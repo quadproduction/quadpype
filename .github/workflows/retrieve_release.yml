@@ -2,9 +2,6 @@ name: Clone
 on:
   # kick off the job on demand
   workflow_dispatch:
-  # and run on a schedule every 12 hours
-  schedule:
-    - cron: "* */12 * * *"
 jobs:
   build:
     runs-on: ubuntu-latest
