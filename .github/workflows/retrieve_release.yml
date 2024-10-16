@@ -11,3 +11,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           src_repo: quadproduction/OpenPype
+          copy_assets: true
