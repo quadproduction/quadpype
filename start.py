@@ -744,7 +744,7 @@ def _find_frozen_openpype(use_version: str = None,
         use_staging (bool, optional): Prefer *staging* flavor over production.
 
     Returns:
-        OpenPypeVersion: Path to version to be used.
+        OpenPypeVersion: Version to be used.
 
     Raises:
         RuntimeError: If no OpenPype version are found.
@@ -880,7 +880,7 @@ def _bootstrap_from_code(use_version) -> OpenPypeVersion:
                 f"Cannot find version at {_openpype_root}")
     else:
         # Get current version of OpenPype
-        local_version = OpenPypeVersion.get_installed_version_str()
+        local_version = OpenPypeVersion.get_installed_version()
 
     # All cases when should be used different version than build
     if use_version and use_version != str(local_version):
@@ -1150,6 +1150,7 @@ def boot():
         # validate version
         _print(f">>> Validating version in frozen [ {str(openpype_version.path)} ]")
         result = bootstrap.validate_openpype_version(openpype_version.path)
+
         if not result[0]:
             _print(f"!!! Invalid version: {result[1]}", True)
             sys.exit(1)
@@ -1158,7 +1159,6 @@ def boot():
     else:
         try:
             openpype_version = _bootstrap_from_code(use_version)
-
         except OpenPypeVersionNotFound as exc:
             _boot_handle_missing_version(local_version, str(exc))
             sys.exit(1)

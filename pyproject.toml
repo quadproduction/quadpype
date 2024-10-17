@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "QuadPype"
-version = "4.0.0" # QuadPype
+version = "4.0.0"
 description = "Open VFX and Animation pipeline with support."
 authors = ["Quad Group Team <dev@quad.fr>"]
 license = "MIT License"
