@@ -62,7 +62,7 @@ class InstallThread(QtCore.QThread):
 
         # find local version of OpenPype
         bs = BootstrapRepos(
-            progress_callback=self.set_progress, message=self.message)
+            progress_callback=self.set_progress, log_signal=self.message)
         local_version = OpenPypeVersion.get_installed_version_str()
 
         # user did not entered url
@@ -181,10 +181,6 @@ class InstallThread(QtCore.QThread):
             return
 
         self.message.emit(f"Installed as {local_openpype}", False)
-        self.progress.emit(100)
-        self._set_result(1)
-        return
-
         self.progress.emit(100)
         self._set_result(1)
         return
