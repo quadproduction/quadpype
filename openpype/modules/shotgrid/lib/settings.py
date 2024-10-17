@@ -1,4 +1,4 @@
-from openpype.settings import get_system_settings, get_project_settings
+from openpype.settings import get_system_settings, get_project_settings, MODULES_SETTINGS_KEY
 from openpype.modules.shotgrid.lib.const import MODULE_NAME
 
 
@@ -7,7 +7,7 @@ def get_shotgrid_project_settings(project):
 
 
 def get_shotgrid_settings():
-    return get_system_settings().get("modules", {}).get(MODULE_NAME, {})
+    return get_system_settings().get(MODULES_SETTINGS_KEY, {}).get(MODULE_NAME, {})
 
 
 def get_shotgrid_servers():

@@ -34,7 +34,6 @@ class BaseFileHandler:
     def check_md5(fpath, md5, **kwargs):
         return md5 == RemoteFileHandler.calculate_md5(fpath, **kwargs)
 
-
     @staticmethod
     def calculate_sha256(fpath):
         """Calculate sha256 for content of the file.
