@@ -20,8 +20,11 @@ from .constants import (
     SYSTEM_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     PROJECT_ANATOMY_KEY,
-    LOCAL_SETTING_KEY,
+    LOCAL_SETTINGS_KEY,
     M_OVERRIDDEN_KEY,
+
+    APPS_SETTINGS_KEY,
+    GENERAL_SETTINGS_KEY,
 
     LEGACY_SETTINGS_VERSION
 )
@@ -649,7 +652,7 @@ class MongoSettingsHandler(SettingsHandler):
         project_settings_root = ProjectSettings(
             reset=False, change_state=False
         )
-        anatomy_entity = project_settings_root["project_anatomy"]
+        anatomy_entity = project_settings_root[PROJECT_ANATOMY_KEY]
         anatomy_keys = set(anatomy_entity.keys())
         anatomy_keys.remove("attributes")
         attribute_keys = set(anatomy_entity["attributes"].keys())
@@ -696,10 +699,10 @@ class MongoSettingsHandler(SettingsHandler):
             dict: Global settings extracted from system settings data.
         """
         output = {}
-        if "general" not in data:
+        if GENERAL_SETTINGS_KEY not in data:
             return output
 
-        general_data = data["general"]
+        general_data = data[GENERAL_SETTINGS_KEY]
 
         # Add predefined keys to global settings if are set
         for key in self.global_keys:
@@ -766,11 +769,11 @@ class MongoSettingsHandler(SettingsHandler):
             system_settings_data = {}
             system_settings_document["data"] = system_settings_data
 
-        if "general" in system_settings_data:
-            system_general = system_settings_data["general"]
+        if GENERAL_SETTINGS_KEY in system_settings_data:
+            system_general = system_settings_data[GENERAL_SETTINGS_KEY]
         else:
             system_general = {}
-            system_settings_data["general"] = system_general
+            system_settings_data[GENERAL_SETTINGS_KEY] = system_general
 
         overridden_keys = system_general.get(M_OVERRIDDEN_KEY) or []
         for key in self.global_keys:
@@ -974,7 +977,7 @@ class MongoSettingsHandler(SettingsHandler):
         update_dict_data = {}
         project_doc_data = project_doc.get("data") or {}
         attributes = new_data.pop("attributes")
-        _applications = attributes.pop("applications", None) or []
+        _applications = attributes.pop(APPS_SETTINGS_KEY, None) or []
         for key, value in attributes.items():
             if (
                 key in project_doc_data
@@ -1488,7 +1491,7 @@ class MongoSettingsHandler(SettingsHandler):
                     app_names.add(app_name)
 
         if set_applications:
-            attributes["applications"] = list(app_names)
+            attributes[APPS_SETTINGS_KEY] = list(app_names)
 
         output = {"attributes": attributes}
         for key in self.anatomy_keys:
@@ -1797,7 +1800,7 @@ class MongoLocalSettingsHandler(LocalSettingsHandler):
     """Settings handler that use mongo for store and load local settings.
 
     Data have 2 query criteria. First is key "type" stored in constant
-    `LOCAL_SETTING_KEY`. Second is key "site_id" which value can be obstained
+    `LOCAL_SETTINGS_KEY`. Second is key "site_id" which value can be obstained
     with `get_local_site_id` function.
     """
 
@@ -1839,11 +1842,11 @@ class MongoLocalSettingsHandler(LocalSettingsHandler):
 
         self.collection.replace_one(
             {
-                "type": LOCAL_SETTING_KEY,
+                "type": LOCAL_SETTINGS_KEY,
                 "site_id": self.local_site_id
             },
             {
-                "type": LOCAL_SETTING_KEY,
+                "type": LOCAL_SETTINGS_KEY,
                 "site_id": self.local_site_id,
                 "data": self.local_settings_cache.data
             },
@@ -1854,7 +1857,7 @@ class MongoLocalSettingsHandler(LocalSettingsHandler):
         """Local settings for local site id."""
         if self.local_settings_cache.is_outdated:
             document = self.collection.find_one({
-                "type": LOCAL_SETTING_KEY,
+                "type": LOCAL_SETTINGS_KEY,
                 "site_id": self.local_site_id
             })
 
