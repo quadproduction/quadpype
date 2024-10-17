@@ -29,7 +29,7 @@ class PypeCommands:
         if dev:
             user_role = "developer"
         else:
-            user_role = "manager"
+            user_role = "administrator"
         settings.main(user_role)
 
     @staticmethod

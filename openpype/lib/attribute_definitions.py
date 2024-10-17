@@ -4,7 +4,7 @@ import collections
 import uuid
 import json
 import copy
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 
 import six
 import clique
@@ -17,14 +17,14 @@ _attr_defs_by_type = {}
 def register_attr_def_class(cls):
     """Register attribute definition.
 
-    Currently are registered definitions used to deserialize data to objects.
+    Currently, these are registered definitions used to deserialize data to objects.
 
     Attrs:
         cls (AbstractAttrDef): Non-abstract class to be registered with unique
             'type' attribute.
 
     Raises:
-        KeyError: When type was already registered.
+        KeyError: When a type was already registered.
     """
 
     if cls.type in _attr_defs_by_type:
@@ -33,7 +33,7 @@ def register_attr_def_class(cls):
 
 
 def get_attributes_keys(attribute_definitions):
-    """Collect keys from list of attribute definitions.
+    """Collect keys from the list of attribute definitions.
 
     Args:
         attribute_definitions (List[AbstractAttrDef]): Objects of attribute
@@ -61,7 +61,7 @@ def get_default_values(attribute_definitions):
             for which default values should be collected.
 
     Returns:
-        Dict[str, Any]: Default values for passet attribute definitions.
+        Dict[str, Any]: Default values for passed attribute definitions.
     """
 
     output = {}
@@ -76,13 +76,13 @@ def get_default_values(attribute_definitions):
 
 
 class AbstractAttrDefMeta(ABCMeta):
-    """Metaclass to validate existence of 'key' attribute.
+    """Metaclass to validate the existence of 'key' attribute.
 
-    Each object of `AbstractAttrDef` mus have defined 'key' attribute.
+    Each object of `AbstractAttrDef` mus has defined 'key' attribute.
     """
 
-    def __call__(self, *args, **kwargs):
-        obj = super(AbstractAttrDefMeta, self).__call__(*args, **kwargs)
+    def __call__(cls, *args, **kwargs):
+        obj = super(AbstractAttrDefMeta, cls).__call__(*args, **kwargs)
         init_class = getattr(obj, "__init__class__", None)
         if init_class is not AbstractAttrDef:
             raise TypeError("{} super was not called in __init__.".format(
@@ -98,8 +98,8 @@ class AbstractAttrDef(object):
     Each attribute definition must have implemented validation and
     conversion method.
 
-    Attribute definition should have ability to return "default" value. That
-    can be based on passed data into `__init__` so is not abstracted to
+    Attribute definition should be able to return "default" value.
+    That can be based on passed data into `__init__` so is not abstracted to
     attribute.
 
     QUESTION:
@@ -110,12 +110,14 @@ class AbstractAttrDef(object):
         default (Any): Default value of an attribute.
         label (str): Attribute label.
         tooltip (str): Attribute tooltip.
-        is_label_horizontal (bool): UI specific argument. Specify if label is
+        is_label_horizontal (bool): UI specific argument.
+        Specify if the label is
             next to value input or ahead.
         hidden (bool): Will be item hidden (for UI purposes).
         disabled (bool): Item will be visible but disabled (for UI purposes).
     """
 
+    type = "invalid"
     type_attributes = []
 
     is_value_def = True
@@ -164,16 +166,6 @@ class AbstractAttrDef(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    @abstractproperty
-    def type(self):
-        """Attribute definition type also used as identifier of class.
-
-        Returns:
-            str: Type of attribute definition.
-        """
-
-        pass
-
     @abstractmethod
     def convert_value(self, value):
         """Convert value to a valid one.
@@ -185,7 +177,7 @@ class AbstractAttrDef(object):
         pass
 
     def serialize(self):
-        """Serialize object to data so it's possible to recreate it.
+        """Serialize the object to data, so it's possible to recreate it.
 
         Returns:
             Dict[str, Any]: Serialized object that can be passed to
@@ -208,7 +200,7 @@ class AbstractAttrDef(object):
 
     @classmethod
     def deserialize(cls, data):
-        """Recreate object from data.
+        """Recreate the object from data.
 
         Data can be received using 'serialize' method.
         """
@@ -217,7 +209,7 @@ class AbstractAttrDef(object):
 
 
 # -----------------------------------------
-# UI attribute definitoins won't hold value
+# UI attribute definitions won't hold value
 # -----------------------------------------
 
 class UIDef(AbstractAttrDef):
@@ -247,14 +239,14 @@ class UILabelDef(UIDef):
 
 
 # ---------------------------------------
-# Attribute defintioins should hold value
+# Attribute definitions should hold value
 # ---------------------------------------
 
 class UnknownDef(AbstractAttrDef):
     """Definition is not known because definition is not available.
 
     This attribute can be used to keep existing data unchanged but does not
-    have known definition of type.
+    have a known definition of the type.
     """
 
     type = "unknown"
@@ -271,9 +263,9 @@ class HiddenDef(AbstractAttrDef):
     """Hidden value of Any type.
 
     This attribute can be used for UI purposes to pass values related
-    to other attributes (e.g. in multi-page UIs).
+    to other attributes (e.g., in multi-page UIs).
 
-    Keep in mind the value should be possible to parse by json parser.
+    Keep in mind the value should be possible to parse by JSON parser.
     """
 
     type = "hidden"
@@ -281,7 +273,7 @@ class HiddenDef(AbstractAttrDef):
     def __init__(self, key, default=None, **kwargs):
         kwargs["default"] = default
         kwargs["hidden"] = True
-        super(UnknownDef, self).__init__(key, **kwargs)
+        super(HiddenDef, self).__init__(key, **kwargs)
 
     def convert_value(self, value):
         return value
@@ -313,7 +305,7 @@ class NumberDef(AbstractAttrDef):
     ):
         minimum = 0 if minimum is None else minimum
         maximum = 999999 if maximum is None else maximum
-        # Swap min/max when are passed in opposited order
+        # Swap min/max when are passed in opposite order
         if minimum > maximum:
             maximum, minimum = minimum, maximum
 
@@ -369,7 +361,7 @@ class TextDef(AbstractAttrDef):
     Text can have multiline option so endline characters are allowed regex
     validation can be applied placeholder for UI purposes and default value.
 
-    Regex validation is not part of attribute implemntentation.
+    Regex validation is not part of attribute implementation.
 
     Args:
         multiline(bool): Text has single or multiline support.
@@ -760,7 +752,7 @@ class FileDefItem(object):
         )
 
     @classmethod
-    def from_paths(cls, paths, allow_sequences):
+    def from_paths(cls, paths, allow_sequences=False):
         filenames_by_dir = collections.defaultdict(list)
         for path in paths:
             normalized = os.path.normpath(path)
@@ -951,7 +943,7 @@ def deserialize_attr_def(attr_def_data):
     """Deserialize attribute definition from data.
 
     Args:
-        attr_def (Dict[str, Any]): Attribute definition data to deserialize.
+        attr_def_data (Dict[str, Any]): Attribute definition data to deserialize.
     """
 
     attr_type = attr_def_data.pop("type")

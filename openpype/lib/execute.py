@@ -478,3 +478,22 @@ def get_linux_launcher_args(*args):
         launch_args.extend(args)
 
     return launch_args
+
+
+def open_in_explorer(filepath):
+    """Opens a file using the system's default application based on the OS.
+
+    Args:
+        filepath (str): The path to the file to be opened.
+    """
+    result = None
+    if 'win' in sys.platform:  # windows
+        result = subprocess.call(f'explorer "{filepath}"', shell=True)
+    elif sys.platform == 'darwin':  # macOS
+        result = subprocess.call(['open', f'{filepath}'])
+    else:  # linux
+        try:
+            result = subprocess.call(['xdg-open', f'{filepath}'])
+        except OSError:
+            raise OSError('unsupported xdg-open call')
+    return result

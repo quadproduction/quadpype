@@ -7,7 +7,9 @@ import platform
 from datetime import datetime
 from abc import ABCMeta, abstractmethod
 
-# TODO Use pype igniter logic instead of using duplicated code
+from openpype.settings import GENERAL_SETTINGS_KEY
+
+# TODO QUAD: Use pype igniter logic instead of using duplicated code
 # disable lru cache in Python 2
 try:
     from functools import lru_cache
@@ -34,7 +36,7 @@ from openpype.settings import (
     get_local_settings,
     get_system_settings
 )
-
+import openpype.settings.lib as sett_lib
 from openpype.client.mongo import validate_mongo_connection
 from openpype.client import get_ayon_server_api_connection
 
@@ -622,7 +624,7 @@ def get_openpype_username():
         local_settings = get_local_settings()
         username = (
             local_settings
-            .get("general", {})
+            .get(GENERAL_SETTINGS_KEY, {})
             .get("username")
         )
         if not username:
@@ -630,14 +632,25 @@ def get_openpype_username():
     return username
 
 
-def is_admin_password_required():
+def is_admin_password_required(admin_bypass_enabled=True):
     system_settings = get_system_settings()
-    password = system_settings["general"].get("admin_password")
+    password = system_settings[GENERAL_SETTINGS_KEY].get("admin_password")
     if not password:
         return False
 
-    local_settings = get_local_settings()
-    is_admin = local_settings.get("general", {}).get("is_admin", False)
-    if is_admin:
+    # Check if the user (session username) is allow-listed
+    # In that case password isn't required
+    username = getpass.getuser()
+    admins_doc = sett_lib._SETTINGS_HANDLER.collection.find_one({"type": "administrators"})
+    if admins_doc and username in admins_doc["data"]["usernames"]:
         return False
+
+    # There is an option on the local settings (user) to switch to admin
+    # By default admin users automatically bypass password requirement
+    # admin_bypass_enabled, if set to False, means password is required even for admins
+    if admin_bypass_enabled:
+        local_settings = get_local_settings()
+        is_admin = local_settings.get(GENERAL_SETTINGS_KEY, {}).get("is_admin", False)
+        if is_admin:
+            return False
     return True
