@@ -2355,6 +2355,8 @@ def get_frame_range(include_animation_range=False):
             animation_start -= int(handle_start)
             animation_end += int(handle_end)
 
+        frame_range["frameStart"] = animation_start
+        frame_range["frameEnd"] = animation_end
         frame_range["animationStart"] = animation_start
         frame_range["animationEnd"] = animation_end
 
@@ -2964,6 +2966,64 @@ def update_content_on_context_change():
                                  new_data["frameEnd"],)
         except ValueError:
             pass
+
+def iter_publish_instances():
+    """Iterate over publishable instances (their objectSets).
+    """
+    for node in cmds.ls(
+        "*.id",
+        long=True,
+        type="objectSet",
+        recursive=True,
+        objectsOnly=True
+    ):
+        if cmds.getAttr("{}.id".format(node)) != "pyblish.avalon.instance":
+            continue
+        yield node
+
+
+def update_instances_asset_name():
+    """Update 'asset' attribute of publishable instances (their objectSets)
+    that got one.
+    """
+
+    for instance in iter_publish_instances():
+        if not cmds.attributeQuery("asset", node=instance, exists=True):
+            continue
+        attr = "{}.asset".format(instance)
+        cmds.setAttr(attr, get_current_asset_name(), type="string")
+
+
+def update_instances_frame_range():
+    """Update 'frameStart', 'frameEnd', 'handleStart', 'handleEnd' and 'fps'
+    attributes of publishable instances (their objectSets) that got one.
+    """
+
+    attributes = ["frameStart", "frameEnd", "handleStart", "handleEnd", "fps"]
+
+    attrs_per_instance = {}
+    for instance in iter_publish_instances():
+        instance_attrs = [
+            attr for attr in attributes
+            if cmds.attributeQuery(attr, node=instance, exists=True)
+        ]
+
+        if instance_attrs:
+            attrs_per_instance[instance] = instance_attrs
+
+    if not attrs_per_instance:
+        # no instances with any frame related attributes
+        return
+
+    fields = ["data.{}".format(key) for key in attributes]
+    asset_doc = get_current_project_asset(fields=fields)
+    asset_data = asset_doc["data"]
+
+    for node, attrs in attrs_per_instance.items():
+        for attr in attrs:
+            plug = "{}.{}".format(node, attr)
+            value = asset_data[attr]
+            cmds.setAttr(plug, value)
 
 
 def show_message(title, msg):
@@ -3865,7 +3925,7 @@ def create_rig_animation_instance(
         log (logging.Logger, optional): Logger to log to if provided
 
     Returns:
-        None
+        instance
 
     """
     if options is None:
@@ -3926,3 +3986,6 @@ def create_rig_animation_instance(
             variant=namespace,
             pre_create_data={"use_selection": True}
         )
+    subset = new_context.get("subset", None)
+
+    return subset

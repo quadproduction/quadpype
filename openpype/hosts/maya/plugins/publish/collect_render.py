@@ -47,6 +47,11 @@ from maya import cmds
 
 import pyblish.api
 
+from openpype.settings import (
+    MODULES_SETTINGS_KEY,
+    PROJECT_SETTINGS_KEY,
+    SYSTEM_SETTINGS_KEY
+)
 from openpype.pipeline import KnownPublishError
 from openpype.lib import get_formatted_current_time
 from openpype.hosts.maya.api.lib_renderproducts import (
@@ -157,10 +162,10 @@ class CollectMayaRender(pyblish.api.InstancePlugin):
 
         # append full path
         aov_dict = {}
-        image_directory = os.path.join(
-            cmds.workspace(query=True, rootDirectory=True),
-            cmds.workspace(fileRuleEntry="images")
-        )
+        default_render_folder = context.data.get(PROJECT_SETTINGS_KEY)\
+            .get("maya")\
+            .get("RenderSettings")\
+            .get("default_render_image_folder") or ""
         # replace relative paths with absolute. Render products are
         # returned as list of dictionaries.
         publish_meta_path = None
@@ -168,7 +173,8 @@ class CollectMayaRender(pyblish.api.InstancePlugin):
             full_paths = []
             aov_first_key = list(aov.keys())[0]
             for file in aov[aov_first_key]:
-                full_path = os.path.join(image_directory, file)
+                full_path = os.path.join(workspace, default_render_folder,
+                                         file)
                 full_path = full_path.replace("\\", "/")
                 full_paths.append(full_path)
                 publish_meta_path = os.path.dirname(full_path)
@@ -277,14 +283,14 @@ class CollectMayaRender(pyblish.api.InstancePlugin):
 
             # todo: Following are likely not needed due to collecting from the
             #       instance itself if they are attribute definitions
-            "tileRendering": instance.data.get("tileRendering") or False,  # noqa: E501
-            "tilesX": instance.data.get("tilesX") or 2,
-            "tilesY": instance.data.get("tilesY") or 2,
+            "tileRendering": instance.data.get("tileRendering", False),  # noqa: E501
+            "tilesX": instance.data.get("tilesX", 2),
+            "tilesY": instance.data.get("tilesY", 2),
             "convertToScanline": instance.data.get(
-                "convertToScanline") or False,
+                "convertToScanline", False),
             "useReferencedAovs": instance.data.get(
                 "useReferencedAovs") or instance.data.get(
-                    "vrayUseReferencedAovs") or False,
+                    "vrayUseReferencedAovs", False),
             "aovSeparator": layer_render_products.layer_data.aov_separator,  # noqa: E501
             "renderSetupIncludeLights": instance.data.get(
                 "renderSetupIncludeLights"
@@ -295,7 +301,7 @@ class CollectMayaRender(pyblish.api.InstancePlugin):
         }
 
         rr_settings = (
-            context.data["system_settings"]["modules"]["royalrender"]
+            context.data[SYSTEM_SETTINGS_KEY][MODULES_SETTINGS_KEY]["royalrender"]
         )
         if rr_settings["enabled"]:
             data["rrPathName"] = instance.data.get("rrPathName")

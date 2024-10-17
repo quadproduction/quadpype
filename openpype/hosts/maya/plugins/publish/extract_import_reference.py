@@ -6,6 +6,7 @@ from maya import cmds
 import pyblish.api
 import tempfile
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.lib import run_subprocess
 from openpype.pipeline import publish
 from openpype.pipeline.publish import OptionalPyblishPluginMixin
@@ -38,7 +39,7 @@ class ExtractImportReference(publish.Extractor,
             return
 
         ext_mapping = (
-            instance.context.data["project_settings"]["maya"]["ext_mapping"]
+            instance.context.data[PROJECT_SETTINGS_KEY]["maya"]["ext_mapping"]
         )
         if ext_mapping:
             self.log.debug("Looking in settings for scene type ...")

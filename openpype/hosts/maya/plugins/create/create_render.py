@@ -8,11 +8,13 @@ from openpype.hosts.maya.api import (
 from openpype.pipeline import CreatorError
 from openpype.lib import (
     BoolDef,
-    NumberDef,
+    NumberDef
 )
 
+from openpype.modules.deadline.utils import DeadlineDefaultJobAttrs
 
-class CreateRenderlayer(plugin.RenderlayerCreator):
+
+class CreateRenderlayer(plugin.RenderlayerCreator, DeadlineDefaultJobAttrs):
     """Create and manages renderlayer subset per renderLayer in workfile.
 
     This generates a single node in the scene which tells the Creator to if

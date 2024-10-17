@@ -2,6 +2,7 @@ import os
 from maya import cmds
 
 import pyblish.api
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder
@@ -94,7 +95,7 @@ class ValidateGLSLMaterial(pyblish.api.InstancePlugin,
                              glsl_shading_grp + ".surfaceShader")
 
             # load the maya2gltf shader
-            ogsfx_path = instance.context.data["project_settings"]["maya"]["publish"]["ExtractGLB"]["ogsfx_path"]  # noqa
+            ogsfx_path = instance.context.data[PROJECT_SETTINGS_KEY]["maya"]["publish"]["ExtractGLB"]["ogsfx_path"]  # noqa
             if not os.path.exists(ogsfx_path):
                 if ogsfx_path:
                     # if custom ogsfx path is not specified
