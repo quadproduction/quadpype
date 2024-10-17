@@ -58,6 +58,7 @@ from .execute import (
     get_ayon_launcher_args,
     get_openpype_execute_args,
     get_linux_launcher_args,
+    open_in_explorer,
     execute,
     run_subprocess,
     run_detached_process,
@@ -149,7 +150,8 @@ from .plugin_tools import (
 from .path_tools import (
     format_file_size,
     collect_frames,
-    create_hard_link,
+    create_hardlink,
+    create_symlink,
     version_up,
     get_version_from_path,
     get_last_version_from_path,
@@ -162,6 +164,7 @@ from .openpype_version import (
     get_expected_version,
     is_running_from_build,
     is_running_staging,
+    is_version_checking_popup_enabled,
     is_current_version_studio_latest,
     is_current_version_higher_than_expected
 )
@@ -181,6 +184,7 @@ __all__ = [
     "get_ayon_launcher_args",
     "get_openpype_execute_args",
     "get_linux_launcher_args",
+    "open_in_explorer",
     "execute",
     "run_subprocess",
     "run_detached_process",
@@ -265,7 +269,8 @@ __all__ = [
 
     "format_file_size",
     "collect_frames",
-    "create_hard_link",
+    "create_hardlink",
+    "create_symlink",
     "version_up",
     "get_version_from_path",
     "get_last_version_from_path",
@@ -290,6 +295,7 @@ __all__ = [
     "get_expected_version",
     "is_running_from_build",
     "is_running_staging",
+    "is_version_checking_popup_enabled",
     "is_current_version_studio_latest",
 
     "requests_get",

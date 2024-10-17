@@ -73,7 +73,7 @@ aiohttp-middlewares = "^2.0.0"
 Unidecode = "1.2.0"
 cryptography = "39.0.0"
 opentimelineio = "^0.15.0"
-ayon-python-api = "0.4.1"
+ayon-python-api = "1.0.0"
 colorama = "0.4.6"
 
 [tool.poetry.dev-dependencies]
