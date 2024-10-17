@@ -6,7 +6,7 @@ import six
 import platform
 
 from openpype.lib import Logger
-from openpype.settings import get_system_settings
+from openpype.settings import get_system_settings, MODULES_SETTINGS_KEY
 from .abstract_provider import AbstractProvider
 from ..utils import time_function, ResumableError
 
@@ -636,7 +636,7 @@ class GDriveHandler(AbstractProvider):
         provider_presets = None
         try:
             provider_presets = (
-                get_system_settings()["modules"]
+                get_system_settings()[MODULES_SETTINGS_KEY]
                 ["sync_server"]
                 ["providers"]
                 ["gdrive"]

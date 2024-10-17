@@ -1,8 +1,10 @@
 from qtpy import QtCore, QtGui, QtWidgets
+
 from openpype import resources, style
+from openpype.widgets import BaseToolWidget
 
 
-class WidgetUserIdle(QtWidgets.QWidget):
+class WidgetUserIdle(BaseToolWidget):
     SIZE_W = 300
     SIZE_H = 160
 
@@ -14,10 +16,12 @@ class WidgetUserIdle(QtWidgets.QWidget):
         icon = QtGui.QIcon(resources.get_openpype_icon_filepath())
         self.setWindowIcon(icon)
 
+        window_flags = self.windowFlags() | QtCore.Qt.WindowCloseButtonHint | QtCore.Qt.WindowMinimizeButtonHint
+        if self.window_stays_on_top:
+            window_flags |= QtCore.Qt.WindowStaysOnTopHint
+
         self.setWindowFlags(
-            QtCore.Qt.WindowCloseButtonHint
-            | QtCore.Qt.WindowMinimizeButtonHint
-            | QtCore.Qt.WindowStaysOnTopHint
+            window_flags
         )
 
         self._is_showed = False
