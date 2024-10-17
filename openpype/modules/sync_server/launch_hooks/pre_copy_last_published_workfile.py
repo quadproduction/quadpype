@@ -12,7 +12,7 @@ from openpype.pipeline.template_data import get_template_data
 from openpype.pipeline.workfile.path_resolving import (
     get_workfile_template_key,
 )
-from openpype.settings.lib import get_project_settings
+from openpype.settings import get_project_settings, PROJECT_SETTINGS_KEY
 
 
 class CopyLastPublishedWorkfile(PreLaunchHook):
@@ -168,7 +168,7 @@ class CopyLastPublishedWorkfile(PreLaunchHook):
 
         project_doc = self.data["project_doc"]
 
-        project_settings = self.data["project_settings"]
+        project_settings = self.data[PROJECT_SETTINGS_KEY]
         template_key = get_workfile_template_key(
             task_name, host_name, project_name, project_settings
         )

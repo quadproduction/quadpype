@@ -1,5 +1,6 @@
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.lib.profiles_filtering import filter_profiles
 from openpype.lib import attribute_definitions
 from openpype.pipeline import OpenPypePyblishPluginMixin
@@ -64,7 +65,7 @@ class CollectSlackFamilies(pyblish.api.InstancePlugin,
                                                       50)
         instance.data["slack_channel_message_profiles"] = selected_profiles
 
-        slack_token = (instance.context.data["project_settings"]
+        slack_token = (instance.context.data[PROJECT_SETTINGS_KEY]
                                             ["slack"]
                                             ["token"])
         instance.data["slack_token"] = slack_token

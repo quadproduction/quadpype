@@ -9,7 +9,6 @@ import platform
 
 import xml.etree.ElementTree
 
-
 from multiprocessing.pool import ThreadPool
 from .execute import run_subprocess
 from .vendor_bin_utils import (

@@ -22,6 +22,7 @@ if platform.system().lower() != "windows":
 
 from colorama import Style
 
+
 class Terminal:
     """Class formatting messages using colorama to specific visual tokens.
 

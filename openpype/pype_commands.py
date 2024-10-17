@@ -25,7 +25,6 @@ class PypeCommands:
     def launch_settings_gui(dev):
         from openpype.tools import settings
 
-        # TODO change argument options to allow enum of user roles
         if dev:
             user_role = "developer"
         else:

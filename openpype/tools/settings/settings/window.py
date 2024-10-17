@@ -6,17 +6,19 @@ from openpype.lib import is_admin_password_required
 from openpype.lib.events import EventSystem
 from openpype.widgets import PasswordDialog
 
+from openpype.settings import get_system_settings
 from openpype.settings.lib import (
     get_last_opened_info,
     opened_settings_ui,
-    closed_settings_ui,
+    closed_settings_ui
 )
 
 from .dialogs import SettingsUIOpenedElsewhere
 from .categories import (
     CategoryState,
     SystemWidget,
-    ProjectWidget
+    ProjectWidget,
+    EditMode
 )
 from .widgets import (
     ShadowWidget,
@@ -39,7 +41,7 @@ class SettingsController:
 
         self._opened_info = None
         self._last_opened_info = None
-        self._edit_mode = None
+        self._edit_mode = EditMode.ENABLE
 
     @property
     def user_role(self):
@@ -68,36 +70,39 @@ class SettingsController:
         self._opened_info = None
         self._edit_mode = None
 
-    def set_edit_mode(self, enabled):
-        if self._edit_mode is enabled:
+    def set_edit_mode(self, mode):
+        if self._edit_mode == mode and self._opened_info:
             return
 
         opened_info = None
-        if enabled:
+        if mode == EditMode.ENABLE:
             opened_info = opened_settings_ui()
             self._last_opened_info = opened_info
 
         self._opened_info = opened_info
-        self._edit_mode = enabled
+        self._edit_mode = mode
 
         self.event_system.emit(
             "edit.mode.changed",
-            {"edit_mode": enabled},
+            {"edit_mode": mode},
             "controller"
         )
 
     def update_last_opened_info(self):
+        if self.edit_mode == EditMode.PROTECT:
+            return
+
         last_opened_info = get_last_opened_info()
-        enabled = False
+        mode = EditMode.DISABLE
         if (
             last_opened_info is None
             or self._opened_info == last_opened_info
         ):
-            enabled = True
+            mode = EditMode.ENABLE
 
         self._last_opened_info = last_opened_info
 
-        self.set_edit_mode(enabled)
+        self.set_edit_mode(mode)
 
 
 class MainWidget(QtWidgets.QWidget):
@@ -116,6 +121,8 @@ class MainWidget(QtWidgets.QWidget):
         # - is used on close event
         self._main_reset = False
         self._controller = controller
+
+        self._protect_system_settings = False
 
         self._user_passed = False
         self._reset_on_show = reset_on_show
@@ -141,6 +148,14 @@ class MainWidget(QtWidgets.QWidget):
             project_widget
         ]
 
+        current_settings = get_system_settings()
+        production_version = current_settings.get('general').get("production_version")
+        # If production_version is empty, this means no version can be found
+        # Avoid blocking the system settings in that case
+        if production_version and production_version != studio_widget._current_version:
+            self._protect_system_settings = True
+            self._controller.set_edit_mode(EditMode.PROTECT)
+
         header_tab_widget.addTab(studio_widget, "System")
         header_tab_widget.addTab(project_widget, "Project")
 
@@ -154,7 +169,7 @@ class MainWidget(QtWidgets.QWidget):
         search_dialog = SearchEntitiesDialog(self)
 
         self._shadow_widget = ShadowWidget("Working...", self)
-        self._shadow_widget.setVisible(False)
+        self._shadow_widget.setVisible(True)
 
         controller.event_system.add_callback(
             "edit.mode.changed",
@@ -241,17 +256,17 @@ class MainWidget(QtWidgets.QWidget):
 
     def _check_on_reset(self):
         self._controller.update_last_opened_info()
-        if self._controller.edit_mode:
+        if self._controller.edit_mode != EditMode.DISABLE:
             return
 
-        # if self._edit_mode is False:
-        #     return
-
-        dialog = SettingsUIOpenedElsewhere(
-            self._controller.last_opened_info, self
-        )
-        dialog.exec_()
-        self._controller.set_edit_mode(dialog.result() == 1)
+        # Someone else already has the settings
+        if self._controller.edit_mode != EditMode.PROTECT:
+            dialog = SettingsUIOpenedElsewhere(
+                self._controller.last_opened_info, self
+            )
+            dialog.exec_()
+            take_control = (dialog.result() == 1)
+            self._controller.set_edit_mode(take_control)
 
     def _show_password_dialog(self):
         if self._password_dialog:
@@ -274,13 +289,13 @@ class MainWidget(QtWidgets.QWidget):
             return
 
         if not self._user_passed:
-            self._user_passed = not is_admin_password_required()
+            self._user_passed = not is_admin_password_required(admin_bypass_enabled=False)
 
         self._on_state_change()
 
         if not self._user_passed:
             # Avoid doubled dialog
-            dialog = PasswordDialog(self)
+            dialog = PasswordDialog(self, allow_remember=False)
             dialog.setModal(True)
             dialog.finished.connect(self._on_password_dialog_close)
 
@@ -299,6 +314,9 @@ class MainWidget(QtWidgets.QWidget):
         self._main_reset = False
         self._check_on_reset()
 
+        # This is to show password dialog each time settings are opened
+        self._user_passed = False
+
     def _update_search_dialog(self, clear=False):
         if self._search_dialog.isVisible():
             entity = None
@@ -309,21 +327,34 @@ class MainWidget(QtWidgets.QWidget):
 
     def _edit_mode_changed(self, event):
         title = self.window_title
-        if not event["edit_mode"]:
+        if event["edit_mode"] != EditMode.ENABLE:
             title += " [View only]"
         self.setWindowTitle(title)
 
-    def _on_tab_changed(self):
+    def is_protected(self, current_widget):
+        return self._protect_system_settings and isinstance(current_widget, SystemWidget)
+
+    def _on_tab_changed(self, event):
+        current_widget = self._header_tab_widget.widget(event)
+        is_protected = self.is_protected(current_widget)
+        if is_protected:
+            self._controller.set_edit_mode(EditMode.PROTECT)
+        else:
+            self._controller.set_edit_mode(EditMode.ENABLE)
+            self._check_on_reset()
+        if hasattr(current_widget, "_update_labels_visibility"):
+            current_widget._update_labels_visibility()  # noqa
         self._update_search_dialog()
 
     def _on_search_path_clicked(self, path):
         widget = self._header_tab_widget.currentWidget()
-        widget.change_path(path)
+        if hasattr(widget, "change_path"):
+            widget.change_path(path)
 
     def _on_restart_required(self):
         # Don't show dialog if there are not registered slots for
         #   `trigger_restart` signal.
-        # - For example when settings are running as standalone tool
+        # - For example, when settings are running as standalone tool
         # - PySide2 and PyQt5 compatible way how to find out
         method_index = self.metaObject().indexOfMethod("trigger_restart()")
         method = self.metaObject().method(method_index)

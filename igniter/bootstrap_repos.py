@@ -1107,9 +1107,12 @@ class BootstrapRepos:
             requested OpenPypeVersion.
 
         """
-        installed_version = OpenPypeVersion.get_installed_version()
         if isinstance(version, str):
             version = OpenPypeVersion(version=version)
+
+        installed_version = OpenPypeVersion.get_installed_version()
+        if installed_version == version:
+            return installed_version
 
         op_version = BootstrapRepos.find_openpype_local_version(version)
         if op_version is not None:

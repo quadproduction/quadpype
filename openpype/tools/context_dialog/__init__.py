@@ -8,5 +8,5 @@ else:
 
 __all__ = (
     "ContextDialog",
-    "main",
+    "main"
 )

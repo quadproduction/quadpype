@@ -76,7 +76,7 @@ def _get_subsets(
 
     active = True
     if archived:
-        active = None
+        active = False
 
     for subset in con.get_products(
         project_name,
@@ -208,7 +208,7 @@ def get_assets(
 
     active = True
     if archived:
-        active = None
+        active = False
 
     con = get_ayon_server_api_connection()
     fields = folder_fields_v3_to_v4(fields, con)
