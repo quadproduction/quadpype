@@ -117,7 +117,7 @@ class InstallPySideToBlender(PreLaunchHook):
 
         # Check if PySide2 is installed and skip if yes
         if self.is_pyside_installed(python_executable):
-            self.log.debug("Blender has already installed PySide2.")
+            self.log.info("Blender has already installed PySide2.")
             return
 
         # Install PySide2 in blender's python

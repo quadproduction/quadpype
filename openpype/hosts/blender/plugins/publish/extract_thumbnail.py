@@ -24,10 +24,10 @@ class ExtractThumbnail(publish.Extractor):
     presets = {}
 
     def process(self, instance):
-        self.log.debug("Extracting capture..")
+        self.log.info("Extracting capture..")
 
         if instance.data.get("thumbnailSource"):
-            self.log.debug("Thumbnail source found, skipping...")
+            self.log.info("Thumbnail source found, skipping...")
             return
 
         stagingdir = self.staging_dir(instance)
@@ -37,7 +37,7 @@ class ExtractThumbnail(publish.Extractor):
 
         path = os.path.join(stagingdir, filename)
 
-        self.log.debug(f"Outputting images to {path}")
+        self.log.info(f"Outputting images to {path}")
 
         camera = instance.data.get("review_camera", "AUTO")
         start = instance.data.get("frameStart", bpy.context.scene.frame_start)
@@ -68,7 +68,7 @@ class ExtractThumbnail(publish.Extractor):
 
         thumbnail = os.path.basename(self._fix_output_path(path))
 
-        self.log.debug(f"thumbnail: {thumbnail}")
+        self.log.info(f"thumbnail: {thumbnail}")
 
         instance.data.setdefault("representations", [])
 

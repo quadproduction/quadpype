@@ -22,6 +22,7 @@ class AutoImageCreator(PSAutoCreator):
     default_variant = ""
     # - Mark by default instance for review
     mark_for_review = True
+    export_psd = False
     active_on_create = True
 
     def create(self, options=None):
@@ -62,7 +63,8 @@ class AutoImageCreator(PSAutoCreator):
             if not self.active_on_create:
                 data["active"] = False
 
-            creator_attributes = {"mark_for_review": self.mark_for_review}
+            creator_attributes = {"mark_for_review": self.mark_for_review,
+                                  "export_psd": self.export_psd}
             data.update({"creator_attributes": creator_attributes})
 
             new_instance = CreatedInstance(
@@ -96,6 +98,11 @@ class AutoImageCreator(PSAutoCreator):
                 "mark_for_review",
                 label="Review",
                 default=self.mark_for_review
+            ),
+            BoolDef(
+                "export_psd",
+                label="Export PSD",
+                default=self.export_psd
             )
         ]
 
@@ -104,6 +111,10 @@ class AutoImageCreator(PSAutoCreator):
             BoolDef(
                 "mark_for_review",
                 label="Review"
+            ),
+            BoolDef(
+                "export_psd",
+                label="Export PSD"
             )
         ]
 

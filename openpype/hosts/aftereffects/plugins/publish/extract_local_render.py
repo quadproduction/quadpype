@@ -25,16 +25,20 @@ class ExtractLocalRender(publish.Extractor):
         stub.render(staging_dir, comp_id)
 
         representations = []
+        format = instance.data.get("format", None)
         for file_name in instance.data["file_names"]:
             _, ext = os.path.splitext(os.path.basename(file_name))
             ext = ext[1:]
 
             first_file_path = None
             files = []
+
             for found_file_name in os.listdir(staging_dir):
+
                 if not found_file_name.endswith(ext):
                     continue
 
+                self.log.info("found_file_name::{}".format(found_file_name))
                 files.append(found_file_name)
                 if first_file_path is None:
                     first_file_path = os.path.join(staging_dir,
@@ -49,20 +53,26 @@ class ExtractLocalRender(publish.Extractor):
             if len(files) == 1:
                 resulting_files = files[0]
 
+            # Check if multiple format informations are passed
+            if type(instance.data.get("format", None)) is list:
+                format = instance.data["format"][file_number]
+
             repre_data = {
                 "frameStart": instance.data["frameStart"],
                 "frameEnd": instance.data["frameEnd"],
+                "format": format,
                 "name": ext,
                 "ext": ext,
                 "files": resulting_files,
                 "stagingDir": staging_dir
             }
+
             first_repre = not representations
             if instance.data["review"] and first_repre:
                 repre_data["tags"] = ["review"]
                 # TODO return back when Extract from source same as regular
-                # thumbnail_path = os.path.join(staging_dir, files[0])
-                # instance.data["thumbnailSource"] = thumbnail_path
+                thumbnail_path = os.path.join(staging_dir, files[0])
+                instance.data["thumbnailSource"] = thumbnail_path
 
             representations.append(repre_data)
 

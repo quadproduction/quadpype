@@ -90,7 +90,7 @@ class RenderCreator(Creator):
                 new_instance.creator_attributes["farm"] = use_farm
 
             review = pre_create_data["mark_for_review"]
-            new_instance. creator_attributes["mark_for_review"] = review
+            new_instance.creator_attributes["mark_for_review"] = review
 
             api.get_stub().imprint(new_instance.id,
                                    new_instance.data_to_store())
@@ -99,7 +99,7 @@ class RenderCreator(Creator):
             stub.rename_item(comp.id, subset_name)
 
             if self.force_setting_values:
-                set_settings(True, True, [comp.id], print_msg=False)
+                set_settings(True, True, [comp.id], print_msg=False, use_custom_settings=True)
 
     def get_pre_create_attr_defs(self):
         output = [
@@ -159,6 +159,7 @@ class RenderCreator(Creator):
             self._remove_instance_from_context(instance)
             self.host.remove_instance(instance)
 
+            subset = instance.data["subset"]
             comp_id = instance.data["members"][0]
             comp = api.get_stub().get_item(comp_id)
             orig_comp_name = instance.data.get("orig_comp_name")

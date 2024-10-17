@@ -165,7 +165,7 @@ class BlendActionLoader(plugin.AssetLoader):
         normalized_libpath = (
             str(Path(bpy.path.abspath(str(libpath))).resolve())
         )
-        logger.debug(
+        logger.info(
             "normalized_collection_libpath:\n  %s\nnormalized_libpath:\n  %s",
             normalized_collection_libpath,
             normalized_libpath,

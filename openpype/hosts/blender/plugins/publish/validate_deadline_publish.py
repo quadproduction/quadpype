@@ -56,4 +56,4 @@ class ValidateDeadlinePublish(pyblish.api.InstancePlugin,
         container = instance.data["transientData"]["instance_node"]
         prepare_rendering(container)
         bpy.ops.wm.save_as_mainfile(filepath=bpy.data.filepath)
-        cls.log.debug("Reset the render output folder...")
+        cls.log.info("Reset the render output folder...")

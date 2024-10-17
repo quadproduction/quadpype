@@ -10,5 +10,5 @@ class ExtractScriptSave(pyblish.api.Extractor):
 
     def process(self, instance):
 
-        self.log.debug('Saving current script')
+        self.log.info('saving script')
         nuke.scriptSave()

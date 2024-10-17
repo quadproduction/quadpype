@@ -2,6 +2,7 @@ import os
 import shutil
 import winreg
 import subprocess
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.lib import get_openpype_execute_args
 from openpype.lib.applications import PreLaunchHook, LaunchTypes
 from openpype.hosts.celaction import CELACTION_ROOT_DIR
@@ -151,4 +152,4 @@ class CelactionPrelaunchHook(PreLaunchHook):
         return workfile_path
 
     def get_workfile_settings(self):
-        return self.data["project_settings"]["celaction"]["workfile"]
+        return self.data[PROJECT_SETTINGS_KEY]["celaction"]["workfile"]

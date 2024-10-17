@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import traceback
 from typing import Callable, Dict, Iterator, List, Optional
 
@@ -27,11 +28,15 @@ from openpype.pipeline import (
     deregister_loader_plugin_path,
     deregister_creator_plugin_path,
     AVALON_CONTAINER_ID,
+    Anatomy,
 )
+
+from openpype.pipeline.context_tools import get_template_data_from_session
 from openpype.lib import (
     Logger,
     register_event_callback,
-    emit_event
+    emit_event,
+    StringTemplate
 )
 import openpype.hosts.blender
 from openpype.settings import get_project_settings
@@ -382,7 +387,7 @@ def _on_task_changed():
     # https://docs.blender.org/api/blender2.8/bpy.types.Operator.html#calling-a-file-selector
     # https://docs.blender.org/api/blender2.8/bpy.types.WindowManager.html#bpy.types.WindowManager.fileselect_add
     workdir = legacy_io.Session["AVALON_WORKDIR"]
-    log.debug("New working directory: %s", workdir)
+    log.info("New working directory: %s", workdir)
 
 
 def _register_events():
@@ -573,3 +578,43 @@ def publish():
     """Shorthand to publish from within host."""
 
     return pyblish.util.publish()
+
+
+def get_path_from_template(template_module='', template_name='', template_data={}, bump_version=False, makedirs=False):
+    """ Build the render node path based on actual context"""
+    anatomy = Anatomy()
+    if not anatomy.templates.get(template_module):
+        raise NotImplemented(f"'{template_module}' template need to be setted in your project settings")
+
+    templates = anatomy.templates.get(template_module)
+    template_session_data = {'root': anatomy.roots, **get_template_data_from_session()}
+
+    # Build render node folder template
+    template_session_data.update(template_data)
+    if 'version' in templates[template_name]:
+        template_folder_path = os.path.normpath(StringTemplate.format_template(templates['folder'], template_session_data))
+        # Get versions
+        if not os.path.exists(template_folder_path):
+            template_session_data.update({'version': 1})
+        else:
+            latest_version = 1
+            regex = fr'v(\d{{{templates["version_padding"]}}})$'
+            for version in os.listdir(template_folder_path):
+                match = re.search(regex, version)
+                if match:
+                    version_num = int(match.group(1))
+                    if bump_version:
+                        latest_version = max(latest_version, version_num + 1)  # Increment the highest version number
+                    else:
+                        latest_version = max(latest_version, version_num)
+            # Update the template data with the latest version
+            template_session_data.update({'version': latest_version})
+
+    # Build render node path and create file architecture if not exists
+    render_node_path = os.path.normpath(StringTemplate.format_template(templates[template_name], template_session_data))
+    if makedirs:
+        if os.path.isdir(render_node_path):
+            os.makedirs(render_node_path, exist_ok=True)
+        else:
+            os.makedirs(os.path.dirname(render_node_path), exist_ok=True)
+    return render_node_path

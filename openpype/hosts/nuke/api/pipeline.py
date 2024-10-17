@@ -14,7 +14,7 @@ from openpype.host import (
     IPublishHost
 )
 from openpype.settings import get_current_project_settings
-from openpype.lib import register_event_callback, Logger
+from openpype.lib import register_event_callback, emit_event, Logger
 from openpype.pipeline import (
     register_loader_plugin_path,
     register_creator_plugin_path,
@@ -25,7 +25,7 @@ from openpype.pipeline import (
 )
 from openpype.pipeline.workfile import BuildWorkfile
 from openpype.tools.utils import host_tools
-
+from openpype.lib.applications import ApplicationManager
 from .command import viewer_update_and_undo_stop
 from .lib import (
     Context,
@@ -178,6 +178,13 @@ def add_nuke_callbacks():
     # set apply all workfile settings on script load and save
     nuke.addOnScriptLoad(WorkfileSettings().set_context_settings)
 
+    # set apply all custom settings on script load and save
+    if workfile_settings._get_set_resolution_startup():
+        nuke.addOnScriptLoad(workfile_settings.set_custom_resolution)
+
+    # Emit events
+    nuke.addOnCreate(_on_scene_open, nodeClass="Root")
+    nuke.addOnScriptSave(_on_scene_save)
 
     if nuke_settings["nuke-dirmap"]["enabled"]:
         log.info("Added Nuke's dir-mapping callback ...")
@@ -298,6 +305,10 @@ def _install_menu():
         lambda: WorkfileSettings().reset_resolution()
     )
     menu.addCommand(
+        "Set Custom Resolution",
+        lambda: WorkfileSettings().set_custom_resolution()
+    )
+    menu.addCommand(
         "Set Frame Range",
         lambda: WorkfileSettings().reset_frame_range_handles()
     )
@@ -350,6 +361,60 @@ def _install_menu():
 
     # adding shortcuts
     add_shortcuts_from_presets()
+
+    # adding rv
+    add_rv_from_presets()
+
+
+def add_rv_from_presets():
+    rv_settings = get_current_project_settings()["openrv"]['openrv_nuke_integration']
+    if not rv_settings['rvnuke_enabled']:
+        return
+
+    app_manager = ApplicationManager()
+    openrv_app = app_manager.find_latest_available_variant_for_group("openrv")
+    if not openrv_app:
+        return
+    rv_exec_path = str(openrv_app.find_executable())
+    rv_root = os.path.dirname(os.path.dirname(rv_exec_path))
+    rv_nuke_path = os.path.join(rv_root, 'plugins', 'SupportFiles', 'rvnuke')
+    if os.path.exists(rv_nuke_path):
+        nuke.pluginAddPath(rv_nuke_path)
+        log.info("RV Nuke path added: {}".format(rv_nuke_path))
+    else:
+        log.warning("RV Nuke path not found: {}".format(rv_nuke_path))
+
+    if not rv_exec_path:
+        return
+    try:
+        import rvNuke
+        rv_pref_panel = rvNuke.RvPreferencesPanel()
+        rv_pref_panel.rvPrefs.prefs["rvExecPath"] = rv_exec_path
+        rv_pref_panel.rvPrefs.saveToDisk()
+    except ImportError:
+        log.warning("rvNuke not found")
+
+    nuke.addOnCreate(add_rv_shortcut, nodeClass="Root")
+    return
+
+
+def add_rv_shortcut():
+    rv_global_settings = get_current_project_settings()["openrv"]
+    rv_settings = rv_global_settings['openrv_nuke_integration']
+    if rv_settings['rvnuke_open_in_rv_shortcut']:
+        menubar = nuke.menu("Nuke")
+        menu_item = menubar.findItem("RV/View in RV")
+        if menu_item:
+            menu_item.setShortcut("Alt+v")
+            menu_item.setShortcut(rv_settings['rvnuke_open_in_rv_shortcut'])
+            log.info("Adding Shortcut `{}` to `{}`".format(
+                'Open in RV',
+                rv_settings['rvnuke_open_in_rv_shortcut']))
+        else:
+            log.warning("Cant't set up rv nuke plugin")
+    else:
+        log.info('RV Nuke Plugin not activated')
+
 
 
 def change_context_label():
@@ -636,3 +701,14 @@ def select_instance(instance):
     """
     instance_node = instance.transient_data["node"]
     instance_node["selected"].setValue(True)
+
+
+def _on_scene_open(*args):
+    emit_event("open")
+
+
+def _on_scene_save(*args):
+    skip = os.getenv("OP_NUKE_SKIP_SAVE_EVENT")
+    if skip:
+        return
+    emit_event("after.save")

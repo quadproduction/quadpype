@@ -7,7 +7,7 @@ Provides:
 """
 import pyblish.api
 
-from openpype.client import get_asset_name_identifier
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.hosts.photoshop import api as photoshop
 from openpype.pipeline.create import get_subset_name
 
@@ -49,7 +49,7 @@ class CollectAutoReview(pyblish.api.ContextPlugin):
                     self.log.debug("Review instance disabled")
                     return
 
-        auto_creator = context.data["project_settings"].get(
+        auto_creator = context.data[PROJECT_SETTINGS_KEY].get(
             "photoshop", {}).get(
             "create", {}).get(
             "ReviewCreator", {})
@@ -62,7 +62,7 @@ class CollectAutoReview(pyblish.api.ContextPlugin):
                    auto_creator["default_variant"])
 
         project_name = context.data["projectName"]
-        proj_settings = context.data["project_settings"]
+        proj_settings = context.data[PROJECT_SETTINGS_KEY]
         task_name = context.data["task"]
         host_name = context.data["hostName"]
         asset_doc = context.data["assetEntity"]

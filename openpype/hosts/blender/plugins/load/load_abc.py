@@ -221,7 +221,7 @@ class CacheModelLoader(plugin.AssetLoader):
         normalized_libpath = (
             str(Path(bpy.path.abspath(str(libpath))).resolve())
         )
-        self.log.debug(
+        self.log.info(
             "normalized_group_libpath:\n  %s\nnormalized_libpath:\n  %s",
             normalized_group_libpath,
             normalized_libpath,

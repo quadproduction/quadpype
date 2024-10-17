@@ -121,7 +121,7 @@ class ExtractLayout(publish.Extractor, publish.OptionalPyblishPluginMixin):
         stagingdir = self.staging_dir(instance)
 
         # Perform extraction
-        self.log.debug("Performing extraction..")
+        self.log.info("Performing extraction..")
 
         if "representations" not in instance.data:
             instance.data["representations"] = []
@@ -149,7 +149,7 @@ class ExtractLayout(publish.Extractor, publish.OptionalPyblishPluginMixin):
             version_id = metadata["parent"]
             family = metadata["family"]
 
-            self.log.debug("Parent: {}".format(version_id))
+            self.log.info("Parent: {}".format(version_id))
             # Get blend reference
             blend = get_representation_by_name(
                 project_name, "blend", version_id, fields=["_id"]
@@ -243,7 +243,7 @@ class ExtractLayout(publish.Extractor, publish.OptionalPyblishPluginMixin):
         }
         instance.data["representations"].append(json_representation)
 
-        self.log.debug(fbx_files)
+        self.log.info(fbx_files)
 
         if len(fbx_files) == 1:
             fbx_representation = {
@@ -262,5 +262,5 @@ class ExtractLayout(publish.Extractor, publish.OptionalPyblishPluginMixin):
             }
             instance.data["representations"].append(fbx_representation)
 
-        self.log.debug("Extracted instance '%s' to: %s",
+        self.log.info("Extracted instance '%s' to: %s",
                        instance.name, json_representation)
