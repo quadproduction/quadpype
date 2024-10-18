@@ -25,6 +25,7 @@ from openpype.client import (
     get_linked_assets,
     get_representations,
 )
+from openpype.client.entities import get_projects
 from openpype.settings import (
     get_project_settings,
     get_system_settings,
@@ -43,10 +44,21 @@ from openpype.pipeline.load import (
     get_contexts_for_repre_docs,
     load_with_repre_context,
 )
+from openpype.pipeline.action import (
+    get_actions_by_name,
+    action_with_repre_context
+)
 
 from openpype.pipeline.create import (
     discover_legacy_creator_plugins,
     CreateContext,
+)
+
+from openpype.pipeline.context_tools import (
+    get_current_asset_name,
+    get_current_project_name,
+    get_current_task_name,
+    get_current_host_name
 )
 
 
@@ -113,6 +125,7 @@ class AbstractTemplateBuilder(object):
         # Where created objects of placeholder plugins will be stored
         self._placeholder_plugins = None
         self._loaders_by_name = None
+        self._actions_by_name = None
         self._creators_by_name = None
         self._create_context = None
 
@@ -123,11 +136,18 @@ class AbstractTemplateBuilder(object):
         self._linked_asset_docs = None
         self._task_type = None
 
+        if isinstance(self._host, HostBase):
+            self._project_name = self._host.get_current_project_name()
+        else:
+            self._project_name = os.getenv("AVALON_PROJECT")
+
     @property
     def project_name(self):
-        if isinstance(self._host, HostBase):
-            return self._host.get_current_project_name()
-        return os.getenv("AVALON_PROJECT")
+        return self._project_name
+
+    @project_name.setter
+    def project_name(self, name):
+        self._project_name = name
 
     @property
     def current_asset_name(self):
@@ -247,6 +267,7 @@ class AbstractTemplateBuilder(object):
         """Reset cached data."""
 
         self._placeholder_plugins = None
+        self._actions_by_name = None
         self._loaders_by_name = None
         self._creators_by_name = None
 
@@ -264,6 +285,11 @@ class AbstractTemplateBuilder(object):
         if self._loaders_by_name is None:
             self._loaders_by_name = get_loaders_by_name()
         return self._loaders_by_name
+
+    def get_actions_by_name(self):
+        if self._actions_by_name is None:
+            self._actions_by_name = get_actions_by_name()
+        return self._actions_by_name
 
     def _collect_legacy_creators(self):
         creators_by_name = {}
@@ -577,9 +603,9 @@ class AbstractTemplateBuilder(object):
             template_path (str): Fullpath for current task and
                 host's template file.
         """
-        last_workfile_path = os.environ.get("AVALON_LAST_WORKFILE")
+        last_workfile_path = get_last_workfile_path()
         self.log.info("__ last_workfile_path: {}".format(last_workfile_path))
-        if os.path.exists(last_workfile_path):
+        if is_last_workfile_exists():
             # ignore in case workfile existence
             self.log.info("Workfile already exists, skipping creation.")
             return False
@@ -866,6 +892,7 @@ class PlaceholderPlugin(object):
 
     def __init__(self, builder):
         self._builder = builder
+        self._project_name = self.builder.project_name
 
     @property
     def builder(self):
@@ -879,7 +906,11 @@ class PlaceholderPlugin(object):
 
     @property
     def project_name(self):
-        return self._builder.project_name
+        return self._project_name
+
+    @project_name.setter
+    def project_name(self, name):
+        self._project_name = name
 
     @property
     def log(self):
@@ -1262,6 +1293,14 @@ class PlaceholderLoadMixin(object):
         ]
 
         loader_items = list(sorted(loader_items, key=lambda i: i["label"]))
+        libraries_project_items = [
+            {
+                "label": "From Library : {}".format(project_name),
+                "value": project_name
+            }
+            for project_name in get_library_project_names()
+        ]
+
         options = options or {}
 
         # Get families from all loaders excluding "*"
@@ -1273,13 +1312,19 @@ class PlaceholderLoadMixin(object):
         # Sort for readability
         families = list(sorted(families))
 
+        actions_by_name = get_actions_by_name()
+        actions_items = [{"value": "", "label": ""}]
+        actions_items.extend(
+            {"value": action_name, "label": action.label or action_name}
+            for action_name, action in actions_by_name.items()
+        )
         if AYON_SERVER_ENABLED:
             builder_type_enum_items = [
                 {"label": "Current folder", "value": "context_folder"},
                 # TODO implement linked folders
                 # {"label": "Linked folders", "value": "linked_folders"},
                 {"label": "All folders", "value": "all_folders"},
-            ]
+            ] + libraries_project_items,
             build_type_label = "Folder Builder Type"
             build_type_help = (
                 "Folder Builder Type\n"
@@ -1296,7 +1341,7 @@ class PlaceholderLoadMixin(object):
                 {"label": "Current asset", "value": "context_asset"},
                 {"label": "Linked assets", "value": "linked_asset"},
                 {"label": "All assets", "value": "all_assets"},
-            ]
+            ] + libraries_project_items,
             build_type_label = "Asset Builder Type"
             build_type_help = (
                 "Asset Builder Type\n"
@@ -1346,6 +1391,17 @@ class PlaceholderLoadMixin(object):
                     "\nUseable loader depends on current host's loader list."
                     "\nField is case sensitive."
                 )
+            ),
+            attribute_definitions.EnumDef(
+                "action",
+                label="Builder Action",
+                default=options.get("action"),
+                items=actions_items,
+                tooltip=(
+                    "Builder Action"
+                    "\nUsed to do actions before or after processing"
+                    " the placeholders."
+                ),
             ),
             attribute_definitions.TextDef(
                 "loader_args",
@@ -1621,6 +1677,9 @@ class PlaceholderLoadMixin(object):
                 if asset_regex.match(asset_name):
                     linked_asset_names.append(asset_name)
 
+            if not linked_asset_names:
+                return []
+
             context_filters = {
                 "asset": linked_asset_names,
                 "subset": [re.compile(placeholder.data["subset"])],
@@ -1630,6 +1689,8 @@ class PlaceholderLoadMixin(object):
             }
 
         else:
+            if builder_type != "all_assets":
+                self.project_name = builder_type
             context_filters = {
                 "asset": [re.compile(placeholder.data["asset"])],
                 "subset": [re.compile(placeholder.data["subset"])],
@@ -1639,7 +1700,7 @@ class PlaceholderLoadMixin(object):
             }
 
         return list(get_representations(
-            project_name,
+            self.project_name,
             context_filters=context_filters
         ))
 
@@ -1722,6 +1783,9 @@ class PlaceholderLoadMixin(object):
             self.log.info((
                 "There's no representation for this placeholder: {}"
             ).format(placeholder.scene_identifier))
+            self.post_placeholder_process(placeholder, failed=True)
+            if not placeholder.data.get("keep_placeholder", True):
+                self.delete_placeholder(placeholder)
             return
 
         repre_load_contexts = get_contexts_for_repre_docs(
@@ -1761,8 +1825,12 @@ class PlaceholderLoadMixin(object):
             else:
                 self.load_succeed(placeholder, container)
 
-        # Run post placeholder process after load of all representations
-        self.post_placeholder_process(placeholder, failed)
+            self.populate_action_placeholder(
+                placeholder,
+                repre_load_contexts
+            )
+
+            self.post_placeholder_process(placeholder, failed)
 
         if failed:
             self.log.debug(
@@ -1770,8 +1838,29 @@ class PlaceholderLoadMixin(object):
                 "population."
             )
             return
+
         if not placeholder.data.get("keep_placeholder", True):
             self.delete_placeholder(placeholder)
+
+    def populate_action_placeholder(self, placeholder, repre_load_contexts):
+        if "action" not in placeholder.data:
+            return
+
+        action_name = placeholder.data["action"]
+
+        if not action_name:
+            return
+
+        actions_by_name = self.builder.get_actions_by_name()
+
+        for context in repre_load_contexts.values():
+            try:
+                action_with_repre_context(
+                    actions_by_name[action_name],
+                    context
+                )
+            except Exception as e:
+                self.log.warning(f"Action {action_name} failed: {e}")
 
     def load_failed(self, placeholder, representation):
         if hasattr(placeholder, "load_failed"):
@@ -1842,9 +1931,9 @@ class PlaceholderCreateMixin(object):
             attribute_definitions.UISeparatorDef(),
 
             attribute_definitions.EnumDef(
-                "creator",
-                label="Creator",
-                default=options.get("creator"),
+                "create",
+                label="Create",
+                default=options.get("create"),
                 items=creator_items,
                 tooltip=(
                     "Creator"
@@ -1892,7 +1981,7 @@ class PlaceholderCreateMixin(object):
         """
 
         legacy_create = self.builder.use_legacy_creators
-        creator_name = placeholder.data["creator"]
+        creator_name = placeholder.data["create"]
         create_variant = placeholder.data["create_variant"]
 
         creator_plugin = self.builder.get_creators_by_name()[creator_name]
@@ -2041,9 +2130,80 @@ class CreatePlaceholderItem(PlaceholderItem):
             "Failed to create {} instance using Creator {}"
         ).format(
             len(self._failed_created_publish_instances),
-            self.data["creator"]
+            self.data["create"]
         )
         return [message]
 
     def create_failed(self, creator_data):
         self._failed_created_publish_instances.append(creator_data)
+
+
+def get_library_project_names():
+    libraries = list()
+
+    for project in get_projects(fields=["name", "data.library_project"]):
+        if project.get("data", {}).get("library_project", False):
+            libraries.append(project["name"])
+
+    return libraries
+
+
+def should_build_first_workfile(
+        project_name=None,
+        project_settings=None,
+        asset_doc=None,
+        asset_name=None,
+        task_name=None,
+        host_name=None
+):
+    """Return whether first workfile should be created for given context"""
+
+    project_name = project_name or get_current_project_name()
+    if project_settings is None:
+        project_settings = get_project_settings(project_name)
+
+    host_name = host_name or get_current_host_name()
+    build_workfile_profiles = project_settings[host_name]["templated_workfile_build"]  # noqa
+
+    if not build_workfile_profiles['profiles']:
+        return False
+
+    asset_name = asset_name or get_current_asset_name()
+    asset_doc = asset_doc or get_asset_by_name(project_name, asset_name)
+    task_name = task_name or get_current_task_name()
+    current_tasks = asset_doc.get("data").get("tasks")
+    task_type = current_tasks.get(task_name).get("type")
+
+    filtering_criteria = {
+        "task_names": task_name,
+        "task_types": task_type
+    }
+
+    profile = filter_profiles(
+        build_workfile_profiles["profiles"],
+        filtering_criteria
+    )
+
+    if not profile or not profile.get("autobuild_first_version"):
+        return False
+
+    is_task_name = task_name in profile["task_names"]
+    is_task_type = task_type in profile["task_types"]
+
+    if not is_task_name and not is_task_type:
+        return False
+
+    return True
+
+
+def get_last_workfile_path():
+    return os.environ.get("AVALON_LAST_WORKFILE")
+
+
+def is_last_workfile_exists():
+    last_workfile_path = get_last_workfile_path()
+
+    if last_workfile_path and os.path.exists(last_workfile_path):
+        return True
+
+    return False
