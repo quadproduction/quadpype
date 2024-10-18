@@ -466,7 +466,7 @@ function extensionsAreDifferents(sourceFilePath, targetFilePath){
 }
 
 
-function _exctractFirstPart(layerName){
+function _extractFirstPart(layerName){
     return layerName.match(/.+?(?=[\/])/)[0];
 }
 
@@ -499,7 +499,7 @@ function getLayerFromFolder(folder, layerName){
 function renameFolderItems(folder){
     for (var index = 1; index <= folder.items.length; index++) {
         folderItem = folder.items[index];
-        folderItem.name = _exctractFirstPart(folderItem.name);
+        folderItem.name = _extractFirstPart(folderItem.name);
     }
 
 }

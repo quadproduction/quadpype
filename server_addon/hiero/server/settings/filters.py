@@ -20,6 +20,6 @@ class PublishGUIFiltersModel(BaseSettingsModel):
     )
 
     @validator("value")
-    def validate_unique_outputs(cls, value):
+    def validate_unique_outputs(self, value):
         ensure_unique_names(value)
         return value

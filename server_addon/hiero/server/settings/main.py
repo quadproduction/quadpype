@@ -9,7 +9,7 @@ from .create_plugins import (
     DEFAULT_CREATE_SETTINGS
 )
 from .loader_plugins import (
-    LoaderPuginsModel,
+    LoaderPluginsModel,
     DEFAULT_LOADER_PLUGINS_SETTINGS
 )
 from .publish_plugins import (
@@ -35,8 +35,8 @@ class HieroSettings(BaseSettingsModel):
         default_factory=CreatorPluginsSettings,
         title="Creator Plugins",
     )
-    load: LoaderPuginsModel = SettingsField(
-        default_factory=LoaderPuginsModel,
+    load: LoaderPluginsModel = SettingsField(
+        default_factory=LoaderPluginsModel,
         title="Loader plugins"
     )
     publish: PublishPluginsModel = SettingsField(
