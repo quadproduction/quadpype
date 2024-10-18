@@ -33,7 +33,7 @@ from .publish_plugins import (
     DEFAULT_PUBLISH_PLUGIN_SETTINGS
 )
 from .loader_plugins import (
-    LoaderPuginsModel,
+    LoaderPluginsModel,
     DEFAULT_LOADER_PLUGINS_SETTINGS
 )
 from .workfile_builder import (
@@ -81,8 +81,8 @@ class NukeSettings(BaseSettingsModel):
         title="Publish Plugins",
     )
 
-    load: LoaderPuginsModel = SettingsField(
-        default_factory=LoaderPuginsModel,
+    load: LoaderPluginsModel = SettingsField(
+        default_factory=LoaderPluginsModel,
         title="Loader Plugins",
     )
 

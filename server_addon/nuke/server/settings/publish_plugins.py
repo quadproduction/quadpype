@@ -56,7 +56,7 @@ class CollectInstanceDataModel(BaseSettingsModel):
     sync_workfile_version_on_product_types: list[str] = SettingsField(
         default_factory=list,
         enum_resolver=nuke_product_types_enum,
-        title="Sync workfile versions for familes"
+        title="Sync workfile versions for families"
     )
 
 
@@ -96,7 +96,7 @@ class BakingStreamFilterModel(BaseSettingsModel):
     product_types: list[str] = SettingsField(
         default_factory=list,
         enum_resolver=nuke_render_publish_types_enum,
-        title="Sync workfile versions for familes"
+        title="Sync workfile versions for families"
     )
     product_names: list[str] = SettingsField(
         default_factory=list, title="Product names")
@@ -190,7 +190,7 @@ class FVFXScopeOfWorkModel(BaseSettingsModel):
     template: str = SettingsField(title="Template")
 
 
-class ExctractSlateFrameParamModel(BaseSettingsModel):
+class ExtractSlateFrameParamModel(BaseSettingsModel):
     f_submission_note: FSubmissionNoteModel = SettingsField(
         title="f_submission_note",
         default_factory=FSubmissionNoteModel
@@ -207,9 +207,9 @@ class ExctractSlateFrameParamModel(BaseSettingsModel):
 
 class ExtractSlateFrameModel(BaseSettingsModel):
     viewer_lut_raw: bool = SettingsField(title="Viewer lut raw")
-    key_value_mapping: ExctractSlateFrameParamModel = SettingsField(
+    key_value_mapping: ExtractSlateFrameParamModel = SettingsField(
         title="Key value mapping",
-        default_factory=ExctractSlateFrameParamModel
+        default_factory=ExtractSlateFrameParamModel
     )
 
 

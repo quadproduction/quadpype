@@ -107,16 +107,16 @@ class EnvSearchReplaceSubmodel(BaseSettingsModel):
     value: str = SettingsField(title="Value")
 
 
-class LimitGroupsSubmodel(BaseSettingsModel):
+class LimitsPluginSubmodel(BaseSettingsModel):
     _layout = "expanded"
     name: str = SettingsField(title="Name")
     value: list[str] = SettingsField(
         default_factory=list,
-        title="Limit Groups"
+        title="Plugin Limits"
     )
 
 
-def fusion_deadline_plugin_enum():
+def fusion_plugin_enum():
     """Return a list of value/label dicts for the enumerator.
 
     Returning a list of dicts is used to allow for a custom label to be
@@ -145,7 +145,7 @@ class FusionSubmitDeadlineModel(BaseSettingsModel):
     )
     group: str = SettingsField("", title="Group Name")
     plugin: str = SettingsField("Fusion",
-                        enum_resolver=fusion_deadline_plugin_enum,
+                        enum_resolver=fusion_plugin_enum,
                         title="Deadline Plugin")
 
 
@@ -176,13 +176,13 @@ class NukeSubmitDeadlineModel(BaseSettingsModel):
         title="Search & replace in environment values",
     )
 
-    limit_groups: list[LimitGroupsSubmodel] = SettingsField(
+    limits_plugin: list[LimitsPluginSubmodel] = Field(
         default_factory=list,
-        title="Limit Groups",
+        title="Plugin Limits",
     )
 
     @validator(
-        "limit_groups",
+        "limits_plugin",
         "env_allowed_keys",
         "env_search_replace_values")
     def validate_unique_names(cls, value):
@@ -245,15 +245,15 @@ class AfterEffectsSubmitDeadlineModel(BaseSettingsModel):
 
 class CelactionSubmitDeadlineModel(BaseSettingsModel):
     enabled: bool = SettingsField(True, title="Enabled")
-    deadline_department: str = SettingsField("", title="Deadline apartment")
-    deadline_priority: int = SettingsField(50, title="Deadline priority")
-    deadline_pool: str = SettingsField("", title="Deadline pool")
-    deadline_pool_secondary: str = SettingsField(
+    department: str = SettingsField("", title="Department")
+    priority: int = SettingsField(50, title="Priority")
+    pool: str = SettingsField("", title="Pool")
+    pool_secondary: str = SettingsField(
         "", title="Deadline pool (secondary)"
     )
-    deadline_group: str = SettingsField("", title="Deadline Group")
-    deadline_chunk_size: int = SettingsField(10, title="Deadline Chunk size")
-    deadline_job_delay: str = SettingsField(
+    group: str = SettingsField("", title="Group")
+    chunk_size: int = SettingsField(10, title="Chunk size")
+    job_delay: str = SettingsField(
         "", title="Delay job (timecode dd:hh:mm:ss)"
     )
 
@@ -284,22 +284,22 @@ class ProcessCacheJobFarmModel(BaseSettingsModel):
     """Process submitted job on farm."""
 
     enabled: bool = SettingsField(title="Enabled")
-    deadline_department: str = SettingsField(title="Department")
-    deadline_pool: str = SettingsField(title="Pool")
-    deadline_group: str = SettingsField(title="Group")
-    deadline_chunk_size: int = SettingsField(title="Chunk Size")
-    deadline_priority: int = SettingsField(title="Priority")
+    department: str = SettingsField(title="Department")
+    pool: str = SettingsField(title="Pool")
+    group: str = SettingsField(title="Group")
+    chunk_size: int = SettingsField(title="Chunk Size")
+    priority: int = SettingsField(title="Priority")
 
 
 class ProcessSubmittedJobOnFarmModel(BaseSettingsModel):
     """Process submitted job on farm."""
 
     enabled: bool = SettingsField(title="Enabled")
-    deadline_department: str = SettingsField(title="Department")
-    deadline_pool: str = SettingsField(title="Pool")
-    deadline_group: str = SettingsField(title="Group")
-    deadline_chunk_size: int = SettingsField(title="Chunk Size")
-    deadline_priority: int = SettingsField(title="Priority")
+    department: str = SettingsField(title="Department")
+    pool: str = SettingsField(title="Pool")
+    group: str = SettingsField(title="Group")
+    chunk_size: int = SettingsField(title="Chunk Size")
+    priority: int = SettingsField(title="Priority")
     publishing_script: str = SettingsField(title="Publishing script path")
     skip_integration_repre_list: list[str] = SettingsField(
         default_factory=list,
@@ -317,9 +317,6 @@ class ProcessSubmittedJobOnFarmModel(BaseSettingsModel):
 
 
 class PublishPluginsModel(BaseSettingsModel):
-    CollectDeadlinePools: CollectDeadlinePoolsModel = SettingsField(
-        default_factory=CollectDeadlinePoolsModel,
-        title="Default Pools")
     ValidateExpectedFiles: ValidateExpectedFilesModel = SettingsField(
         default_factory=ValidateExpectedFilesModel,
         title="Validate Expected Files"
@@ -366,10 +363,6 @@ class PublishPluginsModel(BaseSettingsModel):
 
 
 DEFAULT_DEADLINE_PLUGINS_SETTINGS = {
-    "CollectDeadlinePools": {
-        "primary_pool": "",
-        "secondary_pool": ""
-    },
     "ValidateExpectedFiles": {
         "enabled": True,
         "active": True,
@@ -393,7 +386,7 @@ DEFAULT_DEADLINE_PLUGINS_SETTINGS = {
         "priority": 50,
         "tile_priority": 50,
         "group": "none",
-        "limit": [],
+        "limits_plugin": [],
         # this used to be empty dict
         "jobInfo": "",
         # this used to be empty dict
@@ -451,7 +444,7 @@ DEFAULT_DEADLINE_PLUGINS_SETTINGS = {
         "use_published_workfile": True,
         "env_allowed_keys": [],
         "env_search_replace_values": [],
-        "limit_groups": []
+        "limits_plugin": []
     },
     "HarmonySubmitDeadline": {
         "enabled": True,
@@ -476,13 +469,13 @@ DEFAULT_DEADLINE_PLUGINS_SETTINGS = {
     },
     "CelactionSubmitDeadline": {
         "enabled": True,
-        "deadline_department": "",
-        "deadline_priority": 50,
-        "deadline_pool": "",
-        "deadline_pool_secondary": "",
-        "deadline_group": "",
-        "deadline_chunk_size": 10,
-        "deadline_job_delay": "00:00:00:00"
+        "department": "",
+        "priority": 50,
+        "pool": "",
+        "pool_secondary": "",
+        "group": "",
+        "chunk_size": 10,
+        "job_delay": "00:00:00:00"
     },
     "BlenderSubmitDeadline": {
         "enabled": True,
@@ -496,19 +489,19 @@ DEFAULT_DEADLINE_PLUGINS_SETTINGS = {
     },
     "ProcessSubmittedCacheJobOnFarm": {
         "enabled": True,
-        "deadline_department": "",
-        "deadline_pool": "",
-        "deadline_group": "",
-        "deadline_chunk_size": 1,
-        "deadline_priority": 50
+        "department": "",
+        "pool": "",
+        "group": "",
+        "chunk_size": 1,
+        "priority": 50
     },
     "ProcessSubmittedJobOnFarm": {
         "enabled": True,
-        "deadline_department": "",
-        "deadline_pool": "",
-        "deadline_group": "",
-        "deadline_chunk_size": 1,
-        "deadline_priority": 50,
+        "department": "",
+        "pool": "",
+        "group": "",
+        "chunk_size": 1,
+        "priority": 50,
         "publishing_script": "",
         "skip_integration_repre_list": [],
         "aov_filter": [

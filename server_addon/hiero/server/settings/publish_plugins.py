@@ -64,7 +64,7 @@ class PublishPluginsModel(BaseSettingsModel):
     """
     ExtractReviewCutUpVideo: ExtractReviewCutUpVideoModel = SettingsField(
         default_factory=ExtractReviewCutUpVideoModel,
-        title="Exctract Review Trim"
+        title="Extract Review Trim"
     )
 
 
