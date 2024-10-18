@@ -2,6 +2,7 @@ import os
 import re
 import json
 import getpass
+import platform
 from datetime import datetime
 
 import requests
@@ -12,16 +13,28 @@ from openpype.pipeline import legacy_io
 from openpype.pipeline.publish import (
     OpenPypePyblishPluginMixin
 )
+from openpype.pipeline.context_tools import _get_modules_manager
+from openpype.modules.deadline.utils import (
+    set_custom_deadline_name,
+    get_deadline_job_profile,
+    DeadlineDefaultJobAttrs
+)
 from openpype.tests.lib import is_in_tests
 from openpype.lib import (
     is_running_from_build,
     BoolDef,
-    NumberDef
+    NumberDef,
+    EnumDef
+)
+
+from openpype_modules.deadline import (
+    get_deadline_limits_plugin
 )
 
 
 class NukeSubmitDeadline(pyblish.api.InstancePlugin,
-                         OpenPypePyblishPluginMixin):
+                         OpenPypePyblishPluginMixin,
+                         DeadlineDefaultJobAttrs):
     """Submit write to Deadline
 
     Renders are submitted to a Deadline Web Service as
@@ -37,12 +50,10 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
     targets = ["local"]
 
     # presets
-    priority = 50
     chunk_size = 1
     concurrent_tasks = 1
     group = ""
     department = ""
-    limit_groups = {}
     use_gpu = False
     env_allowed_keys = []
     env_search_replace_values = {}
@@ -50,16 +61,50 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
     use_published_workfile = True
 
     @classmethod
+    def apply_settings(cls, project_settings):
+        profile = get_deadline_job_profile(project_settings, cls.hosts[0])
+        cls.set_job_attrs(profile)
+
+    @classmethod
     def get_attribute_defs(cls):
-        return [
+        defs = super(NukeSubmitDeadline, cls).get_attribute_defs()
+        manager = _get_modules_manager()
+        deadline_module = manager.modules_by_name["deadline"]
+        deadline_url = deadline_module.deadline_urls["default"]
+        pools = deadline_module.get_deadline_pools(deadline_url, cls.log)
+        limits_plugin = get_deadline_limits_plugin(deadline_module.enabled, deadline_url, cls.log)
+
+        defs.extend([
+            EnumDef("pool",
+                    label="Primary Pool",
+                    items=pools,
+                    default=cls.get_job_attr("pool")),
+            EnumDef("pool_secondary",
+                    label="Secondary Pool",
+                    items=pools,
+                    default=cls.get_job_attr("pool_secondary")),
             NumberDef(
                 "priority",
                 label="Priority",
-                default=cls.priority,
+                default=cls.get_job_attr("priority"),
                 decimals=0
             ),
             NumberDef(
-                "chunk",
+                "limit_machine",
+                label="Machine Limit",
+                default=cls.get_job_attr("limit_machine"),
+                minimum=0,
+                decimals=0
+            ),
+            EnumDef(
+                "limits_plugin",
+                label="Plugin Limits",
+                items=limits_plugin,
+                default=cls.get_job_attr("limits_plugin"),
+                multiselection=True
+            ),
+            NumberDef(
+                "chunkSize",
                 label="Frames Per Task",
                 default=cls.chunk_size,
                 decimals=0,
@@ -94,7 +139,8 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
                 default=cls.use_published_workfile,
                 label="Use Published Workfile"
             )
-        ]
+        ])
+        return defs
 
     def process(self, instance):
         if not instance.data.get("farm"):
@@ -263,8 +309,18 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
 
         # batch name
         src_filepath = instance.context.data["currentFile"]
-        batch_name = os.path.basename(src_filepath)
-        job_name = os.path.basename(render_path)
+        filename = os.path.basename(src_filepath)
+
+        job_name = set_custom_deadline_name(
+            instance,
+            filename,
+            "deadline_job_name"
+        )
+        batch_name = set_custom_deadline_name(
+            instance,
+            filename,
+            "deadline_batch_name"
+        )
 
         if is_in_tests():
             batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
@@ -281,34 +337,34 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
             pass
 
         # resolve any limit groups
-        limit_groups = self.get_limit_groups()
-        self.log.debug("Limit groups: `{}`".format(limit_groups))
+        limits_plugin = self.get_attr_value(self, instance, "limits_plugin")
+        if limits_plugin:
+            limits_plugin = ",".join(limits_plugin)
 
         payload = {
             "JobInfo": {
                 # Top-level group name
-                "BatchName": batch_name,
+                "BatchName": "Group: " + batch_name,
 
                 # Job name, as seen in Monitor
                 "Name": job_name,
 
-                # Arbitrary username, for visualisation in Monitor
+                # Arbitrary username, for visualization in Monitor
                 "UserName": self._deadline_user,
 
-                "Priority": instance.data["attributeValues"].get(
-                    "priority", self.priority),
-                "ChunkSize": instance.data["attributeValues"].get(
-                    "chunk", self.chunk_size),
-                "ConcurrentTasks": instance.data["attributeValues"].get(
-                    "concurrency",
-                    self.concurrent_tasks
-                ),
+                "Priority": self.get_attr_value(self, instance, "priority"),
+                "ChunkSize": self.get_attr_value(self, instance, "chunkSize", self.chunk_size),
+                "ConcurrentTasks": self.get_attr_value(self, instance, "concurrency", self.concurrent_tasks),
 
                 "Department": self.department,
 
-                "Pool": instance.data.get("primaryPool"),
-                "SecondaryPool": instance.data.get("secondaryPool"),
+                "Pool": self.get_attr_value(self, instance, "pool"),
+                "SecondaryPool": self.get_attr_value(self, instance, "pool_secondary"),
+                "MachineLimit": self.get_attr_value(self, instance, "limit_machine"),
                 "Group": self.group,
+
+                "MachineName": self.get_attr_value(self, instance, "machine",
+                                                   fallback=instance.context.data.get("machine", platform.node())),
 
                 "Plugin": "Nuke",
                 "Frames": "{start}-{end}".format(
@@ -322,7 +378,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
                 "OutputFilename0": output_filename_0.replace("\\", "/"),
 
                 # limiting groups
-                "LimitGroups": ",".join(limit_groups)
+                "LimitGroups": limits_plugin
 
             },
             "PluginInfo": {
@@ -341,8 +397,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
                 "AWSAssetFile0": render_path,
 
                 # using GPU by default
-                "UseGpu": instance.data["attributeValues"].get(
-                    "use_gpu", self.use_gpu),
+                "UseGpu": self.get_attr_value(self, instance, "use_gpu", self.use_gpu),
 
                 # Only the specific write node is rendered.
                 "WriteNode": exe_node_name
@@ -403,8 +458,22 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         if self.env_allowed_keys:
             keys += self.env_allowed_keys
 
+        # QUICK FIX : add all gizmos and plugin paths to the NUKE_PATH for the render farm
+        # CORRECT WAY : the proper way is to declare tools in settings to add them to the soft
+        # import nuke
+        # nuke_path = os.environ.get("NUKE_PATH", "")
+        # nuke_paths = [path for path in nuke_path.split(os.pathsep) if path]
+        # for nuke_plugin_path in nuke.pluginPath():
+        #     if nuke_plugin_path not in nuke_paths:
+        #         nuke_paths.append(nuke_plugin_path)
+        # os.environ["NUKE_PATH"] = os.pathsep.join(nuke_paths)
+
         environment = dict({key: os.environ[key] for key in keys
                             if key in os.environ}, **legacy_io.Session)
+
+        for _path in os.environ:
+            if _path.lower().startswith('openpype_'):
+                environment[_path] = os.environ[_path]
 
         # to recognize render jobs
         if AYON_SERVER_ENABLED:
@@ -443,7 +512,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         )
 
         self.log.debug("__ expectedFiles: `{}`".format(
-            instance.data["expectedFiles"]))
+            self.get_attr_value(self, instance, "expectedFiles")))
         response = requests.post(self.deadline_url, json=payload, timeout=10)
 
         if not response.ok:
@@ -540,31 +609,3 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         for i in range(start_frame, (end_frame + 1)):
             instance.data["expectedFiles"].append(
                 os.path.join(dirname, (file % i)).replace("\\", "/"))
-
-    def get_limit_groups(self):
-        """Search for limit group nodes and return group name.
-        Limit groups will be defined as pairs in Nuke deadline submitter
-        presents where the key will be name of limit group and value will be
-        a list of plugin's node class names. Thus, when a plugin uses more
-        than one node, these will be captured and the triggered process
-        will add the appropriate limit group to the payload jobinfo attributes.
-        Returning:
-            list: captured groups list
-        """
-        # Not all hosts can import this module.
-        import nuke
-
-        captured_groups = []
-        for lg_name, list_node_class in self.limit_groups.items():
-            for node_class in list_node_class:
-                for node in nuke.allNodes(recurseGroups=True):
-                    # ignore all nodes not member of defined class
-                    if node.Class() not in node_class:
-                        continue
-                    # ignore all disabled nodes
-                    if node["disable"].value():
-                        continue
-                    # add group name if not already added
-                    if lg_name not in captured_groups:
-                        captured_groups.append(lg_name)
-        return captured_groups
