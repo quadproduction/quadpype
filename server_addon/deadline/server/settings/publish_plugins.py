@@ -86,7 +86,7 @@ class MayaSubmitDeadlineModel(BaseSettingsModel):
     )
 
     @validator("scene_patches")
-    def validate_unique_names(cls, value):
+    def validate_unique_names(self, value):
         ensure_unique_names(value)
         return value
 
@@ -116,7 +116,7 @@ class LimitsPluginSubmodel(BaseSettingsModel):
     )
 
 
-def fusion_plugin_enum():
+def fusion_deadline_plugin_enum():
     """Return a list of value/label dicts for the enumerator.
 
     Returning a list of dicts is used to allow for a custom label to be
@@ -145,8 +145,8 @@ class FusionSubmitDeadlineModel(BaseSettingsModel):
     )
     group: str = SettingsField("", title="Group Name")
     plugin: str = SettingsField("Fusion",
-                        enum_resolver=fusion_plugin_enum,
-                        title="Deadline Plugin")
+                                enum_resolver=fusion_deadline_plugin_enum,
+                                title="Deadline Plugin")
 
 
 class NukeSubmitDeadlineModel(BaseSettingsModel):
@@ -176,7 +176,7 @@ class NukeSubmitDeadlineModel(BaseSettingsModel):
         title="Search & replace in environment values",
     )
 
-    limits_plugin: list[LimitsPluginSubmodel] = Field(
+    limits_plugin: list[LimitsPluginSubmodel] = SettingsField(
         default_factory=list,
         title="Plugin Limits",
     )
@@ -185,7 +185,7 @@ class NukeSubmitDeadlineModel(BaseSettingsModel):
         "limits_plugin",
         "env_allowed_keys",
         "env_search_replace_values")
-    def validate_unique_names(cls, value):
+    def validate_unique_names(self, value):
         ensure_unique_names(value)
         return value
 
@@ -311,7 +311,7 @@ class ProcessSubmittedJobOnFarmModel(BaseSettingsModel):
     )
 
     @validator("aov_filter")
-    def validate_unique_names(cls, value):
+    def validate_unique_names(self, value):
         ensure_unique_names(value)
         return value
 
