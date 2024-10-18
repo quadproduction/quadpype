@@ -218,6 +218,7 @@ class CollectFtrackApi(pyblish.api.ContextPlugin):
             entity["name"]: entity
             for entity in entities
         }
+
         for asset_name, by_task_data in instance_by_asset_and_task.items():
             entity = entities_by_name.get(asset_name)
             task_entity_by_name = {}

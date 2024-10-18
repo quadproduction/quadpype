@@ -1,7 +1,10 @@
 import os
+import sys
 import subprocess
 import traceback
 import json
+import getpass
+from collections import defaultdict
 
 import ftrack_api
 
@@ -17,13 +20,14 @@ from openpype.pipeline import (
     Anatomy,
 )
 from openpype_modules.ftrack.lib import BaseAction, statics_icon
+from openpype.lib.applications import ApplicationManager
 
 
 class RVAction(BaseAction):
     """ Launch RV action """
-    identifier = "rv.launch.action"
-    label = "rv"
-    description = "rv Launcher"
+    identifier = "openrv.launch.action"
+    label = "Open with RV"
+    description = "OpenRV Launcher"
     icon = statics_icon("ftrack", "action_icons", "RV.png")
 
     type = 'Application'
@@ -32,32 +36,29 @@ class RVAction(BaseAction):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.context_args = {}
+        # TODO (Critical) This should not be as hardcoded as it is now
         # QUESTION load RV application data from AppplicationManager?
         rv_path = None
 
-        # RV_HOME should be set if properly installed
-        if os.environ.get('RV_HOME'):
-            rv_path = os.path.join(
-                os.environ.get('RV_HOME'),
-                'bin',
-                'rv'
-            )
-            if not os.path.exists(rv_path):
-                rv_path = None
+        app_manager = ApplicationManager()
+        self.openrv_app = app_manager.find_latest_available_variant_for_group("openrv")
+        rv_path = str(self.openrv_app.find_executable())
+        self.rv_home = os.path.dirname(os.path.dirname(rv_path))
+        os.environ["RV_HOME"] = os.path.normpath(self.rv_home)
+        sys.path.append(os.path.join(self.rv_home, "lib"))
 
         if not rv_path:
             self.log.info("RV path was not found.")
             self.ignore_me = True
 
-        self.rv_path = rv_path
 
     def discover(self, session, entities, event):
         """Return available actions based on *event*. """
         return True
 
     def preregister(self):
-        if self.rv_path is None:
+        if self.openrv_app is None:
             return (
                 'RV is not installed or paths in presets are not set correctly'
             )
@@ -74,6 +75,12 @@ class RVAction(BaseAction):
         """
 
         if entity.entity_type.lower() == "assetversion":
+            self.context_args['task_name'] = entity['task']['name']
+            for item in entity['link']:
+                if item['type'] == 'Project':
+                    self.context_args['project_name'] = item['name']
+                if item['type'] == 'TypedContext':
+                    self.context_args['asset_name'] = item['name']
             for component in entity["components"]:
                 if component["file_type"][1:] not in self.allowed_types:
                     continue
@@ -88,6 +95,9 @@ class RVAction(BaseAction):
             return
 
         if entity.entity_type.lower() == "task":
+            self.context_args['project_name'] = entity["project"]["full_name"]
+            self.context_args['task_name'] = entity["name"]
+            self.context_args['asset_name'] = entity["parent"]["name"]
             query = "AssetVersion where task_id is '{0}'".format(entity["id"])
             for assetversion in session.query(query):
                 self.get_components_from_entity(
@@ -157,14 +167,10 @@ class RVAction(BaseAction):
 
         # Sort by version
         for parent_name, entities in components.items():
-            version_mapping = {}
+            version_mapping = defaultdict(list)
             for entity in entities:
-                try:
-                    version_mapping[entity["version"]["version"]].append(
-                        entity
-                    )
-                except KeyError:
-                    version_mapping[entity["version"]["version"]] = [entity]
+                entity_version = entity["version"]["version"]
+                version_mapping[entity_version].append(entity)
 
             # Sort same versions by date.
             for version, entities in version_mapping.items():
@@ -241,18 +247,17 @@ class RVAction(BaseAction):
         # Commit to end job.
         session.commit()
 
-        args = [os.path.normpath(self.rv_path)]
+        args = []
 
         fps = entities[0].get("custom_attributes", {}).get("fps", None)
         if fps is not None:
             args.extend(["-fps", str(fps)])
-
-        args.extend(paths)
+        rv_command = "import rv; rv.commands.addSourceVerbose({0}); vnode = rv.commands.viewNodes()[-1];rv.commands.setViewNode(vnode)".format(paths)
+        args.extend(["-pyeval", rv_command])
 
         self.log.info("Running rv: {}".format(args))
-
-        subprocess.Popen(args)
-
+        self.openrv_app.arguments = args
+        self.openrv_app.launch(**self.context_args)
         return True
 
     def get_file_paths(self, session, event):
@@ -281,9 +286,12 @@ class RVAction(BaseAction):
                 if neighbour_component["name"] != "ftrackreview-mp4_src":
                     continue
 
-                paths.append(
-                    location.get_filesystem_path(neighbour_component)
-                )
+                try:
+                    paths.append(
+                        location.get_filesystem_path(neighbour_component)
+                    )
+                except Exception:
+                    continue
                 online_source = True
 
             if online_source:

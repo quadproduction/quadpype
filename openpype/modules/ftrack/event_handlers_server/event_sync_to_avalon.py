@@ -18,6 +18,7 @@ from openpype.client import (
     get_archived_assets,
     get_asset_ids_with_subsets
 )
+from openpype.settings import APPS_SETTINGS_KEY
 from openpype.client.operations import CURRENT_ASSET_DOC_SCHEMA
 from openpype.pipeline import AvalonMongoDB, schema
 
@@ -662,6 +663,10 @@ class SyncToAvalonEvent(BaseEvent):
 
                 elif "typeid" in changes or "name" in changes:
                     self.modified_tasks_ftrackids.add(ent_info["parentId"])
+                elif action == "update":
+                    self.modified_tasks_ftrackids.add(ent_info["parentId"])
+                    found_actions.add(action)
+                    entities_by_action[action][ftrack_id] = ent_info
                 continue
 
             if action == "move":
@@ -1893,6 +1898,8 @@ class SyncToAvalonEvent(BaseEvent):
         ftrack_mongo_mapping = {}
         not_found_ids = []
         for ftrack_id, ent_info in ent_infos.items():
+            if ent_info["entity_type"] == "Task":
+                ftrack_id = ent_info["parentId"]
             avalon_ent = self.avalon_ents_by_ftrack_id.get(ftrack_id)
             if not avalon_ent:
                 not_found_ids.append(ftrack_id)
@@ -1927,6 +1934,8 @@ class SyncToAvalonEvent(BaseEvent):
                 cust_attrs_by_obj_id[obj_id][key] = cust_attr
 
         for ftrack_id, ent_info in ent_infos.items():
+            if ent_info["entity_type"] == "Task":
+                ftrack_id = ent_info["parentId"]
             mongo_id = ftrack_mongo_mapping[ftrack_id]
             entType = ent_info["entityType"]
             ent_path = self.get_ent_path(ftrack_id)
@@ -1953,15 +1962,25 @@ class SyncToAvalonEvent(BaseEvent):
                     self.hier_cust_attrs_changes[key].append(ftrack_id)
                     continue
 
-                if key not in ent_cust_attrs:
+                # This is because "status" is not in custom attributes,
+                # but it's a "properties" present in every project,
+                # so this will not skip the key
+                if key != "status" and key not in ent_cust_attrs:
                     continue
 
                 value = values["new"]
-                new_value = self.convert_value_by_cust_attr_conf(
-                    value, ent_cust_attrs[key]
-                )
+                # Rename the key because the "status" in ftrack
+                # is called "active" in avalon and is a boolean
+                if key == "status":
+                    key = "active"
+                    new_value = True if value == "active" else False
+                    ent_path = "Project"
+                else:
+                    new_value = self.convert_value_by_cust_attr_conf(
+                        value, ent_cust_attrs[key]
+                    )
 
-                if entType == "show" and key == "applications":
+                if entType == "show" and key == APPS_SETTINGS_KEY:
                     # Store apps to project't config
                     proj_apps, warnings = (
                         avalon_sync.get_project_apps(new_value)
@@ -2440,7 +2459,8 @@ class SyncToAvalonEvent(BaseEvent):
                 continue
 
             tasks_per_ftrack_id[ftrack_id][task_entity["name"]] = {
-                "type": task_type["name"]
+                "type": task_type["name"],
+                "custom_attributes": dict(task_entity["custom_attributes"])
             }
 
         # find avalon entity by parentId
@@ -2526,7 +2546,8 @@ class SyncToAvalonEvent(BaseEvent):
             "type": "label",
             "value": (
                 "<p><i>NOTE: It is not allowed to use the same name"
-                " for multiple entities in the same project</i></p>"
+                " for multiple entities in the same project. Please"
+                " delete or rename your newly created item.</i></p>"
             )
         })
 

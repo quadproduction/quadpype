@@ -9,6 +9,8 @@ from openpype.lib.applications import (
     CUSTOM_LAUNCH_APP_GROUPS
 )
 
+from openpype.settings import APPS_SETTINGS_KEY
+
 
 class AppplicationsAction(BaseAction):
     """Applications Action class."""
@@ -127,7 +129,7 @@ class AppplicationsAction(BaseAction):
         settings = self.get_project_settings_from_event(
             event, avalon_project_doc["name"])
 
-        only_available = settings["applications"]["only_available"]
+        only_available = settings[APPS_SETTINGS_KEY]["only_available"]
 
         items = []
         for app_name in avalon_project_apps:

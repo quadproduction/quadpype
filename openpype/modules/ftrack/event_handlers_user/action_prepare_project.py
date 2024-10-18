@@ -2,8 +2,13 @@ import json
 import copy
 
 from openpype.client import get_project, create_project
-from openpype.settings import ProjectSettings, SaveWarningExc
-
+from openpype.settings import (
+    ProjectSettings,
+    SaveWarningExc,
+    APPS_SETTINGS_KEY,
+    PROJECT_ANATOMY_KEY,
+    PROJECT_SETTINGS_KEY
+)
 from openpype_modules.ftrack.lib import (
     BaseAction,
     statics_icon,
@@ -39,7 +44,7 @@ class PrepareProjectLocal(BaseAction):
         "resolutionHeight",
         "resolutionWidth",
         "pixelAspect",
-        "applications",
+        APPS_SETTINGS_KEY,
         "tools_env",
         "library_project",
     )
@@ -69,7 +74,7 @@ class PrepareProjectLocal(BaseAction):
 
         project_settings = ProjectSettings(project_name)
 
-        project_anatom_settings = project_settings["project_anatomy"]
+        project_anatom_settings = project_settings[PROJECT_ANATOMY_KEY]
         root_items = self.prepare_root_items(project_anatom_settings)
 
         ca_items, multiselect_enumerators = (
@@ -109,7 +114,7 @@ class PrepareProjectLocal(BaseAction):
         # Ask if want to trigger Action Create Folder Structure
         create_project_structure_checked = (
             project_settings
-            ["project_settings"]
+            [PROJECT_SETTINGS_KEY]
             ["ftrack"]
             ["user_handlers"]
             ["prepare_project"]
@@ -404,8 +409,10 @@ class PrepareProjectLocal(BaseAction):
             )
 
         project_settings = ProjectSettings(project_name)
-        project_anatomy_settings = project_settings["project_anatomy"]
+        project_anatomy_settings = project_settings[PROJECT_ANATOMY_KEY]
         project_anatomy_settings["roots"] = root_data
+        # Add a flag to be able to bypass the enabled protection for the anatomy attrs
+        project_anatomy_settings._current_metadata["bypass_protect_anatomy_attributes"] = True
 
         custom_attribute_values = {}
         attributes_entity = project_anatomy_settings["attributes"]
