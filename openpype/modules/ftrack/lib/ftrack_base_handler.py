@@ -7,13 +7,13 @@ import datetime
 import traceback
 import time
 from openpype.lib import Logger
-from openpype.settings import get_project_settings
+from openpype.settings import get_project_settings, PROJECT_SETTINGS_KEY
 
 import ftrack_api
 from openpype_modules.ftrack import ftrack_server
 
 
-class MissingPermision(Exception):
+class MissingPermission(Exception):
     def __init__(self, message=None):
         if message is None:
             message = 'Ftrack'
@@ -101,7 +101,7 @@ class BaseHandler(object):
                 self.log.info((
                     '{} "{}" - Registered successfully ({:.4f}sec)'
                 ).format(self.type, label, run_time))
-            except MissingPermision as MPE:
+            except MissingPermission as MPE:
                 self.log.info((
                     '!{} "{}" - You\'re missing required {} permissions'
                 ).format(self.type, label, str(MPE)))
@@ -602,15 +602,15 @@ class BaseHandler(object):
             event (ftrack_api.Event): Processed event by session.
             project_entity (ftrack_api.Entity): Project entity.
         """
-        project_settings_by_id = event["data"].get("project_settings")
+        project_settings_by_id = event["data"].get(PROJECT_SETTINGS_KEY)
         if not project_settings_by_id:
             project_settings_by_id = {}
-            event["data"]["project_settings"] = project_settings_by_id
+            event["data"][PROJECT_SETTINGS_KEY] = project_settings_by_id
 
         project_settings = project_settings_by_id.get(project_name)
         if not project_settings:
             project_settings = get_project_settings(project_name)
-            event["data"]["project_settings"][project_name] = project_settings
+            event["data"][PROJECT_SETTINGS_KEY][project_name] = project_settings
         return project_settings
 
     @staticmethod

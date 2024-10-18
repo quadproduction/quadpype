@@ -53,7 +53,7 @@ class ValidateFileSaved(pyblish.api.ContextPlugin,
                        for exclude_family in self.exclude_families)
 
         if all(is_excluded(family) for family in families):
-            self.log.debug("Only excluded families found, skipping workfile "
+            self.log.info("Only excluded families found, skipping workfile "
                            "unsaved changes validation..")
             return
 

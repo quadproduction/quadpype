@@ -36,7 +36,7 @@ class PrenodeModel(BaseSettingsModel):
     )
 
     @validator("knobs")
-    def ensure_unique_names(cls, value):
+    def ensure_unique_names(self, value):
         """Ensure name fields within the lists have unique names."""
         ensure_unique_names(value)
         return value
@@ -65,7 +65,7 @@ class CreateWriteRenderModel(BaseSettingsModel):
     )
 
     @validator("prenodes")
-    def ensure_unique_names(cls, value):
+    def ensure_unique_names(self, value):
         """Ensure name fields within the lists have unique names."""
         ensure_unique_names(value)
         return value
@@ -94,7 +94,7 @@ class CreateWritePrerenderModel(BaseSettingsModel):
     )
 
     @validator("prenodes")
-    def ensure_unique_names(cls, value):
+    def ensure_unique_names(self, value):
         """Ensure name fields within the lists have unique names."""
         ensure_unique_names(value)
         return value
@@ -123,7 +123,7 @@ class CreateWriteImageModel(BaseSettingsModel):
     )
 
     @validator("prenodes")
-    def ensure_unique_names(cls, value):
+    def ensure_unique_names(self, value):
         """Ensure name fields within the lists have unique names."""
         ensure_unique_names(value)
         return value

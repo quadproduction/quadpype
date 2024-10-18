@@ -16,7 +16,12 @@ from openpype.client import get_asset_name_identifier
 from openpype.settings import (
     get_system_settings,
     get_project_settings,
-    get_local_settings
+    get_local_settings,
+    APPS_SETTINGS_KEY,
+    GENERAL_SETTINGS_KEY,
+    ENV_SETTINGS_KEY,
+    PROJECT_SETTINGS_KEY,
+    SYSTEM_SETTINGS_KEY
 )
 from openpype.settings.constants import (
     METADATA_KEYS,
@@ -426,7 +431,7 @@ class ApplicationManager:
 
         all_app_defs = {}
         # Prepare known applications
-        app_defs = settings["applications"]
+        app_defs = settings[APPS_SETTINGS_KEY]
         additional_apps = {}
         for group_name, variant_defs in app_defs.items():
             if group_name in METADATA_KEYS:
@@ -897,6 +902,11 @@ class PreLaunchHook(LaunchHook):
     launched.
     """
 
+    @abstractmethod
+    def execute(self, *args, **kwargs):
+        """Abstract execute method where logic of hook is."""
+        pass
+
 
 class PostLaunchHook(LaunchHook):
     """Abstract class of postlaunch hook.
@@ -906,6 +916,11 @@ class PostLaunchHook(LaunchHook):
     Nothing will happen if any exception will happen during processing. And
     processing of other postlaunch hooks won't stop either.
     """
+
+    @abstractmethod
+    def execute(self, *args, **kwargs):
+        """Abstract execute method where logic of hook is."""
+        pass
 
 
 class ApplicationLaunchContext:
@@ -1431,8 +1446,8 @@ class EnvironmentPrepData(dict):
         if data.get("env") is None:
             data["env"] = os.environ.copy()
 
-        if "system_settings" not in data:
-            data["system_settings"] = get_system_settings()
+        if SYSTEM_SETTINGS_KEY not in data:
+            data[SYSTEM_SETTINGS_KEY] = get_system_settings()
 
         super(EnvironmentPrepData, self).__init__(data)
 
@@ -1555,11 +1570,11 @@ def prepare_app_environments(
 
     # Use environments from local settings
     filtered_local_envs = {}
-    system_settings = data["system_settings"]
-    whitelist_envs = system_settings["general"].get("local_env_white_list")
+    system_settings = data[SYSTEM_SETTINGS_KEY]
+    whitelist_envs = system_settings[GENERAL_SETTINGS_KEY].get("local_env_white_list")
     if whitelist_envs:
         local_settings = get_local_settings()
-        local_envs = local_settings.get("environments") or {}
+        local_envs = local_settings.get(ENV_SETTINGS_KEY) or {}
         filtered_local_envs = {
             key: value
             for key, value in local_envs.items()
@@ -1579,13 +1594,15 @@ def prepare_app_environments(
         app.environment
     ]
 
-    asset_doc = data.get("asset_doc")
+    # We use project_doc/tools_env instead of asset_doc/tools_env to ensure tools_env propagation
+    # TODO QUAD: Handle this case for asset and project separately
+    project_doc = data.get("project_doc")
     # Add tools environments
     groups_by_name = {}
     tool_by_group_name = collections.defaultdict(dict)
-    if asset_doc:
+    if project_doc:
         # Make sure each tool group can be added only once
-        for key in asset_doc["data"].get("tools_env") or []:
+        for key in project_doc["data"].get("tools_env") or []:
             tool = app.manager.tools.get(key)
             if not tool or not tool.is_valid_for_app(app):
                 continue
@@ -1720,8 +1737,8 @@ def prepare_context_environments(data, env_group=None, modules_manager=None):
     project_name = project_doc["name"]
     project_settings = get_project_settings(project_name)
     system_settings = get_system_settings()
-    data["project_settings"] = project_settings
-    data["system_settings"] = system_settings
+    data[PROJECT_SETTINGS_KEY] = project_settings
+    data[SYSTEM_SETTINGS_KEY] = system_settings
 
     app = data["app"]
     context_env = {
@@ -1884,7 +1901,7 @@ def _prepare_last_workfile(data, workdir, modules_manager):
             )
 
             anatomy = data["anatomy"]
-            project_settings = data["project_settings"]
+            project_settings = data[PROJECT_SETTINGS_KEY]
             task_type = workdir_data["task"]["type"]
             template_key = get_workfile_template_key(
                 task_type,

@@ -33,6 +33,7 @@ class ModifiableDictEmptyItem(QtWidgets.QWidget):
         self.collapsible_key = entity_widget.entity.collapsible_key
         self.ignore_input_changes = entity_widget.ignore_input_changes
 
+        self._read_only = False
         self.store_as_list = store_as_list
         self.is_duplicated = False
         self.key_is_valid = store_as_list
@@ -173,6 +174,10 @@ class ModifiableDictEmptyItem(QtWidgets.QWidget):
         self.wrapper_widget = wrapper_widget
         self.confirm_btn = confirm_btn
 
+    def set_read_only(self, status):
+        self._read_only = status
+        self.setEnabled(not self._read_only)
+
 
 class ModifiableDictItem(QtWidgets.QWidget):
     def __init__(self, collapsible_key, store_as_list, entity, entity_widget):
@@ -186,6 +191,7 @@ class ModifiableDictItem(QtWidgets.QWidget):
 
         self.ignore_input_changes = entity_widget.ignore_input_changes
 
+        self._read_only = False
         self.is_key_duplicated = False
         self.key_is_valid = store_as_list
         self.is_required = False
@@ -202,6 +208,7 @@ class ModifiableDictItem(QtWidgets.QWidget):
 
         self.key_label_input = None
 
+        self.edit_btn = None
         self.confirm_btn = None
 
         self._key_change_timer = create_deffered_value_change_timer(
@@ -487,6 +494,7 @@ class ModifiableDictItem(QtWidgets.QWidget):
             self.key_input.setFocus()
 
     def set_edit_mode(self, enabled=True):
+        # This code only works when self.collapsible_key is True
         if self.is_invalid and not enabled:
             return
         self.wrapper_widget.label_widget.setVisible(not enabled)
@@ -589,6 +597,14 @@ class ModifiableDictItem(QtWidgets.QWidget):
 
     def mouseReleaseEvent(self, event):
         return QtWidgets.QWidget.mouseReleaseEvent(self, event)
+
+    def set_read_only(self, status):
+        self._read_only = status
+
+        if self.edit_btn:
+            self.edit_btn.setEnabled(not self._read_only)
+
+        self.input_field.set_read_only(self._read_only)
 
 
 class DictMutableKeysWidget(BaseWidget):
@@ -711,6 +727,7 @@ class DictMutableKeysWidget(BaseWidget):
             input_field.set_key("")
 
         input_field.set_entity_value()
+        input_field.set_read_only(self._read_only)
 
         self.on_shuffle()
 
@@ -776,6 +793,8 @@ class DictMutableKeysWidget(BaseWidget):
             self.entity.collapsible_key, self.entity.store_as_list,
             child_entity, self
         )
+
+        input_field.set_read_only(self._read_only)
         self.input_fields.append(input_field)
 
         new_widget_index = self.content_layout.count() - 1
@@ -973,3 +992,9 @@ class DictMutableKeysWidget(BaseWidget):
         self.body_widget.side_line_widget.style().polish(
             self.body_widget.side_line_widget
         )
+
+    def set_read_only(self, status):
+        self._read_only = status
+        self.empty_row.set_read_only(self._read_only)
+        for input_field in self.input_fields:
+            input_field.set_read_only(self._read_only)

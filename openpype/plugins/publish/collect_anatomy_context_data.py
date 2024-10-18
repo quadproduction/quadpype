@@ -15,6 +15,7 @@ Provides:
 import json
 import pyblish.api
 
+from openpype.settings import SYSTEM_SETTINGS_KEY
 from openpype.pipeline.template_data import get_template_data
 
 
@@ -47,7 +48,7 @@ class CollectAnatomyContextData(pyblish.api.ContextPlugin):
 
     def process(self, context):
         host_name = context.data["hostName"]
-        system_settings = context.data["system_settings"]
+        system_settings = context.data[SYSTEM_SETTINGS_KEY]
         project_entity = context.data["projectEntity"]
         asset_entity = context.data.get("assetEntity")
         task_name = None

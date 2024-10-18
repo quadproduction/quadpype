@@ -1,3 +1,4 @@
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.lib.applications import PreLaunchHook, LaunchTypes
 
 
@@ -15,7 +16,7 @@ class MayaPreOpenWorkfilePostInitialization(PreLaunchHook):
         if not self.data.get("start_last_workfile"):
             return
 
-        maya_settings = self.data["project_settings"]["maya"]
+        maya_settings = self.data[PROJECT_SETTINGS_KEY]["maya"]
         enabled = maya_settings["open_workfile_post_initialization"]
         if enabled:
             # Force disable the `AddLastWorkfileToLaunchArgs`.

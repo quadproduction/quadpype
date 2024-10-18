@@ -5,6 +5,7 @@ import contextlib
 import socket
 from pprint import pformat
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.lib import (
     get_openpype_username,
     run_subprocess,
@@ -41,7 +42,7 @@ class FlamePrelaunch(PreLaunchHook):
         volume_name = _env.get("FLAME_WIRETAP_VOLUME")
 
         # get image io
-        project_settings = self.data["project_settings"]
+        project_settings = self.data[PROJECT_SETTINGS_KEY]
 
         imageio_flame = project_settings["flame"]["imageio"]
 

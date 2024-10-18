@@ -3,6 +3,8 @@ import copy
 from collections import OrderedDict
 from pprint import pformat
 import pyblish
+
+from openpype.settings import PROJECT_SETTINGS_KEY
 import openpype.hosts.flame.api as opfapi
 import openpype.pipeline as op_pipeline
 from openpype.pipeline.workfile import get_workdir
@@ -324,7 +326,7 @@ class IntegrateBatchGroup(pyblish.api.InstancePlugin):
         project_doc = instance.data["projectEntity"]
         asset_entity = instance.data["assetEntity"]
         anatomy = instance.context.data["anatomy"]
-        project_settings = instance.context.data["project_settings"]
+        project_settings = instance.context.data[PROJECT_SETTINGS_KEY]
 
         return get_workdir(
             project_doc,

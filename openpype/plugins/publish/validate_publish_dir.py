@@ -1,4 +1,5 @@
 import pyblish.api
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline.publish import ValidateContentsOrder
 from openpype.pipeline.publish import (
     PublishXmlValidationError,
@@ -73,6 +74,6 @@ class ValidatePublishDir(pyblish.api.InstancePlugin):
             family,
             task_name=task_info.get("name"),
             task_type=task_info.get("type"),
-            project_settings=instance.context.data["project_settings"],
+            project_settings=instance.context.data[PROJECT_SETTINGS_KEY],
             logger=self.log
         )

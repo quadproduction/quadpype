@@ -12,6 +12,7 @@ import os.path
 
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline.publish.lib import get_custom_staging_dir_info
 
 
@@ -42,7 +43,7 @@ class CollectCustomStagingDir(pyblish.api.InstancePlugin):
         subset_name = instance.data["subset"]
         host_name = instance.context.data["hostName"]
         project_name = instance.context.data["projectName"]
-        project_settings = instance.context.data["project_settings"]
+        project_settings = instance.context.data[PROJECT_SETTINGS_KEY]
         anatomy = instance.context.data["anatomy"]
         task = instance.data["anatomyData"].get("task", {})
 

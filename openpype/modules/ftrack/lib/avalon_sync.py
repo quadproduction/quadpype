@@ -19,7 +19,7 @@ from openpype.client.operations import (
     CURRENT_PROJECT_SCHEMA,
     CURRENT_PROJECT_CONFIG_SCHEMA,
 )
-from openpype.settings import get_anatomy_settings
+from openpype.settings import get_anatomy_settings, APPS_SETTINGS_KEY
 from openpype.lib import ApplicationManager, Logger
 from openpype.pipeline import AvalonMongoDB, schema
 
@@ -1366,7 +1366,7 @@ class SyncEntitiesFactory:
             proj_schema = entity["project_schema"]
             task_types = proj_schema["_task_type_schema"]["types"]
             proj_apps, warnings = get_project_apps(
-                data.pop("applications", [])
+                data.pop(APPS_SETTINGS_KEY, [])
             )
             for msg, items in warnings.items():
                 if not msg or not items:

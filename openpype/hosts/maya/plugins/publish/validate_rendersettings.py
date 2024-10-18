@@ -6,6 +6,7 @@ from collections import OrderedDict
 from maya import cmds, mel
 
 import pyblish.api
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
@@ -263,7 +264,7 @@ class ValidateRenderSettings(pyblish.api.InstancePlugin):
                 cls.DEFAULT_PADDING, "0" * cls.DEFAULT_PADDING))
 
         # load validation definitions from settings
-        settings_lights_flag = instance.context.data["project_settings"].get(
+        settings_lights_flag = instance.context.data[PROJECT_SETTINGS_KEY].get(
             "maya", {}).get(
             "RenderSettings", {}).get(
             "enable_all_lights", False)
@@ -309,7 +310,7 @@ class ValidateRenderSettings(pyblish.api.InstancePlugin):
 
     @classmethod
     def get_nodes(cls, instance, renderer):
-        maya_settings = instance.context.data["project_settings"]["maya"]
+        maya_settings = instance.context.data[PROJECT_SETTINGS_KEY]["maya"]
         validation_settings = (
             maya_settings["publish"]["ValidateRenderSettings"].get(
                 "{}_render_attributes".format(renderer)

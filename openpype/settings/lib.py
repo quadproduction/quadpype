@@ -18,7 +18,13 @@ from .constants import (
     SYSTEM_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     PROJECT_ANATOMY_KEY,
-    DEFAULT_PROJECT_KEY
+    DEFAULT_PROJECT_KEY,
+
+    GENERAL_SETTINGS_KEY,
+    ENV_SETTINGS_KEY,
+    APPS_SETTINGS_KEY,
+    MODULES_SETTINGS_KEY,
+    PROJECTS_SETTINGS_KEY
 )
 
 from .ayon_settings import (
@@ -271,6 +277,7 @@ def save_project_anatomy(project_name, anatomy_data):
     Raises:
         SaveWarningExc: If any module raises the exception.
     """
+    bypass_protect_attrs = anatomy_data.pop("bypass_protect_anatomy_attributes", None)
     # Notify Pype modules
     from openpype.modules import ModulesManager, ISettingsChangeListener
 
@@ -288,6 +295,8 @@ def save_project_anatomy(project_name, anatomy_data):
         new_data = apply_overrides(default_values, copy.deepcopy(anatomy_data))
 
     new_data_with_metadata = copy.deepcopy(new_data)
+    if bypass_protect_attrs is not None:
+        new_data_with_metadata["bypass_protect_anatomy_attributes"] = bypass_protect_attrs
     clear_metadata_from_settings(new_data)
 
     changes = calculate_changes(old_data, new_data)
@@ -556,7 +565,7 @@ def _get_default_settings():
             if not path:
                 continue
 
-            subdict = defaults["system_settings"]
+            subdict = defaults[SYSTEM_SETTINGS_KEY]
             path_items = list(path.split("/"))
             last_key = path_items.pop(-1)
             for key in path_items:
@@ -701,7 +710,7 @@ def merge_overrides(source_dict, override_dict):
         overridden_keys = set()
 
     for key, value in override_dict.items():
-        if (key in overridden_keys or key not in source_dict):
+        if key in overridden_keys or key not in source_dict:
             source_dict[key] = value
 
         elif isinstance(value, dict) and isinstance(source_dict[key], dict):
@@ -719,25 +728,17 @@ def apply_overrides(source_data, override_data):
     return merge_overrides(_source_data, override_data)
 
 
-def apply_local_settings_on_system_settings(system_settings, local_settings):
-    """Apply local settings on studio system settings.
-
-    ATM local settings can modify only application executables. Executable
-    values are not overridden but prepended.
-    """
-    if not local_settings or "applications" not in local_settings:
-        return
-
+def _apply_applications_settings_override(system_settings, local_settings):
     current_platform = platform.system().lower()
-    apps_settings = system_settings["applications"]
+    apps_settings = system_settings[APPS_SETTINGS_KEY]
     additional_apps = apps_settings["additional_apps"]
-    for app_group_name, value in local_settings["applications"].items():
+    for app_group_name, value in local_settings[APPS_SETTINGS_KEY].items():
         if not value:
             continue
 
         if (
-            app_group_name not in apps_settings
-            and app_group_name not in additional_apps
+                app_group_name not in apps_settings
+                and app_group_name not in additional_apps
         ):
             continue
 
@@ -751,9 +752,9 @@ def apply_local_settings_on_system_settings(system_settings, local_settings):
 
         for app_name, app_value in value.items():
             if (
-                not app_value
-                or app_name not in variants
-                or "executables" not in variants[app_name]
+                    not app_value
+                    or app_name not in variants
+                    or "executables" not in variants[app_name]
             ):
                 continue
 
@@ -769,6 +770,28 @@ def apply_local_settings_on_system_settings(system_settings, local_settings):
             new_executables = [executable]
             new_executables.extend(platform_executables)
             variants[app_name]["executables"] = new_executables
+
+
+def _apply_modules_settings_override(system_settings, local_settings):
+    modules_settings = system_settings[MODULES_SETTINGS_KEY]
+    for module_name, property in local_settings[MODULES_SETTINGS_KEY].items():
+        modules_settings[module_name].update(property)
+
+
+def apply_local_settings_on_system_settings(system_settings, local_settings):
+    """Apply local settings on studio system settings.
+
+    ATM local settings can modify only application executables. Executable
+    values are not overridden but prepended.
+    """
+    if not local_settings:
+        return
+
+    if APPS_SETTINGS_KEY in local_settings:
+        _apply_applications_settings_override(system_settings, local_settings)
+
+    if MODULES_SETTINGS_KEY in local_settings:
+        _apply_modules_settings_override(system_settings, local_settings)
 
 
 def apply_local_settings_on_anatomy_settings(
@@ -793,11 +816,12 @@ def apply_local_settings_on_anatomy_settings(
         anatomy_settings (dict): Data for anatomy settings.
         local_settings (dict): Data of local settings.
         project_name (str): Name of project for which anatomy data are.
+        site_name (str): Name of the site
     """
     if not local_settings:
         return
 
-    local_project_settings = local_settings.get("projects") or {}
+    local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY) or {}
 
     # Check for roots existence in local settings first
     roots_project_locals = (
@@ -847,7 +871,7 @@ def apply_local_settings_on_anatomy_settings(
 
 
 def get_site_local_overrides(project_name, site_name, local_settings=None):
-    """Site overrides from local settings for passet project and site name.
+    """Site overrides from local settings for passed project and site name.
 
     Args:
         project_name (str): For which project are overrides.
@@ -865,7 +889,7 @@ def get_site_local_overrides(project_name, site_name, local_settings=None):
     if not local_settings:
         return output
 
-    local_project_settings = local_settings.get("projects") or {}
+    local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY) or {}
 
     # Prepare overrides for entered project and for default project
     project_locals = None
@@ -899,7 +923,7 @@ def apply_local_settings_on_project_settings(
     if not local_settings:
         return
 
-    local_project_settings = local_settings.get("projects")
+    local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY)
     if not local_project_settings:
         return
 
@@ -1064,12 +1088,12 @@ def get_current_project_settings():
     Project name should be stored in environment variable `AVALON_PROJECT`.
     This function should be used only in host context where environment
     variable must be set and should not happen that any part of process will
-    change the value of the enviornment variable.
+    change the value of the environment variable.
     """
     project_name = os.environ.get("AVALON_PROJECT")
     if not project_name:
         raise ValueError(
-            "Missing context project in environemt variable `AVALON_PROJECT`."
+            "Missing context project in environment variable `AVALON_PROJECT`."
         )
     return get_project_settings(project_name)
 
@@ -1077,7 +1101,7 @@ def get_current_project_settings():
 @require_handler
 def _get_global_settings():
     default_settings = load_openpype_default_settings()
-    default_values = default_settings["system_settings"]["general"]
+    default_values = default_settings[SYSTEM_SETTINGS_KEY][GENERAL_SETTINGS_KEY]
     studio_values = _SETTINGS_HANDLER.get_global_settings()
     return {
         key: studio_values.get(key, default_values.get(key))
@@ -1089,31 +1113,31 @@ def get_global_settings():
     if not AYON_SERVER_ENABLED:
         return _get_global_settings()
     default_settings = load_openpype_default_settings()
-    return default_settings["system_settings"]["general"]
+    return default_settings[SYSTEM_SETTINGS_KEY][GENERAL_SETTINGS_KEY]
 
 
 def _get_general_environments():
     """Get general environments.
 
-    Function is implemented to be able load general environments without using
+    Function is implemented to be able to load general environments without using
     `get_default_settings`.
     """
     # Use only openpype defaults.
     # - prevent to use `get_system_settings` where `get_default_settings`
     #   is used
     default_values = load_openpype_default_settings()
-    system_settings = default_values["system_settings"]
+    system_settings = default_values[SYSTEM_SETTINGS_KEY]
     studio_overrides = get_studio_system_settings_overrides()
 
     result = apply_overrides(system_settings, studio_overrides)
-    environments = result["general"]["environment"]
+    environments = result[GENERAL_SETTINGS_KEY]["environment"]
 
     clear_metadata_from_settings(environments)
 
-    whitelist_envs = result["general"].get("local_env_white_list")
+    whitelist_envs = result[GENERAL_SETTINGS_KEY].get("local_env_white_list")
     if whitelist_envs:
         local_settings = get_local_settings()
-        local_envs = local_settings.get("environments") or {}
+        local_envs = local_settings.get(ENV_SETTINGS_KEY) or {}
         for key, value in local_envs.items():
             if key in whitelist_envs and key in environments:
                 environments[key] = value
@@ -1125,7 +1149,7 @@ def get_general_environments():
     if not AYON_SERVER_ENABLED:
         return _get_general_environments()
     value = get_system_settings()
-    return value["general"]["environment"]
+    return value[GENERAL_SETTINGS_KEY]["environment"]
 
 
 def get_system_settings(*args, **kwargs):

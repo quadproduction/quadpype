@@ -2,8 +2,12 @@ import json
 import copy
 
 from openpype.client import get_project, create_project
-from openpype.settings import ProjectSettings, SaveWarningExc
-
+from openpype.settings import (
+    ProjectSettings,
+    SaveWarningExc,
+    APPS_SETTINGS_KEY,
+    PROJECT_ANATOMY_KEY
+)
 from openpype_modules.ftrack.lib import (
     ServerAction,
     get_openpype_attr,
@@ -37,7 +41,7 @@ class PrepareProjectServer(ServerAction):
         "resolutionHeight",
         "resolutionWidth",
         "pixelAspect",
-        "applications",
+        APPS_SETTINGS_KEY,
         "tools_env",
         "library_project",
     )
@@ -67,7 +71,7 @@ class PrepareProjectServer(ServerAction):
 
         project_settings = ProjectSettings(project_name)
 
-        project_anatom_settings = project_settings["project_anatomy"]
+        project_anatom_settings = project_settings[PROJECT_ANATOMY_KEY]
         root_items = self.prepare_root_items(project_anatom_settings)
 
         ca_items, multiselect_enumerators = (
@@ -378,7 +382,7 @@ class PrepareProjectServer(ServerAction):
             )
 
         project_settings = ProjectSettings(project_name)
-        project_anatomy_settings = project_settings["project_anatomy"]
+        project_anatomy_settings = project_settings[PROJECT_ANATOMY_KEY]
         project_anatomy_settings["roots"] = root_data
 
         custom_attribute_values = {}

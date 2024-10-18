@@ -7,6 +7,7 @@ import contextlib
 
 from maya import cmds
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline import publish
 from openpype.hosts.maya.api import lib
 
@@ -101,7 +102,7 @@ class ExtractYetiRig(publish.Extractor):
     def process(self, instance):
         """Plugin entry point."""
         ext_mapping = (
-            instance.context.data["project_settings"]["maya"]["ext_mapping"]
+            instance.context.data[PROJECT_SETTINGS_KEY]["maya"]["ext_mapping"]
         )
         if ext_mapping:
             self.log.debug("Looking in settings for scene type ...")

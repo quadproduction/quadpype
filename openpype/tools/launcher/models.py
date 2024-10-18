@@ -19,7 +19,7 @@ from openpype.lib.applications import (
     CUSTOM_LAUNCH_APP_GROUPS,
     ApplicationManager
 )
-from openpype.settings import get_project_settings
+from openpype.settings import get_project_settings, APPS_SETTINGS_KEY
 from openpype.pipeline import discover_launcher_actions
 from openpype.tools.utils.lib import (
     DynamicQThread,
@@ -96,7 +96,7 @@ class ActionModel(QtGui.QStandardItemModel):
             return actions
 
         project_settings = get_project_settings(project_name)
-        only_available = project_settings["applications"]["only_available"]
+        only_available = project_settings[APPS_SETTINGS_KEY]["only_available"]
         self.application_manager.refresh()
         for app_def in project_doc["config"]["apps"]:
             app_name = app_def["name"]

@@ -111,9 +111,21 @@ class ExtractSequence(pyblish.api.Extractor):
             "Files will be rendered to folder: {}".format(output_dir)
         )
 
-        if instance.data["family"] == "review":
+        export_type = instance.data["creator_attributes"].get("export_type", "project")
+        apply_background = instance.data["creator_attributes"].get("apply_background", True)
+        is_review = instance.data["family"] == "review"
+        is_playblast = instance.data["creator_identifier"] == "render.playblast"
+        publish_sequence_with_transparency = (
+                instance.data["creator_identifier"] == "publish.sequence" and not ignore_layers_transparency
+        )
+
+        if is_review or is_playblast or publish_sequence_with_transparency:
             result = self.render_review(
-                output_dir, mark_in, mark_out, scene_bg_color
+                output_dir,
+                export_type,
+                mark_in,
+                mark_out,
+                scene_bg_color if apply_background else None
             )
         else:
             # Render output
@@ -145,8 +157,10 @@ class ExtractSequence(pyblish.api.Extractor):
         # Fill tags and new families from project settings
         instance_families = get_publish_instance_families(instance)
         tags = []
-        if "review" in instance_families:
+        if "review" in instance.data["families"]:
             tags.append("review")
+        else:
+            tags.append("sequence")
 
         # Sequence of one frame
         single_file = len(repre_files) == 1
@@ -205,7 +219,7 @@ class ExtractSequence(pyblish.api.Extractor):
         return repre_filenames
 
     def render_review(
-        self, output_dir, mark_in, mark_out, scene_bg_color
+        self, output_dir, export_type, mark_in, mark_out, scene_bg_color
     ):
         """ Export images from TVPaint using `tv_savesequence` command.
 
@@ -237,11 +251,19 @@ class ExtractSequence(pyblish.api.Extractor):
             "export_path = \"{}\"".format(
                 first_frame_filepath.replace("\\", "/")
             ),
-            "tv_savesequence '\"'export_path'\"' {} {}".format(
-                mark_in, mark_out
+            # TvPaint seems to consider software markin as frame 0. If we set a frame start at export,
+            # it will add the frame start to the markin frame and will add an offset for the rest of the export.
+            "tv_projectsavesequence '\"'export_path'\"' \"{}\" {} {}".format(
+                export_type, 0, mark_out - mark_in
             )
         ]
+
         if scene_bg_color:
+            bg_color = self._get_review_bg_color()
+
+            # Change bg color to color from settings
+            george_script_lines.insert(0, "tv_background \"color\" {} {} {}".format(*bg_color)),
+
             # Change bg color back to previous scene bg color
             _scene_bg_color = copy.deepcopy(scene_bg_color)
             bg_type = _scene_bg_color.pop(0)

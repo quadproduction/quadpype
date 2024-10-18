@@ -26,7 +26,7 @@ class ExtractABC(publish.Extractor, publish.OptionalPyblishPluginMixin):
         filepath = os.path.join(stagingdir, filename)
 
         # Perform extraction
-        self.log.debug("Performing extraction..")
+        self.log.info("Performing extraction..")
 
         plugin.deselect_all()
 
@@ -62,7 +62,7 @@ class ExtractABC(publish.Extractor, publish.OptionalPyblishPluginMixin):
         }
         instance.data["representations"].append(representation)
 
-        self.log.debug("Extracted instance '%s' to: %s",
+        self.log.info("Extracted instance '%s' to: %s",
                        instance.name, representation)
 
 

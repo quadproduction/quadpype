@@ -5,6 +5,7 @@ import collections
 from bson.objectid import ObjectId
 from pymongo import DeleteOne, InsertOne, UpdateOne
 
+from openpype.settings import PROJECT_ANATOMY_KEY
 from openpype.client.operations_base import (
     REMOVED_VALUE,
     CreateOperation,
@@ -606,6 +607,8 @@ def create_project(
     #   and Anatomy
     try:
         project_settings_entity = ProjectSettings(project_name)
+        # Add a flag to be able to bypass the enabled protection for the anatomy attrs
+        project_settings_entity[PROJECT_ANATOMY_KEY]._current_metadata["bypass_protect_anatomy_attributes"] = True
         project_settings_entity.save()
     except SaveWarningExc as exc:
         print(str(exc))

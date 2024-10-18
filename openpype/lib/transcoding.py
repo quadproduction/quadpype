@@ -9,6 +9,7 @@ import platform
 
 import xml.etree.ElementTree
 
+from multiprocessing.pool import ThreadPool
 from .execute import run_subprocess
 from .vendor_bin_utils import (
     get_ffmpeg_tool_args,
@@ -834,6 +835,57 @@ def get_ffprobe_streams(path_to_file, logger=None):
     return get_ffprobe_data(path_to_file, logger)["streams"]
 
 
+def get_video_metadata(streams, logger=None):
+    if not logger:
+        logger = logging.getLogger(__name__)
+
+    input_timecode = ""
+    input_width = None
+    input_height = None
+    input_frame_rate = None
+    input_pixel_aspect = None
+    for stream in streams:
+        if stream.get("codec_type") != "video":
+            continue
+        logger.debug("FFprobe Video: {}".format(stream))
+
+        if "width" not in stream or "height" not in stream:
+            continue
+        width = int(stream["width"])
+        height = int(stream["height"])
+        if not width or not height:
+            continue
+
+        # Make sure that width and height are captured even if frame rate
+        #    is not available
+        input_width = width
+        input_height = height
+
+        input_pixel_aspect = stream.get("sample_aspect_ratio")
+        if input_pixel_aspect is not None:
+            try:
+                input_pixel_aspect = float(
+                    eval(str(input_pixel_aspect).replace(':', '/')))
+            except Exception:
+                logger.debug(
+                    "__Converting pixel aspect to float failed: {}".format(
+                        input_pixel_aspect))
+
+        tags = stream.get("tags") or {}
+        input_timecode = tags.get("timecode") or ""
+
+        input_frame_rate = stream.get("r_frame_rate")
+        if input_frame_rate is not None:
+            break
+    return (
+        input_width,
+        input_height,
+        input_timecode,
+        input_frame_rate,
+        input_pixel_aspect
+    )
+
+
 def get_ffmpeg_format_args(ffprobe_data, source_ffmpeg_cmd=None):
     """Copy format from input metadata for output.
 
@@ -978,7 +1030,7 @@ def _ffmpeg_h264_codec_args(stream_data, source_ffmpeg_cmd):
     if pix_fmt:
         output.extend(["-pix_fmt", pix_fmt])
 
-    output.extend(["-intra", "-g", "1"])
+    output.extend(["-g", "1"])
     return output
 
 
@@ -1131,54 +1183,79 @@ def convert_colorspace(
     Raises:
         ValueError: if misconfigured
     """
+    def chunk_list(frame_start, frame_end, chunk_size):
+        """Chunk the frame numbers into groups."""
+        numbers = list(range(frame_start, frame_end + 1))
+        chunked_list = [numbers[i:i + chunk_size] for i in range(0, len(numbers), chunk_size)]
+        return chunked_list
+
+    def process_frame_group(frame_group, input_path, output_path):
+        """Process a group of frames."""
+        if '-' in input_path:
+            frame_group = f'.{frame_group[0]}-{frame_group[-1]}#.'
+            frame_regex = r'\.\d+-\d+#\.'
+            input_path = re.sub(frame_regex, frame_group, input_path)
+            output_path = re.sub(frame_regex, frame_group, output_path)
+	
+    	input_info = get_oiio_info_for_input(input_path, logger=logger)
+
+        # Collect channels to export
+        input_arg, channels_arg = get_oiio_input_and_channel_args(input_info)
+
+        # Prepare subprocess arguments
+        oiio_cmd = get_oiio_tool_args(
+            "oiiotool",
+            # Don't add any additional attributes
+            "--nosoftwareattrib",
+            "--colorconfig", config_path
+        )
+        oiio_cmd.extend([
+            input_arg, input_path,
+            # Tell oiiotool which channels should be put to top stack
+            #   (and output)
+            "--ch", channels_arg,
+            # Use first subimage
+            "--subimage", "0"
+        ])
+
+        if all([target_colorspace, view, display]):
+            raise ValueError("Colorspace and both screen and display"
+                             " cannot be set together."
+                             "Choose colorspace or screen and display")
+        if not target_colorspace and not all([view, display]):
+            raise ValueError("Both screen and display must be set.")
+
+        if additional_command_args:
+            oiio_cmd.extend(additional_command_args)
+
+        if target_colorspace:
+            oiio_cmd.extend(["--colorconvert",
+                             source_colorspace,
+                             target_colorspace])
+        if view and display:
+            oiio_cmd.extend(["--iscolorspace", source_colorspace])
+            oiio_cmd.extend(["--ociodisplay", display, view])
+
+        oiio_cmd.extend(["-o", output_path])
+
+        logger.debug("Conversion command: {}".format(" ".join(oiio_cmd)))
+        run_subprocess(oiio_cmd, logger=logger)
+
     if logger is None:
         logger = logging.getLogger(__name__)
 
-    input_info = get_oiio_info_for_input(input_path, logger=logger)
+    frame_data = input_path.split('.')[-2]
+    if '-' in frame_data:
+        frame_start, frame_end = frame_data[:-1].split('-')
+    else:
+        frame_start = frame_end = frame_data
 
-    # Collect channels to export
-    input_arg, channels_arg = get_oiio_input_and_channel_args(input_info)
-
-    # Prepare subprocess arguments
-    oiio_cmd = get_oiio_tool_args(
-        "oiiotool",
-        # Don't add any additional attributes
-        "--nosoftwareattrib",
-        "--colorconfig", config_path
-    )
-
-    oiio_cmd.extend([
-        input_arg, input_path,
-        # Tell oiiotool which channels should be put to top stack
-        #   (and output)
-        "--ch", channels_arg,
-        # Use first subimage
-        "--subimage", "0"
-    ])
-
-    if all([target_colorspace, view, display]):
-        raise ValueError("Colorspace and both screen and display"
-                         " cannot be set together."
-                         "Choose colorspace or screen and display")
-    if not target_colorspace and not all([view, display]):
-        raise ValueError("Both screen and display must be set.")
-
-    if additional_command_args:
-        oiio_cmd.extend(additional_command_args)
-
-    if target_colorspace:
-        oiio_cmd.extend(["--colorconvert",
-                         source_colorspace,
-                         target_colorspace])
-    if view and display:
-        oiio_cmd.extend(["--iscolorspace", source_colorspace])
-        oiio_cmd.extend(["--ociodisplay", display, view])
-
-    oiio_cmd.extend(["-o", output_path])
-
-    logger.debug("Conversion command: {}".format(" ".join(oiio_cmd)))
-    run_subprocess(oiio_cmd, logger=logger)
-
+    frame_groups = chunk_list(int(frame_start), int(frame_end), 10)
+    pool = ThreadPool()
+    for frame_group in frame_groups:
+        pool.apply_async(process_frame_group, (frame_group, input_path, output_path))
+    pool.close()
+    pool.join()
 
 def split_cmd_args(in_args):
     """Makes sure all entered arguments are separated in individual items.

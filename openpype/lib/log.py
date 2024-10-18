@@ -189,7 +189,7 @@ class MongoFormatter(logging.Formatter):
 
 
 class Logger:
-    DFT = '%(levelname)s >>> { %(name)s }: [ %(message)s ] '
+    DFT = "%(levelname)s >>> { %(name)s }: [ %(message)s ] "
     DBG = "  - { %(name)s }: [ %(message)s ] "
     INF = ">>> [ %(message)s ] "
     WRN = "*** WRN: >>> { %(name)s }: [ %(message)s ] "

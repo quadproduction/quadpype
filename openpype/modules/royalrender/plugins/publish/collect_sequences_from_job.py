@@ -9,6 +9,7 @@ from pprint import pformat
 import pyblish.api
 
 from openpype.pipeline import legacy_io
+from openpype.settings import PROJECT_SETTINGS_KEY
 
 
 def collect(root,
@@ -84,7 +85,7 @@ class CollectSequencesFromJob(pyblish.api.ContextPlugin):
 
         self.review = (
             context.data
-            ["project_settings"]
+            [PROJECT_SETTINGS_KEY]
             ["royalrender"]
             ["publish"]
             ["CollectSequencesFromJob"]

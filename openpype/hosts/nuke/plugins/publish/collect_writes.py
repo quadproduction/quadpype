@@ -268,6 +268,10 @@ class CollectNukeWrites(pyblish.api.InstancePlugin,
             "tags": []
         }
 
+        frame_start_str = self._get_frame_start_str(first_frame, last_frame)
+
+        representation['frameStart'] = frame_start_str
+
         # set slate frame
         collected_frames = self._add_slate_frame_to_collected_frames(
             instance,

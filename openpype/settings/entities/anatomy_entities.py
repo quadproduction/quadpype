@@ -1,3 +1,4 @@
+from openpype.settings import get_system_settings, GENERAL_SETTINGS_KEY
 from .dict_immutable_keys_entity import DictImmutableKeysEntity
 from .lib import OverrideState
 from .exceptions import EntitySchemaError
@@ -5,6 +6,20 @@ from .exceptions import EntitySchemaError
 
 class AnatomyEntity(DictImmutableKeysEntity):
     schema_types = ["anatomy"]
+
+    def _item_initialization(self):
+        super(AnatomyEntity, self)._item_initialization()
+
+        # Set (if requested) the Attributes widget/section in read-only
+        # This feature exists to add protection on the attributes synced with
+        # prod tracker (Shotgrid, Ftrack, Kitsu, ...)
+        # Anatomy Attributes should only be edited on the prod tracker side, then
+        # the sync will retrieve and update the OpenPype data for the project.
+        system_settings = get_system_settings()
+        protect_attrs = system_settings[GENERAL_SETTINGS_KEY].get("project", {}).get("protect_anatomy_attributes", False)
+        self.non_gui_children["attributes"].protect_attrs = protect_attrs
+        if protect_attrs:
+            self.non_gui_children["attributes"].read_only = protect_attrs
 
     def _update_current_metadata(self):
         if self._override_state is OverrideState.PROJECT:

@@ -2,6 +2,7 @@ from maya import cmds, mel
 
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.client import get_subset_by_name
 from openpype.pipeline import KnownPublishError
 from openpype.hosts.maya.api import lib
@@ -36,8 +37,8 @@ class CollectReview(pyblish.api.InstancePlugin):
 
         # Collect display lights.
         display_lights = instance.data.get("displayLights", "default")
-        if display_lights == "project_settings":
-            settings = instance.context.data["project_settings"]
+        if display_lights == PROJECT_SETTINGS_KEY:
+            settings = instance.context.data[PROJECT_SETTINGS_KEY]
             settings = settings["maya"]["publish"]["ExtractPlayblast"]
             settings = settings["capture_preset"]["Viewport Options"]
             display_lights = settings["displayLights"]

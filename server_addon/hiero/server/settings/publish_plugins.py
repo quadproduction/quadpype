@@ -49,7 +49,7 @@ class ExtractReviewCutUpVideoModel(BaseSettingsModel):
     )
 
 
-class PublishPuginsModel(BaseSettingsModel):
+class PublishPluginsModel(BaseSettingsModel):
     CollectInstanceVersion: CollectInstanceVersionModel = SettingsField(
         default_factory=CollectInstanceVersionModel,
         title="Collect Instance Version"
@@ -64,7 +64,7 @@ class PublishPuginsModel(BaseSettingsModel):
     """
     ExtractReviewCutUpVideo: ExtractReviewCutUpVideoModel = SettingsField(
         default_factory=ExtractReviewCutUpVideoModel,
-        title="Exctract Review Trim"
+        title="Extract Review Trim"
     )
 
 

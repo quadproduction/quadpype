@@ -20,7 +20,7 @@ class ExtractReviewDataLut(publish.Extractor):
     hosts = ["nuke"]
 
     def process(self, instance):
-        self.log.debug("Creating staging dir...")
+        self.log.info("Creating staging dir...")
         if "representations" in instance.data:
             staging_dir = instance.data[
                 "representations"][0]["stagingDir"].replace("\\", "/")
@@ -33,7 +33,7 @@ class ExtractReviewDataLut(publish.Extractor):
             staging_dir = os.path.normpath(os.path.dirname(render_path))
             instance.data["stagingDir"] = staging_dir
 
-        self.log.debug(
+        self.log.info(
             "StagingDir `{0}`...".format(instance.data["stagingDir"]))
 
         # generate data

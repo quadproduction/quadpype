@@ -726,7 +726,7 @@ class CleanUpFarmModel(BaseSettingsModel):
     enabled: bool = SettingsField(True)
 
 
-class PublishPuginsModel(BaseSettingsModel):
+class PublishPluginsModel(BaseSettingsModel):
     CollectAnatomyInstanceData: CollectAnatomyInstanceDataModel = (
         SettingsField(
             default_factory=CollectAnatomyInstanceDataModel,
@@ -931,8 +931,7 @@ DEFAULT_PUBLISH_VALUES = {
                             ],
                             "output": [
                                 "-pix_fmt yuv420p",
-                                "-crf 18",
-                                "-intra"
+                                "-crf 18"
                             ]
                         },
                         "filter": {

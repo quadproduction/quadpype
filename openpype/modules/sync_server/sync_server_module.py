@@ -16,13 +16,15 @@ from openpype.client import (
 )
 from openpype.modules import (
     OpenPypeModule,
-    ITrayModule,
+    ITrayAction,
     IPluginPaths,
     click_wrap,
 )
 from openpype.settings import (
     get_project_settings,
     get_system_settings,
+    MODULES_SETTINGS_KEY,
+    PROJECTS_SETTINGS_KEY
 )
 from openpype.lib import Logger, get_local_site_id
 from openpype.pipeline import AvalonMongoDB, Anatomy
@@ -48,7 +50,7 @@ from .utils import (
 log = Logger.get_logger("SyncServer")
 
 
-class SyncServerModule(OpenPypeModule, ITrayModule, IPluginPaths):
+class SyncServerModule(OpenPypeModule, ITrayAction, IPluginPaths):
     """
        Synchronization server that is syncing published files from local to
        any of implemented providers (like GDrive, S3 etc.)
@@ -115,6 +117,7 @@ class SyncServerModule(OpenPypeModule, ITrayModule, IPluginPaths):
 
     name = "sync_server"
     label = "Sync Queue"
+    submenu = "More Tools"
 
     def initialize(self, module_settings):
         """
@@ -753,7 +756,7 @@ class SyncServerModule(OpenPypeModule, ITrayModule, IPluginPaths):
         if local_settings is None:
             local_settings = get_local_settings()
 
-        local_project_settings = local_settings.get("projects")
+        local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY)
         project_settings = get_project_settings(project_name)
         sync_server_settings = project_settings["global"]["sync_server"]
         if not sync_server_settings["enabled"]:
@@ -807,7 +810,7 @@ class SyncServerModule(OpenPypeModule, ITrayModule, IPluginPaths):
         if not local_settings:
             return
 
-        local_project_settings = local_settings.get("projects") or {}
+        local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY) or {}
 
         # Check for roots existence in local settings first
         roots_project_locals = (
@@ -1370,6 +1373,9 @@ class SyncServerModule(OpenPypeModule, ITrayModule, IPluginPaths):
 
     """ End of Public API """
 
+    def on_action_trigger(self):
+        self.show_widget()
+
     def get_local_file_path(self, project_name, site_name, file_path):
         """
             Externalized for app
@@ -1467,19 +1473,6 @@ class SyncServerModule(OpenPypeModule, ITrayModule, IPluginPaths):
                 exc_info=True
             )
 
-    def tray_menu(self, parent_menu):
-        if not self.enabled:
-            return
-
-        from qtpy import QtWidgets
-        """Add menu or action to Tray(or parent)'s menu"""
-        action = QtWidgets.QAction(self.label, parent_menu)
-        action.triggered.connect(self.show_widget)
-        parent_menu.addAction(action)
-        parent_menu.addSeparator()
-
-        self.action_show_widget = action
-
     @property
     def is_running(self):
         return self.sync_server_thread.is_running
@@ -1506,7 +1499,7 @@ class SyncServerModule(OpenPypeModule, ITrayModule, IPluginPaths):
     @property
     def sync_system_settings(self):
         if self._sync_system_settings is None:
-            self._sync_system_settings = get_system_settings()["modules"].\
+            self._sync_system_settings = get_system_settings()[MODULES_SETTINGS_KEY].\
                 get("sync_server")
 
         return self._sync_system_settings

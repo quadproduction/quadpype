@@ -4,7 +4,13 @@ from openpype import style
 
 from openpype.settings import (
     SystemSettings,
-    ProjectSettings
+    ProjectSettings,
+
+    GENERAL_SETTINGS_KEY,
+    ENV_SETTINGS_KEY,
+    APPS_SETTINGS_KEY,
+    MODULES_SETTINGS_KEY,
+    PROJECTS_SETTINGS_KEY
 )
 from openpype.settings.lib import (
     get_local_settings,
@@ -25,15 +31,9 @@ from .experimental_widget import (
     LOCAL_EXPERIMENTAL_KEY
 )
 from .apps_widget import LocalApplicationsWidgets
+from .modules_widget import LocalModulesWidgets
 from .environments_widget import LocalEnvironmentsWidgets
 from .projects_widget import ProjectSettingsWidget
-
-from .constants import (
-    LOCAL_GENERAL_KEY,
-    LOCAL_PROJECTS_KEY,
-    LOCAL_ENV_KEY,
-    LOCAL_APPS_KEY
-)
 
 log = Logger.get_logger(__name__)
 
@@ -53,14 +53,16 @@ class LocalSettingsWidget(QtWidgets.QWidget):
         self.experimental_widget = None
         self.envs_widget = None
         self.apps_widget = None
+        self.modules_widget = None
         self.projects_widget = None
 
         self._create_mongo_url_ui()
         self._create_general_ui()
         self._create_experimental_ui()
         self._create_environments_ui()
-        self._create_app_ui()
-        self._create_project_ui()
+        self._create_modules_ui()
+        self._create_apps_ui()
+        self._create_projects_ui()
 
         self.main_layout.addStretch(1)
 
@@ -130,37 +132,54 @@ class LocalSettingsWidget(QtWidgets.QWidget):
 
         self.envs_widget = envs_widget
 
-    def _create_app_ui(self):
-        # Applications
-        app_expand_widget = ExpandingWidget("Applications", self)
+    def _create_modules_ui(self):
+        modules_expand_widget = ExpandingWidget("Modules", self)
 
-        app_content = QtWidgets.QWidget(self)
-        app_layout = QtWidgets.QVBoxLayout(app_content)
-        app_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 0)
-        app_expand_widget.set_content_widget(app_content)
+        modules_content = QtWidgets.QWidget(self)
+        modules_layout = QtWidgets.QVBoxLayout(modules_content)
+        modules_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 0)
+        modules_expand_widget.set_content_widget(modules_content)
 
-        app_widget = LocalApplicationsWidgets(
-            self.system_settings, app_content
+        modules_widget = LocalModulesWidgets(
+            self.system_settings, modules_content
         )
-        app_layout.addWidget(app_widget)
+        modules_layout.addWidget(modules_widget)
 
-        self.main_layout.addWidget(app_expand_widget)
+        self.main_layout.addWidget(modules_expand_widget)
 
-        self.app_widget = app_widget
+        self.modules_widget = modules_widget
 
-    def _create_project_ui(self):
-        project_expand_widget = ExpandingWidget("Project settings", self)
-        project_content = QtWidgets.QWidget(self)
-        project_layout = QtWidgets.QVBoxLayout(project_content)
-        project_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 0)
-        project_expand_widget.set_content_widget(project_content)
+    def _create_apps_ui(self):
+        # Applications
+        apps_expand_widget = ExpandingWidget("Applications", self)
+
+        apps_content = QtWidgets.QWidget(self)
+        apps_layout = QtWidgets.QVBoxLayout(apps_content)
+        apps_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 0)
+        apps_expand_widget.set_content_widget(apps_content)
+
+        apps_widget = LocalApplicationsWidgets(
+            self.system_settings, apps_content
+        )
+        apps_layout.addWidget(apps_widget)
+
+        self.main_layout.addWidget(apps_expand_widget)
+
+        self.apps_widget = apps_widget
+
+    def _create_projects_ui(self):
+        projects_expand_widget = ExpandingWidget("Projects settings", self)
+        projects_content = QtWidgets.QWidget(self)
+        projects_layout = QtWidgets.QVBoxLayout(projects_content)
+        projects_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 0)
+        projects_expand_widget.set_content_widget(projects_content)
 
         projects_widget = ProjectSettingsWidget(
             self.modules_manager, self.project_settings, self
         )
-        project_layout.addWidget(projects_widget)
+        projects_layout.addWidget(projects_widget)
 
-        self.main_layout.addWidget(project_expand_widget)
+        self.main_layout.addWidget(projects_expand_widget)
 
         self.projects_widget = projects_widget
 
@@ -172,16 +191,19 @@ class LocalSettingsWidget(QtWidgets.QWidget):
         self.project_settings.reset()
 
         self.general_widget.update_local_settings(
-            value.get(LOCAL_GENERAL_KEY)
+            value.get(GENERAL_SETTINGS_KEY)
         )
         self.envs_widget.update_local_settings(
-            value.get(LOCAL_ENV_KEY)
+            value.get(ENV_SETTINGS_KEY)
         )
-        self.app_widget.update_local_settings(
-            value.get(LOCAL_APPS_KEY)
+        self.modules_widget.update_local_settings(
+            value.get(MODULES_SETTINGS_KEY)
+        )
+        self.apps_widget.update_local_settings(
+            value.get(APPS_SETTINGS_KEY)
         )
         self.projects_widget.update_local_settings(
-            value.get(LOCAL_PROJECTS_KEY)
+            value.get(PROJECTS_SETTINGS_KEY)
         )
         self.experimental_widget.update_local_settings(
             value.get(LOCAL_EXPERIMENTAL_KEY)
@@ -191,19 +213,23 @@ class LocalSettingsWidget(QtWidgets.QWidget):
         output = {}
         general_value = self.general_widget.settings_value()
         if general_value:
-            output[LOCAL_GENERAL_KEY] = general_value
+            output[GENERAL_SETTINGS_KEY] = general_value
 
         envs_value = self.envs_widget.settings_value()
         if envs_value:
-            output[LOCAL_ENV_KEY] = envs_value
+            output[ENV_SETTINGS_KEY] = envs_value
 
-        app_value = self.app_widget.settings_value()
+        modules_value = self.modules_widget.settings_value()
+        if modules_value:
+            output[MODULES_SETTINGS_KEY] = modules_value
+
+        app_value = self.apps_widget.settings_value()
         if app_value:
-            output[LOCAL_APPS_KEY] = app_value
+            output[APPS_SETTINGS_KEY] = app_value
 
         projects_value = self.projects_widget.settings_value()
         if projects_value:
-            output[LOCAL_PROJECTS_KEY] = projects_value
+            output[PROJECTS_SETTINGS_KEY] = projects_value
 
         experimental_value = self.experimental_widget.settings_value()
         if experimental_value:

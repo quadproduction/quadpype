@@ -25,7 +25,8 @@ from openpype.settings import (
     SYSTEM_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     SCHEMA_KEY_SYSTEM_SETTINGS,
-    SCHEMA_KEY_PROJECT_SETTINGS
+    SCHEMA_KEY_PROJECT_SETTINGS,
+    MODULES_SETTINGS_KEY
 )
 
 from openpype.settings.lib import (
@@ -215,7 +216,7 @@ def get_dynamic_modules_dirs():
         return output
 
     value = get_studio_system_settings_overrides()
-    for key in ("modules", "addon_paths", platform.system().lower()):
+    for key in (MODULES_SETTINGS_KEY, "addon_paths", platform.system().lower()):
         if key not in value:
             return output
         value = value[key]
@@ -808,6 +809,10 @@ class OpenPypeAddOn(OpenPypeModule):
     # Enable Addon by default
     enabled = True
 
+    def initialize(self, module_settings):
+        """Initialization is not be required for most of addons."""
+        pass
+
 
 class ModulesManager:
     """Manager of Pype modules helps to load and prepare them to work.
@@ -893,7 +898,7 @@ class ModulesManager:
         if AYON_SERVER_ENABLED and ayon_settings is None:
             ayon_settings = get_ayon_settings()
 
-        modules_settings = system_settings["modules"]
+        modules_settings = system_settings[MODULES_SETTINGS_KEY]
 
         report = {}
         time_start = time.time()
@@ -1037,7 +1042,7 @@ class ModulesManager:
 
         Returns:
             dict: Output is dictionary with keys "publish", "create", "load",
-                "actions" and "inventory" each containing list of paths.
+                "actions", "inventory", "builder" each containing list of paths.
         """
         # Output structure
         output = {
@@ -1045,7 +1050,8 @@ class ModulesManager:
             "create": [],
             "load": [],
             "actions": [],
-            "inventory": []
+            "inventory": [],
+            "builder": []
         }
         unknown_keys_by_module = {}
         for module in self.get_enabled_modules():
@@ -1330,17 +1336,27 @@ class ModulesManager:
 class TrayModulesManager(ModulesManager):
     # Define order of modules in menu
     modules_menu_order = (
-        "user",
-        "ftrack",
-        "kitsu",
-        "launcher_tool",
-        "avalon",
-        "clockify",
-        "standalonepublish_tool",
-        "traypublish_tool",
-        "log_viewer",
-        "local_settings",
-        "settings"
+        # Menu ------------------------------------------
+        # "user",                  # {USERNAME} <not a real module>
+        "ftrack",                  # ftrack
+        "kitsu",                   # Kitsu
+        "muster",                  # Muster
+        "launcher_tool",           # Launcher
+        "avalon",                  # Loader
+        "tray_publisher",          # Publisher
+        "standalone_publisher",    # Publisher (legacy)
+        "clockify",                # Clockify
+        "local_settings",          # Local Settings
+        # More Tools Submenu -----------------------------
+        "sync_server",             # Sync Queue
+        "update_zxp_extensions",   # Update ZXP Extensions
+        "log_viewer",              # Show Logs
+        "python_interpreter",      # Console
+        # Admin Submenu ----------------------------------
+        "settings",                # Studio Settings
+        "project_manager",         # Project Manager (beta)
+        # Services Submenu -------------------------------
+        # Order currently not defined (this could be done)
     )
 
     def __init__(self):

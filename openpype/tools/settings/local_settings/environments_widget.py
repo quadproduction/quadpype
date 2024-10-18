@@ -1,5 +1,6 @@
 from qtpy import QtWidgets
 
+from openpype.settings import GENERAL_SETTINGS_KEY
 from openpype.tools.utils import PlaceholderLineEdit
 
 
@@ -38,7 +39,7 @@ class LocalEnvironmentsWidgets(QtWidgets.QWidget):
         content_layout = QtWidgets.QGridLayout(content_widget)
         content_layout.setContentsMargins(0, 0, 0, 0)
         white_list_entity = (
-            self.system_settings_entity["general"]["local_env_white_list"]
+            self.system_settings_entity[GENERAL_SETTINGS_KEY]["local_env_white_list"]
         )
         row = -1
         for row, item in enumerate(white_list_entity):

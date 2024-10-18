@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 import pyblish.api
 
+from openpype.settings import (
+    MODULES_SETTINGS_KEY,
+    PROJECT_SETTINGS_KEY,
+    SYSTEM_SETTINGS_KEY
+)
+
 
 class CollectRRPathFromInstance(pyblish.api.InstancePlugin):
     """Collect RR Path from instance."""
@@ -20,8 +26,8 @@ class CollectRRPathFromInstance(pyblish.api.InstancePlugin):
         """Get Royal Render pat name from render instance."""
         rr_settings = (
             instance.context.data
-            ["system_settings"]
-            ["modules"]
+            [SYSTEM_SETTINGS_KEY]
+            [MODULES_SETTINGS_KEY]
             ["royalrender"]
         )
         if not instance.data.get("rrPaths"):
@@ -30,7 +36,7 @@ class CollectRRPathFromInstance(pyblish.api.InstancePlugin):
             default_servers = rr_settings["rr_paths"]
             project_servers = (
                 instance.context.data
-                ["project_settings"]
+                [PROJECT_SETTINGS_KEY]
                 ["royalrender"]
                 ["rr_paths"]
             )

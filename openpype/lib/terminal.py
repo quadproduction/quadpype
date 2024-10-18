@@ -13,6 +13,14 @@
 import re
 import time
 import threading
+import platform
+
+if platform.system().lower() != "windows":
+    from colorama import just_fix_windows_console
+    # Use Colorama to add ANSI styles to Windows
+    just_fix_windows_console()
+
+from colorama import Style
 
 
 class Terminal:
@@ -74,9 +82,9 @@ class Terminal:
             Terminal._initialized = True
             return
 
-        # shortcuts for blessed codes
+        # shortcuts for styles
         _SB = term.bold
-        _RST = ""
+        _RST = Style.RESET_ALL  # Colorama reset work properly on all platforms
         _LR = term.tomato2
         _LG = term.aquamarine3
         _LB = term.turquoise2
@@ -94,8 +102,8 @@ class Terminal:
             r">>> ": _SB + _LG + r">>> " + _RST,
             r"!!!(?!\sCRI|\sERR)": _SB + _R + r"!!! " + _RST,
             r"\-\-\- ": _SB + _C + r"--- " + _RST,
-            r"\*\*\*(?!\sWRN)": _SB + _LY + r"***" + _RST,
-            r"\*\*\* WRN": _SB + _LY + r"*** WRN" + _RST,
+            r"\*\*\*(?!\sWRN)": _SB + _LY + r"*** " + _RST,
+            r"\*\*\* WRN": _SB + _LY + r"*** WRN " + _RST,
             r"  \- ": _SB + _LY + r"  - " + _RST,
             r"\[ ": _SB + _LG + r"[ " + _RST,
             r" \]": _SB + _LG + r" ]" + _RST,

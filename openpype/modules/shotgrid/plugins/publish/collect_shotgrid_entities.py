@@ -1,6 +1,6 @@
 import pyblish.api
 from openpype.client.mongo import OpenPypeMongoConnection
-
+from openpype.settings import PROJECT_SETTINGS_KEY
 
 class CollectShotgridEntities(pyblish.api.ContextPlugin):
     """Collect shotgrid entities according to the current context"""
@@ -64,7 +64,7 @@ def _get_shotgrid_collection(project):
 
 
 def _get_shotgrid_project(context):
-    shotgrid_project_id = context.data["project_settings"].get(
+    shotgrid_project_id = context.data[PROJECT_SETTINGS_KEY].get(
         "shotgrid_project_id")
     if shotgrid_project_id:
         return {"type": "Project", "id": shotgrid_project_id}

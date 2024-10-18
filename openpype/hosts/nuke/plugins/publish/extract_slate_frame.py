@@ -48,7 +48,7 @@ class ExtractSlateFrame(publish.Extractor):
 
             if instance.data.get("bakePresets"):
                 for o_name, o_data in instance.data["bakePresets"].items():
-                    self.log.debug("_ o_name: {}, o_data: {}".format(
+                    self.log.info("_ o_name: {}, o_data: {}".format(
                         o_name, pformat(o_data)))
                     self.render_slate(
                         instance,
@@ -65,14 +65,14 @@ class ExtractSlateFrame(publish.Extractor):
 
     def _create_staging_dir(self, instance):
 
-        self.log.debug("Creating staging dir...")
+        self.log.info("Creating staging dir...")
 
         staging_dir = os.path.normpath(
             os.path.dirname(instance.data["path"]))
 
         instance.data["stagingDir"] = staging_dir
 
-        self.log.debug(
+        self.log.info(
             "StagingDir `{0}`...".format(instance.data["stagingDir"]))
 
     def _check_frames_exists(self, instance):
@@ -294,7 +294,7 @@ class ExtractSlateFrame(publish.Extractor):
             self.log.debug(
                 "__ matching_repre: {}".format(pformat(matching_repre)))
 
-        self.log.info("Added slate frame to representation files")
+        self.log.warning("Added slate frame to representation files")
 
     def add_comment_slate_node(self, instance, node):
 
@@ -345,7 +345,7 @@ class ExtractSlateFrame(publish.Extractor):
 
             try:
                 node[key].setValue(value)
-                self.log.debug("Change key \"{}\" to value \"{}\"".format(
+                self.log.info("Change key \"{}\" to value \"{}\"".format(
                     key, value
                 ))
             except NameError:

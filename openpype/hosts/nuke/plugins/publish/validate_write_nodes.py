@@ -39,7 +39,7 @@ class RepairNukeWriteNodeAction(pyblish.api.Action):
 
             set_node_knobs_from_settings(write_node, correct_data["knobs"])
 
-            self.log.debug("Node attributes were fixed")
+            self.log.info("Node attributes were fixed")
 
 
 class ValidateNukeWriteNode(
@@ -130,6 +130,7 @@ class ValidateNukeWriteNode(
                 and key != "tile_color"
             ):
                 check.append([key, fixed_values, write_node[key].value()])
+        self.log.info(check)
 
         if check:
             self._make_error(check)

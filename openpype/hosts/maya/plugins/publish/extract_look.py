@@ -22,7 +22,7 @@ from openpype.lib import (
     get_oiio_tool_args,
     ToolNotFoundError,
 )
-
+from openpype.settings import PROJECT_SETTINGS_KEY, SYSTEM_SETTINGS_KEY
 from openpype.pipeline import legacy_io, publish, KnownPublishError
 from openpype.hosts.maya.api import lib
 from openpype import AYON_SERVER_ENABLED
@@ -492,8 +492,8 @@ class ExtractLook(publish.Extractor):
         }.items():
             if instance.data.get(key, False):
                 processor = Processor(log=self.log)
-                processor.apply_settings(context.data["system_settings"],
-                                         context.data["project_settings"])
+                processor.apply_settings(context.data[SYSTEM_SETTINGS_KEY],
+                                         context.data[PROJECT_SETTINGS_KEY])
                 processors.append(processor)
 
         if processors:

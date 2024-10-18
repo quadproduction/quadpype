@@ -60,7 +60,7 @@ class ExtractAnimationFBX(
         stagingdir = self.staging_dir(instance)
 
         # Perform extraction
-        self.log.debug("Performing extraction..")
+        self.log.info("Performing extraction..")
 
         asset_group = instance.data["transientData"]["instance_node"]
 
@@ -223,5 +223,5 @@ class ExtractAnimationFBX(
         instance.data["representations"].append(fbx_representation)
         instance.data["representations"].append(json_representation)
 
-        self.log.debug("Extracted instance '{}' to: {}".format(
+        self.log.info("Extracted instance '{}' to: {}".format(
                        instance.name, fbx_representation))

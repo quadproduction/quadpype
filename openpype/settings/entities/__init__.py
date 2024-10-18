@@ -94,6 +94,7 @@ from .input_entities import (
     NumberEntity,
     BoolEntity,
     TextEntity,
+    PasswordEntity,
     PathInput,
     RawJsonEntity
 )
@@ -106,9 +107,12 @@ from .enum_entity import (
     ToolsEnumEntity,
     TaskTypeEnumEntity,
     DeadlineUrlEnumEntity,
+    DeadlineLimitsPluginEnumEntity,
+    DeadlinePoolsEnumEntity,
     AnatomyTemplatesEnumEntity,
     ShotgridUrlEnumEntity,
-    RoyalRenderRootEnumEntity
+    RoyalRenderRootEnumEntity,
+    FtrackTaskStatusesEnumEntity
 )
 
 from .list_entity import ListEntity
@@ -158,6 +162,7 @@ __all__ = (
     "NumberEntity",
     "BoolEntity",
     "TextEntity",
+    "PasswordEntity",
     "PathInput",
     "RawJsonEntity",
 
@@ -170,8 +175,11 @@ __all__ = (
     "ToolsEnumEntity",
     "TaskTypeEnumEntity",
     "DeadlineUrlEnumEntity",
+    "DeadlineLimitsPluginEnumEntity",
+    "DeadlinePoolsEnumEntity",
     "ShotgridUrlEnumEntity",
     "RoyalRenderRootEnumEntity",
+    "FtrackTaskStatusesEnumEntity"
     "AnatomyTemplatesEnumEntity",
 
     "ListEntity",

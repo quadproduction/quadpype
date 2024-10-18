@@ -14,6 +14,8 @@ Can't determine which layers should be published because there are duplicated la
 
 ### How to repair?
 
+You can click the Select Layers button to highlight the layers in fault.
+
 Hide/rename/remove layers that should not be published.
 
 If all of them should be published then you have duplicated subset names in the scene. In that case you have to recrete them and use different variant name.

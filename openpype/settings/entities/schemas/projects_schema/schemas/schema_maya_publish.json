@@ -833,7 +833,6 @@
                         }
                     ]
                 },
-
                 {
                     "type": "dict",
                     "collapsible": true,
@@ -950,6 +949,20 @@
                     "type": "boolean",
                     "key": "validate_shapes",
                     "label": "Validate presence of shapes"
+                }
+            ]
+        },
+        {
+            "type": "dict",
+            "collapsible": true,
+            "key": "ValidateLookSets",
+            "label": "Validate Look Sets",
+            "children": [
+                {
+                    "key": "exclude_sets_with_suffix",
+                    "label": "Exclude Sets With Suffix",
+                    "type": "list",
+                    "object_type": "text"
                 }
             ]
         },

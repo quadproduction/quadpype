@@ -23,6 +23,13 @@ import six
 
 from openpype.client import get_ayon_server_api_connection
 
+from .constants import (
+    APPS_SETTINGS_KEY,
+    GENERAL_SETTINGS_KEY,
+    ENV_SETTINGS_KEY,
+    MODULES_SETTINGS_KEY
+)
+
 
 def _convert_color(color_value):
     if isinstance(color_value, six.string_types):
@@ -118,13 +125,13 @@ def _convert_applications_system_settings(
     ayon_settings, output, clear_metadata
 ):
     # Addon settings
-    addon_settings = ayon_settings["applications"]
+    addon_settings = ayon_settings[APPS_SETTINGS_KEY]
 
     # Remove project settings
     addon_settings.pop("only_available", None)
 
     # Applications settings
-    ayon_apps = addon_settings["applications"]
+    ayon_apps = addon_settings[APPS_SETTINGS_KEY]
 
     additional_apps = ayon_apps.pop("additional_apps")
     applications = _convert_applications_groups(
@@ -139,43 +146,43 @@ def _convert_applications_system_settings(
         addon_settings["tool_groups"], clear_metadata
     )
 
-    output["applications"] = applications
+    output[APPS_SETTINGS_KEY] = applications
     output["tools"] = {"tool_groups": tools}
 
 
 def _convert_general(ayon_settings, output, default_settings):
     # TODO get studio name/code
     core_settings = ayon_settings["core"]
-    environments = core_settings["environments"]
+    environments = core_settings[ENV_SETTINGS_KEY]
     if isinstance(environments, six.string_types):
         environments = json.loads(environments)
 
-    general = default_settings["general"]
+    general = default_settings[GENERAL_SETTINGS_KEY]
     general.update({
         "log_to_server": False,
         "studio_name": core_settings["studio_name"],
         "studio_code": core_settings["studio_code"],
-        "environment": environments
+        ENV_SETTINGS_KEY: environments
     })
-    output["general"] = general
+    output[GENERAL_SETTINGS_KEY] = general
 
 
 def _convert_kitsu_system_settings(
     ayon_settings, output, addon_versions, default_settings
 ):
     enabled = addon_versions.get("kitsu") is not None
-    kitsu_settings = default_settings["modules"]["kitsu"]
+    kitsu_settings = default_settings[MODULES_SETTINGS_KEY]["kitsu"]
     kitsu_settings["enabled"] = enabled
     if enabled:
         kitsu_settings["server"] = ayon_settings["kitsu"]["server"]
-    output["modules"]["kitsu"] = kitsu_settings
+    output[MODULES_SETTINGS_KEY]["kitsu"] = kitsu_settings
 
 
 def _convert_timers_manager_system_settings(
     ayon_settings, output, addon_versions, default_settings
 ):
     enabled = addon_versions.get("timers_manager") is not None
-    manager_settings = default_settings["modules"]["timers_manager"]
+    manager_settings = default_settings[MODULES_SETTINGS_KEY]["timers_manager"]
     manager_settings["enabled"] = enabled
     if enabled:
         ayon_manager = ayon_settings["timers_manager"]
@@ -188,27 +195,27 @@ def _convert_timers_manager_system_settings(
                 "disregard_publishing"
             }
         })
-    output["modules"]["timers_manager"] = manager_settings
+    output[MODULES_SETTINGS_KEY]["timers_manager"] = manager_settings
 
 
 def _convert_clockify_system_settings(
     ayon_settings, output, addon_versions, default_settings
 ):
     enabled = addon_versions.get("clockify") is not None
-    clockify_settings = default_settings["modules"]["clockify"]
+    clockify_settings = default_settings[MODULES_SETTINGS_KEY]["clockify"]
     clockify_settings["enabled"] = enabled
     if enabled:
         clockify_settings["workspace_name"] = (
             ayon_settings["clockify"]["workspace_name"]
         )
-    output["modules"]["clockify"] = clockify_settings
+    output[MODULES_SETTINGS_KEY]["clockify"] = clockify_settings
 
 
 def _convert_deadline_system_settings(
     ayon_settings, output, addon_versions, default_settings
 ):
     enabled = addon_versions.get("deadline") is not None
-    deadline_settings = default_settings["modules"]["deadline"]
+    deadline_settings = default_settings[MODULES_SETTINGS_KEY]["deadline"]
     deadline_settings["enabled"] = enabled
     if enabled:
         ayon_deadline = ayon_settings["deadline"]
@@ -217,14 +224,14 @@ def _convert_deadline_system_settings(
             for item in ayon_deadline["deadline_urls"]
         }
 
-    output["modules"]["deadline"] = deadline_settings
+    output[MODULES_SETTINGS_KEY]["deadline"] = deadline_settings
 
 
 def _convert_royalrender_system_settings(
     ayon_settings, output, addon_versions, default_settings
 ):
     enabled = addon_versions.get("royalrender") is not None
-    rr_settings = default_settings["modules"]["royalrender"]
+    rr_settings = default_settings[MODULES_SETTINGS_KEY]["royalrender"]
     rr_settings["enabled"] = enabled
     if enabled:
         ayon_royalrender = ayon_settings["royalrender"]
@@ -232,7 +239,7 @@ def _convert_royalrender_system_settings(
             item["name"]: item["value"]
             for item in ayon_royalrender["rr_paths"]
         }
-    output["modules"]["royalrender"] = rr_settings
+    output[MODULES_SETTINGS_KEY]["royalrender"] = rr_settings
 
 
 def _convert_modules_system(
@@ -249,7 +256,7 @@ def _convert_modules_system(
     ):
         func(ayon_settings, output, addon_versions, default_settings)
 
-    modules_settings = output["modules"]
+    modules_settings = output[MODULES_SETTINGS_KEY]
     for module_name in (
         "sync_server",
         "log_viewer",
@@ -259,7 +266,7 @@ def _convert_modules_system(
         "avalon",
         "addon_paths",
     ):
-        settings = default_settings["modules"][module_name]
+        settings = default_settings[MODULES_SETTINGS_KEY][module_name]
         if "enabled" in settings:
             settings["enabled"] = False
         modules_settings[module_name] = settings
@@ -287,9 +294,9 @@ def is_dev_mode_enabled():
 def convert_system_settings(ayon_settings, default_settings, addon_versions):
     default_settings = copy.deepcopy(default_settings)
     output = {
-        "modules": {}
+        MODULES_SETTINGS_KEY: {}
     }
-    if "applications" in ayon_settings:
+    if APPS_SETTINGS_KEY in ayon_settings:
         _convert_applications_system_settings(ayon_settings, output, False)
 
     if "core" in ayon_settings:
@@ -314,11 +321,11 @@ def convert_system_settings(ayon_settings, default_settings, addon_versions):
 
 # --------- Project settings ---------
 def _convert_applications_project_settings(ayon_settings, output):
-    if "applications" not in ayon_settings:
+    if APPS_SETTINGS_KEY not in ayon_settings:
         return
 
-    output["applications"] = {
-        "only_available": ayon_settings["applications"]["only_available"]
+    output[APPS_SETTINGS_KEY] = {
+        "only_available": ayon_settings[APPS_SETTINGS_KEY]["only_available"]
     }
 
 
@@ -1146,7 +1153,7 @@ def _convert_global_project_settings(ayon_settings, output, default_settings):
     _convert_host_imageio(ayon_core)
 
     for key in (
-        "environments",
+        ENV_SETTINGS_KEY,
         "studio_name",
         "studio_code",
     ):

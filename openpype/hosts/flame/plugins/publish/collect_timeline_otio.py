@@ -1,5 +1,6 @@
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.client import get_asset_name_identifier
 import openpype.hosts.flame.api as opfapi
 from openpype.hosts.flame.otio import flame_export
@@ -31,7 +32,7 @@ class CollecTimelineOTIO(pyblish.api.ContextPlugin):
             asset_doc,
             context.data["projectName"],
             context.data["hostName"],
-            project_settings=context.data["project_settings"]
+            project_settings=context.data[PROJECT_SETTINGS_KEY]
         )
 
         asset_name = get_asset_name_identifier(asset_doc)

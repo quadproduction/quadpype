@@ -24,6 +24,7 @@ from openpype.pipeline import (
     LoaderPlugin,
     get_representation_path,
 )
+from openpype.pipeline.action import BuilderAction
 from openpype.pipeline.load import LoadError
 from openpype.client import get_asset_by_name
 from openpype.pipeline.create import get_subset_name
@@ -272,7 +273,7 @@ class MayaCreatorBase(object):
 @six.add_metaclass(ABCMeta)
 class MayaCreator(NewCreator, MayaCreatorBase):
 
-    settings_category = "maya"
+    settings_name = None
 
     def create(self, subset_name, instance_data, pre_create_data):
 
@@ -317,6 +318,24 @@ class MayaCreator(NewCreator, MayaCreatorBase):
                     label="Use selection",
                     default=True)
         ]
+
+    def apply_settings(self, project_settings):
+        """Method called on initialization of plugin to apply settings."""
+
+        settings_name = self.settings_name
+        if settings_name is None:
+            settings_name = self.__class__.__name__
+
+        settings = project_settings["maya"]["create"]
+        settings = settings.get(settings_name)
+        if settings is None:
+            self.log.debug(
+                "No settings found for {}".format(self.__class__.__name__)
+            )
+            return
+
+        for key, value in settings.items():
+            setattr(self, key, value)
 
 
 class MayaAutoCreator(AutoCreator, MayaCreatorBase):
@@ -493,7 +512,31 @@ class RenderlayerCreator(NewCreator, MayaCreatorBase):
             creator_identifier = cmds.getAttr(node + ".creator_identifier")
             if creator_identifier == self.identifier:
                 self.log.info("Found node: {}".format(node))
+
+                subset = cmds.getAttr(f'{node}.subset')
+                if layer.name() not in subset:
+                    node = self._update_renderlayer_instance(
+                        node,
+                        layer.name(),
+                        subset
+                    )
                 return node
+
+    def _update_renderlayer_instance(self, node, layer_name, subset):
+        variant = cmds.getAttr(f'{node}.variant')
+        new_subset_name = subset.replace(variant, layer_name)
+
+        # Update the subset and variant attributes
+        cmds.setAttr(f'{node}.subset', new_subset_name, type="string")
+        cmds.setAttr(f'{node}.variant', layer_name, type="string")
+
+        # Rename the set to match the new layer name
+        set_layer_name = node.split(":")[-1]
+        new_set_name = node.replace(set_layer_name, layer_name)
+        renamed_node = cmds.rename(node, new_set_name)
+
+        return renamed_node
+
 
     def _create_layer_instance_node(self, layer):
 
@@ -630,6 +673,8 @@ class Loader(LoaderPlugin):
 
         asset = context['asset']
         subset = context['subset']
+        settings = get_project_settings(context['project']['name'])
+        custom_naming = settings['maya']['load'][loader_key]
         formatting_data = {
             "asset_name": asset['name'],
             "asset_type": asset['type'],
@@ -931,6 +976,155 @@ class ReferenceLoader(Loader):
                            deleteNamespaceContent=True)
         except RuntimeError:
             pass
+
+    def prepare_root_value(self, file_url, project_name):
+        """Replace root value with env var placeholder.
+
+        Use ${OPENPYPE_ROOT_WORK} (or any other root) instead of proper root
+        value when storing referenced url into a workfile.
+        Useful for remote workflows with SiteSync.
+
+        Args:
+            file_url (str)
+            project_name (dict)
+        Returns:
+            (str)
+        """
+        settings = get_project_settings(project_name)
+        use_env_var_as_root = (settings["maya"]
+                                       ["maya-dirmap"]
+                                       ["use_env_var_as_root"])
+        if use_env_var_as_root:
+            anatomy = Anatomy(project_name)
+            file_url = anatomy.replace_root_with_env_key(file_url, '${{{}}}')
+
+        return file_url
+
+    @staticmethod
+    def _organize_containers(nodes, container):
+        # type: (list, str) -> None
+        """Put containers in loaded data to correct hierarchy."""
+        for node in nodes:
+            id_attr = "{}.id".format(node)
+            if not cmds.attributeQuery("id", node=node, exists=True):
+                continue
+            if cmds.getAttr(id_attr) == AVALON_CONTAINER_ID:
+                cmds.sets(node, forceElement=container)
+
+
+class ActionBase(BuilderAction):
+    """Base class for all actions."""
+    label = "Action Base"
+    options = [
+        qargparse.Integer(
+            "count",
+            label="Count",
+            default=1,
+            min=1,
+            help="How many times to load?"
+        ),
+        qargparse.Double3(
+            "offset",
+            label="Position Offset",
+            help="Offset loaded models for easier selection."
+        ),
+        qargparse.Boolean(
+            "attach_to_root",
+            label="Group imported asset",
+            default=True,
+            help="Should a group be created to encapsulate"
+                 " imported representation ?"
+        )
+    ]
+
+    def load(
+        self,
+        context,
+        name=None,
+        namespace=None,
+        options=None
+    ):
+        assert os.path.exists(self.fname), "%s does not exist." % self.fname
+
+        asset = context['asset']
+        subset = context['subset']
+        settings = get_project_settings(context['project']['name'])
+        custom_naming = settings['maya']['load']['reference_loader']
+        loaded_containers = []
+
+        if not custom_naming['namespace']:
+            raise LoadError("No namespace specified in "
+                            "Maya ReferenceLoader settings")
+        elif not custom_naming['group_name']:
+            raise LoadError("No group name specified in "
+                            "Maya ReferenceLoader settings")
+
+        formatting_data = {
+            "asset_name": asset['name'],
+            "asset_type": asset['type'],
+            "subset": subset['name'],
+            "family": (
+                subset['data'].get('family') or
+                subset['data']['families'][0]
+            )
+        }
+
+        custom_namespace = custom_naming['namespace'].format(
+            **formatting_data
+        )
+
+        custom_group_name = custom_naming['group_name'].format(
+            **formatting_data
+        )
+
+        count = options.get("count") or 1
+
+        for c in range(0, count):
+            namespace = lib.get_custom_namespace(custom_namespace)
+            group_name = "{}:{}".format(
+                namespace,
+                custom_group_name
+            )
+
+            options['group_name'] = group_name
+
+            # Offset loaded subset
+            if "offset" in options:
+                offset = [i * c for i in options["offset"]]
+                options["translate"] = offset
+
+            self.log.info(options)
+
+            self.process(
+                context=context,
+                name=name,
+                namespace=namespace,
+                options=options
+            )
+
+            # Only containerize if any nodes were loaded by the Loader
+            nodes = self[:]
+            if not nodes:
+                return
+
+            ref_node = get_reference_node(nodes, self.log)
+            container = containerise(
+                name=name,
+                namespace=namespace,
+                nodes=[ref_node],
+                context=context,
+                loader=self.__class__.__name__
+            )
+            loaded_containers.append(container)
+            self._organize_containers(nodes, container)
+            c += 1
+            namespace = None
+
+        return loaded_containers
+
+    def process(self, context, name, namespace, options):
+        """To be implemented by subclass"""
+        raise NotImplementedError("Must be implemented by subclass")
 
     def prepare_root_value(self, file_url, project_name):
         """Replace root value with env var placeholder.

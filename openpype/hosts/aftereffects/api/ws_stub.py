@@ -31,6 +31,7 @@ class AEItem(object):
     frameStart = attr.ib(default=None)
     framesDuration = attr.ib(default=None)
     frameRate = attr.ib(default=None)
+    format = attr.ib(default=None)
     file_name = attr.ib(default=None)
     instance_id = attr.ib(default=None)  # New Publisher
     width = attr.ib(default=None)
@@ -298,7 +299,29 @@ class AfterEffectsServerStub():
                              path=path,
                              item_name=item_name,
                              import_options=import_options)
-            )
+        )
+        records = self._to_records(self._handle_return(res))
+        if records:
+            return records.pop()
+
+    def import_file_with_dialog(self, path, item_name, import_options=None):
+        """
+            Imports file through ImportFileWithDialog AE command.
+            Allow user to import photoshop file as image sequence.
+        Args:
+            path (string): absolute path for asset file
+            item_name (string): label for created FootageItem and Folder
+        """
+        res = self.websocketserver.call(
+            self.client.call('AfterEffects.import_file_with_dialog',
+                             path=path,
+                             item_name=item_name,
+                             import_options=import_options)
+        )
+
+        if not res:
+            return None
+
         records = self._to_records(self._handle_return(res))
         if records:
             return records.pop()
@@ -703,6 +726,7 @@ class AfterEffectsServerStub():
                           d.get('frameStart'),
                           d.get('framesDuration'),
                           d.get('frameRate'),
+                          d.get('format'),
                           d.get('file_name'),
                           d.get("instance_id"),
                           d.get("width"),

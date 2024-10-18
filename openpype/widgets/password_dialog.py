@@ -3,7 +3,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 from openpype import style
 from openpype.resources import get_resource
 
-from openpype.settings import get_system_settings
+from openpype.settings import get_system_settings, GENERAL_SETTINGS_KEY
 from openpype.settings.lib import (
     get_local_settings,
     save_local_settings
@@ -50,7 +50,7 @@ class PasswordDialog(QtWidgets.QDialog):
         system_settings = get_system_settings()
 
         self._expected_result = (
-            system_settings["general"].get("admin_password")
+            system_settings[GENERAL_SETTINGS_KEY].get("admin_password")
         )
         self._final_result = None
         self._allow_remember = allow_remember
@@ -142,10 +142,10 @@ class PasswordDialog(QtWidgets.QDialog):
 
         if self.remember_password():
             local_settings = get_local_settings()
-            if "general" not in local_settings:
-                local_settings["general"] = {}
+            if GENERAL_SETTINGS_KEY not in local_settings:
+                local_settings[GENERAL_SETTINGS_KEY] = {}
 
-            local_settings["general"]["is_admin"] = True
+            local_settings[GENERAL_SETTINGS_KEY]["is_admin"] = True
 
             save_local_settings(local_settings)
 

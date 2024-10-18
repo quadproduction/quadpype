@@ -84,7 +84,8 @@ function getLayers() {
       layer.parents = parents.slice();
       layer.type = getLayerTypeWithName(layer.name);
       layer.visible = desc.getBoolean(stringIDToTypeID("visible"));
-      //log(" name: " + layer.name + " groupId " + layer.groupId + 
+      layer.blendMode = typeIDToStringID(desc.getEnumerationValue(stringIDToTypeID('mode')));
+      //log(" name: " + layer.name + " groupId " + layer.groupId +
       //" group " + layer.group);
       if (layerSection == 'layerSectionStart') { // Group start and end
         parents.push(layer.id); 
@@ -110,6 +111,46 @@ function getLayers() {
     };
     //log("layers " + layers);
     return '[' + layers + ']';
+}
+
+function setBlendmode(layerName, blendModeName){
+    /**
+     * Sets blendMode 'blendModeName'<str> on a given 'layerName'<str>
+     **/
+
+    // search for the conresponding layer
+    var layer = _go_through_layers(layerName, app.activeDocument);
+    // if layer not found, raise an alert and stop
+    if (layer==null){
+        return alert("Error Occured, Layer Not Found");
+    }
+    layer.blendMode = eval('BlendMode.' + blendModeName.toUpperCase());
+}
+
+function _go_through_layers(layerName, parentLayer){
+    /**
+     * Recurcive function to scan all the layers even in groups
+     *
+     * return the psd layer that matches the given name we want as a psd <class Layer>
+     * see more here https://developer.adobe.com/photoshop/uxp/2022/ps_reference/classes/layer/
+     **/
+    var curLayer;
+    for(var i=0;i<parentLayer.layers.length;i++){
+            curLayer = parentLayer.layers[i];
+            if (curLayer.typename=='LayerSet' && curLayer.name!=layerName){
+                curLayer = _go_through_layers(layerName, curLayer);
+                if (curLayer!=null){
+                    return curLayer;
+                }
+            }
+            else {
+                if (curLayer.name==layerName){
+                    return curLayer;
+                }
+            }
+
+    }
+    return null;
 }
 
 function setVisible(layer_id, visibility){
@@ -193,7 +234,13 @@ function getActiveDocumentName(){
     if (documents.length == 0){
         return null;
     }
-    return app.activeDocument.name;
+
+    try {
+        return app.activeDocument.name;
+    }catch(e){
+        // Document has not been saved yet and has no name
+        return
+    };
 }
 
 function getActiveDocumentFullName(){
@@ -204,11 +251,53 @@ function getActiveDocumentFullName(){
     if (documents.length == 0){
         return null;
     }
-    var f = new File(app.activeDocument.fullName);
-    var path = f.fsName;
-    f.close();
-    return path;
+
+    try {
+        var f = new File(app.activeDocument.fullName);
+        var path = f.fsName;
+        f.close();
+        return path;
+    }catch(e){
+        // Document has not been saved yet and has no name
+        return
+    };
 }
+
+function getActiveDocumentFormatResolution(){
+    /**
+     *   Returns a dict with the resolution of the current doc
+     * */
+    if (documents.length == 0){
+        return {};
+    }
+
+    try {
+        savedUnit = app.preferences.rulerUnits;
+        app.preferences.rulerUnits = Units.PIXELS;
+        resDict = {"width" :app.activeDocument.width.value,
+                    "height": app.activeDocument.height.value}
+        app.preferences.rulerUnits = savedUnit;
+        return(JSON.stringify(resDict));
+    }catch(e){
+        // No doc is active.
+        return {}
+    };
+}
+
+function cropDocumentToCoordinate(x1, y1, x2, y2) {
+    /*
+    * Crop all the document and the layers in to the define coordinate
+    * x1,y1----------------------
+    * |                         |
+    * |                         |
+    * |                         |
+    * |                         |
+    * ----------------------x2,y2
+    */
+    bounds = [UnitValue(x1, "px"), UnitValue(y1, "px"), UnitValue(x2, "px"), UnitValue(y2, "px")];
+    app.activeDocument.crop(bounds);
+}
+
 
 function imprint(payload){
     /**
@@ -459,6 +548,23 @@ function renameLayer(layer_id, new_name){
     selectLayers('['+layer_id+']');
 
     doc.activeLayer.name = new_name;
+}
+
+function renameLayers(layers){
+    /***
+     * Renames all given layers based on given id
+     *
+     * Via Action (fast)
+     *
+     * Args:
+     *    layers(list)
+     *
+     **/
+    parsed_layers = JSON.parse(layers);
+    for (var i = 0; i < parsed_layers.length; i++){
+        given_layer = parsed_layers[i]
+        renameLayer(given_layer["id"], given_layer["new_name"]);
+    }
 }
 
 function _get_parents_names(layer, itself_name){

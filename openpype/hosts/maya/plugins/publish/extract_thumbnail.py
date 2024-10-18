@@ -2,6 +2,7 @@ import os
 import glob
 import tempfile
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline import publish
 from openpype.hosts.maya.api import lib
 
@@ -28,7 +29,7 @@ class ExtractThumbnail(publish.Extractor):
             task_data.get("name"),
             task_data.get("type"),
             instance.data["subset"],
-            instance.context.data["project_settings"],
+            instance.context.data[PROJECT_SETTINGS_KEY],
             self.log
         )
 

@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
 """Submitting render job to RoyalRender."""
 import os
-import json
 import platform
 import re
-import tempfile
-import uuid
 from datetime import datetime
 
 import pyblish.api
-
+from openpype.settings import (
+    MODULES_SETTINGS_KEY,
+    PROJECT_SETTINGS_KEY,
+    SYSTEM_SETTINGS_KEY
+)
 from openpype.lib import BoolDef, NumberDef, is_running_from_build
-from openpype.lib.execute import run_openpype_process
 from openpype.modules.royalrender.api import Api as rrApi
 from openpype.modules.royalrender.rr_job import (
     CustomAttribute,
     RRJob,
     RREnvList,
-    get_rr_platform,
-    SubmitterParameter
+    get_rr_platform
 )
 from openpype.pipeline import OpenPypePyblishPluginMixin
 from openpype.pipeline.publish import KnownPublishError
@@ -52,7 +51,7 @@ class BaseCreateRoyalRenderJob(pyblish.api.InstancePlugin,
                 decimals=0
             ),
             NumberDef(
-                "chunk",
+                "chunkSize",
                 label="Frames Per Task",
                 default=cls.chunk_size,
                 decimals=0,
@@ -228,15 +227,15 @@ class BaseCreateRoyalRenderJob(pyblish.api.InstancePlugin,
         # type: (pyblish.api.Context, str) -> str
         rr_settings = (
             context.data
-            ["system_settings"]
-            ["modules"]
+            [SYSTEM_SETTINGS_KEY]
+            [MODULES_SETTINGS_KEY]
             ["royalrender"]
         )
         try:
             default_servers = rr_settings["rr_paths"]
             project_servers = (
                 context.data
-                ["project_settings"]
+                [PROJECT_SETTINGS_KEY]
                 ["royalrender"]
                 ["rr_paths"]
             )

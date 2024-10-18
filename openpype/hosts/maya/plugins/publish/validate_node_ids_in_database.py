@@ -6,6 +6,7 @@ from openpype.hosts.maya.api import lib
 from openpype.pipeline import legacy_io
 from openpype.pipeline.publish import (
     PublishValidationError, ValidatePipelineOrder)
+from openpype.client.entities import get_projects
 
 
 class ValidateNodeIdsInDatabase(pyblish.api.InstancePlugin):
@@ -65,3 +66,13 @@ class ValidateNodeIdsInDatabase(pyblish.api.InstancePlugin):
                 invalid.append(node)
 
         return invalid
+
+    @staticmethod
+    def get_library_project_names():
+        libraries = list()
+
+        for project in get_projects(fields=["name", "data.library_project"]):
+            if project.get("data", {}).get("library_project", False):
+                libraries.append(project["name"])
+
+        return libraries

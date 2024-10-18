@@ -100,5 +100,5 @@ class ExtractBackdropNode(publish.Extractor):
         }
         instance.data["representations"].append(representation)
 
-        self.log.debug("Extracted instance '{}' to: {}".format(
+        self.log.info("Extracted instance '{}' to: {}".format(
             instance.name, path))

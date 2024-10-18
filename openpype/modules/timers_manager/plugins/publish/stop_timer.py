@@ -7,6 +7,8 @@ Requires:
 
 import pyblish.api
 
+from openpype.settings import MODULES_SETTINGS_KEY, SYSTEM_SETTINGS_KEY
+
 
 class StopTimer(pyblish.api.ContextPlugin):
     label = "Stop Timer"
@@ -19,7 +21,7 @@ class StopTimer(pyblish.api.ContextPlugin):
             self.log.debug("TimersManager is disabled")
             return
 
-        modules_settings = context.data["system_settings"]["modules"]
+        modules_settings = context.data[SYSTEM_SETTINGS_KEY][MODULES_SETTINGS_KEY]
         if not modules_settings["timers_manager"]["disregard_publishing"]:
             self.log.debug("Publish is not affecting running timers.")
             return

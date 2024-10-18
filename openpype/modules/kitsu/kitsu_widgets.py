@@ -9,8 +9,9 @@ from openpype.modules.kitsu.utils.credentials import (
     validate_credentials,
 )
 from openpype.resources import get_resource
-from openpype.settings.lib import (
+from openpype.settings import (
     get_system_settings,
+    MODULES_SETTINGS_KEY
 )
 
 from openpype.widgets.password_dialog import PressHoverButton
@@ -33,12 +34,12 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
 
         self._final_result = None
         self._connectable = bool(
-            system_settings["modules"].get("kitsu", {}).get("server")
+            system_settings[MODULES_SETTINGS_KEY].get("kitsu", {}).get("server")
         )
 
         # Server label
         server_message = (
-            system_settings["modules"]["kitsu"]["server"]
+            system_settings[MODULES_SETTINGS_KEY]["kitsu"]["server"]
             if self._connectable
             else "no server url set in Studio Settings..."
         )

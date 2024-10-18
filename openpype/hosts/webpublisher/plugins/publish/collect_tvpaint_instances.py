@@ -10,6 +10,7 @@ import re
 import copy
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline.create import get_subset_name
 
 
@@ -54,7 +55,7 @@ class CollectTVPaintInstances(pyblish.api.ContextPlugin):
             asset_doc,
             project_name,
             host_name,
-            project_settings=context.data["project_settings"]
+            project_settings=context.data[PROJECT_SETTINGS_KEY]
         )
         workfile_instance = self._create_workfile_instance(
             context, workfile_subset_name
@@ -69,7 +70,7 @@ class CollectTVPaintInstances(pyblish.api.ContextPlugin):
             asset_doc,
             project_name,
             host_name,
-            project_settings=context.data["project_settings"]
+            project_settings=context.data[PROJECT_SETTINGS_KEY]
         )
         review_instance = self._create_review_instance(
             context, review_subset_name
@@ -124,7 +125,7 @@ class CollectTVPaintInstances(pyblish.api.ContextPlugin):
                     project_name,
                     host_name,
                     dynamic_data=dynamic_data,
-                    project_settings=context.data["project_settings"]
+                    project_settings=context.data[PROJECT_SETTINGS_KEY]
                 )
 
                 instance = self._create_render_pass_instance(
@@ -148,7 +149,7 @@ class CollectTVPaintInstances(pyblish.api.ContextPlugin):
                 project_name,
                 host_name,
                 dynamic_data=dynamic_data,
-                project_settings=context.data["project_settings"]
+                project_settings=context.data[PROJECT_SETTINGS_KEY]
             )
             instance = self._create_render_layer_instance(
                 context, layers, subset_name

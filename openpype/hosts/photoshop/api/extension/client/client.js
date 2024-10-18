@@ -115,7 +115,16 @@
                       return result;
                   });
       });
-      
+
+      RPC.addRoute('Photoshop.set_blendmode', function (data) {
+            log.warn('Server called client route "set_blendmode":', data);
+            return runEvalScript("setBlendmode(" + "'" + data.layer_name + "', " + "'" +data.blendMode_name + "')")
+                .then(function(result){
+                    log.warn("setBlendmode: " + result);
+                    return result;
+                });
+      });
+
       RPC.addRoute('Photoshop.set_visible', function (data) {
               log.warn('Server called client route "set_visible":', data);
               return runEvalScript("setVisible(" + data.layer_id + ", " +
@@ -145,7 +154,29 @@
                       return result;
                   });
       });
-      
+
+      RPC.addRoute('Photoshop.get_activeDocument_format_resolution', function (data) {
+        log.warn('Server called client route ' +
+                 '"get_activeDocument_format_resolution":', data);
+        return runEvalScript("getActiveDocumentFormatResolution()")
+            .then(function(result){
+                log.warn("Get document resolution ");
+                return result;
+            });
+        });
+
+    RPC.addRoute('Photoshop.crop_document_to_coordinate', function (data) {
+            log.warn('Server called client route "crop_document_to_coordinate":', data);
+            return runEvalScript("cropDocumentToCoordinate('" + data.x1 +"', " +
+                                                      "'"+ data.y1 +"',"+
+                                                      "'"+ data.x2 +"'," +
+                                                      "'"+ data.y2 +"'," +")")
+                .then(function(result){
+                    log.warn("Crop to given coordinates");
+                    return result;
+                });
+        });
+
       RPC.addRoute('Photoshop.save', function (data) {
               log.warn('Server called client route "save":', data);
               
@@ -217,6 +248,15 @@
               return runEvalScript("deleteLayer("+data.layer_id+")")
                   .then(function(result){
                       log.warn("delete_layer: " + result);
+                      return result;
+                  });
+      });
+
+      RPC.addRoute('Photoshop.rename_layers', function (data) {
+              log.warn('Server called route "rename_layers":', data);
+              return runEvalScript("renameLayers('"+data.layers+"')")
+                  .then(function(result){
+                      log.warn("rename_layers: " + result);
                       return result;
                   });
       });

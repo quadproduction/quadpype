@@ -34,7 +34,7 @@ import qtawesome
 from six import text_type
 from .constants import PluginStates, InstanceStates, GroupStates, Roles
 
-from openpype.settings import get_system_settings
+from openpype.settings import get_system_settings, MODULES_SETTINGS_KEY
 
 
 # ItemTypes
@@ -107,7 +107,7 @@ class IntentModel(QtGui.QStandardItemModel):
 
         intent_settings = (
             get_system_settings()
-            .get("modules", {})
+            .get(MODULES_SETTINGS_KEY, {})
             .get("ftrack", {})
             .get("intent", {})
         )

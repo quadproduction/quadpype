@@ -1,5 +1,21 @@
 import pyblish.api
 from openpype.pipeline import PublishXmlValidationError
+from openpype.hosts.tvpaint.api.lib import execute_george
+
+class ValidateLayersGroupSelect(pyblish.api.Action):
+    """Select the layers in fault.
+    """
+
+    label = "Select Layers"
+    icon = "briefcase"
+    on = "failed"
+
+    def process(self, context, plugin):
+        """Select the layers that haven't a unique name"""
+
+        for layer_index in context.data['transientData'][ValidateLayersGroup.__name__]:
+            self.log.debug(execute_george(f'tv_layerselection {layer_index} "true"'))
+        return True
 
 
 class ValidateLayersGroup(pyblish.api.InstancePlugin):
@@ -7,37 +23,50 @@ class ValidateLayersGroup(pyblish.api.InstancePlugin):
 
     label = "Validate Duplicated Layers Names"
     order = pyblish.api.ValidatorOrder
-    families = ["renderPass"]
+    families = ["renderPass", "renderScene"]
+    actions = [ValidateLayersGroupSelect]
 
     def process(self, instance):
+
+        return_set = set()
+
         # Prepare layers
         layers_by_name = instance.context.data["layersByName"]
 
         # Layers ids of an instance
-        layer_names = instance.data["layer_names"]
+        layer_names = instance.data.get("layer_names", [])
+
+        # Get the names in case of renderScene
+        if not layer_names:
+            layer_names = [layer["name"] for layer in instance.data.get("layers")]
 
         # Check if all layers from render pass are in right group
-        duplicated_layer_names = []
+        duplicated_layer_names = set()
         for layer_name in layer_names:
             layers = layers_by_name.get(layer_name)
             # It is not job of this validator to handle missing layers
             if layers is None:
                 continue
             if len(layers) > 1:
-                duplicated_layer_names.append(layer_name)
+                duplicated_layer_names.add(layer_name)
+                for layer in layers:
+                    return_set.add(layer["layer_id"])
 
         # Everything is OK and skip exception
         if not duplicated_layer_names:
             return
 
-        layers_msg = ", ".join([
-            "\"{}\"".format(layer_name)
-            for layer_name in duplicated_layer_names
-        ])
+        layers_msg = ",\n ".join(duplicated_layer_names)
         detail_lines = [
             "- {}".format(layer_name)
             for layer_name in set(duplicated_layer_names)
         ]
+
+        if not instance.context.data.get('transientData'):
+                instance.context.data['transientData'] = dict()
+
+        instance.context.data['transientData'][self.__class__.__name__] = list(return_set)
+
         raise PublishXmlValidationError(
             self,
             (

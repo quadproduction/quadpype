@@ -17,7 +17,7 @@ class IntegrateAnimation(
     families = ["setdress"]
 
     def process(self, instance):
-        self.log.debug("Integrate Animation")
+        self.log.info("Integrate Animation")
 
         representation = instance.data.get('representations')[0]
         json_path = representation.get('publishedFiles')[0]

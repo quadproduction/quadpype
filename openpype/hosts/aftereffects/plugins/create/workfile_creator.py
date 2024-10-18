@@ -59,6 +59,7 @@ class AEWorkfileCreator(AutoCreator):
                 project_name, host_name
             )
             data = {
+                "asset": asset_name,
                 "task": task_name,
                 "variant": self.default_variant
             }
@@ -80,7 +81,7 @@ class AEWorkfileCreator(AutoCreator):
                                    new_instance.data_to_store())
 
         elif (
-            existing_asset_name != asset_name
+            existing_instance["asset"] != asset_name
             or existing_instance["task"] != task_name
         ):
             asset_doc = get_asset_by_name(project_name, asset_name)
@@ -88,10 +89,6 @@ class AEWorkfileCreator(AutoCreator):
                 self.default_variant, task_name, asset_doc,
                 project_name, host_name
             )
-            if AYON_SERVER_ENABLED:
-                existing_instance["folderPath"] = asset_name
-            else:
-                existing_instance["asset"] = asset_name
-
+            existing_instance["asset"] = asset_name
             existing_instance["task"] = task_name
             existing_instance["subset"] = subset_name

@@ -15,12 +15,14 @@ from openpype.lib import (
     get_openpype_execute_args,
     run_detached_process,
 )
+from openpype.lib.local_settings import get_openpype_username
 from openpype.lib.openpype_version import (
     op_version_control_available,
     get_expected_version,
     get_installed_version,
     is_current_version_studio_latest,
     is_current_version_higher_than_expected,
+    is_version_checking_popup_enabled,
     is_running_from_build,
     get_openpype_version,
     is_running_staging,
@@ -31,7 +33,9 @@ from openpype.settings import (
     get_system_settings,
     SystemSettings,
     ProjectSettings,
-    DefaultsNotDefined
+    DefaultsNotDefined,
+    GENERAL_SETTINGS_KEY,
+    MODULES_SETTINGS_KEY
 )
 from openpype.tools.utils import (
     WrappedCallbackItem,
@@ -338,9 +342,9 @@ class TrayManager:
         self.log = Logger.get_logger(self.__class__.__name__)
 
         system_settings = get_system_settings()
-        self.module_settings = system_settings["modules"]
+        self.module_settings = system_settings[MODULES_SETTINGS_KEY]
 
-        version_check_interval = system_settings["general"].get(
+        version_check_interval = system_settings[GENERAL_SETTINGS_KEY].get(
             "version_check_interval"
         )
         if version_check_interval is None:
@@ -372,7 +376,9 @@ class TrayManager:
 
     def _on_version_check_timer(self):
         # Check if is running from build and stop future validations if yes
-        if not is_running_from_build() or not op_version_control_available():
+        if not is_version_checking_popup_enabled() or \
+                not is_running_from_build() or \
+                not op_version_control_available():
             self._version_check_timer.stop()
             return
 
@@ -465,16 +471,40 @@ class TrayManager:
         self._execution_in_progress = False
 
     def initialize_modules(self):
-        """Add modules to tray."""
-        from openpype.modules import (
-            ITrayAction,
-            ITrayService
-        )
+        """Add modules to the tray menu."""
+        from openpype.modules import ITrayService
 
+        # Menu header
+        system_settings = get_system_settings()
+        studio_name = system_settings[GENERAL_SETTINGS_KEY]["studio_name"]
+
+        header_label = QtWidgets.QLabel("OpenPype {}".format(studio_name))
+        header_label.setStyleSheet(
+            "background: qlineargradient(x1: 0, y1: 0, x2: 0.7, y2: 1, stop: 0 #3bebb9, stop: 1.0 #52abd7);"
+            "font-weight: bold; color: #003740; margin: 0; padding: 8px 6px;")
+
+        header_widget = QtWidgets.QWidgetAction(self.tray_widget.menu)
+        header_widget.setDefaultWidget(header_label)
+
+        self.tray_widget.menu.addAction(header_widget)
+
+        # Username info as a non-clickable item in the menu
+        # Note: Double space before the username for readability
+        username_label = QtWidgets.QLabel("User:  {}".format(str(get_openpype_username())))
+        username_label.setStyleSheet("margin: 0; padding: 8px 6px;")
+
+        username_widget = QtWidgets.QWidgetAction(self.tray_widget.menu)
+        username_widget.setDefaultWidget(username_label)
+
+        self.tray_widget.menu.addAction(username_widget)
+
+        # Add version item (and potentially "Update & Restart" item)
+        self._add_version_item()
+
+        self.tray_widget.menu.addSeparator()
+
+        # Add enabled modules
         self.modules_manager.initialize(self, self.tray_widget.menu)
-
-        admin_submenu = ITrayAction.admin_submenu(self.tray_widget.menu)
-        self.tray_widget.menu.addMenu(admin_submenu)
 
         # Add services if they are
         services_submenu = ITrayService.services_submenu(self.tray_widget.menu)
@@ -483,9 +513,7 @@ class TrayManager:
         # Add separator
         self.tray_widget.menu.addSeparator()
 
-        self._add_version_item()
-
-        # Add Exit action to menu
+        # Add Exit action to the menu
         exit_action = QtWidgets.QAction("Exit", self.tray_widget)
         exit_action.triggered.connect(self.tray_widget.exit)
         self.tray_widget.menu.addAction(exit_action)
@@ -521,6 +549,7 @@ class TrayManager:
         # Trigger version validation on start
         self._version_check_timer.timeout.emit()
 
+        # SLOW: This operation is very slow
         self._validate_settings_defaults()
 
         if not op_version_control_available():
@@ -602,7 +631,7 @@ class TrayManager:
         if AYON_SERVER_ENABLED:
             version_string = os.getenv("AYON_VERSION", "AYON Info")
         else:
-            version_string = openpype.version.__version__
+            version_string = "Ver.:  {}".format(openpype.version.__version__)  # double space for readability
         if subversion:
             version_string += " ({})".format(subversion)
 
@@ -620,7 +649,6 @@ class TrayManager:
 
         self.tray_widget.menu.addAction(version_action)
         self.tray_widget.menu.addAction(restart_action)
-        self.tray_widget.menu.addSeparator()
 
         self._restart_action = restart_action
 
@@ -719,7 +747,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     :type parent: QtWidgets.QMainWindow
     """
 
-    doubleclick_time_ms = 100
+    doubleclick_time_ms = 500
 
     def __init__(self, parent):
         icon = QtGui.QIcon(resources.get_openpype_icon_filepath())

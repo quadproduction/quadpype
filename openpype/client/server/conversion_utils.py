@@ -238,7 +238,7 @@ def convert_v4_project_to_v3(project):
         for key in (
             "work",
             "publish",
-            "hero",
+            "hero"
         ):
             cat_templates = templates.pop(key)
             _fill_template_category(templates, cat_templates, key)

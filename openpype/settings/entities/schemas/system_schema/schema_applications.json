@@ -111,6 +111,10 @@
     },
     {
       "type": "schema",
+      "name": "schema_openrv"
+    },
+    {
+      "type": "schema",
       "name": "schema_3dequalizer"
     },
     {

@@ -31,12 +31,18 @@ from openpype.pipeline import (
     register_loader_plugin_path,
     register_inventory_action_path,
     register_creator_plugin_path,
+    register_builder_action_path,
     deregister_loader_plugin_path,
     deregister_inventory_action_path,
     deregister_creator_plugin_path,
+    deregister_builder_action_path,
     AVALON_CONTAINER_ID,
 )
 from openpype.pipeline.load import any_outdated_containers
+from openpype.pipeline.workfile.workfile_template_builder import (
+    is_last_workfile_exists,
+    should_build_first_workfile
+)
 from openpype.pipeline.workfile.lock_workfile import (
     create_workfile_lock,
     remove_workfile_lock,
@@ -47,7 +53,11 @@ from openpype.hosts.maya import MAYA_ROOT_DIR
 from openpype.hosts.maya.lib import create_workspace_mel
 
 from . import menu, lib
-from .workfile_template_builder import MayaPlaceholderLoadPlugin
+from .workfile_template_builder import (
+    MayaPlaceholderLoadPlugin,
+    MayaPlaceholderCreatePlugin,
+    build_workfile_template
+)
 from .workio import (
     open_file,
     save_file,
@@ -64,6 +74,7 @@ PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
 LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
 CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 INVENTORY_PATH = os.path.join(PLUGINS_DIR, "inventory")
+BUILDER_PATH = os.path.join(PLUGINS_DIR, "builder")
 
 AVALON_CONTAINERS = ":AVALON_CONTAINERS"
 
@@ -90,6 +101,7 @@ class MayaHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         register_loader_plugin_path(LOAD_PATH)
         register_creator_plugin_path(CREATE_PATH)
         register_inventory_action_path(INVENTORY_PATH)
+        register_builder_action_path(BUILDER_PATH)
         self.log.info(PUBLISH_PATH)
 
         self.log.info("Installing callbacks ... ")
@@ -147,7 +159,8 @@ class MayaHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
     def get_workfile_build_placeholder_plugins(self):
         return [
-            MayaPlaceholderLoadPlugin
+            MayaPlaceholderLoadPlugin,
+            MayaPlaceholderCreatePlugin
         ]
 
     @contextlib.contextmanager
@@ -335,6 +348,7 @@ def uninstall():
     deregister_loader_plugin_path(LOAD_PATH)
     deregister_creator_plugin_path(CREATE_PATH)
     deregister_inventory_action_path(INVENTORY_PATH)
+    deregister_builder_action_path(BUILDER_PATH)
 
     menu.uninstall()
 
@@ -580,11 +594,17 @@ def on_save():
         lib.set_id(node, new_id, overwrite=False)
 
 
+def _autobuild_first_workfile():
+    if not is_last_workfile_exists() and should_build_first_workfile():
+        build_workfile_template()
+
+
 def on_open():
     """On scene open let's assume the containers have changed."""
 
     from openpype.widgets import popup
 
+    utils.executeDeferred(_autobuild_first_workfile)
     # Validate FPS after update_task_from_path to
     # ensure it is using correct FPS for the asset
     lib.validate_fps()
@@ -621,6 +641,7 @@ def on_new():
     with lib.suspended_refresh():
         lib.set_context_settings()
 
+    utils.executeDeferred(_autobuild_first_workfile)
     _remove_workfile_lock()
 
 
@@ -646,7 +667,8 @@ def on_task_changed():
 
     with lib.suspended_refresh():
         lib.set_context_settings()
-        lib.update_content_on_context_change()
+        lib.update_instances_frame_range()
+        lib.update_instances_asset_name()
 
 
 def before_workfile_open():

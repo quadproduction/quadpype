@@ -1,9 +1,11 @@
 import platform
 from qtpy import QtWidgets
+
 from .widgets import (
     Separator,
     ExpandingWidget
 )
+from openpype.settings import APPS_SETTINGS_KEY
 from openpype.tools.settings import CHILD_OFFSET
 from openpype.tools.utils import PlaceholderLineEdit
 
@@ -23,17 +25,17 @@ class AppVariantWidget(QtWidgets.QWidget):
 
         label = " ".join([group_label, variant_label])
 
-        expading_widget = ExpandingWidget(label, self)
-        content_widget = QtWidgets.QWidget(expading_widget)
+        expanding_widget = ExpandingWidget(label, self)
+        content_widget = QtWidgets.QWidget(expanding_widget)
         content_layout = QtWidgets.QVBoxLayout(content_widget)
         content_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 0)
 
-        expading_widget.set_content_widget(content_widget)
+        expanding_widget.set_content_widget(content_widget)
 
-        # Add expanding widget to main layout
+        # Add expanding widget to the main layout
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(expading_widget)
+        layout.addWidget(expanding_widget)
 
         # TODO For celaction - not sure what is "Celaction publish" for
         if not variant_entity["executables"].multiplatform:
@@ -190,7 +192,7 @@ class LocalApplicationsWidgets(QtWidgets.QWidget):
 
         return False
 
-    def _reset_app_widgets(self):
+    def _reset_apps_widgets(self):
         while self.content_layout.count() > 0:
             item = self.content_layout.itemAt(0)
             widget = item.widget()
@@ -202,7 +204,7 @@ class LocalApplicationsWidgets(QtWidgets.QWidget):
         app_items = {}
         additional_apps = set()
         additional_apps_entity = None
-        for key, entity in self.system_settings_entity["applications"].items():
+        for key, entity in self.system_settings_entity[APPS_SETTINGS_KEY].items():
             if key != "additional_apps":
                 app_items[key] = entity
                 continue
@@ -239,7 +241,7 @@ class LocalApplicationsWidgets(QtWidgets.QWidget):
         if not value:
             value = {}
 
-        self._reset_app_widgets()
+        self._reset_apps_widgets()
 
         for group_name, widget in self.widgets_by_group_name.items():
             widget.update_local_settings(value.get(group_name))

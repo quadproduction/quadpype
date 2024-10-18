@@ -37,6 +37,6 @@ class CollectWorkfile(pyblish.api.InstancePlugin):
         # adding basic script data
         instance.data.update(script_data)
 
-        self.log.debug(
+        self.log.info(
             "Collected current script version: {}".format(current_file)
         )

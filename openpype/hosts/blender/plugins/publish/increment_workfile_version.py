@@ -29,4 +29,4 @@ class IncrementWorkfileVersion(
 
         save_file(filepath, copy=False)
 
-        self.log.debug('Incrementing blender workfile version')
+        self.log.info('Incrementing script version')

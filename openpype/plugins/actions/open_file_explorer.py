@@ -1,8 +1,6 @@
 import os
-import platform
-import subprocess
-
 from string import Formatter
+
 from openpype.client import (
     get_project,
     get_asset_by_name,
@@ -12,6 +10,7 @@ from openpype.pipeline import (
     LauncherAction,
 )
 from openpype.pipeline.template_data import get_template_data
+from openpype.lib import open_in_explorer
 
 
 class OpenTaskPath(LauncherAction):
@@ -41,7 +40,7 @@ class OpenTaskPath(LauncherAction):
             # Copy path to clipboard
             self.copy_path_to_clipboard(path)
         else:
-            self.open_in_explorer(path)
+            open_in_explorer(path)
 
     def _find_first_filled_path(self, path):
         if not path:
@@ -91,21 +90,7 @@ class OpenTaskPath(LauncherAction):
             valid_workdir = os.path.normpath(valid_workdir)
             if os.path.exists(valid_workdir):
                 return valid_workdir
-        raise AssertionError("Folder does not exist yet.")
-
-    @staticmethod
-    def open_in_explorer(path):
-        platform_name = platform.system().lower()
-        if platform_name == "windows":
-            args = ["start", path]
-        elif platform_name == "darwin":
-            args = ["open", "-na", path]
-        elif platform_name == "linux":
-            args = ["xdg-open", path]
-        else:
-            raise RuntimeError(f"Unknown platform {platform.system()}")
-        # Make sure path is converted correctly for 'os.system'
-        os.system(subprocess.list2cmdline(args))
+        raise AssertionError("Folder does not exist.")
 
     @staticmethod
     def copy_path_to_clipboard(path):

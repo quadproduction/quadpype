@@ -1,3 +1,4 @@
+from openpype.settings import PROJECT_SETTINGS_KEY, SYSTEM_SETTINGS_KEY
 from openpype.lib.applications import PreLaunchHook
 
 from openpype.pipeline.colorspace import get_imageio_config
@@ -13,12 +14,13 @@ class OCIOEnvHook(PreLaunchHook):
         "fusion",
         "blender",
         "aftereffects",
-        "3dsmax",
+        "max",
         "houdini",
         "maya",
         "nuke",
         "hiero",
         "resolve",
+        "openrv"
     }
     launch_types = set()
 
@@ -30,13 +32,13 @@ class OCIOEnvHook(PreLaunchHook):
             asset_name=self.data["asset_name"],
             task_name=self.data["task_name"],
             host_name=self.host_name,
-            system_settings=self.data["system_settings"]
+            system_settings=self.data[SYSTEM_SETTINGS_KEY]
         )
 
         config_data = get_imageio_config(
             project_name=self.data["project_name"],
             host_name=self.host_name,
-            project_settings=self.data["project_settings"],
+            project_settings=self.data[PROJECT_SETTINGS_KEY],
             anatomy_data=template_data,
             anatomy=self.data["anatomy"],
             env=self.launch_context.env,

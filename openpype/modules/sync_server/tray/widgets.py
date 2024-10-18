@@ -1,6 +1,4 @@
 import os
-import subprocess
-import sys
 from functools import partial
 
 from qtpy import QtWidgets, QtCore, QtGui
@@ -8,7 +6,7 @@ import qtawesome
 
 from openpype.tools.settings import style
 
-from openpype.lib import Logger, get_local_site_id
+from openpype.lib import Logger, get_local_site_id, open_in_explorer
 
 from openpype.tools.utils.delegates import pretty_timestamp
 
@@ -521,15 +519,7 @@ class _SyncRepresentationWidget(QtWidgets.QWidget):
 
             fpath = os.path.normpath(os.path.dirname(fpath))
             if os.path.isdir(fpath):
-                if 'win' in sys.platform:  # windows
-                    subprocess.Popen('explorer "%s"' % fpath)
-                elif sys.platform == 'darwin':  # macOS
-                    subprocess.Popen(['open', fpath])
-                else:  # linux
-                    try:
-                        subprocess.Popen(['xdg-open', fpath])
-                    except OSError:
-                        raise OSError('unsupported xdg-open call??')
+                open_in_explorer(fpath)
 
     def _change_priority(self, **kwargs):
         """Open editor to change priority on first selected row"""

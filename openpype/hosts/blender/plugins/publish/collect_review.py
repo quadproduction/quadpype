@@ -14,7 +14,7 @@ class CollectReview(pyblish.api.InstancePlugin):
 
     def process(self, instance):
 
-        self.log.debug(f"instance: {instance}")
+        self.log.info(f"instance: {instance}")
 
         datablock = instance.data["transientData"]["instance_node"]
 
@@ -29,7 +29,7 @@ class CollectReview(pyblish.api.InstancePlugin):
             f"Not a single camera found in extraction: {cameras}"
         )
         camera = cameras[0].name
-        self.log.debug(f"camera: {camera}")
+        self.log.info(f"camera: {camera}")
 
         focal_length = cameras[0].data.lens
 
@@ -54,7 +54,7 @@ class CollectReview(pyblish.api.InstancePlugin):
                 "isolate": isolate_objects,
             })
 
-            self.log.debug(f"instance data: {instance.data}")
+            self.log.info(f"instance data: {instance.data}")
 
             # TODO : Collect audio
             audio_tracks = []

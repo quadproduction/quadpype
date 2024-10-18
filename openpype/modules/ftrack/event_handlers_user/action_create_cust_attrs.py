@@ -18,7 +18,7 @@ from openpype_modules.ftrack.lib import (
     tool_definitions_from_app_manager
 )
 
-from openpype.settings import get_system_settings
+from openpype.settings import get_system_settings, MODULES_SETTINGS_KEY
 from openpype.lib import ApplicationManager
 
 """
@@ -226,7 +226,7 @@ class CustomAttributes(BaseAction):
 
         self.groups = {}
 
-        self.ftrack_settings = get_system_settings()["modules"]["ftrack"]
+        self.ftrack_settings = get_system_settings()[MODULES_SETTINGS_KEY]["ftrack"]
         self.attrs_settings = self.prepare_attribute_settings()
 
     def prepare_attribute_settings(self):

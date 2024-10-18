@@ -1,11 +1,10 @@
 import os
-import sys
-import subprocess
 from openpype_modules.ftrack.lib import BaseAction, statics_icon
+from openpype.lib import open_in_explorer
 
 
 class ComponentOpen(BaseAction):
-    '''Custom action.'''
+    """Custom action."""
 
     # Action identifier
     identifier = 'component.open'
@@ -15,7 +14,7 @@ class ComponentOpen(BaseAction):
     icon = statics_icon("ftrack", "action_icons", "ComponentOpen.svg")
 
     def discover(self, session, entities, event):
-        ''' Validation '''
+        """ Validation """
         if len(entities) != 1 or entities[0].entity_type != 'FileComponent':
             return False
 
@@ -39,15 +38,7 @@ class ComponentOpen(BaseAction):
         fpath = os.path.normpath(os.path.dirname(fpath))
 
         if os.path.isdir(fpath):
-            if 'win' in sys.platform:  # windows
-                subprocess.Popen('explorer "%s"' % fpath)
-            elif sys.platform == 'darwin':  # macOS
-                subprocess.Popen(['open', fpath])
-            else:  # linux
-                try:
-                    subprocess.Popen(['xdg-open', fpath])
-                except OSError:
-                    raise OSError('unsupported xdg-open call??')
+            open_in_explorer(fpath)
         else:
             return {
                 'success': False,
@@ -61,6 +52,6 @@ class ComponentOpen(BaseAction):
 
 
 def register(session):
-    '''Register action. Called when used as an event plugin.'''
+    """Register action. Called when used as an event plugin."""
 
     ComponentOpen(session).register()

@@ -1,3 +1,4 @@
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.lib.applications import PreLaunchHook, LaunchTypes
 from openpype.hosts.maya.lib import create_workspace_mel
 
@@ -17,5 +18,5 @@ class PreCopyMel(PreLaunchHook):
             self.log.warning("BUG: Workdir is not filled.")
             return
 
-        project_settings = self.data["project_settings"]
+        project_settings = self.data[PROJECT_SETTINGS_KEY]
         create_workspace_mel(workdir, project_doc["name"], project_settings)

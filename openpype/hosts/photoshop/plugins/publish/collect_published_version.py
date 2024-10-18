@@ -17,6 +17,7 @@ Provides:
 
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.client import get_last_version_by_subset_name
 from openpype.pipeline.version_start import get_versioning_start
 
@@ -57,7 +58,7 @@ class CollectPublishedVersion(pyblish.api.ContextPlugin):
                 "photoshop",
                 task_name=context.data["task"],
                 task_type=context.data["taskType"],
-                project_settings=context.data["project_settings"]
+                project_settings=context.data[PROJECT_SETTINGS_KEY]
             )
 
         self.log.debug(f"Setting {version_int} to context.")

@@ -1,4 +1,6 @@
 import pyblish.api
+
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline.workfile.lock_workfile import (
     is_workfile_lock_enabled,
     remove_workfile_lock
@@ -27,7 +29,7 @@ class SaveCurrentScene(pyblish.api.ContextPlugin):
                            "are no modifications..")
             return
         project_name = context.data["projectName"]
-        project_settings = context.data["project_settings"]
+        project_settings = context.data[PROJECT_SETTINGS_KEY]
         # remove lockfile before saving
         if is_workfile_lock_enabled("maya", project_name, project_settings):
             remove_workfile_lock(current)

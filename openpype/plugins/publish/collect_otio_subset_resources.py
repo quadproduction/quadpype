@@ -9,6 +9,7 @@ import os
 
 import clique
 import pyblish.api
+from openpype.settings import PROJECT_SETTINGS_KEY
 
 from openpype.pipeline.publish import (
     get_publish_template_name
@@ -22,6 +23,7 @@ class CollectOtioSubsetResources(pyblish.api.InstancePlugin):
     order = pyblish.api.CollectorOrder + 0.491
     families = ["clip"]
     hosts = ["resolve", "hiero", "flame"]
+
 
     def process(self, instance):
         # Not all hosts can import these modules.
@@ -260,6 +262,6 @@ class CollectOtioSubsetResources(pyblish.api.InstancePlugin):
             family,
             task_name=task_info.get("name"),
             task_type=task_info.get("type"),
-            project_settings=context.data["project_settings"],
+            project_settings=context.data[PROJECT_SETTINGS_KEY],
             logger=self.log
         )

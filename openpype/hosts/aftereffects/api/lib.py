@@ -4,8 +4,10 @@ import json
 import contextlib
 import logging
 
-from openpype.pipeline.context_tools import get_current_context
+from openpype.settings import GENERAL_SETTINGS_KEY
+from openpype.pipeline.context_tools import get_current_context, get_project_settings
 from openpype.client import get_asset_by_name
+from openpype.pipeline import get_current_host_name
 from .ws_stub import get_stub
 
 log = logging.getLogger(__name__)
@@ -31,7 +33,7 @@ def get_extension_manifest_path():
     )
 
 
-def get_unique_layer_name(layers, name):
+def get_unique_layer_name(layers, name, is_psd=False):
     """
         Gets all layer names and if 'name' is present in them, increases
         suffix by 1 (eg. creates unique layer name - for Loader)
@@ -49,7 +51,13 @@ def get_unique_layer_name(layers, name):
             names[layer_name] = names[layer_name] + 1
         else:
             names[layer_name] = 1
-    occurrences = names.get(name, 0)
+    occurrences = names.get("{}{}".format(get_stub().LOADED_ICON, name), 0)
+
+    # when a psd is load, it creates a compostion AND a folder,
+    # so 2 element have the "layer_name"
+    # To avoid passing from 1 to 3, we must divide the occurence
+    if occurrences !=0 and is_psd:
+        occurrences = int(occurrences/2)
 
     return "{}_{:0>3d}".format(name, occurrences + 1)
 
@@ -114,7 +122,39 @@ def get_asset_settings(asset_doc):
     }
 
 
-def set_settings(frames, resolution, comp_ids=None, print_msg=True):
+def get_custom_settings(project_name):
+    project_settings = get_project_settings(project_name)
+    custom_settings = project_settings.get('quad_custom_settings')
+    if not custom_settings:
+        log.warning("Can't access to quad custom settings. Custom settings will not be applied.")
+        return
+
+    return custom_settings
+
+
+def get_workfile_overrides(custom_settings):
+    resolution_overrides = custom_settings.get(GENERAL_SETTINGS_KEY, {}).get("working_resolution_overrides", None)
+    if not resolution_overrides:
+        log.warning("Can't retrieve resolution overrides for workfiles. Will not be applied.")
+        return
+
+    current_host_name = get_current_host_name()
+    overrides_group = _get_override_group(resolution_overrides, current_host_name)
+    if not overrides_group:
+        log.warning("Can't find overrides group that fit application. Abort.")
+
+    return overrides_group
+
+
+def _get_override_group(resolution_overrides, current_host_name):
+    for resolution_overrides_set in resolution_overrides:
+        if current_host_name in resolution_overrides_set.get('hosts', []):
+            return resolution_overrides_set
+
+    return None
+
+
+def set_settings(frames, resolution, comp_ids=None, print_msg=True, use_custom_settings=False):
     """Sets number of frames and resolution to selected comps.
 
     Args:
@@ -138,7 +178,13 @@ def set_settings(frames, resolution, comp_ids=None, print_msg=True):
         fps = settings["fps"]
         msg += f"frame start:{frame_start}, duration:{frames_duration}, "\
                f"fps:{fps}"
+
     if resolution:
+        if use_custom_settings:
+            retrieve_custom_settings(
+                project_name=current_context["project_name"],
+                settings=settings
+            )
         width = settings["resolutionWidth"]
         height = settings["resolutionHeight"]
         msg += f"width:{width} and height:{height}"
@@ -158,3 +204,13 @@ def set_settings(frames, resolution, comp_ids=None, print_msg=True):
                                  fps, width, height)
         if print_msg:
             stub.print_msg(msg)
+
+def retrieve_custom_settings(project_name, settings):
+    custom_settings = get_custom_settings(project_name)
+    workfile_overrides = get_workfile_overrides(custom_settings)
+
+    if workfile_overrides:
+        override_width = workfile_overrides.get('working_resolution_width')
+        if override_width: settings["resolutionWidth"] = override_width
+        override_height = workfile_overrides.get('working_resolution_height')
+        if override_height: settings["resolutionHeight"] = override_height

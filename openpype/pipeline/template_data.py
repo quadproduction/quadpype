@@ -1,5 +1,5 @@
 from openpype.client import get_project, get_asset_by_name
-from openpype.settings import get_system_settings
+from openpype.settings import get_system_settings, GENERAL_SETTINGS_KEY
 from openpype.lib.local_settings import get_openpype_username
 
 
@@ -17,8 +17,8 @@ def get_general_template_data(system_settings=None):
 
     if not system_settings:
         system_settings = get_system_settings()
-    studio_name = system_settings["general"]["studio_name"]
-    studio_code = system_settings["general"]["studio_code"]
+    studio_name = system_settings[GENERAL_SETTINGS_KEY]["studio_name"]
+    studio_code = system_settings[GENERAL_SETTINGS_KEY]["studio_code"]
     return {
         "studio": {
             "name": studio_name,

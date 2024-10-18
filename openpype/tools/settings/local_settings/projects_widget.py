@@ -3,9 +3,9 @@ import copy
 from qtpy import QtWidgets, QtCore, QtGui
 from openpype.tools.settings.settings import ProjectListWidget
 from openpype.tools.utils import PlaceholderLineEdit
-from openpype.settings.constants import (
-    PROJECT_ANATOMY_KEY,
-    DEFAULT_PROJECT_KEY
+from openpype.settings import (
+    DEFAULT_PROJECT_KEY,
+    PROJECT_SETTINGS_KEY
 )
 from .widgets import ProxyLabelWidget
 from .constants import (
@@ -13,8 +13,7 @@ from .constants import (
     LABEL_ADD_DEFAULT,
     LABEL_REMOVE_PROJECT,
     LABEL_ADD_PROJECT,
-    LABEL_DISCARD_CHANGES,
-    LOCAL_ROOTS_KEY
+    LABEL_DISCARD_CHANGES
 )
 
 NOT_SET = type("NOT_SET", (), {})()
@@ -707,7 +706,7 @@ class AciveSiteCombo(_SiteCombobox):
         )
         if self.project_name is None:
             return sync_server_module.get_active_sites_from_settings(
-                self.project_settings["project_settings"].value
+                self.project_settings[PROJECT_SETTINGS_KEY].value
             )
         return sync_server_module.get_active_sites(self.project_name)
 
@@ -724,7 +723,7 @@ class AciveSiteCombo(_SiteCombobox):
         return value
 
     def _get_value_from_project_settings(self):
-        global_entity = self.project_settings["project_settings"]["global"]
+        global_entity = self.project_settings[PROJECT_SETTINGS_KEY]["global"]
         return global_entity["sync_server"]["config"]["active_site"].value
 
     def _set_local_settings_value(self, value):
@@ -749,7 +748,7 @@ class RemoteSiteCombo(_SiteCombobox):
         )
         if self.project_name is None:
             return sync_server_module.get_remote_sites_from_settings(
-                self.project_settings["project_settings"].value
+                self.project_settings[PROJECT_SETTINGS_KEY].value
             )
         return sync_server_module.get_remote_sites(self.project_name)
 
@@ -765,7 +764,7 @@ class RemoteSiteCombo(_SiteCombobox):
         return value
 
     def _get_value_from_project_settings(self):
-        global_entity = self.project_settings["project_settings"]["global"]
+        global_entity = self.project_settings[PROJECT_SETTINGS_KEY]["global"]
         return global_entity["sync_server"]["config"]["remote_site"].value
 
     def _set_local_settings_value(self, value):
@@ -820,21 +819,21 @@ class ProjectSettingsWidget(QtWidgets.QWidget):
         self.modules_manager = modules_manager
 
         projects_widget = _ProjectListWidget(self, only_active=True)
-        roos_site_widget = RootSiteWidget(
+        root_site_widget = RootSiteWidget(
             modules_manager, project_settings, self
         )
 
         main_layout = QtWidgets.QHBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.addWidget(projects_widget, 0)
-        main_layout.addWidget(roos_site_widget, 1)
+        main_layout.addWidget(root_site_widget, 1)
 
         projects_widget.project_changed.connect(self._on_project_change)
 
         self.project_settings = project_settings
 
         self.projects_widget = projects_widget
-        self.roos_site_widget = roos_site_widget
+        self.root_site_widget = root_site_widget
 
     def project_name(self):
         return self.projects_widget.project_name()
@@ -844,14 +843,14 @@ class ProjectSettingsWidget(QtWidgets.QWidget):
         self.project_settings.change_project(project_name)
         if project_name is None:
             project_name = DEFAULT_PROJECT_KEY
-        self.roos_site_widget.change_project(project_name)
+        self.root_site_widget.change_project(project_name)
 
     def update_local_settings(self, value):
         if not value:
             value = {}
         self.local_project_settings = ProjectValue(value)
 
-        self.roos_site_widget.update_local_settings(
+        self.root_site_widget.update_local_settings(
             self.local_project_settings
         )
 

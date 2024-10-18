@@ -9,18 +9,17 @@ from .create_plugins import (
     DEFAULT_CREATE_SETTINGS
 )
 from .loader_plugins import (
-    LoaderPuginsModel,
+    LoaderPluginsModel,
     DEFAULT_LOADER_PLUGINS_SETTINGS
 )
 from .publish_plugins import (
-    PublishPuginsModel,
+    PublishPluginsModel,
     DEFAULT_PUBLISH_PLUGIN_SETTINGS
 )
 from .scriptsmenu import (
     ScriptsmenuSettings,
     DEFAULT_SCRIPTSMENU_SETTINGS
 )
-from .filters import PublishGUIFilterItemModel
 
 
 class HieroSettings(BaseSettingsModel):
@@ -35,20 +34,17 @@ class HieroSettings(BaseSettingsModel):
         default_factory=CreatorPluginsSettings,
         title="Creator Plugins",
     )
-    load: LoaderPuginsModel = SettingsField(
-        default_factory=LoaderPuginsModel,
+    load: LoaderPluginsModel = SettingsField(
+        default_factory=LoaderPluginsModel,
         title="Loader plugins"
     )
-    publish: PublishPuginsModel = SettingsField(
-        default_factory=PublishPuginsModel,
+    publish: PublishPluginsModel = SettingsField(
+        default_factory=PublishPluginsModel,
         title="Publish plugins"
     )
     scriptsmenu: ScriptsmenuSettings = SettingsField(
         default_factory=ScriptsmenuSettings,
         title="Scripts Menu Definition",
-    )
-    filters: list[PublishGUIFilterItemModel] = SettingsField(
-        default_factory=list
     )
 
 
@@ -58,5 +54,4 @@ DEFAULT_VALUES = {
     "load": DEFAULT_LOADER_PLUGINS_SETTINGS,
     "publish": DEFAULT_PUBLISH_PLUGIN_SETTINGS,
     "scriptsmenu": DEFAULT_SCRIPTSMENU_SETTINGS,
-    "filters": [],
 }

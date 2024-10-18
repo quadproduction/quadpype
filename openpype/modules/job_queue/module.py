@@ -42,7 +42,7 @@ import copy
 import platform
 
 from openpype.modules import OpenPypeModule, click_wrap
-from openpype.settings import get_system_settings
+from openpype.settings import get_system_settings, MODULES_SETTINGS_KEY
 
 
 class JobQueueModule(OpenPypeModule):
@@ -126,7 +126,7 @@ class JobQueueModule(OpenPypeModule):
 
     @classmethod
     def get_jobs_root_from_settings(cls):
-        module_settings = get_system_settings()["modules"]
+        module_settings = get_system_settings()[MODULES_SETTINGS_KEY]
         jobs_root_mapping = module_settings.get(cls.name, {}).get("jobs_root")
         converted_mapping = cls._roots_mapping_conversion(jobs_root_mapping)
 
@@ -156,7 +156,7 @@ class JobQueueModule(OpenPypeModule):
 
     @classmethod
     def get_server_url_from_settings(cls):
-        module_settings = get_system_settings()["modules"]
+        module_settings = get_system_settings()[MODULES_SETTINGS_KEY]
         return cls.url_conversion(
             module_settings
             .get(cls.name, {})

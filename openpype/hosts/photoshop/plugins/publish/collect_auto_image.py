@@ -1,6 +1,6 @@
 import pyblish.api
 
-from openpype.client import get_asset_name_identifier
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.hosts.photoshop import api as photoshop
 from openpype.pipeline.create import get_subset_name
 
@@ -24,7 +24,7 @@ class CollectAutoImage(pyblish.api.ContextPlugin):
                 return
 
         project_name = context.data["projectName"]
-        proj_settings = context.data["project_settings"]
+        proj_settings = context.data[PROJECT_SETTINGS_KEY]
         task_name = context.data["task"]
         host_name = context.data["hostName"]
         asset_doc = context.data["assetEntity"]
