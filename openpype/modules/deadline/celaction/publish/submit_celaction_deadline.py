@@ -5,8 +5,9 @@ import getpass
 import requests
 import pyblish.api
 
+from openpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs
 
-class CelactionSubmitDeadline(pyblish.api.InstancePlugin):
+class CelactionSubmitDeadline(pyblish.api.InstancePlugin, DeadlineDefaultJobAttrs):
     """Submit CelAction2D scene to Deadline
 
     Renders are submitted to a Deadline Web Service.
@@ -18,13 +19,10 @@ class CelactionSubmitDeadline(pyblish.api.InstancePlugin):
     hosts = ["celaction"]
     families = ["render.farm"]
 
-    deadline_department = ""
-    deadline_priority = 50
-    deadline_pool = ""
-    deadline_pool_secondary = ""
-    deadline_group = ""
-    deadline_chunk_size = 1
-    deadline_job_delay = "00:00:08:00"
+    department = ""
+    group = ""
+    chunk_size = 1
+    job_delay = "00:00:08:00"
 
     def process(self, instance):
 
@@ -74,6 +72,12 @@ class CelactionSubmitDeadline(pyblish.api.InstancePlugin):
         render_path = os.path.normpath(render_path)
         script_name = os.path.basename(script_path)
 
+        batch_name = set_custom_deadline_name(
+            instance,
+            script_name,
+            "deadline_batch_name"
+        )
+
         for item in instance.context:
             if "workfile" in item.data["family"]:
                 msg = "Workfile (scene) must be published along"
@@ -93,7 +97,11 @@ class CelactionSubmitDeadline(pyblish.api.InstancePlugin):
                     "Using published scene for render {}".format(script_path)
                 )
 
-        jobname = "%s - %s" % (script_name, instance.name)
+        jobname = set_custom_deadline_name(
+            instance,
+            script_name,
+            "deadline_job_name"
+        )
 
         output_filename_0 = self.preview_fname(render_path)
 
@@ -104,9 +112,7 @@ class CelactionSubmitDeadline(pyblish.api.InstancePlugin):
             pass
 
         # define chunk and priority
-        chunk_size = instance.context.data.get("chunk")
-        if not chunk_size:
-            chunk_size = self.deadline_chunk_size
+        chunk_size = instance.context.data.get("chunkSize", self.chunk_size)
 
         # search for %02d pattern in name, and padding number
         search_results = re.search(r"(%0)(\d)(d)[._]", render_path).groups()
@@ -136,17 +142,17 @@ class CelactionSubmitDeadline(pyblish.api.InstancePlugin):
                 "Plugin": "CelAction",
 
                 # Top-level group name
-                "BatchName": script_name,
+                "BatchName": "Group: " + batch_name,
 
-                # Arbitrary username, for visualisation in Monitor
+                # Arbitrary username, for visualization in Monitor
                 "UserName": self._deadline_user,
 
-                "Department": self.deadline_department,
-                "Priority": self.deadline_priority,
+                "Department": self.department,
+                "Priority": self.get_job_attr("priority"),
 
-                "Group": self.deadline_group,
-                "Pool": self.deadline_pool,
-                "SecondaryPool": self.deadline_pool_secondary,
+                "Group": self.group,
+                "Pool": self.get_job_attr("pool"),
+                "SecondaryPool": self.get_job_attr("pool_secondary"),
                 "ChunkSize": chunk_size,
 
                 "Frames": f"{self._frame_start}-{self._frame_end}",
@@ -160,7 +166,7 @@ class CelactionSubmitDeadline(pyblish.api.InstancePlugin):
                 # the scene file to sync.
                 # "AssetDependency0": script_path
                 "ScheduledType": "Once",
-                "JobDelay": self.deadline_job_delay
+                "JobDelay": self.job_delay
             },
             "PluginInfo": {
                 # Input

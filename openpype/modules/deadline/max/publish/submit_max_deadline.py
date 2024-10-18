@@ -8,6 +8,7 @@ from openpype.lib import (
     BoolDef,
     NumberDef,
 )
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline import (
     legacy_io,
     OpenPypePyblishPluginMixin
@@ -18,6 +19,7 @@ from openpype.pipeline.publish.lib import (
 from openpype.pipeline.publish import KnownPublishError
 from openpype_modules.deadline import abstract_submit_deadline
 from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from openpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs
 from openpype.lib import is_running_from_build
 
 
@@ -30,7 +32,7 @@ class MaxPluginInfo(object):
 
 
 class MaxSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
-                        OpenPypePyblishPluginMixin):
+                        OpenPypePyblishPluginMixin, DeadlineDefaultJobAttrs):
 
     label = "Submit Render to Deadline"
     hosts = ["max"]
@@ -38,23 +40,11 @@ class MaxSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
     targets = ["local"]
 
     use_published = True
-    priority = 50
     chunk_size = 1
     jobInfo = {}
     pluginInfo = {}
     group = None
 
-    @classmethod
-    def apply_settings(cls, project_settings, system_settings):
-        settings = project_settings["deadline"]["publish"]["MaxSubmitDeadline"]  # noqa
-
-        # Take some defaults from settings
-        cls.use_published = settings.get("use_published",
-                                         cls.use_published)
-        cls.priority = settings.get("priority",
-                                    cls.priority)
-        cls.chuck_size = settings.get("chunk_size", cls.chunk_size)
-        cls.group = settings.get("group", cls.group)
     # TODO: multiple camera instance, separate job infos
     def get_job_info(self):
         job_info = DeadlineJobInfo(Plugin="3dsmax")
@@ -72,8 +62,20 @@ class MaxSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
 
         src_filepath = context.data["currentFile"]
         src_filename = os.path.basename(src_filepath)
-        job_info.Name = "%s - %s" % (src_filename, instance.name)
-        job_info.BatchName = src_filename
+
+        job_name = set_custom_deadline_name(
+            instance,
+            src_filename,
+            "deadline_job_name"
+        )
+        batch_name = set_custom_deadline_name(
+            instance,
+            src_filename,
+            "deadline_batch_name"
+        )
+
+        job_info.Name = job_name
+        job_info.BatchName = "Group: " + batch_name
         job_info.Plugin = instance.data["plugin"]
         job_info.UserName = context.data.get("deadlineUser", getpass.getuser())
         job_info.EnableAutoTimeout = True
@@ -84,14 +86,14 @@ class MaxSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         )
         job_info.Frames = frames
 
-        job_info.Pool = instance.data.get("primaryPool")
-        job_info.SecondaryPool = instance.data.get("secondaryPool")
+        job_info.Pool = instance.data.get("pool", self.default_pool)
+        job_info.SecondaryPool = instance.data.get("pool_secondary", self.default_pool_secondary)
 
         attr_values = self.get_attr_values_from_data(instance.data)
 
         job_info.ChunkSize = attr_values.get("chunkSize", 1)
         job_info.Comment = context.data.get("comment")
-        job_info.Priority = attr_values.get("priority", self.priority)
+        job_info.Priority = attr_values.get("priority", self.get_job_attr("priority"))
         job_info.Group = attr_values.get("group", self.group)
 
         # Add options from RenderGlobals
@@ -181,7 +183,7 @@ class MaxSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         }
 
         self.log.debug("Submitting 3dsMax render..")
-        project_settings = instance.context.data["project_settings"]
+        project_settings = instance.context.data[PROJECT_SETTINGS_KEY]
         if instance.data.get("multiCamera"):
             self.log.debug("Submitting jobs for multiple cameras..")
             payload = self._use_published_name_for_multiples(
@@ -408,7 +410,7 @@ class MaxSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
                       minimum=1,
                       maximum=250,
                       decimals=0,
-                      default=cls.priority,
+                      default=cls.get_job_attr("priority"),
                       label="Priority"),
 
             NumberDef("chunkSize",

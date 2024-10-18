@@ -5,10 +5,11 @@ from datetime import datetime
 
 import pyblish.api
 
-from openpype.pipeline import legacy_io, OpenPypePyblishPluginMixin
+from openpype.pipeline import legacy_io
 from openpype.tests.lib import is_in_tests
 from openpype_modules.deadline import abstract_submit_deadline
 from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from openpype.modules.deadline.utils import DeadlineDefaultJobAttrs, set_custom_deadline_name
 from openpype.lib import (
     is_running_from_build,
     BoolDef,
@@ -51,7 +52,7 @@ class RedshiftRenderPluginInfo():
 
 class HoudiniSubmitDeadline(
     abstract_submit_deadline.AbstractSubmitDeadline,
-    OpenPypePyblishPluginMixin
+    DeadlineDefaultJobAttrs
 ):
     """Submit Render ROPs to Deadline.
 
@@ -81,7 +82,6 @@ class HoudiniSubmitDeadline(
     export_priority = 50
     export_chunk_size = 10
     export_group = ""
-    priority = 50
     chunk_size = 1
     group = ""
 
@@ -92,12 +92,6 @@ class HoudiniSubmitDeadline(
                 "suspend_publish",
                 default=False,
                 label="Suspend publish"
-            ),
-            NumberDef(
-                "priority",
-                label="Priority",
-                default=cls.priority,
-                decimals=0
             ),
             NumberDef(
                 "chunk",
@@ -169,9 +163,21 @@ class HoudiniSubmitDeadline(
 
         filepath = context.data["currentFile"]
         filename = os.path.basename(filepath)
-        job_info.Name = "{} - {} {}".format(filename, instance.name, job_type)
-        job_info.BatchName = filename
 
+        job_name = set_custom_deadline_name(
+            instance,
+            filename,
+            "deadline_job_name"
+        )
+        batch_name = set_custom_deadline_name(
+            instance,
+            filename,
+            "deadline_batch_name"
+        )
+
+        job_info.Name = job_name
+        job_info.BatchName = "Group: " + batch_name
+        job_info.Plugin = "Houdini"
         job_info.UserName = context.data.get(
             "deadlineUser", getpass.getuser())
 
@@ -193,8 +199,8 @@ class HoudiniSubmitDeadline(
         if split_render_job and not is_export_job:
             job_info.IsFrameDependent = True
 
-        job_info.Pool = instance.data.get("primaryPool")
-        job_info.SecondaryPool = instance.data.get("secondaryPool")
+        job_info.Pool = instance.data.get("pool", self.get_job_attr("pool"))
+        job_info.SecondaryPool = instance.data.get("pool_secondary", self.get_job_attr("pool_secondary"))
 
         if split_render_job and is_export_job:
             job_info.Priority = attribute_values.get(
@@ -205,12 +211,8 @@ class HoudiniSubmitDeadline(
             )
             job_info.Group = self.export_group
         else:
-            job_info.Priority = attribute_values.get(
-                "priority", self.priority
-            )
-            job_info.ChunkSize = attribute_values.get(
-                "chunk", self.chunk_size
-            )
+            job_info.Priority = instance.data.get("priority", self.get_job_attr("priority"))
+            job_info.ChunkSize = instance.data.get("chunkSize", 10)
             job_info.Group = self.group
 
         job_info.Comment = context.data.get("comment")

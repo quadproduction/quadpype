@@ -3,6 +3,7 @@
 import pyblish.api
 
 from openpype import AYON_SERVER_ENABLED
+from openpype.settings import PROJECT_SETTINGS_KEY
 
 
 class CollectDefaultDeadlineServer(pyblish.api.ContextPlugin):
@@ -32,7 +33,7 @@ class CollectDefaultDeadlineServer(pyblish.api.ContextPlugin):
             self.log.error("Cannot get OpenPype Deadline module.")
             raise AssertionError("OpenPype Deadline module not found.")
 
-        deadline_settings = context.data["project_settings"]["deadline"]
+        deadline_settings = context.data[PROJECT_SETTINGS_KEY]["deadline"]
         deadline_server_name = None
         if AYON_SERVER_ENABLED:
             deadline_server_name = deadline_settings["deadline_server"]

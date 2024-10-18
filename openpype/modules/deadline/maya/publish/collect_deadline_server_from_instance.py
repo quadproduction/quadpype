@@ -6,6 +6,11 @@ attribute or using default server if that attribute doesn't exists.
 
 """
 import pyblish.api
+from openpype.settings import (
+    MODULES_SETTINGS_KEY,
+    PROJECT_SETTINGS_KEY,
+    SYSTEM_SETTINGS_KEY
+)
 from openpype.pipeline.publish import KnownPublishError
 
 
@@ -46,8 +51,8 @@ class CollectDeadlineServerFromInstance(pyblish.api.InstancePlugin):
         from maya import cmds
         deadline_settings = (
             render_instance.context.data
-            ["system_settings"]
-            ["modules"]
+            [SYSTEM_SETTINGS_KEY]
+            [MODULES_SETTINGS_KEY]
             ["deadline"]
         )
 
@@ -67,7 +72,7 @@ class CollectDeadlineServerFromInstance(pyblish.api.InstancePlugin):
         default_servers = deadline_settings["deadline_urls"]
         project_servers = (
             render_instance.context.data
-            ["project_settings"]
+            [PROJECT_SETTINGS_KEY]
             ["deadline"]
             ["deadline_servers"]
         )

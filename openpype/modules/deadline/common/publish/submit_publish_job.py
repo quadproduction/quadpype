@@ -13,11 +13,12 @@ from openpype import AYON_SERVER_ENABLED
 from openpype.client import (
     get_last_version_by_subset_name,
 )
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline import publish, legacy_io
 from openpype.lib import EnumDef, is_running_from_build
 from openpype.tests.lib import is_in_tests
 from openpype.pipeline.version_start import get_versioning_start
-
+from openpype.modules.deadline.utils import DeadlineDefaultJobAttrs
 from openpype.pipeline.farm.pyblish_functions import (
     create_skeleton_instance,
     create_instances_for_aov,
@@ -56,7 +57,8 @@ def get_resource_files(resources, frame_range=None):
 
 class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                                 publish.OpenPypePyblishPluginMixin,
-                                publish.ColormanagedPyblishPluginMixin):
+                                publish.ColormanagedPyblishPluginMixin,
+                                DeadlineDefaultJobAttrs):
     """Process Job submitted on farm.
 
     These jobs are dependent on a deadline job
@@ -122,13 +124,11 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
         "KITSU_PWD"
     ]
 
-    # custom deadline attributes
-    deadline_department = ""
-    deadline_pool = ""
-    deadline_pool_secondary = ""
-    deadline_group = ""
-    deadline_chunk_size = 1
-    deadline_priority = None
+    # Deadline attributes
+    url = ""
+    department = ""
+    group = ""
+    chunk_size = 1
 
     # regex for finding frame number in string
     R_FRAME_NUMBER = re.compile(r'.+\.(?P<frame>[0-9]+)\..+')
@@ -200,16 +200,15 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             environment["AYON_RENDER_JOB"] = "0"
             environment["AYON_REMOTE_PUBLISH"] = "0"
             environment["AYON_BUNDLE_NAME"] = os.environ["AYON_BUNDLE_NAME"]
-            deadline_plugin = "Ayon"
+            plugin_name = "Ayon"
         else:
             environment["AVALON_DB"] = os.environ["AVALON_DB"]
             environment["OPENPYPE_PUBLISH_JOB"] = "1"
             environment["OPENPYPE_RENDER_JOB"] = "0"
             environment["OPENPYPE_REMOTE_PUBLISH"] = "0"
-            deadline_plugin = "OpenPype"
-            # Add OpenPype version if we are running from build.
-            if is_running_from_build():
-                self.environ_keys.append("OPENPYPE_VERSION")
+            plugin_name = "OpenPype"
+            # Add OpenPype version
+            self.environ_keys.append("OPENPYPE_VERSION")
 
         # add environments from self.environ_keys
         for env_key in self.environ_keys:
@@ -227,8 +226,6 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             mongo_url = os.environ.get("OPENPYPE_MONGO")
             if mongo_url:
                 environment["OPENPYPE_MONGO"] = mongo_url
-
-        priority = self.deadline_priority or instance.data.get("priority", 50)
 
         instance_settings = self.get_attr_values_from_data(instance.data)
         initial_status = instance_settings.get("publishJobState", "Active")
@@ -248,25 +245,22 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             args.append("--automatic-tests")
 
         # Generate the payload for Deadline submission
-        secondary_pool = (
-            self.deadline_pool_secondary or instance.data.get("secondaryPool")
-        )
         payload = {
             "JobInfo": {
-                "Plugin": deadline_plugin,
+                "Plugin": plugin_name,
                 "BatchName": job["Props"]["Batch"],
                 "Name": job_name,
                 "UserName": job["Props"]["User"],
                 "Comment": instance.context.data.get("comment", ""),
 
-                "Department": self.deadline_department,
-                "ChunkSize": self.deadline_chunk_size,
-                "Priority": priority,
+                "Department": self.department,
+                "ChunkSize": self.chunk_size,
+                "Priority": self.get_attr_value(self, instance, "priority"),
                 "InitialStatus": initial_status,
 
-                "Group": self.deadline_group,
-                "Pool": self.deadline_pool or instance.data.get("primaryPool"),
-                "SecondaryPool": secondary_pool,
+                "Group": self.group,
+                "Pool": self.get_attr_value(self, instance, "pool"),
+                "SecondaryPool": self.get_attr_value(self, instance, "pool_secondary"),
                 # ensure the outputdirectory with correct slashes
                 "OutputDirectory0": output_dir.replace("\\", "/")
             },
@@ -288,9 +282,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                     job_index)] = assembly_id  # noqa: E501
                 job_index += 1
         elif instance.data.get("bakingSubmissionJobs"):
-            self.log.info(
-                "Adding baking submission jobs as dependencies..."
-            )
+            self.log.info("Adding baking submission jobs as dependencies...")
             job_index = 0
             for assembly_id in instance.data["bakingSubmissionJobs"]:
                 payload["JobInfo"]["JobDependency{}".format(
@@ -308,8 +300,6 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                     )
                 }
             )
-        # remove secondary pool
-        payload["JobInfo"].pop("SecondaryPool", None)
 
         self.log.debug("Submitting Deadline publish job ...")
 
@@ -551,7 +541,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                     task_type=template_data["task"]["type"],
                     family="render",
                     subset=subset,
-                    project_settings=context.data["project_settings"]
+                    project_settings=context.data[PROJECT_SETTINGS_KEY]
                 )
 
         host_name = context.data["hostName"]

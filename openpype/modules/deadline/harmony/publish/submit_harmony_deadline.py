@@ -13,6 +13,7 @@ import pyblish.api
 from openpype.pipeline import legacy_io
 from openpype_modules.deadline import abstract_submit_deadline
 from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from openpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs
 from openpype.tests.lib import is_in_tests
 from openpype.lib import is_running_from_build
 
@@ -220,7 +221,7 @@ class PluginInfo(object):
 
 
 class HarmonySubmitDeadline(
-    abstract_submit_deadline.AbstractSubmitDeadline
+    abstract_submit_deadline.AbstractSubmitDeadline, DeadlineDefaultJobAttrs
 ):
     """Submit render write of Harmony scene to Deadline.
 
@@ -245,28 +246,39 @@ class HarmonySubmitDeadline(
 
     optional = True
     use_published = False
-    priority = 50
     chunk_size = 1000000
     group = "none"
     department = ""
 
     def get_job_info(self):
         job_info = DeadlineJobInfo("Harmony")
-        job_info.Name = self._instance.data["name"]
-        job_info.Plugin = "HarmonyOpenPype"
+        job_info.Plugin = "Harmony"
         job_info.Frames = "{}-{}".format(
             self._instance.data["frameStartHandle"],
             self._instance.data["frameEndHandle"]
         )
         # for now, get those from presets. Later on it should be
         # configurable in Harmony UI directly.
-        job_info.Priority = self.priority
-        job_info.Pool = self._instance.data.get("primaryPool")
-        job_info.SecondaryPool = self._instance.data.get("secondaryPool")
+        job_info.Priority = self.get_job_attr("priority")
+        job_info.Pool = self._instance.data.get("pool", self.get_job_attr("pool"))
+        job_info.SecondaryPool = self._instance.data.get("pool_secondary", self.get_job_attr("pool_secondary"))
         job_info.ChunkSize = self.chunk_size
-        batch_name = os.path.basename(self._instance.data["source"])
+        filename = os.path.basename(self._instance.data["source"])
+        job_name = set_custom_deadline_name(
+            self._instance,
+            filename,
+            "deadline_job_name"
+        )
+
+        batch_name = set_custom_deadline_name(
+            self._instance,
+            filename,
+            "deadline_batch_name"
+        )
         if is_in_tests():
             batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
+        job_info.BatchName = "Group: " + batch_name
+        job_info.Name = job_name
         job_info.BatchName = batch_name
         job_info.Department = self.department
         job_info.Group = self.group

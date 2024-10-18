@@ -11,6 +11,7 @@ from openpype.lib import (
 from openpype.pipeline import legacy_io
 from openpype_modules.deadline import abstract_submit_deadline
 from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from openpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs
 from openpype.tests.lib import is_in_tests
 from openpype.lib import is_running_from_build
 
@@ -30,8 +31,8 @@ class DeadlinePluginInfo():
 
 
 class AfterEffectsSubmitDeadline(
-    abstract_submit_deadline.AbstractSubmitDeadline
-):
+    abstract_submit_deadline.AbstractSubmitDeadline,
+    DeadlineDefaultJobAttrs):
 
     label = "Submit AE to Deadline"
     order = pyblish.api.IntegratorOrder + 0.1
@@ -40,7 +41,6 @@ class AfterEffectsSubmitDeadline(
     use_published = True
     targets = ["local"]
 
-    priority = 50
     chunk_size = 1000000
     group = None
     department = None
@@ -51,11 +51,23 @@ class AfterEffectsSubmitDeadline(
 
         context = self._instance.context
 
-        batch_name = os.path.basename(self._instance.data["source"])
+        filename = os.path.basename(self._instance.data["source"])
+
+        job_name = set_custom_deadline_name(
+            self._instance,
+            filename,
+            "deadline_job_name"
+        )
+        batch_name = set_custom_deadline_name(
+            self._instance,
+            filename,
+            "deadline_batch_name"
+        )
+
         if is_in_tests():
             batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
-        dln_job_info.Name = self._instance.data["name"]
-        dln_job_info.BatchName = batch_name
+        dln_job_info.Name = job_name
+        dln_job_info.BatchName = "Group: " + batch_name
         dln_job_info.Plugin = "AfterEffects"
         dln_job_info.UserName = context.data.get(
             "deadlineUser", getpass.getuser())
@@ -66,9 +78,9 @@ class AfterEffectsSubmitDeadline(
                 int(round(self._instance.data["frameEnd"])))
             dln_job_info.Frames = frame_range
 
-        dln_job_info.Priority = self.priority
-        dln_job_info.Pool = self._instance.data.get("primaryPool")
-        dln_job_info.SecondaryPool = self._instance.data.get("secondaryPool")
+        dln_job_info.Priority = self.get_job_attr("priority")
+        dln_job_info.Pool = self._instance.data.get("pool", self.get_job_attr("pool"))
+        dln_job_info.SecondaryPool = self._instance.data.get("pool_secondary", self.get_job_attr("pool_secondary"))
         dln_job_info.Group = self.group
         dln_job_info.Department = self.department
         dln_job_info.ChunkSize = self.chunk_size

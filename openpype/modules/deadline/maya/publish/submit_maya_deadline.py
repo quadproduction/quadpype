@@ -28,6 +28,7 @@ from collections import OrderedDict
 
 import attr
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline import (
     legacy_io,
     OpenPypePyblishPluginMixin
@@ -41,8 +42,13 @@ from openpype.lib import (
 from openpype.hosts.maya.api.lib_rendersettings import RenderSettings
 from openpype.hosts.maya.api.lib import get_attr_in_layer
 
-from openpype_modules.deadline import abstract_submit_deadline
+from openpype_modules.deadline import (
+    abstract_submit_deadline,
+    get_deadline_limits_plugin
+)
+from openpype.pipeline.context_tools import _get_modules_manager
 from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from openpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs, get_deadline_job_profile
 from openpype.tests.lib import is_in_tests
 from openpype.lib import is_running_from_build
 from openpype.pipeline.farm.tools import iter_expected_files
@@ -100,7 +106,8 @@ class ArnoldPluginInfo(object):
 
 
 class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
-                         OpenPypePyblishPluginMixin):
+                         OpenPypePyblishPluginMixin,
+                         DeadlineDefaultJobAttrs):
 
     label = "Submit Render to Deadline"
     hosts = ["maya"]
@@ -108,32 +115,16 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
     targets = ["local"]
 
     tile_assembler_plugin = "OpenPypeTileAssembler"
-    priority = 50
     tile_priority = 50
-    limit = []  # limit groups
     jobInfo = {}
     pluginInfo = {}
     group = "none"
     strict_error_checking = True
 
     @classmethod
-    def apply_settings(cls, project_settings, system_settings):
-        settings = project_settings["deadline"]["publish"]["MayaSubmitDeadline"]  # noqa
-
-        # Take some defaults from settings
-        cls.asset_dependencies = settings.get("asset_dependencies",
-                                              cls.asset_dependencies)
-        cls.import_reference = settings.get("import_reference",
-                                            cls.import_reference)
-        cls.use_published = settings.get("use_published", cls.use_published)
-        cls.priority = settings.get("priority", cls.priority)
-        cls.tile_priority = settings.get("tile_priority", cls.tile_priority)
-        cls.limit = settings.get("limit", cls.limit)
-        cls.group = settings.get("group", cls.group)
-        cls.strict_error_checking = settings.get("strict_error_checking",
-                                                 cls.strict_error_checking)
-        cls.jobInfo = settings.get("jobInfo", cls.jobInfo)
-        cls.pluginInfo = settings.get("pluginInfo", cls.pluginInfo)
+    def apply_settings(cls, project_settings):
+        profile = get_deadline_job_profile(project_settings, cls.hosts[0])
+        cls.set_job_attrs(profile)
 
     def get_job_info(self):
         job_info = DeadlineJobInfo(Plugin="MayaBatch")
@@ -152,48 +143,57 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         src_filepath = context.data["currentFile"]
         src_filename = os.path.basename(src_filepath)
 
-        if is_in_tests():
-            src_filename += datetime.now().strftime("%d%m%Y%H%M%S")
+        job_name = set_custom_deadline_name(
+            instance,
+            src_filename,
+            "deadline_job_name"
+        )
+        batch_name = set_custom_deadline_name(
+            instance,
+            src_filename,
+            "deadline_batch_name"
+        )
 
-        job_info.Name = "%s - %s" % (src_filename, instance.name)
-        job_info.BatchName = src_filename
-        job_info.Plugin = instance.data.get("mayaRenderPlugin", "MayaBatch")
+        if is_in_tests():
+            batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
+
+        job_info.Name = job_name
+        job_info.BatchName = "Group: " + batch_name
+        job_info.Plugin = self.get_attr_value(self, instance, "mayaRenderPlugin", "MayaBatch")
         job_info.UserName = context.data.get("deadlineUser", getpass.getuser())
 
         # Deadline requires integers in frame range
         frames = "{start}-{end}x{step}".format(
-            start=int(instance.data["frameStartHandle"]),
-            end=int(instance.data["frameEndHandle"]),
-            step=int(instance.data["byFrameStep"]),
+            start=int(self.get_attr_value(self, instance, "frameStartHandle")),
+            end=int(self.get_attr_value(self, instance, "frameEndHandle")),
+            step=int(self.get_attr_value(self, instance, "byFrameStep")),
         )
         job_info.Frames = frames
-
-        job_info.Pool = instance.data.get("primaryPool")
-        job_info.SecondaryPool = instance.data.get("secondaryPool")
         job_info.Comment = context.data.get("comment")
-        job_info.Priority = instance.data.get("priority", self.priority)
 
         if self.group != "none" and self.group:
             job_info.Group = self.group
 
-        if self.limit:
-            job_info.LimitGroups = ",".join(self.limit)
-
-        attr_values = self.get_attr_values_from_data(instance.data)
         render_globals = instance.data.setdefault("renderGlobals", dict())
-        machine_list = attr_values.get("machineList", "")
+        machine_list = self.get_attr_value(self, instance, "machineList")
         if machine_list:
-            if attr_values.get("whitelist", True):
+            if self.get_attr_value(self, instance, "whitelist", True):
                 machine_list_key = "Whitelist"
             else:
                 machine_list_key = "Blacklist"
             render_globals[machine_list_key] = machine_list
 
-        job_info.Priority = attr_values.get("priority")
-        job_info.ChunkSize = attr_values.get("chunkSize")
+        job_info.Priority = self.get_attr_value(self, instance, "priority")
+        job_info.Pool = self.get_attr_value(self, instance, "pool")
+        job_info.SecondaryPool = self.get_attr_value(self, instance, "pool_secondary")
+        job_info.ChunkSize = self.get_attr_value(self, instance, "chunkSize")
+        job_info.MachineLimit = self.get_attr_value(self, instance, "limit_machine")
+        limits_plugin = self.get_attr_value(self, instance, "limits_plugin")
+        if limits_plugin:
+            job_info.LimitGroups = ",".join(limits_plugin)
 
         # Add options from RenderGlobals
-        render_globals = instance.data.get("renderGlobals", {})
+        render_globals = self.get_attr_value(self, instance, "renderGlobals", {})
         job_info.update(render_globals)
 
         keys = [
@@ -232,14 +232,14 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         job_info.EnvironmentKeyValue["OPENPYPE_LOG_NO_COLORS"] = "1"
 
         # Adding file dependencies.
-        if not bool(os.environ.get("IS_TEST")) and self.asset_dependencies:
+        if self.asset_dependencies:
             dependencies = instance.context.data["fileDependencies"]
             for dependency in dependencies:
                 job_info.AssetDependency += dependency
 
-        # Add list of expected files to job
-        # ---------------------------------
-        exp = instance.data.get("expectedFiles")
+        # Add the list of expected files to the job
+        # -----------------------------------------
+        exp = self.get_attr_value(self, instance, "expectedFiles")
         for filepath in iter_expected_files(exp):
             job_info.OutputDirectory += os.path.dirname(filepath)
             job_info.OutputFilename += os.path.basename(filepath)
@@ -293,6 +293,7 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
     def process_submission(self):
         from maya import cmds
         instance = self._instance
+        context = instance.context
 
         filepath = self.scene_path  # publish if `use_publish` else workfile
 
@@ -464,10 +465,8 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
                                                      self.tile_priority)
         assembly_job_info.TileJob = False
 
-        # TODO: This should be a new publisher attribute definition
-        pool = instance.context.data["project_settings"]["deadline"]
-        pool = pool["publish"]["ProcessSubmittedJobOnFarm"]["deadline_pool"]
-        assembly_job_info.Pool = pool or instance.data.get("primaryPool", "")
+        assembly_job_info.Pool = instance.data.get("pool", self.get_job_attr("pool"))
+        assembly_job_info.SecondaryPool = instance.data.get("pool_secondary", self.get_job_attr("pool_secondary"))
 
         assembly_plugin_info = {
             "CleanupTiles": 1,
@@ -571,7 +570,7 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
 
         job_info = copy.deepcopy(self.job_info)
 
-        if not bool(os.environ.get("IS_TEST")) and self.asset_dependencies:
+        if self.asset_dependencies:
             # Asset dependency to wait for at least the scene file to sync.
             job_info.AssetDependency += self.scene_path
 
@@ -724,7 +723,7 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
             }
 
         """
-        project_settings = self._instance.context.data["project_settings"]
+        project_settings = self._instance.context.data[PROJECT_SETTINGS_KEY]
         patches = (
             project_settings.get(
                 "deadline", {}).get(
@@ -765,12 +764,35 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
     @classmethod
     def get_attribute_defs(cls):
         defs = super(MayaSubmitDeadline, cls).get_attribute_defs()
+        manager = _get_modules_manager()
+        deadline_module = manager.modules_by_name["deadline"]
+        deadline_url = deadline_module.deadline_urls["default"]
+        pools = deadline_module.get_deadline_pools(deadline_url, cls.log)
+        limits_plugin = get_deadline_limits_plugin(deadline_module.enabled, deadline_url, cls.log)
 
         defs.extend([
+            EnumDef("pool",
+                    label="Primary Pool",
+                    items=pools,
+                    default=cls.get_job_attr("pool")),
+            EnumDef("pool_secondary",
+                    label="Secondary Pool",
+                    items=pools,
+                    default=cls.get_job_attr("pool_secondary")),
             NumberDef("priority",
                       label="Priority",
-                      default=cls.default_priority,
+                      default=cls.get_job_attr("priority"),
                       decimals=0),
+            NumberDef("limit_machine",
+                      label="Machine Limit",
+                      default=cls.get_job_attr("limit_machine"),
+                      minimum=0,
+                      decimals=0),
+            EnumDef("limits_plugin",
+                    label="Limit Groups",
+                    items=limits_plugin,
+                    default=cls.get_job_attr("limits_plugin"),
+                    multiselection=True),
             NumberDef("chunkSize",
                       label="Frames Per Task",
                       default=1,

@@ -1,17 +1,20 @@
 import os
 import json
+import getpass
 from datetime import datetime
 
 import requests
 
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline import legacy_io
 from openpype.tests.lib import is_in_tests
 from openpype.lib import is_running_from_build
+from openpype.modules.deadline.utils import DeadlineDefaultJobAttrs, get_deadline_job_profile
 
 
-class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin):
+class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin, DeadlineDefaultJobAttrs):
     """Submit Houdini scene to perform a local publish in Deadline.
 
     Publishing in Deadline can be helpful for scenes that publish very slow.
@@ -62,11 +65,15 @@ class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin):
         project = context.data["projectEntity"]
         code = project["data"].get("code", project["name"])
 
+        project_settings = context.data[PROJECT_SETTINGS_KEY]
+        profile = get_deadline_job_profile(project_settings, self.hosts[0])
+        self.set_job_attrs(profile)
+
         job_name = "{scene} [PUBLISH]".format(scene=scenename)
         batch_name = "{code} - {scene}".format(code=code, scene=scenename)
         if is_in_tests():
             batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
-        deadline_user = "roy"  # todo: get deadline user dynamically
+        deadline_user = context.data.get("deadlineUser", getpass.getuser())
 
         # Get only major.minor version of Houdini, ignore patch version
         version = hou.applicationVersionString()
@@ -76,10 +83,10 @@ class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin):
         payload = {
             "JobInfo": {
                 "Plugin": "Houdini",
-                "Pool": "houdini",  # todo: remove hardcoded pool
-                "BatchName": batch_name,
+                "Pool": self.get_job_attr("pool"),
+                "BatchName": "Group: " + batch_name,
                 "Comment": context.data.get("comment", ""),
-                "Priority": 50,
+                "Priority": self.get_job_attr("priority"),
                 "Frames": "1-1",  # Always trigger a single frame
                 "IsFrameDependent": False,
                 "Name": job_name,

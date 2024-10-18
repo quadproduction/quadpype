@@ -16,11 +16,13 @@ from openpype.lib import (
     NumberDef,
     is_running_from_build
 )
+from openpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs
 
 
 class FusionSubmitDeadline(
     pyblish.api.InstancePlugin,
-    OpenPypePyblishPluginMixin
+    OpenPypePyblishPluginMixin,
+    DeadlineDefaultJobAttrs
 ):
     """Submit current Comp to Deadline
 
@@ -37,8 +39,6 @@ class FusionSubmitDeadline(
 
     # presets
     plugin = None
-
-    priority = 50
     chunk_size = 1
     concurrent_tasks = 1
     group = ""
@@ -49,11 +49,11 @@ class FusionSubmitDeadline(
             NumberDef(
                 "priority",
                 label="Priority",
-                default=cls.priority,
+                default=cls.get_job_attr("priority"),
                 decimals=0
             ),
             NumberDef(
-                "chunk",
+                "chunkSize",
                 label="Frames Per Task",
                 default=cls.chunk_size,
                 decimals=0,
@@ -145,6 +145,16 @@ class FusionSubmitDeadline(
                 )
 
         filename = os.path.basename(script_path)
+        job_name = set_custom_deadline_name(
+            instance,
+            filename,
+            "deadline_job_name"
+        )
+        batch_name = set_custom_deadline_name(
+            instance,
+            filename,
+            "deadline_batch_name"
+        )
 
         # Documentation for keys available at:
         # https://docs.thinkboxsoftware.com
@@ -153,18 +163,18 @@ class FusionSubmitDeadline(
         payload = {
             "JobInfo": {
                 # Top-level group name
-                "BatchName": filename,
+                "BatchName": "Group: " + batch_name,
 
                 # Asset dependency to wait for at least the scene file to sync.
                 "AssetDependency0": script_path,
 
                 # Job name, as seen in Monitor
-                "Name": filename,
+                "Name": job_name,
 
                 "Priority": attribute_values.get(
-                    "priority", self.priority),
+                    "priority", self.get_job_attr("priority")),
                 "ChunkSize": attribute_values.get(
-                    "chunk", self.chunk_size),
+                    "chunkSize", self.chunk_size),
                 "ConcurrentTasks": attribute_values.get(
                     "concurrency",
                     self.concurrent_tasks
@@ -173,8 +183,8 @@ class FusionSubmitDeadline(
                 # User, as seen in Monitor
                 "UserName": deadline_user,
 
-                "Pool": instance.data.get("primaryPool"),
-                "SecondaryPool": instance.data.get("secondaryPool"),
+                "Pool": instance.data.get("pool", self.get_job_attr("pool")),
+                "SecondaryPool": instance.data.get("pool_secondary", self.get_job_attr("pool_secondary")),
                 "Group": self.group,
 
                 "Plugin": self.plugin,
