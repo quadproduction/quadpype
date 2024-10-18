@@ -23,6 +23,7 @@ from openpype.lib import (
     get_ffprobe_streams,
     convert_ffprobe_fps_value,
 )
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline.create import get_subset_name
 from openpype_modules.webpublisher.lib import parse_json
 from openpype.pipeline.version_start import get_versioning_start
@@ -101,7 +102,7 @@ class CollectPublishedFiles(pyblish.api.ContextPlugin):
                 asset_doc,
                 project_name=project_name,
                 host_name="webpublisher",
-                project_settings=context.data["project_settings"]
+                project_settings=context.data[PROJECT_SETTINGS_KEY]
             )
             version = self._get_next_version(
                 project_name,
@@ -305,7 +306,7 @@ class CollectPublishedFiles(pyblish.api.ContextPlugin):
                 task_type=task_type,
                 family=family,
                 subset=subset_name,
-                project_settings=context.data["project_settings"]
+                project_settings=context.data[PROJECT_SETTINGS_KEY]
             )
 
         return version

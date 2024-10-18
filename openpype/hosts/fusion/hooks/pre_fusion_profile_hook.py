@@ -2,7 +2,7 @@ import os
 import shutil
 import platform
 from pathlib import Path
-from openpype import AYON_SERVER_ENABLED
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.hosts.fusion import (
     FUSION_HOST_DIR,
     FUSION_VERSIONS_DICT,
@@ -73,7 +73,7 @@ class FusionCopyPrefsPrelaunch(PreLaunchHook):
     def get_copy_fusion_prefs_settings(self):
         # Get copy preferences options from the global application settings
 
-        copy_fusion_settings = self.data["project_settings"]["fusion"].get(
+        copy_fusion_settings = self.data[PROJECT_SETTINGS_KEY]["fusion"].get(
             "copy_fusion_settings", {}
         )
         if not copy_fusion_settings:

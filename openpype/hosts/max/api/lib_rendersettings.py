@@ -5,6 +5,13 @@ from openpype.settings import get_project_settings
 from openpype.pipeline import get_current_project_name
 from openpype.pipeline.context_tools import get_current_project_asset
 
+try:
+    from pymxs import runtime as rt
+except ImportError:
+    # Ignoring, we don't want misleading error logs on jobs log on deadline.
+    # Because the farm publish function imports every publish file before filtering.
+    pass
+
 from openpype.hosts.max.api.lib import (
     set_render_frame_range,
     get_current_renderer,

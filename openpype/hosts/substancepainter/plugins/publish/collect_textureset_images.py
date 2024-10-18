@@ -2,6 +2,7 @@ import os
 import copy
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline import publish
 
 import substance_painter.textureset
@@ -88,7 +89,7 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
             asset_doc=asset_doc,
             project_name=context.data["projectName"],
             host_name=context.data["hostName"],
-            project_settings=context.data["project_settings"]
+            project_settings=context.data[PROJECT_SETTINGS_KEY]
         )
 
         # Prepare representation

@@ -3,6 +3,7 @@ import os
 import pyblish.api
 from pymxs import runtime as rt
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.hosts.max.api import maintained_selection
 from openpype.pipeline import publish
 
@@ -147,7 +148,7 @@ class ExtractPointCloud(publish.Extractor):
 
     @staticmethod
     def get_setting(instance):
-        project_setting = instance.context.data["project_settings"]
+        project_setting = instance.context.data[PROJECT_SETTINGS_KEY]
         return project_setting["max"]["PointCloud"]
 
     def get_custom_attr(self, operator):

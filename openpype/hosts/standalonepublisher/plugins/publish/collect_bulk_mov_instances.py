@@ -2,6 +2,7 @@ import copy
 import json
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.client import get_asset_by_name
 from openpype.pipeline.create import get_subset_name
 
@@ -51,7 +52,7 @@ class CollectBulkMovInstances(pyblish.api.InstancePlugin):
             asset_doc,
             project_name,
             host_name=context.data["hostName"],
-            project_settings=context.data["project_settings"]
+            project_settings=context.data[PROJECT_SETTINGS_KEY]
         )
         instance_name = f"{asset_name}_{subset_name}"
 

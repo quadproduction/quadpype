@@ -1,5 +1,6 @@
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishXmlValidationError,
@@ -42,7 +43,7 @@ class ValidateTextureBatchWorkfiles(pyblish.api.InstancePlugin):
 
     @staticmethod
     def get_main_workfile_extensions(instance):
-        project_settings = instance.context.data["project_settings"]
+        project_settings = instance.context.data[PROJECT_SETTINGS_KEY]
 
         try:
             extensions = (project_settings["standalonepublisher"]
