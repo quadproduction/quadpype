@@ -12,6 +12,111 @@
             "multiselect": true
         },
         {
+            "type": "text",
+            "key": "deadline_batch_name",
+            "label": "Batch name"
+        },
+        {
+            "type": "text",
+            "key": "deadline_job_name",
+            "label": "Job name"
+        },
+        {
+            "type": "dict",
+            "collapsible": true,
+            "key": "JobAttrsValues",
+            "label": "Job Attributes Values",
+            "is_group": true,
+            "children": [
+                {
+                    "type": "dict",
+                    "collapsible": true,
+                    "collapsed": true,
+                    "key": "DefaultValues",
+                    "label": "Default Values",
+                    "children": [
+                        {
+                            "type": "deadline-pools-enum",
+                            "key": "pool",
+                            "label": "Primary pool"
+                        },
+                        {
+                            "type": "deadline-pools-enum",
+                            "key": "pool_secondary",
+                            "label": "Secondary Pool"
+                        },
+                        {
+                            "type": "number",
+                            "key": "priority",
+                            "label": "Priority"
+                        },
+                        {
+                            "type": "number",
+                            "key": "limit_machine",
+                            "label": "Machine Limit"
+                        },
+                        {
+                            "type": "deadline-limits-plugin-enum",
+                            "key": "limits_plugin",
+                            "label": "Plugin Limits"
+                        }
+                    ]
+                },
+                {
+                    "type": "separator"
+                },
+                {
+                    "type": "list",
+                    "key": "profiles",
+                    "label": "Profiles",
+                    "object_type": {
+                        "type": "dict",
+                        "children": [
+                            {
+                                "type": "task-types-enum",
+                                "key": "task_types",
+                                "label": "Task types"
+                            },
+                            {
+                                "type": "hosts-enum",
+                                "key": "hosts",
+                                "label": "Host names",
+                                "multiselection": true
+                            },
+                            {
+                                "type": "splitter"
+                            },
+                            {
+                                "type": "deadline-pools-enum",
+                                "key": "pool",
+                                "label": "Primary pool"
+                            },
+                            {
+                                "type": "deadline-pools-enum",
+                                "key": "pool_secondary",
+                                "label": "Secondary Pool"
+                            },
+                            {
+                                "type": "number",
+                                "key": "priority",
+                                "label": "Priority"
+                            },
+                            {
+                                "type": "number",
+                                "key": "limit_machine",
+                                "label": "Machine Limit"
+                            },
+                            {
+                                "type": "deadline-limits-plugin-enum",
+                                "key": "limits_plugin",
+                                "label": "Plugin Limits"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "type": "dict",
             "collapsible": true,
             "key": "publish",
@@ -27,24 +132,6 @@
                             "type": "boolean",
                             "key": "pass_mongo_url",
                             "label": "Pass Mongo url to job"
-                        }
-                    ]
-                },
-                {
-                    "type": "dict",
-                    "collapsible": true,
-                    "key": "CollectDeadlinePools",
-                    "label": "Default Deadline Pools",
-                    "children": [
-                        {
-                            "type": "text",
-                            "key": "primary_pool",
-                            "label": "Primary Pool"
-                        },
-                        {
-                            "type": "text",
-                            "key": "secondary_pool",
-                            "label": "Secondary Pool"
                         }
                     ]
                 },
@@ -142,11 +229,6 @@
                         },
                         {
                             "type": "number",
-                            "key": "priority",
-                            "label": "Priority"
-                        },
-                        {
-                            "type": "number",
                             "key": "tile_priority",
                             "label": "Tile Assembler Priority"
                         },
@@ -154,12 +236,6 @@
                             "type": "text",
                             "key": "group",
                             "label": "Group Name"
-                        },
-                        {
-                            "type": "list",
-                            "key": "limit",
-                            "label": "Limit Groups",
-                            "object_type": "text"
                         },
                         {
                             "type": "raw-json",
@@ -326,11 +402,6 @@
                         },
                         {
                             "type": "number",
-                            "key": "priority",
-                            "label": "Priority"
-                        },
-                        {
-                            "type": "number",
                             "key": "chunk_size",
                             "label": "Frame per Task"
                         },
@@ -362,11 +433,6 @@
                             "type": "boolean",
                             "key": "active",
                             "label": "Active"
-                        },
-                        {
-                            "type": "number",
-                            "key": "priority",
-                            "label": "Priority"
                         },
                         {
                             "type": "number",
@@ -418,11 +484,6 @@
                         },
                         {
                             "type": "splitter"
-                        },
-                        {
-                            "type": "number",
-                            "key": "priority",
-                            "label": "Priority"
                         },
                         {
                             "type": "number",
@@ -478,15 +539,6 @@
                             "object_type": {
                                 "type": "text"
                             }
-                        },
-                        {
-                            "type": "dict-modifiable",
-                            "key": "limit_groups",
-                            "label": "Limit Groups",
-                            "object_type": {
-                                "type": "list",
-                                "object_type": "text"
-                            }
                         }
                     ]
                 },
@@ -516,11 +568,6 @@
                             "type": "boolean",
                             "key": "use_published",
                             "label": "Use Published scene"
-                        },
-                        {
-                            "type": "number",
-                            "key": "priority",
-                            "label": "Priority"
                         },
                         {
                             "type": "number",
@@ -568,11 +615,6 @@
                         },
                         {
                             "type": "number",
-                            "key": "priority",
-                            "label": "Priority"
-                        },
-                        {
-                            "type": "number",
                             "key": "chunk_size",
                             "label": "Chunk Size"
                         },
@@ -608,37 +650,22 @@
                         },
                         {
                             "type": "text",
-                            "key": "deadline_department",
+                            "key": "department",
                             "label": "Deadline apartment"
                         },
                         {
-                            "type": "number",
-                            "key": "deadline_priority",
-                            "label": "Deadline priority"
-                        },
-                        {
                             "type": "text",
-                            "key": "deadline_pool",
-                            "label": "Deadline pool"
-                        },
-                        {
-                            "type": "text",
-                            "key": "deadline_pool_secondary",
-                            "label": "Deadline pool (secondary)"
-                        },
-                        {
-                            "type": "text",
-                            "key": "deadline_group",
+                            "key": "group",
                             "label": "Deadline Group"
                         },
                         {
                             "type": "number",
-                            "key": "deadline_chunk_size",
+                            "key": "chunk_size",
                             "label": "Deadline Chunk size"
                         },
                         {
                             "type": "text",
-                            "key": "deadline_job_delay",
+                            "key": "job_delay",
                             "label": "Delay job (timecode dd:hh:mm:ss)"
                         }
                     ]
@@ -672,11 +699,6 @@
                         },
                         {
                             "type": "number",
-                            "key": "priority",
-                            "label": "Priority"
-                        },
-                        {
-                            "type": "number",
                             "key": "chunk_size",
                             "label": "Frame per Task"
                         },
@@ -707,28 +729,18 @@
                         },
                         {
                             "type": "text",
-                            "key": "deadline_department",
+                            "key": "department",
                             "label": "Deadline department"
                         },
                         {
                             "type": "text",
-                            "key": "deadline_pool",
-                            "label": "Deadline Pool"
-                        },
-                        {
-                            "type": "text",
-                            "key": "deadline_group",
+                            "key": "group",
                             "label": "Deadline Group"
                         },
                         {
                             "type": "number",
-                            "key": "deadline_chunk_size",
+                            "key": "chunk_size",
                             "label": "Deadline Chunk Size"
-                        },
-                        {
-                            "type": "number",
-                            "key": "deadline_priority",
-                            "label": "Deadline Priotity"
                         }
                     ]
                 },
@@ -747,28 +759,18 @@
                         },
                         {
                             "type": "text",
-                            "key": "deadline_department",
+                            "key": "department",
                             "label": "Deadline department"
                         },
                         {
                             "type": "text",
-                            "key": "deadline_pool",
-                            "label": "Deadline Pool"
-                        },
-                        {
-                            "type": "text",
-                            "key": "deadline_group",
+                            "key": "group",
                             "label": "Deadline Group"
                         },
                         {
                             "type": "number",
-                            "key": "deadline_chunk_size",
+                            "key": "chunk_size",
                             "label": "Deadline Chunk Size"
-                        },
-                        {
-                            "type": "number",
-                            "key": "deadline_priority",
-                            "label": "Deadline Priotity"
                         },
                         {
                             "type": "splitter"
