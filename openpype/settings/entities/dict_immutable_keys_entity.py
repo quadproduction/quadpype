@@ -42,6 +42,10 @@ class DictImmutableKeysEntity(ItemEntity):
         "collapsed": True
     }
 
+    def __init__(self, schema_data, parent, is_dynamic_item=False):
+        super(DictImmutableKeysEntity, self).__init__(schema_data, parent, is_dynamic_item)
+        self.protect_attrs = False
+
     def __getitem__(self, key):
         """Return entity inder key."""
         return self.non_gui_children[key]
@@ -182,7 +186,7 @@ class DictImmutableKeysEntity(ItemEntity):
         self._ignore_child_changes = False
 
         # `current_metadata` are still when schema is loaded
-        # - only metadata stored with dict item are gorup overrides in
+        # - only metadata stored with dict item are group overrides in
         #   M_OVERRIDDEN_KEY
         self._current_metadata = {}
         self._metadata_are_modified = False
@@ -197,6 +201,8 @@ class DictImmutableKeysEntity(ItemEntity):
 
         if self.is_dynamic_item:
             self.require_key = False
+
+        self.read_only = self.schema_data.get("read_only", False)
 
         # GUI attributes
         self.checkbox_key = self.schema_data.get("checkbox_key")

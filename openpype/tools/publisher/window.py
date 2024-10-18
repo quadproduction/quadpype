@@ -10,6 +10,7 @@ from openpype import (
     style
 )
 from openpype import AYON_SERVER_ENABLED
+from openpype.widgets import BaseToolDialog
 from openpype.tools.utils import (
     ErrorMessageBox,
     PlaceholderLineEdit,
@@ -42,7 +43,7 @@ from .widgets import (
 )
 
 
-class PublisherWindow(QtWidgets.QDialog):
+class PublisherWindow(BaseToolDialog):
     """Main window of publisher."""
     default_width = 1300
     default_height = 800
@@ -64,13 +65,16 @@ class PublisherWindow(QtWidgets.QDialog):
         if reset_on_show is None:
             reset_on_show = True
 
-        self.setWindowFlags(
-            QtCore.Qt.Window
-            | QtCore.Qt.WindowTitleHint
-            | QtCore.Qt.WindowMaximizeButtonHint
-            | QtCore.Qt.WindowMinimizeButtonHint
-            | QtCore.Qt.WindowCloseButtonHint
-        )
+        window_flags = QtCore.Qt.Dialog \
+                       | QtCore.Qt.WindowTitleHint \
+                       | QtCore.Qt.WindowMaximizeButtonHint \
+                       | QtCore.Qt.WindowMinimizeButtonHint \
+                       | QtCore.Qt.WindowCloseButtonHint
+
+        if self.window_stays_on_top:
+            window_flags |= QtCore.Qt.WindowStaysOnTopHint
+
+        self.setWindowFlags(window_flags)
 
         if controller is None:
             controller = QtPublisherController()
@@ -385,6 +389,8 @@ class PublisherWindow(QtWidgets.QDialog):
         self._show_counter = 0
         self._window_is_visible = False
 
+        self.resize(self.default_width, self.default_height)
+
     @property
     def controller(self):
         return self._controller
@@ -534,7 +540,6 @@ class PublisherWindow(QtWidgets.QDialog):
         )
 
     def _on_first_show(self):
-        self.resize(self.default_width, self.default_height)
         self.setStyleSheet(style.load_stylesheet())
         center_window(self)
         self._reset_on_show = self._reset_on_first_show
@@ -895,8 +900,8 @@ class PublisherWindow(QtWidgets.QDialog):
             validate_enabled = not self._controller.publish_has_validated
         if publish_enabled:
             if (
-                self._controller.publish_has_validated
-                and self._controller.publish_has_validation_errors
+                    self._controller.publish_has_validated
+                    and self._controller.publish_has_validation_errors
             ):
                 publish_enabled = False
 
