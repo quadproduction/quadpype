@@ -118,13 +118,13 @@
             ]
         },
         "CreateUSD": {
-            "enabled": true,
+            "enabled": false,
             "default_variants": [
                 "Main"
             ]
         },
         "CreateUSDRender": {
-            "enabled": true,
+            "enabled": false,
             "default_variants": [
                 "Main"
             ]

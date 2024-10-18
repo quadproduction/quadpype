@@ -44,20 +44,6 @@ class LauncherAction(OpenPypeModule, ITrayAction):
             if path and os.path.exists(path):
                 register_launcher_action_path(path)
 
-        paths_str = os.environ.get("AVALON_ACTIONS") or ""
-        if paths_str:
-            self.log.warning(
-                "WARNING: 'AVALON_ACTIONS' is deprecated. Support of this"
-                " environment variable will be removed in future versions."
-                " Please consider using 'OpenPypeModule' to define custom"
-                " action paths. Planned version to drop the support"
-                " is 3.17.2 or 3.18.0 ."
-            )
-
-        for path in paths_str.split(os.pathsep):
-            if path and os.path.exists(path):
-                register_launcher_action_path(path)
-
     def on_action_trigger(self):
         """Implementation for ITrayAction interface.
 
@@ -76,8 +62,15 @@ class LauncherAction(OpenPypeModule, ITrayAction):
         self._window = LauncherWindow()
 
     def _show_launcher(self):
-        if self._window is None:
-            return
-        self._window.show()
-        self._window.raise_()
-        self._window.activateWindow()
+        password_required = is_admin_password_required(admin_bypass_enabled=False)
+        if password_required:
+            dialog = PasswordDialog(allow_remember=False)
+            dialog.setModal(True)
+            dialog.exec_()
+            if not dialog.result():
+                return
+
+        if self.window:
+            self._window.show()
+            self._window.raise_()
+            self._window.activateWindow()
