@@ -7,14 +7,6 @@ from ayon_server.settings import (
 )
 
 
-class CollectDeadlinePoolsModel(BaseSettingsModel):
-    """Settings Deadline default pools."""
-
-    primary_pool: str = SettingsField(title="Primary Pool")
-
-    secondary_pool: str = SettingsField(title="Secondary Pool")
-
-
 class ValidateExpectedFilesModel(BaseSettingsModel):
     enabled: bool = SettingsField(True, title="Enabled")
     active: bool = SettingsField(True, title="Active")

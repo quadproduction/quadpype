@@ -13,7 +13,8 @@ from openpype.settings.lib import (
     get_local_settings,
 )
 from openpype.settings.constants import (
-    DEFAULT_PROJECT_KEY
+    DEFAULT_PROJECT_KEY,
+    PROJECTS_SETTINGS_KEY
 )
 from openpype.client import get_project, get_ayon_server_api_connection
 from openpype.lib import Logger, get_local_site_id
@@ -486,7 +487,7 @@ class Anatomy(BaseAnatomy):
         if local_settings is None:
             local_settings = get_local_settings()
 
-        local_project_settings = local_settings.get("projects") or {}
+        local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY) or {}
         if not local_project_settings:
             return None
 
