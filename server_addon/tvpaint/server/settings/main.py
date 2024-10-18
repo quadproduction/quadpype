@@ -60,6 +60,5 @@ DEFAULT_VALUES = {
     "workfile_builder": {
         "create_first_version": False,
         "custom_templates": []
-    },
-    "filters": []
+    }
 }
