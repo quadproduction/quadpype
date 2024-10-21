@@ -7,6 +7,7 @@ import shutil
 import pyblish.api
 
 from openpype import AYON_SERVER_ENABLED
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.client import (
     get_version_by_id,
     get_hero_version_by_subset_id,
@@ -576,7 +577,7 @@ class IntegrateHeroVersion(pyblish.api.InstancePlugin):
             family,
             task_info.get("name"),
             task_info.get("type"),
-            project_settings=instance.context.data["project_settings"],
+            project_settings=instance.context.data[PROJECT_SETTINGS_KEY],
             hero=True,
             logger=self.log
         )

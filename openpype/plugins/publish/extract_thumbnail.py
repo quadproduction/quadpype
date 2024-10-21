@@ -412,12 +412,13 @@ class ExtractThumbnail(pyblish.api.InstancePlugin):
                 "Failed to create thumbnail using oiiotool",
                 exc_info=True
             )
-            return False
+            return None
 
-        return True
+        return dst_path
 
     def _create_thumbnail_ffmpeg(self, src_path, dst_path):
         self.log.debug("Extracting thumbnail with FFMPEG: {}".format(dst_path))
+
         resolution_arg = self._get_resolution_arg("ffmpeg", src_path)
         ffmpeg_path_args = get_ffmpeg_tool_args("ffmpeg")
         ffmpeg_args = self.ffmpeg_args or {}
@@ -531,7 +532,6 @@ class ExtractThumbnail(pyblish.api.InstancePlugin):
         target_width = self.target_size["width"]
         target_height = self.target_size["height"]
 
-        # form arg string per application
         return get_rescaled_command_arguments(
             application,
             input_path,
