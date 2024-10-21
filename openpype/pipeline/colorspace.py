@@ -9,7 +9,7 @@ import warnings
 from copy import deepcopy
 
 from openpype import PACKAGE_DIR
-from openpype.settings import get_project_settings
+from openpype.settings import get_project_settings, PROJECT_SETTINGS_KEY
 from openpype.lib import (
     StringTemplate,
     run_openpype_process,
@@ -1043,7 +1043,7 @@ def get_colorspace_settings_from_publish_context(context_data):
     project_name = context_data["projectName"]
     host_name = context_data["hostName"]
     anatomy_data = context_data["anatomyData"]
-    project_settings_ = context_data["project_settings"]
+    project_settings_ = context_data[PROJECT_SETTINGS_KEY]
 
     config_data = get_imageio_config(
         project_name, host_name,
@@ -1117,7 +1117,7 @@ def set_colorspace_data_to_representation(
 
     project_name = context_data["projectName"]
     host_name = context_data["hostName"]
-    project_settings = context_data["project_settings"]
+    project_settings = context_data[PROJECT_SETTINGS_KEY]
 
     # get one filename
     filename = representation["files"]
