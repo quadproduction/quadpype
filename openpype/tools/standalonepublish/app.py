@@ -225,7 +225,7 @@ def main():
     qt_app = QtWidgets.QApplication([])
     # app.setQuitOnLastWindowClosed(False)
     qt_app.setStyleSheet(style.load_stylesheet())
-    icon = QtGui.QIcon(resources.get_openpype_icon_filepath())
+    icon = QtGui.QIcon(resources.get_app_icon_filepath())
     qt_app.setWindowIcon(icon)
 
     def signal_handler(sig, frame):

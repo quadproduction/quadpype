@@ -56,7 +56,7 @@ class PublisherWindow(BaseToolDialog):
 
         self.setWindowTitle("{} publisher".format("QuadPype"))
 
-        icon = QtGui.QIcon(resources.get_openpype_icon_filepath())
+        icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
 
         if reset_on_show is None:
@@ -83,7 +83,7 @@ class PublisherWindow(BaseToolDialog):
         # Header
         header_widget = QtWidgets.QWidget(self)
 
-        icon_pixmap = QtGui.QPixmap(resources.get_openpype_icon_filepath())
+        icon_pixmap = QtGui.QPixmap(resources.get_app_icon_filepath())
         icon_label = PixmapLabel(icon_pixmap, header_widget)
         icon_label.setObjectName("PublishContextLabel")
 

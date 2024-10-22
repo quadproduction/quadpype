@@ -130,7 +130,7 @@ class RenderCreator(Creator):
         ]
 
     def get_icon(self):
-        return resources.get_openpype_splash_filepath()
+        return resources.get_app_icon_filepath()
 
     def collect_instances(self):
         for instance_data in cache_and_get_instances(self):

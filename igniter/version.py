@@ -1,4 +1,4 @@
 # -*- coding: utf-8 -*-
-"""Definition of Igniter version."""
+"""Definition of the Igniter version."""
 
-__version__ = "1.0.2"
+__version__ = "1.1.0"

@@ -93,7 +93,7 @@ class VersionUpdateDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(VersionUpdateDialog, self).__init__(parent)
 
-        icon = QtGui.QIcon(resources.get_openpype_icon_filepath())
+        icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
         self.setWindowFlags(
             self.windowFlags()
@@ -218,7 +218,7 @@ class ProductionStagingDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(ProductionStagingDialog, self).__init__(parent)
 
-        icon = QtGui.QIcon(resources.get_openpype_icon_filepath())
+        icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
         self.setWindowTitle("Production and Staging versions are the same")
         self.setWindowFlags(
@@ -228,9 +228,7 @@ class ProductionStagingDialog(QtWidgets.QDialog):
 
         top_widget = QtWidgets.QWidget(self)
 
-        staging_pixmap = QtGui.QPixmap(
-            resources.get_openpype_staging_icon_filepath()
-        )
+        staging_pixmap = QtGui.QPixmap(fileName=resources.get_app_icon_filepath(variation_name="staging"))
         staging_icon_label = PixmapLabel(staging_pixmap, top_widget)
         message = (
             "Because production and staging versions are the same"
@@ -278,7 +276,7 @@ class BuildVersionDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(BuildVersionDialog, self).__init__(parent)
 
-        icon = QtGui.QIcon(resources.get_openpype_icon_filepath())
+        icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
         self.setWindowTitle("Outdated OpenPype installation")
         self.setWindowFlags(
@@ -584,7 +582,7 @@ class TrayManager:
             QtWidgets.QMessageBox.Ok,
             flags=QtCore.Qt.Dialog
         )
-        icon = QtGui.QIcon(resources.get_openpype_icon_filepath())
+        icon = QtGui.QIcon(resources.get_app_icon_filepath())
         msg_box.setWindowIcon(icon)
         msg_box.setStyleSheet(style.load_stylesheet())
         msg_box.buttonClicked.connect(self._post_validate_settings_defaults)
@@ -742,7 +740,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     doubleclick_time_ms = 500
 
     def __init__(self, parent):
-        icon = QtGui.QIcon(resources.get_openpype_icon_filepath())
+        icon = QtGui.QIcon(resources.get_app_icon_filepath())
 
         super(SystemTrayIcon, self).__init__(icon, parent)
 
@@ -879,7 +877,7 @@ class PypeTrayStarter(QtCore.QObject):
         return self._splash
 
     def _create_splash(self):
-        splash_pix = QtGui.QPixmap(resources.get_openpype_splash_filepath())
+        splash_pix = QtGui.QPixmap(resources.get_app_splash_filepath())
         splash = QtWidgets.QSplashScreen(splash_pix)
         splash.setMask(splash_pix.mask())
         splash.setEnabled(False)

@@ -32,9 +32,7 @@ igniter/
 ├── __main__.py - Like `__init__.py` ?
 ├── message_dialog.py - Qt Dialog with a message and "Ok" button.
 ├── nice_progress_bar.py - Fancy Qt progress bar.
-├── splash.txt - ASCII art for the terminal installer.
 ├── stylesheet.css - Installer Qt styles.
-├── terminal_splash.py - Terminal installer animation, relies in `splash.txt`.
 ├── tools.py - Collection of methods that don't fit in other modules.
 ├── update_thread.py - Threading helper to update existing OpenPype installs.
 ├── update_window.py - Qt UI to update OpenPype installs. 

@@ -3,12 +3,13 @@
 import os
 import logging as log
 
+from pathlib import Path
 from qtpy import QtCore, QtGui, QtWidgets
 
 from .update_thread import UpdateThread
 from .bootstrap_repos import OpenPypeVersion, ZXPExtensionData
 from .nice_progress_bar import NiceProgressBar
-from .tools import load_stylesheet
+from .tools import load_stylesheet, get_app_icon_path, get_fonts_dir_path
 
 
 class UpdateWindow(QtWidgets.QDialog):
@@ -32,23 +33,23 @@ class UpdateWindow(QtWidgets.QDialog):
             QtCore.Qt.WindowMinimizeButtonHint
         )
 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        roboto_font_path = os.path.join(current_dir, "RobotoMono-Regular.ttf")
-        poppins_font_path = os.path.join(current_dir, "Poppins")
-        icon_path = os.path.join(current_dir, "openpype_icon.png")
+        fonts_dir = Path(get_fonts_dir_path())
+        roboto_font_path = str(fonts_dir.joinpath("RobotoMono-Regular.ttf"))
+        poppins_font_path = str(fonts_dir.joinpath("Poppins"))
+        icon_path = get_app_icon_path()
 
-        # Install roboto font
+        # Install fonts
         QtGui.QFontDatabase.addApplicationFont(roboto_font_path)
         for filename in os.listdir(poppins_font_path):
             if os.path.splitext(filename)[1] == ".ttf":
                 QtGui.QFontDatabase.addApplicationFont(filename)
 
         # Load logo
-        pixmap_openpype_logo = QtGui.QPixmap(icon_path)
+        pixmap_app_logo = QtGui.QPixmap(icon_path)
         # Set logo as icon of the window
-        self.setWindowIcon(QtGui.QIcon(pixmap_openpype_logo))
+        self.setWindowIcon(QtGui.QIcon(pixmap_app_logo))
 
-        self._pixmap_openpype_logo = pixmap_openpype_logo
+        self._pixmap_app_logo = pixmap_app_logo
 
         self._update_thread = None
 
