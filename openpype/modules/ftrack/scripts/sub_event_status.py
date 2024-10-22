@@ -261,7 +261,7 @@ class StatusFactory:
             "value": (
                 "Local versions dir: {}<br/>Version repository path: {}"
             ).format(
-                appdirs.user_data_dir("openpype", "pypeclub"),
+                appdirs.user_data_dir("quadpype", "quad"),
                 os.environ.get("QUADPYPE_PATH")
             )
         })

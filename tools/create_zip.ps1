@@ -5,7 +5,7 @@
 .DESCRIPTION
   This script will detect Python installation and run OpenPype to create
   zip. It will create zip from current source code
-  version and copy it top `%LOCALAPPDATA%/pypeclub/openpype` if `--path` or `-p`
+  version and copy it top `%LOCALAPPDATA%/quad/quadpype` if `--path` or `-p`
   argument is not used.
 
 .EXAMPLE

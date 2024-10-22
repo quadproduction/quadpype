@@ -13,7 +13,6 @@ The current file structure looks like this:
 ├── tests - Integration and unit tests.
 ├── tools - Conveninece scripts to perform common actions (in both bash and ps1).
 ├── vendor - When using the igniter, it deploys third party tools in here, such as ffmpeg.
-└── website - Source files for https://openpype.io/ which is Docusaursus (https://docusaurus.io/).
 ```
 
 The core functionality of the pipeline can be found in `igniter` and `openpype`, which in turn rely on the `schema` files, whenever you build (or download a pre-built) version of OpenPype, these two are bundled in there, and `Igniter` is the entry point.

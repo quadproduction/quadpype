@@ -17,9 +17,6 @@ PS> .\build.ps1
 To build without automatical submodule update:
 PS> .\build.ps1 --no-submodule-update
 
-.LINK
-https://openpype.io/docs
-
 #>
 
 $arguments=$ARGS

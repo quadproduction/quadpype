@@ -6,11 +6,11 @@ ARG VERSION
 
 LABEL maintainer="dev@quad.fr"
 LABEL description="Docker Image to build and run OpenPype under Ubuntu 20.04"
-LABEL org.opencontainers.image.name="pypeclub/openpype"
+LABEL org.opencontainers.image.name="quad/quadpype"
 LABEL org.opencontainers.image.title="OpenPype Docker Image"
-LABEL org.opencontainers.image.url="https://openpype.io/"
-LABEL org.opencontainers.image.source="https://github.com/pypeclub/OpenPype"
-LABEL org.opencontainers.image.documentation="https://openpype.io/docs/system_introduction"
+LABEL org.opencontainers.image.url="https://github.com/quadproduction/quadpype"
+LABEL org.opencontainers.image.source="https://github.com/quadproduction/quadpype"
+LABEL org.opencontainers.image.documentation="https://github.com/quadproduction/quadpype/wiki"
 LABEL org.opencontainers.image.created=$BUILD_DATE
 LABEL org.opencontainers.image.version=$VERSION
 

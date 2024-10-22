@@ -107,8 +107,8 @@ pre-commit = "*"
 virtualenv = "^20.24.6"
 
 [tool.poetry.urls]
-"Bug Tracker" = "https://github.com/pypeclub/openpype/issues"
-"Discussions" = "https://github.com/pypeclub/openpype/discussions"
+"Bug Tracker" = "https://github.com/quad/quadpype/issues"
+"Discussions" = "https://github.com/quad/quadpype/discussions"
 
 [[tool.poetry.source]]
 name = "openpype"

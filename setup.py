@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Setup info for building OpenPype 3.0."""
+"""Setup info for building QuadPype 4."""
 import os
 import re
 import platform

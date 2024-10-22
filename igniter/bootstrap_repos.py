@@ -336,7 +336,7 @@ class OpenPypeVersion(semver.VersionInfo):
         settings = get_openpype_global_settings(os.environ["QUADPYPE_MONGO"])
         data_dir = get_local_openpype_path_from_settings(settings)
         if not data_dir:
-            data_dir = Path(user_data_dir("openpype", "pypeclub"))
+            data_dir = Path(user_data_dir("quadpype", "quad"))
         cls._local_openpype_path = data_dir
         return data_dir
 
@@ -615,7 +615,7 @@ class BootstrapRepos:
 
     def set_data_dir(self, data_dir):
         if not data_dir:
-            self.data_dir = Path(user_data_dir("openpype", "pypeclub"))
+            self.data_dir = Path(user_data_dir("quadpype", "quad"))
         else:
             self._print(f"overriding local folder: {data_dir}")
             self.data_dir = data_dir

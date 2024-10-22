@@ -75,7 +75,7 @@ function New-DockerBuild {
     }
 
     Write-Color -Text ">>> ", "Running Docker build ..." -Color Green, Gray, White
-    docker build --pull --iidfile $repo_root/build/docker-image.id --build-arg BUILD_DATE=$(Get-Date -UFormat %Y-%m-%dT%H:%M:%SZ) --build-arg VERSION=$openpype_version -t pypeclub/openpype:$openpype_version -f $dockerfile .
+    docker build --pull --iidfile $repo_root/build/docker-image.id --build-arg BUILD_DATE=$(Get-Date -UFormat %Y-%m-%dT%H:%M:%SZ) --build-arg VERSION=$openpype_version -t quad/quadpype:$openpype_version -f $dockerfile .
     if ($LASTEXITCODE -ne 0) {
         Write-Color -Text "!!! ", "Docker command failed.", $LASTEXITCODE -Color Red, Yellow, Red
         Restore-Cwd

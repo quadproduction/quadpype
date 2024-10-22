@@ -37,7 +37,7 @@ class Window(QtWidgets.QDialog):
         self._db.install()
 
         try:
-            settings = QtCore.QSettings("pypeclub", "StandalonePublisher")
+            settings = QtCore.QSettings("quad", "StandalonePublisher")
         except Exception:
             settings = None
 

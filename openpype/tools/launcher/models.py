@@ -64,7 +64,7 @@ class ActionModel(QtGui.QStandardItemModel):
         # Cache of available actions
         self._registered_actions = list()
         self.items_by_id = {}
-        path = appdirs.user_data_dir("openpype", "pypeclub")
+        path = appdirs.user_data_dir("quadpype", "quad")
         self.launcher_registry = JSONSettingRegistry("launcher", path)
 
         try:

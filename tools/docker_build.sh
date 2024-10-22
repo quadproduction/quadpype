@@ -67,8 +67,8 @@ main () {
   local openpype_version="$(python3 <<< ${version_command})"
 
   echo -e "${BIGreen}>>>${RST} Running docker build ..."
-  # docker build --pull --no-cache -t pypeclub/openpype:$openpype_version .
-  docker build --pull --iidfile $openpype_root/build/docker-image.id --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') --build-arg VERSION=$openpype_version -t pypeclub/openpype:$openpype_version -f $dockerfile .
+  # docker build --pull --no-cache -t quad/quadpype:$openpype_version .
+  docker build --pull --iidfile $openpype_root/build/docker-image.id --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') --build-arg VERSION=$openpype_version -t quad/quadpype:$openpype_version -f $dockerfile .
   if [ $? -ne 0 ] ; then
     echo $?
     echo -e "${BIRed}!!!${RST} Docker build failed."

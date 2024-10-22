@@ -345,7 +345,7 @@ def _system_settings_backwards_compatible_conversion(studio_overrides):
 
 def _project_anatomy_backwards_compatible_conversion(project_anatomy):
     # Backwards compatibility of node settings in Nuke 3.9.x - 3.10.0
-    # - source PR - https://github.com/pypeclub/OpenPype/pull/3143
+    # - source PR - https://github.com/quadproduction/quadpype/pull/3143
     value = project_anatomy
     for key in ("imageio", "nuke", "nodes", "requiredNodes"):
         if key not in value:
