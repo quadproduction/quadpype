@@ -115,7 +115,7 @@ class IgnoreInputChangesObj:
 class StandaloneCategoryWidget(QtWidgets.QWidget):
 
     def __init__(self, content_widget, content_layout, parent=None):
-        super(StandaloneCategoryWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.content_widget = content_widget
         self.content_layout = content_layout
@@ -204,7 +204,7 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
     )
 
     def __init__(self, controller, parent=None):
-        super(SettingsCategoryWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self._controller = controller
         controller.event_system.add_callback(
@@ -949,7 +949,7 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
 class SystemWidget(SettingsCategoryWidget):
     def __init__(self, *args, **kwargs):
         self._actions = []
-        super(SystemWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _check_last_saved_info(self):
         if self.is_modifying_defaults:
@@ -1015,7 +1015,7 @@ class SystemWidget(SettingsCategoryWidget):
 
 class ProjectWidget(SettingsCategoryWidget):
     def __init__(self, *args, **kwargs):
-        super(ProjectWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.protect_attrs = False
 
     def set_edit_mode(self, enabled):

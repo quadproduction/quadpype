@@ -8,7 +8,7 @@ from openpype.tools.utils import PlaceholderLineEdit
 
 class LocalGeneralWidgets(QtWidgets.QWidget):
     def __init__(self, parent):
-        super(LocalGeneralWidgets, self).__init__(parent)
+        super().__init__(parent)
 
         self._loading_local_settings = False
 
@@ -20,7 +20,7 @@ class LocalGeneralWidgets(QtWidgets.QWidget):
         layout = QtWidgets.QFormLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        layout.addRow("OpenPype Username", username_input)
+        layout.addRow("QuadPype Username", username_input)
         layout.addRow("Admin permissions", is_admin_input)
 
         is_admin_input.stateChanged.connect(self._on_admin_check_change)

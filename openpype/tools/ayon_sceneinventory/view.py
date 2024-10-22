@@ -40,7 +40,7 @@ class SceneInventoryView(QtWidgets.QTreeView):
     hierarchy_view_changed = QtCore.Signal(bool)
 
     def __init__(self, controller, parent):
-        super(SceneInventoryView, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         # view settings
         self.setIndentation(12)

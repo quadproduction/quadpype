@@ -37,7 +37,7 @@ class LoadClipBatchModel(BaseSettingsModel):
         title="Product types"
     )
     reel_name: str = SettingsField(
-        "OP_LoadedReel",
+        "QuadPype_LoadedReel",
         title="Reel name"
     )
     clip_name_template: str = SettingsField(
@@ -74,7 +74,7 @@ DEFAULT_LOADER_SETTINGS = {
             "render",
             "review"
         ],
-        "reel_group_name": "OpenPype_Reels",
+        "reel_group_name": "QuadPype_Reels",
         "reel_name": "Loaded",
         "clip_name_template": "{folder[name]}_{product[name]}<_{output}>",
         "layer_rename_template": "{folder[name]}_{product[name]}<_{output}>",
@@ -92,7 +92,7 @@ DEFAULT_LOADER_SETTINGS = {
             "render",
             "review"
         ],
-        "reel_name": "OP_LoadedReel",
+        "reel_name": "QuadPype_LoadedReel",
         "clip_name_template": "{batch}_{folder[name]}_{product[name]}<_{output}>",
         "layer_rename_template": "{folder[name]}_{product[name]}<_{output}>",
         "layer_rename_patterns": [

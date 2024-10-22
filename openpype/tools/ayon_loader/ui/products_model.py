@@ -76,7 +76,7 @@ class ProductsModel(QtGui.QStandardItemModel):
     site_sync_avail_col = column_labels.index("Availability")
 
     def __init__(self, controller):
-        super(ProductsModel, self).__init__()
+        super().__init__()
         self.setColumnCount(len(self.column_labels))
         for idx, label in enumerate(self.column_labels):
             self.setHeaderData(idx, QtCore.Qt.Horizontal, label)

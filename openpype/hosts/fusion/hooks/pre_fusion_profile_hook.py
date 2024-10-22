@@ -89,7 +89,7 @@ class FusionCopyPrefsPrelaunch(PreLaunchHook):
         self, copy_from: Path, copy_to: Path, force_sync: bool
     ) -> None:
         """On the first Fusion launch copy the contents of Fusion profile
-        directory to the working predefined location. If the Openpype profile
+        directory to the working predefined location. If the QuadPype profile
         folder exists, skip copying, unless re-sync is checked.
         If the prefs were not copied on the first launch,
         clean Fusion profile will be created in fu_profile_dir.

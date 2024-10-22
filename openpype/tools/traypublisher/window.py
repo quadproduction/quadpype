@@ -44,18 +44,18 @@ class TrayPublisherRegistry(JSONSettingRegistry):
     """
 
     def __init__(self):
-        self.vendor = "pypeclub"
-        self.product = "openpype"
+        self.vendor = "quad"
+        self.product = "quadpype"
         name = "tray_publisher"
         path = appdirs.user_data_dir(self.product, self.vendor)
-        super(TrayPublisherRegistry, self).__init__(name, path)
+        super().__init__(name, path)
 
 
 class StandaloneOverlayWidget(QtWidgets.QFrame):
     project_selected = QtCore.Signal(str)
 
     def __init__(self, publisher_window):
-        super(StandaloneOverlayWidget, self).__init__(publisher_window)
+        super().__init__(publisher_window)
         self.setObjectName("OverlayFrame")
 
         middle_frame = QtWidgets.QFrame(self)
@@ -190,7 +190,7 @@ class StandaloneOverlayWidget(QtWidgets.QFrame):
 class TrayPublishWindow(PublisherWindow):
     def __init__(self, *args, **kwargs):
         controller = TrayPublisherController()
-        super(TrayPublishWindow, self).__init__(
+        super().__init__(
             controller=controller, reset_on_show=False
         )
 

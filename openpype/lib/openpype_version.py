@@ -34,7 +34,7 @@ def get_build_version():
 
     # Import `version.py` from build directory
     version_filepath = os.path.join(
-        os.environ["OPENPYPE_ROOT"],
+        os.environ["QUADPYPE_ROOT"],
         "openpype",
         "version.py"
     )
@@ -51,7 +51,7 @@ def is_running_from_build():
     Returns:
         bool: True if running from build.
     """
-    executable_path = os.environ["OPENPYPE_EXECUTABLE"]
+    executable_path = os.environ["QUADPYPE_EXECUTABLE"]
     executable_filename = os.path.basename(executable_path)
     if "python" in executable_filename.lower():
         return False
@@ -59,44 +59,38 @@ def is_running_from_build():
 
 
 def is_staging_enabled():
-    return os.environ.get("OPENPYPE_USE_STAGING") == "1"
+    return os.environ.get("QUADPYPE_USE_STAGING") == "1"
 
 
 def is_running_locally():
-    pype_executable = os.environ["OPENPYPE_EXECUTABLE"]
+    pype_executable = os.environ["QUADPYPE_EXECUTABLE"]
     executable_filename = os.path.basename(pype_executable)
-    # On development, Openpype is launched by Python
+    # On development, QuadPype is launched by Python
     return "python" in executable_filename.lower()
 
 
 def is_running_staging():
-    """Currently used OpenPype is staging version.
-
-    This function is not 100% proper check of staging version. It is possible
-    to have enabled to use staging version but be in different one.
+    """Check if QuadPype is using the staging version.
 
     The function is based on 4 factors:
-    - env 'OPENPYPE_IS_STAGING' is set
+    - env 'QUADPYPE_IS_STAGING' is set
     - current production version
     - current staging version
     - use staging is enabled
 
-    First checks for 'OPENPYPE_IS_STAGING' environment which can be set to '1'.
+    First checks for 'QUADPYPE_IS_STAGING' environment which can be set to '1'.
     The value should be set only when a process without access to
     OpenPypeVersion is launched (e.g. in DCCs). If current version is same
     as production version it is expected that it is not staging, and it
     doesn't matter what would 'is_staging_enabled' return. If current version
     is same as staging version it is expected we're in staging. In all other
-    cases 'is_staging_enabled' is used as source of outpu value.
-
-    The function is used to decide which icon is used. To check e.g. updates
-    the output should be combined with other functions from this file.
+    cases 'is_staging_enabled' is used as source of output value.
 
     Returns:
         bool: Using staging version or not.
     """
 
-    if os.environ.get("OPENPYPE_IS_STAGING") == "1":
+    if os.environ.get("QUADPYPE_IS_STAGING") == "1":
         return True
 
     if not op_version_control_available():
@@ -128,7 +122,7 @@ def is_running_staging():
 
 
 def is_version_checking_popup_enabled():
-    value = os.getenv("OPENPYPE_VERSION_CHECK_POPUP", 'False').lower()
+    value = os.getenv("QUADPYPE_VERSION_CHECK_POPUP", 'False').lower()
     if value == "true" or value == "1":
         return True
     return False

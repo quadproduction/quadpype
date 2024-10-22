@@ -122,7 +122,7 @@ class HierarchyView(QtWidgets.QTreeView):
     }
 
     def __init__(self, dbcon, source_model, parent):
-        super(HierarchyView, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("HierarchyView")
 

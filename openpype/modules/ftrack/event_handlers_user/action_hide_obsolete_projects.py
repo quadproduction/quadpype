@@ -6,7 +6,7 @@ from openpype_modules.ftrack.lib import BaseAction, statics_icon
 
 
 class HideObsoleteProjects(BaseAction):
-    """Hide projects on OP that no longer exist on Ftrack
+    """Hide projects on QuadPype that no longer exist on Ftrack
     or have an FtrackId
     """
 
@@ -14,7 +14,7 @@ class HideObsoleteProjects(BaseAction):
     show_identifier = "hide.obsolete.projects"
     label = "OpenPype Admin"
     variant = "- Hide Obsolete projects"
-    description = "Hide projects on OP that no longer exist on Ftrack or have an FtrackId."
+    description = "Hide projects on QuadPype that no longer exist on Ftrack or have an FtrackId."
     icon = statics_icon("ftrack", "action_icons", "HideProjects.svg")
 
     def __init__(self, session):

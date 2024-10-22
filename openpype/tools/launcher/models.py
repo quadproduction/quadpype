@@ -55,7 +55,7 @@ ASSET_ASSIGNEE_ROLE = QtCore.Qt.UserRole + 11
 
 class ActionModel(QtGui.QStandardItemModel):
     def __init__(self, dbcon, parent=None):
-        super(ActionModel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.dbcon = dbcon
 
         self.application_manager = ApplicationManager()
@@ -407,7 +407,7 @@ class LauncherModel(QtCore.QObject):
     }
 
     def __init__(self, dbcon):
-        super(LauncherModel, self).__init__()
+        super().__init__()
         # Refresh timer
         #   - should affect only projects
         refresh_timer = QtCore.QTimer()
@@ -685,7 +685,7 @@ class LauncherTasksProxyModel(TasksProxyModel):
     """
     def __init__(self, launcher_model, *args, **kwargs):
         self._launcher_model = launcher_model
-        super(LauncherTasksProxyModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         launcher_model.filters_changed.connect(self._on_filter_change)
 
@@ -722,7 +722,7 @@ class LauncherTasksProxyModel(TasksProxyModel):
 class LauncherTaskModel(TasksModel):
     def __init__(self, launcher_model, *args, **kwargs):
         self._launcher_model = launcher_model
-        super(LauncherTaskModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _refresh_project_doc(self):
         self._project_doc = self._launcher_model.get_project_doc(
@@ -740,7 +740,7 @@ class AssetRecursiveSortFilterModel(QtCore.QSortFilterProxyModel):
     def __init__(self, launcher_model, *args, **kwargs):
         self._launcher_model = launcher_model
 
-        super(AssetRecursiveSortFilterModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         launcher_model.filters_changed.connect(self._on_filter_change)
         self._name_filter = ""
@@ -803,7 +803,7 @@ class LauncherAssetsModel(AssetModel):
         # Make sure that variable is available (even if is in AssetModel)
         self._last_project_name = None
 
-        super(LauncherAssetsModel, self).__init__(dbcon, parent)
+        super().__init__(dbcon, parent)
 
         launcher_model.project_changed.connect(self._on_project_change)
         launcher_model.assets_refresh_started.connect(
@@ -849,7 +849,7 @@ class ProjectModel(QtGui.QStandardItemModel):
     """List of projects"""
 
     def __init__(self, launcher_model, parent=None):
-        super(ProjectModel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self._launcher_model = launcher_model
         self._project_names = set()

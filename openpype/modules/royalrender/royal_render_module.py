@@ -24,7 +24,7 @@ class RoyalRenderModule(OpenPypeModule, IPluginPaths):
         self.rr_paths = {}
         self._api = None
         self.settings = settings
-        super(RoyalRenderModule, self).__init__(manager, settings)
+        super().__init__(manager, settings)
 
     def initialize(self, module_settings):
         # type: (dict) -> None
@@ -32,7 +32,7 @@ class RoyalRenderModule(OpenPypeModule, IPluginPaths):
         self.enabled = rr_settings["enabled"]
         self.rr_paths = rr_settings.get("rr_paths")
 
-        self.log.info("RoyalRender is not implemented for Openpype")
+        self.log.info("RoyalRender is not implemented for QuadPype")
         self.enabled = False
 
     @staticmethod

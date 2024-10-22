@@ -140,7 +140,7 @@ class AssetWidget(QtWidgets.QWidget):
     task_changed = QtCore.Signal()
 
     def __init__(self, dbcon, settings, parent=None):
-        super(AssetWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setContentsMargins(0, 0, 0, 0)
 
         self.dbcon = dbcon

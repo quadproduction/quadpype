@@ -52,7 +52,7 @@ class SidePanelWidget(QtWidgets.QWidget):
     )
 
     def __init__(self, parent=None):
-        super(SidePanelWidget, self).__init__(parent)
+        super().__init__(parent)
 
         details_label = QtWidgets.QLabel("Details", self)
         details_input = QtWidgets.QPlainTextEdit(self)
@@ -175,7 +175,7 @@ class Window(QtWidgets.QWidget):
     title = "Work Files"
 
     def __init__(self, parent=None):
-        super(Window, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setWindowTitle(self.title)
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)

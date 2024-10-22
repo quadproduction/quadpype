@@ -24,7 +24,7 @@ from .repres_widget import RepresentationsWidget
 class LoadErrorMessageBox(ErrorMessageBox):
     def __init__(self, messages, parent=None):
         self._messages = messages
-        super(LoadErrorMessageBox, self).__init__("Loading failed", parent)
+        super().__init__("Loading failed", parent)
 
     def _create_top_widget(self, parent_widget):
         label_widget = QtWidgets.QLabel(parent_widget)
@@ -117,7 +117,7 @@ class RefreshHandler:
 
 class LoaderWindow(QtWidgets.QWidget):
     def __init__(self, controller=None, parent=None):
-        super(LoaderWindow, self).__init__(parent)
+        super().__init__(parent)
 
         icon = QtGui.QIcon(get_app_icon_filepath())
         self.setWindowIcon(icon)

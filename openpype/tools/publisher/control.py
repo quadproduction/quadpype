@@ -1698,7 +1698,7 @@ class PublisherController(BasePublisherController):
     _log = None
 
     def __init__(self, headless=False):
-        super(PublisherController, self).__init__()
+        super().__init__()
 
         self._host = registered_host()
         self._headless = headless

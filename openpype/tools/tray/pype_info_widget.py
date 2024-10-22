@@ -29,7 +29,7 @@ class EnvironmentValueDelegate(QtWidgets.QStyledItemDelegate):
 
 class EnvironmentsView(QtWidgets.QTreeView):
     def __init__(self, parent=None):
-        super(EnvironmentsView, self).__init__(parent)
+        super().__init__(parent)
 
         self._scroll_enabled = False
 
@@ -138,7 +138,7 @@ class ClickableWidget(QtWidgets.QWidget):
 
 class CollapsibleWidget(QtWidgets.QWidget):
     def __init__(self, label, parent):
-        super(CollapsibleWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.content_widget = None
 
@@ -211,7 +211,7 @@ class PypeInfoWidget(QtWidgets.QWidget):
     _resized = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super(PypeInfoWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self._scroll_at_bottom = False
 
@@ -320,7 +320,7 @@ class PypeInfoSubWidget(QtWidgets.QWidget):
     not_applicable = "N/A"
 
     def __init__(self, parent=None):
-        super(PypeInfoSubWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.env_view = None
 

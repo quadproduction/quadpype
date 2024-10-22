@@ -46,7 +46,7 @@ def main(ctx):
 
     if ctx.invoked_subcommand is None:
         # Print help if headless mode is used
-        is_headless = os.getenv("OPENPYPE_HEADLESS_MODE") == "1"
+        is_headless = os.getenv("QUADPYPE_HEADLESS_MODE") == "1"
         if is_headless:
             print(ctx.get_help())
             sys.exit(0)
@@ -128,7 +128,7 @@ def eventserver(ftrack_url,
 def webpublisherwebserver(executable, upload_dir, host=None, port=None):
     """Starts webserver for communication with Webpublish FR via command line
 
-        OP must be congigured on a machine, eg. OPENPYPE_MONGO filled AND
+        QuadPype must be congigured on a machine, eg. QUADPYPE_MONGO filled AND
         FTRACK_BOT_API_KEY provided with api key from Ftrack.
 
         Expect "pype.club" user created on Ftrack.
@@ -309,10 +309,10 @@ def syncserver(ctx, active_site):
         mark published assets to live on multiple sites (they might be
         physically in same location - mounted shared disk).
 
-        Process mimics OP Tray with specific 'active_site' name, all
+        Process mimics QuadPype Tray with specific 'active_site' name, all
         configuration for this "dummy" user comes from Setting or Local
-        Settings (configured by starting OP Tray with env
-        var OPENPYPE_LOCAL_ID set to 'active_site'.
+        Settings (configured by starting QuadPype Tray with env
+        var QUADPYPE_LOCAL_ID set to 'active_site'.
     """
 
     from openpype.modules.sync_server.sync_server_module import (
@@ -384,7 +384,7 @@ def version(build):
 
     if getattr(sys, 'frozen', False):
         local_version = BootstrapRepos.get_version(
-            Path(os.getenv("OPENPYPE_ROOT")))
+            Path(os.getenv("QUADPYPE_ROOT")))
     else:
         local_version = OpenPypeVersion.get_installed_version_str()
 

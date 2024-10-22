@@ -63,7 +63,7 @@ class FileItem(object):
 
 class SourceFile(FileItem):
     def __init__(self, path, frame=None, udim=None):
-        super(SourceFile, self).__init__(path)
+        super().__init__(path)
         self.frame = frame
         self.udim = udim
 
@@ -79,7 +79,7 @@ class SourceFile(FileItem):
 
 class ResourceFile(FileItem):
     def __init__(self, path, relative_path):
-        super(ResourceFile, self).__init__(path)
+        super().__init__(path)
         self.relative_path = relative_path
 
     def __repr__(self):

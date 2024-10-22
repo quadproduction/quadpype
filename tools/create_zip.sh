@@ -5,26 +5,6 @@
 # version and copy it top `~/.local/share/pype` if `--path` or `-p`
 # argument is not used.
 
-art () {
-  cat <<-EOF
-
-             . .   ..     .    ..
-        _oOOP3OPP3Op_. .
-     .PPpo~·   ··   ~2p.  ··  ····  ·  ·
-    ·Ppo · .pPO3Op.· · O:· · · ·
-   .3Pp · oP3'· 'P33· · 4 ··   ·  ·   · ·· ·  ·  ·
-  ·~OP    3PO·  .Op3    : · ··  _____  _____  _____
-  ·P3O  · oP3oP3O3P' · · ·   · /    /·/    /·/    /
-   O3:·   O3p~ ·       ·:· · ·/____/·/____/ /____/
-   'P ·   3p3·  oP3~· ·.P:· ·  · ··  ·   · ·· ·  ·  ·
-  · ':  · Po'  ·Opo'· .3O· .  o[ by Pype Club ]]]==- - - ·  ·
-    · '_ ..  ·    . _OP3··  ·  ·https://openpype.io·· ·
-         ~P3·OPPPO3OP~ · ··  ·
-           ·  ' '· ·  ·· · · · ··  ·
-
-EOF
-}
-
 # Colors for terminal
 
 RST='\033[0m'             # Text Reset
@@ -104,9 +84,6 @@ realpath () {
 
 # Main
 main () {
-  echo -e "${BGreen}"
-  art
-  echo -e "${RST}"
   detect_python || return 1
 
   # Directories
@@ -131,7 +108,7 @@ main () {
 
   echo -e "${BIGreen}>>>${RST} Generating zip from current sources ..."
   export PYTHONPATH="$openpype_root:$PYTHONPATH"
-  export OPENPYPE_ROOT="$openpype_root"
+  export QUADPYPE_ROOT="$openpype_root"
   "$POETRY_HOME/bin/poetry" run python3 "$openpype_root/tools/create_zip.py" "$@"
 }
 

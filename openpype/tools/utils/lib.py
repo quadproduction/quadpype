@@ -752,7 +752,7 @@ class DynamicQThread(QtCore.QThread):
         parent (QObject): Parent of thread.
     """
     def __init__(self, func, args=None, kwargs=None, parent=None):
-        super(DynamicQThread, self).__init__(parent)
+        super().__init__(parent)
         if args is None:
             args = tuple()
         if kwargs is None:

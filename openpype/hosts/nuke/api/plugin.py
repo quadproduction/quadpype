@@ -412,7 +412,7 @@ class OpenPypeCreator(LegacyCreator):
     node_color = "0xdfea5dff"
 
     def __init__(self, *args, **kwargs):
-        super(OpenPypeCreator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if check_subsetname_exists(
                 nuke.allNodes(),
                 self.data["subset"]):
@@ -702,7 +702,7 @@ class ExporterReviewLut(ExporterReview):
                  lut_style=None,
                  multiple_presets=True):
         # initialize parent class
-        super(ExporterReviewLut, self).__init__(
+        super().__init__(
             klass, instance, multiple_presets)
 
         # deal with now lut defined in viewer lut
@@ -815,7 +815,7 @@ class ExporterReviewMov(ExporterReview):
                  multiple_presets=True
                  ):
         # initialize parent class
-        super(ExporterReviewMov, self).__init__(
+        super().__init__(
             klass, instance, multiple_presets)
         # passing presets for nodes to self
         self.nodes = klass.nodes if hasattr(klass, "nodes") else {}
@@ -1062,7 +1062,7 @@ class AbstractWriteRender(OpenPypeCreator):
     prenodes = {}
 
     def __init__(self, *args, **kwargs):
-        super(AbstractWriteRender, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         data = OrderedDict()
 
@@ -1331,7 +1331,7 @@ def convert_to_valid_instaces():
 def _remove_old_knobs(node):
     remove_knobs = [
         "review", "publish", "render", "suspend_publish", "warn", "divd",
-        "OpenpypeDataGroup", "OpenpypeDataGroup_End", "deadlinePriority",
+        "QuadPypeDataGroup", "QuadPypeDataGroup_End", "deadlinePriority",
         "deadlineChunkSize", "deadlineConcurrentTasks", "Deadline"
     ]
     print(node.name())

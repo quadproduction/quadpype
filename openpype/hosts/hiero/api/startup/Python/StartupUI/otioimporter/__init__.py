@@ -15,7 +15,7 @@ from openpype.hosts.hiero.api.otio.hiero_import import load_otio
 class OTIOProjectSelect(qw.QDialog):
 
     def __init__(self, projects, *args, **kwargs):
-        super(OTIOProjectSelect, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setWindowTitle("Please select active project")
         self.layout = qw.QVBoxLayout()
 

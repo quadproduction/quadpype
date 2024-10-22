@@ -8,7 +8,7 @@ from openpype.tools.settings.settings.categories import (
 
 class LocalModulesWidgets(QtWidgets.QWidget):
     def __init__(self, system_settings_entity, parent):
-        super(LocalModulesWidgets, self).__init__(parent)
+        super().__init__(parent)
 
         self.modules_data = {}
         self.system_settings_entity = system_settings_entity

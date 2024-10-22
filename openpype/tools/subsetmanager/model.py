@@ -9,7 +9,7 @@ ITEM_ID_ROLE = QtCore.Qt.UserRole + 1
 
 class InstanceModel(QtGui.QStandardItemModel):
     def __init__(self, *args, **kwargs):
-        super(InstanceModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._instances_by_item_id = {}
 
     def get_instance_by_id(self, item_id):

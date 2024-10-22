@@ -7,7 +7,7 @@ class Layer(BaseObj):
 
     # Direction can be 0=vertical/ 1=horizontal
     def __init__(self, direction=0, *args, **kwargs):
-        super(Layer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._direction = direction
 
     @property

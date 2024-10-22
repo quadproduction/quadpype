@@ -142,7 +142,7 @@ class ProductsModel:
 
     Note:
         Data are not used for actions model because that would require to
-            break OpenPype compatibility of 'LoaderPlugin's.
+            break QuadPype compatibility of 'LoaderPlugin's.
     """
 
     lifetime = 60  # In seconds (minute by default)

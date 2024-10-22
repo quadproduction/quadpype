@@ -157,7 +157,7 @@ class WebServerThread(threading.Thread):
         it creates separate thread and separate asyncio event loop
     """
     def __init__(self, module, port):
-        super(WebServerThread, self).__init__()
+        super().__init__()
 
         self.is_running = False
         self.port = port

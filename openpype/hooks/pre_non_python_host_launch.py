@@ -7,7 +7,7 @@ from openpype.lib.applications import (
     LaunchTypes,
 )
 
-from openpype import PACKAGE_DIR as OPENPYPE_DIR
+from openpype import PACKAGE_DIR as QUADPYPE_DIR
 
 
 class NonPythonHostHook(PreLaunchHook):
@@ -32,7 +32,7 @@ class NonPythonHostHook(PreLaunchHook):
             remainders.append(self.launch_context.launch_args.pop(0))
 
         script_path = os.path.join(
-            OPENPYPE_DIR,
+            QUADPYPE_DIR,
             "scripts",
             "non_python_host_launch.py"
         )

@@ -67,7 +67,7 @@ class ColorViewer(QtWidgets.QWidget):
     clicked = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super(ColorViewer, self).__init__(parent)
+        super().__init__(parent)
 
         self.setMinimumSize(10, 10)
 
@@ -123,7 +123,7 @@ class ColorViewer(QtWidgets.QWidget):
 
 class ColorDialog(QtWidgets.QDialog):
     def __init__(self, color=None, use_alpha=True, parent=None):
-        super(ColorDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Color picker dialog")
 

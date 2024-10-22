@@ -42,7 +42,7 @@ class PasswordDialog(QtWidgets.QDialog):
     finished = QtCore.Signal(bool)
 
     def __init__(self, parent=None, allow_remember=True):
-        super(PasswordDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Admin Password")
         self.resize(300, 120)

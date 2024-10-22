@@ -13,7 +13,7 @@ __all__ = (
 
 class LocalExperimentalToolsWidgets(QtWidgets.QWidget):
     def __init__(self, parent):
-        super(LocalExperimentalToolsWidgets, self).__init__(parent)
+        super().__init__(parent)
 
         self._loading_local_settings = False
 

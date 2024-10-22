@@ -12,37 +12,6 @@ from openpype.style import load_stylesheet
 from openpype.lib import JSONSettingRegistry
 
 
-openpype_art = """
-             . .   ..     .    ..
-        _oOOP3OPP3Op_. .
-     .PPpo~.   ..   ~2p.  ..  ....  .  .
-    .Ppo . .pPO3Op.. . O:. . . .
-   .3Pp . oP3'. 'P33. . 4 ..   .  .   . .. .  .  .
-  .~OP    3PO.  .Op3    : . ..  _____  _____  _____
-  .P3O  . oP3oP3O3P' . . .   . /    /./    /./    /
-   O3:.   O3p~ .       .:. . ./____/./____/ /____/
-   'P .   3p3.  oP3~. ..P:. .  . ..  .   . .. .  .  .
-  . ':  . Po'  .Opo'. .3O. .  o[ by Pype Club ]]]==- - - .  .
-    . '_ ..  .    . _OP3..  .  .https://openpype.io.. .
-         ~P3.OPPPO3OP~ . ..  .
-           .  ' '. .  .. . . . ..  .
-
-"""
-
-ayon_art = r"""
-
-                    ▄██▄
-         ▄███▄ ▀██▄ ▀██▀ ▄██▀ ▄██▀▀▀██▄    ▀███▄      █▄
-        ▄▄ ▀██▄  ▀██▄  ▄██▀ ██▀      ▀██▄  ▄  ▀██▄    ███
-       ▄██▀  ██▄   ▀ ▄▄ ▀  ██         ▄██  ███  ▀██▄  ███
-      ▄██▀    ▀██▄   ██    ▀██▄      ▄██▀  ███    ▀██ ▀█▀
-     ▄██▀      ▀██▄  ▀█      ▀██▄▄▄▄██▀    █▀      ▀██▄
-
-     ·  · - =[ by YNPUT ]:[ http://ayon.ynput.io ]= - ·  ·
-
-"""
-
-
 class PythonInterpreterRegistry(JSONSettingRegistry):
     """Class handling OpenPype general settings registry.
 
@@ -53,11 +22,11 @@ class PythonInterpreterRegistry(JSONSettingRegistry):
     """
 
     def __init__(self):
-        self.vendor = "pypeclub"
-        self.product = "openpype"
+        self.vendor = "quad"
+        self.product = "quadpype"
         name = "python_interpreter"
         path = appdirs.user_data_dir(self.product, self.vendor)
-        super(PythonInterpreterRegistry, self).__init__(name, path)
+        super().__init__(name, path)
 
 
 class StdOEWrap:
@@ -103,7 +72,7 @@ class PythonCodeEditor(QtWidgets.QPlainTextEdit):
     execute_requested = QtCore.Signal()
 
     def __init__(self, parent):
-        super(PythonCodeEditor, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("PythonCodeEditor")
 
@@ -192,7 +161,7 @@ class PythonTabWidget(QtWidgets.QWidget):
     before_execute = QtCore.Signal(str)
 
     def __init__(self, parent):
-        super(PythonTabWidget, self).__init__(parent)
+        super().__init__(parent)
 
         code_input = PythonCodeEditor(self)
 
@@ -245,7 +214,7 @@ class TabNameDialog(QtWidgets.QDialog):
     default_height = 85
 
     def __init__(self, parent):
-        super(TabNameDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Enter tab name")
 
@@ -322,7 +291,7 @@ class EnhancedTabBar(QtWidgets.QTabBar):
     mid_clicked = QtCore.Signal(QtCore.QPoint)
 
     def __init__(self, parent):
-        super(EnhancedTabBar, self).__init__(parent)
+        super().__init__(parent)
 
         self.setDrawBase(False)
 
@@ -349,7 +318,7 @@ class PythonInterpreterWidget(QtWidgets.QWidget):
     default_height = 600
 
     def __init__(self, allow_save_registry=True, parent=None):
-        super(PythonInterpreterWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("{} Console".format("QuadPype"))
         self.setWindowIcon(QtGui.QIcon(resources.get_app_icon_filepath()))
@@ -398,8 +367,6 @@ class PythonInterpreterWidget(QtWidgets.QWidget):
         self._output_widget = output_widget
         self._tab_widget = tab_widget
         self._line_check_timer = line_check_timer
-
-        self._append_lines([openpype_art])
 
         self._first_show = True
         self._splitter_size_ratio = None

@@ -111,7 +111,7 @@ class ValidateModelName(pyblish.api.InstancePlugin,
                 return True
         else:
             client = OpenPypeMongoConnection.get_mongo_client()
-            fs = gridfs.GridFS(client[os.getenv("OPENPYPE_DATABASE_NAME")])
+            fs = gridfs.GridFS(client[os.getenv("QUADPYPE_DATABASE_NAME")])
             shader_file = fs.find_one({"filename": cls.database_file})
             if not shader_file:
                 cls.log.error("Missing shader name definition in database.")

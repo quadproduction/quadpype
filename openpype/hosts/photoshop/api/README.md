@@ -58,7 +58,7 @@ class CreateImage(photoshop.Creator):
     family = "image"
 
     def __init__(self, *args, **kwargs):
-        super(CreateImage, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 ```
 
 #### Collector Plugin

@@ -16,7 +16,7 @@ Running multiple servers in one process is not recommended and probably won't
 work as expected. It is because of few limitations connected to asyncio module.
 
 When module's `create_server_manager` is called it is also set environment
-variable "OPENPYPE_WEBSERVER_URL". Which should lead to root access point
+variable "QUADPYPE_WEBSERVER_URL". Which should lead to root access point
 of server.
 """
 
@@ -31,7 +31,7 @@ class WebServerModule(OpenPypeModule, ITrayService):
     name = "webserver"
     label = "WebServer"
 
-    webserver_url_env = "OPENPYPE_WEBSERVER_URL"
+    webserver_url_env = "QUADPYPE_WEBSERVER_URL"
 
     def initialize(self, _module_settings):
         self.enabled = True
@@ -74,7 +74,7 @@ class WebServerModule(OpenPypeModule, ITrayService):
         static_prefix = "/res"
         self.server_manager.add_static(static_prefix, resources.RESOURCES_DIR)
 
-        os.environ["OPENPYPE_STATICS_SERVER"] = "{}{}".format(
+        os.environ["QUADPYPE_STATICS_SERVER"] = "{}{}".format(
             self.webserver_url, static_prefix
         )
 

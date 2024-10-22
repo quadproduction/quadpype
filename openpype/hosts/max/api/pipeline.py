@@ -35,7 +35,7 @@ class MaxHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     menu = None
 
     def __init__(self):
-        super(MaxHost, self).__init__()
+        super().__init__()
         self._op_events = {}
         self._has_been_setup = False
 
@@ -179,13 +179,13 @@ def load_custom_attribute_data():
     """Re-loading the AYON custom parameter built by the creator
 
     Returns:
-        attribute: re-loading the custom OP attributes set in Maxscript
+        attribute: re-loading the custom QuadPype attributes set in Maxscript
     """
     return rt.Execute(MS_CUSTOM_ATTRIB)
 
 
 def import_custom_attribute_data(container: str, selections: list):
-    """Importing the Openpype/AYON custom parameter built by the creator
+    """Importing the QuadPype custom parameter built by the creator
 
     Args:
         container (str): target container which adds custom attributes
@@ -195,7 +195,7 @@ def import_custom_attribute_data(container: str, selections: list):
     attrs = load_custom_attribute_data()
     modifier = rt.EmptyModifier()
     rt.addModifier(container, modifier)
-    container.modifiers[0].name = "OP Data"
+    container.modifiers[0].name = "QuadPype Data"
     rt.custAttributes.add(container.modifiers[0], attrs)
     node_list = []
     sel_list = []
@@ -206,10 +206,10 @@ def import_custom_attribute_data(container: str, selections: list):
 
     # Setting the property
     rt.setProperty(
-        container.modifiers[0].openPypeData,
+        container.modifiers[0].quadpypeData,
         "all_handles", node_list)
     rt.setProperty(
-        container.modifiers[0].openPypeData,
+        container.modifiers[0].quadpypeData,
         "sel_list", sel_list)
 
 
@@ -221,22 +221,22 @@ def update_custom_attribute_data(container: str, selections: list):
         selections (list): nodes to be added into
         group in custom attributes
     """
-    if container.modifiers[0].name == "OP Data":
+    if container.modifiers[0].name == "QuadPype Data":
         rt.deleteModifier(container, container.modifiers[0])
     import_custom_attribute_data(container, selections)
 
 
 def get_previous_loaded_object(container: str):
-    """Get previous loaded_object through the OP data
+    """Get previous loaded_object through the QuadPype data
 
     Args:
-        container (str): the container which stores the OP data
+        container (str): the container which stores the QuadPype data
 
     Returns:
         node_list(list): list of nodes which are previously loaded
     """
     node_list = []
-    sel_list = rt.getProperty(container.modifiers[0].openPypeData, "sel_list")
+    sel_list = rt.getProperty(container.modifiers[0].quadpypeData, "sel_list")
     for obj in rt.Objects:
         if str(obj) in sel_list:
             node_list.append(obj)

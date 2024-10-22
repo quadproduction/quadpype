@@ -27,7 +27,7 @@ class Server(threading.Thread):
 
     def __init__(self, port):
         """Constructor."""
-        super(Server, self).__init__()
+        super().__init__()
         self.daemon = True
         self.connection = None
         self.received = ""

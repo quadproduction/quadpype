@@ -422,7 +422,7 @@ class InvalidContextOverlay(QtWidgets.QFrame):
     confirmed = QtCore.Signal()
 
     def __init__(self, parent):
-        super(InvalidContextOverlay, self).__init__(parent)
+        super().__init__(parent)
         self.setObjectName("OverlayFrame")
 
         mid_widget = QtWidgets.QWidget(self)
@@ -503,7 +503,7 @@ class ContextDialog(QtWidgets.QDialog):
     will have passed preselected values and will be disabled.
     """
     def __init__(self, controller=None, parent=None):
-        super(ContextDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Select Context")
         self.setWindowIcon(QtGui.QIcon(style.app_icon_path()))

@@ -21,10 +21,10 @@ class AppplicationsAction(BaseAction):
     identifier = "openpype_app"
     _launch_identifier_with_id = None
 
-    icon_url = os.environ.get("OPENPYPE_STATICS_SERVER")
+    icon_url = os.environ.get("QUADPYPE_STATICS_SERVER")
 
     def __init__(self, *args, **kwargs):
-        super(AppplicationsAction, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.application_manager = ApplicationManager()
 

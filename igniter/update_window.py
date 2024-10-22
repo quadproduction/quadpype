@@ -19,14 +19,14 @@ class UpdateWindow(QtWidgets.QDialog):
     _height = 100
 
     def __init__(self, version: OpenPypeVersion, zxp_hosts: [ZXPExtensionData], parent=None):
-        super(UpdateWindow, self).__init__(parent)
+        super().__init__(parent)
         self._openpype_version = version
         self._zxp_hosts = zxp_hosts
         self._result_version_path = None
         self._log = log.getLogger(str(__class__))
 
         self.setWindowTitle(
-            f"OpenPype is updating ..."
+            f"QuadPype is updating ..."
         )
         self.setModal(True)
         self.setWindowFlags(
@@ -64,7 +64,7 @@ class UpdateWindow(QtWidgets.QDialog):
         # Main info
         # --------------------------------------------------------------------
         main_label = QtWidgets.QLabel(
-            f"<b>OpenPype</b> is updating to {self._openpype_version}", self)
+            f"<b>QuadPype</b> is updating to {self._openpype_version}", self)
         main_label.setWordWrap(True)
         main_label.setObjectName("MainLabel")
 

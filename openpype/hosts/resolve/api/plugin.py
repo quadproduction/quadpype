@@ -22,7 +22,7 @@ class CreatorWidget(QtWidgets.QDialog):
     items = {}
 
     def __init__(self, name, info, ui_inputs, parent=None):
-        super(CreatorWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName(name)
 
@@ -561,7 +561,7 @@ class Creator(LegacyCreator):
     marker_color = "Purple"
 
     def __init__(self, *args, **kwargs):
-        super(Creator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         resolve_p_settings = get_current_project_settings().get("resolve")
         self.presets = {}

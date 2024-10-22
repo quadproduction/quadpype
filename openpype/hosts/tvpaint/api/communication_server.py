@@ -114,7 +114,7 @@ class WebsocketServerThread(threading.Thread):
         it creates separate thread and separate asyncio event loop
     """
     def __init__(self, module, port, loop):
-        super(WebsocketServerThread, self).__init__()
+        super().__init__()
         self.is_running = False
         self.server_is_running = False
         self.port = port

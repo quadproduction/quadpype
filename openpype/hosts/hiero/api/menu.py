@@ -125,7 +125,7 @@ def menu_install():
         lambda: host_tools.show_library_loader(parent=main_window)
     )
 
-    if os.getenv("OPENPYPE_DEVELOP"):
+    if os.getenv("QUADPYPE_DEVELOP"):
         menu.addSeparator()
         reload_action = menu.addAction("Reload pipeline")
         reload_action.setIcon(QtGui.QIcon("icons:ColorAdd.png"))

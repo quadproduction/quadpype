@@ -51,7 +51,7 @@ class AddibleComboBox(QtWidgets.QComboBox):
     """Searchable ComboBox with empty placeholder value as first value"""
 
     def __init__(self, placeholder="", parent=None):
-        super(AddibleComboBox, self).__init__(parent)
+        super().__init__(parent)
 
         self.setEditable(True)
         # self.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
@@ -99,7 +99,7 @@ class MultiselectEnum(QtWidgets.QWidget):
     selection_changed = QtCore.Signal()
 
     def __init__(self, title, parent=None):
-        super(MultiselectEnum, self).__init__(parent)
+        super().__init__(parent)
         toolbutton = QtWidgets.QToolButton(self)
         toolbutton.setText(title)
 

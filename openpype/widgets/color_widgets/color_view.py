@@ -33,7 +33,7 @@ def draw_checkerboard_tile(piece_size=None, color_1=None, color_2=None):
 
 class ColorViewer(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(ColorViewer, self).__init__(parent)
+        super().__init__(parent)
 
         self.setMinimumSize(10, 10)
 

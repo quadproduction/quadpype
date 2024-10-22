@@ -50,7 +50,7 @@ class SocketBaseEventHub(ftrack_api.event.hub.EventHub):
 
     def __init__(self, *args, **kwargs):
         self.sock = kwargs.pop("sock")
-        super(SocketBaseEventHub, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _handle_packet(self, code, packet_identifier, path, data):
         """Override `_handle_packet` which extend heartbeat"""
@@ -121,7 +121,7 @@ class ProcessEventHub(SocketBaseEventHub):
         self.mongo_url = None
         self.dbcon = None
 
-        super(ProcessEventHub, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def prepare_dbcon(self):
         try:
@@ -174,7 +174,7 @@ class ProcessEventHub(SocketBaseEventHub):
                 except pymongo.errors.AutoReconnect:
                     self.pypelog.error((
                         "Mongo server \"{}\" is not responding, exiting."
-                    ).format(os.environ["OPENPYPE_MONGO"]))
+                    ).format(os.environ["QUADPYPE_MONGO"]))
                     sys.exit(0)
                 # Additional special processing of events.
                 if event['topic'] == 'ftrack.meta.disconnected':
@@ -237,7 +237,7 @@ class CustomEventHubSession(ftrack_api.session.Session):
     ):
         self.kwargs = kwargs
 
-        super(ftrack_api.session.Session, self).__init__()
+        super().__init__()
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )

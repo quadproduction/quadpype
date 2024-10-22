@@ -5,7 +5,7 @@ from openpype import style
 
 class LogsWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(LogsWindow, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Logs viewer")
 

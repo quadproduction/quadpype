@@ -16,7 +16,7 @@ class CredentialsDialog(QtWidgets.QDialog):
     logout_signal = QtCore.Signal()
 
     def __init__(self, module, parent=None):
-        super(CredentialsDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("OpenPype - Ftrack Login")
 

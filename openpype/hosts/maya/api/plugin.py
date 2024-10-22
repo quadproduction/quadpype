@@ -976,7 +976,7 @@ class ReferenceLoader(Loader):
     def prepare_root_value(self, file_url, project_name):
         """Replace root value with env var placeholder.
 
-        Use ${OPENPYPE_ROOT_WORK} (or any other root) instead of proper root
+        Use ${QUADPYPE_ROOT_WORK} (or any other root) instead of proper root
         value when storing referenced url into a workfile.
         Useful for remote workflows with SiteSync.
 
@@ -1125,7 +1125,7 @@ class ActionBase(BuilderAction):
     def prepare_root_value(self, file_url, project_name):
         """Replace root value with env var placeholder.
 
-        Use ${OPENPYPE_ROOT_WORK} (or any other root) instead of proper root
+        Use ${QUADPYPE_ROOT_WORK} (or any other root) instead of proper root
         value when storing referenced url into a workfile.
         Useful for remote workflows with SiteSync.
 

@@ -21,7 +21,7 @@ LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
 CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 INVENTORY_PATH = os.path.join(PLUGINS_DIR, "inventory")
 
-OPENPYPE_ATTR_PREFIX = "openpype."
+QUADPYPE_ATTR_PREFIX = "openpype."
 JSON_PREFIX = "JSON:::"
 
 
@@ -29,7 +29,7 @@ class OpenRVHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     name = "openrv"
 
     def __init__(self):
-        super(OpenRVHost, self).__init__()
+        super().__init__()
         self._op_events = {}
 
     def install(self):
@@ -75,10 +75,10 @@ class OpenRVHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
             yield container
 
     def update_context_data(self, data, changes):
-        imprint("root", data, prefix=OPENPYPE_ATTR_PREFIX)
+        imprint("root", data, prefix=QUADPYPE_ATTR_PREFIX)
 
     def get_context_data(self):
-        return read("root", prefix=OPENPYPE_ATTR_PREFIX)
+        return read("root", prefix=QUADPYPE_ATTR_PREFIX)
 
 
 def imprint(node, data, prefix=None):
@@ -186,7 +186,7 @@ def imprint_container(node, name, namespace, context, loader):
     # are always created in the same order. This is solely
     # to make debugging easier when reading the values in
     # the attribute editor.
-    imprint(node, OrderedDict(data), prefix=OPENPYPE_ATTR_PREFIX)
+    imprint(node, OrderedDict(data), prefix=QUADPYPE_ATTR_PREFIX)
 
 
 def parse_container(node):
@@ -199,7 +199,7 @@ def parse_container(node):
 
     data = {}
     for key in required:
-        prop = f"{node}.{OPENPYPE_ATTR_PREFIX}{key}"
+        prop = f"{node}.{QUADPYPE_ATTR_PREFIX}{key}"
         if not rv.commands.propertyExists(prop):
             return
 
@@ -219,7 +219,7 @@ def get_container_nodes():
     """Return a list of node names that are marked as loaded container."""
     container_nodes = []
     for node in rv.commands.nodes():
-        prop = f"{node}.{OPENPYPE_ATTR_PREFIX}schema"
+        prop = f"{node}.{QUADPYPE_ATTR_PREFIX}schema"
         if rv.commands.propertyExists(prop):
             container_nodes.append(node)
     return container_nodes

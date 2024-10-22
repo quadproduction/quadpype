@@ -103,23 +103,23 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
             "FTRACK_API_KEY",
             "FTRACK_API_USER",
             "FTRACK_SERVER",
-            "OPENPYPE_SG_USER",
+            "QUADPYPE_SG_USER",
             "AVALON_DB",
             "AVALON_PROJECT",
             "AVALON_ASSET",
             "AVALON_TASK",
             "AVALON_APP_NAME",
-            "OPENPYPE_DEV"
+            "QUADPYPE_DEV"
             "IS_TEST"
         ]
 
         # Add OpenPype version if we are running from build.
         if is_running_from_build():
-            keys.append("OPENPYPE_VERSION")
+            keys.append("QUADPYPE_VERSION")
 
         # Add mongo url if it's enabled
         if self._instance.context.data.get("deadlinePassMongoUrl"):
-            keys.append("OPENPYPE_MONGO")
+            keys.append("QUADPYPE_MONGO")
 
         environment = dict({key: os.environ[key] for key in keys
                             if key in os.environ}, **legacy_io.Session)

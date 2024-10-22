@@ -32,7 +32,7 @@ class LibraryLoaderWindow(QtWidgets.QDialog):
     def __init__(
         self, parent=None, show_projects=False, show_libraries=True
     ):
-        super(LibraryLoaderWindow, self).__init__(parent)
+        super().__init__(parent)
 
         # Window modifications
         self.setWindowTitle(self.tool_title)

@@ -16,7 +16,7 @@ def requests_post(*args, **kwargs):
 
     """
     if "verify" not in kwargs:
-        kwargs["verify"] = not os.getenv("OPENPYPE_DONT_VERIFY_SSL", True)
+        kwargs["verify"] = not os.getenv("QUADPYPE_DONT_VERIFY_SSL", True)
     return requests.post(*args, **kwargs)
 
 
@@ -34,5 +34,5 @@ def requests_get(*args, **kwargs):
 
     """
     if "verify" not in kwargs:
-        kwargs["verify"] = not os.getenv("OPENPYPE_DONT_VERIFY_SSL", True)
+        kwargs["verify"] = not os.getenv("QUADPYPE_DONT_VERIFY_SSL", True)
     return requests.get(*args, **kwargs)

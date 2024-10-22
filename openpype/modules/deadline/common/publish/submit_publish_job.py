@@ -109,7 +109,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                   "max": [r".*"]}
 
     environ_job_filter = [
-        "OPENPYPE_METADATA_FILE"
+        "QUADPYPE_METADATA_FILE"
     ]
 
     environ_keys = [
@@ -118,7 +118,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
         "FTRACK_SERVER",
         "AVALON_APP_NAME",
         "QUADPYPE_USERNAME",
-        "OPENPYPE_SG_USER",
+        "QUADPYPE_SG_USER",
         "KITSU_LOGIN",
         "KITSU_PWD"
     ]
@@ -195,12 +195,12 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
         }
 
         environment["AVALON_DB"] = os.environ["AVALON_DB"]
-        environment["OPENPYPE_PUBLISH_JOB"] = "1"
-        environment["OPENPYPE_RENDER_JOB"] = "0"
-        environment["OPENPYPE_REMOTE_PUBLISH"] = "0"
+        environment["QUADPYPE_PUBLISH_JOB"] = "1"
+        environment["QUADPYPE_RENDER_JOB"] = "0"
+        environment["QUADPYPE_REMOTE_PUBLISH"] = "0"
         plugin_name = "OpenPype"
         # Add OpenPype version
-        self.environ_keys.append("OPENPYPE_VERSION")
+        self.environ_keys.append("QUADPYPE_VERSION")
 
         # add environments from self.environ_keys
         for env_key in self.environ_keys:
@@ -215,9 +215,9 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
 
         # Add mongo url if it's enabled
         if instance.context.data.get("deadlinePassMongoUrl"):
-            mongo_url = os.environ.get("OPENPYPE_MONGO")
+            mongo_url = os.environ.get("QUADPYPE_MONGO")
             if mongo_url:
-                environment["OPENPYPE_MONGO"] = mongo_url
+                environment["QUADPYPE_MONGO"] = mongo_url
 
         instance_settings = self.get_attr_values_from_data(instance.data)
         initial_status = instance_settings.get("publishJobState", "Active")

@@ -32,7 +32,7 @@ from openpype.pipeline.version_start import get_versioning_start
 class CollectPublishedFiles(pyblish.api.ContextPlugin):
     """
     This collector will try to find json files in provided
-    `OPENPYPE_PUBLISH_DATA`. Those files _MUST_ share same context.
+    `QUADPYPE_PUBLISH_DATA`. Those files _MUST_ share same context.
 
     This covers 'basic' webpublishes, eg artists uses Standalone Publisher to
     publish rendered frames or assets.

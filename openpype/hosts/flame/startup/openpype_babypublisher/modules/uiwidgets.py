@@ -14,7 +14,7 @@ class FlameLabel(QtWidgets.QLabel):
     """
 
     def __init__(self, label_name, label_type, parent_window, *args, **kwargs):
-        super(FlameLabel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setText(label_name)
         self.setParent(parent_window)
@@ -54,7 +54,7 @@ class FlameLineEdit(QtWidgets.QLineEdit):
     """
 
     def __init__(self, text, parent_window, *args, **kwargs):
-        super(FlameLineEdit, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setText(text)
         self.setParent(parent_window)
@@ -78,7 +78,7 @@ class FlameTreeWidget(QtWidgets.QTreeWidget):
     """
 
     def __init__(self, tree_headers, parent_window, *args, **kwargs):
-        super(FlameTreeWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setMinimumWidth(1000)
         self.setMinimumHeight(300)
@@ -110,7 +110,7 @@ class FlameButton(QtWidgets.QPushButton):
 
     def __init__(self, button_name, do_when_pressed, parent_window,
                  *args, **kwargs):
-        super(FlameButton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setText(button_name)
         self.setParent(parent_window)
@@ -136,7 +136,7 @@ class FlamePushButton(QtWidgets.QPushButton):
 
     def __init__(self, button_name, button_checked, parent_window,
                  *args, **kwargs):
-        super(FlamePushButton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setText(button_name)
         self.setParent(parent_window)
@@ -173,7 +173,7 @@ class FlamePushButtonMenu(QtWidgets.QPushButton):
 
     def __init__(self, button_name, menu_options, parent_window,
                  *args, **kwargs):
-        super(FlamePushButtonMenu, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setParent(parent_window)
         self.setMinimumHeight(28)

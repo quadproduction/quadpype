@@ -53,7 +53,7 @@ def _get_qt_app():
 
 def open_dialog():
     """Show Igniter dialog."""
-    if os.getenv("OPENPYPE_HEADLESS_MODE"):
+    if os.getenv("QUADPYPE_HEADLESS_MODE"):
         print("!!! Can't open dialog in headless mode. Exiting.")
         sys.exit(1)
     from .install_dialog import InstallDialog
@@ -75,7 +75,7 @@ def open_update_window(openpype_version, zxp_hosts=None):
     """Open update window."""
     if zxp_hosts is None:
         zxp_hosts = []
-    if os.getenv("OPENPYPE_HEADLESS_MODE"):
+    if os.getenv("QUADPYPE_HEADLESS_MODE"):
         print("!!! Can't open dialog in headless mode. Exiting.")
         sys.exit(1)
 
@@ -98,7 +98,7 @@ def open_update_window(openpype_version, zxp_hosts=None):
 
 def show_message_dialog(title, message):
     """Show dialog with a message and title to user."""
-    if os.getenv("OPENPYPE_HEADLESS_MODE"):
+    if os.getenv("QUADPYPE_HEADLESS_MODE"):
         print("!!! Can't open dialog in headless mode. Exiting.")
         sys.exit(1)
 

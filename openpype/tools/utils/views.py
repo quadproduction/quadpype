@@ -23,7 +23,7 @@ class TreeViewSpinner(QtWidgets.QTreeView):
     size = 160
 
     def __init__(self, parent=None):
-        super(TreeViewSpinner, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         loading_image_path = get_image_path("spinner-200.svg")
 
@@ -74,7 +74,7 @@ class TreeView(QtWidgets.QTreeView):
     double_clicked = QtCore.Signal(QtGui.QMouseEvent)
 
     def __init__(self, *args, **kwargs):
-        super(TreeView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._deselectable = False
 
         self._flick_charm_activated = False

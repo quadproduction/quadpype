@@ -1420,11 +1420,11 @@ CreateNextPageOverlay {
     border-radius: 5px;
 }
 
-#OpenPypeVersionLabel[state="success"] {
+#QuadPypeVersionLabel[state="success"] {
     color: {color:settings:version-exists};
 }
 
-#OpenPypeVersionLabel[state="warning"] {
+#QuadPypeVersionLabel[state="warning"] {
     color: {color:settings:version-not-found};
 }
 

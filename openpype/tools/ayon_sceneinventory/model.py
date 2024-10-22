@@ -60,7 +60,7 @@ class InventoryModel(TreeModel):
     UniqueRole = QtCore.Qt.UserRole + 2     # unique label role
 
     def __init__(self, controller, parent=None):
-        super(InventoryModel, self).__init__(parent)
+        super().__init__(parent)
         self.log = logging.getLogger(self.__class__.__name__)
 
         self._controller = controller
@@ -394,7 +394,7 @@ class InventoryModel(TreeModel):
         filtered_repre_ids = set()
         for repre_id in repre_ids:
             # Filter out invalid representation ids
-            # NOTE: This is added because scenes from OpenPype did contain
+            # NOTE: This is added because scenes from QuadPype did contain
             #   ObjectId from mongo.
             try:
                 uuid.UUID(repre_id)
@@ -479,7 +479,7 @@ class FilterProxyModel(QtCore.QSortFilterProxyModel):
     """Filter model to where key column's value is in the filtered tags"""
 
     def __init__(self, *args, **kwargs):
-        super(FilterProxyModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._filter_outdated = False
         self._hierarchy_view = False
 

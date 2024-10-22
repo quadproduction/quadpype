@@ -467,7 +467,7 @@ class ProcessTVPaintCommands(TVPaintCommands):
     Workfile path logic is based on 'SenderTVPaintCommands'.
     """
     def __init__(self, workfile, commands, communicator):
-        super(ProcessTVPaintCommands, self).__init__(workfile)
+        super().__init__(workfile)
 
         self._communicator = communicator
 

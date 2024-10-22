@@ -41,7 +41,7 @@ class ResizeControlWidget(QtWidgets.QWidget):
 # TODO add creator identifier/label to details
 class CreatorShortDescWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(CreatorShortDescWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         # --- Short description widget ---
         icon_widget = IconValuePixmapLabel(None, self)
@@ -105,7 +105,7 @@ class CreatorsProxyModel(QtCore.QSortFilterProxyModel):
 
 class CreateWidget(QtWidgets.QWidget):
     def __init__(self, controller, parent=None):
-        super(CreateWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self._controller = controller
 

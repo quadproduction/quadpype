@@ -41,7 +41,7 @@ class MultiSelectionComboBox(QtWidgets.QComboBox):
     }
 
     def __init__(self, parent=None, **kwargs):
-        super(MultiSelectionComboBox, self).__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, **kwargs)
         self.setObjectName("MultiSelectionComboBox")
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 

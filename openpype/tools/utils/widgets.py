@@ -20,7 +20,7 @@ class FocusSpinBox(QtWidgets.QSpinBox):
     """QSpinBox which allow scroll wheel changes only in active state."""
 
     def __init__(self, *args, **kwargs):
-        super(FocusSpinBox, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
     def wheelEvent(self, event):
@@ -34,7 +34,7 @@ class FocusDoubleSpinBox(QtWidgets.QDoubleSpinBox):
     """QDoubleSpinBox which allow scroll wheel changes only in active state."""
 
     def __init__(self, *args, **kwargs):
-        super(FocusDoubleSpinBox, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
     def wheelEvent(self, event):
@@ -53,7 +53,7 @@ class ComboBox(QtWidgets.QComboBox):
     """
 
     def __init__(self, *args, **kwargs):
-        super(ComboBox, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         delegate = QtWidgets.QStyledItemDelegate()
         self.setItemDelegate(delegate)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -70,7 +70,7 @@ class CustomTextComboBox(ComboBox):
 
     def __init__(self, *args, **kwargs):
         self._custom_text = None
-        super(CustomTextComboBox, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def set_custom_text(self, text=None):
         if self._custom_text != text:
@@ -90,7 +90,7 @@ class CustomTextComboBox(ComboBox):
 class PlaceholderLineEdit(QtWidgets.QLineEdit):
     """Set placeholder color of QLineEdit in Qt 5.12 and higher."""
     def __init__(self, *args, **kwargs):
-        super(PlaceholderLineEdit, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # Change placeholder palette color
         if hasattr(QtGui.QPalette, "PlaceholderText"):
             filter_palette = self.palette()
@@ -108,7 +108,7 @@ class ExpandingTextEdit(QtWidgets.QTextEdit):
     """QTextEdit which does not have sroll area but expands height."""
 
     def __init__(self, parent=None):
-        super(ExpandingTextEdit, self).__init__(parent)
+        super().__init__(parent)
 
         size_policy = self.sizePolicy()
         size_policy.setHeightForWidth(True)
@@ -150,7 +150,7 @@ class BaseClickableFrame(QtWidgets.QFrame):
     Callback is defined by overriding `_mouse_release_callback`.
     """
     def __init__(self, parent):
-        super(BaseClickableFrame, self).__init__(parent)
+        super().__init__(parent)
 
         self._mouse_pressed = False
 
@@ -184,7 +184,7 @@ class ClickableLabel(QtWidgets.QLabel):
     clicked = QtCore.Signal()
 
     def __init__(self, parent):
-        super(ClickableLabel, self).__init__(parent)
+        super().__init__(parent)
 
         self._mouse_pressed = False
 
@@ -208,7 +208,7 @@ class ExpandBtnLabel(QtWidgets.QLabel):
 
 
     def __init__(self, parent):
-        super(ExpandBtnLabel, self).__init__(parent)
+        super().__init__(parent)
         self._source_collapsed_pix = self._create_collapsed_pixmap()
         self._source_expanded_pix = self._create_expanded_pixmap()
 
@@ -265,7 +265,7 @@ class ExpandBtn(ClickableFrame):
     state_changed = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super(ExpandBtn, self).__init__(parent)
+        super().__init__(parent)
 
         pixmap_label = self._create_pix_widget(self)
 
@@ -321,7 +321,7 @@ class ImageButton(QtWidgets.QPushButton):
     """
 
     def __init__(self, *args, **kwargs):
-        super(ImageButton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setObjectName("ImageButton")
 
     def _change_size(self):
@@ -344,7 +344,7 @@ class IconButton(QtWidgets.QPushButton):
     """
 
     def __init__(self, *args, **kwargs):
-        super(IconButton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setObjectName("IconButton")
 
     def sizeHint(self):
@@ -363,7 +363,7 @@ class IconButton(QtWidgets.QPushButton):
 class PixmapLabel(QtWidgets.QLabel):
     """Label resizing image to height of font."""
     def __init__(self, pixmap, parent):
-        super(PixmapLabel, self).__init__(parent)
+        super().__init__(parent)
         self._empty_pixmap = QtGui.QPixmap(0, 0)
         self._source_pixmap = pixmap
 
@@ -409,7 +409,7 @@ class PixmapLabel(QtWidgets.QLabel):
 
 class PixmapButtonPainter(QtWidgets.QWidget):
     def __init__(self, pixmap, parent):
-        super(PixmapButtonPainter, self).__init__(parent)
+        super().__init__(parent)
 
         self._pixmap = pixmap
         self._cached_pixmap = None
@@ -468,7 +468,7 @@ class PixmapButtonPainter(QtWidgets.QWidget):
 
 class PixmapButton(ClickableFrame):
     def __init__(self, pixmap=None, parent=None):
-        super(PixmapButton, self).__init__(parent)
+        super().__init__(parent)
 
         button_painter = PixmapButtonPainter(pixmap, self)
         layout = QtWidgets.QHBoxLayout(self)
@@ -552,7 +552,7 @@ class OptionalAction(QtWidgets.QWidgetAction):
     """
 
     def __init__(self, label, icon, use_option, parent):
-        super(OptionalAction, self).__init__(parent)
+        super().__init__(parent)
         self.label = label
         self.icon = icon
         self.use_option = use_option
@@ -612,7 +612,7 @@ class OptionalActionWidget(QtWidgets.QWidget):
     """Main widget class for `OptionalAction`"""
 
     def __init__(self, label, parent=None):
-        super(OptionalActionWidget, self).__init__(parent)
+        super().__init__(parent)
 
         body_widget = QtWidgets.QWidget(self)
         body_widget.setObjectName("OptionalActionBody")
@@ -679,7 +679,7 @@ class OptionBox(QtWidgets.QLabel):
     clicked = QtCore.Signal()
 
     def __init__(self, parent):
-        super(OptionBox, self).__init__(parent)
+        super().__init__(parent)
 
         self.setAlignment(QtCore.Qt.AlignCenter)
 
@@ -698,7 +698,7 @@ class OptionDialog(QtWidgets.QDialog):
     """Option dialog shown by option box"""
 
     def __init__(self, parent=None):
-        super(OptionDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setModal(True)
         self._options = dict()
 
@@ -738,7 +738,7 @@ class SeparatorWidget(QtWidgets.QFrame):
     """
 
     def __init__(self, size=2, orientation=QtCore.Qt.Horizontal, parent=None):
-        super(SeparatorWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("Separator")
 
@@ -803,7 +803,7 @@ class VerticalExpandButton(QtWidgets.QPushButton):
     """
 
     def __init__(self, parent=None):
-        super(VerticalExpandButton, self).__init__(parent)
+        super().__init__(parent)
 
         sp = self.sizePolicy()
         sp.setVerticalPolicy(QtWidgets.QSizePolicy.Minimum)
@@ -817,7 +817,7 @@ class SquareButton(QtWidgets.QPushButton):
     """
 
     def __init__(self, *args, **kwargs):
-        super(SquareButton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         sp = self.sizePolicy()
         sp.setVerticalPolicy(QtWidgets.QSizePolicy.Minimum)
@@ -846,11 +846,11 @@ class SquareButton(QtWidgets.QPushButton):
 
 class RefreshButton(VerticalExpandButton):
     def __init__(self, parent=None):
-        super(RefreshButton, self).__init__(parent)
+        super().__init__(parent)
         self.setIcon(get_refresh_icon())
 
 
 class GoToCurrentButton(VerticalExpandButton):
     def __init__(self, parent=None):
-        super(GoToCurrentButton, self).__init__(parent)
+        super().__init__(parent)
         self.setIcon(get_go_to_current_icon())

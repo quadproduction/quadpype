@@ -23,7 +23,7 @@ def create_custom_tempdir(project_name, anatomy=None):
     Returns:
         str | None: formatted path or None
     """
-    openpype_tempdir = os.getenv("OPENPYPE_TMPDIR")
+    openpype_tempdir = os.getenv("QUADPYPE_TMPDIR")
     if not openpype_tempdir:
         return
 

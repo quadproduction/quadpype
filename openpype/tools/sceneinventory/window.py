@@ -30,7 +30,7 @@ class SceneInventoryWindow(QtWidgets.QDialog):
     """Scene Inventory window"""
 
     def __init__(self, parent=None):
-        super(SceneInventoryWindow, self).__init__(parent)
+        super().__init__(parent)
 
         if not parent:
             self.setWindowFlags(

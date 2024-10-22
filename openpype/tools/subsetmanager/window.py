@@ -25,7 +25,7 @@ module.window = None
 
 class SubsetManagerWindow(QtWidgets.QDialog):
     def __init__(self, parent=None):
-        super(SubsetManagerWindow, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setWindowTitle("Subset Manager 0.1")
         self.setObjectName("SubsetManager")
         if not parent:

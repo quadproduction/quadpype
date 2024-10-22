@@ -58,7 +58,7 @@ class DeliveryOptionsDialog(QtWidgets.QDialog):
     """Dialog to select template where to deliver selected representations."""
 
     def __init__(self, contexts, log=None, parent=None):
-        super(DeliveryOptionsDialog, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.setWindowTitle("OpenPype - Deliver versions")
         icon = QtGui.QIcon(resources.get_app_icon_filepath())

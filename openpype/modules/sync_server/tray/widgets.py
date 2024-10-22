@@ -46,7 +46,7 @@ class SyncProjectListWidget(QtWidgets.QWidget):
     show_only_enabled = True
 
     def __init__(self, sync_server, parent):
-        super(SyncProjectListWidget, self).__init__(parent)
+        super().__init__(parent)
         self.setObjectName("ProjectListWidget")
 
         self._parent = parent
@@ -578,7 +578,7 @@ class SyncRepresentationSummaryWidget(_SyncRepresentationWidget):
     )
 
     def __init__(self, sync_server, project=None, parent=None):
-        super(SyncRepresentationSummaryWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.sync_server = sync_server
         self._selected_ids = set()  # keep last selected _id
@@ -679,7 +679,7 @@ class SyncServerDetailWindow(QtWidgets.QDialog):
     def __init__(self, sync_server, _id, project, parent=None):
         log.debug(
             "!!! SyncServerDetailWindow _id:: {}".format(_id))
-        super(SyncServerDetailWindow, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowFlags(QtCore.Qt.Window)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
@@ -732,7 +732,7 @@ class SyncRepresentationDetailWidget(_SyncRepresentationWidget):
     )
 
     def __init__(self, sync_server, _id=None, project=None, parent=None):
-        super(SyncRepresentationDetailWidget, self).__init__(parent)
+        super().__init__(parent)
 
         log.debug("Representation_id:{}".format(_id))
         self.project = project
@@ -879,7 +879,7 @@ class SyncRepresentationDetailWidget(_SyncRepresentationWidget):
 class SyncRepresentationErrorWindow(QtWidgets.QDialog):
     """Wrapper window to show errors during sync on file(s)"""
     def __init__(self, model, selected_ids, parent=None):
-        super(SyncRepresentationErrorWindow, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowFlags(QtCore.Qt.Window)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
@@ -911,7 +911,7 @@ class SyncRepresentationErrorWidget(QtWidgets.QWidget):
         Dialog to show when sync error happened, prints formatted error message
     """
     def __init__(self, model, selected_ids, parent=None):
-        super(SyncRepresentationErrorWidget, self).__init__(parent)
+        super().__init__(parent)
 
         layout = QtWidgets.QVBoxLayout(self)
 
@@ -954,7 +954,7 @@ class SyncRepresentationErrorWidget(QtWidgets.QWidget):
 class HorizontalHeader(QtWidgets.QHeaderView):
     """Reiplemented QHeaderView to contain clickable changeable button"""
     def __init__(self, parent=None):
-        super(HorizontalHeader, self).__init__(QtCore.Qt.Horizontal, parent)
+        super().__init__(QtCore.Qt.Horizontal, parent)
         self._parent = parent
         self.checked_values = {}
         self.setModel(self._parent.model)

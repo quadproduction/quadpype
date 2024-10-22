@@ -167,7 +167,7 @@ class BaseCreateRoyalRenderJob(pyblish.api.InstancePlugin,
             custom_attributes = [
                 CustomAttribute(
                     name="OpenPypeVersion",
-                    value=os.environ.get("OPENPYPE_VERSION"))
+                    value=os.environ.get("QUADPYPE_VERSION"))
             ]
 
         # this will append expected files to instance as needed.

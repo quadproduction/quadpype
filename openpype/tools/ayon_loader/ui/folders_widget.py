@@ -31,7 +31,7 @@ class UnderlinesFolderDelegate(QtWidgets.QItemDelegate):
     bar_height = 3
 
     def __init__(self, *args, **kwargs):
-        super(UnderlinesFolderDelegate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         colors = get_objected_colors("loader", "asset-view")
         self._selected_color = colors["selected"].get_qcolor()
         self._hover_color = colors["hover"].get_qcolor()
@@ -184,7 +184,7 @@ class UnderlinesFolderDelegate(QtWidgets.QItemDelegate):
 
 class LoaderFoldersModel(FoldersQtModel):
     def __init__(self, *args, **kwargs):
-        super(LoaderFoldersModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._colored_items = set()
 
@@ -262,7 +262,7 @@ class LoaderFoldersWidget(QtWidgets.QWidget):
     refreshed = QtCore.Signal()
 
     def __init__(self, controller, parent):
-        super(LoaderFoldersWidget, self).__init__(parent)
+        super().__init__(parent)
 
         folders_view = DeselectableTreeView(self)
         folders_view.setHeaderHidden(True)

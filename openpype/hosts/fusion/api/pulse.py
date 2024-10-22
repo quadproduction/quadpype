@@ -8,13 +8,13 @@ class PulseThread(QtCore.QThread):
     no_response = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super(PulseThread, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
     def run(self):
         app = getattr(sys.modules["__main__"], "app", None)
 
         # Interval in milliseconds
-        interval = os.environ.get("OPENPYPE_FUSION_PULSE_INTERVAL", 1000)
+        interval = os.environ.get("QUADPYPE_FUSION_PULSE_INTERVAL", 1000)
 
         while True:
             if self.isInterruptionRequested():
@@ -48,7 +48,7 @@ class FusionPulse(QtCore.QObject):
     """
 
     def __init__(self, parent=None):
-        super(FusionPulse, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self._thread = PulseThread(parent=self)
         self._thread.no_response.connect(self.on_no_response)
 

@@ -178,7 +178,7 @@ or updating already created. Publishing will create OTIO file.
     def __init__(
         self, project_settings, *args, **kwargs
     ):
-        super(EditorialSimpleCreator, self).__init__(
+        super().__init__(
             project_settings, *args, **kwargs
         )
         editorial_creators = deepcopy(

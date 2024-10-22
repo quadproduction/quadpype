@@ -84,7 +84,7 @@ class BaseItemEntity(BaseEntity):
     gui_type = False
 
     def __init__(self, schema_data):
-        super(BaseItemEntity, self).__init__(schema_data)
+        super().__init__(schema_data)
 
         # Parent entity
         self.parent = None
@@ -826,7 +826,7 @@ class ItemEntity(BaseItemEntity):
     }
 
     def __init__(self, schema_data, parent, is_dynamic_item=False):
-        super(ItemEntity, self).__init__(schema_data)
+        super().__init__(schema_data)
 
         self.parent = parent
         self.is_dynamic_item = is_dynamic_item

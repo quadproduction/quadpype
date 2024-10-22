@@ -17,7 +17,7 @@ class FilesWidget(QtWidgets.QWidget):
     """
 
     def __init__(self, controller, parent):
-        super(FilesWidget, self).__init__(parent)
+        super().__init__(parent)
 
         files_widget = QtWidgets.QStackedWidget(self)
         workarea_widget = WorkAreaFilesWidget(controller, files_widget)

@@ -60,7 +60,7 @@ class FilesView(QtWidgets.QTreeView):
 
 class SelectContextOverlay(QtWidgets.QFrame):
     def __init__(self, parent):
-        super(SelectContextOverlay, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("WorkfilesPublishedContextSelect")
         label_widget = QtWidgets.QLabel(
@@ -91,7 +91,7 @@ class FilesWidget(QtWidgets.QWidget):
     published_visible_changed = QtCore.Signal(bool)
 
     def __init__(self, parent):
-        super(FilesWidget, self).__init__(parent)
+        super().__init__(parent)
 
         # Setup
         self._asset_id = None

@@ -25,7 +25,7 @@ class AssetOutliner(QtWidgets.QWidget):
     selection_changed = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super(AssetOutliner, self).__init__(parent)
+        super().__init__(parent)
 
         title = QtWidgets.QLabel("Assets", self)
         title.setAlignment(QtCore.Qt.AlignCenter)
@@ -188,7 +188,7 @@ class LookOutliner(QtWidgets.QWidget):
     menu_apply_action = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super(LookOutliner, self).__init__(parent)
+        super().__init__(parent)
 
         # Looks from database
         title = QtWidgets.QLabel("Looks", self)

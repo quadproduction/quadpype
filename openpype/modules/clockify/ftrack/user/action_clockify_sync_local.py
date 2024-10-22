@@ -18,7 +18,7 @@ class SyncClockifyLocal(BaseAction):
     icon = statics_icon("app_icons", "clockify-white.png")
 
     def __init__(self, *args, **kwargs):
-        super(SyncClockifyLocal, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         #: CLockifyApi
         self.clockify_api = ClockifyAPI()
 

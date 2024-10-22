@@ -67,5 +67,5 @@ class FusionPrelaunch(PreLaunchHook):
         # for hook installing PySide2
         self.data["fusion_python3_home"] = py3_dir
 
-        self.log.info(f"Setting OPENPYPE_FUSION: {FUSION_HOST_DIR}")
-        self.launch_context.env["OPENPYPE_FUSION"] = FUSION_HOST_DIR
+        self.log.info(f"Setting QUADPYPE_FUSION: {FUSION_HOST_DIR}")
+        self.launch_context.env["QUADPYPE_FUSION"] = FUSION_HOST_DIR

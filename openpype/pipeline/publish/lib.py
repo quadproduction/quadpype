@@ -450,7 +450,7 @@ def filter_pyblish_plugins(plugins):
     for plugin in plugins[:]:
         # Apply settings to plugin
 
-        # First settings from OP settings
+        # First settings from QuadPype settings
         plugin_settings = get_publish_plugin_settings(
             plugin, project_settings, host_name, logger=log)
         apply_plugin_settings(plugin, plugin_settings, log)
@@ -626,7 +626,7 @@ def get_instance_staging_dir(instance):
     First check if 'stagingDir' is already set in instance data.
     In case there already is new tempdir will not be created.
 
-    It also supports `OPENPYPE_TMPDIR`, so studio can define own temp
+    It also supports `QUADPYPE_TMPDIR`, so studio can define own temp
     shared repository per project or even per more granular context.
     Template formatting is supported also with optional keys. Folder is
     created in case it doesn't exists.
@@ -652,7 +652,7 @@ def get_instance_staging_dir(instance):
 
     anatomy = instance.context.data.get("anatomy")
 
-    # get customized tempdir path from `OPENPYPE_TMPDIR` env var
+    # get customized tempdir path from `QUADPYPE_TMPDIR` env var
     custom_temp_dir = tempdir.create_custom_tempdir(
         anatomy.project_name, anatomy)
 

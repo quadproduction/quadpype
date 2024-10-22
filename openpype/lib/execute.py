@@ -208,7 +208,7 @@ def run_openpype_process(*args, **kwargs):
 
     # Only keep OpenPype version if we are running from build.
     if not is_running_from_build():
-        env.pop("OPENPYPE_VERSION", None)
+        env.pop("QUADPYPE_VERSION", None)
 
     return run_subprocess(args, env=env, **kwargs)
 

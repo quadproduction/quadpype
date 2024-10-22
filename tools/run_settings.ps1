@@ -18,7 +18,7 @@ $openpype_root = (Get-Item $script_dir).parent.FullName
 # Install PSWriteColor to support colorized output to terminal
 $env:PSModulePath = $env:PSModulePath + ";$($openpype_root)\tools\modules\powershell"
 
-$env:_INSIDE_OPENPYPE_TOOL = "1"
+$env:_INSIDE_QUADPYPE_TOOL = "1"
 
 # make sure Poetry is in PATH
 if (-not (Test-Path 'env:POETRY_HOME')) {

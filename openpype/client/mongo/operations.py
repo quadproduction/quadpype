@@ -385,7 +385,7 @@ class MongoCreateOperation(CreateOperation):
     operation_name = "create"
 
     def __init__(self, project_name, entity_type, data):
-        super(MongoCreateOperation, self).__init__(
+        super().__init__(
             project_name, entity_type, data
         )
 
@@ -418,7 +418,7 @@ class MongoUpdateOperation(UpdateOperation):
     operation_name = "update"
 
     def __init__(self, project_name, entity_type, entity_id, update_data):
-        super(MongoUpdateOperation, self).__init__(
+        super().__init__(
             project_name, entity_type, entity_id, update_data
         )
 
@@ -461,7 +461,7 @@ class MongoDeleteOperation(DeleteOperation):
     operation_name = "delete"
 
     def __init__(self, project_name, entity_type, entity_id):
-        super(MongoDeleteOperation, self).__init__(
+        super().__init__(
             project_name, entity_type, entity_id
         )
 
@@ -558,7 +558,7 @@ def create_project(
     Entered project name must be unique and project must not exist yet.
 
     Note:
-        This function is here to be OP v4 ready but in v3 has more logic
+        This function is here to be QuadPype v4 ready but in v3 has more logic
             to do. That's why inner imports are in the body.
 
     Args:

@@ -330,7 +330,7 @@ class ExtractReviewSlate(publish.Extractor):
             concat_args.extend(fmap)
             if offset_timecode:
                 concat_args.extend(["-timecode", offset_timecode])
-            # NOTE: Added because of OP Atom demuxers
+            # NOTE: Added because of QuadPype Atom demuxers
             # Add format arguments if there are any
             # - keep format of output
             if format_args:

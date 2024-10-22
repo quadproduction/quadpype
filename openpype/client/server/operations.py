@@ -492,7 +492,7 @@ class ServerCreateOperation(CreateOperation):
                 json.dumps(new_data, default=failed_json_default)
             ))
 
-        super(ServerCreateOperation, self).__init__(
+        super().__init__(
             project_name, entity_type, new_data
         )
 
@@ -601,7 +601,7 @@ class ServerUpdateOperation(UpdateOperation):
                 json.dumps(new_update_data, default=failed_json_default)
             ))
 
-        super(ServerUpdateOperation, self).__init__(
+        super().__init__(
             project_name, entity_type, entity_id, new_update_data
         )
 
@@ -654,7 +654,7 @@ class ServerDeleteOperation(DeleteOperation):
         elif entity_type == "subset":
             entity_type = "product"
 
-        super(ServerDeleteOperation, self).__init__(
+        super().__init__(
             project_name, entity_type, entity_id
         )
 
@@ -677,7 +677,7 @@ class ServerDeleteOperation(DeleteOperation):
 
 class OperationsSession(BaseOperationsSession):
     def __init__(self, con=None, *args, **kwargs):
-        super(OperationsSession, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if con is None:
             con = get_ayon_server_api_connection()
         self._con = con
@@ -838,7 +838,7 @@ def create_project(
     Entered project name must be unique and project must not exist yet.
 
     Note:
-        This function is here to be OP v4 ready but in v3 has more logic
+        This function is here to be QuadPype v4 ready but in v3 has more logic
             to do. That's why inner imports are in the body.
 
     Args:

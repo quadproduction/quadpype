@@ -1,9 +1,9 @@
 # Build Pype docker image
 FROM centos:7 AS builder
-ARG OPENPYPE_PYTHON_VERSION=3.9.12
+ARG QUADPYPE_PYTHON_VERSION=3.9.12
 
 LABEL org.opencontainers.image.name="pypeclub/openpype"
-LABEL org.opencontainers.image.title="OpenPype Docker Image"
+LABEL org.opencontainers.image.title="QuadPype Docker Image"
 LABEL org.opencontainers.image.url="https://openpype.io/"
 LABEL org.opencontainers.image.source="https://github.com/pypeclub/pype"
 LABEL org.opencontainers.image.documentation="https://openpype.io/docs/system_introduction"
@@ -80,7 +80,7 @@ RUN source $HOME/.bashrc \
     && export LDFLAGS="-L/usr/lib64/openssl11 -lssl -lcrypto" \
     && export PATH=/usr/local/openssl/bin:$PATH \
     && export LD_LIBRARY_PATH=/usr/local/openssl/lib:$LD_LIBRARY_PATH \
-    && pyenv install ${OPENPYPE_PYTHON_VERSION}
+    && pyenv install ${QUADPYPE_PYTHON_VERSION}
 
 COPY . /opt/openpype/
 RUN rm -rf /openpype/.poetry || echo "No Poetry installed yet."
@@ -94,7 +94,7 @@ WORKDIR /opt/openpype
 
 RUN cd /opt/openpype \
     && source $HOME/.bashrc \
-    && pyenv local ${OPENPYPE_PYTHON_VERSION}
+    && pyenv local ${QUADPYPE_PYTHON_VERSION}
 
 RUN source $HOME/.bashrc \
     && ./tools/create_env.sh
@@ -111,7 +111,7 @@ RUN cp /usr/lib64/libffi* ./build/exe.linux-x86_64-3.9/lib \
     && cp /usr/lib64/openssl11/libcrypto* ./build/exe.linux-x86_64-3.9/lib \
     && ln -sr ./build/exe.linux-x86_64-3.9/lib/libssl.so ./build/exe.linux-x86_64-3.9/lib/libssl.1.1.so \
     && ln -sr ./build/exe.linux-x86_64-3.9/lib/libcrypto.so ./build/exe.linux-x86_64-3.9/lib/libcrypto.1.1.so \
-    && cp /root/.pyenv/versions/${OPENPYPE_PYTHON_VERSION}/lib/libpython* ./build/exe.linux-x86_64-3.9/lib \
+    && cp /root/.pyenv/versions/${QUADPYPE_PYTHON_VERSION}/lib/libpython* ./build/exe.linux-x86_64-3.9/lib \
     && cp /usr/lib64/libxcb* ./build/exe.linux-x86_64-3.9/vendor/python/PySide2/Qt/lib
 
 RUN cd /opt/openpype \

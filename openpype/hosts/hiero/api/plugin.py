@@ -34,7 +34,7 @@ class CreatorWidget(QtWidgets.QDialog):
     items = {}
 
     def __init__(self, name, info, ui_inputs, parent=None):
-        super(CreatorWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName(name)
 
@@ -611,7 +611,7 @@ class Creator(LegacyCreator):
     rename_index = None
 
     def __init__(self, *args, **kwargs):
-        super(Creator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         import openpype.hosts.hiero.api as phiero
         self.presets = get_current_project_settings()[
             "hiero"]["create"].get(self.__class__.__name__, {})

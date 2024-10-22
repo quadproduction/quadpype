@@ -708,7 +708,7 @@ def _on_scene_open(*args):
 
 
 def _on_scene_save(*args):
-    skip = os.getenv("OP_NUKE_SKIP_SAVE_EVENT")
+    skip = os.getenv("QUADPYPE_NUKE_SKIP_SAVE_EVENT")
     if skip:
         return
     emit_event("after.save")

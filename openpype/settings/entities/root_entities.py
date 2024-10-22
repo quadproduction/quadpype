@@ -70,7 +70,7 @@ class RootEntity(BaseItemEntity):
             main_schema_name = "schema_main"
         schema_data = schema_hub.get_schema(main_schema_name)
 
-        super(RootEntity, self).__init__(schema_data)
+        super().__init__(schema_data)
         self._require_restart_callbacks = []
         self._item_ids_require_restart = set()
         self._item_initialization()
@@ -510,7 +510,7 @@ class SystemSettings(RootEntity):
 
         self._source_version = source_version
 
-        super(SystemSettings, self).__init__(schema_hub, reset)
+        super().__init__(schema_hub, reset)
 
         if set_studio_state:
             self.set_studio_state()
@@ -651,7 +651,7 @@ class ProjectSettings(RootEntity):
             # Load system schemas
             schema_hub = SchemasHub(SCHEMA_KEY_PROJECT_SETTINGS)
 
-        super(ProjectSettings, self).__init__(schema_hub, reset)
+        super().__init__(schema_hub, reset)
 
         if change_state:
             if self.project_name is None:

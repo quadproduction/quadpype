@@ -54,7 +54,7 @@ ZXPSignCmd -sign {path to addon}/api/extension {path to addon}/api/extension.zxp
 These plugins were made with the [polly config](https://github.com/mindbender-studio/config). To fully integrate and load, you will have to use this config and add `image` to the [integration plugin](https://github.com/mindbender-studio/config/blob/master/polly/plugins/publish/integrate_asset.py).
 
 Expected deployed extension location on default Windows:
-`c:\Program Files (x86)\Common Files\Adobe\CEP\extensions\io.ynput.AE.panel`
+`c:\Program Files (x86)\Common Files\Adobe\CEP\extensions\io.quad.AE.panel`
 
 For easier debugging of Javascript:
 https://community.adobe.com/t5/download-install/adobe-extension-debuger-problem/td-p/10911704?page=1

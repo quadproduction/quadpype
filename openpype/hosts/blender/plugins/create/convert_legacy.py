@@ -32,7 +32,7 @@ class BlenderLegacyConvertor(SubsetConvertorPlugin):
     }
 
     def __init__(self, *args, **kwargs):
-        super(BlenderLegacyConvertor, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.legacy_subsets = {}
 
     def find_instances(self):

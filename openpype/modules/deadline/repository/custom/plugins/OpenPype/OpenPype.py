@@ -102,7 +102,7 @@ class OpenPypeDeadlinePlugin(DeadlinePlugin):
         openpype_versions = []
         # if the job requires specific OpenPype version,
         # lets go over all available and find compatible build.
-        requested_version = job.GetJobEnvironmentKeyValue("OPENPYPE_VERSION")
+        requested_version = job.GetJobEnvironmentKeyValue("QUADPYPE_VERSION")
         if requested_version:
             self.LogInfo((
                 "Scanning for compatible requested "

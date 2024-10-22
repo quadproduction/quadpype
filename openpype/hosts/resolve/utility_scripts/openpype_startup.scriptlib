@@ -5,7 +5,7 @@ function file_exists(name)
 end
 
 
-openpype_startup_script = os.getenv("OPENPYPE_RESOLVE_STARTUP_SCRIPT")
+openpype_startup_script = os.getenv("QUADPYPE_RESOLVE_STARTUP_SCRIPT")
 if openpype_startup_script ~= nil then
     script = fusion:MapPath(openpype_startup_script)
 

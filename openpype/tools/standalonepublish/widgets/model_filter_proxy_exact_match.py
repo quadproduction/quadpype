@@ -5,7 +5,7 @@ class ExactMatchesFilterProxyModel(QtCore.QSortFilterProxyModel):
     """Filter model to where key column's value is in the filtered tags"""
 
     def __init__(self, *args, **kwargs):
-        super(ExactMatchesFilterProxyModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._filters = set()
 
     def setFilters(self, filters):

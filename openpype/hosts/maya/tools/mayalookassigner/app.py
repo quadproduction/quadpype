@@ -36,7 +36,7 @@ module.window = None
 class MayaLookAssignerWindow(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
-        super(MayaLookAssignerWindow, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.log = logging.getLogger(__name__)
 

@@ -10,7 +10,7 @@ class LoadedInSceneDelegate(QtWidgets.QStyledItemDelegate):
     """
 
     def __init__(self, *args, **kwargs):
-        super(LoadedInSceneDelegate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._colors = {
             True: QtGui.QColor(80, 170, 80),
             False: QtGui.QColor(90, 90, 90)

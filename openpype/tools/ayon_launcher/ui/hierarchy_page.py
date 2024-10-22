@@ -15,7 +15,7 @@ from openpype.tools.ayon_utils.widgets import (
 
 class HierarchyPage(QtWidgets.QWidget):
     def __init__(self, controller, parent):
-        super(HierarchyPage, self).__init__(parent)
+        super().__init__(parent)
 
         # Header
         header_widget = QtWidgets.QWidget(self)

@@ -34,7 +34,7 @@ def disconnect_inputs(plug):
 class CameraWindow(QtWidgets.QDialog):
 
     def __init__(self, cameras):
-        super(CameraWindow, self).__init__()
+        super().__init__()
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
 
         self.camera = None

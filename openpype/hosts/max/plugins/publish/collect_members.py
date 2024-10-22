@@ -20,6 +20,6 @@ class CollectMembers(pyblish.api.InstancePlugin):
             container = rt.GetNodeByName(instance.data["instance_node"])
             instance.data["members"] = [
                 member.node for member
-                in container.modifiers[0].openPypeData.all_handles
+                in container.modifiers[0].quadpypeData.all_handles
             ]
             self.log.debug("{}".format(instance.data["members"]))

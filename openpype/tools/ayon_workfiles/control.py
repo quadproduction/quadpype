@@ -31,7 +31,7 @@ from .models import SelectionModel, WorkfilesModel
 
 class WorkfilesToolExpectedSelection(HierarchyExpectedSelection):
     def __init__(self, controller):
-        super(WorkfilesToolExpectedSelection, self).__init__(
+        super().__init__(
             controller,
             handle_project=False,
             handle_folder=True,
@@ -636,7 +636,7 @@ class BaseWorkfileController(
             folder = self.get_folder_entity(project_name, folder_id)
         if task is None:
             task = self.get_task_entity(project_name, task_id)
-        # NOTE keys should be OpenPype compatible
+        # NOTE keys should be QuadPype compatible
         return {
             "project_name": project_name,
             "folder_id": folder_id,
@@ -662,7 +662,7 @@ class BaseWorkfileController(
             folder_id != self.get_current_folder_id()
             or task_name != self.get_current_task_name()
         ):
-            # Use OpenPype asset-like object
+            # Use QuadPype asset-like object
             asset_doc = get_asset_by_id(
                 event_data["project_name"],
                 event_data["folder_id"],
@@ -712,7 +712,7 @@ class BaseWorkfileController(
             folder_id != self.get_current_folder_id()
             or task_name != self.get_current_task_name()
         ):
-            # Use OpenPype asset-like object
+            # Use QuadPype asset-like object
             asset_doc = get_asset_by_id(project_name, folder["id"])
             change_current_context(
                 asset_doc,

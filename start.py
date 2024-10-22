@@ -1,47 +1,47 @@
 # -*- coding: utf-8 -*-
-"""Main entry point for OpenPype command.
+"""Main entry point for the QuadPype application.
 
-Bootstrapping process of OpenPype is as follows:
+Bootstrapping process of QuadPype is as follows:
 
-`OPENPYPE_PATH` is checked for existence - either one from environment or
+`QUADPYPE_PATH` is checked for existence - either one from environment or
 from user settings. Precedence takes the one set by environment.
 
-On this path we try to find OpenPype in directories version string in their
+On this path we try to find QuadPype in directories version string in their
 names. For example: `openpype-v3.0.1-foo` is valid name, or
 even `foo_3.0.2` - as long as version can be determined from its name
 _AND_ file `openpype/openpype/version.py` can be found inside, it is
-considered OpenPype installation.
+considered QuadPype installation.
 
-If no OpenPype repositories are found in `OPENPYPE_PATH` (user data dir)
-then **Igniter** (OpenPype setup tool) will launch its GUI.
+If no QuadPype repositories are found in `QUADPYPE_PATH` (user data dir)
+then **Igniter** (QuadPype's setup tool) will launch its GUI.
 
-It can be used to specify `OPENPYPE_PATH` or if it is _not_ specified, current
+It can be used to specify `QUADPYPE_PATH` or if it is _not_ specified, current
 *"live"* repositories will be used to create zip file and copy it to
 appdata dir in user home and extract it there. Version will be determined by
-version specified in OpenPype module.
+version specified in QuadPype module.
 
-If OpenPype repository directories are found in default install location
-(user data dir) or in `OPENPYPE_PATH`, it will get list of those dirs
+If QuadPype repository directories are found in default install location
+(user data dir) or in `QUADPYPE_PATH`, it will get list of those dirs
 there and use latest one or the one specified with optional `--use-version`
 command line argument. If the one specified doesn't exist then latest
 available version will be used. All repositories in that dir will be added
 to `sys.path` and `PYTHONPATH`.
 
-If OpenPype is live (not frozen) then current version of OpenPype module
+If QuadPype is live (not frozen) then current version of QuadPype module
 will be used. All directories under `repos` will be added to `sys.path` and
 `PYTHONPATH`.
 
-OpenPype depends on connection to `MongoDB`_. You can specify MongoDB
-connection string via `OPENPYPE_MONGO` set in environment or it can be set
+QuadPype depends on connection to `MongoDB`_. You can specify MongoDB
+connection string via `QUADPYPE_MONGO` set in environment or it can be set
 in user settings or via **Igniter** GUI.
 
-So, bootstrapping OpenPype looks like this::
+So, bootstrapping QuadPype looks like this::
 
 .. code-block:: bash
 
 ┌───────────────────────────────────────────────────────┐
 │ Determine MongoDB connection:                         │
-│ Use `OPENPYPE_MONGO`, system keyring `openPypeMongo`  │
+│ Use `QUADPYPE_MONGO`, system keyring `quadpypeMongo`  │
 └──────────────────────────┬────────────────────────────┘
                   ┌───- Found? -─┐
                  YES             NO
@@ -53,9 +53,9 @@ So, bootstrapping OpenPype looks like this::
                   │                                        │
                   │                                        │
 ┌─────────────────┴─────────────────────────────────────┐  │
-│ Get location of OpenPype:                             │  │
-│   1) Test for `OPENPYPE_PATH` environment variable    │  │
-│   2) Test `openPypePath` in registry setting          │  │
+│ Get location of QuadPype:                             │  │
+│   1) Test for `QUADPYPE_PATH` environment variable    │  │
+│   2) Test `quadpypePath` in registry setting          │  │
 │   3) Test user data directory                         │  │
 │ ····················································· │  │
 │ If running from frozen code:                          │  │
@@ -64,30 +64,30 @@ So, bootstrapping OpenPype looks like this::
 │   - Use live code and install it to user data dir     │  │
 │ * can be overridden with `--use-version` argument     │  │
 └──────────────────────────┬────────────────────────────┘  │
-              ┌─- Is OpenPype found? -─┐                   │
+              ┌─- Is QuadPype found? -─┐                   │
              YES                       NO                  │
               │                        │                   │
               │      ┌─────────────────┴─────────────┐     │
-              │      │ Look in `OPENPYPE_PATH`, find │     │
+              │      │ Look in `QUADPYPE_PATH`, find │     │
               │      │ latest version and install it │     │
               │      │ to user data dir.             │     │
               │      └──────────────┬────────────────┘     │
-              │         ┌─- Is OpenPype found? -─┐         │
+              │         ┌─- Is QuadPype found? -─┐         │
               │        YES                       NO -──────┘
               │         │
               ├<-───────┘
               │
 ┌─────────────┴────────────┐
-│      Run OpenPype        │
-└─────═══════════════──────┘
+│      Run QuadPype        │
+└─────══════════════───────┘
 
 
 Todo:
     Move or remove bootstrapping environments out of the code.
 
 Attributes:
-    silent_commands (set): list of commands for which we won't print OpenPype
-        logo and info header.
+    silent_commands (set): list of commands for which we won't print QuadPype
+        info header.
 
 .. _MongoDB:
    https://www.mongodb.com/
@@ -106,22 +106,22 @@ from pathlib import Path
 
 silent_mode = False
 
-# OPENPYPE_ROOT is variable pointing to build (or code) directory
-# WARNING `OPENPYPE_ROOT` must be defined before igniter import
+# QUADPYPE_ROOT is variable pointing to build (or code) directory
+# WARNING `QUADPYPE_ROOT` must be defined before igniter import
 # - igniter changes cwd which cause that filepath of this script won't lead
 #   to right directory
 if not getattr(sys, 'frozen', False):
     # Code root defined by `start.py` directory
-    OPENPYPE_ROOT = os.path.dirname(os.path.abspath(__file__))
+    QUADPYPE_ROOT = os.path.dirname(os.path.abspath(__file__))
 else:
-    OPENPYPE_ROOT = os.path.dirname(sys.executable)
+    QUADPYPE_ROOT = os.path.dirname(sys.executable)
 
     # add dependencies folder to sys.pat for frozen code
     frozen_libs = os.path.normpath(
-        os.path.join(OPENPYPE_ROOT, "dependencies")
+        os.path.join(QUADPYPE_ROOT, "dependencies")
     )
     sys.path.append(frozen_libs)
-    sys.path.insert(0, OPENPYPE_ROOT)
+    sys.path.insert(0, QUADPYPE_ROOT)
     # add stuff from `<frozen>/dependencies` to PYTHONPATH.
     pythonpath = os.getenv("PYTHONPATH", "")
     paths = pythonpath.split(os.pathsep)
@@ -130,12 +130,12 @@ else:
 
 # Vendored python modules that must not be in PYTHONPATH environment but
 #   are required for OpenPype processes
-vendor_python_path = os.path.join(OPENPYPE_ROOT, "vendor", "python")
+vendor_python_path = os.path.join(QUADPYPE_ROOT, "vendor", "python")
 sys.path.insert(0, vendor_python_path)
 
 # Add common package to sys path
 # - common contains common code for bootstraping and OpenPype processes
-sys.path.insert(0, os.path.join(OPENPYPE_ROOT, "common"))
+sys.path.insert(0, os.path.join(QUADPYPE_ROOT, "common"))
 
 import blessed  # noqa: E402
 import certifi  # noqa: E402
@@ -196,20 +196,20 @@ else:
     os.environ["SSL_CERT_FILE"] = ssl_cert_file
 
 if "--zxp-ignore-update" in sys.argv:
-    os.environ["OPENPYPE_IGNORE_ZXP_UPDATE"] = "1"
+    os.environ["QUADPYPE_IGNORE_ZXP_UPDATE"] = "1"
     sys.argv.remove("--zxp-ignore-update")
-elif os.getenv("OPENPYPE_IGNORE_ZXP_UPDATE") != "1":
-    os.environ.pop("OPENPYPE_IGNORE_ZXP_UPDATE", None)
+elif os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE") != "1":
+    os.environ.pop("QUADPYPE_IGNORE_ZXP_UPDATE", None)
 
 if "--headless" in sys.argv:
-    os.environ["OPENPYPE_HEADLESS_MODE"] = "1"
+    os.environ["QUADPYPE_HEADLESS_MODE"] = "1"
     sys.argv.remove("--headless")
-elif os.getenv("OPENPYPE_HEADLESS_MODE") != "1":
-    os.environ.pop("OPENPYPE_HEADLESS_MODE", None)
+elif os.getenv("QUADPYPE_HEADLESS_MODE") != "1":
+    os.environ.pop("QUADPYPE_HEADLESS_MODE", None)
 
 # Set builtin ocio root
 os.environ["BUILTIN_OCIO_ROOT"] = os.path.join(
-    OPENPYPE_ROOT,
+    QUADPYPE_ROOT,
     "vendor",
     "bin",
     "ocioconfig",
@@ -254,12 +254,12 @@ if "--verbose" in sys.argv:
             f"argument \"{value}\". {expected_values}"
         ))
 
-    os.environ["OPENPYPE_LOG_LEVEL"] = str(log_level)
+    os.environ["QUADPYPE_LOG_LEVEL"] = str(log_level)
 
 # Enable debug mode, may affect log level if log level is not defined
 if "--debug" in sys.argv:
     sys.argv.remove("--debug")
-    os.environ["OPENPYPE_DEBUG"] = "1"
+    os.environ["QUADPYPE_DEBUG"] = "1"
 
 if "--automatic-tests" in sys.argv:
     sys.argv.remove("--automatic-tests")
@@ -267,7 +267,7 @@ if "--automatic-tests" in sys.argv:
 
 if "--use-staging" in sys.argv:
     sys.argv.remove("--use-staging")
-    os.environ["OPENPYPE_USE_STAGING"] = "1"
+    os.environ["QUADPYPE_USE_STAGING"] = "1"
 
 import igniter  # noqa: E402
 from igniter import BootstrapRepos  # noqa: E402
@@ -358,7 +358,7 @@ def run(arguments: list, env: dict = None) -> int:
 def run_disk_mapping_commands(settings):
     """ Run disk mapping command
 
-        Used to map shared disk for OP to pull codebase.
+        Used to map shared disk for QuadPype to pull codebase.
     """
 
     low_platform = platform.system().lower()
@@ -428,7 +428,7 @@ def update_zxp_extensions(openpype_version):
     if not zxp_hosts_to_update:
         return
 
-    in_headless_mode = os.getenv("OPENPYPE_HEADLESS_MODE") == "1"
+    in_headless_mode = os.getenv("QUADPYPE_HEADLESS_MODE") == "1"
     if in_headless_mode:
         bootstrap.update_zxp_extensions(openpype_version, zxp_hosts_to_update)
     else:
@@ -461,7 +461,7 @@ def _startup_validations():
     try:
         _validate_thirdparty_binaries()
     except Exception as exc:
-        if os.environ.get("OPENPYPE_HEADLESS_MODE"):
+        if os.environ.get("QUADPYPE_HEADLESS_MODE"):
             raise
 
         import tkinter
@@ -485,7 +485,7 @@ def _validate_thirdparty_binaries():
     """Check existence of thirdpart executables."""
     low_platform = platform.system().lower()
     binary_vendors_dir = os.path.join(
-        os.environ["OPENPYPE_ROOT"],
+        os.environ["QUADPYPE_ROOT"],
         "vendor",
         "bin"
     )
@@ -603,7 +603,7 @@ def _process_arguments() -> tuple:
     # handle igniter
     # this is helper to run igniter before anything else
     if "igniter" in sys.argv:
-        if os.getenv("OPENPYPE_HEADLESS_MODE") == "1":
+        if os.getenv("QUADPYPE_HEADLESS_MODE") == "1":
             _print("!!! Cannot open Igniter dialog in headless mode.", True)
             sys.exit(1)
 
@@ -624,7 +624,7 @@ def _process_arguments() -> tuple:
 def _determine_mongodb() -> str:
     """Determine mongodb connection string.
 
-    First use ``OPENPYPE_MONGO`` environment variable, then system keyring.
+    First use ``QUADPYPE_MONGO`` environment variable, then system keyring.
     Then try to run **Igniter UI** to let user specify it.
 
     Returns:
@@ -635,12 +635,12 @@ def _determine_mongodb() -> str:
 
     """
 
-    openpype_mongo = os.getenv("OPENPYPE_MONGO", None)
+    openpype_mongo = os.getenv("QUADPYPE_MONGO", None)
     if not openpype_mongo:
         # try system keyring
         try:
             openpype_mongo = bootstrap.secure_registry.get_item(
-                "openPypeMongo"
+                "quadpypeMongo"
             )
         except ValueError:
             pass
@@ -653,9 +653,9 @@ def _determine_mongodb() -> str:
 
     if not openpype_mongo:
         _print("*** No DB connection string specified.")
-        if os.getenv("OPENPYPE_HEADLESS_MODE") == "1":
+        if os.getenv("QUADPYPE_HEADLESS_MODE") == "1":
             _print("!!! Cannot open Igniter dialog in headless mode.", True)
-            _print(("!!! Please use `OPENPYPE_MONGO` to specify "
+            _print(("!!! Please use `QUADPYPE_MONGO` to specify "
                     "server address."), True)
             sys.exit(1)
         _print("--- launching setup UI ...")
@@ -664,11 +664,11 @@ def _determine_mongodb() -> str:
         if result == 0:
             raise RuntimeError("MongoDB URL was not defined")
 
-        openpype_mongo = os.getenv("OPENPYPE_MONGO")
+        openpype_mongo = os.getenv("QUADPYPE_MONGO")
         if not openpype_mongo:
             try:
                 openpype_mongo = bootstrap.secure_registry.get_item(
-                    "openPypeMongo")
+                    "quadpypeMongo")
             except ValueError as e:
                 raise RuntimeError("Missing MongoDB url") from e
 
@@ -680,26 +680,26 @@ def _initialize_environment(openpype_version: OpenPypeVersion) -> None:
     if not version_path:
         _print(f"!!! Version {openpype_version} doesn't have path set.")
         raise ValueError("No path set in specified OpenPype version.")
-    os.environ["OPENPYPE_VERSION"] = str(openpype_version)
-    # set OPENPYPE_REPOS_ROOT to point to currently used OpenPype version.
-    os.environ["OPENPYPE_REPOS_ROOT"] = os.path.normpath(
+    os.environ["QUADPYPE_VERSION"] = str(openpype_version)
+    # set QUADPYPE_REPOS_ROOT to point to currently used OpenPype version.
+    os.environ["QUADPYPE_REPOS_ROOT"] = os.path.normpath(
         version_path.as_posix()
     )
     # inject version to Python environment (sys.path, ...)
     _print(">>> Injecting OpenPype version to running environment  ...")
     bootstrap.add_paths_from_directory(version_path)
 
-    # Additional sys paths related to OPENPYPE_REPOS_ROOT directory
-    # TODO move additional paths to `boot` part when OPENPYPE_REPOS_ROOT will
+    # Additional sys paths related to QUADPYPE_REPOS_ROOT directory
+    # TODO move additional paths to `boot` part when QUADPYPE_REPOS_ROOT will
     # point to same hierarchy from code and from frozen OpenPype
     additional_paths = [
-        os.environ["OPENPYPE_REPOS_ROOT"],
+        os.environ["QUADPYPE_REPOS_ROOT"],
         # add OpenPype tools
-        os.path.join(os.environ["OPENPYPE_REPOS_ROOT"], "openpype", "tools"),
+        os.path.join(os.environ["QUADPYPE_REPOS_ROOT"], "openpype", "tools"),
         # add common OpenPype vendor
         # (common for multiple Python interpreter versions)
         os.path.join(
-            os.environ["OPENPYPE_REPOS_ROOT"],
+            os.environ["QUADPYPE_REPOS_ROOT"],
             "openpype",
             "vendor",
             "python",
@@ -737,7 +737,7 @@ def _find_frozen_openpype(use_version: str = None,
     """Find OpenPype to run from frozen code.
 
     This will process and modify environment variables:
-    ``PYTHONPATH``, ``OPENPYPE_VERSION``, ``OPENPYPE_REPOS_ROOT``
+    ``PYTHONPATH``, ``QUADPYPE_VERSION``, ``QUADPYPE_REPOS_ROOT``
 
     Args:
         use_version (str, optional): Try to use specified version.
@@ -800,7 +800,7 @@ def _find_frozen_openpype(use_version: str = None,
         _initialize_environment(openpype_version)
         return openpype_version
 
-    in_headless_mode = os.getenv("OPENPYPE_HEADLESS_MODE") == "1"
+    in_headless_mode = os.getenv("QUADPYPE_HEADLESS_MODE") == "1"
     if not installed_version.is_compatible(openpype_version):
         message = "Version {} is not compatible with installed version {}."
         # Show UI to user
@@ -862,7 +862,7 @@ def _bootstrap_from_code(use_version) -> OpenPypeVersion:
     """
     # run through repos and add them to `sys.path` and `PYTHONPATH`
     # set root
-    _openpype_root = OPENPYPE_ROOT
+    _openpype_root = QUADPYPE_ROOT
     # Unset use version if latest should be used
     #   - when executed from code then code is expected as latest
     #   - when executed from build then build is already marked as latest
@@ -899,16 +899,16 @@ def _bootstrap_from_code(use_version) -> OpenPypeVersion:
         if version_to_use.path.is_file():
             version_to_use.path = bootstrap.extract_openpype(version_to_use)
         bootstrap.add_paths_from_directory(version_to_use.path)
-        os.environ["OPENPYPE_VERSION"] = use_version
+        os.environ["QUADPYPE_VERSION"] = use_version
         version_path = version_to_use.path
-        os.environ["OPENPYPE_REPOS_ROOT"] = (
+        os.environ["QUADPYPE_REPOS_ROOT"] = (
             version_path / "openpype"
         ).as_posix()
         _openpype_root = version_to_use.path.as_posix()
 
     else:
-        os.environ["OPENPYPE_VERSION"] = str(local_version)
-        os.environ["OPENPYPE_REPOS_ROOT"] = _openpype_root
+        os.environ["QUADPYPE_VERSION"] = str(local_version)
+        os.environ["QUADPYPE_REPOS_ROOT"] = _openpype_root
 
     # add self to sys.path of current process
     # NOTE: this seems to be duplicate of 'add_paths_from_directory'
@@ -924,7 +924,7 @@ def _bootstrap_from_code(use_version) -> OpenPypeVersion:
     # in case when we are running without any version installed.
     if not getattr(sys, 'frozen', False):
         split_paths.append(site.getsitepackages()[-1])
-        # TODO move additional paths to `boot` part when OPENPYPE_ROOT will
+        # TODO move additional paths to `boot` part when QUADPYPE_ROOT will
         # point to same hierarchy from code and from frozen OpenPype
         additional_paths = [
             # add OpenPype tools
@@ -992,7 +992,7 @@ def _boot_print_versions(openpype_root):
 
 def _boot_handle_missing_version(local_version, message):
     _print(message, True)
-    if os.environ.get("OPENPYPE_HEADLESS_MODE") == "1":
+    if os.environ.get("QUADPYPE_HEADLESS_MODE") == "1":
         openpype_versions = bootstrap.find_openpype(
             include_zips=True)
         list_versions(openpype_versions, local_version)
@@ -1009,7 +1009,7 @@ def boot():
     # ------------------------------------------------------------------------
     # Set environment to OpenPype root path
     # ------------------------------------------------------------------------
-    os.environ["OPENPYPE_ROOT"] = OPENPYPE_ROOT
+    os.environ["QUADPYPE_ROOT"] = QUADPYPE_ROOT
 
     # ------------------------------------------------------------------------
     # Do necessary startup validations
@@ -1021,15 +1021,15 @@ def boot():
     # ------------------------------------------------------------------------
 
     use_version, commands = _process_arguments()
-    use_staging = os.environ.get("OPENPYPE_USE_STAGING") == "1"
+    use_staging = os.environ.get("QUADPYPE_USE_STAGING") == "1"
 
-    if os.getenv("OPENPYPE_VERSION"):
+    if os.getenv("QUADPYPE_VERSION"):
         if use_version:
-            _print(("*** environment variable OPENPYPE_VERSION"
+            _print(("*** environment variable QUADPYPE_VERSION"
                     "is overridden by command line argument."))
         else:
             _print(">>> version set by environment variable")
-            use_version = os.getenv("OPENPYPE_VERSION")
+            use_version = os.getenv("QUADPYPE_VERSION")
 
     # ------------------------------------------------------------------------
     # Determine mongodb connection
@@ -1042,15 +1042,15 @@ def boot():
         _print(f"!!! {e}", True)
         sys.exit(1)
 
-    os.environ["OPENPYPE_MONGO"] = openpype_mongo
+    os.environ["QUADPYPE_MONGO"] = openpype_mongo
     # name of Pype database
-    os.environ["OPENPYPE_DATABASE_NAME"] = \
-        os.environ.get("OPENPYPE_DATABASE_NAME") or "openpype"
+    os.environ["QUADPYPE_DATABASE_NAME"] = \
+        os.environ.get("QUADPYPE_DATABASE_NAME") or "openpype"
 
     if os.environ.get("IS_TEST") == "1":
         # change source DBs to predefined ones set for automatic testing
-        if "_tests" not in os.environ["OPENPYPE_DATABASE_NAME"]:
-            os.environ["OPENPYPE_DATABASE_NAME"] += "_tests"
+        if "_tests" not in os.environ["QUADPYPE_DATABASE_NAME"]:
+            os.environ["QUADPYPE_DATABASE_NAME"] += "_tests"
         avalon_db = os.environ.get("AVALON_DB") or "avalon"
         if "_tests" not in avalon_db:
             os.environ["AVALON_DB"] = avalon_db + "_tests"
@@ -1063,10 +1063,10 @@ def boot():
     # Logging to server enabled/disabled
     log_to_server = global_settings.get("log_to_server", True)
     if log_to_server:
-        os.environ["OPENPYPE_LOG_TO_SERVER"] = "1"
+        os.environ["QUADPYPE_LOG_TO_SERVER"] = "1"
         log_to_server_msg = "ON"
     else:
-        os.environ.pop("OPENPYPE_LOG_TO_SERVER", None)
+        os.environ.pop("QUADPYPE_LOG_TO_SERVER", None)
         log_to_server_msg = "OFF"
     _print(f">>> Logging to server is turned {log_to_server_msg}")
 
@@ -1079,7 +1079,7 @@ def boot():
     data_dir = get_local_openpype_path_from_settings(global_settings)
     bootstrap.set_data_dir(data_dir)
     if getattr(sys, 'frozen', False):
-        local_version = bootstrap.get_version(Path(OPENPYPE_ROOT))
+        local_version = bootstrap.get_version(Path(QUADPYPE_ROOT))
     else:
         local_version = OpenPypeVersion.get_installed_version_str()
 
@@ -1090,11 +1090,11 @@ def boot():
     if not openpype_path:
         _print("*** Cannot get OpenPype path from database.")
 
-    if not os.getenv("OPENPYPE_PATH") and openpype_path:
-        os.environ["OPENPYPE_PATH"] = openpype_path
+    if not os.getenv("QUADPYPE_PATH") and openpype_path:
+        os.environ["QUADPYPE_PATH"] = openpype_path
 
     if "print_versions" in commands:
-        _boot_print_versions(OPENPYPE_ROOT)
+        _boot_print_versions(QUADPYPE_ROOT)
         sys.exit(0)
 
     # ------------------------------------------------------------------------
@@ -1109,8 +1109,8 @@ def boot():
 
     op_version_to_extract = None
 
-    _print(">>> OP Version Exists in User(local) Dir: {}".format(bool(user_dir_version)))
-    _print(">>> OP Version Exists in Prod(remote) Dir: {}".format(bool(prod_dir_version)))
+    _print(">>> QuadPype Version Exists in User(local) Dir: {}".format(bool(user_dir_version)))
+    _print(">>> QuadPype Version Exists in Prod(remote) Dir: {}".format(bool(prod_dir_version)))
     _print(">>> Dev Mode Enabled: {}".format(dev_mode))
 
     if prod_dir_version and not user_dir_version:
@@ -1133,7 +1133,7 @@ def boot():
     # Find OpenPype versions
     # ------------------------------------------------------------------------
     openpype_version = None
-    # WARNING: Environment OPENPYPE_REPOS_ROOT may change if frozen OpenPype
+    # WARNING: Environment QUADPYPE_REPOS_ROOT may change if frozen OpenPype
     # is executed
     if getattr(sys, 'frozen', False):
         # find versions of OpenPype to be used with frozen code
@@ -1165,7 +1165,7 @@ def boot():
 
     # set this to point either to `python` from venv in case of live code
     # or to `openpype` or `openpype_console` in case of frozen code
-    os.environ["OPENPYPE_EXECUTABLE"] = sys.executable
+    os.environ["QUADPYPE_EXECUTABLE"] = sys.executable
 
     # delete OpenPype module and it's submodules from cache so it is used from
     # specific version
@@ -1184,7 +1184,7 @@ def boot():
         pass
 
     # Do the program display popups to the users regarding updates or incompatibilities
-    os.environ["OPENPYPE_VERSION_CHECK_POPUP"] = "False" if "disable_version_popup" in commands else "True"
+    os.environ["QUADPYPE_VERSION_CHECK_POPUP"] = "False" if "disable_version_popup" in commands else "True"
     _print(">>> loading environments ...")
     # Avalon environments must be set before avalon module is imported
     _print("  - for Avalon ...")
@@ -1193,7 +1193,7 @@ def boot():
     set_openpype_global_environments()
     _print("  - for modules ...")
     set_modules_environments()
-    if os.getenv("OPENPYPE_IGNORE_ZXP_UPDATE"):
+    if os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE"):
         _print(">>> skip ZXP extensions ...")
     else:
         _print(">>> check ZXP extensions ...")
@@ -1249,7 +1249,7 @@ def get_info(use_staging=None) -> list:
     else:
         inf.append(("OpenPype variant", "production"))
     inf.extend([
-        ("Running OpenPype from", os.environ.get('OPENPYPE_REPOS_ROOT')),
+        ("Running OpenPype from", os.environ.get('QUADPYPE_REPOS_ROOT')),
         ("Using mongodb", components["host"])]
     )
 

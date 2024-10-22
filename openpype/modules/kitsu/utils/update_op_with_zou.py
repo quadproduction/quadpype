@@ -30,7 +30,7 @@ KitsuStateToBool = {
 
 
 def create_op_asset(gazu_entity: dict) -> dict:
-    """Create OP asset dict from gazu entity.
+    """Create QuadPype asset dict from gazu entity.
 
     :param gazu_entity:
     """
@@ -299,7 +299,7 @@ def update_op_assets(
 
 
 def write_project_to_op(project: dict, dbcon: AvalonMongoDB) -> UpdateOne:
-    """Write gazu project to OP database.
+    """Write gazu project to QuadPype database.
     Create project if doesn't exist.
 
     Args:
@@ -367,7 +367,7 @@ def sync_all_projects(
     ignore_projects: list = None,
     filter_projects: tuple = None,
 ):
-    """Update all OP projects in DB with Zou data.
+    """Update all QuadPype projects in DB with Zou data.
 
     Args:
         login (str): Kitsu user login
@@ -438,7 +438,7 @@ def update_project_state_in_db(dbcon: AvalonMongoDB, project: dict, active: bool
 
 
 def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict):
-    """Update OP project in DB with Zou data.
+    """Update QuadPype project in DB with Zou data.
 
     `root_of` is meant to sort entities by type for a better readability in
     the data tree. It puts all shot like (Shot and Episode and Sequence) and

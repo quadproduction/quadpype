@@ -45,7 +45,7 @@ class PublishValidationError(Exception):
         self.title = title
         self.description = description or message
         self.detail = detail
-        super(PublishValidationError, self).__init__(message)
+        super().__init__(message)
 
 
 class PublishXmlValidationError(PublishValidationError):
@@ -63,7 +63,7 @@ class PublishXmlValidationError(PublishValidationError):
         detail = content_obj.detail
         if detail:
             detail = detail.format(**formatting_data)
-        super(PublishXmlValidationError, self).__init__(
+        super().__init__(
             message, content_obj.title, description, detail
         )
 

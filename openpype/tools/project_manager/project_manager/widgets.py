@@ -25,7 +25,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 
 class NameTextEdit(QtWidgets.QLineEdit):
     def __init__(self, *args, **kwargs):
-        super(NameTextEdit, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.textChanged.connect(self._on_text_change)
 
@@ -47,7 +47,7 @@ class NameTextEdit(QtWidgets.QLineEdit):
 
 class FilterComboBox(QtWidgets.QComboBox):
     def __init__(self, parent=None):
-        super(FilterComboBox, self).__init__(parent)
+        super().__init__(parent)
 
         self._last_value = None
 
@@ -125,7 +125,7 @@ class FilterComboBox(QtWidgets.QComboBox):
 
 class CreateProjectDialog(QtWidgets.QDialog):
     def __init__(self, parent=None, dbcon=None):
-        super(CreateProjectDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Create Project")
 
@@ -365,7 +365,7 @@ class ConfirmProjectDeletion(QtWidgets.QDialog):
     """Dialog which confirms deletion of a project."""
 
     def __init__(self, project_name, parent):
-        super(ConfirmProjectDeletion, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Delete project?")
 
@@ -471,7 +471,7 @@ class SpinBoxScrollFixed(QtWidgets.QSpinBox):
     """QSpinBox which only allow edits change with scroll wheel when active"""
 
     def __init__(self, *args, **kwargs):
-        super(SpinBoxScrollFixed, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
     def wheelEvent(self, event):
@@ -485,7 +485,7 @@ class DoubleSpinBoxScrollFixed(QtWidgets.QDoubleSpinBox):
     """QDoubleSpinBox which only allow edits with scroll wheel when active"""
 
     def __init__(self, *args, **kwargs):
-        super(DoubleSpinBoxScrollFixed, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
     def wheelEvent(self, event):
@@ -497,7 +497,7 @@ class DoubleSpinBoxScrollFixed(QtWidgets.QDoubleSpinBox):
 
 class NumScrollWidget(SpinBoxScrollFixed):
     def __init__(self, minimum, maximum):
-        super(NumScrollWidget, self).__init__()
+        super().__init__()
         self.setMaximum(maximum)
         self.setMinimum(minimum)
         self.setButtonSymbols(QtWidgets.QSpinBox.NoButtons)
@@ -505,7 +505,7 @@ class NumScrollWidget(SpinBoxScrollFixed):
 
 class FloatScrollWidget(DoubleSpinBoxScrollFixed):
     def __init__(self, minimum, maximum, decimals, step=None):
-        super(FloatScrollWidget, self).__init__()
+        super().__init__()
         self.setMaximum(maximum)
         self.setMinimum(minimum)
         self.setDecimals(decimals)

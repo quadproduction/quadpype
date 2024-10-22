@@ -22,7 +22,7 @@ from .pipeline import (
 )
 
 from .constants import (
-    OPENPYPE_TAG_NAME,
+    QUADPYPE_TAG_NAME,
     DEFAULT_SEQUENCE_NAME,
     DEFAULT_BIN_NAME
 )
@@ -88,7 +88,7 @@ __all__ = [
     "work_root",
 
     # Constants
-    "OPENPYPE_TAG_NAME",
+    "QUADPYPE_TAG_NAME",
     "DEFAULT_SEQUENCE_NAME",
     "DEFAULT_BIN_NAME",
 

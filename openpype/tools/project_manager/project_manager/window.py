@@ -26,7 +26,7 @@ class ProjectManagerWindow(QtWidgets.QWidget):
     """Main widget of Project Manager tool."""
 
     def __init__(self, parent=None):
-        super(ProjectManagerWindow, self).__init__(parent)
+        super().__init__(parent)
 
         self.log = Logger.get_logger(self.__class__.__name__)
 
@@ -34,7 +34,7 @@ class ProjectManagerWindow(QtWidgets.QWidget):
         self._password_dialog = None
         self._user_passed = False
 
-        self.setWindowTitle("OpenPype Project Manager")
+        self.setWindowTitle("QuadPype Project Manager")
         self.setWindowIcon(QtGui.QIcon(resources.get_app_icon_filepath()))
 
         # Top part of window
@@ -250,13 +250,13 @@ class ProjectManagerWindow(QtWidgets.QWidget):
 
         result = QtWidgets.QMessageBox.question(
             self,
-            "OpenPype Project Manager",
+            "QuadPype Project Manager",
             "Confirm to create starting project folders?",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
         )
         if result == QtWidgets.QMessageBox.Yes:
             try:
-                # Invoking OpenPype API to create the project folders
+                # Invoking QuadPype API to create the project folders
                 create_project_folders(project_name)
             except Exception as exc:
                 self.log.warning(

@@ -17,7 +17,7 @@ class OverviewView(QtWidgets.QTreeView):
     show_perspective = QtCore.Signal(QtCore.QModelIndex)
 
     def __init__(self, parent=None):
-        super(OverviewView, self).__init__(parent)
+        super().__init__(parent)
 
         self.horizontalScrollBar().hide()
         self.viewport().setAttribute(QtCore.Qt.WA_Hover, True)
@@ -71,7 +71,7 @@ class OverviewView(QtWidgets.QTreeView):
 
 class PluginView(OverviewView):
     def __init__(self, *args, **kwargs):
-        super(PluginView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.clicked.connect(self.item_expand)
 
     def item_expand(self, index):
@@ -102,7 +102,7 @@ class PluginView(OverviewView):
 
 class InstanceView(OverviewView):
     def __init__(self, *args, **kwargs):
-        super(InstanceView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setSortingEnabled(True)
         self.sortByColumn(0, QtCore.Qt.AscendingOrder)
         self.viewport().setMouseTracking(True)
@@ -242,7 +242,7 @@ class InstanceView(OverviewView):
 class TerminalView(QtWidgets.QTreeView):
     # An item is requesting to be toggled, with optional forced-state
     def __init__(self, parent=None):
-        super(TerminalView, self).__init__(parent)
+        super().__init__(parent)
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.setAutoScroll(False)

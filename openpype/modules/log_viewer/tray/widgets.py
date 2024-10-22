@@ -8,7 +8,7 @@ class SearchComboBox(QtWidgets.QComboBox):
     """Searchable ComboBox with empty placeholder value as first value"""
 
     def __init__(self, parent=None, placeholder=""):
-        super(SearchComboBox, self).__init__(parent)
+        super().__init__(parent)
 
         self.setEditable(True)
         self.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
@@ -69,7 +69,7 @@ class CustomCombo(QtWidgets.QWidget):
     selection_changed = QtCore.Signal()
 
     def __init__(self, title, parent=None):
-        super(CustomCombo, self).__init__(parent)
+        super().__init__(parent)
         toolbutton = QtWidgets.QToolButton(self)
         toolbutton.setText(title)
 
@@ -108,7 +108,7 @@ class LogsWidget(QtWidgets.QWidget):
     """A widget that lists the published subsets for an asset"""
 
     def __init__(self, detail_widget, parent=None):
-        super(LogsWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         model = LogModel()
         proxy_model = LogsFilterProxy()
@@ -231,7 +231,7 @@ class LogsWidget(QtWidgets.QWidget):
 
 class OutputWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(OutputWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         layout = QtWidgets.QVBoxLayout(self)
 
         show_timecode_checkbox = QtWidgets.QCheckBox("Show timestamp", self)

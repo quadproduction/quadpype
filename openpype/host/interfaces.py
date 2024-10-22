@@ -23,7 +23,7 @@ class MissingMethodsError(ValueError):
         message = (
             "Host \"{}\" miss methods {}".format(host_name, joined_missing)
         )
-        super(MissingMethodsError, self).__init__(message)
+        super().__init__(message)
 
 
 class ILoadHost:

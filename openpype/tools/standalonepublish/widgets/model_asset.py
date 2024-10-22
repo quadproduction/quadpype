@@ -53,7 +53,7 @@ class AssetModel(TreeModel):
     ObjectIdRole = QtCore.Qt.UserRole + 3
 
     def __init__(self, dbcon, parent=None):
-        super(AssetModel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.dbcon = dbcon
 
         self._default_asset_icon_color = QtGui.QColor(

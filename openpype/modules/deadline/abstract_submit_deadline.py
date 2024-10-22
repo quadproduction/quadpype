@@ -43,7 +43,7 @@ def requests_post(*args, **kwargs):
 
     """
     if 'verify' not in kwargs:
-        kwargs['verify'] = False if os.getenv("OPENPYPE_DONT_VERIFY_SSL",
+        kwargs['verify'] = False if os.getenv("QUADPYPE_DONT_VERIFY_SSL",
                                               True) else True  # noqa
     # add 10sec timeout before bailing out
     kwargs['timeout'] = 10
@@ -64,7 +64,7 @@ def requests_get(*args, **kwargs):
 
     """
     if 'verify' not in kwargs:
-        kwargs['verify'] = False if os.getenv("OPENPYPE_DONT_VERIFY_SSL",
+        kwargs['verify'] = False if os.getenv("QUADPYPE_DONT_VERIFY_SSL",
                                               True) else True  # noqa
     # add 10sec timeout before bailing out
     kwargs['timeout'] = 10
@@ -92,7 +92,7 @@ class DeadlineKeyValueVar(dict):
 
     """
     def __init__(self, key):
-        super(DeadlineKeyValueVar, self).__init__()
+        super().__init__()
         self.__key = key
 
     def serialize(self):
@@ -121,7 +121,7 @@ class DeadlineIndexedVar(dict):
 
     """
     def __init__(self, key):
-        super(DeadlineIndexedVar, self).__init__()
+        super().__init__()
         self.__key = key
 
     def serialize(self):
@@ -398,8 +398,8 @@ class DeadlineJobInfo(object):
             setattr(self, key, value)
 
     def add_render_job_env_var(self):
-        """Check if in OP or AYON mode and use appropriate env var."""
-        self.EnvironmentKeyValue["OPENPYPE_RENDER_JOB"] = "1"
+        """Check if in QuadPype or AYON mode and use appropriate env var."""
+        self.EnvironmentKeyValue["QUADPYPE_RENDER_JOB"] = "1"
 
 
 @six.add_metaclass(AbstractMetaInstancePlugin)
@@ -416,7 +416,7 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
     default_priority = 50
 
     def __init__(self, *args, **kwargs):
-        super(AbstractSubmitDeadline, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._instance = None
         self._deadline_url = None
         self.scene_path = None

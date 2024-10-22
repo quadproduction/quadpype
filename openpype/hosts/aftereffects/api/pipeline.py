@@ -45,7 +45,7 @@ class AfterEffectsHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
     def __init__(self):
         self._stub = None
-        super(AfterEffectsHost, self).__init__()
+        super().__init__()
 
     @property
     def stub(self):

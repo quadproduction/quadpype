@@ -40,7 +40,7 @@ log = Logger.get_logger(__name__)
 
 class LocalSettingsWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(LocalSettingsWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.system_settings = SystemSettings()
         self.project_settings = ProjectSettings()
@@ -239,7 +239,7 @@ class LocalSettingsWidget(QtWidgets.QWidget):
 
 class LocalSettingsWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(LocalSettingsWindow, self).__init__(parent)
+        super().__init__(parent)
 
         self._reset_on_show = True
 

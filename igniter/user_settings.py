@@ -148,7 +148,7 @@ class ASettingRegistry():
 
     def __init__(self, name):
         # type: (str) -> ASettingRegistry
-        super(ASettingRegistry, self).__init__()
+        super().__init__()
 
         self._name = name
         self._items = {}
@@ -234,9 +234,9 @@ class IniSettingRegistry(ASettingRegistry):
 
     def __init__(self, name, path):
         # type: (str, str) -> IniSettingRegistry
-        super(IniSettingRegistry, self).__init__(name)
+        super().__init__(name)
         # get registry file
-        version = os.getenv("OPENPYPE_VERSION", "N/A")
+        version = os.getenv("QUADPYPE_VERSION", "N/A")
         self._registry_file = os.path.join(path, "{}.ini".format(name))
         if not os.path.exists(self._registry_file):
             with open(self._registry_file, mode="w") as cfg:
@@ -386,13 +386,13 @@ class JSONSettingRegistry(ASettingRegistry):
 
     def __init__(self, name, path):
         # type: (str, str) -> JSONSettingRegistry
-        super(JSONSettingRegistry, self).__init__(name)
+        super().__init__(name)
         #: str: name of registry file
         self._registry_file = os.path.join(path, "{}.json".format(name))
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         header = {
             "__metadata__": {
-                "openpype-version": os.getenv("OPENPYPE_VERSION", "N/A"),
+                "openpype-version": os.getenv("QUADPYPE_VERSION", "N/A"),
                 "generated": now
             },
             "registry": {}
@@ -475,8 +475,8 @@ class JSONSettingRegistry(ASettingRegistry):
             json.dump(data, cfg, indent=4)
 
 
-class OpenPypeSettingsRegistry(JSONSettingRegistry):
-    """Class handling OpenPype general settings registry.
+class QuadPypeSettingsRegistry(JSONSettingRegistry):
+    """Class handling QuadPype general settings registry.
 
     Attributes:
         vendor (str): Name used for path construction.
@@ -485,9 +485,9 @@ class OpenPypeSettingsRegistry(JSONSettingRegistry):
     """
 
     def __init__(self, name=None):
-        self.vendor = "pypeclub"
-        self.product = "openpype"
+        self.vendor = "quad"
+        self.product = "quadpype"
         if not name:
             name = "openpype_settings"
         path = appdirs.user_data_dir(self.product, self.vendor)
-        super(OpenPypeSettingsRegistry, self).__init__(name, path)
+        super().__init__(name, path)

@@ -17,7 +17,7 @@ from .utils import BaseOverlayFrame
 
 class InvalidHostOverlay(BaseOverlayFrame):
     def __init__(self, parent):
-        super(InvalidHostOverlay, self).__init__(parent)
+        super().__init__(parent)
 
         label_widget = QtWidgets.QLabel(
             (
@@ -51,7 +51,7 @@ class WorkfilesToolWindow(QtWidgets.QWidget):
     title = "Work Files"
 
     def __init__(self, controller=None, parent=None):
-        super(WorkfilesToolWindow, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         if controller is None:
             controller = BaseWorkfileController()

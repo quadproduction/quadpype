@@ -34,7 +34,7 @@ class ThumbnailPainterWidget(QtWidgets.QWidget):
     checker_boxes_count = 20
 
     def __init__(self, parent):
-        super(ThumbnailPainterWidget, self).__init__(parent)
+        super().__init__(parent)
 
         border_color = get_objected_colors("bg-buttons").get_qcolor()
         thumbnail_bg_color = get_objected_colors("bg-view").get_qcolor()
@@ -302,7 +302,7 @@ class ThumbnailWidget(QtWidgets.QWidget):
     def __init__(self, controller, parent):
         # Missing implementation for thumbnail
         # - widget kept to make a visial offset of global attr widget offset
-        super(ThumbnailWidget, self).__init__(parent)
+        super().__init__(parent)
         self.setAcceptDrops(True)
 
         thumbnail_painter = ThumbnailPainterWidget(self)

@@ -11,5 +11,5 @@ cmd> .\openpype_console.bat path/to/python_script.py
 :comment
 
 cd "%~dp0\.."
-echo %OPENPYPE_MONGO%
+echo %QUADPYPE_MONGO%
 .poetry\bin\poetry.exe run python start.py %*

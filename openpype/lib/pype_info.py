@@ -28,8 +28,8 @@ def get_openpype_info():
         "version": get_openpype_version(),
         "version_type": version_type,
         "executable": executable_args[-1],
-        "pype_root": os.environ["OPENPYPE_REPOS_ROOT"],
-        "mongo_url": os.environ["OPENPYPE_MONGO"]
+        "pype_root": os.environ["QUADPYPE_REPOS_ROOT"],
+        "mongo_url": os.environ["QUADPYPE_MONGO"]
     }
 
 

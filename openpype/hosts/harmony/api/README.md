@@ -42,7 +42,7 @@ First two bytes are *magic* bytes stands for **A**valon **H**armony. Next four b
 
 ## Usage
 
-The integration creates an `Openpype` menu entry where all related tools are located.
+The integration creates an `QuadPype` menu entry where all related tools are located.
 
 **NOTE: Menu creation can be temperamental. The best way is to launch Harmony and do nothing else until Harmony is fully launched.**
 
@@ -93,8 +93,7 @@ print(harmony.send({"function": func, "args": ["Hello", "Python"]})["result"])
 ### Caution
 
 When naming your functions be aware that they are executed in global scope. They can potentially clash with Harmony own function and object names.
-For example `func` is already existing Harmony object. When you call your function `func` it will overwrite in global scope the one from Harmony, causing
-erratic behavior of Harmony. Openpype is prefixing those function names with [UUID4](https://docs.python.org/3/library/uuid.html) making chance of such clash minimal.
+For example `func` is already existing Harmony object. When you call your function `func` it will overwrite in global scope the one from Harmony, causing erratic behavior of Harmony. QuadPype is prefixing those function names with [UUID4](https://docs.python.org/3/library/uuid.html) making chance of such clash minimal.
 See above examples how that works. This will result in function named `38dfcef0_a6d7_4064_8069_51fe99ab276e_hello()`.
 You can find list of Harmony object and function in Harmony documentation.
 
@@ -185,7 +184,7 @@ harmony.save_scene()
 <details>
   <summary>Click to expand for details on scene save.</summary>
 
-  Because Openpype tools does not deal well with folders for a single entity like a Harmony scene, this integration has implemented to use zip files to encapsulate the Harmony scene folders. Saving scene in Harmony via menu or CTRL+S will not result in producing zip file, only saving it from Workfiles will. This is because
+  Because QuadPype tools does not deal well with folders for a single entity like a Harmony scene, this integration has implemented to use zip files to encapsulate the Harmony scene folders. Saving scene in Harmony via menu or CTRL+S will not result in producing zip file, only saving it from Workfiles will. This is because
   zipping process can take some time in which we cannot block user from saving again. If xstage file is changed during zipping process it will produce corrupted zip
   archive.
 </details>
@@ -207,7 +206,7 @@ class CreateComposite(harmony.Creator):
     family = "mindbender.template"
 
     def __init__(self, *args, **kwargs):
-        super(CreateComposite, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 ```
 
 The creator plugin can be configured to use other node types. For example here is a write node creator:
@@ -224,7 +223,7 @@ class CreateRender(harmony.Creator):
     node_type = "WRITE"
 
     def __init__(self, *args, **kwargs):
-        super(CreateRender, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def setup_node(self, node):
         signature = str(uuid4()).replace("-", "_")

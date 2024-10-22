@@ -25,7 +25,7 @@ class ButtonWithOptions(QtWidgets.QFrame):
     option_clicked = QtCore.Signal(str)
 
     def __init__(self, commands, parent=None):
-        super(ButtonWithOptions, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("ButtonWithOptions")
 
@@ -85,7 +85,7 @@ class ButtonWithOptions(QtWidgets.QFrame):
 
 class ConsoleWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(ConsoleWidget, self).__init__(parent)
+        super().__init__(parent)
 
         # style for normal and error console text
         default_console_style = QtGui.QTextCharFormat()
@@ -174,7 +174,7 @@ class InstallDialog(QtWidgets.QDialog):
     ])
 
     def __init__(self, parent=None):
-        super(InstallDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle(
             f"QuadPype Igniter {__version__}"
@@ -204,8 +204,8 @@ class InstallDialog(QtWidgets.QDialog):
         mongo_url = ""
         try:
             mongo_url = (
-                os.getenv("OPENPYPE_MONGO", "")
-                or secure_registry.get_item("openPypeMongo")
+                os.getenv("QUADPYPE_MONGO", "")
+                or secure_registry.get_item("quadpypeMongo")
             )
         except ValueError:
             pass
@@ -357,9 +357,9 @@ class InstallDialog(QtWidgets.QDialog):
             raise AssertionError("BUG: Unknown variant \"{}\"".format(option))
 
     def _run_openpype_from_code(self):
-        os.environ["OPENPYPE_MONGO"] = self.mongo_url
+        os.environ["QUADPYPE_MONGO"] = self.mongo_url
         try:
-            self._secure_registry.set_item("openPypeMongo", self.mongo_url)
+            self._secure_registry.set_item("quadpypeMongo", self.mongo_url)
         except ValueError:
             print("Couldn't save Mongo URL to keyring")
 

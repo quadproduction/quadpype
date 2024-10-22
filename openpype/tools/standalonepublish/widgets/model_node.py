@@ -16,7 +16,7 @@ class Node(dict):
     """
 
     def __init__(self, data=None):
-        super(Node, self).__init__()
+        super().__init__()
 
         self._children = list()
         self._parent = None

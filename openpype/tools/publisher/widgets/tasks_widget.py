@@ -19,7 +19,7 @@ class TasksModel(QtGui.QStandardItemModel):
             publishing.
     """
     def __init__(self, controller, allow_empty_task=False):
-        super(TasksModel, self).__init__()
+        super().__init__()
 
         self._allow_empty_task = allow_empty_task
         self._controller = controller
@@ -144,7 +144,7 @@ class TasksModel(QtGui.QStandardItemModel):
 class CreateWidgetTasksWidget(TasksWidget):
     def __init__(self, controller, parent):
         self._controller = controller
-        super(CreateWidgetTasksWidget, self).__init__(None, parent)
+        super().__init__(None, parent)
 
         self._enabled = None
 

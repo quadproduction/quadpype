@@ -40,7 +40,7 @@ class ValidatePublishDir(pyblish.api.InstancePlugin):
                 self,
                 "Instance meant for in place publishing."
                 " Its 'originalDirname' must be collected."
-                " Contact OP developer to modify collector."
+                " Contact QuadPype developer to modify collector."
             )
 
         anatomy = instance.context.data["anatomy"]

@@ -42,17 +42,17 @@ LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
 CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 INVENTORY_PATH = os.path.join(PLUGINS_DIR, "inventory")
 
-OPENPYPE_METADATA_KEY = "OpenPype"
-OPENPYPE_METADATA_CONTAINERS_KEY = "containers"  # child key
-OPENPYPE_METADATA_CONTEXT_KEY = "context"        # child key
-OPENPYPE_METADATA_INSTANCES_KEY = "instances"    # child key
+QUADPYPE_METADATA_KEY = "OpenPype"
+QUADPYPE_METADATA_CONTAINERS_KEY = "containers"  # child key
+QUADPYPE_METADATA_CONTEXT_KEY = "context"        # child key
+QUADPYPE_METADATA_INSTANCES_KEY = "instances"    # child key
 
 
 class SubstanceHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     name = "substancepainter"
 
     def __init__(self):
-        super(SubstanceHost, self).__init__()
+        super().__init__()
         self._has_been_setup = False
         self.menu = None
         self.callbacks = []
@@ -141,8 +141,8 @@ class SubstanceHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         if not substance_painter.project.is_open():
             return
 
-        metadata = substance_painter.project.Metadata(OPENPYPE_METADATA_KEY)
-        containers = metadata.get(OPENPYPE_METADATA_CONTAINERS_KEY)
+        metadata = substance_painter.project.Metadata(QUADPYPE_METADATA_KEY)
+        containers = metadata.get(QUADPYPE_METADATA_CONTAINERS_KEY)
         if containers:
             for key, container in containers.items():
                 container["objectName"] = key
@@ -153,16 +153,16 @@ class SubstanceHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         if not substance_painter.project.is_open():
             return
 
-        metadata = substance_painter.project.Metadata(OPENPYPE_METADATA_KEY)
-        metadata.set(OPENPYPE_METADATA_CONTEXT_KEY, data)
+        metadata = substance_painter.project.Metadata(QUADPYPE_METADATA_KEY)
+        metadata.set(QUADPYPE_METADATA_CONTEXT_KEY, data)
 
     def get_context_data(self):
 
         if not substance_painter.project.is_open():
             return
 
-        metadata = substance_painter.project.Metadata(OPENPYPE_METADATA_KEY)
-        return metadata.get(OPENPYPE_METADATA_CONTEXT_KEY) or {}
+        metadata = substance_painter.project.Metadata(QUADPYPE_METADATA_KEY)
+        return metadata.get(QUADPYPE_METADATA_CONTEXT_KEY) or {}
 
     def _install_menu(self):
         from PySide2 import QtWidgets
@@ -358,8 +358,8 @@ def set_container_metadata(object_name, container_data, update=False):
     # in the metadata in the container's data.
     container_data.pop("objectName", None)
 
-    metadata = substance_painter.project.Metadata(OPENPYPE_METADATA_KEY)
-    containers = metadata.get(OPENPYPE_METADATA_CONTAINERS_KEY) or {}
+    metadata = substance_painter.project.Metadata(QUADPYPE_METADATA_KEY)
+    containers = metadata.get(QUADPYPE_METADATA_CONTAINERS_KEY) or {}
     if update:
         existing_data = containers.setdefault(object_name, {})
         existing_data.update(container_data)  # mutable dict, in-place update
@@ -370,8 +370,8 @@ def set_container_metadata(object_name, container_data, update=False):
 
 def remove_container_metadata(object_name):
     """Helper method to remove the data for a specific container"""
-    metadata = substance_painter.project.Metadata(OPENPYPE_METADATA_KEY)
-    containers = metadata.get(OPENPYPE_METADATA_CONTAINERS_KEY)
+    metadata = substance_painter.project.Metadata(QUADPYPE_METADATA_KEY)
+    containers = metadata.get(QUADPYPE_METADATA_CONTAINERS_KEY)
     if containers:
         containers.pop(object_name, None)
         metadata.set("containers", containers)
@@ -393,8 +393,8 @@ def set_instances(instance_data_by_id, update=False):
     This is more optimal than querying and setting them in the metadata one
     by one.
     """
-    metadata = substance_painter.project.Metadata(OPENPYPE_METADATA_KEY)
-    instances = metadata.get(OPENPYPE_METADATA_INSTANCES_KEY) or {}
+    metadata = substance_painter.project.Metadata(QUADPYPE_METADATA_KEY)
+    instances = metadata.get(QUADPYPE_METADATA_INSTANCES_KEY) or {}
 
     for instance_id, instance_data in instance_data_by_id.items():
         if update:
@@ -408,8 +408,8 @@ def set_instances(instance_data_by_id, update=False):
 
 def remove_instance(instance_id):
     """Helper method to remove the data for a specific container"""
-    metadata = substance_painter.project.Metadata(OPENPYPE_METADATA_KEY)
-    instances = metadata.get(OPENPYPE_METADATA_INSTANCES_KEY) or {}
+    metadata = substance_painter.project.Metadata(QUADPYPE_METADATA_KEY)
+    instances = metadata.get(QUADPYPE_METADATA_INSTANCES_KEY) or {}
     instances.pop(instance_id, None)
     metadata.set("instances", instances)
 
@@ -419,8 +419,8 @@ def get_instances_by_id():
     if not substance_painter.project.is_open():
         return {}
 
-    metadata = substance_painter.project.Metadata(OPENPYPE_METADATA_KEY)
-    return metadata.get(OPENPYPE_METADATA_INSTANCES_KEY) or {}
+    metadata = substance_painter.project.Metadata(QUADPYPE_METADATA_KEY)
+    return metadata.get(QUADPYPE_METADATA_INSTANCES_KEY) or {}
 
 
 def get_instances():

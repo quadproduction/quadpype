@@ -28,7 +28,7 @@ log = Logger.get_logger("WebpublishRoutes")
 class ResourceRestApiEndpoint(RestApiEndpoint):
     def __init__(self, resource):
         self.resource = resource
-        super(ResourceRestApiEndpoint, self).__init__()
+        super().__init__()
 
 
 class WebpublishApiEndpoint(ResourceRestApiEndpoint):
@@ -75,7 +75,7 @@ class RestApiResource(JsonApiResource):
 
 
 class WebpublishRestApiResource(JsonApiResource):
-    """Resource carrying OP DB connection for storing batch info into DB."""
+    """Resource carrying QuadPype DB connection for storing batch info into DB."""
 
     def __init__(self):
         self.dbcon = get_webpublish_conn()

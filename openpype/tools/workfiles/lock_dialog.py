@@ -6,7 +6,7 @@ from openpype.pipeline.workfile.lock_workfile import get_workfile_lock_data
 
 class WorkfileLockDialog(QtWidgets.QDialog):
     def __init__(self, workfile_path, parent=None):
-        super(WorkfileLockDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Warning")
         icon = QtGui.QIcon(get_app_icon_path())
         self.setWindowIcon(icon)

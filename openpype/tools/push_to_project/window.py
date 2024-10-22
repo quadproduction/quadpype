@@ -28,7 +28,7 @@ class ProjectsModel(QtGui.QStandardItemModel):
     refreshed = QtCore.Signal()
 
     def __init__(self, controller):
-        super(ProjectsModel, self).__init__()
+        super().__init__()
         self._controller = controller
 
         self.event_system.add_callback(
@@ -83,7 +83,7 @@ class ProjectsModel(QtGui.QStandardItemModel):
 
 class ProjectProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self):
-        super(ProjectProxyModel, self).__init__()
+        super().__init__()
         self._filter_empty_projects = False
 
     def set_filter_empty_project(self, filter_empty_projects):
@@ -107,7 +107,7 @@ class AssetsModel(QtGui.QStandardItemModel):
     empty_text = "< Empty >"
 
     def __init__(self, controller):
-        super(AssetsModel, self).__init__()
+        super().__init__()
         self._controller = controller
 
         placeholder_item = QtGui.QStandardItem(self.empty_text)
@@ -246,7 +246,7 @@ class TasksModel(QtGui.QStandardItemModel):
     empty_text = "< Empty >"
 
     def __init__(self, controller):
-        super(TasksModel, self).__init__()
+        super().__init__()
         self._controller = controller
 
         placeholder_item = QtGui.QStandardItem(self.empty_text)
@@ -371,7 +371,7 @@ class PushToContextSelectWindow(QtWidgets.QDialog):
     def __init__(
         self, controller=None, library_filter=True, context_only=False
     ):
-        super(PushToContextSelectWindow, self).__init__()
+        super().__init__()
         if controller is None:
             controller = PushToContextController(library_filter=library_filter)
         self._controller = controller

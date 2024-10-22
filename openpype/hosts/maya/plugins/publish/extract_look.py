@@ -246,7 +246,7 @@ class MakeTX(TextureProcessor):
     extension = ".tx"
 
     def __init__(self, log=None):
-        super(MakeTX, self).__init__(log=log)
+        super().__init__(log=log)
         self.extra_args = []
 
     def apply_settings(self, system_settings, project_settings):

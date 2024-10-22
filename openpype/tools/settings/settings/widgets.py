@@ -32,7 +32,7 @@ class SettingsTabWidget(QtWidgets.QTabWidget):
     context_menu_requested = QtCore.Signal(int)
 
     def __init__(self, *args, **kwargs):
-        super(SettingsTabWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._right_click_tab_idx = None
 
     def mousePressEvent(self, event):
@@ -58,7 +58,7 @@ class SettingsTabWidget(QtWidgets.QTabWidget):
 
 class CompleterFilter(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
-        super(CompleterFilter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
 
@@ -87,7 +87,7 @@ class CompleterView(QtWidgets.QListView):
     row_activated = QtCore.Signal(str)
 
     def __init__(self, parent):
-        super(CompleterView, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowFlags(
             QtCore.Qt.FramelessWindowHint
@@ -250,7 +250,7 @@ class SettingsLineEdit(PlaceholderLineEdit):
     focused_in = QtCore.Signal()
 
     def __init__(self, *args, **kwargs):
-        super(SettingsLineEdit, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Timer which will get started on focus in and stopped on focus out
         # - callback checks if line edit or completer have focus
@@ -369,7 +369,7 @@ class SettingsToolBtn(ImageButton):
     _cached_icons = {}
 
     def __init__(self, btn_type, parent):
-        super(SettingsToolBtn, self).__init__(parent)
+        super().__init__(parent)
 
         icon, hover_icon = self._get_icon_type(btn_type)
 
@@ -438,7 +438,7 @@ class SettingsToolBtn(ImageButton):
 
 class ShadowWidget(QtWidgets.QWidget):
     def __init__(self, message, parent):
-        super(ShadowWidget, self).__init__(parent)
+        super().__init__(parent)
         self.setObjectName("ShadowWidget")
 
         self.parent_widget = parent
@@ -480,7 +480,7 @@ class ShadowWidget(QtWidgets.QWidget):
 
 class IconButton(QtWidgets.QPushButton):
     def __init__(self, icon_name, color, hover_color, *args, **kwargs):
-        super(IconButton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.icon = qtawesome.icon(icon_name, color=color)
         self.hover_icon = qtawesome.icon(icon_name, color=hover_color)
@@ -505,7 +505,7 @@ class NumberSpinBox(QtWidgets.QDoubleSpinBox):
         decimals = kwargs.pop("decimal", 0)
         steps = kwargs.pop("steps", None)
 
-        super(NumberSpinBox, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.setDecimals(decimals)
         self.setMinimum(min_value)
@@ -535,7 +535,7 @@ class SettingsComboBox(QtWidgets.QComboBox):
     focused_in = QtCore.Signal()
 
     def __init__(self, *args, **kwargs):
-        super(SettingsComboBox, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         delegate = QtWidgets.QStyledItemDelegate()
         self.setItemDelegate(delegate)
@@ -578,7 +578,7 @@ class ClickableWidget(QtWidgets.QWidget):
 
 class ExpandingWidget(QtWidgets.QWidget):
     def __init__(self, label, parent):
-        super(ExpandingWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.content_widget = None
         self.toolbox_hidden = False
@@ -703,7 +703,7 @@ class UnsavedChangesDialog(QtWidgets.QDialog):
     message = "You have unsaved changes. What do you want to do with them?"
 
     def __init__(self, parent=None):
-        super(UnsavedChangesDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Unsaved changes")
 
@@ -744,7 +744,7 @@ class RestartDialog(QtWidgets.QDialog):
     )
 
     def __init__(self, parent=None):
-        super(RestartDialog, self).__init__(parent)
+        super().__init__(parent)
         message_label = QtWidgets.QLabel(self.message)
 
         btns_widget = QtWidgets.QWidget(self)
@@ -781,13 +781,13 @@ class RestartDialog(QtWidgets.QDialog):
 
 class SpacerWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(SpacerWidget, self).__init__(parent)
+        super().__init__(parent)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
 
 class GridLabelWidget(QtWidgets.QWidget):
     def __init__(self, label, parent=None):
-        super(GridLabelWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.input_field = None
 
@@ -841,7 +841,7 @@ class ProjectModel(QtGui.QStandardItemModel):
     _update_versions = QtCore.Signal()
 
     def __init__(self, only_active, *args, **kwargs):
-        super(ProjectModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setColumnCount(2)
 
@@ -985,7 +985,7 @@ class VersionAction(QtWidgets.QAction):
     version_triggered = QtCore.Signal(str)
 
     def __init__(self, version, *args, **kwargs):
-        super(VersionAction, self).__init__(version, *args, **kwargs)
+        super().__init__(version, *args, **kwargs)
         self._version = version
         self.triggered.connect(self._on_trigger)
 
@@ -997,7 +997,7 @@ class ProjectSettingsAction(QtWidgets.QAction):
     project_triggered = QtCore.Signal(str)
 
     def __init__(self, project, *args, **kwargs):
-        super(ProjectSettingsAction, self).__init__(project, *args, **kwargs)
+        super().__init__(project, *args, **kwargs)
         self._project = project
         self.triggered.connect(self._on_trigger)
 
@@ -1010,7 +1010,7 @@ class ProjectView(QtWidgets.QTreeView):
     right_mouse_released_at = QtCore.Signal(QtCore.QModelIndex)
 
     def __init__(self, *args, **kwargs):
-        super(ProjectView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.setIndentation(0)
 
@@ -1036,7 +1036,7 @@ class ProjectView(QtWidgets.QTreeView):
 
 class ProjectSortFilterProxy(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
-        super(ProjectSortFilterProxy, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._enable_filter = True
 
     def lessThan(self, left_index, right_index):
@@ -1088,7 +1088,7 @@ class ProjectListWidget(QtWidgets.QWidget):
         self.current_project = None
         self._edit_mode = True
 
-        super(ProjectListWidget, self).__init__(parent)
+        super().__init__(parent)
         self.setObjectName("ProjectListWidget")
 
         content_frame = QtWidgets.QFrame(self)

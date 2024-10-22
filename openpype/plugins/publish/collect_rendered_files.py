@@ -19,7 +19,7 @@ from openpype.pipeline.publish.lib import add_repre_files_for_cleanup
 class CollectRenderedFiles(pyblish.api.ContextPlugin):
     """
     This collector will try to find json files in provided
-    `OPENPYPE_PUBLISH_DATA`. Those files _MUST_ share same context.
+    `QUADPYPE_PUBLISH_DATA`. Those files _MUST_ share same context.
 
     Note:
         We should split this collector and move the part which handle reading
@@ -141,13 +141,13 @@ class CollectRenderedFiles(pyblish.api.ContextPlugin):
     def process(self, context):
         self._context = context
 
-        if not os.environ.get("OPENPYPE_PUBLISH_DATA"):
-            raise KnownPublishError("Missing `OPENPYPE_PUBLISH_DATA`")
+        if not os.environ.get("QUADPYPE_PUBLISH_DATA"):
+            raise KnownPublishError("Missing `QUADPYPE_PUBLISH_DATA`")
 
         # QUESTION
         #   Do we support (or want support) multiple files in the variable?
         #   - what if they have different context?
-        paths = os.environ["OPENPYPE_PUBLISH_DATA"].split(os.pathsep)
+        paths = os.environ["QUADPYPE_PUBLISH_DATA"].split(os.pathsep)
 
         # Using already collected Anatomy
         anatomy = context.data["anatomy"]

@@ -9,7 +9,7 @@ class WidgetUserIdle(BaseToolWidget):
     SIZE_H = 160
 
     def __init__(self, module):
-        super(WidgetUserIdle, self).__init__()
+        super().__init__()
 
         self.setWindowTitle("OpenPype - Stop timers")
 
@@ -194,7 +194,7 @@ class SignalHandler(QtCore.QObject):
     signal_stop_timers = QtCore.Signal()
 
     def __init__(self, module):
-        super(SignalHandler, self).__init__()
+        super().__init__()
         self.module = module
         self.signal_show_message.connect(module.show_message)
         self.signal_stop_timers.connect(module.stop_timers)

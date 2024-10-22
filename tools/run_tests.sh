@@ -1,27 +1,7 @@
 #!/usr/bin/env bash
 
-# Run tests for OpenPype
-# This will use virtual environment and pytest to run test for OpenPype.
-
-art () {
-  cat <<-EOF
-
-             . .   ..     .    ..
-        _oOOP3OPP3Op_. .
-     .PPpo~·   ··   ~2p.  ··  ····  ·  ·
-    ·Ppo · .pPO3Op.· · O:· · · ·
-   .3Pp · oP3'· 'P33· · 4 ··   ·  ·   · ·· ·  ·  ·
-  ·~OP    3PO·  .Op3    : · ··  _____  _____  _____
-  ·P3O  · oP3oP3O3P' · · ·   · /    /·/    /·/    /
-   O3:·   O3p~ ·       ·:· · ·/____/·/____/ /____/
-   'P ·   3p3·  oP3~· ·.P:· ·  · ··  ·   · ·· ·  ·  ·
-  · ':  · Po'  ·Opo'· .3O· .  o[ by Pype Club ]]]==- - - ·  ·
-    · '_ ..  ·    . _OP3··  ·  ·https://openpype.io·· ·
-         ~P3·OPPPO3OP~ · ··  ·
-           ·  ' '· ·  ·· · · · ··  ·
-
-EOF
-}
+# Run tests for QuadPype
+# This will use virtual environment and pytest to run the tests
 
 # Colors for terminal
 
@@ -89,10 +69,6 @@ realpath () {
 
 # Main
 main () {
-  echo -e "${BGreen}"
-  art
-  echo -e "${RST}"
-
   # Directories
   openpype_root=$(realpath $(dirname $(dirname "${BASH_SOURCE[0]}")))
 
@@ -113,7 +89,7 @@ main () {
 
   pushd "$openpype_root" || return > /dev/null
 
-  echo -e "${BIGreen}>>>${RST} Testing OpenPype ..."
+  echo -e "${BIGreen}>>>${RST} Starting QuadPype tests ..."
   original_pythonpath=$PYTHONPATH
   export PYTHONPATH="$openpype_root:$PYTHONPATH"
   "$POETRY_HOME/bin/poetry" run pytest -x --capture=sys --print -W ignore::DeprecationWarning "$openpype_root/tests"

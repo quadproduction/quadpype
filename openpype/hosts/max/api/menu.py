@@ -51,7 +51,7 @@ class OpenPypeMenu(object):
         return list(self.main_widget.findChildren(QtWidgets.QMenuBar))[0]
 
     def get_or_create_openpype_menu(
-            self, name: str = "&Openpype",
+            self, name: str = "&QuadPype",
             before: str = "&Help") -> QtWidgets.QAction:
         """Create AYON menu.
 
@@ -73,7 +73,7 @@ class OpenPypeMenu(object):
         help_action = None
         for item in menu_items:
             if name in item.title():
-                # we already have OpenPype menu
+                # we already have QuadPype menu
                 return item
 
             if before in item.title():

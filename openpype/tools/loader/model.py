@@ -205,7 +205,7 @@ class SubsetsModel(BaseRepresentationModel, TreeModel):
         asset_doc_projection=None,
         subset_doc_projection=None
     ):
-        super(SubsetsModel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.dbcon = dbcon
 
@@ -912,7 +912,7 @@ class GroupMemberFilterProxyModel(QtCore.QSortFilterProxyModel):
         filter_accepts_group = _is_group_acceptable
 
     def __init__(self, *args, **kwargs):
-        super(GroupMemberFilterProxyModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setRecursiveFilteringEnabled(True)
 
 
@@ -932,7 +932,7 @@ class FamiliesFilterProxyModel(GroupMemberFilterProxyModel):
     """Filters to specified families"""
 
     def __init__(self, *args, **kwargs):
-        super(FamiliesFilterProxyModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._families = set()
 
     def familyFilter(self):
@@ -1034,7 +1034,7 @@ class RepresentationModel(TreeModel, BaseRepresentationModel):
     }
 
     def __init__(self, dbcon, header):
-        super(RepresentationModel, self).__init__()
+        super().__init__()
         self.dbcon = dbcon
         self._data = []
         self._header = header

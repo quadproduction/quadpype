@@ -18,7 +18,7 @@ from openpype.tools.ayon_push_to_project.control import (
 
 class PushToContextSelectWindow(QtWidgets.QWidget):
     def __init__(self, controller=None):
-        super(PushToContextSelectWindow, self).__init__()
+        super().__init__()
         if controller is None:
             controller = PushToContextController()
         self._controller = controller

@@ -68,21 +68,21 @@ class InstallThread(QtCore.QThread):
         # user did not entered url
         if self._mongo:
             self.message.emit("Saving mongo connection string ...", False)
-            bs.secure_registry.set_item("openPypeMongo", self._mongo)
+            bs.secure_registry.set_item("quadpypeMongo", self._mongo)
 
-        elif os.getenv("OPENPYPE_MONGO"):
-            self._mongo = os.getenv("OPENPYPE_MONGO")
+        elif os.getenv("QUADPYPE_MONGO"):
+            self._mongo = os.getenv("QUADPYPE_MONGO")
         else:
             # try to get it from settings registry
             try:
                 self._mongo = bs.secure_registry.get_item(
-                    "openPypeMongo")
+                    "quadpypeMongo")
             except ValueError:
                 self.message.emit(
                     "!!! We need MongoDB URL to proceed.", True)
                 self._set_result(-1)
                 return
-        os.environ["OPENPYPE_MONGO"] = self._mongo
+        os.environ["QUADPYPE_MONGO"] = self._mongo
 
         if not validate_mongo_connection(self._mongo):
             self.message.emit(f"Cannot connect to {self._mongo}", True)

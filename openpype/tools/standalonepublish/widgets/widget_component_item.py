@@ -347,7 +347,7 @@ class LightingButton(QtWidgets.QPushButton):
     """
 
     def __init__(self, text, font_size_pt=8, *args, **kwargs):
-        super(LightingButton, self).__init__(text, *args, **kwargs)
+        super().__init__(text, *args, **kwargs)
         self.setStyleSheet(self.lightingbtnstyle % {
             "font_size_pt": font_size_pt
         })
@@ -413,7 +413,7 @@ class PngButton(QtWidgets.QPushButton):
     ):
         self._hovered = False
         self._pressed = False
-        super(PngButton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setStyleSheet(self.png_button_style)
 
         png_dict = {}

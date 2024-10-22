@@ -23,7 +23,7 @@ def load_stylesheet():
 
 class Spacer(QtWidgets.QWidget):
     def __init__(self, height, *args, **kwargs):
-        super(Spacer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setFixedHeight(height)
 
@@ -40,7 +40,7 @@ class Spacer(QtWidgets.QWidget):
 
 class OpenPypeMenu(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
-        super(OpenPypeMenu, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setObjectName(f"{MENU_LABEL}Menu")
 

@@ -51,7 +51,7 @@ from .pype_info_widget import PypeInfoWidget
 class PixmapLabel(QtWidgets.QLabel):
     """Label resizing image to height of font."""
     def __init__(self, pixmap, parent):
-        super(PixmapLabel, self).__init__(parent)
+        super().__init__(parent)
         self._empty_pixmap = QtGui.QPixmap(0, 0)
         self._source_pixmap = pixmap
 
@@ -91,7 +91,7 @@ class VersionUpdateDialog(QtWidgets.QDialog):
     _min_height = 130
 
     def __init__(self, parent=None):
-        super(VersionUpdateDialog, self).__init__(parent)
+        super().__init__(parent)
 
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
@@ -216,7 +216,7 @@ class ProductionStagingDialog(QtWidgets.QDialog):
     """
 
     def __init__(self, parent=None):
-        super(ProductionStagingDialog, self).__init__(parent)
+        super().__init__(parent)
 
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
@@ -274,7 +274,7 @@ class BuildVersionDialog(QtWidgets.QDialog):
     This dialog tells to user that it's build OpenPype is too old.
     """
     def __init__(self, parent=None):
-        super(BuildVersionDialog, self).__init__(parent)
+        super().__init__(parent)
 
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
@@ -618,8 +618,8 @@ class TrayManager:
 
     def _add_version_item(self):
 
-        subversion = os.environ.get("OPENPYPE_SUBVERSION")
-        client_name = os.environ.get("OPENPYPE_CLIENT")
+        subversion = os.environ.get("QUADPYPE_SUBVERSION")
+        client_name = os.environ.get("QUADPYPE_CLIENT")
 
         version_string = "Ver.:  {}".format(openpype.version.__version__)  # double space for readability
         if subversion:
@@ -693,15 +693,15 @@ class TrayManager:
             expected_version = get_expected_version()
             if expected_version is not None:
                 reset_version = False
-                envs["OPENPYPE_VERSION"] = str(expected_version)
+                envs["QUADPYPE_VERSION"] = str(expected_version)
             else:
                 # Trigger reset of version if expected version was not found
                 reset_version = True
 
-        # Pop OPENPYPE_VERSION
+        # Pop QUADPYPE_VERSION
         if reset_version:
             cleanup_additional_args = True
-            envs.pop("OPENPYPE_VERSION", None)
+            envs.pop("QUADPYPE_VERSION", None)
 
         if cleanup_additional_args:
             _additional_args = []
@@ -742,7 +742,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def __init__(self, parent):
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
 
-        super(SystemTrayIcon, self).__init__(icon, parent)
+        super().__init__(icon, parent)
 
         self._exited = False
 

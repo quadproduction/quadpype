@@ -92,7 +92,7 @@ class IntentModel(QtGui.QStandardItemModel):
     default_empty_label = "< Not set >"
 
     def __init__(self, parent=None):
-        super(IntentModel, self).__init__(parent)
+        super().__init__(parent)
         self._item_count = 0
         self.default_index = 0
 
@@ -150,7 +150,7 @@ class PluginItem(QtGui.QStandardItem):
     """Plugin item implementation."""
 
     def __init__(self, plugin):
-        super(PluginItem, self).__init__()
+        super().__init__()
 
         item_text = plugin.__name__
         if settings.UseLabel:
@@ -387,7 +387,7 @@ class GroupItem(QtGui.QStandardItem):
     def __init__(self, *args, **kwargs):
         self.order = kwargs.pop("order", None)
         self.publish_states = 0
-        super(GroupItem, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def flags(self):
         return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
@@ -429,7 +429,7 @@ class GroupItem(QtGui.QStandardItem):
 
 class PluginModel(QtGui.QStandardItemModel):
     def __init__(self, controller, *args, **kwargs):
-        super(PluginModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.controller = controller
         self.checkstates = {}
@@ -587,7 +587,7 @@ class InstanceItem(QtGui.QStandardItem):
     """Instance item implementation."""
 
     def __init__(self, instance):
-        super(InstanceItem, self).__init__()
+        super().__init__()
 
         self.instance = instance
         self.is_context = False
@@ -723,7 +723,7 @@ class InstanceModel(QtGui.QStandardItemModel):
     group_created = QtCore.Signal(QtCore.QModelIndex)
 
     def __init__(self, controller, *args, **kwargs):
-        super(InstanceModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.controller = controller
         self.checkstates = {}
@@ -867,7 +867,7 @@ class InstanceModel(QtGui.QStandardItemModel):
 
 class InstanceSortProxy(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
-        super(InstanceSortProxy, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # Do not care about lower/upper case
         self.setSortCaseSensitivity(QtCore.Qt.CaseInsensitive)
 
@@ -901,7 +901,7 @@ class TerminalDetailItem(QtGui.QStandardItem):
         if msg is None:
             msg = record_item["label"].split("\n")[0]
 
-        super(TerminalDetailItem, self).__init__(msg)
+        super().__init__(msg)
 
     def data(self, role=QtCore.Qt.DisplayRole):
         if role in (QtCore.Qt.DisplayRole, QtCore.Qt.EditRole):
@@ -972,7 +972,7 @@ class TerminalModel(QtGui.QStandardItemModel):
     )
 
     def __init__(self, *args, **kwargs):
-        super(TerminalModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.reset()
 
     def reset(self):

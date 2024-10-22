@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run OpenPype Tray
+# Run app tray
 
 # Colors for terminal
 
@@ -71,7 +71,7 @@ main () {
 
   pushd "$openpype_root" > /dev/null || return > /dev/null
 
-  echo -e "${BIGreen}>>>${RST} Running OpenPype Tray with debug option ..."
+  echo -e "${BIGreen}>>>${RST} Running QuadPype Tray with debug option ..."
   "$POETRY_HOME/bin/poetry" run python3 "$openpype_root/start.py" tray --debug
 }
 

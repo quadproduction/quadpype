@@ -318,10 +318,10 @@ class OpenPypeVersion(semver.VersionInfo):
     def get_openpype_path(cls):
         """Path to openpype zip directory.
 
-        Path can be set through environment variable 'OPENPYPE_PATH' which
+        Path can be set through environment variable 'QUADPYPE_PATH' which
         is set during start of OpenPype if is not available.
         """
-        return os.getenv("OPENPYPE_PATH")
+        return os.getenv("QUADPYPE_PATH")
 
     @classmethod
     def get_local_openpype_path(cls):
@@ -333,7 +333,7 @@ class OpenPypeVersion(semver.VersionInfo):
         if cls._local_openpype_path:
             return cls._local_openpype_path
 
-        settings = get_openpype_global_settings(os.environ["OPENPYPE_MONGO"])
+        settings = get_openpype_global_settings(os.environ["QUADPYPE_MONGO"])
         data_dir = get_local_openpype_path_from_settings(settings)
         if not data_dir:
             data_dir = Path(user_data_dir("openpype", "pypeclub"))
@@ -391,7 +391,7 @@ class OpenPypeVersion(semver.VersionInfo):
         else:
             registry = OpenPypeSettingsRegistry()
             try:
-                registry_dir = Path(str(registry.get_item("openPypePath")))
+                registry_dir = Path(str(registry.get_item("quadpypePath")))
                 if registry_dir.exists():
                     dir_to_search = registry_dir
 
@@ -464,7 +464,7 @@ class OpenPypeVersion(semver.VersionInfo):
         """Get version of local OpenPype."""
 
         version = {}
-        path = Path(os.environ["OPENPYPE_ROOT"]) / "openpype" / "version.py"
+        path = Path(os.environ["QUADPYPE_ROOT"]) / "openpype" / "version.py"
         with open(path, "r") as fp:
             exec(fp.read(), version)
         return version["__version__"]
@@ -477,7 +477,7 @@ class OpenPypeVersion(semver.VersionInfo):
             if installed_version_str:
                 cls._installed_version = OpenPypeVersion(
                     version=installed_version_str,
-                    path=Path(os.environ["OPENPYPE_ROOT"])
+                    path=Path(os.environ["QUADPYPE_ROOT"])
                 )
         return cls._installed_version
 
@@ -910,7 +910,7 @@ class BootstrapRepos:
                 and string with reason as second.
 
         """
-        if os.getenv("OPENPYPE_DONT_VALIDATE_VERSION"):
+        if os.getenv("QUADPYPE_DONT_VALIDATE_VERSION"):
             return True, "Disabled validation"
         if not path.exists():
             return False, "Path doesn't exist"
@@ -1157,8 +1157,8 @@ class BootstrapRepos:
 
         Resolution order for OpenPype is following:
 
-            1) First we test for ``OPENPYPE_PATH`` environment variable
-            2) We try to find ``openPypePath`` in registry setting
+            1) First we test for ``QUADPYPE_PATH`` environment variable
+            2) We try to find ``quadpypePath`` in registry setting
             3) We use user data directory
 
         Args:
@@ -1184,22 +1184,22 @@ class BootstrapRepos:
                 ("Finding OpenPype in non-filesystem locations is"
                  " not implemented yet."))
 
-        # if checks bellow for OPENPYPE_PATH and registry fails, use data_dir
+        # if checks bellow for QUADPYPE_PATH and registry fails, use data_dir
         # DEPRECATED: lookup in root of this folder is deprecated in favour
         #             of major.minor sub-folders.
         dirs_to_search = [self.data_dir]
 
         if openpype_path:
             dirs_to_search = [openpype_path]
-        elif os.getenv("OPENPYPE_PATH") \
-                and Path(os.getenv("OPENPYPE_PATH")).exists():
-            # first try OPENPYPE_PATH and if that is not available,
+        elif os.getenv("QUADPYPE_PATH") \
+                and Path(os.getenv("QUADPYPE_PATH")).exists():
+            # first try QUADPYPE_PATH and if that is not available,
             # try registry.
-            dirs_to_search = [Path(os.getenv("OPENPYPE_PATH"))]
+            dirs_to_search = [Path(os.getenv("QUADPYPE_PATH"))]
         else:
             try:
                 registry_dir = Path(
-                    str(self.registry.get_item("openPypePath")))
+                    str(self.registry.get_item("quadpypePath")))
                 if registry_dir.exists():
                     dirs_to_search = [registry_dir]
 
@@ -1230,7 +1230,7 @@ class BootstrapRepos:
         """Process user entered location string.
 
         It decides if location string is mongodb url or path.
-        If it is mongodb url, it will connect and load ``OPENPYPE_PATH`` from
+        If it is mongodb url, it will connect and load ``QUADPYPE_PATH`` from
         there and use it as path to OpenPype. In it is _not_ mongodb url, it
         is assumed we have a path, this is tested and zip file is
         produced and installed using :meth:`create_version_from_live_code`.
@@ -1249,7 +1249,7 @@ class BootstrapRepos:
             global_settings = get_openpype_global_settings(location)
             openpype_path = get_openpype_path_from_settings(global_settings)
             if not openpype_path:
-                self._print("cannot find OPENPYPE_PATH in settings.")
+                self._print("cannot find QUADPYPE_PATH in settings.")
                 return None
 
         # if not successful, consider location to be fs path.

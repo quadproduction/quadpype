@@ -38,7 +38,7 @@ class LoaderWindow(QtWidgets.QDialog):
     message_timeout = 5000
 
     def __init__(self, parent=None):
-        super(LoaderWindow, self).__init__(parent)
+        super().__init__(parent)
         title = "Asset Loader 2.1"
         project_name = legacy_io.active_project()
         if project_name:
@@ -463,7 +463,7 @@ class SubsetGroupingDialog(QtWidgets.QDialog):
     grouped = QtCore.Signal()
 
     def __init__(self, items, groups_config, parent=None):
-        super(SubsetGroupingDialog, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setWindowTitle("Grouping Subsets")
         self.setMinimumWidth(250)
         self.setModal(True)

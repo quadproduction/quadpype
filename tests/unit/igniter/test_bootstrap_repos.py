@@ -146,8 +146,8 @@ def test_search_string_for_openpype_version(printer):
 
 @pytest.mark.slow
 def test_install_live_repos(fix_bootstrap, printer, monkeypatch, pytestconfig):
-    monkeypatch.setenv("OPENPYPE_ROOT", pytestconfig.rootpath.as_posix())
-    monkeypatch.setenv("OPENPYPE_DATABASE_NAME", str(uuid4()))
+    monkeypatch.setenv("QUADPYPE_ROOT", pytestconfig.rootpath.as_posix())
+    monkeypatch.setenv("QUADPYPE_DATABASE_NAME", str(uuid4()))
     openpype_version = fix_bootstrap.create_version_from_live_code()
     sep = os.path.sep
     expected_paths = [
@@ -285,15 +285,15 @@ def test_find_openpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
             with open(test_path, "w") as fp:
                 fp.write("foo")
 
-    # in OPENPYPE_PATH
+    # in QUADPYPE_PATH
     e_path = tmp_path_factory.mktemp("environ")
 
     # create files and directories for test
     for test_file in test_versions_1:
         _build_test_item(e_path, test_file)
 
-    # in openPypePath registry
-    p_path = tmp_path_factory.mktemp("openPypePath")
+    # in quadpypePath registry
+    p_path = tmp_path_factory.mktemp("quadpypePath")
     for test_file in test_versions_2:
         _build_test_item(p_path, test_file)
 
@@ -328,8 +328,8 @@ def test_find_openpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
     assert result[-1].path == expected_path, ("not a latest version of "
                                               "OpenPype 3")
 
-    printer("testing finding OpenPype in OPENPYPE_PATH ...")
-    monkeypatch.setenv("OPENPYPE_PATH", e_path.as_posix())
+    printer("testing finding OpenPype in QUADPYPE_PATH ...")
+    monkeypatch.setenv("QUADPYPE_PATH", e_path.as_posix())
     result = fix_bootstrap.find_openpype(include_zips=True)
     # we should have results as file were created
     assert result is not None, "no OpenPype version found"
@@ -345,7 +345,7 @@ def test_find_openpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
     assert result[-1].path == expected_path, ("not a latest version of "
                                               "OpenPype 1")
 
-    monkeypatch.delenv("OPENPYPE_PATH", raising=False)
+    monkeypatch.delenv("QUADPYPE_PATH", raising=False)
 
     printer("testing finding OpenPype in user data dir ...")
 
@@ -356,7 +356,7 @@ def test_find_openpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
 
     monkeypatch.setattr(appdirs, "user_data_dir", mock_user_data_dir)
     fix_bootstrap.registry = OpenPypeSettingsRegistry()
-    fix_bootstrap.registry.set_item("openPypePath", d_path.as_posix())
+    fix_bootstrap.registry.set_item("quadpypePath", d_path.as_posix())
 
     result = fix_bootstrap.find_openpype(include_zips=True)
     # we should have results as file were created

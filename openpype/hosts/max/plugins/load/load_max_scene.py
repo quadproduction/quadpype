@@ -56,7 +56,7 @@ class MaxSceneLoader(load.LoaderPlugin):
         namespace, _ = get_namespace(node_name)
         # delete the old container with attribute
         # delete old duplicate
-        # use the modifier OP data to delete the data
+        # use the modifier QuadPype data to delete the data
         node_list = get_previous_loaded_object(node)
         rt.select(node_list)
         prev_max_objects = rt.GetCurrentSelection()

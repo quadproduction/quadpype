@@ -442,16 +442,16 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
             "NUKE_PATH",
             "TOOL_ENV",
             "FOUNDRY_LICENSE",
-            "OPENPYPE_SG_USER",
+            "QUADPYPE_SG_USER",
         ]
 
         # Add OpenPype version if we are running from build.
         if is_running_from_build():
-            keys.append("OPENPYPE_VERSION")
+            keys.append("QUADPYPE_VERSION")
 
         # Add mongo url if it's enabled
         if instance.context.data.get("deadlinePassMongoUrl"):
-            keys.append("OPENPYPE_MONGO")
+            keys.append("QUADPYPE_MONGO")
 
         # add allowed keys from preset if any
         if self.env_allowed_keys:
@@ -475,7 +475,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
                 environment[_path] = os.environ[_path]
 
         # to recognize render jobs
-        render_job_label = "OPENPYPE_RENDER_JOB"
+        render_job_label = "QUADPYPE_RENDER_JOB"
 
         environment[render_job_label] = "1"
 

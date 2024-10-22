@@ -35,7 +35,7 @@ if explicit_plugins_loading["enabled"]:
     )
 
 # Open Workfile Post Initialization.
-key = "OPENPYPE_OPEN_WORKFILE_POST_INITIALIZATION"
+key = "QUADPYPE_OPEN_WORKFILE_POST_INITIALIZATION"
 if bool(int(os.environ.get(key, "0"))):
     def _log_and_open():
         path = os.environ["AVALON_LAST_WORKFILE"]
@@ -50,7 +50,7 @@ if bool(int(os.environ.get(key, "0"))):
 shelf_preset = settings['maya'].get('project_shelf')
 if shelf_preset:
     icon_path = os.path.join(
-        os.environ['OPENPYPE_PROJECT_SCRIPTS'],
+        os.environ['QUADPYPE_PROJECT_SCRIPTS'],
         project_name,
         "icons")
     icon_path = os.path.abspath(icon_path)

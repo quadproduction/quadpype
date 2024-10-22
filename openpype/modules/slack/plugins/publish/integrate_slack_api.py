@@ -89,7 +89,7 @@ class IntegrateSlackAPI(pyblish.api.InstancePlugin):
                     "created_dt": datetime.now()
                 }
                 mongo_client = OpenPypeMongoConnection.get_mongo_client()
-                database_name = os.environ["OPENPYPE_DATABASE_NAME"]
+                database_name = os.environ["QUADPYPE_DATABASE_NAME"]
                 dbcon = mongo_client[database_name]["notification_messages"]
                 dbcon.insert_one(msg)
 

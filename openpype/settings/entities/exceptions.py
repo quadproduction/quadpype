@@ -4,7 +4,7 @@ from openpype.settings.constants import KEY_ALLOWED_SYMBOLS
 class DefaultsNotDefined(Exception):
     def __init__(self, obj):
         msg = "Default values for object are not set. {}".format(obj.path)
-        super(DefaultsNotDefined, self).__init__(msg)
+        super().__init__(msg)
 
 
 class StudioDefaultsNotDefined(Exception):
@@ -12,14 +12,14 @@ class StudioDefaultsNotDefined(Exception):
         msg = "Studio default values for object are not set. {}".format(
             obj.path
         )
-        super(StudioDefaultsNotDefined, self).__init__(msg)
+        super().__init__(msg)
 
 
 class BaseInvalidValue(Exception):
     def __init__(self, reason, path):
         msg = "Path \"{}\". {}".format(path, reason)
         self.msg = msg
-        super(BaseInvalidValue, self).__init__(msg)
+        super().__init__(msg)
 
 
 class InvalidValueType(BaseInvalidValue):
@@ -30,19 +30,19 @@ class InvalidValueType(BaseInvalidValue):
         msg = "Got invalid type \"{}\". Expected: {}".format(
             invalid_type, joined_types
         )
-        super(InvalidValueType, self).__init__(msg, path)
+        super().__init__(msg, path)
 
 
 class RequiredKeyModified(KeyError):
     def __init__(self, entity_path, key):
         msg = "{} - Tried to modify required key \"{}\"."
-        super(RequiredKeyModified, self).__init__(msg.format(entity_path, key))
+        super().__init__(msg.format(entity_path, key))
 
 
 class InvalidKeySymbols(KeyError):
     def __init__(self, entity_path, key):
         msg = "{} - Invalid key \"{}\". Allowed symbols are {}"
-        super(InvalidKeySymbols, self).__init__(
+        super().__init__(
             msg.format(entity_path, key, KEY_ALLOWED_SYMBOLS)
         )
 
@@ -56,7 +56,7 @@ class EntitySchemaError(SchemaError):
         self.entity = entity
         self.reason = reason
         msg = "{} {} - {}".format(entity.__class__, entity.path, reason)
-        super(EntitySchemaError, self).__init__(msg)
+        super().__init__(msg)
 
 
 class SchemeGroupHierarchyBug(EntitySchemaError):
@@ -65,7 +65,7 @@ class SchemeGroupHierarchyBug(EntitySchemaError):
             "Items with attribute \"is_group\" can't have another item with"
             " \"is_group\" attribute as child."
         )
-        super(SchemeGroupHierarchyBug, self).__init__(entity, reason)
+        super().__init__(entity, reason)
 
 
 class SchemaMissingFileInfo(SchemaError):
@@ -78,7 +78,7 @@ class SchemaMissingFileInfo(SchemaError):
             "Schema has missing definition of output file (\"is_file\" key)"
             " for keys. [{}]"
         ).format(", ".join(full_path_keys))
-        super(SchemaMissingFileInfo, self).__init__(msg)
+        super().__init__(msg)
 
 
 class SchemaDuplicatedKeys(SchemaError):
@@ -87,7 +87,7 @@ class SchemaDuplicatedKeys(SchemaError):
             "Schema item contain duplicated key \"{}\" in"
             " one hierarchy level."
         ).format(key)
-        super(SchemaDuplicatedKeys, self).__init__(entity, msg)
+        super().__init__(entity, msg)
 
 
 class SchemaDuplicatedEnvGroupKeys(SchemaError):
@@ -102,7 +102,7 @@ class SchemaDuplicatedEnvGroupKeys(SchemaError):
         msg = (
             "Schema items contain duplicated environment group keys. {}"
         ).format(" || ".join(items))
-        super(SchemaDuplicatedEnvGroupKeys, self).__init__(msg)
+        super().__init__(msg)
 
 
 class SchemaTemplateMissingKeys(SchemaError):
@@ -119,7 +119,7 @@ class SchemaTemplateMissingKeys(SchemaError):
             self.join_keys(required_keys),
             self.join_keys(missing_keys)
         )
-        super(SchemaTemplateMissingKeys, self).__init__(msg)
+        super().__init__(msg)
 
     def join_keys(self, keys):
         return ", ".join([

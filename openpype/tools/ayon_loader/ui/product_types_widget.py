@@ -10,7 +10,7 @@ class ProductTypesQtModel(QtGui.QStandardItemModel):
     filter_changed = QtCore.Signal()
 
     def __init__(self, controller):
-        super(ProductTypesQtModel, self).__init__()
+        super().__init__()
         self._controller = controller
 
         self._refreshing = False
@@ -127,7 +127,7 @@ class ProductTypesView(QtWidgets.QListView):
     filter_changed = QtCore.Signal()
 
     def __init__(self, controller, parent):
-        super(ProductTypesView, self).__init__(parent)
+        super().__init__(parent)
 
         self.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection

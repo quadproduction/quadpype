@@ -23,7 +23,7 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
     finished = QtCore.Signal(bool)
 
     def __init__(self, parent=None):
-        super(KitsuPasswordDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Kitsu Credentials")
         self.resize(300, 120)

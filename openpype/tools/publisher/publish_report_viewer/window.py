@@ -49,8 +49,6 @@ class PublishReportItem:
     """Report item representing one file in report directory."""
 
     def __init__(self, content):
-        changed = self._fix_content(content)
-
         report_path = os.path.join(get_reports_dir(), content["id"])
         file_modified = None
         if os.path.exists(report_path):
@@ -64,7 +62,7 @@ class PublishReportItem:
         self.file_modified = file_modified
         self.created_at = float(created_at)
         self._loaded_label = content.get("label")
-        self._changed = changed
+        self._changed = False
         self.publish_report = PublishReport(content)
 
     @property
@@ -157,12 +155,7 @@ class PublishReportItem:
             with open(filepath, "r") as stream:
                 content = json.load(stream)
 
-            file_modified = os.path.getmtime(filepath)
-            changed = cls._fix_content(content, file_modified=file_modified)
-            obj = cls(content)
-            if changed:
-                obj.mark_as_changed()
-            return obj
+            return cls(content)
 
         except Exception:
             return None
@@ -198,54 +191,6 @@ class PublishReportItem:
 
         self.content = content
         self.file_modified = file_modified
-
-    @classmethod
-    def _fix_content(cls, content, file_modified=None):
-        """Fix content for backward compatibility of older report items.
-
-        Args:
-            content (dict[str, Any]): Report content.
-            file_modified (Optional[float]): File modification time.
-
-        Returns:
-            bool: True if content was changed, False otherwise.
-        """
-
-        # Fix created_at key
-        changed = cls._fix_created_at(content, file_modified)
-
-        # NOTE backward compatibility for 'id' and 'report_version' is from
-        #    28.10.2022 https://github.com/ynput/OpenPype/pull/4040
-        # We can probably safely remove it
-
-        # Fix missing 'id'
-        item_id = content.get("id")
-        if not item_id:
-            item_id = str(uuid.uuid4())
-            changed = True
-            content["id"] = item_id
-
-        # Fix missing 'report_version'
-        if not content.get("report_version"):
-            changed = True
-            content["report_version"] = "0.0.1"
-        return changed
-
-    @classmethod
-    def _fix_created_at(cls, content, file_modified):
-        # Key 'create_at' was added in report version 1.0.1
-        created_at = content.get("created_at")
-        if created_at:
-            return False
-
-        # Auto fix 'created_at', use file modification time if it is not set
-        #   or current time if modification could not be received.
-        if file_modified is not None:
-            created_at_obj = arrow.Arrow.fromtimestamp(file_modified)
-        else:
-            created_at_obj = arrow.utcnow()
-        content["created_at"] = created_at_obj.to("local").isoformat()
-        return True
 
 
 class PublisherReportHandler:
@@ -302,7 +247,7 @@ class LoadedFilesModel(QtGui.QStandardItemModel):
     header_labels = ("Reports", "Created")
 
     def __init__(self, *args, **kwargs):
-        super(LoadedFilesModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Column count must be set before setting header data
         self.setColumnCount(len(self.header_labels))
@@ -451,7 +396,7 @@ class LoadedFilesView(QtWidgets.QTreeView):
     selection_changed = QtCore.Signal()
 
     def __init__(self, *args, **kwargs):
-        super(LoadedFilesView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setEditTriggers(
             QtWidgets.QAbstractItemView.EditKeyPressed
             | QtWidgets.QAbstractItemView.SelectedClicked
@@ -548,7 +493,7 @@ class LoadedFilesWidget(QtWidgets.QWidget):
     report_changed = QtCore.Signal()
 
     def __init__(self, parent):
-        super(LoadedFilesWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.setAcceptDrops(True)
 
@@ -598,7 +543,7 @@ class PublishReportViewerWindow(QtWidgets.QWidget):
     default_height = 600
 
     def __init__(self, parent=None):
-        super(PublishReportViewerWindow, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Publish report viewer")
         icon = QtGui.QIcon(get_app_icon_filepath())
         self.setWindowIcon(icon)

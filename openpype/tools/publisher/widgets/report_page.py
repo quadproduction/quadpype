@@ -50,7 +50,7 @@ class VerticalScrollArea(QtWidgets.QScrollArea):
     """
 
     def __init__(self, *args, **kwargs):
-        super(VerticalScrollArea, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
@@ -120,7 +120,7 @@ class ActionButton(BaseClickableFrame):
     action_clicked = QtCore.Signal(str, str)
 
     def __init__(self, plugin_action_item, parent):
-        super(ActionButton, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("ValidationActionButton")
 
@@ -158,7 +158,7 @@ class ValidateActionsWidget(QtWidgets.QFrame):
     """
 
     def __init__(self, controller, parent):
-        super(ValidateActionsWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
@@ -244,7 +244,7 @@ class ValidationErrorInstanceList(QtWidgets.QListView):
     Instances are collected per plugin's validation error title.
     """
     def __init__(self, *args, **kwargs):
-        super(ValidationErrorInstanceList, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setObjectName("ValidationErrorInstanceList")
 
@@ -278,7 +278,7 @@ class ValidationErrorTitleWidget(QtWidgets.QWidget):
     instance_changed = QtCore.Signal(str)
 
     def __init__(self, title_id, error_info, parent):
-        super(ValidationErrorTitleWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self._title_id = title_id
         self._error_info = error_info
@@ -473,7 +473,7 @@ class ValidationErrorTitleWidget(QtWidgets.QWidget):
 
 class ValidationArtistMessage(QtWidgets.QWidget):
     def __init__(self, message, parent):
-        super(ValidationArtistMessage, self).__init__(parent)
+        super().__init__(parent)
 
         artist_msg_label = QtWidgets.QLabel(message, self)
         artist_msg_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -489,7 +489,7 @@ class ValidationErrorsView(QtWidgets.QWidget):
     selection_changed = QtCore.Signal()
 
     def __init__(self, parent):
-        super(ValidationErrorsView, self).__init__(parent)
+        super().__init__(parent)
 
         errors_scroll = VerticalScrollArea(self)
         errors_scroll.setWidgetResizable(True)
@@ -711,7 +711,7 @@ class _InstanceItem:
 
 class FamilyGroupLabel(QtWidgets.QWidget):
     def __init__(self, family, parent):
-        super(FamilyGroupLabel, self).__init__(parent)
+        super().__init__(parent)
 
         self.setLayoutDirection(QtCore.Qt.LeftToRight)
 
@@ -739,7 +739,7 @@ class PublishInstanceCardWidget(BaseClickableFrame):
     _in_progress_pix = None
 
     def __init__(self, instance, icon, publish_finished, parent):
-        super(PublishInstanceCardWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("CardViewWidget")
 
@@ -871,7 +871,7 @@ class PublishInstancesViewWidget(QtWidgets.QWidget):
     selection_changed = QtCore.Signal()
 
     def __init__(self, controller, parent):
-        super(PublishInstancesViewWidget, self).__init__(parent)
+        super().__init__(parent)
 
         scroll_area = VerticalScrollArea(self)
         scroll_area.setWidgetResizable(True)
@@ -1036,7 +1036,7 @@ class LogIconFrame(QtWidgets.QFrame):
     _validation_error_pix = None
 
     def __init__(self, parent, log_type, log_level, is_validation_error):
-        super(LogIconFrame, self).__init__(parent)
+        super().__init__(parent)
 
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
@@ -1104,7 +1104,7 @@ class LogItemWidget(QtWidgets.QWidget):
     }
 
     def __init__(self, log, parent):
-        super(LogItemWidget, self).__init__(parent)
+        super().__init__(parent)
 
         type_flag, level_n = self._get_log_info(log)
         icon_label = LogIconFrame(
@@ -1181,7 +1181,7 @@ class LogsWithIconsView(QtWidgets.QWidget):
     """
 
     def __init__(self, logs, parent):
-        super(LogsWithIconsView, self).__init__(parent)
+        super().__init__(parent)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
         logs_layout = QtWidgets.QVBoxLayout(self)
@@ -1261,7 +1261,7 @@ class InstanceLogsWidget(QtWidgets.QWidget):
     """
 
     def __init__(self, instance, parent):
-        super(InstanceLogsWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
@@ -1292,7 +1292,7 @@ class InstancesLogsView(QtWidgets.QFrame):
     """Publish instances logs view widget."""
 
     def __init__(self, parent):
-        super(InstancesLogsView, self).__init__(parent)
+        super().__init__(parent)
         self.setObjectName("InstancesLogsView")
 
         scroll_area = QtWidgets.QScrollArea(self)
@@ -1453,7 +1453,7 @@ class CrashWidget(QtWidgets.QWidget):
     """
 
     def __init__(self, controller, parent):
-        super(CrashWidget, self).__init__(parent)
+        super().__init__(parent)
 
         main_label = QtWidgets.QLabel("This is not your fault", self)
         main_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -1508,7 +1508,7 @@ class CrashWidget(QtWidgets.QWidget):
 
 class ErrorDetailsWidget(QtWidgets.QWidget):
     def __init__(self, parent):
-        super(ErrorDetailsWidget, self).__init__(parent)
+        super().__init__(parent)
 
         inputs_widget = QtWidgets.QWidget(self)
         # Error 'Description' input
@@ -1621,7 +1621,7 @@ class ReportsWidget(QtWidgets.QWidget):
     """
 
     def __init__(self, controller, parent):
-        super(ReportsWidget, self).__init__(parent)
+        super().__init__(parent)
 
         # Instances view
         views_widget = QtWidgets.QWidget(self)
@@ -1815,7 +1815,7 @@ class ReportPageWidget(QtWidgets.QFrame):
     """
 
     def __init__(self, controller, parent):
-        super(ReportPageWidget, self).__init__(parent)
+        super().__init__(parent)
 
         header_label = QtWidgets.QLabel(self)
         header_label.setAlignment(QtCore.Qt.AlignCenter)

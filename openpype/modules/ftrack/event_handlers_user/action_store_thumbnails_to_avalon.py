@@ -36,7 +36,7 @@ class StoreThumbnailsToAvalon(BaseAction):
 
     def __init__(self, *args, **kwargs):
         self.db_con = AvalonMongoDB()
-        super(StoreThumbnailsToAvalon, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def discover(self, session, entities, event):
         is_valid = False

@@ -24,7 +24,7 @@ class SubmitJobsToRoyalRender(pyblish.api.ContextPlugin):
     targets = ["local"]
 
     def __init__(self):
-        super(SubmitJobsToRoyalRender, self).__init__()
+        super().__init__()
         self._rr_root = None
         self._rr_api = None
         self._submission_parameters = []

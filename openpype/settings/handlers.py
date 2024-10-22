@@ -627,7 +627,7 @@ class MongoSettingsHandler(SettingsHandler):
         self._project_anatomy_key = PROJECT_ANATOMY_KEY + self.key_suffix
         self._current_version = openpype.version.__version__
 
-        database_name = os.environ["OPENPYPE_DATABASE_NAME"]
+        database_name = os.environ["QUADPYPE_DATABASE_NAME"]
         # TODO modify to not use hardcoded keys
         collection_name = "settings"
 
@@ -1815,7 +1815,7 @@ class MongoLocalSettingsHandler(LocalSettingsHandler):
         # TODO prepare version of pype
         # - pype version should define how are settings saved and loaded
 
-        database_name = os.environ["OPENPYPE_DATABASE_NAME"]
+        database_name = os.environ["QUADPYPE_DATABASE_NAME"]
         # TODO modify to not use hardcoded keys
         collection_name = "settings"
 

@@ -298,7 +298,7 @@ def inject_openpype_environment(deadlinePlugin):
         exe_list, dir_list = get_openpype_executable()
         exe = FileUtils.SearchFileList(exe_list)
 
-        requested_version = job.GetJobEnvironmentKeyValue("OPENPYPE_VERSION")
+        requested_version = job.GetJobEnvironmentKeyValue("QUADPYPE_VERSION")
         if requested_version:
             exe = get_requested_openpype_executable(
                 exe, dir_list, requested_version
@@ -355,15 +355,15 @@ def inject_openpype_environment(deadlinePlugin):
                 " AVALON_TASK, AVALON_APP_NAME"
             ))
 
-        openpype_mongo = job.GetJobEnvironmentKeyValue("OPENPYPE_MONGO")
+        openpype_mongo = job.GetJobEnvironmentKeyValue("QUADPYPE_MONGO")
         if openpype_mongo:
-            # inject env var for OP extractenvironments
+            # inject env var for QuadPype extractenvironments
             # SetEnvironmentVariable is important, not SetProcessEnv...
-            deadlinePlugin.SetEnvironmentVariable("OPENPYPE_MONGO",
+            deadlinePlugin.SetEnvironmentVariable("QUADPYPE_MONGO",
                                                   openpype_mongo)
 
-        if not os.environ.get("OPENPYPE_MONGO"):
-            print(">>> Missing OPENPYPE_MONGO env var, process won't work")
+        if not os.environ.get("QUADPYPE_MONGO"):
+            print(">>> Missing QUADPYPE_MONGO env var, process won't work")
 
         os.environ["AVALON_TIMEOUT"] = "5000"
 
@@ -592,11 +592,11 @@ def __main__(deadlinePlugin):
     job = deadlinePlugin.GetJob()
 
     openpype_render_job = \
-        job.GetJobEnvironmentKeyValue('OPENPYPE_RENDER_JOB') or '0'
+        job.GetJobEnvironmentKeyValue('QUADPYPE_RENDER_JOB') or '0'
     openpype_publish_job = \
-        job.GetJobEnvironmentKeyValue('OPENPYPE_PUBLISH_JOB') or '0'
+        job.GetJobEnvironmentKeyValue('QUADPYPE_PUBLISH_JOB') or '0'
     openpype_remote_job = \
-        job.GetJobEnvironmentKeyValue('OPENPYPE_REMOTE_PUBLISH') or '0'
+        job.GetJobEnvironmentKeyValue('QUADPYPE_REMOTE_PUBLISH') or '0'
 
     if openpype_publish_job == '1' and openpype_render_job == '1':
         raise RuntimeError("Misconfiguration. Job couldn't be both " +

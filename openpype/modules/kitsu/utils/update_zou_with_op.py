@@ -21,7 +21,7 @@ def sync_zou(login: str, password: str):
     This is an utility function to help updating zou data with OP's, it may not
     handle correctly all cases, a human intervention might
     be required after all.
-    Will work better if OP DB has been previously synchronized from zou/kitsu.
+    Will work better if QuadPype DB has been previously synchronized from zou/kitsu.
 
     Args:
         login (str): Kitsu user login
@@ -49,7 +49,7 @@ def sync_zou(login: str, password: str):
 def sync_zou_from_op_project(
     project_name: str, dbcon: AvalonMongoDB, project_doc: dict = None
 ) -> List[UpdateOne]:
-    """Update OP project in DB with Zou data.
+    """Update QuadPype project in DB with Zou data.
 
     Args:
         project_name (str): Name of project to sync

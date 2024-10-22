@@ -293,7 +293,7 @@ class SyncServerThread(threading.Thread):
     def __init__(self, module):
         self.log = Logger.get_logger(self.__class__.__name__)
 
-        super(SyncServerThread, self).__init__()
+        super().__init__()
         self.module = module
         self.loop = None
         self.is_running = False

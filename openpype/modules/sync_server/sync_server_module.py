@@ -1182,7 +1182,7 @@ class SyncServerModule(OpenPypeModule, ITrayAction, IPluginPaths):
 
     def _reset_timer_with_rest_api(self):
         # POST to webserver sites to add to representations
-        webserver_url = os.environ.get("OPENPYPE_WEBSERVER_URL")
+        webserver_url = os.environ.get("QUADPYPE_WEBSERVER_URL")
         if not webserver_url:
             self.log.warning("Couldn't find webserver url")
             return
@@ -2436,7 +2436,7 @@ def syncservice(active_site):
 
     from openpype.modules import ModulesManager
 
-    os.environ["OPENPYPE_LOCAL_ID"] = active_site
+    os.environ["QUADPYPE_LOCAL_ID"] = active_site
 
     def signal_handler(sig, frame):
         print("You pressed Ctrl+C. Process ended.")

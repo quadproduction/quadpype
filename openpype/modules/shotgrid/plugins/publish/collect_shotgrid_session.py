@@ -75,7 +75,7 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
                 "script name and script key in OpenPype settings"
             )
 
-        login = get_login() or os.getenv("OPENPYPE_SG_USER")
+        login = get_login() or os.getenv("QUADPYPE_SG_USER")
 
         if not login:
             self.log.error(
@@ -83,10 +83,10 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
                 "login to shotgrid withing openpype Tray"
             )
 
-        # Set OPENPYPE_SG_USER with login so other deadline tasks can make
+        # Set QUADPYPE_SG_USER with login so other deadline tasks can make
         # use of it
-        self.log.info("Setting OPENPYPE_SG_USER to '%s'.", login)
-        os.environ["OPENPYPE_SG_USER"] = login
+        self.log.info("Setting QUADPYPE_SG_USER to '%s'.", login)
+        os.environ["QUADPYPE_SG_USER"] = login
 
         session = shotgun_api3.Shotgun(
             base_url=shotgrid_url,

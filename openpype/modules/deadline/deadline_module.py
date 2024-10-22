@@ -21,7 +21,7 @@ class DeadlineModule(OpenPypeModule, IPluginPaths):
     def __init__(self, manager, settings):
         self.deadline_urls = {}
         self._plugin_folders = {}
-        super(DeadlineModule, self).__init__(manager, settings)
+        super().__init__(manager, settings)
 
     def initialize(self, modules_settings):
         # This module is always enabled

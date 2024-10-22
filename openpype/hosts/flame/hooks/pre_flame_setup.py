@@ -33,8 +33,8 @@ class FlamePrelaunch(PreLaunchHook):
 
     def execute(self):
         _env = self.launch_context.env
-        self.flame_python_exe = _env["OPENPYPE_FLAME_PYTHON_EXEC"]
-        self.flame_pythonpath = _env["OPENPYPE_FLAME_PYTHONPATH"]
+        self.flame_python_exe = _env["QUADPYPE_FLAME_PYTHON_EXEC"]
+        self.flame_pythonpath = _env["QUADPYPE_FLAME_PYTHONPATH"]
 
         """Hook entry method."""
         project_doc = self.data["project_doc"]

@@ -24,9 +24,9 @@ class CollectDeadlinePublishableInstances(pyblish.api.InstancePlugin):
 
     def process(self, instance):
         self.log.debug("CollectDeadlinePublishableInstances")
-        publish_inst = os.environ.get("OPENPYPE_PUBLISH_SUBSET", '')
+        publish_inst = os.environ.get("QUADPYPE_PUBLISH_SUBSET", '')
         if not publish_inst:
-            raise PublishValidationError("OPENPYPE_PUBLISH_SUBSET env var "
+            raise PublishValidationError("QUADPYPE_PUBLISH_SUBSET env var "
                                          "required for remote publishing")
 
         subset_name = instance.data["subset"]

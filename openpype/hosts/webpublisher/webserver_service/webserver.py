@@ -127,7 +127,7 @@ def run_webserver(executable, upload_dir, host=None, port=None):
 def reprocess_failed(upload_dir, webserver_url):
     # log.info("check_reprocesable_records")
     mongo_client = OpenPypeMongoConnection.get_mongo_client()
-    database_name = os.environ["OPENPYPE_DATABASE_NAME"]
+    database_name = os.environ["QUADPYPE_DATABASE_NAME"]
     dbcon = mongo_client[database_name]["webpublishes"]
 
     results = dbcon.find({"status": REPROCESS_STATUS})

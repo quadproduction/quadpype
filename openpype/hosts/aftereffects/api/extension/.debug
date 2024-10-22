@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ExtensionList>
-    <Extension Id="io.ynput.AE.panel">
+    <Extension Id="io.quad.AE.panel">
         <HostList>
 
             <!-- Comment Host tags according to the apps you want your panel to support -->

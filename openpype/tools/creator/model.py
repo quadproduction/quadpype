@@ -11,7 +11,7 @@ from . constants import (
 
 class CreatorsModel(QtGui.QStandardItemModel):
     def __init__(self, *args, **kwargs):
-        super(CreatorsModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._creators_by_id = {}
 

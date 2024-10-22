@@ -44,33 +44,13 @@ function Show-PSWarning() {
     }
 }
 
-$env:_INSIDE_OPENPYPE_TOOL = "1"
+$env:_INSIDE_QUADPYPE_TOOL = "1"
 
 if (-not (Test-Path 'env:POETRY_HOME')) {
     $env:POETRY_HOME = "$openpype_root\.poetry"
 }
 
 Set-Location -Path $openpype_root
-
-$art = @"
-
-             . .   ..     .    ..
-        _oOOP3OPP3Op_. .
-     .PPpo~.   ..   ~2p.  ..  ....  .  .
-    .Ppo . .pPO3Op.. . O:. . . .
-   .3Pp . oP3'. 'P33. . 4 ..   .  .   . .. .  .  .
-  .~OP    3PO.  .Op3    : . ..  _____  _____  _____
-  .P3O  . oP3oP3O3P' . . .   . /    /./    /./    /
-   O3:.   O3p~ .       .:. . ./____/./____/ /____/
-   'P .   3p3.  oP3~. ..P:. .  . ..  .   . .. .  .  .
-  . ':  . Po'  .Opo'. .3O. .  o[ by Pype Club ]]]==- - - .  .
-    . '_ ..  .    . _OP3..  .  .https://openpype.io.. .
-         ~P3.OPPPO3OP~ . ..  .
-           .  ' '. .  .. . . . ..  .
-
-"@
-
-Write-Host $art -ForegroundColor DarkGreen
 
 # Enable if PS 7.x is needed.
 # Show-PSWarning
@@ -103,7 +83,7 @@ Write-Color -Text "OK" -Color Green
 
 Write-Color -Text ">>> ", "Generating zip from current sources ..." -Color Green, Gray
 $env:PYTHONPATH="$($openpype_root);$($env:PYTHONPATH)"
-$env:OPENPYPE_ROOT="$($openpype_root)"
+$env:QUADPYPE_ROOT="$($openpype_root)"
 & "$($env:POETRY_HOME)\bin\poetry" run python "$($openpype_root)\tools\create_zip.py" $ARGS
 Set-Location -Path $current_dir
 

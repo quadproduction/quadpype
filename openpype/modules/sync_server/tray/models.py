@@ -519,7 +519,7 @@ class SyncRepresentationSummaryModel(_SyncRepresentationModel):
         path = attr.ib(default=None)
 
     def __init__(self, sync_server, header, project=None, parent=None):
-        super(SyncRepresentationSummaryModel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self._header = header
         self._data = []
         self._project = project
@@ -1000,7 +1000,7 @@ class SyncRepresentationDetailModel(_SyncRepresentationModel):
 
     def __init__(self, sync_server, header, _id,
                  project=None):
-        super(SyncRepresentationDetailModel, self).__init__()
+        super().__init__()
         self._header = header
         self._data = []
         self._project = project

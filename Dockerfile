@@ -1,10 +1,10 @@
 # Build Pype docker image
 FROM ubuntu:focal AS builder
-ARG OPENPYPE_PYTHON_VERSION=3.9.12
+ARG QUADPYPE_PYTHON_VERSION=3.9.12
 ARG BUILD_DATE
 ARG VERSION
 
-LABEL maintainer="info@openpype.io"
+LABEL maintainer="dev@quad.fr"
 LABEL description="Docker Image to build and run OpenPype under Ubuntu 20.04"
 LABEL org.opencontainers.image.name="pypeclub/openpype"
 LABEL org.opencontainers.image.title="OpenPype Docker Image"
@@ -59,7 +59,7 @@ RUN curl https://pyenv.run | bash \
 
 # install python with pyenv
 RUN source $HOME/init_pyenv.sh \
-    && pyenv install ${OPENPYPE_PYTHON_VERSION}
+    && pyenv install ${QUADPYPE_PYTHON_VERSION}
 
 COPY . /opt/openpype/
 
@@ -70,7 +70,7 @@ WORKDIR /opt/openpype
 # set local python version
 RUN cd /opt/openpype \
     && source $HOME/init_pyenv.sh \
-    && pyenv local ${OPENPYPE_PYTHON_VERSION}
+    && pyenv local ${QUADPYPE_PYTHON_VERSION}
 
 # fetch third party tools/libraries
 RUN source $HOME/init_pyenv.sh \

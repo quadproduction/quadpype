@@ -25,7 +25,7 @@ class VersionDelegate(QtWidgets.QStyledItemDelegate):
 
     def __init__(self, dbcon, *args, **kwargs):
         self._dbcon = dbcon
-        super(VersionDelegate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_project_name(self):
         return self._dbcon.active_project()

@@ -30,7 +30,7 @@ class IdleManager(QtCore.QThread):
     signal_reset_timer = QtCore.Signal()
 
     def __init__(self):
-        super(IdleManager, self).__init__()
+        super().__init__()
         self.log = Logger.get_logger(self.__class__.__name__)
         self.signal_reset_timer.connect(self._reset_time)
 
@@ -118,7 +118,7 @@ class MouseThread(QtCore.QThread):
     signal_stop = QtCore.Signal()
 
     def __init__(self, idle_item):
-        super(MouseThread, self).__init__()
+        super().__init__()
         self.signal_stop.connect(self.stop)
         self.m_listener = None
         self.idle_item = idle_item
@@ -141,7 +141,7 @@ class KeyboardThread(QtCore.QThread):
     signal_stop = QtCore.Signal()
 
     def __init__(self, idle_item):
-        super(KeyboardThread, self).__init__()
+        super().__init__()
         self.signal_stop.connect(self.stop)
         self.k_listener = None
         self.idle_item = idle_item

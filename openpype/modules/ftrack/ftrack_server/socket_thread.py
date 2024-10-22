@@ -12,10 +12,10 @@ from openpype.lib import get_openpype_execute_args, Logger
 class SocketThread(threading.Thread):
     """Thread that checks suprocess of storer of processor of events"""
 
-    MAX_TIMEOUT = int(os.environ.get("OPENPYPE_FTRACK_SOCKET_TIMEOUT", 45))
+    MAX_TIMEOUT = int(os.environ.get("QUADPYPE_FTRACK_SOCKET_TIMEOUT", 45))
 
     def __init__(self, name, port, filepath, additional_args=[]):
-        super(SocketThread, self).__init__()
+        super().__init__()
         self.log = Logger.get_logger(self.__class__.__name__)
         self.setName(name)
         self.name = name
@@ -57,7 +57,7 @@ class SocketThread(threading.Thread):
         )
 
         env = os.environ.copy()
-        env["OPENPYPE_PROCESS_MONGO_ID"] = str(Logger.mongo_process_id)
+        env["QUADPYPE_PROCESS_MONGO_ID"] = str(Logger.mongo_process_id)
         # OpenPype executable (with path to start script if not build)
         args = get_openpype_execute_args(
             # Add `run` command
@@ -160,7 +160,7 @@ class StatusSocketThread(SocketThread):
     def __init__(self, *args, **kwargs):
         self.process_threads = {}
         self.stop_subprocess = False
-        super(StatusSocketThread, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def set_process(self, process_name, thread):
         try:

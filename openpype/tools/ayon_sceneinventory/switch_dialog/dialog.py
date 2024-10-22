@@ -55,7 +55,7 @@ class SwitchAssetDialog(QtWidgets.QDialog):
     switched = QtCore.Signal()
 
     def __init__(self, controller, parent=None, items=None):
-        super(SwitchAssetDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Switch selected items ...")
 

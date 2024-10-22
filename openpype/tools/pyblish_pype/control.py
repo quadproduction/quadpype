@@ -53,7 +53,7 @@ class MainThreadProcess(QtCore.QObject):
     count_timeout = 2
 
     def __init__(self):
-        super(MainThreadProcess, self).__init__()
+        super().__init__()
         self._items_to_process = collections.deque()
 
         timer = QtCore.QTimer()
@@ -145,7 +145,7 @@ class Controller(QtCore.QObject):
     instance_toggled = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
-        super(Controller, self).__init__(parent)
+        super().__init__(parent)
         self.context = None
         self.plugins = {}
         self.optional_default = {}

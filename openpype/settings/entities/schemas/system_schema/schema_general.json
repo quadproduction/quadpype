@@ -151,7 +151,7 @@
             "children": [
                 {
                     "type": "label",
-                    "label": "Define location accessible by artist machine to check for zip updates with Openpype code."
+                    "label": "Define location accessible by artist machine to check for zip updates with QuadPype code."
                 },
                 {
                     "type": "path",
@@ -163,7 +163,7 @@
                 },
                 {
                     "type": "label",
-                    "label": "Define custom location for artist machine where to unzip versions of Openpype code. By default it is in user app data folder."
+                    "label": "Define custom location for artist machine where to unzip versions of QuadPype code. By default it is in user app data folder."
                 },
                 {
                     "type": "path",

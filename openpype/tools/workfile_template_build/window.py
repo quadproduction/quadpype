@@ -9,7 +9,7 @@ from openpype.tools.attribute_defs import AttributeDefinitionsWidget
 
 class WorkfileBuildPlaceholderDialog(QtWidgets.QDialog):
     def __init__(self, host, builder, parent=None):
-        super(WorkfileBuildPlaceholderDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Workfile Placeholder Manager")
 
         self._log = None

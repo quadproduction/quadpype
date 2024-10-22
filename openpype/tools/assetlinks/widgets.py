@@ -11,7 +11,7 @@ from qtpy import QtWidgets
 
 class SimpleLinkView(QtWidgets.QWidget):
     def __init__(self, dbcon, parent):
-        super(SimpleLinkView, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.dbcon = dbcon
 
         # TODO: display selected target

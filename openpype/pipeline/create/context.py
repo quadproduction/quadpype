@@ -56,7 +56,7 @@ class ImmutableKeyError(TypeError):
             msg = "Key \"{}\" is immutable and does not allow changes.".format(
                 key
             )
-        super(ImmutableKeyError, self).__init__(msg)
+        super().__init__(msg)
 
 
 class HostMissRequiredMethod(Exception):
@@ -79,19 +79,19 @@ class HostMissRequiredMethod(Exception):
         msg = "Host \"{}\" does not have implemented method/s {}".format(
             host_name, joined_methods
         )
-        super(HostMissRequiredMethod, self).__init__(msg)
+        super().__init__(msg)
 
 
 class ConvertorsOperationFailed(Exception):
     def __init__(self, msg, failed_info):
-        super(ConvertorsOperationFailed, self).__init__(msg)
+        super().__init__(msg)
         self.failed_info = failed_info
 
 
 class ConvertorsFindFailed(ConvertorsOperationFailed):
     def __init__(self, failed_info):
         msg = "Failed to find incompatible subsets"
-        super(ConvertorsFindFailed, self).__init__(
+        super().__init__(
             msg, failed_info
         )
 
@@ -99,7 +99,7 @@ class ConvertorsFindFailed(ConvertorsOperationFailed):
 class ConvertorsConversionFailed(ConvertorsOperationFailed):
     def __init__(self, failed_info):
         msg = "Failed to convert incompatible subsets"
-        super(ConvertorsConversionFailed, self).__init__(
+        super().__init__(
             msg, failed_info
         )
 
@@ -134,14 +134,14 @@ class CreatorsOperationFailed(Exception):
     """
 
     def __init__(self, msg, failed_info):
-        super(CreatorsOperationFailed, self).__init__(msg)
+        super().__init__(msg)
         self.failed_info = failed_info
 
 
 class CreatorsCollectionFailed(CreatorsOperationFailed):
     def __init__(self, failed_info):
         msg = "Failed to collect instances"
-        super(CreatorsCollectionFailed, self).__init__(
+        super().__init__(
             msg, failed_info
         )
 
@@ -149,7 +149,7 @@ class CreatorsCollectionFailed(CreatorsOperationFailed):
 class CreatorsSaveFailed(CreatorsOperationFailed):
     def __init__(self, failed_info):
         msg = "Failed update instance changes"
-        super(CreatorsSaveFailed, self).__init__(
+        super().__init__(
             msg, failed_info
         )
 
@@ -157,7 +157,7 @@ class CreatorsSaveFailed(CreatorsOperationFailed):
 class CreatorsRemoveFailed(CreatorsOperationFailed):
     def __init__(self, failed_info):
         msg = "Failed to remove instances"
-        super(CreatorsRemoveFailed, self).__init__(
+        super().__init__(
             msg, failed_info
         )
 
@@ -165,7 +165,7 @@ class CreatorsRemoveFailed(CreatorsOperationFailed):
 class CreatorsCreateFailed(CreatorsOperationFailed):
     def __init__(self, failed_info):
         msg = "Failed to create instances"
-        super(CreatorsCreateFailed, self).__init__(
+        super().__init__(
             msg, failed_info
         )
 
@@ -664,7 +664,7 @@ class CreatorAttributeValues(AttributeValues):
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
-        super(CreatorAttributeValues, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class PublishAttributeValues(AttributeValues):
@@ -680,7 +680,7 @@ class PublishAttributeValues(AttributeValues):
 
     def __init__(self, publish_attributes, *args, **kwargs):
         self.publish_attributes = publish_attributes
-        super(PublishAttributeValues, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def parent(self):

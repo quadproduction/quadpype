@@ -29,7 +29,7 @@ class FamilyWidget(QtWidgets.QWidget):
     NOT_SELECTED = '< Nothing is selected >'
 
     def __init__(self, dbcon, parent=None):
-        super(FamilyWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         # Store internal states in here
         self.state = {"valid": False}
         self.dbcon = dbcon

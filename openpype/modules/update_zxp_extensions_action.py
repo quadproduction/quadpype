@@ -17,7 +17,7 @@ class UpdateZXPExtensionsAction(OpenPypeModule, ITrayAction):
 
     def initialize(self, _modules_settings):
         self.enabled = True
-        if os.getenv("OPENPYPE_IGNORE_ZXP_UPDATE"):
+        if os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE"):
             self.enabled = False
 
     def tray_init(self):
@@ -33,7 +33,7 @@ class UpdateZXPExtensionsAction(OpenPypeModule, ITrayAction):
         # install latest version to user data dir
         bootstrap = BootstrapRepos()
 
-        openpype_version = bootstrap.find_openpype_version(os.environ["OPENPYPE_VERSION"])
+        openpype_version = bootstrap.find_openpype_version(os.environ["QUADPYPE_VERSION"])
 
         system_settings = get_system_settings()
         zxp_hosts_to_update = bootstrap.get_zxp_extensions_to_update(openpype_version, system_settings, force=True)

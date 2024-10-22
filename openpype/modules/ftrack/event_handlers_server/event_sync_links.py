@@ -19,7 +19,7 @@ class SyncLinksToAvalon(BaseEvent):
     def __init__(self, session):
         self.dbcon = AvalonMongoDB()
 
-        super(SyncLinksToAvalon, self).__init__(session)
+        super().__init__(session)
 
     def launch(self, session, event):
         # Try to commit and if any error happen then recreate session

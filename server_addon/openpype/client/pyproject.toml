@@ -1,5 +1,5 @@
 [project]
-name="openpype"
+name="quadpype"
 description="OpenPype addon for AYON server."
 
 [tool.poetry.dependencies]

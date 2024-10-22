@@ -46,7 +46,7 @@ class AssetsView(TreeViewSpinner, DeselectableTreeView):
     """
 
     def __init__(self, parent=None):
-        super(AssetsView, self).__init__(parent)
+        super().__init__(parent)
         self.setIndentation(15)
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.setHeaderHidden(True)
@@ -114,7 +114,7 @@ class UnderlinesAssetDelegate(QtWidgets.QItemDelegate):
     bar_height = 3
 
     def __init__(self, *args, **kwargs):
-        super(UnderlinesAssetDelegate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         asset_view_colors = get_objected_colors("loader", "asset-view")
         self._selected_color = (
             asset_view_colors["selected"].get_qcolor()
@@ -302,7 +302,7 @@ class AssetModel(QtGui.QStandardItemModel):
     }
 
     def __init__(self, dbcon, parent=None):
-        super(AssetModel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.dbcon = dbcon
 
         self._refreshing = False
@@ -578,7 +578,7 @@ class AssetsWidget(QtWidgets.QWidget):
     double_clicked = QtCore.Signal()
 
     def __init__(self, dbcon, parent=None):
-        super(AssetsWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.dbcon = dbcon
 
@@ -821,7 +821,7 @@ class MultiSelectAssetsWidget(AssetsWidget):
     separated.
     """
     def __init__(self, *args, **kwargs):
-        super(MultiSelectAssetsWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._view.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
         )

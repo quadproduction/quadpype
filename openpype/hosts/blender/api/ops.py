@@ -43,7 +43,7 @@ class BlenderApplication(QtWidgets.QApplication):
     blender_windows = {}
 
     def __init__(self, *args, **kwargs):
-        super(BlenderApplication, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setQuitOnLastWindowClosed(False)
 
         self.setStyleSheet(style.load_stylesheet())

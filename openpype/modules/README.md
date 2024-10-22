@@ -33,7 +33,7 @@ OpenPype modules should contain separated logic of specific kind of implementati
 
 ## How to add addons/modules
 - in System settings go to `modules/addon_paths` (`Modules/OpenPype AddOn Paths`) where you have to add path to addon root folder
-- for openpype example addons use `{OPENPYPE_REPOS_ROOT}/openpype/modules/example_addons`
+- for openpype example addons use `{QUADPYPE_REPOS_ROOT}/openpype/modules/example_addons`
 
 ## Addon/module settings
 - addons/modules may have defined custom settings definitions with default values

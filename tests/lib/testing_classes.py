@@ -37,15 +37,15 @@ class ModuleUnitTest(BaseTest):
             db_setup - prepares avalon AND openpype DBs for testing from
                         binary dumps from input data
             dbcon - returns DBConnection to AvalonDB
-            dbcon_openpype - returns DBConnection for OpenpypeMongoDB
+            dbcon_openpype - returns DBConnection for QuadPypeMongoDB
 
     """
     PERSIST = False  # True to not purge temporary folder nor test DB
 
-    TEST_OPENPYPE_MONGO = "mongodb://localhost:27017"
+    TEST_QUADPYPE_MONGO = "mongodb://localhost:27017"
     TEST_DB_NAME = "avalon_tests"
     TEST_PROJECT_NAME = "test_project"
-    TEST_OPENPYPE_NAME = "openpype_tests"
+    TEST_QUADPYPE_NAME = "openpype_tests"
 
     TEST_FILES = []
 
@@ -145,7 +145,7 @@ class ModuleUnitTest(BaseTest):
 
         #reset connection to openpype DB with new env var
         if mongo_url:
-            monkeypatch_session.setenv("OPENPYPE_MONGO", mongo_url)
+            monkeypatch_session.setenv("QUADPYPE_MONGO", mongo_url)
 
         import openpype.settings.lib as sett_lib
         sett_lib._SETTINGS_HANDLER = None
@@ -157,8 +157,8 @@ class ModuleUnitTest(BaseTest):
         openpype_root = os.path.dirname(os.path.dirname(openpype.__file__))
 
         # ?? why 2 of those
-        monkeypatch_session.setenv("OPENPYPE_ROOT", openpype_root)
-        monkeypatch_session.setenv("OPENPYPE_REPOS_ROOT", openpype_root)
+        monkeypatch_session.setenv("QUADPYPE_ROOT", openpype_root)
+        monkeypatch_session.setenv("QUADPYPE_REPOS_ROOT", openpype_root)
 
         # for remapping purposes (currently in Nuke)
         monkeypatch_session.setenv("TEST_SOURCE_FOLDER", download_test_data)
@@ -168,15 +168,15 @@ class ModuleUnitTest(BaseTest):
                  request, mongo_url, dump_databases, persist):
         """Restore prepared MongoDB dumps into selected DB."""
         backup_dir = os.path.join(download_test_data, "input", "dumps")
-        uri = os.environ.get("OPENPYPE_MONGO")
+        uri = os.environ.get("QUADPYPE_MONGO")
         db_handler = DBHandler(uri)
         db_handler.setup_from_dump(self.TEST_DB_NAME, backup_dir,
                                    overwrite=True,
                                    db_name_out=self.TEST_DB_NAME)
 
-        db_handler.setup_from_dump(self.TEST_OPENPYPE_NAME, backup_dir,
+        db_handler.setup_from_dump(self.TEST_QUADPYPE_NAME, backup_dir,
                                    overwrite=True,
-                                   db_name_out=self.TEST_OPENPYPE_NAME)
+                                   db_name_out=self.TEST_QUADPYPE_NAME)
 
         yield db_handler
 
@@ -187,13 +187,13 @@ class ModuleUnitTest(BaseTest):
                 self.TEST_DB_NAME, output_dir, format=dump_databases
             )
             db_handler.backup_to_dump(
-                self.TEST_OPENPYPE_NAME, output_dir, format=dump_databases
+                self.TEST_QUADPYPE_NAME, output_dir, format=dump_databases
             )
 
         persist = persist or self.PERSIST or self.is_test_failed(request)
         if not persist:
             db_handler.teardown(self.TEST_DB_NAME)
-            db_handler.teardown(self.TEST_OPENPYPE_NAME)
+            db_handler.teardown(self.TEST_QUADPYPE_NAME)
 
     @pytest.fixture(scope="module")
     def dbcon(self, db_setup, output_folder_url):
@@ -221,13 +221,13 @@ class ModuleUnitTest(BaseTest):
 
     @pytest.fixture(scope="module")
     def dbcon_openpype(self, db_setup):
-        """Provide test database connection for OP settings.
+        """Provide test database connection for QuadPype settings.
 
             Database prepared from dumps with 'db_setup' fixture.
         """
         from openpype.lib import OpenPypeMongoConnection
         mongo_client = OpenPypeMongoConnection.get_mongo_client()
-        yield mongo_client[self.TEST_OPENPYPE_NAME]["settings"]
+        yield mongo_client[self.TEST_QUADPYPE_NAME]["settings"]
 
     def is_test_failed(self, request):
         return getattr(request.node, "module_test_failure", False)
@@ -330,7 +330,7 @@ class PublishTest(ModuleUnitTest):
         )
         os.environ["AVALON_SCHEMA"] = schema_path
 
-        os.environ["OPENPYPE_EXECUTABLE"] = sys.executable
+        os.environ["QUADPYPE_EXECUTABLE"] = sys.executable
         from openpype.lib import ApplicationManager
 
         application_manager = ApplicationManager()

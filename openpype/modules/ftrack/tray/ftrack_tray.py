@@ -365,7 +365,7 @@ class FtrackEventsThread(QtCore.QThread):
     signal_timer_stopped = QtCore.Signal()
 
     def __init__(self, parent):
-        super(FtrackEventsThread, self).__init__()
+        super().__init__()
         cred = credentials.get_credentials()
         self.username = cred['username']
         self.user = None

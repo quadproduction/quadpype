@@ -6,7 +6,7 @@ from openpype.tools.settings.settings.widgets import (
 
 class Separator(QtWidgets.QFrame):
     def __init__(self, height=None, parent=None):
-        super(Separator, self).__init__(parent)
+        super().__init__(parent)
         if height is None:
             height = 2
 
@@ -22,7 +22,7 @@ class Separator(QtWidgets.QFrame):
 
 class ProxyLabelWidget(QtWidgets.QWidget):
     def __init__(self, label, mouse_release_callback=None, parent=None):
-        super(ProxyLabelWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.mouse_release_callback = mouse_release_callback
 

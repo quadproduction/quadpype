@@ -59,7 +59,7 @@ class UpdateThread(QtCore.QThread):
         bs.set_data_dir(OpenPypeVersion.get_local_openpype_path())
 
         # Adding the conditions to be able to show this window to update the ZXP extensions
-        # without needing to install an OP version
+        # without needing to install an QuadPype version
         if not bs.is_inside_user_data(self._openpype_version.path) and self._openpype_version.path.is_file():
             version_path = bs.install_version(self._openpype_version)
         else:

@@ -237,20 +237,20 @@ class FusionSubmitDeadline(
             "AVALON_ASSET",
             "AVALON_TASK",
             "AVALON_APP_NAME",
-            "OPENPYPE_DEV",
+            "QUADPYPE_DEV",
             "QUADPYPE_LOG_NO_COLORS",
             "IS_TEST"
         ]
 
         # Add OpenPype version if we are running from build.
         if is_running_from_build():
-            keys.append("OPENPYPE_VERSION")
+            keys.append("QUADPYPE_VERSION")
 
         environment = dict({key: os.environ[key] for key in keys
                             if key in os.environ}, **legacy_io.Session)
 
         # to recognize render jobs
-        render_job_label = "OPENPYPE_RENDER_JOB"
+        render_job_label = "QUADPYPE_RENDER_JOB"
 
         environment[render_job_label] = "1"
 

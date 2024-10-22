@@ -43,7 +43,7 @@ class Creator(LegacyCreator):
     defaults = ['Main']
 
     def __init__(self, *args, **kwargs):
-        super(Creator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.nodes = []
 
     def process(self):

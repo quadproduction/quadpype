@@ -33,7 +33,7 @@ from .constants import (
 
 class ProjectBar(QtWidgets.QWidget):
     def __init__(self, launcher_model, parent=None):
-        super(ProjectBar, self).__init__(parent)
+        super().__init__(parent)
 
         project_combobox = QtWidgets.QComboBox(self)
         # Change delegate so stylysheets are applied
@@ -96,7 +96,7 @@ class LauncherTaskWidget(TasksWidget):
     def __init__(self, launcher_model, *args, **kwargs):
         self._launcher_model = launcher_model
 
-        super(LauncherTaskWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _create_source_model(self):
         return LauncherTaskModel(self._launcher_model, self._dbcon)
@@ -111,7 +111,7 @@ class LauncherAssetsWidget(SingleSelectAssetsWidget):
     def __init__(self, launcher_model, *args, **kwargs):
         self._launcher_model = launcher_model
 
-        super(LauncherAssetsWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         launcher_model.assets_refresh_started.connect(self._on_refresh_start)
 
@@ -161,7 +161,7 @@ class ActionBar(QtWidgets.QWidget):
     action_clicked = QtCore.Signal(object)
 
     def __init__(self, launcher_model, dbcon, parent=None):
-        super(ActionBar, self).__init__(parent)
+        super().__init__(parent)
 
         self._launcher_model = launcher_model
         self.dbcon = dbcon
@@ -404,7 +404,7 @@ class ActionHistory(QtWidgets.QPushButton):
     trigger_history = QtCore.Signal(tuple)
 
     def __init__(self, parent=None):
-        super(ActionHistory, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.max_history = 15
 

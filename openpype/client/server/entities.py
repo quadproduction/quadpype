@@ -520,7 +520,7 @@ def get_representations(
     if context_filters is not None:
         # TODO should we add the support?
         # - there was ability to filter using regex
-        raise ValueError("OP v4 can't filter by representation context.")
+        raise ValueError("QuadPype v4 can't filter by representation context.")
 
     if not archived and not standard:
         return

@@ -737,7 +737,7 @@ def eventserver(
     on linux and window service).
     """
     if debug:
-        os.environ["OPENPYPE_DEBUG"] = "3"
+        os.environ["QUADPYPE_DEBUG"] = "3"
 
     from .ftrack_server.event_server_cli import run_event_server
 

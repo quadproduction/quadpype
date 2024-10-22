@@ -21,10 +21,10 @@ class ShaderDefinitionsEditor(QtWidgets.QWidget):
     # name of the file used to store definitions
 
     def __init__(self, parent=None):
-        super(ShaderDefinitionsEditor, self).__init__(parent)
+        super().__init__(parent)
         self._mongo = OpenPypeMongoConnection.get_mongo_client()
         self._gridfs = gridfs.GridFS(
-            self._mongo[os.getenv("OPENPYPE_DATABASE_NAME")])
+            self._mongo[os.getenv("QUADPYPE_DATABASE_NAME")])
         self._editor = None
 
         self._original_content = self._read_definition_file()

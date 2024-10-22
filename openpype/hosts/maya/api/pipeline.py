@@ -83,7 +83,7 @@ class MayaHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     name = "maya"
 
     def __init__(self):
-        super(MayaHost, self).__init__()
+        super().__init__()
         self._op_events = {}
 
     def install(self):

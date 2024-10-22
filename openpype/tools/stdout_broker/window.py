@@ -50,7 +50,7 @@ class ConsoleDialog(QtWidgets.QDialog):
     }
 
     def __init__(self, text, parent=None):
-        super(ConsoleDialog, self).__init__(parent)
+        super().__init__(parent)
         layout = QtWidgets.QHBoxLayout(parent)
 
         plain_text = QtWidgets.QPlainTextEdit(self)

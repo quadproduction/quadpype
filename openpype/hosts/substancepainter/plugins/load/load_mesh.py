@@ -57,7 +57,7 @@ class SubstanceProjectConfigurationWindow(QtWidgets.QDialog):
     or switching assets.
     """
     def __init__(self, project_templates):
-        super(SubstanceProjectConfigurationWindow, self).__init__()
+        super().__init__()
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
 
         self.configuration = None

@@ -91,7 +91,7 @@ def publishfromapp(project, path, host, user=None, targets=None):
 def webserver(executable, upload_dir, host=None, port=None):
     """Start service for communication with Webpublish Front end.
 
-        OP must be congigured on a machine, eg. OPENPYPE_MONGO filled AND
+        QuadPype must be congigured on a machine, eg. QUADPYPE_MONGO filled AND
         FTRACK_BOT_API_KEY provided with api key from Ftrack.
 
         Expect "pype.club" user created on Ftrack.

@@ -2229,7 +2229,7 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
 
         # include all project root related env vars
         for env_var in os.environ:
-            if env_var.startswith("OPENPYPE_PROJECT_ROOT_"):
+            if env_var.startswith("QUADPYPE_PROJECT_ROOT_"):
                 included_vars.append(env_var)
 
         # use regex to find env var in template with format {ENV_VAR}
@@ -2600,7 +2600,7 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
             )
 
     def set_context_settings(self):
-        os.environ["OP_NUKE_SKIP_SAVE_EVENT"] = "True"
+        os.environ["QUADPYPE_NUKE_SKIP_SAVE_EVENT"] = "True"
         # replace reset resolution from avalon core to pype's
         if self._get_set_resolution_startup():
             self.reset_resolution()
@@ -2608,7 +2608,7 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
         self.reset_frame_range_handles()
         # add colorspace menu item
         self.set_colorspace()
-        del os.environ["OP_NUKE_SKIP_SAVE_EVENT"]
+        del os.environ["QUADPYPE_NUKE_SKIP_SAVE_EVENT"]
 
     def _get_set_resolution_startup(self):
         custom_settings = self.get_custom_settings()
@@ -2975,7 +2975,7 @@ def launch_workfiles_app():
 
     # get all imortant settings
     open_at_start = env_value_to_bool(
-        env_key="OPENPYPE_WORKFILE_TOOL_ON_START",
+        env_key="QUADPYPE_WORKFILE_TOOL_ON_START",
         default=None)
 
     # return if none is defined
@@ -3260,7 +3260,7 @@ class NukeDirmap(HostDirmap):
         """
 
         self.file_name = file_name
-        super(NukeDirmap, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def on_enable_dirmap(self):
         pass

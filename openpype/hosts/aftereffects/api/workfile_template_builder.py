@@ -186,7 +186,7 @@ class AEPlaceholderLoadPlugin(AEPlaceholderPlugin, PlaceholderLoadMixin):
         self._imprint_item(item_id, name, placeholder_data, stub)
 
     def populate_placeholder(self, placeholder):
-        """Use Openpype Loader from `placeholder` to create new FootageItems
+        """Use QuadPype Loader from `placeholder` to create new FootageItems
 
         New FootageItems are created, files are imported.
         """

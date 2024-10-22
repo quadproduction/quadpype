@@ -91,7 +91,7 @@ class ProcessLauncher(QtCore.QObject):
         self._subprocess_args = subprocess_args
         self._log = None
 
-        super(ProcessLauncher, self).__init__()
+        super().__init__()
 
         # Keep track if launcher was alreadu started
         self._started = False

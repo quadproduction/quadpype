@@ -35,11 +35,11 @@ class AssetReporterRegistry(JSONSettingRegistry):
     """
 
     def __init__(self):
-        self.vendor = "ynput"
-        self.product = "openpype"
+        self.vendor = "quad"
+        self.product = "quadpype"
         name = "asset_usage_reporter"
         path = appdirs.user_data_dir(self.product, self.vendor)
-        super(AssetReporterRegistry, self).__init__(name, path)
+        super().__init__(name, path)
 
 
 class OverlayWidget(QtWidgets.QFrame):
@@ -50,7 +50,7 @@ class OverlayWidget(QtWidgets.QFrame):
     project_selected = QtCore.Signal(str)
 
     def __init__(self, publisher_window):
-        super(OverlayWidget, self).__init__(publisher_window)
+        super().__init__(publisher_window)
         self.setObjectName("OverlayFrame")
 
         middle_frame = QtWidgets.QFrame(self)
@@ -182,7 +182,7 @@ class AssetReporterWindow(QtWidgets.QDialog):
     _content = None
 
     def __init__(self, parent=None, controller=None, reset_on_show=None):
-        super(AssetReporterWindow, self).__init__(parent)
+        super().__init__(parent)
 
         self._result = {}
         self.setObjectName("AssetReporterWindow")

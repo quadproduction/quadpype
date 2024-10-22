@@ -43,7 +43,7 @@ class HoudiniHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     name = "houdini"
 
     def __init__(self):
-        super(HoudiniHost, self).__init__()
+        super().__init__()
         self._op_events = {}
         self._has_been_setup = False
 

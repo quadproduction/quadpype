@@ -46,7 +46,7 @@ class EqualizerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
     def __init__(self):
         self._qapp = None
-        super(EqualizerHost, self).__init__()
+        super().__init__()
 
     def workfile_has_unsaved_changes(self):
         """Return the state of the current workfile.

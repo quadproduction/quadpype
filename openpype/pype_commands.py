@@ -136,7 +136,7 @@ class PypeCommands:
         else:
             pyblish.api.register_target("farm")
 
-        os.environ["OPENPYPE_PUBLISH_DATA"] = os.pathsep.join(paths)
+        os.environ["QUADPYPE_PUBLISH_DATA"] = os.pathsep.join(paths)
         os.environ["HEADLESS_PUBLISH"] = 'true'  # to use in app lib
 
         log.info("Running publish ...")
@@ -229,7 +229,7 @@ class PypeCommands:
                 timeout (int): explicit timeout for single test
                 setup_only (bool): if only preparation steps should be
                     triggered, no tests (useful for debugging/development)
-                mongo_url (str): url to Openpype Mongo database
+                mongo_url (str): url to the QuadPype Mongo database
         """
         print("run_tests")
         if folder:

@@ -28,7 +28,7 @@ class LoadClipBatch(opfapi.ClipLoader):
     color = "orange"
 
     # settings
-    reel_name = "OP_LoadedReel"
+    reel_name = "QuadPype_LoadedReel"
     clip_name_template = "{batch}_{asset}_{subset}<_{output}>"
 
     """ Anatomy keys from version context data and dynamically added:

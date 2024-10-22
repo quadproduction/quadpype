@@ -36,7 +36,7 @@ class RepresentationsModel(QtGui.QStandardItemModel):
     remote_site_column = column_labels.index("Remote site")
 
     def __init__(self, controller):
-        super(RepresentationsModel, self).__init__()
+        super().__init__()
 
         self.setColumnCount(len(self.column_labels))
 
@@ -261,7 +261,7 @@ class RepresentationsModel(QtGui.QStandardItemModel):
 
 class RepresentationsWidget(QtWidgets.QWidget):
     def __init__(self, controller, parent):
-        super(RepresentationsWidget, self).__init__(parent)
+        super().__init__(parent)
 
         repre_view = DeselectableTreeView(self)
         repre_view.setSelectionMode(

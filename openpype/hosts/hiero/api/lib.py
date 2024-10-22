@@ -27,7 +27,7 @@ from openpype.pipeline.load import filter_containers
 from openpype.lib import Logger
 from . import tags
 from .constants import (
-    OPENPYPE_TAG_NAME,
+    QUADPYPE_TAG_NAME,
     DEFAULT_SEQUENCE_NAME,
     DEFAULT_BIN_NAME
 )
@@ -348,7 +348,7 @@ def get_track_item_tags(track_item):
     # collect all tags which are not openpype tag
     returning_tag_data.extend(
         tag for tag in _tags
-        if tag.name() != OPENPYPE_TAG_NAME
+        if tag.name() != QUADPYPE_TAG_NAME
     )
 
     return returning_tag_data
@@ -388,7 +388,7 @@ def set_track_openpype_tag(track, data=None):
         # if pype tag available then update with input data
         tag = tags.create_tag(
             "{}_{}".format(
-                OPENPYPE_TAG_NAME,
+                QUADPYPE_TAG_NAME,
                 _get_tag_unique_hash()
             ),
             tag_data
@@ -415,7 +415,7 @@ def get_track_openpype_tag(track):
         return None
     for tag in _tags:
         # return only correct tag defined by global name
-        if OPENPYPE_TAG_NAME in tag.name():
+        if QUADPYPE_TAG_NAME in tag.name():
             return tag
 
 
@@ -487,7 +487,7 @@ def get_trackitem_openpype_tag(track_item):
         return None
     for tag in _tags:
         # return only correct tag defined by global name
-        if OPENPYPE_TAG_NAME in tag.name():
+        if QUADPYPE_TAG_NAME in tag.name():
             return tag
 
 
@@ -519,7 +519,7 @@ def set_trackitem_openpype_tag(track_item, data=None):
         # if pype tag available then update with input data
         tag = tags.create_tag(
             "{}_{}".format(
-                OPENPYPE_TAG_NAME,
+                QUADPYPE_TAG_NAME,
                 _get_tag_unique_hash()
             ),
             tag_data

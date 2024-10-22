@@ -330,7 +330,7 @@ class PrecollectInstances(pyblish.api.ContextPlugin):
 
                 # add pypedata marker to otio_clip metadata
                 for marker in otio_clip.markers:
-                    if phiero.OPENPYPE_TAG_NAME in marker.name:
+                    if phiero.QUADPYPE_TAG_NAME in marker.name:
                         otio_clip.metadata.update(marker.metadata)
                 return {"otioClip": otio_clip}
 

@@ -14,7 +14,7 @@ class SyncClockifyServer(ServerAction):
     role_list = ["Pypeclub", "Administrator", "project Manager"]
 
     def __init__(self, *args, **kwargs):
-        super(SyncClockifyServer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         workspace_name = os.environ.get("CLOCKIFY_WORKSPACE")
         api_key = os.environ.get("CLOCKIFY_API_KEY")

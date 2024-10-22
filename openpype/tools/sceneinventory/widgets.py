@@ -4,7 +4,7 @@ from openpype import style
 
 class ButtonWithMenu(QtWidgets.QToolButton):
     def __init__(self, parent=None):
-        super(ButtonWithMenu, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("ButtonWithMenu")
 
@@ -39,7 +39,7 @@ class SearchComboBox(QtWidgets.QComboBox):
     """Searchable ComboBox with empty placeholder value as first value"""
 
     def __init__(self, parent):
-        super(SearchComboBox, self).__init__(parent)
+        super().__init__(parent)
 
         self.setEditable(True)
         self.setInsertPolicy(QtWidgets.QComboBox.NoInsert)

@@ -84,7 +84,7 @@ class WebServerThread(threading.Thread):
     def __init__(self, manager):
         self._log = None
 
-        super(WebServerThread, self).__init__()
+        super().__init__()
 
         self.is_running = False
         self.manager = manager

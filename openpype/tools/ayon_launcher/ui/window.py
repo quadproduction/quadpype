@@ -17,7 +17,7 @@ class LauncherWindow(QtWidgets.QWidget):
     page_side_anim_interval = 250
 
     def __init__(self, controller=None, parent=None):
-        super(LauncherWindow, self).__init__(parent)
+        super().__init__(parent)
 
         if controller is None:
             controller = BaseLauncherController()

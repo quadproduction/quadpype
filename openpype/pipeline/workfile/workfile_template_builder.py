@@ -863,7 +863,7 @@ class AbstractTemplateBuilder(object):
         solved_path = os.path.normpath(solved_path)
         if not os.path.exists(solved_path):
             raise TemplateNotFound(
-                "Template found in openPype settings for task '{}' with host "
+                "Template found in quadpype settings for task '{}' with host "
                 "'{}' does not exists. (Not found : {})".format(
                     task_name, host_name, solved_path))
 
@@ -1983,7 +1983,7 @@ class LoadPlaceholderItem(PlaceholderItem):
     """
 
     def __init__(self, *args, **kwargs):
-        super(LoadPlaceholderItem, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._failed_representations = []
 
     def get_errors(self):
@@ -2008,7 +2008,7 @@ class CreatePlaceholderItem(PlaceholderItem):
     """
 
     def __init__(self, *args, **kwargs):
-        super(CreatePlaceholderItem, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._failed_created_publish_instances = []
 
     def get_errors(self):

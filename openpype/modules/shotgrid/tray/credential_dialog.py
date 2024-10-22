@@ -26,7 +26,7 @@ class CredentialsDialog(QtWidgets.QDialog):
     login_changed = QtCore.Signal()
 
     def __init__(self, module, parent=None):
-        super(CredentialsDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self._module = module
         self._is_logged = False
@@ -156,14 +156,14 @@ class CredentialsDialog(QtWidgets.QDialog):
         credentials.save_local_login(
             login=login
         )
-        os.environ['OPENPYPE_SG_USER'] = login
+        os.environ['QUADPYPE_SG_USER'] = login
         self._on_login()
 
         self.set_error("CANT LOGIN")
 
     def _on_shotgrid_logout_clicked(self):
         credentials.clear_local_login()
-        del os.environ['OPENPYPE_SG_USER']
+        del os.environ['QUADPYPE_SG_USER']
         self._clear_shotgrid_login()
         self._on_logout()
 

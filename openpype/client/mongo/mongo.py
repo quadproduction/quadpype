@@ -111,7 +111,7 @@ def _decompose_url(url):
 
 
 def get_default_components():
-    mongo_url = os.environ.get("OPENPYPE_MONGO")
+    mongo_url = os.environ.get("QUADPYPE_MONGO")
     if mongo_url is None:
         raise MongoEnvNotSet(
             "URL for Mongo logging connection is not set."
@@ -180,7 +180,7 @@ class OpenPypeMongoConnection:
 
     @staticmethod
     def get_default_mongo_url():
-        return os.environ["OPENPYPE_MONGO"]
+        return os.environ["QUADPYPE_MONGO"]
 
     @classmethod
     def get_mongo_client(cls, mongo_url=None):

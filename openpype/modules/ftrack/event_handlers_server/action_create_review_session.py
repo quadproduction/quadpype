@@ -40,7 +40,7 @@ class CreateDailyReviewSessionServerAction(ServerAction):
     default_template = "{yy}{mm}{dd}"
 
     def __init__(self, *args, **kwargs):
-        super(CreateDailyReviewSessionServerAction, self).__init__(
+        super().__init__(
             *args, **kwargs
         )
 

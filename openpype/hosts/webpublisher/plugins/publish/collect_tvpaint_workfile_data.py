@@ -31,7 +31,7 @@ class CollectTVPaintWorkfileData(pyblish.api.ContextPlugin):
 
     def process(self, context):
         # Get JobQueue module
-        modules = context.data["openPypeModules"]
+        modules = context.data["quadpypeModules"]
         job_queue_module = modules["job_queue"]
         jobs_root = job_queue_module.get_jobs_root()
         if not jobs_root:

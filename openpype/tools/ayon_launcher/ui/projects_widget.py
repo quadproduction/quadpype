@@ -19,7 +19,7 @@ class ProjectIconView(QtWidgets.QListView):
     ListMode = 1
 
     def __init__(self, parent=None, mode=ListMode):
-        super(ProjectIconView, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         # Workaround for scrolling being super slow or fast when
         # toggling between the two visual modes
@@ -77,7 +77,7 @@ class ProjectsWidget(QtWidgets.QWidget):
     refreshed = QtCore.Signal()
 
     def __init__(self, controller, parent=None):
-        super(ProjectsWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         header_widget = QtWidgets.QWidget(self)
 

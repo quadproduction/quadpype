@@ -133,13 +133,13 @@ class Listener:
 
     # == Project ==
     def _new_project(self, data):
-        """Create new project into OP DB."""
+        """Create new project into QuadPype DB."""
 
         # Use update process to avoid duplicating code
         self._update_project(data, new_project=True)
 
     def _update_project(self, data, new_project=False):
-        """Update project into OP DB."""
+        """Update project into QuadPype DB."""
         # Get project entity
         project = gazu.project.get_project(data["project_id"])
 
@@ -173,7 +173,7 @@ class Listener:
 
     # == Asset ==
     def _new_asset(self, data):
-        """Create new asset into OP DB."""
+        """Create new asset into QuadPype DB."""
         # Get project entity
         set_op_project(self.dbcon, data["project_id"])
 
@@ -202,7 +202,7 @@ class Listener:
         log.info(msg)
 
     def _update_asset(self, data):
-        """Update asset into OP DB."""
+        """Update asset into QuadPype DB."""
         set_op_project(self.dbcon, data["project_id"])
         project_name = self.dbcon.active_project()
         project_doc = get_project(project_name)
@@ -233,7 +233,7 @@ class Listener:
             self.dbcon.update_one({"_id": asset_doc_id}, asset_update)
 
     def _delete_asset(self, data):
-        """Delete asset of OP DB."""
+        """Delete asset of QuadPype DB."""
         set_op_project(self.dbcon, data["project_id"])
 
         asset = self.dbcon.find_one({"data.zou.id": data["asset_id"]})
@@ -260,7 +260,7 @@ class Listener:
 
     # == Episode ==
     def _new_episode(self, data):
-        """Create new episode into OP DB."""
+        """Create new episode into QuadPype DB."""
         # Get project entity
         set_op_project(self.dbcon, data["project_id"])
 
@@ -280,7 +280,7 @@ class Listener:
         log.info(msg)
 
     def _update_episode(self, data):
-        """Update episode into OP DB."""
+        """Update episode into QuadPype DB."""
         set_op_project(self.dbcon, data["project_id"])
         project_name = self.dbcon.active_project()
         project_doc = get_project(project_name)
@@ -311,7 +311,7 @@ class Listener:
             self.dbcon.update_one({"_id": asset_doc_id}, asset_update)
 
     def _delete_episode(self, data):
-        """Delete shot of OP DB."""
+        """Delete shot of QuadPype DB."""
         set_op_project(self.dbcon, data["project_id"])
 
         ep = self.dbcon.find_one({"data.zou.id": data["episode_id"]})
@@ -333,7 +333,7 @@ class Listener:
 
     # == Sequence ==
     def _new_sequence(self, data):
-        """Create new sequnce into OP DB."""
+        """Create new sequnce into QuadPype DB."""
         # Get project entity
         set_op_project(self.dbcon, data["project_id"])
 
@@ -361,7 +361,7 @@ class Listener:
         log.info(msg)
 
     def _update_sequence(self, data):
-        """Update sequence into OP DB."""
+        """Update sequence into QuadPype DB."""
         set_op_project(self.dbcon, data["project_id"])
         project_name = self.dbcon.active_project()
         project_doc = get_project(project_name)
@@ -392,7 +392,7 @@ class Listener:
             self.dbcon.update_one({"_id": asset_doc_id}, asset_update)
 
     def _delete_sequence(self, data):
-        """Delete sequence of OP DB."""
+        """Delete sequence of QuadPype DB."""
         set_op_project(self.dbcon, data["project_id"])
         sequence = self.dbcon.find_one({"data.zou.id": data["sequence_id"]})
         if sequence:
@@ -421,7 +421,7 @@ class Listener:
 
     # == Shot ==
     def _new_shot(self, data):
-        """Create new shot into OP DB."""
+        """Create new shot into QuadPype DB."""
         # Get project entity
         set_op_project(self.dbcon, data["project_id"])
 
@@ -450,7 +450,7 @@ class Listener:
         log.info(msg)
 
     def _update_shot(self, data):
-        """Update shot into OP DB."""
+        """Update shot into QuadPype DB."""
         set_op_project(self.dbcon, data["project_id"])
         project_name = self.dbcon.active_project()
         project_doc = get_project(project_name)
@@ -482,7 +482,7 @@ class Listener:
             self.dbcon.update_one({"_id": asset_doc_id}, asset_update)
 
     def _delete_shot(self, data):
-        """Delete shot of OP DB."""
+        """Delete shot of QuadPype DB."""
         set_op_project(self.dbcon, data["project_id"])
         shot = self.dbcon.find_one({"data.zou.id": data["shot_id"]})
 
@@ -509,7 +509,7 @@ class Listener:
 
     # == Task ==
     def _new_task(self, data):
-        """Create new task into OP DB."""
+        """Create new task into QuadPype DB."""
         # Get project entity
         set_op_project(self.dbcon, data["project_id"])
         project_name = self.dbcon.active_project()
@@ -568,11 +568,11 @@ class Listener:
             log.info(msg)
 
     def _update_task(self, data):
-        """Update task into OP DB."""
+        """Update task into QuadPype DB."""
         # TODO is it necessary?
 
     def _delete_task(self, data):
-        """Delete task of OP DB."""
+        """Delete task of QuadPype DB."""
 
         set_op_project(self.dbcon, data["project_id"])
         project_name = self.dbcon.active_project()

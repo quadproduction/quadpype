@@ -21,7 +21,7 @@ class WorkAreaFilesModel(QtGui.QStandardItemModel):
     """
 
     def __init__(self, controller):
-        super(WorkAreaFilesModel, self).__init__()
+        super().__init__()
 
         self.setColumnCount(2)
 
@@ -254,7 +254,7 @@ class WorkAreaFilesWidget(QtWidgets.QWidget):
     duplicate_requested = QtCore.Signal()
 
     def __init__(self, controller, parent):
-        super(WorkAreaFilesWidget, self).__init__(parent)
+        super().__init__(parent)
 
         view = TreeView(self)
         view.setSortingEnabled(True)

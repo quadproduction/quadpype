@@ -9,4 +9,4 @@ class CreateTemplate(plugin.Creator):
     family = "harmony.template"
 
     def __init__(self, *args, **kwargs):
-        super(CreateTemplate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)

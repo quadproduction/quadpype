@@ -216,7 +216,7 @@ class UIDef(AbstractAttrDef):
     is_value_def = False
 
     def __init__(self, key=None, default=None, *args, **kwargs):
-        super(UIDef, self).__init__(key, default, *args, **kwargs)
+        super().__init__(key, default, *args, **kwargs)
 
     def convert_value(self, value):
         return value
@@ -230,7 +230,7 @@ class UILabelDef(UIDef):
     type = "label"
 
     def __init__(self, label, key=None):
-        super(UILabelDef, self).__init__(label=label, key=key)
+        super().__init__(label=label, key=key)
 
     def __eq__(self, other):
         if not super(UILabelDef, self).__eq__(other):
@@ -253,7 +253,7 @@ class UnknownDef(AbstractAttrDef):
 
     def __init__(self, key, default=None, **kwargs):
         kwargs["default"] = default
-        super(UnknownDef, self).__init__(key, **kwargs)
+        super().__init__(key, **kwargs)
 
     def convert_value(self, value):
         return value
@@ -273,7 +273,7 @@ class HiddenDef(AbstractAttrDef):
     def __init__(self, key, default=None, **kwargs):
         kwargs["default"] = default
         kwargs["hidden"] = True
-        super(HiddenDef, self).__init__(key, **kwargs)
+        super().__init__(key, **kwargs)
 
     def convert_value(self, value):
         return value
@@ -324,7 +324,7 @@ class NumberDef(AbstractAttrDef):
         elif default > maximum:
             default = maximum
 
-        super(NumberDef, self).__init__(key, default=default, **kwargs)
+        super().__init__(key, default=default, **kwargs)
 
         self.minimum = minimum
         self.maximum = maximum
@@ -383,7 +383,7 @@ class TextDef(AbstractAttrDef):
         if default is None:
             default = ""
 
-        super(TextDef, self).__init__(key, default=default, **kwargs)
+        super().__init__(key, default=default, **kwargs)
 
         if multiline is None:
             multiline = False
@@ -457,7 +457,7 @@ class EnumDef(AbstractAttrDef):
         elif default not in item_values:
             default = next(iter(item_values), None)
 
-        super(EnumDef, self).__init__(key, default=default, **kwargs)
+        super().__init__(key, default=default, **kwargs)
 
         self.items = items
         self._item_values = item_values_set
@@ -563,7 +563,7 @@ class BoolDef(AbstractAttrDef):
     def __init__(self, key, default=None, **kwargs):
         if default is None:
             default = False
-        super(BoolDef, self).__init__(key, default=default, **kwargs)
+        super().__init__(key, default=default, **kwargs)
 
     def convert_value(self, value):
         if isinstance(value, bool):
@@ -861,7 +861,7 @@ class FileDef(AbstractAttrDef):
         self.extensions = set(extensions)
         self.allow_sequences = allow_sequences
         self.extensions_label = extensions_label
-        super(FileDef, self).__init__(key, default=default, **kwargs)
+        super().__init__(key, default=default, **kwargs)
 
     def __eq__(self, other):
         if not super(FileDef, self).__eq__(other):

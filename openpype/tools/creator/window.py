@@ -37,7 +37,7 @@ module.window = None
 
 class CreatorWindow(QtWidgets.QDialog):
     def __init__(self, parent=None):
-        super(CreatorWindow, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Instance Creator")
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         if not parent:

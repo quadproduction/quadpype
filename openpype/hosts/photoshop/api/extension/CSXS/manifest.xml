@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<ExtensionManifest ExtensionBundleId="io.ynput.PS.panel" ExtensionBundleVersion="1.1.0" Version="7.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ExtensionManifest ExtensionBundleId="io.quad.PS.panel" ExtensionBundleVersion="1.1.0" Version="7.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="io.ynput.PS.panel" Version="1.0.1" />
+    <Extension Id="io.quad.PS.panel" Version="1.0.1" />
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>
@@ -16,7 +16,7 @@
     </RequiredRuntimeList>
   </ExecutionEnvironment>
   <DispatchInfoList>
-    <Extension Id="io.ynput.PS.panel">
+    <Extension Id="io.quad.PS.panel">
       <DispatchInfo>
         <Resources>
           <MainPath>./index.html</MainPath>

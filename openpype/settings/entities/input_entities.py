@@ -27,7 +27,7 @@ class EndpointEntity(ItemEntity):
     """
 
     def __init__(self, *args, **kwargs):
-        super(EndpointEntity, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if (
                 not (self.group_item is not None or self.is_group)
@@ -115,7 +115,7 @@ class EndpointEntity(ItemEntity):
 class InputEntity(EndpointEntity):
     """Endpoint entity without children."""
     def __init__(self, *args, **kwargs):
-        super(InputEntity, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._value_is_modified = False
         self._current_value = NOT_SET
 

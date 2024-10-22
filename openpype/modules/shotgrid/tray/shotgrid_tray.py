@@ -70,6 +70,6 @@ class ShotgridTrayWrapper:
         if not login:
             self.show_credential_dialog()
         else:
-            os.environ["OPENPYPE_SG_USER"] = login
+            os.environ["QUADPYPE_SG_USER"] = login
 
         return True

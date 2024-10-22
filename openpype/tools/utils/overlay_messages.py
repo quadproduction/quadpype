@@ -13,7 +13,7 @@ class CloseButton(QtWidgets.QFrame):
     clicked = QtCore.Signal()
 
     def __init__(self, parent):
-        super(CloseButton, self).__init__(parent)
+        super().__init__(parent)
         close_btn_color = get_objected_colors("overlay-messages", "close-btn")
         self._color = close_btn_color.get_qcolor()
         self._mouse_pressed = False
@@ -87,7 +87,7 @@ class OverlayMessageWidget(QtWidgets.QFrame):
     def __init__(
         self, message_id, message, parent, message_type=None, timeout=None
     ):
-        super(OverlayMessageWidget, self).__init__(parent)
+        super().__init__(parent)
         self.setObjectName("OverlayMessageWidget")
 
         if message_type:
@@ -183,7 +183,7 @@ class MessageOverlayObject(QtCore.QObject):
     """
 
     def __init__(self, widget, default_timeout=None):
-        super(MessageOverlayObject, self).__init__()
+        super().__init__()
 
         widget.installEventFilter(self)
 

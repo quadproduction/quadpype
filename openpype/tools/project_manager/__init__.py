@@ -1,7 +1,7 @@
 """Project Manager tool
 
 Purpose of the tool is to be able create and modify hierarchy under project
-ready for OpenPype pipeline usage. Tool also give ability to create new
+ready for QuadPype pipeline usage. Tool also give ability to create new
 projects.
 
 # Brief info

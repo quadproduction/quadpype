@@ -12,7 +12,7 @@ class AssetModel(models.TreeModel):
     Columns = ["label"]
 
     def __init__(self, *args, **kwargs):
-        super(AssetModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._icon_color = get_default_entity_icon_color()
 

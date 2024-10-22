@@ -14,7 +14,7 @@ class MainFrame(BaseObj):
         self, width, height, destination_path, fill_data={}, *args, **kwargs
     ):
         kwargs["parent"] = None
-        super(MainFrame, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._width = width
         self._height = height
         self.dst_path = destination_path

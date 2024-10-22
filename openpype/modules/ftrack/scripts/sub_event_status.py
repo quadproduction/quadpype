@@ -262,7 +262,7 @@ class StatusFactory:
                 "Local versions dir: {}<br/>Version repository path: {}"
             ).format(
                 appdirs.user_data_dir("openpype", "pypeclub"),
-                os.environ.get("OPENPYPE_PATH")
+                os.environ.get("QUADPYPE_PATH")
             )
         })
         items.append({"type": "label", "value": "---"})
@@ -296,7 +296,7 @@ def server_activity_validate_user(event):
     if not user_ent:
         return False
 
-    role_list = {"pypeclub", "administrator"}
+    role_list = {"quad", "administrator"}
     for role in user_ent["user_security_roles"]:
         if role["security_role"]["name"].lower() in role_list:
             return True

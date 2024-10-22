@@ -71,7 +71,7 @@ from .delegates import LoadedInSceneDelegate
 
 class OverlayFrame(QtWidgets.QFrame):
     def __init__(self, label, parent):
-        super(OverlayFrame, self).__init__(parent)
+        super().__init__(parent)
 
         label_widget = QtWidgets.QLabel(label, self)
         label_widget.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -93,7 +93,7 @@ class OverlayFrame(QtWidgets.QFrame):
 class LoadErrorMessageBox(ErrorMessageBox):
     def __init__(self, messages, parent=None):
         self._messages = messages
-        super(LoadErrorMessageBox, self).__init__("Loading failed", parent)
+        super().__init__("Loading failed", parent)
 
     def _create_top_widget(self, parent_widget):
         label_widget = QtWidgets.QLabel(parent_widget)
@@ -184,7 +184,7 @@ class SubsetWidget(QtWidgets.QWidget):
         tool_name=None,
         parent=None
     ):
-        super(SubsetWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.dbcon = dbcon
         self.tool_name = tool_name
@@ -669,7 +669,7 @@ class VersionTextEdit(QtWidgets.QTextEdit):
 
     """
     def __init__(self, dbcon, parent=None):
-        super(VersionTextEdit, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.dbcon = dbcon
 
         self.data = {
@@ -810,7 +810,7 @@ class ThumbnailWidget(QtWidgets.QLabel):
     max_width = 300
 
     def __init__(self, dbcon, parent=None):
-        super(ThumbnailWidget, self).__init__(parent)
+        super().__init__(parent)
         self.dbcon = dbcon
 
         self.current_thumb_id = None
@@ -908,7 +908,7 @@ class ThumbnailWidget(QtWidgets.QLabel):
 class VersionWidget(QtWidgets.QWidget):
     """A Widget that display information about a specific version"""
     def __init__(self, dbcon, parent=None):
-        super(VersionWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         data = VersionTextEdit(dbcon, self)
         data.setReadOnly(True)
@@ -933,7 +933,7 @@ class VersionWidget(QtWidgets.QWidget):
 
 class FamilyModel(QtGui.QStandardItemModel):
     def __init__(self, dbcon, family_config_cache):
-        super(FamilyModel, self).__init__()
+        super().__init__()
 
         self.dbcon = dbcon
         self.family_config_cache = family_config_cache
@@ -991,7 +991,7 @@ class FamilyModel(QtGui.QStandardItemModel):
 
 class FamilyProxyFiler(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
-        super(FamilyProxyFiler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._filtering_enabled = False
         self._enabled_families = set()
@@ -1033,7 +1033,7 @@ class FamilyListView(QtWidgets.QListView):
     active_changed = QtCore.Signal(list)
 
     def __init__(self, dbcon, family_config_cache, parent=None):
-        super(FamilyListView, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.setAlternatingRowColors(True)
@@ -1188,7 +1188,7 @@ class RepresentationWidget(QtWidgets.QWidget):
     commands = {'active': 'Download', 'remote': 'Upload'}
 
     def __init__(self, dbcon, tool_name=None, parent=None):
-        super(RepresentationWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.dbcon = dbcon
         self.tool_name = tool_name
 
@@ -1705,7 +1705,7 @@ class AvailabilityDelegate(QtWidgets.QStyledItemDelegate):
     """
 
     def __init__(self, dbcon, parent=None):
-        super(AvailabilityDelegate, self).__init__(parent)
+        super().__init__(parent)
         self.icons = tools_lib.get_repre_icons()
 
     def paint(self, painter, option, index):

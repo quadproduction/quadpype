@@ -182,7 +182,7 @@ class Command(object):
 
 class Group(Command):
     def __init__(self, func, *args, **kwargs):
-        super(Group, self).__init__(func, *args, **kwargs)
+        super().__init__(func, *args, **kwargs)
         # Store sub-groupd and sub-commands to the same variable
         self._commands = []
 

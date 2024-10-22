@@ -36,7 +36,7 @@ class ProjectIconView(QtWidgets.QListView):
     ListMode = 1
 
     def __init__(self, parent=None, mode=ListMode):
-        super(ProjectIconView, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         # Workaround for scrolling being super slow or fast when
         # toggling between the two visual modes
@@ -91,7 +91,7 @@ class ProjectIconView(QtWidgets.QListView):
 class ProjectsPanel(QtWidgets.QWidget):
     """Projects Page"""
     def __init__(self, launcher_model, parent=None):
-        super(ProjectsPanel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         view = ProjectIconView(parent=self)
         view.setSelectionMode(QtWidgets.QListView.NoSelection)
@@ -122,7 +122,7 @@ class AssetsPanel(QtWidgets.QWidget):
     session_changed = QtCore.Signal()
 
     def __init__(self, launcher_model, dbcon, parent=None):
-        super(AssetsPanel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.dbcon = dbcon
 
@@ -229,7 +229,7 @@ class LauncherWindow(QtWidgets.QDialog):
     message_timeout = 5000
 
     def __init__(self, parent=None):
-        super(LauncherWindow, self).__init__(parent)
+        super().__init__(parent)
 
         self.log = logging.getLogger(
             ".".join([__name__, self.__class__.__name__])

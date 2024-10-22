@@ -108,9 +108,9 @@ def publish_in_test(log, close_plugin_name=None):
 
 
 def get_webpublish_conn():
-    """Get connection to OP 'webpublishes' collection."""
+    """Get connection to QuadPype 'webpublishes' collection."""
     mongo_client = OpenPypeMongoConnection.get_mongo_client()
-    database_name = os.environ["OPENPYPE_DATABASE_NAME"]
+    database_name = os.environ["QUADPYPE_DATABASE_NAME"]
     return mongo_client[database_name]["webpublishes"]
 
 
@@ -134,7 +134,7 @@ def start_webpublish_log(dbcon, batch_id, user):
 
 
 def publish_and_log(dbcon, _id, log, close_plugin_name=None, batch_id=None):
-    """Loops through all plugins, logs ok and fails into OP DB.
+    """Loops through all plugins, logs ok and fails into QuadPype DB.
 
         Args:
             dbcon (OpenPypeMongoConnection)

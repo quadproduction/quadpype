@@ -153,7 +153,7 @@ def get_openpype_global_settings(url: str) -> dict:
         # Create mongo connection
         client = MongoClient(url, **kwargs)
         # Access settings collection
-        openpype_db = os.environ.get("OPENPYPE_DATABASE_NAME") or "openpype"
+        openpype_db = os.environ.get("QUADPYPE_DATABASE_NAME") or "openpype"
         col = client[openpype_db]["settings"]
         # Query global settings
         global_settings = col.find_one({"type": "global_settings"}) or {}
@@ -191,7 +191,7 @@ def get_openpype_path_from_settings(settings: dict) -> Union[str, None]:
 def get_local_openpype_path_from_settings(settings: dict) -> Union[Path, None]:
     """Get OpenPype local path from global settings.
 
-    Used to download and unzip OP versions.
+    Used to download and unzip QuadPype versions.
     Args:
         settings (dict): settings from DB.
 
@@ -220,7 +220,7 @@ def get_expected_studio_version_str(
     Returns:
         str: OpenPype version which should be used. Empty string means latest.
     """
-    mongo_url = os.environ.get("OPENPYPE_MONGO")
+    mongo_url = os.environ.get("QUADPYPE_MONGO")
     if global_settings is None:
         global_settings = get_openpype_global_settings(mongo_url)
     key = "staging_version" if staging else "production_version"

@@ -6,7 +6,7 @@ class InstanceDetail(QtWidgets.QWidget):
     save_triggered = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super(InstanceDetail, self).__init__(parent)
+        super().__init__(parent)
 
         details_widget = QtWidgets.QPlainTextEdit(self)
         details_widget.setObjectName("SubsetManagerDetailsText")

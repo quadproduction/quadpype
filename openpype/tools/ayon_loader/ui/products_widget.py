@@ -29,7 +29,7 @@ from .actions_utils import show_actions_menu
 
 class ProductsProxyModel(RecursiveSortFilterProxyModel):
     def __init__(self, parent=None):
-        super(ProductsProxyModel, self).__init__(parent)
+        super().__init__(parent)
 
         self._product_type_filters = {}
         self._ascending_sort = True
@@ -100,7 +100,7 @@ class ProductsWidget(QtWidgets.QWidget):
     )
 
     def __init__(self, controller, parent):
-        super(ProductsWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self._controller = controller
 

@@ -9,7 +9,7 @@ class SubversionLineEdit(QtWidgets.QWidget):
     text_changed = QtCore.Signal(str)
 
     def __init__(self, *args, **kwargs):
-        super(SubversionLineEdit, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         input_field = PlaceholderLineEdit(self)
         menu_btn = QtWidgets.QPushButton(self)
@@ -94,7 +94,7 @@ class SaveAsDialog(QtWidgets.QDialog):
     """
 
     def __init__(self, controller, parent):
-        super(SaveAsDialog, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
 
         self._controller = controller

@@ -9,7 +9,7 @@ from .tools import (
 class MessageDialog(QtWidgets.QDialog):
     """Simple message dialog with title, message and OK button."""
     def __init__(self, title, message):
-        super(MessageDialog, self).__init__()
+        super().__init__()
 
         # Set logo as icon of the window
         icon_path = get_app_icon_path()

@@ -84,7 +84,7 @@ class NumberDelegate(QtWidgets.QStyledItemDelegate):
             as value if is higher than 0.
     """
     def __init__(self, minimum, maximum, decimals, step, *args, **kwargs):
-        super(NumberDelegate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.minimum = minimum
         self.maximum = maximum
         self.decimals = decimals
@@ -144,7 +144,7 @@ class TypeDelegate(QtWidgets.QStyledItemDelegate):
 
     def __init__(self, project_doc_cache, *args, **kwargs):
         self._project_doc_cache = project_doc_cache
-        super(TypeDelegate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def createEditor(self, parent, option, index):
         """Editor is using filtrable combobox.
@@ -189,7 +189,7 @@ class ToolsDelegate(QtWidgets.QStyledItemDelegate):
 
     def __init__(self, tools_cache, *args, **kwargs):
         self._tools_cache = tools_cache
-        super(ToolsDelegate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def createEditor(self, parent, option, index):
         editor = MultiSelectionComboBox(parent)

@@ -27,7 +27,7 @@ class WorkAreaFilesModel(QtGui.QStandardItemModel):
     """Model is looking into one folder for files with extension."""
 
     def __init__(self, extensions, *args, **kwargs):
-        super(WorkAreaFilesModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setColumnCount(2)
 
@@ -214,7 +214,7 @@ class PublishFilesModel(QtGui.QStandardItemModel):
     """
 
     def __init__(self, extensions, dbcon, anatomy, *args, **kwargs):
-        super(PublishFilesModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setColumnCount(2)
 

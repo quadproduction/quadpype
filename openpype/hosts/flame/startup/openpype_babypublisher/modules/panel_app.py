@@ -24,7 +24,7 @@ def clear_inner_modules():
 class MainWindow(QtWidgets.QWidget):
 
     def __init__(self, klass, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.panel_class = klass
 
     def closeEvent(self, event):

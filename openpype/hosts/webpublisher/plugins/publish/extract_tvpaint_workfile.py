@@ -53,7 +53,7 @@ class ExtractTVPaintSequences(pyblish.api.Extractor):
         handle_end = context.data["handleEnd"]
 
         # Get JobQueue module
-        modules = context.data["openPypeModules"]
+        modules = context.data["quadpypeModules"]
         job_queue_module = modules["job_queue"]
 
         tvpaint_commands = SenderTVPaintCommands(

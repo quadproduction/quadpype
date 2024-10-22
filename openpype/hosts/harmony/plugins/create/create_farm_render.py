@@ -14,7 +14,7 @@ class CreateFarmRender(plugin.Creator):
 
     def __init__(self, *args, **kwargs):
         """Constructor."""
-        super(CreateFarmRender, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def setup_node(self, node):
         """Set render node."""

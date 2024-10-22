@@ -46,7 +46,7 @@ class ExperimentalHostTool(ExperimentalTool):
     def __init__(
         self, identifier, label, tooltip, callback, hosts_filter=None
     ):
-        super(ExperimentalHostTool, self).__init__(identifier, label, tooltip)
+        super().__init__(identifier, label, tooltip)
         self.callback = callback
         self.hosts_filter = hosts_filter
         self._enabled = True

@@ -113,7 +113,7 @@ class MainWidget(QtWidgets.QWidget):
     window_title = "OpenPype Settings"
 
     def __init__(self, user_role, parent=None, reset_on_show=True):
-        super(MainWidget, self).__init__(parent)
+        super().__init__(parent)
 
         controller = SettingsController(user_role)
 

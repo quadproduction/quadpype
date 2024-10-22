@@ -56,7 +56,7 @@ class DropEmpty(QtWidgets.QWidget):
     _empty_extensions = "Any file"
 
     def __init__(self, single_item, allow_sequences, extensions_label, parent):
-        super(DropEmpty, self).__init__(parent)
+        super().__init__(parent)
 
         drop_label_widget = QtWidgets.QLabel("Drag & Drop files here", self)
 
@@ -229,7 +229,7 @@ class DropEmpty(QtWidgets.QWidget):
 
 class FilesModel(QtGui.QStandardItemModel):
     def __init__(self, single_item, allow_sequences):
-        super(FilesModel, self).__init__()
+        super().__init__()
 
         self._id = str(uuid.uuid4())
         self._single_item = single_item
@@ -428,7 +428,7 @@ class FilesModel(QtGui.QStandardItemModel):
 
 class FilesProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
-        super(FilesProxyModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._allow_folders = False
         self._allowed_extensions = None
         self._multivalue = False
@@ -527,7 +527,7 @@ class ItemWidget(QtWidgets.QWidget):
     ):
         self._item_id = item_id
 
-        super(ItemWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
@@ -601,7 +601,7 @@ class FilesView(QtWidgets.QListView):
     context_menu_requested = QtCore.Signal(QtCore.QPoint)
 
     def __init__(self, *args, **kwargs):
-        super(FilesView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.setSelectionMode(
@@ -723,7 +723,7 @@ class FilesWidget(QtWidgets.QFrame):
     value_changed = QtCore.Signal()
 
     def __init__(self, single_item, allow_sequences, extensions_label, parent):
-        super(FilesWidget, self).__init__(parent)
+        super().__init__(parent)
         self.setAcceptDrops(True)
 
         empty_widget = DropEmpty(

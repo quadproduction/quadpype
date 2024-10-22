@@ -169,7 +169,7 @@ class ApplicationNotFound(Exception):
 
     def __init__(self, app_name):
         self.app_name = app_name
-        super(ApplicationNotFound, self).__init__(
+        super().__init__(
             "Application \"{}\" was not found.".format(app_name)
         )
 
@@ -201,7 +201,7 @@ class ApplictionExecutableNotFound(Exception):
             # Is good idea to pass new line symbol to exception message?
             exc_mgs += "\n" + details
         self.exc_msg = exc_mgs
-        super(ApplictionExecutableNotFound, self).__init__(exc_mgs)
+        super().__init__(exc_mgs)
 
 
 class ApplicationLaunchFailed(Exception):
@@ -1449,7 +1449,7 @@ class EnvironmentPrepData(dict):
         if SYSTEM_SETTINGS_KEY not in data:
             data[SYSTEM_SETTINGS_KEY] = get_system_settings()
 
-        super(EnvironmentPrepData, self).__init__(data)
+        super().__init__(data)
 
 
 def get_app_environments_for_context(
@@ -1876,7 +1876,7 @@ def _prepare_last_workfile(data, workdir, modules_manager):
     data["env"]["AVALON_OPEN_LAST_WORKFILE"] = (
         str(int(bool(start_last_workfile)))
     )
-    data["env"]["OPENPYPE_WORKFILE_TOOL_ON_START"] = (
+    data["env"]["QUADPYPE_WORKFILE_TOOL_ON_START"] = (
         str(int(bool(workfile_startup)))
     )
 
@@ -1991,7 +1991,7 @@ def should_workfile_tool_start(
     """Define if host should start workfile tool at host launch.
 
     Default output is `False`. Can be overridden with environment variable
-    `OPENPYPE_WORKFILE_TOOL_ON_START`, valid values without case sensitivity are
+    `QUADPYPE_WORKFILE_TOOL_ON_START`, valid values without case sensitivity are
     `"0", "1", "true", "false", "yes", "no"`.
 
     Args:
@@ -2054,7 +2054,7 @@ def get_non_python_host_kwargs(kwargs, allow_console=True):
     if platform.system().lower() != "windows":
         return kwargs
 
-    executable_path = os.environ.get("OPENPYPE_EXECUTABLE")
+    executable_path = os.environ.get("QUADPYPE_EXECUTABLE")
 
     executable_filename = ""
     if executable_path:

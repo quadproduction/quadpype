@@ -46,7 +46,7 @@ class DictImmutableKeysWidget(BaseWidget):
         self._parent_widget_by_entity_id = {}
         self._added_wrapper_ids = set()
 
-        super(DictImmutableKeysWidget, self).__init__(category_widget, entity, entity_widget)
+        super().__init__(category_widget, entity, entity_widget)
 
     def create_ui(self):
         self.checkbox_child = None
@@ -508,7 +508,7 @@ class PasswordWidget(TextWidget):
 class OpenPypeVersionText(TextWidget):
     def __init__(self, *args, **kwargs):
         self._info_widget = None
-        super(OpenPypeVersionText, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_ui(self):
         super(OpenPypeVersionText, self).create_ui()
@@ -671,7 +671,7 @@ class RawJsonInput(SettingsPlainTextEdit):
     tab_length = 4
 
     def __init__(self, valid_type, *args, **kwargs):
-        super(RawJsonInput, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setObjectName("RawJsonInput")
         self.setTabStopDistance(
             QtGui.QFontMetricsF(

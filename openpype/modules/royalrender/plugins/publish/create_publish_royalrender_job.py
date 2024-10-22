@@ -63,7 +63,7 @@ class CreatePublishRoyalRenderJob(pyblish.api.InstancePlugin,
     families_transfer = ["render3d", "render2d", "ftrack", "slate"]
 
     environ_job_filter = [
-        "OPENPYPE_METADATA_FILE"
+        "QUADPYPE_METADATA_FILE"
     ]
 
     environ_keys = [
@@ -72,7 +72,7 @@ class CreatePublishRoyalRenderJob(pyblish.api.InstancePlugin,
         "FTRACK_SERVER",
         "AVALON_APP_NAME",
         "QUADPYPE_USERNAME",
-        "OPENPYPE_SG_USER",
+        "QUADPYPE_SG_USER",
         "AYON_BUNDLE_NAME"
     ]
     priority = 50

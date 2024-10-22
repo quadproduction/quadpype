@@ -33,7 +33,7 @@ class DeleteAssetSubset(BaseAction):
     def __init__(self, *args, **kwargs):
         self.dbcon = AvalonMongoDB()
 
-        super(DeleteAssetSubset, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def discover(self, session, entities, event):
         """ Validation """

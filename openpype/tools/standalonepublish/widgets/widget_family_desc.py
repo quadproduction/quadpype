@@ -21,7 +21,7 @@ class FamilyDescriptionWidget(QtWidgets.QWidget):
     SIZE = 35
 
     def __init__(self, parent=None):
-        super(FamilyDescriptionWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         # Header font
         font = QtGui.QFont()

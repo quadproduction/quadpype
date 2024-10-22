@@ -19,7 +19,7 @@ class FlowLayout(QtWidgets.QLayout):
     """
 
     def __init__(self, parent=None):
-        super(FlowLayout, self).__init__(parent)
+        super().__init__(parent)
 
         # spaces between each item
         self._horizontal_spacing = 5
