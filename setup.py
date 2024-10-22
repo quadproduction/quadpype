@@ -9,22 +9,22 @@ from pathlib import Path
 from cx_Freeze import setup, Executable
 from sphinx.setup_command import BuildDoc
 
-openpype_root = Path(os.path.dirname(__file__))
+app_root = Path(os.path.dirname(__file__))
 
 
 def validate_thirdparty_binaries():
-    """Check existence of thirdpart executables."""
+    """Check the existence of the third party executables."""
     low_platform = platform.system().lower()
     binary_vendors_dir = os.path.join(
-        openpype_root,
+        app_root,
         "vendor",
         "bin"
     )
 
     error_msg = (
-        "Missing binary dependency {}. Please fetch thirdparty dependencies."
+        "Missing binary dependency {}. Please fetch third party dependencies."
     )
-    # Validate existence of FFmpeg
+    # Validate the presence of FFmpeg
     ffmpeg_dir = os.path.join(binary_vendors_dir, "ffmpeg", low_platform)
     if low_platform == "windows":
         ffmpeg_dir = os.path.join(ffmpeg_dir, "bin")
@@ -50,20 +50,19 @@ def validate_thirdparty_binaries():
             low_platform,
             "oiiotool"
         )
-    oiio_result = None
     if oiio_tool_path is not None:
         oiio_result = distutils.spawn.find_executable(oiio_tool_path)
         if oiio_result is None:
             raise RuntimeError(error_msg.format("OpenImageIO"))
 
 
-# Give ability to skip vaidation
+# Give the ability to skip the validation
 if not os.getenv("SKIP_THIRD_PARTY_VALIDATION"):
     validate_thirdparty_binaries()
 
 version = {}
 
-with open(openpype_root / "openpype" / "version.py") as fp:
+with open(app_root / "openpype" / "version.py") as fp:
     exec(fp.read(), version)
 
 version_match = re.search(r"(\d+\.\d+.\d+).*", version["__version__"])
@@ -137,8 +136,9 @@ if IS_WINDOWS:
     ])
 
 
-icon_path = openpype_root / "igniter" / "openpype.ico"
-mac_icon_path = openpype_root / "igniter" / "openpype.icns"
+icons_dir_path = app_root.resolve().joinpath("igniter", "resources", "icons")
+icon_path = icons_dir_path.joinpath("quadpype.ico")
+mac_icon_path = icons_dir_path.joinpath("quadpype.icns")
 
 build_exe_options = dict(
     packages=install_requires,
@@ -150,7 +150,7 @@ build_exe_options = dict(
 )
 
 bdist_mac_options = dict(
-    bundle_name=f"OpenPype {__version__}",
+    bundle_name=f"QuadPype {__version__}",
     iconfile=mac_icon_path
 )
 
@@ -180,19 +180,19 @@ if IS_LINUX:
     )
 
 setup(
-    name="OpenPype",
+    name="QuadPype",
     version=__version__,
-    description="OpenPype",
+    description="QuadPype",
     cmdclass={"build_sphinx": BuildDoc},
     options={
         "build_exe": build_exe_options,
         "bdist_mac": bdist_mac_options,
         "build_sphinx": {
-            "project": "OpenPype",
+            "project": "QuadPype",
             "version": __version__,
             "release": __version__,
-            "source_dir": (openpype_root / "docs" / "source").as_posix(),
-            "build_dir": (openpype_root / "docs" / "build").as_posix()
+            "source_dir": (app_root / "docs" / "source").as_posix(),
+            "build_dir": (app_root / "docs" / "build").as_posix()
         }
     },
     executables=executables,
