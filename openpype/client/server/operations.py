@@ -6,7 +6,7 @@ import datetime
 
 from bson.objectid import ObjectId
 
-from openpype.client.operations_base import (
+from quadpype.client.operations_base import (
     REMOVED_VALUE,
     CreateOperation,
     UpdateOperation,
@@ -14,7 +14,7 @@ from openpype.client.operations_base import (
     BaseOperationsSession
 )
 
-from openpype.client.mongo.operations import (
+from quadpype.client.mongo.operations import (
     CURRENT_THUMBNAIL_SCHEMA,
     CURRENT_REPRESENTATION_SCHEMA,
     CURRENT_HERO_VERSION_SCHEMA,
@@ -828,7 +828,7 @@ def create_project(
     preset_name=None,
     con=None
 ):
-    """Create project using OpenPype settings.
+    """Create project using QuadPype settings.
 
     This project creation function is not validating project document on
     creation. It is because project document is created blindly with only

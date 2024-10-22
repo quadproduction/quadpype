@@ -3,7 +3,7 @@ import collections
 
 from qtpy import QtWidgets
 
-from openpype import style
+from quadpype import style
 
 
 class ConsoleDialog(QtWidgets.QDialog):

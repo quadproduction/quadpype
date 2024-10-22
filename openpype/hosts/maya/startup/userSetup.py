@@ -1,8 +1,8 @@
 import os
 
-from openpype.settings import get_project_settings
-from openpype.pipeline import install_host, get_current_project_name
-from openpype.hosts.maya.api import MayaHost
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import install_host, get_current_project_name
+from quadpype.hosts.maya.api import MayaHost
 
 from maya import cmds
 
@@ -10,7 +10,7 @@ from maya import cmds
 host = MayaHost()
 install_host(host)
 
-print("Starting OpenPype usersetup...")
+print("Starting QuadPype usersetup...")
 
 project_name = get_current_project_name()
 settings = get_project_settings(project_name)
@@ -66,4 +66,4 @@ if shelf_preset:
     )
 
 
-print("Finished OpenPype usersetup.")
+print("Finished QuadPype usersetup.")

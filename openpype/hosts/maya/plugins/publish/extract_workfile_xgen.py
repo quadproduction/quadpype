@@ -5,9 +5,9 @@ import copy
 from maya import cmds
 
 import pyblish.api
-from openpype.hosts.maya.api.alembic import extract_alembic
-from openpype.pipeline import publish
-from openpype.lib import StringTemplate
+from quadpype.hosts.maya.api.alembic import extract_alembic
+from quadpype.pipeline import publish
+from quadpype.lib import StringTemplate
 
 
 class ExtractWorkfileXgen(publish.Extractor):

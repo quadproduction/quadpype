@@ -1,10 +1,10 @@
 import re
 
-from openpype.pipeline.project_folders import (
+from quadpype.pipeline.project_folders import (
     get_project_basic_paths,
     create_project_folders,
 )
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 
 
 class CreateProjectFolders(BaseAction):
@@ -83,12 +83,12 @@ class CreateProjectFolders(BaseAction):
                     "message": "Project structure is not set."
                 }
 
-            # Invoking OpenPype API to create the project folders
+            # Invoking QuadPype API to create the project folders
             case_sensitivity_issues = create_project_folders(project_name, basic_paths)
             self.create_ftrack_entities(basic_paths, project_entity)
 
             self.trigger_event(
-                "openpype.project.structure.created",
+                "quadpype.project.structure.created",
                 {"project_name": project_name}
             )
 

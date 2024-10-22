@@ -1,16 +1,16 @@
 import copy
 from qtpy import QtWidgets, QtCore
-from openpype.pipeline import (
+from quadpype.pipeline import (
     load,
     get_representation_path,
 )
-from openpype.pipeline.load import LoadError
-from openpype.hosts.substancepainter.api.pipeline import (
+from quadpype.pipeline.load import LoadError
+from quadpype.hosts.substancepainter.api.pipeline import (
     imprint_container,
     set_container_metadata,
     remove_container_metadata
 )
-from openpype.hosts.substancepainter.api.lib import prompt_new_file_with_mesh
+from quadpype.hosts.substancepainter.api.lib import prompt_new_file_with_mesh
 
 import substance_painter.project
 
@@ -246,7 +246,7 @@ class SubstanceLoadProjectMesh(load.LoaderPlugin):
 
     def remove(self, container):
 
-        # Remove OpenPype related settings about what model was loaded
+        # Remove QuadPype related settings about what model was loaded
         # or close the project?
         # TODO: This is likely best 'hidden' away to the user because
         #       this will leave the project's mesh unmanaged.

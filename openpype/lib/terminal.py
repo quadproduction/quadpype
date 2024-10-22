@@ -56,7 +56,7 @@ class Terminal:
         Set `_initialized` attribute to `True` when is done.
         """
 
-        from openpype.lib import env_value_to_bool
+        from quadpype.lib import env_value_to_bool
         log_no_colors = env_value_to_bool(
             "QUADPYPE_LOG_NO_COLORS", default=None
         )

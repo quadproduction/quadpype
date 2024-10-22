@@ -3,9 +3,9 @@ import re
 from pprint import pformat
 import pyblish.api
 
-from openpype.pipeline import publish
-from openpype.hosts.nuke.api import plugin
-from openpype.hosts.nuke.api.lib import maintained_selection
+from quadpype.pipeline import publish
+from quadpype.hosts.nuke.api import plugin
+from quadpype.hosts.nuke.api.lib import maintained_selection
 
 
 class ExtractReviewIntermediates(publish.Extractor):

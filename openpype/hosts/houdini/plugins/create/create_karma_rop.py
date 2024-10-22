@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Creator plugin to create Karma ROP."""
-from openpype.hosts.houdini.api import plugin
-from openpype.pipeline import CreatedInstance
-from openpype.lib import BoolDef, EnumDef, NumberDef
+from quadpype.hosts.houdini.api import plugin
+from quadpype.pipeline import CreatedInstance
+from quadpype.lib import BoolDef, EnumDef, NumberDef
 
 
 class CreateKarmaROP(plugin.HoudiniCreator):
     """Karma ROP"""
-    identifier = "io.openpype.creators.houdini.karma_rop"
+    identifier = "io.quadpype.creators.houdini.karma_rop"
     label = "Karma ROP"
     family = "karma_rop"
     icon = "magic"

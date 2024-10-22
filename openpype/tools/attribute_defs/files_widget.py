@@ -5,14 +5,14 @@ import json
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.lib import FileDefItem
-from openpype.tools.utils import (
+from quadpype.lib import FileDefItem
+from quadpype.tools.utils import (
     paint_image_with_color,
     ClickableLabel,
 )
 # TODO change imports
-from openpype.tools.resources import get_image
-from openpype.tools.utils import (
+from quadpype.tools.resources import get_image
+from quadpype.tools.utils import (
     IconButton,
     PixmapLabel
 )

@@ -1,6 +1,6 @@
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     PublishValidationError,
     ValidateContentsOrder
 )
@@ -27,7 +27,7 @@ class ValidateLookContents(pyblish.api.InstancePlugin):
     families = ['look']
     hosts = ['maya']
     label = 'Look Data Contents'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
 
     def process(self, instance):
         """Process all the nodes in the instance"""

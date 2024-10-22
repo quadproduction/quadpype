@@ -3,23 +3,23 @@ import uuid
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.style import get_objected_colors
-from openpype.lib import (
+from quadpype.style import get_objected_colors
+from quadpype.lib import (
     run_subprocess,
     is_oiio_supported,
     get_oiio_tool_args,
     get_ffmpeg_tool_args,
 )
-from openpype.lib.transcoding import (
+from quadpype.lib.transcoding import (
     IMAGE_EXTENSIONS,
     VIDEO_EXTENSIONS,
 )
 
-from openpype.tools.utils import (
+from quadpype.tools.utils import (
     paint_image_with_color,
     PixmapButton,
 )
-from openpype.tools.publisher.control import CardMessageTypes
+from quadpype.tools.publisher.control import CardMessageTypes
 
 from .icons import get_image
 from .screenshot_widget import capture_to_file

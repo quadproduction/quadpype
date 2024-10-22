@@ -6,7 +6,7 @@ import threading
 import traceback
 import subprocess
 
-from openpype.lib import get_openpype_execute_args, Logger
+from quadpype.lib import get_quadpype_execute_args, Logger
 
 
 class SocketThread(threading.Thread):
@@ -58,8 +58,8 @@ class SocketThread(threading.Thread):
 
         env = os.environ.copy()
         env["QUADPYPE_PROCESS_MONGO_ID"] = str(Logger.mongo_process_id)
-        # OpenPype executable (with path to start script if not build)
-        args = get_openpype_execute_args(
+        # QuadPype executable (with path to start script if not build)
+        args = get_quadpype_execute_args(
             # Add `run` command
             "run",
             self.filepath,

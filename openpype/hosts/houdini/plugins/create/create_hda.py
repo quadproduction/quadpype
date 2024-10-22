@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating publishable Houdini Digital Assets."""
-from openpype.client import (
+from quadpype.client import (
     get_asset_by_name,
     get_subsets,
 )
-from openpype.hosts.houdini.api import plugin
+from quadpype.hosts.houdini.api import plugin
 import hou
 
 
 class CreateHDA(plugin.HoudiniCreator):
     """Publish Houdini Digital Asset file."""
 
-    identifier = "io.openpype.creators.houdini.hda"
+    identifier = "io.quadpype.creators.houdini.hda"
     label = "Houdini Digital Asset (Hda)"
     family = "hda"
     icon = "gears"
@@ -54,7 +54,7 @@ class CreateHDA(plugin.HoudiniCreator):
             # if node type has not its definition, it is not user
             # created hda. We test if hda can be created from the node.
             if not to_hda.canCreateDigitalAsset():
-                raise plugin.OpenPypeCreatorError(
+                raise plugin.QuadPypeCreatorError(
                     "cannot create hda from node {}".format(to_hda))
 
             hda_node = to_hda.createDigitalAsset(
@@ -63,7 +63,7 @@ class CreateHDA(plugin.HoudiniCreator):
             )
             hda_node.layoutChildren()
         elif self._check_existing(asset_name, node_name):
-            raise plugin.OpenPypeCreatorError(
+            raise plugin.QuadPypeCreatorError(
                 ("subset {} is already published with different HDA"
                  "definition.").format(node_name))
         else:

@@ -1,11 +1,11 @@
 import os
-from openpype.pipeline import load, get_representation_path
-from openpype.hosts.max.api.pipeline import (
+from quadpype.pipeline import load, get_representation_path
+from quadpype.hosts.max.api.pipeline import (
     containerise,
     get_previous_loaded_object
 )
-from openpype.hosts.max.api import lib
-from openpype.hosts.max.api.lib import (
+from quadpype.hosts.max.api import lib
+from quadpype.hosts.max.api.lib import (
     maintained_selection, unique_namespace
 )
 

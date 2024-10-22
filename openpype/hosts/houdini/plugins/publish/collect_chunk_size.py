@@ -1,10 +1,10 @@
 import pyblish.api
-from openpype.lib import NumberDef
-from openpype.pipeline import OpenPypePyblishPluginMixin
+from quadpype.lib import NumberDef
+from quadpype.pipeline import QuadPypePyblishPluginMixin
 
 
 class CollectChunkSize(pyblish.api.InstancePlugin,
-                       OpenPypePyblishPluginMixin):
+                       QuadPypePyblishPluginMixin):
     """Collect chunk size for cache submission to Deadline."""
 
     order = pyblish.api.CollectorOrder + 0.05

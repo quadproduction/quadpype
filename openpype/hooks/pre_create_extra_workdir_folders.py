@@ -1,6 +1,6 @@
 import os
-from openpype.lib.applications import PreLaunchHook, LaunchTypes
-from openpype.pipeline.workfile import create_workdir_extra_folders
+from quadpype.lib.applications import PreLaunchHook, LaunchTypes
+from quadpype.pipeline.workfile import create_workdir_extra_folders
 
 
 class CreateWorkdirExtraFolders(PreLaunchHook):

@@ -5,10 +5,10 @@ import bpy
 import bpy_extras
 import bpy_extras.anim_utils
 
-from openpype.client import get_representation_by_name
-from openpype.pipeline import publish
-from openpype.hosts.blender.api import plugin
-from openpype.hosts.blender.api.pipeline import AVALON_PROPERTY
+from quadpype.client import get_representation_by_name
+from quadpype.pipeline import publish
+from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api.pipeline import AVALON_PROPERTY
 
 
 class ExtractLayout(publish.Extractor, publish.OptionalPyblishPluginMixin):

@@ -5,15 +5,15 @@ from copy import deepcopy
 
 import pyblish.api
 
-from openpype.client import get_asset_by_id
-from openpype.lib import filter_profiles
-from openpype.pipeline import KnownPublishError
+from quadpype.client import get_asset_by_id
+from quadpype.lib import filter_profiles
+from quadpype.pipeline import KnownPublishError
 
-CUST_ATTR_GROUP = "openpype"
+CUST_ATTR_GROUP = "quadpype"
 
 
-# Copy of `get_pype_attr` from openpype_modules.ftrack.lib
-# TODO import from openpype's ftrack module when possible to not break Python 2
+# Copy of `get_pype_attr` from quadpype_modules.ftrack.lib
+# TODO import from quadpype's ftrack module when possible to not break Python 2
 def get_pype_attr(session, split_hierarchical=True):
     custom_attributes = []
     hier_custom_attributes = []

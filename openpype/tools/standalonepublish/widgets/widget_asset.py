@@ -2,14 +2,14 @@ import contextlib
 from qtpy import QtWidgets, QtCore
 import qtawesome
 
-from openpype.client import (
+from quadpype.client import (
     get_projects,
     get_project,
     get_asset_by_id,
 )
-from openpype.tools.utils import PlaceholderLineEdit
+from quadpype.tools.utils import PlaceholderLineEdit
 
-from openpype.style import get_default_tools_icon_color
+from quadpype.style import get_default_tools_icon_color
 
 from . import RecursiveSortFilterProxyModel, AssetModel
 from . import TasksTemplateModel, DeselectableTreeView

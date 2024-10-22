@@ -2,7 +2,7 @@ from maya import cmds
 
 import pyblish.api
 
-from openpype.hosts.maya.api import lib
+from quadpype.hosts.maya.api import lib
 
 
 class CollectRenderLayerAOVS(pyblish.api.InstancePlugin):

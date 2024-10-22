@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Converter for legacy Houdini subsets."""
-from openpype.pipeline.create.creator_plugins import SubsetConvertorPlugin
-from openpype.hosts.blender.api.lib import imprint
+from quadpype.pipeline.create.creator_plugins import SubsetConvertorPlugin
+from quadpype.hosts.blender.api.lib import imprint
 
 
 class BlenderLegacyConvertor(SubsetConvertorPlugin):
@@ -14,21 +14,21 @@ class BlenderLegacyConvertor(SubsetConvertorPlugin):
 
     Its limitation is that you can have multiple creators creating subset
     of the same family and there is no way to handle it. This code should
-    nevertheless cover all creators that came with OpenPype.
+    nevertheless cover all creators that came with QuadPype.
 
     """
-    identifier = "io.openpype.creators.blender.legacy"
+    identifier = "io.quadpype.creators.blender.legacy"
     family_to_id = {
-        "action": "io.openpype.creators.blender.action",
-        "camera": "io.openpype.creators.blender.camera",
-        "animation": "io.openpype.creators.blender.animation",
-        "blendScene": "io.openpype.creators.blender.blendscene",
-        "layout": "io.openpype.creators.blender.layout",
-        "model": "io.openpype.creators.blender.model",
-        "pointcache": "io.openpype.creators.blender.pointcache",
-        "render": "io.openpype.creators.blender.render",
-        "review": "io.openpype.creators.blender.review",
-        "rig": "io.openpype.creators.blender.rig",
+        "action": "io.quadpype.creators.blender.action",
+        "camera": "io.quadpype.creators.blender.camera",
+        "animation": "io.quadpype.creators.blender.animation",
+        "blendScene": "io.quadpype.creators.blender.blendscene",
+        "layout": "io.quadpype.creators.blender.layout",
+        "model": "io.quadpype.creators.blender.model",
+        "pointcache": "io.quadpype.creators.blender.pointcache",
+        "render": "io.quadpype.creators.blender.render",
+        "review": "io.quadpype.creators.blender.review",
+        "rig": "io.quadpype.creators.blender.rig",
     }
 
     def __init__(self, *args, **kwargs):

@@ -1,9 +1,9 @@
 from pymongo import UpdateOne
 from bson.objectid import ObjectId
 
-from openpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import AvalonMongoDB
 
-from openpype_modules.ftrack.lib import (
+from quadpype_modules.ftrack.lib import (
     CUST_ATTR_ID_KEY,
     query_custom_attributes,
 

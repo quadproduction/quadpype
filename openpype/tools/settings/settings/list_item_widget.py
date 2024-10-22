@@ -1,6 +1,6 @@
 from qtpy import QtWidgets, QtCore
 
-from openpype.tools.settings import (
+from quadpype.tools.settings import (
     CHILD_OFFSET
 )
 

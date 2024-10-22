@@ -3,13 +3,13 @@ import time
 import pyblish.api
 import pyblish.util
 
-from openpype.lib import Logger
-from openpype.lib.applications import (
+from quadpype.lib import Logger
+from quadpype.lib.applications import (
     ApplicationManager,
     LaunchTypes,
 )
-from openpype.pipeline import install_host
-from openpype.hosts.webpublisher.api import WebpublisherHost
+from quadpype.pipeline import install_host
+from quadpype.hosts.webpublisher.api import WebpublisherHost
 
 from .lib import (
     get_batch_asset_task_info,

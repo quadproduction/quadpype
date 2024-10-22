@@ -1,7 +1,7 @@
 from qtpy import QtWidgets
 
-from openpype.settings import GENERAL_SETTINGS_KEY
-from openpype.tools.utils import PlaceholderLineEdit
+from quadpype.settings import GENERAL_SETTINGS_KEY
+from quadpype.tools.utils import PlaceholderLineEdit
 
 
 class LocalEnvironmentsWidgets(QtWidgets.QWidget):

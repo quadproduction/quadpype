@@ -2,13 +2,13 @@
 
 import bpy
 
-from openpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api import plugin, lib
 
 
 class CreateBlendScene(plugin.BaseCreator):
     """Generic group of assets."""
 
-    identifier = "io.openpype.creators.blender.blendscene"
+    identifier = "io.quadpype.creators.blender.blendscene"
     label = "Blender Scene"
     family = "blendScene"
     icon = "cubes"

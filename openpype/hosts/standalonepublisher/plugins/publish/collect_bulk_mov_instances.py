@@ -2,9 +2,9 @@ import copy
 import json
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.client import get_asset_by_name
-from openpype.pipeline.create import get_subset_name
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.client import get_asset_by_name
+from quadpype.pipeline.create import get_subset_name
 
 
 class CollectBulkMovInstances(pyblish.api.InstancePlugin):

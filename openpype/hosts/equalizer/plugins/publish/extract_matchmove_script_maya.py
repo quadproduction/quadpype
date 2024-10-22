@@ -6,12 +6,12 @@ from pathlib import Path
 import pyblish.api
 import tde4
 
-from openpype.hosts.equalizer.api import (
+from quadpype.hosts.equalizer.api import (
     ExtractScriptBase,
     maintained_model_selection,
 )
-from openpype.lib import import_filepath
-from openpype.pipeline import (
+from quadpype.lib import import_filepath
+from quadpype.pipeline import (
     KnownPublishError,
     OptionalPyblishPluginMixin,
     publish,

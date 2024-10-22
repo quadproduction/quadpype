@@ -3,8 +3,8 @@ import os
 import pyblish.api
 from pymxs import runtime as rt
 
-from openpype.hosts.max.api import maintained_selection
-from openpype.pipeline import OptionalPyblishPluginMixin, publish
+from quadpype.hosts.max.api import maintained_selection
+from quadpype.pipeline import OptionalPyblishPluginMixin, publish
 
 
 class ExtractModelUSD(publish.Extractor,

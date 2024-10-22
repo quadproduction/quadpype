@@ -5,12 +5,12 @@ import collections
 
 import ftrack_api
 
-from openpype.lib import get_datetime_data
-from openpype.settings.lib import (
+from quadpype.lib import get_datetime_data
+from quadpype.settings.lib import (
     get_project_settings,
     get_default_project_settings
 )
-from openpype_modules.ftrack.lib import ServerAction
+from quadpype_modules.ftrack.lib import ServerAction
 
 
 class CreateDailyReviewSessionServerAction(ServerAction):
@@ -30,7 +30,7 @@ class CreateDailyReviewSessionServerAction(ServerAction):
 
     identifier = "create.daily.review.session"
     #: Action label.
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     variant = "- Create Daily Review Session (Server)"
     #: Action description.
     description = "Manually create daily review session"

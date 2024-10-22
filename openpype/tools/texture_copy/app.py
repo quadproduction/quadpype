@@ -4,9 +4,9 @@ import click
 
 import speedcopy
 
-from openpype.client import get_project, get_asset_by_name
-from openpype.lib import Terminal
-from openpype.pipeline import legacy_io, Anatomy
+from quadpype.client import get_project, get_asset_by_name
+from quadpype.lib import Terminal
+from quadpype.pipeline import legacy_io, Anatomy
 
 
 t = Terminal()

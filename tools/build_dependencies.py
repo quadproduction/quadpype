@@ -95,24 +95,24 @@ _print("Getting venv site-packages ...")
 assert site_pkg, "No venv site-packages are found."
 _print(f"Working with: {site_pkg}", 2)
 
-openpype_root = Path(os.path.dirname(__file__)).parent
+quadpype_root = Path(os.path.dirname(__file__)).parent
 version = {}
-with open(openpype_root / "openpype" / "version.py") as fp:
+with open(quadpype_root / "quadpype" / "version.py") as fp:
     exec(fp.read(), version)
 
 version_match = re.search(r"(\d+\.\d+.\d+).*", version["__version__"])
-openpype_version = version_match[1]
+quadpype_version = version_match[1]
 
 # create full path
 if platform.system().lower() == "darwin":
-    build_dir = openpype_root.joinpath(
+    build_dir = quadpype_root.joinpath(
         "build",
-        f"OpenPype {openpype_version}.app",
+        f"QuadPype {quadpype_version}.app",
         "Contents",
         "MacOS")
 else:
     build_subdir = f"exe.{get_platform()}-{sys.version[:3]}"
-    build_dir = openpype_root / "build" / build_subdir
+    build_dir = quadpype_root / "build" / build_subdir
 
 _print(f"Using build at {build_dir}", 2)
 if not build_dir.exists():
@@ -128,7 +128,7 @@ def _progress(_base, _names):
 
 deps_dir = build_dir / "dependencies"
 vendor_dir = build_dir / "vendor"
-vendor_src = openpype_root / "vendor"
+vendor_src = quadpype_root / "vendor"
 
 # copy vendor files
 _print("Copying vendor files ...")
@@ -161,7 +161,7 @@ libs_dir = build_dir / "lib"
 
 # On Linux use rpath from source libraries in destination libraries
 if platform.system().lower() == "linux":
-    src_pyside_dir = openpype_root / "vendor" / "python" / "PySide2"
+    src_pyside_dir = quadpype_root / "vendor" / "python" / "PySide2"
     dst_pyside_dir = build_dir / "vendor" / "python" / "PySide2"
     src_rpath_per_so_file = {}
     for filepath in src_pyside_dir.glob("*.so"):
@@ -197,11 +197,11 @@ for d in libs_dir.iterdir():
     find_progress_bar.update()
 
 find_progress_bar.close()
-# add openpype and igniter in libs too
-to_delete.append(libs_dir / "openpype")
+# add quadpype and igniter in libs too
+to_delete.append(libs_dir / "quadpype")
 to_delete.append(libs_dir / "igniter")
-to_delete.append(libs_dir / "openpype.pth")
-to_delete.append(deps_dir / "openpype.pth")
+to_delete.append(libs_dir / "quadpype.pth")
+to_delete.append(deps_dir / "quadpype.pth")
 
 # delete duplicates
 # _print(f"Deleting {len(to_delete)} duplicates ...")

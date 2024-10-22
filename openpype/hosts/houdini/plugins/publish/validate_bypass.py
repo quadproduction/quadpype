@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pyblish.api
-from openpype.pipeline import PublishValidationError
+from quadpype.pipeline import PublishValidationError
 
 import hou
 

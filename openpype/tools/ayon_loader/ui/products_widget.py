@@ -2,11 +2,11 @@ import collections
 
 from qtpy import QtWidgets, QtCore
 
-from openpype.tools.utils import (
+from quadpype.tools.utils import (
     RecursiveSortFilterProxyModel,
     DeselectableTreeView,
 )
-from openpype.tools.utils.delegates import PrettyTimeDelegate
+from quadpype.tools.utils.delegates import PrettyTimeDelegate
 
 from .products_model import (
     ProductsModel,

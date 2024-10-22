@@ -2,20 +2,20 @@ import sys
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import style
-from openpype.client import get_projects, get_project
-from openpype.pipeline import AvalonMongoDB
-from openpype.tools.utils import lib as tools_lib
-from openpype.tools.loader.widgets import (
+from quadpype import style
+from quadpype.client import get_projects, get_project
+from quadpype.pipeline import AvalonMongoDB
+from quadpype.tools.utils import lib as tools_lib
+from quadpype.tools.loader.widgets import (
     ThumbnailWidget,
     VersionWidget,
     FamilyListView,
     RepresentationWidget,
     SubsetWidget
 )
-from openpype.tools.utils.assets_widget import MultiSelectAssetsWidget
+from quadpype.tools.utils.assets_widget import MultiSelectAssetsWidget
 
-from openpype.modules import ModulesManager
+from quadpype.modules import ModulesManager
 
 module = sys.modules[__name__]
 module.window = None

@@ -2,8 +2,8 @@ from maya import cmds
 
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     OptionalPyblishPluginMixin
 )
@@ -26,7 +26,7 @@ class ValidateNodeNoGhosting(pyblish.api.InstancePlugin,
     hosts = ['maya']
     families = ['model', 'rig']
     label = "No Ghosting"
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = False
 
     _attributes = {'ghosting': 0}

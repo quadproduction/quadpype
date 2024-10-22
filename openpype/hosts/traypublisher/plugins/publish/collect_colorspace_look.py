@@ -1,12 +1,12 @@
 import os
 from pprint import pformat
 import pyblish.api
-from openpype.pipeline import publish
-from openpype.pipeline import colorspace
+from quadpype.pipeline import publish
+from quadpype.pipeline import colorspace
 
 
 class CollectColorspaceLook(pyblish.api.InstancePlugin,
-                            publish.OpenPypePyblishPluginMixin):
+                            publish.QuadPypePyblishPluginMixin):
     """Collect OCIO colorspace look from LUT file
     """
 

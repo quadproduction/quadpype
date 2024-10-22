@@ -3,21 +3,21 @@ import re
 import logging
 import platform
 
-from openpype.settings import get_project_settings
-from openpype.pipeline import get_current_project_name
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import get_current_project_name
 
-from openpype.lib import StringTemplate
+from quadpype.lib import StringTemplate
 
 import hou
 
 from .lib import get_current_context_template_data_with_asset_data
 
-log = logging.getLogger("openpype.hosts.houdini.shelves")
+log = logging.getLogger("quadpype.hosts.houdini.shelves")
 
 
 def generate_shelves():
     """This function generates complete shelves from shelf set to tools
-    in Houdini from openpype project settings houdini shelf definition.
+    in Houdini from quadpype project settings houdini shelf definition.
     """
     current_os = platform.system().lower()
 

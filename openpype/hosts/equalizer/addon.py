@@ -1,10 +1,10 @@
 import os
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 EQUALIZER_HOST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class EqualizerAddon(OpenPypeModule, IHostAddon):
+class EqualizerAddon(QuadPypeModule, IHostAddon):
     name = "equalizer"
     host_name = "equalizer"
     heartbeat = 500

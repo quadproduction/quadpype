@@ -1,14 +1,14 @@
-from openpype.hosts.maya.api import (
+from quadpype.hosts.maya.api import (
     lib,
     plugin
 )
-from openpype.lib import BoolDef
+from quadpype.lib import BoolDef
 
 
 class CreateCamera(plugin.MayaCreator):
     """Single baked camera"""
 
-    identifier = "io.openpype.creators.maya.camera"
+    identifier = "io.quadpype.creators.maya.camera"
     label = "Camera"
     family = "camera"
     icon = "video-camera"
@@ -30,7 +30,7 @@ class CreateCamera(plugin.MayaCreator):
 class CreateCameraRig(plugin.MayaCreator):
     """Complex hierarchy with camera."""
 
-    identifier = "io.openpype.creators.maya.camerarig"
+    identifier = "io.quadpype.creators.maya.camerarig"
     label = "Camera Rig"
     family = "camerarig"
     icon = "video-camera"

@@ -1,8 +1,8 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.tools.settings import style
+from quadpype.tools.settings import style
 
-from openpype import resources
+from quadpype import resources
 
 from .widgets import (
     SyncProjectListWidget,

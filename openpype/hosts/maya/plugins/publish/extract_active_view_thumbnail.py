@@ -4,7 +4,7 @@ import maya.api.OpenMayaUI as omui
 import pyblish.api
 import tempfile
 
-from openpype.hosts.maya.api.lib import IS_HEADLESS
+from quadpype.hosts.maya.api.lib import IS_HEADLESS
 
 
 class ExtractActiveViewThumbnail(pyblish.api.InstancePlugin):

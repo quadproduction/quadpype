@@ -6,8 +6,8 @@ import re
 
 import pyblish.api
 
-import openpype.hosts.harmony.api as harmony
-from openpype.pipeline import PublishXmlValidationError
+import quadpype.hosts.harmony.api as harmony
+from quadpype.pipeline import PublishXmlValidationError
 
 
 class ValidateSceneSettingsRepair(pyblish.api.Action):

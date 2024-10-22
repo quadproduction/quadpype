@@ -2,7 +2,7 @@
 
 """
 
-from openpype.pipeline import load
+from quadpype.pipeline import load
 
 
 class SetFrameRangeLoader(load.LoaderPlugin):

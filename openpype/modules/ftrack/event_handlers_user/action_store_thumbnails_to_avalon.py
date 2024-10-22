@@ -5,7 +5,7 @@ import requests
 
 from bson.objectid import ObjectId
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_asset_by_id,
     get_assets,
@@ -13,23 +13,23 @@ from openpype.client import (
     get_version_by_name,
     get_representations
 )
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
-from openpype.pipeline import AvalonMongoDB, Anatomy
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype.pipeline import AvalonMongoDB, Anatomy
 
-from openpype_modules.ftrack.lib.avalon_sync import CUST_ATTR_ID_KEY
+from quadpype_modules.ftrack.lib.avalon_sync import CUST_ATTR_ID_KEY
 
 
 class StoreThumbnailsToAvalon(BaseAction):
     # Action identifier
     identifier = "store.thumbnail.to.avalon"
     # Action label
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     # Action variant
     variant = "- Store Thumbnails to avalon"
     # Action description
     description = 'Test action'
     # roles that are allowed to register this action
-    icon = statics_icon("ftrack", "action_icons", "OpenPypeAdmin.svg")
+    icon = statics_icon("ftrack", "action_icons", "QuadPypeAdmin.svg")
     settings_key = "store_thumbnail_to_avalon"
 
     thumbnail_key = "AVALON_THUMBNAIL_ROOT"
@@ -282,7 +282,7 @@ class StoreThumbnailsToAvalon(BaseAction):
             thumbnail_entity = {
                 "_id": thumbnail_id,
                 "type": "thumbnail",
-                "schema": "openpype:thumbnail-1.0",
+                "schema": "quadpype:thumbnail-1.0",
                 "data": {
                     "template": thumbnail_template,
                     "template_data": template_data

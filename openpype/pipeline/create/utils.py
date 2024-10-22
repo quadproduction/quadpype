@@ -1,6 +1,6 @@
 import collections
 
-from openpype.client import (
+from quadpype.client import (
     get_assets,
     get_subsets,
     get_last_versions,

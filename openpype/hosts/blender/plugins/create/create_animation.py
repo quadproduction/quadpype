@@ -1,12 +1,12 @@
 """Create an animation asset."""
 
-from openpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api import plugin, lib
 
 
 class CreateAnimation(plugin.BaseCreator):
     """Animation output for character rigs."""
 
-    identifier = "io.openpype.creators.blender.animation"
+    identifier = "io.quadpype.creators.blender.animation"
     label = "Animation"
     family = "animation"
     icon = "male"

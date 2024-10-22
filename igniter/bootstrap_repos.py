@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Bootstrap OpenPype repositories."""
+"""Bootstrap QuadPype repositories."""
 from __future__ import annotations
 import logging as log
 import os
@@ -20,14 +20,14 @@ from speedcopy import copyfile
 import semver
 
 from .user_settings import (
-    OpenPypeSecureRegistry,
-    OpenPypeSettingsRegistry
+    QuadPypeSecureRegistry,
+    QuadPypeSettingsRegistry
 )
 from .tools import (
-    get_openpype_global_settings,
-    get_openpype_path_from_settings,
+    get_quadpype_global_settings,
+    get_quadpype_path_from_settings,
     get_expected_studio_version_str,
-    get_local_openpype_path_from_settings
+    get_local_quadpype_path_from_settings
 )
 
 
@@ -85,22 +85,22 @@ class ZipFileLongPaths(ZipFile):
         )
 
 
-class OpenPypeVersion(semver.VersionInfo):
-    """Class for storing information about OpenPype version.
+class QuadPypeVersion(semver.VersionInfo):
+    """Class for storing information about QuadPype version.
 
     Attributes:
-        path (str): path to OpenPype
+        path (str): path to QuadPype
 
     """
     path = None
 
-    _local_openpype_path = None
+    _local_quadpype_path = None
     # this should match any string complying with https://semver.org/
     _VERSION_REGEX = re.compile(r"(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>[a-zA-Z\d\-.]*))?(?:\+(?P<buildmetadata>[a-zA-Z\d\-.]*))?")  # noqa: E501
     _installed_version = None
 
     def __init__(self, *args, **kwargs):
-        """Create OpenPype version.
+        """Create QuadPype version.
 
         .. deprecated:: 3.0.0-rc.2
             `client` and `variant` are removed.
@@ -123,7 +123,7 @@ class OpenPypeVersion(semver.VersionInfo):
         if "version" in kwargs.keys():
             if not kwargs.get("version"):
                 raise ValueError("Invalid version specified")
-            v = OpenPypeVersion.parse(kwargs.get("version"))
+            v = QuadPypeVersion.parse(kwargs.get("version"))
             kwargs["major"] = v.major
             kwargs["minor"] = v.minor
             kwargs["patch"] = v.patch
@@ -148,7 +148,7 @@ class OpenPypeVersion(semver.VersionInfo):
     def __repr__(self):
         return f"<{self.__class__.__name__}: {str(self)} - path={self.path}>"
 
-    def __lt__(self, other: OpenPypeVersion):
+    def __lt__(self, other: QuadPypeVersion):
         result = super().__lt__(other)
         # prefer path over no path
         if self == other and not self.path and other.path:
@@ -179,22 +179,22 @@ class OpenPypeVersion(semver.VersionInfo):
         return str(self.finalize_version())
 
     @staticmethod
-    def version_in_str(string: str) -> Union[None, OpenPypeVersion]:
-        """Find OpenPype version in given string.
+    def version_in_str(string: str) -> Union[None, QuadPypeVersion]:
+        """Find QuadPype version in given string.
 
         Args:
             string (str):  string to search.
 
         Returns:
-            OpenPypeVersion: of detected or None.
+            QuadPypeVersion: of detected or None.
 
         """
         # strip .zip ext if present
         string = re.sub(r"\.zip$", "", string, flags=re.IGNORECASE)
-        m = re.search(OpenPypeVersion._VERSION_REGEX, string)
+        m = re.search(QuadPypeVersion._VERSION_REGEX, string)
         if not m:
             return None
-        version = OpenPypeVersion.parse(string[m.start():m.end()])
+        version = QuadPypeVersion.parse(string[m.start():m.end()])
         return version
 
     def __hash__(self):
@@ -202,29 +202,29 @@ class OpenPypeVersion(semver.VersionInfo):
 
     @staticmethod
     def is_version_in_dir(
-            dir_item: Path, version: OpenPypeVersion) -> Tuple[bool, str]:
-        """Test if path item is OpenPype version matching detected version.
+            dir_item: Path, version: QuadPypeVersion) -> Tuple[bool, str]:
+        """Test if path item is QuadPype version matching detected version.
 
         If item is directory that might (based on it's name)
-        contain OpenPype version, check if it really does contain
-        OpenPype and that their versions matches.
+        contain QuadPype version, check if it really does contain
+        QuadPype and that their versions matches.
 
         Args:
             dir_item (Path): Directory to test.
-            version (OpenPypeVersion): OpenPype version detected
+            version (QuadPypeVersion): QuadPype version detected
                 from name.
 
         Returns:
-            Tuple: State and reason, True if it is valid OpenPype version,
+            Tuple: State and reason, True if it is valid QuadPype version,
                    False otherwise.
 
         """
         try:
-            # add one 'openpype' level as inside dir there should
+            # add one 'quadpype' level as inside dir there should
             # be many other repositories.
-            version_str = OpenPypeVersion.get_version_string_from_directory(
+            version_str = QuadPypeVersion.get_version_string_from_directory(
                 dir_item)  # noqa: E501
-            version_check = OpenPypeVersion(version=version_str)
+            version_check = QuadPypeVersion(version=version_str)
         except ValueError:
             return False, f"cannot determine version from {dir_item}"
 
@@ -238,20 +238,20 @@ class OpenPypeVersion(semver.VersionInfo):
 
     @staticmethod
     def is_version_in_zip(
-            zip_item: Path, version: OpenPypeVersion) -> Tuple[bool, str]:
-        """Test if zip path is OpenPype version matching detected version.
+            zip_item: Path, version: QuadPypeVersion) -> Tuple[bool, str]:
+        """Test if zip path is QuadPype version matching detected version.
 
-        Open zip file, look inside and parse version from OpenPype
+        Open zip file, look inside and parse version from QuadPype
         inside it. If there is none, or it is different from
         version specified in file name, skip it.
 
         Args:
             zip_item (Path): Zip file to test.
-            version (OpenPypeVersion): Pype version detected
+            version (QuadPypeVersion): Pype version detected
                 from name.
 
         Returns:
-           Tuple: State and reason, True if it is valid OpenPype version,
+           Tuple: State and reason, True if it is valid QuadPype version,
                 False otherwise.
 
         """
@@ -262,11 +262,11 @@ class OpenPypeVersion(semver.VersionInfo):
         try:
             with ZipFile(zip_item, "r") as zip_file:
                 with zip_file.open(
-                        "openpype/version.py") as version_file:
+                        "quadpype/version.py") as version_file:
                     zip_version = {}
                     exec(version_file.read(), zip_version)
                     try:
-                        version_check = OpenPypeVersion(
+                        version_check = QuadPypeVersion(
                             version=zip_version["__version__"])
                     except ValueError as e:
                         return False, str(e)
@@ -284,27 +284,27 @@ class OpenPypeVersion(semver.VersionInfo):
         except BadZipFile:
             return False, f"{zip_item} is not a zip file"
         except KeyError:
-            return False, "Zip does not contain OpenPype"
+            return False, "Zip does not contain QuadPype"
         return True, "Versions match"
 
     @staticmethod
     def get_version_string_from_directory(repo_dir: Path) -> Union[str, None]:
-        """Get version of OpenPype in given directory.
+        """Get version of QuadPype in given directory.
 
-        Note: in frozen OpenPype installed in user data dir, this must point
+        Note: in frozen QuadPype installed in user data dir, this must point
         one level deeper as it is:
-        `openpype-version-v3.0.0/openpype/version.py`
+        `quadpype-version-v3.0.0/quadpype/version.py`
 
         Args:
-            repo_dir (Path): Path to OpenPype repo.
+            repo_dir (Path): Path to QuadPype repo.
 
         Returns:
             str: version string.
-            None: if OpenPype is not found.
+            None: if QuadPype is not found.
 
         """
         # try to find version
-        version_file = Path(repo_dir) / "openpype" / "version.py"
+        version_file = Path(repo_dir) / "quadpype" / "version.py"
         if not version_file.exists():
             return None
 
@@ -315,50 +315,50 @@ class OpenPypeVersion(semver.VersionInfo):
         return version['__version__']
 
     @classmethod
-    def get_openpype_path(cls):
-        """Path to openpype zip directory.
+    def get_quadpype_path(cls):
+        """Path to quadpype zip directory.
 
         Path can be set through environment variable 'QUADPYPE_PATH' which
-        is set during start of OpenPype if is not available.
+        is set during start of QuadPype if is not available.
         """
         return os.getenv("QUADPYPE_PATH")
 
     @classmethod
-    def get_local_openpype_path(cls):
+    def get_local_quadpype_path(cls):
         """Path to unzipped versions.
 
         By default it should be user appdata, but could be overridden by
         settings.
         """
-        if cls._local_openpype_path:
-            return cls._local_openpype_path
+        if cls._local_quadpype_path:
+            return cls._local_quadpype_path
 
-        settings = get_openpype_global_settings(os.environ["QUADPYPE_MONGO"])
-        data_dir = get_local_openpype_path_from_settings(settings)
+        settings = get_quadpype_global_settings(os.environ["QUADPYPE_MONGO"])
+        data_dir = get_local_quadpype_path_from_settings(settings)
         if not data_dir:
             data_dir = Path(user_data_dir("quadpype", "quad"))
-        cls._local_openpype_path = data_dir
+        cls._local_quadpype_path = data_dir
         return data_dir
 
     @classmethod
-    def openpype_path_is_set(cls):
-        """Path to OpenPype zip directory is set."""
-        if cls.get_openpype_path():
+    def quadpype_path_is_set(cls):
+        """Path to QuadPype zip directory is set."""
+        if cls.get_quadpype_path():
             return True
         return False
 
     @classmethod
-    def openpype_path_is_accessible(cls):
-        """Path to OpenPype zip directory is accessible.
+    def quadpype_path_is_accessible(cls):
+        """Path to QuadPype zip directory is accessible.
 
         Exists for this machine.
         """
         # First check if is set
-        if not cls.openpype_path_is_set():
+        if not cls.quadpype_path_is_set():
             return False
 
         # Validate existence
-        if Path(cls.get_openpype_path()).exists():
+        if Path(cls.get_quadpype_path()).exists():
             return True
         return False
 
@@ -370,26 +370,26 @@ class OpenPypeVersion(semver.VersionInfo):
             list: of compatible versions available on the machine.
 
         """
-        dir_to_search = cls.get_local_openpype_path()
+        dir_to_search = cls.get_local_quadpype_path()
         versions = cls.get_versions_from_directory(dir_to_search)
 
         return list(sorted(set(versions)))
 
     @classmethod
     def get_remote_versions(cls) -> List:
-        """Get all versions available in OpenPype Path.
+        """Get all versions available in QuadPype Path.
 
         Returns:
-            list of OpenPypeVersions: Versions found in OpenPype path.
+            list of QuadPypeVersions: Versions found in QuadPype path.
 
         """
         # Return all local versions if arguments are set to None
 
         dir_to_search = None
-        if cls.openpype_path_is_accessible():
-            dir_to_search = Path(cls.get_openpype_path())
+        if cls.quadpype_path_is_accessible():
+            dir_to_search = Path(cls.get_quadpype_path())
         else:
-            registry = OpenPypeSettingsRegistry()
+            registry = QuadPypeSettingsRegistry()
             try:
                 registry_dir = Path(str(registry.get_item("quadpypePath")))
                 if registry_dir.exists():
@@ -408,74 +408,74 @@ class OpenPypeVersion(semver.VersionInfo):
 
     @staticmethod
     def get_versions_from_directory(
-            openpype_dir: Path) -> List:
-        """Get all detected OpenPype versions in directory.
+            quadpype_dir: Path) -> List:
+        """Get all detected QuadPype versions in directory.
 
         Args:
-            openpype_dir (Path): Directory to scan.
+            quadpype_dir (Path): Directory to scan.
 
         Returns:
-            list of OpenPypeVersion
+            list of QuadPypeVersion
 
         Throws:
             ValueError: if invalid path is specified.
 
         """
-        openpype_versions = []
-        if not openpype_dir.exists() and not openpype_dir.is_dir():
-            return openpype_versions
+        quadpype_versions = []
+        if not quadpype_dir.exists() and not quadpype_dir.is_dir():
+            return quadpype_versions
 
         # iterate over directory in first level and find all that might
-        # contain OpenPype.
-        for item in openpype_dir.iterdir():
+        # contain QuadPype.
+        for item in quadpype_dir.iterdir():
             # if the item is directory with major.minor version, dive deeper
 
             if item.is_dir() and re.match(r"^\d+\.\d+$", item.name):
-                _versions = OpenPypeVersion.get_versions_from_directory(
+                _versions = QuadPypeVersion.get_versions_from_directory(
                     item)
                 if _versions:
-                    openpype_versions += _versions
+                    quadpype_versions += _versions
 
             # if file exists, strip extension, in case of dir don't.
             name = item.name if item.is_dir() else item.stem
-            result = OpenPypeVersion.version_in_str(name)
+            result = QuadPypeVersion.version_in_str(name)
 
             if result:
-                detected_version: OpenPypeVersion
+                detected_version: QuadPypeVersion
                 detected_version = result
 
-                if item.is_dir() and not OpenPypeVersion.is_version_in_dir(
+                if item.is_dir() and not QuadPypeVersion.is_version_in_dir(
                         item, detected_version
                 )[0]:
                     continue
 
-                if item.is_file() and not OpenPypeVersion.is_version_in_zip(
+                if item.is_file() and not QuadPypeVersion.is_version_in_zip(
                         item, detected_version
                 )[0]:
                     continue
 
                 detected_version.path = item
-                openpype_versions.append(detected_version)
+                quadpype_versions.append(detected_version)
 
-        return sorted(openpype_versions)
+        return sorted(quadpype_versions)
 
     @staticmethod
     def get_installed_version_str() -> str:
-        """Get version of local OpenPype."""
+        """Get version of local QuadPype."""
 
         version = {}
-        path = Path(os.environ["QUADPYPE_ROOT"]) / "openpype" / "version.py"
+        path = Path(os.environ["QUADPYPE_ROOT"]) / "quadpype" / "version.py"
         with open(path, "r") as fp:
             exec(fp.read(), version)
         return version["__version__"]
 
     @classmethod
     def get_installed_version(cls):
-        """Get version of OpenPype inside build."""
+        """Get version of QuadPype inside build."""
         if cls._installed_version is None:
             installed_version_str = cls.get_installed_version_str()
             if installed_version_str:
-                cls._installed_version = OpenPypeVersion(
+                cls._installed_version = QuadPypeVersion(
                     version=installed_version_str,
                     path=Path(os.environ["QUADPYPE_ROOT"])
                 )
@@ -485,7 +485,7 @@ class OpenPypeVersion(semver.VersionInfo):
     def get_latest_version(
         local: bool = None,
         remote: bool = None
-    ) -> Union[OpenPypeVersion, None]:
+    ) -> Union[QuadPypeVersion, None]:
         """Get the latest available version.
 
         The version does not contain information about path and source.
@@ -503,7 +503,7 @@ class OpenPypeVersion(semver.VersionInfo):
             remote (bool, optional): List remote versions if True.
 
         Returns:
-            Latest OpenPypeVersion or None
+            Latest QuadPypeVersion or None
 
         """
         if local is None and remote is None:
@@ -516,9 +516,9 @@ class OpenPypeVersion(semver.VersionInfo):
         elif remote is None and not local:
             remote = True
 
-        installed_version = OpenPypeVersion.get_installed_version()
-        local_versions = OpenPypeVersion.get_local_versions() if local else []
-        remote_versions = OpenPypeVersion.get_remote_versions() if remote else []  # noqa: E501
+        installed_version = QuadPypeVersion.get_installed_version()
+        local_versions = QuadPypeVersion.get_local_versions() if local else []
+        remote_versions = QuadPypeVersion.get_remote_versions() if remote else []  # noqa: E501
         all_versions = local_versions + remote_versions + [installed_version]
 
         all_versions.sort()
@@ -526,33 +526,33 @@ class OpenPypeVersion(semver.VersionInfo):
 
     @classmethod
     def get_expected_studio_version(cls, staging=False, global_settings=None):
-        """Expected OpenPype version that should be used at the moment.
+        """Expected QuadPype version that should be used at the moment.
 
         If version is not defined in settings the latest found version is
         used.
 
-        Using precached global settings is needed for usage inside OpenPype.
+        Using precached global settings is needed for usage inside QuadPype.
 
         Args:
             staging (bool): Staging version or production version.
             global_settings (dict): Optional precached global settings.
 
         Returns:
-            OpenPypeVersion: Version that should be used.
+            QuadPypeVersion: Version that should be used.
         """
         result = get_expected_studio_version_str(staging, global_settings)
         if not result:
             return None
-        return OpenPypeVersion(version=result)
+        return QuadPypeVersion(version=result)
 
-    def is_compatible(self, version: OpenPypeVersion):
+    def is_compatible(self, version: QuadPypeVersion):
         """Test build compatibility.
 
         This will simply compare major and minor versions (ignoring patch
         and the rest).
 
         Args:
-            version (OpenPypeVersion): Version to check compatibility with.
+            version (QuadPypeVersion): Version to check compatibility with.
 
         Returns:
             bool: if the version is compatible
@@ -571,14 +571,14 @@ class ZXPExtensionData:
 
 
 class BootstrapRepos:
-    """Class for bootstrapping local OpenPype installation.
+    """Class for bootstrapping local QuadPype installation.
 
     Attributes:
-        data_dir (Path): local OpenPype installation directory.
-        registry (OpenPypeSettingsRegistry): OpenPype registry object.
+        data_dir (Path): local QuadPype installation directory.
+        registry (QuadPypeSettingsRegistry): QuadPype registry object.
         zip_filter (list): List of files to exclude from zip
-        openpype_filter (list): list of top level directories to
-            include in zip in OpenPype repository.
+        quadpype_filter (list): list of top level directories to
+            include in zip in QuadPype repository.
 
     """
 
@@ -597,11 +597,11 @@ class BootstrapRepos:
         self._log = log.getLogger(str(__class__))
         self.data_dir = None
         self.set_data_dir(None)
-        self.secure_registry = OpenPypeSecureRegistry("mongodb")
-        self.registry = OpenPypeSettingsRegistry()
+        self.secure_registry = QuadPypeSecureRegistry("mongodb")
+        self.registry = QuadPypeSettingsRegistry()
         self.zip_filter = [".pyc", "__pycache__"]
-        self.openpype_filter = [
-            "openpype", "LICENSE"
+        self.quadpype_filter = [
+            "quadpype", "LICENSE"
         ]
 
         # dummy progress reporter
@@ -623,11 +623,11 @@ class BootstrapRepos:
     @staticmethod
     def get_version_path_from_list(
             version: str, version_list: list) -> Union[Path, None]:
-        """Get path for specific version in list of OpenPype versions.
+        """Get path for specific version in list of QuadPype versions.
 
         Args:
             version (str): Version string to look for (1.2.4-nightly.1+test)
-            version_list (list of OpenPypeVersion): list of version to search.
+            version_list (list of QuadPypeVersion): list of version to search.
 
         Returns:
             Path: Path to given version.
@@ -639,23 +639,23 @@ class BootstrapRepos:
         return None
 
     @staticmethod
-    def get_version(repo_dir: Path) -> Union[OpenPypeVersion, None]:
-        """Get version of OpenPype in given directory.
+    def get_version(repo_dir: Path) -> Union[QuadPypeVersion, None]:
+        """Get version of QuadPype in given directory.
 
-        Note: in frozen OpenPype installed in user data dir, this must point
+        Note: in frozen QuadPype installed in user data dir, this must point
         one level deeper as it is:
-        `openpype-version-v3.0.0/openpype/version.py`
+        `quadpype-version-v3.0.0/quadpype/version.py`
 
         Args:
-            repo_dir (Path): Path to OpenPype repo.
+            repo_dir (Path): Path to QuadPype repo.
 
         Returns:
             str: version string.
-            None: if OpenPype is not found.
+            None: if QuadPype is not found.
 
         """
         # try to find version
-        version_file = Path(repo_dir) / "openpype" / "version.py"
+        version_file = Path(repo_dir) / "quadpype" / "version.py"
         if not version_file.exists():
             return None
 
@@ -663,37 +663,37 @@ class BootstrapRepos:
         with version_file.open("r") as fp:
             exec(fp.read(), version)
 
-        return OpenPypeVersion(version=version['__version__'], path=repo_dir)
+        return QuadPypeVersion(version=version['__version__'], path=repo_dir)
 
     def create_version_from_live_code(
-            self, repo_dir: Path = None, data_dir: Path = None) -> Union[OpenPypeVersion, None]:
-        """Copy zip created from OpenPype repositories to user data dir.
+            self, repo_dir: Path = None, data_dir: Path = None) -> Union[QuadPypeVersion, None]:
+        """Copy zip created from QuadPype repositories to user data dir.
 
-        This detects OpenPype version either in local "live" OpenPype
+        This detects QuadPype version either in local "live" QuadPype
         repository or in user provided path. Then it will zip it in temporary
         directory, and finally it will move it to destination which is user
         data directory. Existing files will be replaced.
 
         Args:
-            repo_dir (Path, optional): Path to OpenPype repository.
+            repo_dir (Path, optional): Path to QuadPype repository.
             data_dir (Path, optional): Path to the user data directory.
 
         Returns:
-            version (OpenPypeVersion): Info of the version created.
+            version (QuadPypeVersion): Info of the version created.
 
         """
-        # If repo dir is not set, we detect local "live" OpenPype repository
+        # If repo dir is not set, we detect local "live" QuadPype repository
         # version and use it as a source. Otherwise, repo_dir is user
         # entered location.
         if repo_dir:
             version_str = str(self.get_version(repo_dir))
         else:
-            installed_version = OpenPypeVersion.get_installed_version()
+            installed_version = QuadPypeVersion.get_installed_version()
             version_str = str(installed_version)
             repo_dir = installed_version.path
 
         if not version_str:
-            self._print("OpenPype not found.", LOG_ERROR)
+            self._print("QuadPype not found.", LOG_ERROR)
             return
 
         # create destination directory
@@ -704,20 +704,20 @@ class BootstrapRepos:
         # create zip inside temporary directory.
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_zip = \
-                Path(temp_dir) / f"openpype-v{version_str}.zip"
+                Path(temp_dir) / f"quadpype-v{version_str}.zip"
             self._print(f"creating zip: {temp_zip}")
 
-            self._create_openpype_zip(temp_zip, repo_dir)
+            self._create_quadpype_zip(temp_zip, repo_dir)
             if not os.path.exists(temp_zip):
                 self._print("make archive failed.", LOG_ERROR)
                 return None
 
             destination = self._move_zip_to_data_dir(temp_zip)
 
-        return OpenPypeVersion(version=version_str, path=Path(destination))
+        return QuadPypeVersion(version=version_str, path=Path(destination))
 
     def _move_zip_to_data_dir(self, zip_file) -> Union[None, Path]:
-        """Move zip with OpenPype version to user data directory.
+        """Move zip with QuadPype version to user data directory.
 
         Args:
             zip_file (Path): Path to zip file.
@@ -727,7 +727,7 @@ class BootstrapRepos:
             Path to moved zip on success.
 
         """
-        version = OpenPypeVersion.version_in_str(zip_file.name)
+        version = QuadPypeVersion.version_in_str(zip_file.name)
         destination_dir = self.data_dir / f"{version.major}.{version.minor}"
         if not destination_dir.exists():
             destination_dir.mkdir(parents=True)
@@ -771,93 +771,93 @@ class BootstrapRepos:
                 result.append(item)
         return result
 
-    def create_version_from_frozen_code(self) -> Union[None, OpenPypeVersion]:
-        """Create OpenPype version from *frozen* code distributed by installer.
+    def create_version_from_frozen_code(self) -> Union[None, QuadPypeVersion]:
+        """Create QuadPype version from *frozen* code distributed by installer.
 
-        This should be real edge case for those wanting to try out OpenPype
+        This should be real edge case for those wanting to try out QuadPype
         without setting up whole infrastructure but is strongly discouraged
         in studio setup as this use local version independent of others
         that can be out of date.
 
         Returns:
-            :class:`OpenPypeVersion` zip file to be installed.
+            :class:`QuadPypeVersion` zip file to be installed.
 
         """
         frozen_root = Path(sys.executable).parent
 
-        openpype_list = []
-        for f in self.openpype_filter:
+        quadpype_list = []
+        for f in self.quadpype_filter:
             if (frozen_root / f).is_dir():
-                openpype_list += self._filter_dir(
+                quadpype_list += self._filter_dir(
                     frozen_root / f, self.zip_filter)
             else:
-                openpype_list.append(frozen_root / f)
+                quadpype_list.append(frozen_root / f)
 
         version_str = str(self.get_version(frozen_root))
 
         # create zip inside temporary directory.
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_zip = \
-                Path(temp_dir) / f"openpype-v{version_str}.zip"
+                Path(temp_dir) / f"quadpype-v{version_str}.zip"
             self._print(f"creating zip: {temp_zip}")
 
             with ZipFile(temp_zip, "w") as zip_file:
                 progress = 0
-                openpype_inc = 98.0 / float(len(openpype_list))
+                quadpype_inc = 98.0 / float(len(quadpype_list))
                 file: Path
-                for file in openpype_list:
-                    progress += openpype_inc
+                for file in quadpype_list:
+                    progress += quadpype_inc
                     self._progress_callback(int(progress))
 
                     arc_name = file.relative_to(frozen_root.parent)
                     # we need to replace first part of path which starts with
-                    # something like `exe.win/linux....` with `openpype` as
-                    # this is expected by OpenPype in zip archive.
+                    # something like `exe.win/linux....` with `quadpype` as
+                    # this is expected by QuadPype in zip archive.
                     arc_name = Path().joinpath(*arc_name.parts[1:])
                     zip_file.write(file, arc_name)
 
             destination = self._move_zip_to_data_dir(temp_zip)
 
-        return OpenPypeVersion(version=version_str, path=destination)
+        return QuadPypeVersion(version=version_str, path=destination)
 
-    def _create_openpype_zip(self, zip_path: Path, openpype_path: Path) -> None:
-        """Pack repositories and OpenPype into zip.
+    def _create_quadpype_zip(self, zip_path: Path, quadpype_path: Path) -> None:
+        """Pack repositories and QuadPype into zip.
 
         We are using :mod:`ZipFile` instead :meth:`shutil.make_archive`
         because we need to decide what file and directories to include in zip
         and what not. They are determined by :attr:`zip_filter` on file level
-        and :attr:`openpype_filter` on top level directory in OpenPype
+        and :attr:`quadpype_filter` on top level directory in QuadPype
         repository.
 
         Args:
             zip_path (Path): Path to zip file.
-            openpype_path (Path): Path to OpenPype sources.
+            quadpype_path (Path): Path to QuadPype sources.
 
         """
         # get filtered list of file in Pype repository
-        # openpype_list = self._filter_dir(openpype_path, self.zip_filter)
-        openpype_list = []
-        for f in self.openpype_filter:
-            if (openpype_path / f).is_dir():
-                openpype_list += self._filter_dir(
-                    openpype_path / f, self.zip_filter)
+        # quadpype_list = self._filter_dir(quadpype_path, self.zip_filter)
+        quadpype_list = []
+        for f in self.quadpype_filter:
+            if (quadpype_path / f).is_dir():
+                quadpype_list += self._filter_dir(
+                    quadpype_path / f, self.zip_filter)
             else:
-                openpype_list.append(openpype_path / f)
+                quadpype_list.append(quadpype_path / f)
 
-        openpype_files = len(openpype_list)
+        quadpype_files = len(quadpype_list)
 
-        openpype_inc = 98.0 / float(openpype_files)
+        quadpype_inc = 98.0 / float(quadpype_files)
 
         with ZipFile(zip_path, "w") as zip_file:
             progress = 0
-            openpype_root = openpype_path.resolve()
+            quadpype_root = quadpype_path.resolve()
             # generate list of filtered paths
-            dir_filter = [openpype_root / f for f in self.openpype_filter]
+            dir_filter = [quadpype_root / f for f in self.quadpype_filter]
             checksums = []
 
             file: Path
-            for file in openpype_list:
-                progress += openpype_inc
+            for file in quadpype_list:
+                progress += quadpype_inc
                 self._progress_callback(int(progress))
 
                 # if file resides in filtered path, skip it
@@ -878,11 +878,11 @@ class BootstrapRepos:
                 checksums.append(
                     (
                         sha256sum(sanitize_long_path(file.as_posix())),
-                        file.resolve().relative_to(openpype_root)
+                        file.resolve().relative_to(quadpype_root)
                     )
                 )
                 zip_file.write(
-                    file, file.resolve().relative_to(openpype_root))
+                    file, file.resolve().relative_to(quadpype_root))
 
             checksums_str = ""
             for c in checksums:
@@ -895,7 +895,7 @@ class BootstrapRepos:
             zip_file.testzip()
             self._progress_callback(100)
 
-    def validate_openpype_version(self, path: Path) -> tuple:
+    def validate_quadpype_version(self, path: Path) -> tuple:
         """Validate version directory or zip file.
 
         This will load `checksums` file if present, calculate checksums
@@ -903,7 +903,7 @@ class BootstrapRepos:
         lists of files together for missing files.
 
         Args:
-            path (Path): Path to OpenPype version to validate.
+            path (Path): Path to QuadPype version to validate.
 
         Returns:
             tuple(bool, str): with version validity as first item
@@ -1016,7 +1016,7 @@ class BootstrapRepos:
     def add_paths_from_archive(archive: Path) -> None:
         """Add first-level directory and 'repos' as paths to :mod:`sys.path`.
 
-        This will enable Python to import OpenPype and modules in `repos`
+        This will enable Python to import QuadPype and modules in `repos`
         submodule directory in zip file.
 
         Adding to both `sys.path` and `PYTHONPATH`, skipping duplicates.
@@ -1056,18 +1056,18 @@ class BootstrapRepos:
         sys.path.insert(0, directory.as_posix())
 
     @staticmethod
-    def find_openpype_local_version(version: OpenPypeVersion) -> Union[OpenPypeVersion, None]:
+    def find_quadpype_local_version(version: QuadPypeVersion) -> Union[QuadPypeVersion, None]:
         """
-           Finds the specified OpenPype version in the local directory.
+           Finds the specified QuadPype version in the local directory.
 
            Parameters:
-           - version (OpenPypeVersion): A specific version of OpenPype to search for.
+           - version (QuadPypeVersion): A specific version of QuadPype to search for.
 
            Returns:
-           - OpenPypeVersion() or None: Returns the found OpenPype version if available, or None if not found.
+           - QuadPypeVersion() or None: Returns the found QuadPype version if available, or None if not found.
         """
         zip_version = None
-        for local_version in OpenPypeVersion.get_local_versions():
+        for local_version in QuadPypeVersion.get_local_versions():
             if local_version == version:
                 if local_version.path.suffix.lower() == ".zip":
                     zip_version = local_version
@@ -1077,17 +1077,17 @@ class BootstrapRepos:
         return zip_version
 
     @staticmethod
-    def find_openpype_remote_version(version: OpenPypeVersion) -> Union[OpenPypeVersion, None]:
+    def find_quadpype_remote_version(version: QuadPypeVersion) -> Union[QuadPypeVersion, None]:
         """
-           Finds the specified OpenPype version in the remote directory.
+           Finds the specified QuadPype version in the remote directory.
 
            Parameters:
-           - version (OpenPypeVersion): A specific version of OpenPype to search for.
+           - version (QuadPypeVersion): A specific version of QuadPype to search for.
 
            Returns:
-           - OpenPypeVersion() or None: Returns the found OpenPype version if available, or None if not found.
+           - QuadPypeVersion() or None: Returns the found QuadPype version if available, or None if not found.
         """
-        remote_versions = OpenPypeVersion.get_remote_versions()
+        remote_versions = QuadPypeVersion.get_remote_versions()
         return next(
             (
                 remote_version for remote_version in remote_versions
@@ -1095,42 +1095,42 @@ class BootstrapRepos:
             ), None)
 
     @staticmethod
-    def find_openpype_version(
-            version: Union[str, OpenPypeVersion]
-    ) -> Union[OpenPypeVersion, None]:
-        """Find location of specified OpenPype version.
+    def find_quadpype_version(
+            version: Union[str, QuadPypeVersion]
+    ) -> Union[QuadPypeVersion, None]:
+        """Find location of specified QuadPype version.
 
         Args:
-            version (Union[str, OpenPypeVersion): Version to find.
+            version (Union[str, QuadPypeVersion): Version to find.
 
         Returns:
-            requested OpenPypeVersion.
+            requested QuadPypeVersion.
 
         """
         if isinstance(version, str):
-            version = OpenPypeVersion(version=version)
+            version = QuadPypeVersion(version=version)
 
-        installed_version = OpenPypeVersion.get_installed_version()
+        installed_version = QuadPypeVersion.get_installed_version()
         if installed_version == version:
             return installed_version
 
-        op_version = BootstrapRepos.find_openpype_local_version(version)
+        op_version = BootstrapRepos.find_quadpype_local_version(version)
         if op_version is not None:
             return op_version
 
-        return BootstrapRepos.find_openpype_remote_version(version)
+        return BootstrapRepos.find_quadpype_remote_version(version)
 
     @staticmethod
-    def find_latest_openpype_version() -> Union[OpenPypeVersion, None]:
-        """Find the latest available OpenPype version in all location.
+    def find_latest_quadpype_version() -> Union[QuadPypeVersion, None]:
+        """Find the latest available QuadPype version in all location.
 
         Returns:
-            Latest OpenPype version on None if nothing was found.
+            Latest QuadPype version on None if nothing was found.
 
         """
-        installed_version = OpenPypeVersion.get_installed_version()
-        local_versions = OpenPypeVersion.get_local_versions()
-        remote_versions = OpenPypeVersion.get_remote_versions()
+        installed_version = QuadPypeVersion.get_installed_version()
+        local_versions = QuadPypeVersion.get_local_versions()
+        remote_versions = QuadPypeVersion.get_remote_versions()
         all_versions = local_versions + remote_versions + [installed_version]
 
         if not all_versions:
@@ -1148,40 +1148,40 @@ class BootstrapRepos:
                     break
         return latest_version
 
-    def find_openpype(
+    def find_quadpype(
             self,
-            openpype_path: Union[Path, str] = None,
+            quadpype_path: Union[Path, str] = None,
             include_zips: bool = False
-    ) -> Union[List[OpenPypeVersion], None]:
-        """Get ordered dict of detected OpenPype version.
+    ) -> Union[List[QuadPypeVersion], None]:
+        """Get ordered dict of detected QuadPype version.
 
-        Resolution order for OpenPype is following:
+        Resolution order for QuadPype is following:
 
             1) First we test for ``QUADPYPE_PATH`` environment variable
             2) We try to find ``quadpypePath`` in registry setting
             3) We use user data directory
 
         Args:
-            openpype_path (Path or str, optional): Try to find OpenPype on
+            quadpype_path (Path or str, optional): Try to find QuadPype on
                 the given path or url.
             include_zips (bool, optional): If set True it will try to find
-                OpenPype in zip files in given directory.
+                QuadPype in zip files in given directory.
 
         Returns:
-            dict of Path: Dictionary of detected OpenPype version.
+            dict of Path: Dictionary of detected QuadPype version.
                  Key is version, value is path to zip file.
 
-            None: if OpenPype is not found.
+            None: if QuadPype is not found.
 
         Todo:
-            implement git/url support as OpenPype location, so it would be
-            possible to enter git url, OpenPype would check it out and if it is
+            implement git/url support as QuadPype location, so it would be
+            possible to enter git url, QuadPype would check it out and if it is
             ok install it as normal version.
 
         """
-        if openpype_path and not isinstance(openpype_path, Path):
+        if quadpype_path and not isinstance(quadpype_path, Path):
             raise NotImplementedError(
-                ("Finding OpenPype in non-filesystem locations is"
+                ("Finding QuadPype in non-filesystem locations is"
                  " not implemented yet."))
 
         # if checks bellow for QUADPYPE_PATH and registry fails, use data_dir
@@ -1189,8 +1189,8 @@ class BootstrapRepos:
         #             of major.minor sub-folders.
         dirs_to_search = [self.data_dir]
 
-        if openpype_path:
-            dirs_to_search = [openpype_path]
+        if quadpype_path:
+            dirs_to_search = [quadpype_path]
         elif os.getenv("QUADPYPE_PATH") \
                 and Path(os.getenv("QUADPYPE_PATH")).exists():
             # first try QUADPYPE_PATH and if that is not available,
@@ -1207,31 +1207,31 @@ class BootstrapRepos:
                 # nothing found in registry, we'll use data dir
                 pass
 
-        openpype_versions = []
+        quadpype_versions = []
         for dir_to_search in dirs_to_search:
             try:
-                openpype_versions += self.get_openpype_versions(
+                quadpype_versions += self.get_quadpype_versions(
                     dir_to_search)
             except ValueError:
                 # location is invalid, skip it
                 pass
 
         if not include_zips:
-            openpype_versions = [
-                v for v in openpype_versions if v.path.suffix != ".zip"
+            quadpype_versions = [
+                v for v in quadpype_versions if v.path.suffix != ".zip"
             ]
 
         # remove duplicates
-        openpype_versions = sorted(list(set(openpype_versions)))
+        quadpype_versions = sorted(list(set(quadpype_versions)))
 
-        return openpype_versions
+        return quadpype_versions
 
     def process_entered_location(self, location: str) -> Union[Path, None]:
         """Process user entered location string.
 
         It decides if location string is mongodb url or path.
         If it is mongodb url, it will connect and load ``QUADPYPE_PATH`` from
-        there and use it as path to OpenPype. In it is _not_ mongodb url, it
+        there and use it as path to QuadPype. In it is _not_ mongodb url, it
         is assumed we have a path, this is tested and zip file is
         produced and installed using :meth:`create_version_from_live_code`.
 
@@ -1239,53 +1239,53 @@ class BootstrapRepos:
             location (str): User entered location.
 
         Returns:
-            Path: to OpenPype zip produced from this location.
+            Path: to QuadPype zip produced from this location.
             None: Zipping failed.
 
         """
-        openpype_path = None
-        # try to get OpenPype path from mongo.
+        quadpype_path = None
+        # try to get QuadPype path from mongo.
         if location.startswith("mongodb"):
-            global_settings = get_openpype_global_settings(location)
-            openpype_path = get_openpype_path_from_settings(global_settings)
-            if not openpype_path:
+            global_settings = get_quadpype_global_settings(location)
+            quadpype_path = get_quadpype_path_from_settings(global_settings)
+            if not quadpype_path:
                 self._print("cannot find QUADPYPE_PATH in settings.")
                 return None
 
         # if not successful, consider location to be fs path.
-        if not openpype_path:
-            openpype_path = Path(location)
+        if not quadpype_path:
+            quadpype_path = Path(location)
 
         # test if this path does exist.
-        if not openpype_path.exists():
-            self._print(f"{openpype_path} doesn't exists.")
+        if not quadpype_path.exists():
+            self._print(f"{quadpype_path} doesn't exists.")
             return None
 
         # test if entered path isn't user data dir
-        if self.data_dir == openpype_path:
+        if self.data_dir == quadpype_path:
             self._print("cannot point to user data dir", LOG_ERROR)
             return None
 
-        # find openpype zip files in location. There can be
-        # either "live" OpenPype repository, or multiple zip files or even
-        # multiple OpenPype version directories. This process looks into zip
+        # find quadpype zip files in location. There can be
+        # either "live" QuadPype repository, or multiple zip files or even
+        # multiple QuadPype version directories. This process looks into zip
         # files and directories and tries to parse `version.py` file.
-        versions = self.find_openpype(openpype_path, include_zips=True)
+        versions = self.find_quadpype(quadpype_path, include_zips=True)
         if versions:
-            self._print(f"found OpenPype in [ {openpype_path} ]")
+            self._print(f"found QuadPype in [ {quadpype_path} ]")
             self._print(f"latest version found is [ {versions[-1]} ]")
 
             return self.install_version(versions[-1])
 
         # if we got here, it means that location is "live"
-        # OpenPype repository. We'll create zip from it and move it to user
+        # QuadPype repository. We'll create zip from it and move it to user
         # data dir.
-        live_openpype = self.create_version_from_live_code(openpype_path)
-        if not live_openpype.path.exists():
-            self._print(f"installing zip {live_openpype} failed.", LOG_ERROR)
+        live_quadpype = self.create_version_from_live_code(quadpype_path)
+        if not live_quadpype.path.exists():
+            self._print(f"installing zip {live_quadpype} failed.", LOG_ERROR)
             return None
         # install it
-        return self.install_version(live_openpype)
+        return self.install_version(live_quadpype)
 
     def _print(self,
                message: str,
@@ -1313,11 +1313,11 @@ class BootstrapRepos:
             return
         self._log.info(message, exc_info=exc_info)
 
-    def extract_openpype(self, version: OpenPypeVersion) -> Union[Path, None]:
-        """Extract zipped OpenPype version to user data directory.
+    def extract_quadpype(self, version: QuadPypeVersion) -> Union[Path, None]:
+        """Extract zipped QuadPype version to user data directory.
 
         Args:
-            version (OpenPypeVersion): Version of OpenPype.
+            version (QuadPypeVersion): Version of QuadPype.
 
         Returns:
             Path: path to extracted version.
@@ -1363,42 +1363,42 @@ class BootstrapRepos:
             is_inside = path.resolve().relative_to(
                 self.data_dir)
         except ValueError:
-            # if relative path cannot be calculated, OpenPype version is not
+            # if relative path cannot be calculated, QuadPype version is not
             # inside user data dir
             pass
         return is_inside
 
     def install_version(self,
-                        openpype_version: OpenPypeVersion,
+                        quadpype_version: QuadPypeVersion,
                         force: bool = False) -> Path:
-        """Install OpenPype version to user data directory.
+        """Install QuadPype version to user data directory.
 
         Args:
-            openpype_version (OpenPypeVersion): OpenPype version to install.
+            quadpype_version (QuadPypeVersion): QuadPype version to install.
             force (bool, optional): Force overwrite existing version.
 
         Returns:
-            Path: Path to installed OpenPype.
+            Path: Path to installed QuadPype.
 
         Raises:
-            OpenPypeVersionExists: If not forced and this version already exist
+            QuadPypeVersionExists: If not forced and this version already exist
                 in user data directory.
-            OpenPypeVersionInvalid: If version to install is invalid.
-            OpenPypeVersionIOError: If copying or zipping fail.
+            QuadPypeVersionInvalid: If version to install is invalid.
+            QuadPypeVersionIOError: If copying or zipping fail.
 
         """
-        if self.is_inside_user_data(openpype_version.path) and not openpype_version.path.is_file():  # noqa
-            raise OpenPypeVersionExists(
-                "OpenPype already inside user data dir")
+        if self.is_inside_user_data(quadpype_version.path) and not quadpype_version.path.is_file():  # noqa
+            raise QuadPypeVersionExists(
+                "QuadPype already inside user data dir")
 
         # determine destination directory name
         # for zip file strip suffix, in case of dir use whole dir name
-        if openpype_version.path.is_dir():
-            dir_name = openpype_version.path.name
+        if quadpype_version.path.is_dir():
+            dir_name = quadpype_version.path.name
         else:
-            dir_name = openpype_version.path.stem
+            dir_name = quadpype_version.path.stem
 
-        destination = self.data_dir / f"{openpype_version.major}.{openpype_version.minor}" / dir_name  # noqa
+        destination = self.data_dir / f"{quadpype_version.major}.{quadpype_version.minor}" / dir_name  # noqa
 
         # test if destination directory already exist, if so lets delete it.
         if destination.exists() and force:
@@ -1409,62 +1409,62 @@ class BootstrapRepos:
                 self._print(
                     f"cannot remove already existing {destination}",
                     LOG_ERROR, exc_info=True)
-                raise OpenPypeVersionIOError(
+                raise QuadPypeVersionIOError(
                     f"cannot remove existing {destination}") from e
         elif destination.exists() and not force:
             self._print("destination directory already exists")
-            raise OpenPypeVersionExists(f"{destination} already exist.")
+            raise QuadPypeVersionExists(f"{destination} already exist.")
         else:
             # create destination parent directories even if they don't exist.
             destination.mkdir(parents=True)
 
         remove_source_file = False
         # version is directory
-        if openpype_version.path.is_dir():
+        if quadpype_version.path.is_dir():
             # create zip inside temporary directory.
             self._print("Creating zip from directory ...")
             self._progress_callback(0)
             with tempfile.TemporaryDirectory() as temp_dir:
                 temp_zip = \
-                    Path(temp_dir) / f"openpype-v{openpype_version}.zip"
+                    Path(temp_dir) / f"quadpype-v{quadpype_version}.zip"
                 self._print(f"creating zip: {temp_zip}")
 
-                self._create_openpype_zip(temp_zip, openpype_version.path)
+                self._create_quadpype_zip(temp_zip, quadpype_version.path)
                 if not os.path.exists(temp_zip):
                     self._print("make archive failed.", LOG_ERROR)
-                    raise OpenPypeVersionIOError("Zip creation failed.")
+                    raise QuadPypeVersionIOError("Zip creation failed.")
 
                 # set zip as version source
-                openpype_version.path = temp_zip
+                quadpype_version.path = temp_zip
 
-                if self.is_inside_user_data(openpype_version.path):
-                    raise OpenPypeVersionInvalid(
+                if self.is_inside_user_data(quadpype_version.path):
+                    raise QuadPypeVersionInvalid(
                         "Version is in user data dir.")
-                openpype_version.path = self._copy_zip(
-                    openpype_version.path, destination)
+                quadpype_version.path = self._copy_zip(
+                    quadpype_version.path, destination)
 
-        elif openpype_version.path.is_file():
+        elif quadpype_version.path.is_file():
             # check if file is zip (by extension)
-            if openpype_version.path.suffix.lower() != ".zip":
-                raise OpenPypeVersionInvalid("Invalid file format")
+            if quadpype_version.path.suffix.lower() != ".zip":
+                raise QuadPypeVersionInvalid("Invalid file format")
 
-            if not self.is_inside_user_data(openpype_version.path):
+            if not self.is_inside_user_data(quadpype_version.path):
                 self._progress_callback(35)
-                openpype_version.path = self._copy_zip(
-                    openpype_version.path, destination)
+                quadpype_version.path = self._copy_zip(
+                    quadpype_version.path, destination)
                 # Mark zip to be deleted when done
                 remove_source_file = True
 
         # extract zip there
         self._print("extracting zip to destination ...")
-        with ZipFileLongPaths(openpype_version.path, "r") as zip_ref:
+        with ZipFileLongPaths(quadpype_version.path, "r") as zip_ref:
             self._progress_callback(75)
             zip_ref.extractall(destination)
             self._progress_callback(100)
 
         # Remove zip file copied to local app data
         if remove_source_file:
-            os.remove(openpype_version.path)
+            os.remove(quadpype_version.path)
 
         return destination
 
@@ -1492,14 +1492,14 @@ class BootstrapRepos:
 
         return extension_id, extension_version
 
-    def update_zxp_extensions(self, openpype_version: OpenPypeVersion, extensions: [ZXPExtensionData]):
+    def update_zxp_extensions(self, quadpype_version: QuadPypeVersion, extensions: [ZXPExtensionData]):
         # Determine the user-specific Adobe extensions directory
         user_extensions_dir = Path(os.getenv('APPDATA'), 'Adobe', 'CEP', 'extensions')
 
         # Create the user extensions directory if it doesn't exist
         os.makedirs(user_extensions_dir, exist_ok=True)
 
-        version_path = openpype_version.path
+        version_path = quadpype_version.path
 
         for extension in extensions:
             # Remove installed ZXP extension
@@ -1510,7 +1510,7 @@ class BootstrapRepos:
                 shutil.rmtree(user_extensions_dir.joinpath(extension.host_id))
 
             # Install ZXP shipped in the current version folder
-            fullpath_curr_zxp_extension = version_path.joinpath("openpype",
+            fullpath_curr_zxp_extension = version_path.joinpath("quadpype",
                                                                 "hosts",
                                                                 extension.host_id,
                                                                 "api",
@@ -1536,8 +1536,8 @@ class BootstrapRepos:
             # Cleaned up temporary files removed zip_path
             os.remove(zip_path)
 
-    def get_zxp_extensions_to_update(self, openpype_version, system_settings, force=False) -> [ZXPExtensionData]:
-        # List of all Adobe software ids (named hosts) handled by OpenPype
+    def get_zxp_extensions_to_update(self, quadpype_version, system_settings, force=False) -> [ZXPExtensionData]:
+        # List of all Adobe software ids (named hosts) handled by QuadPype
         # TODO: where and how to store the list of Adobe software ids
         zxp_host_ids = ["photoshop", "aftereffects"]
 
@@ -1548,8 +1548,8 @@ class BootstrapRepos:
 
         zxp_hosts_to_update = []
         for zxp_host_id in zxp_host_ids:
-            version_path = openpype_version.path
-            path_manifest = version_path.joinpath("openpype", "hosts", zxp_host_id, "api", "extension", "CSXS",
+            version_path = quadpype_version.path
+            path_manifest = version_path.joinpath("quadpype", "hosts", zxp_host_id, "api", "extension", "CSXS",
                                                   "manifest.xml")
             extension_new_id, extension_new_version = self.extract_zxp_info_from_manifest(path_manifest)
             if not extension_new_id or not extension_new_version:
@@ -1592,31 +1592,31 @@ class BootstrapRepos:
             self._print(
                 "cannot copy version to user data directory", LOG_ERROR,
                 exc_info=True)
-            raise OpenPypeVersionIOError((
+            raise QuadPypeVersionIOError((
                 f"can't copy version {source.as_posix()} "
                 f"to destination {destination.parent.as_posix()}")) from e
         return _destination_zip
 
-    def _is_openpype_in_dir(self,
+    def _is_quadpype_in_dir(self,
                             dir_item: Path,
-                            detected_version: OpenPypeVersion) -> bool:
-        """Test if path item is OpenPype version matching detected version.
+                            detected_version: QuadPypeVersion) -> bool:
+        """Test if path item is QuadPype version matching detected version.
 
         If item is directory that might (based on it's name)
-        contain OpenPype version, check if it really does contain
-        OpenPype and that their versions matches.
+        contain QuadPype version, check if it really does contain
+        QuadPype and that their versions matches.
 
         Args:
             dir_item (Path): Directory to test.
-            detected_version (OpenPypeVersion): OpenPype version detected
+            detected_version (QuadPypeVersion): QuadPype version detected
                 from name.
 
         Returns:
-            True if it is valid OpenPype version, False otherwise.
+            True if it is valid QuadPype version, False otherwise.
 
         """
         try:
-            # add one 'openpype' level as inside dir there should
+            # add one 'quadpype' level as inside dir there should
             # be many other repositories.
             version_check = BootstrapRepos.get_version(dir_item)
         except ValueError:
@@ -1634,22 +1634,22 @@ class BootstrapRepos:
             return False
         return True
 
-    def _is_openpype_in_zip(self,
+    def _is_quadpype_in_zip(self,
                             zip_item: Path,
-                            detected_version: OpenPypeVersion) -> bool:
-        """Test if zip path is OpenPype version matching detected version.
+                            detected_version: QuadPypeVersion) -> bool:
+        """Test if zip path is QuadPype version matching detected version.
 
-        Open zip file, look inside and parse version from OpenPype
+        Open zip file, look inside and parse version from QuadPype
         inside it. If there is none, or it is different from
         version specified in file name, skip it.
 
         Args:
             zip_item (Path): Zip file to test.
-            detected_version (OpenPypeVersion): Pype version detected from
+            detected_version (QuadPypeVersion): Pype version detected from
                 name.
 
         Returns:
-           True if it is valid OpenPype version, False otherwise.
+           True if it is valid QuadPype version, False otherwise.
 
         """
         # skip non-zip files
@@ -1659,11 +1659,11 @@ class BootstrapRepos:
         try:
             with ZipFile(zip_item, "r") as zip_file:
                 with zip_file.open(
-                        "openpype/version.py") as version_file:
+                        "quadpype/version.py") as version_file:
                     zip_version = {}
                     exec(version_file.read(), zip_version)
                     try:
-                        version_check = OpenPypeVersion(
+                        version_check = QuadPypeVersion(
                             version=zip_version["__version__"])
                     except ValueError as e:
                         self._print(str(e), True)
@@ -1683,70 +1683,70 @@ class BootstrapRepos:
             self._print(f"{zip_item} is not a zip file", True)
             return False
         except KeyError:
-            self._print("Zip does not contain OpenPype", True)
+            self._print("Zip does not contain QuadPype", True)
             return False
         return True
 
-    def get_openpype_versions(self, openpype_dir: Path) -> list:
-        """Get all detected OpenPype versions in directory.
+    def get_quadpype_versions(self, quadpype_dir: Path) -> list:
+        """Get all detected QuadPype versions in directory.
 
         Args:
-            openpype_dir (Path): Directory to scan.
+            quadpype_dir (Path): Directory to scan.
 
         Returns:
-            list of OpenPypeVersion
+            list of QuadPypeVersion
 
         Throws:
             ValueError: if invalid path is specified.
 
         """
-        if not openpype_dir.exists() and not openpype_dir.is_dir():
-            raise ValueError(f"specified directory {openpype_dir} is invalid")
+        if not quadpype_dir.exists() and not quadpype_dir.is_dir():
+            raise ValueError(f"specified directory {quadpype_dir} is invalid")
 
-        openpype_versions = []
+        quadpype_versions = []
         # iterate over directory in first level and find all that might
-        # contain OpenPype.
-        for item in openpype_dir.iterdir():
+        # contain QuadPype.
+        for item in quadpype_dir.iterdir():
             # if the item is directory with major.minor version, dive deeper
             if item.is_dir() and re.match(r"^\d+\.\d+$", item.name):
-                _versions = self.get_openpype_versions(item)
+                _versions = self.get_quadpype_versions(item)
                 if _versions:
-                    openpype_versions += _versions
+                    quadpype_versions += _versions
 
             # if it is file, strip extension, in case of dir don't.
             name = item.name if item.is_dir() else item.stem
-            result = OpenPypeVersion.version_in_str(name)
+            result = QuadPypeVersion.version_in_str(name)
 
             if result:
-                detected_version: OpenPypeVersion
+                detected_version: QuadPypeVersion
                 detected_version = result
 
-                if item.is_dir() and not self._is_openpype_in_dir(
+                if item.is_dir() and not self._is_quadpype_in_dir(
                         item, detected_version
                 ):
                     continue
 
-                if item.is_file() and not self._is_openpype_in_zip(
+                if item.is_file() and not self._is_quadpype_in_zip(
                         item, detected_version
                 ):
                     continue
 
                 detected_version.path = item
-                openpype_versions.append(detected_version)
+                quadpype_versions.append(detected_version)
 
-        return sorted(openpype_versions)
+        return sorted(quadpype_versions)
 
 
-class OpenPypeVersionExists(Exception):
-    """Exception for handling existing OpenPype version."""
+class QuadPypeVersionExists(Exception):
+    """Exception for handling existing QuadPype version."""
     pass
 
 
-class OpenPypeVersionInvalid(Exception):
-    """Exception for handling invalid OpenPype version."""
+class QuadPypeVersionInvalid(Exception):
+    """Exception for handling invalid QuadPype version."""
     pass
 
 
-class OpenPypeVersionIOError(Exception):
-    """Exception for handling IO errors in OpenPype version."""
+class QuadPypeVersionIOError(Exception):
+    """Exception for handling IO errors in QuadPype version."""
     pass

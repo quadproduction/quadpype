@@ -1,5 +1,5 @@
-from openpype.pipeline import LegacyCreator
-import openpype.hosts.harmony.api as harmony
+from quadpype.pipeline import LegacyCreator
+import quadpype.hosts.harmony.api as harmony
 
 
 class Creator(LegacyCreator):

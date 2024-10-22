@@ -3,24 +3,24 @@ import getpass
 import copy
 import attr
 
-from openpype.lib import (
+from quadpype.lib import (
     TextDef,
     BoolDef,
     NumberDef,
 )
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline import (
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline import (
     legacy_io,
-    OpenPypePyblishPluginMixin
+    QuadPypePyblishPluginMixin
 )
-from openpype.pipeline.publish.lib import (
+from quadpype.pipeline.publish.lib import (
     replace_with_published_scene_path
 )
-from openpype.pipeline.publish import KnownPublishError
-from openpype_modules.deadline import abstract_submit_deadline
-from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
-from openpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs
-from openpype.lib import is_running_from_build
+from quadpype.pipeline.publish import KnownPublishError
+from quadpype_modules.deadline import abstract_submit_deadline
+from quadpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from quadpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs
+from quadpype.lib import is_running_from_build
 
 
 @attr.s
@@ -32,7 +32,7 @@ class MaxPluginInfo(object):
 
 
 class MaxSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
-                        OpenPypePyblishPluginMixin, DeadlineDefaultJobAttrs):
+                        QuadPypePyblishPluginMixin, DeadlineDefaultJobAttrs):
 
     label = "Submit Render to Deadline"
     hosts = ["max"]
@@ -114,7 +114,7 @@ class MaxSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
             "IS_TEST"
         ]
 
-        # Add OpenPype version if we are running from build.
+        # Add QuadPype version if we are running from build.
         if is_running_from_build():
             keys.append("QUADPYPE_VERSION")
 
@@ -198,11 +198,11 @@ class MaxSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
 
     def _use_published_name(self, data, project_settings):
         # Not all hosts can import these modules.
-        from openpype.hosts.max.api.lib import (
+        from quadpype.hosts.max.api.lib import (
             get_current_renderer,
             get_multipass_setting
         )
-        from openpype.hosts.max.api.lib_rendersettings import RenderSettings
+        from quadpype.hosts.max.api.lib_rendersettings import RenderSettings
 
         instance = self._instance
         job_info = copy.deepcopy(self.job_info)
@@ -291,8 +291,8 @@ class MaxSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         Args:
             infos(dict): a dictionary with plugin info.
         """
-        from openpype.hosts.max.api.lib import get_current_renderer
-        from openpype.hosts.max.api.lib_rendersettings import RenderSettings
+        from quadpype.hosts.max.api.lib import get_current_renderer
+        from quadpype.hosts.max.api.lib_rendersettings import RenderSettings
 
         instance = self._instance
         # set the target camera
@@ -359,7 +359,7 @@ class MaxSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
             job_info_list (list): A list of multiple job infos
             plugin_info_list (list): A list of multiple plugin infos
         """
-        from openpype.hosts.max.api.lib import get_multipass_setting
+        from quadpype.hosts.max.api.lib import get_multipass_setting
 
         job_info_list = []
         plugin_info_list = []

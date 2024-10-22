@@ -2,8 +2,8 @@ from maya import cmds
 
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     OptionalPyblishPluginMixin
 )
@@ -23,7 +23,7 @@ class ValidateSkinclusterDeformerSet(pyblish.api.InstancePlugin,
     hosts = ['maya']
     families = ['fbx']
     label = "Skincluster Deformer Relationships"
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = False
 
     def process(self, instance):

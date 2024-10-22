@@ -1,6 +1,6 @@
-"""Ease the OpenPype on-boarding process by loading the plug-in on first run"""
+"""Ease the QuadPype on-boarding process by loading the plug-in on first run"""
 
-QUADPYPE_PLUGIN_NAME = "openpype_plugin"
+QUADPYPE_PLUGIN_NAME = "quadpype_plugin"
 
 
 def start_plugin():
@@ -21,7 +21,7 @@ def start_plugin():
 
         settings = get_settings(QUADPYPE_PLUGIN_NAME)
         if settings.value(LAUNCH_AT_START_KEY, None) is None:
-            print("Initializing OpenPype plug-in on first run...")
+            print("Initializing QuadPype plug-in on first run...")
             if is_before_plugins_menu:
                 print("- running before 'painter_plugins_ui'")
                 # Delay the launch to the painter_plugins_ui initialization

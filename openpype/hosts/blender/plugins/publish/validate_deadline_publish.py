@@ -3,13 +3,13 @@ import os
 import bpy
 
 import pyblish.api
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
-from openpype.hosts.blender.api.render_lib import prepare_rendering
+from quadpype.hosts.blender.api.render_lib import prepare_rendering
 
 
 class ValidateDeadlinePublish(pyblish.api.InstancePlugin,

@@ -1,8 +1,8 @@
 import os
 
 import ftrack_api
-from openpype.settings import get_project_settings
-from openpype.lib.applications import PostLaunchHook, LaunchTypes
+from quadpype.settings import get_project_settings
+from quadpype.lib.applications import PostLaunchHook, LaunchTypes
 
 
 class PostFtrackHook(PostLaunchHook):

@@ -16,7 +16,7 @@ import os
 import tempfile
 
 import pyblish.api
-from openpype.lib import (
+from quadpype.lib import (
     get_ffmpeg_tool_args,
     get_oiio_tool_args,
     is_oiio_supported,

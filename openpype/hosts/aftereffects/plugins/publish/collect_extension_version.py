@@ -2,7 +2,7 @@ import os
 import re
 import pyblish.api
 
-from openpype.hosts.aftereffects.api import (
+from quadpype.hosts.aftereffects.api import (
     get_stub,
     get_extension_manifest_path
 )

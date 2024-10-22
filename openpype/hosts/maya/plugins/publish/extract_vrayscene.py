@@ -3,9 +3,9 @@
 import os
 import re
 
-from openpype.pipeline import publish
-from openpype.hosts.maya.api.render_setup_tools import export_in_rs_layer
-from openpype.hosts.maya.api.lib import maintained_selection
+from quadpype.pipeline import publish
+from quadpype.hosts.maya.api.render_setup_tools import export_in_rs_layer
+from quadpype.hosts.maya.api.lib import maintained_selection
 
 from maya import cmds
 

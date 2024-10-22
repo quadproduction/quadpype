@@ -3,9 +3,9 @@ import os
 from maya import cmds, mel
 import pyblish.api
 
-from openpype.pipeline import publish
-from openpype.hosts.maya.api import lib
-from openpype.hosts.maya.api.gltf import extract_gltf
+from quadpype.pipeline import publish
+from quadpype.hosts.maya.api import lib
+from quadpype.hosts.maya.api.gltf import extract_gltf
 
 
 class ExtractGLB(publish.Extractor):

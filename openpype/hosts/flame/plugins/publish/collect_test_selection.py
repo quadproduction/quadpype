@@ -1,8 +1,8 @@
 import os
 import pyblish.api
 import tempfile
-import openpype.hosts.flame.api as opfapi
-from openpype.hosts.flame.otio import flame_export as otio_export
+import quadpype.hosts.flame.api as opfapi
+from quadpype.hosts.flame.otio import flame_export as otio_export
 import opentimelineio as otio
 from pprint import pformat
 reload(otio_export)  # noqa
@@ -54,7 +54,7 @@ class CollectTestSelection(pyblish.api.ContextPlugin):
                 if str(segment.name)[1:-1] == "":
                     continue
 
-                self.log.debug("Segment with OpenPypeData: {}".format(
+                self.log.debug("Segment with QuadPypeData: {}".format(
                     segment.name))
 
                 opfapi.imprint(segment, {

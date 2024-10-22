@@ -7,7 +7,7 @@ from qtpy.QtGui import QPixmap
 
 import hiero.ui
 
-from openpype.hosts.hiero.api.otio import hiero_export
+from quadpype.hosts.hiero.api.otio import hiero_export
 
 
 class PrecollectWorkfile(pyblish.api.ContextPlugin):

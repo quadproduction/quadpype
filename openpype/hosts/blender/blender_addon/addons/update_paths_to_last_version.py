@@ -2,8 +2,8 @@ import os
 import logging
 import re
 
-from openpype.hosts.blender.api.pipeline import get_path_from_template
-from openpype.pipeline.anatomy import Anatomy
+from quadpype.hosts.blender.api.pipeline import get_path_from_template
+from quadpype.pipeline.anatomy import Anatomy
 
 import bpy
 

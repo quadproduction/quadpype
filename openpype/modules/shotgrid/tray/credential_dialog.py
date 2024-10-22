@@ -1,9 +1,9 @@
 import os
 from qtpy import QtCore, QtWidgets, QtGui
 
-from openpype import style
-from openpype import resources
-from openpype.modules.shotgrid.lib import settings, credentials
+from quadpype import style
+from quadpype import resources
+from quadpype.modules.shotgrid.lib import settings, credentials
 
 
 class CredentialsDialog(QtWidgets.QDialog):
@@ -31,7 +31,7 @@ class CredentialsDialog(QtWidgets.QDialog):
         self._module = module
         self._is_logged = False
 
-        self.setWindowTitle("OpenPype - Shotgrid Login")
+        self.setWindowTitle("QuadPype - Shotgrid Login")
 
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)

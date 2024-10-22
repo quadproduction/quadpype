@@ -3,15 +3,15 @@ from pathlib import Path
 
 import unreal
 
-from openpype.hosts.unreal.api.pipeline import (
+from quadpype.hosts.unreal.api.pipeline import (
     UNREAL_VERSION,
     create_folder,
     get_subsequences,
 )
-from openpype.hosts.unreal.api.plugin import (
+from quadpype.hosts.unreal.api.plugin import (
     UnrealAssetCreator
 )
-from openpype.lib import (
+from quadpype.lib import (
     UILabelDef,
     UISeparatorDef,
     BoolDef,
@@ -139,7 +139,7 @@ class CreateRender(UnrealAssetCreator):
                 # The asset name is the the third element of the path which
                 # contains the map.
                 # To take the asset name, we remove from the path the prefix
-                # "/Game/OpenPype/" and then we split the path by "/".
+                # "/Game/QuadPype/" and then we split the path by "/".
                 sel_path = selected_asset_path
                 asset_name = sel_path.replace(
                     "/Game/Ayon/", "").split("/")[0]

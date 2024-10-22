@@ -54,11 +54,11 @@ realpath () {
 # Main
 main () {
   # Directories
-  openpype_root=$(dirname $(realpath $(dirname $(dirname "${BASH_SOURCE[0]}"))))
-  pushd "$openpype_root" > /dev/null || return > /dev/null
+  quadpype_root=$(dirname $(realpath $(dirname $(dirname "${BASH_SOURCE[0]}"))))
+  pushd "$quadpype_root" > /dev/null || return > /dev/null
 
   mongo_port=2707
-  dbpath="$(dirname $openpype_root)/mongo_db_data"
+  dbpath="$(dirname $quadpype_root)/mongo_db_data"
 
   echo -e "${BIGreen}>>>${RST} Running mongodb ..."
   mongod --dbpath "$dbpath" --port $mongo_port

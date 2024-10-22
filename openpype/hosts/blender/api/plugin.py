@@ -6,12 +6,12 @@ from typing import Dict, List, Optional
 
 import bpy
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     Creator,
     CreatedInstance,
     LoaderPlugin,
 )
-from openpype.lib import BoolDef
+from quadpype.lib import BoolDef
 
 from .pipeline import (
     AVALON_CONTAINERS,
@@ -488,7 +488,7 @@ class AssetLoader(LoaderPlugin):
         # Only containerise if it's not already a collection from a .blend file.
         # representation = context["representation"]["name"]
         # if representation != "blend":
-        #     from openpype.hosts.blender.api.pipeline import containerise
+        #     from quadpype.hosts.blender.api.pipeline import containerise
         #     return containerise(
         #         name=name,
         #         namespace=namespace,

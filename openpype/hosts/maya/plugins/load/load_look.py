@@ -5,19 +5,19 @@ from collections import defaultdict
 
 from qtpy import QtWidgets
 
-from openpype.client import get_representation_by_name
-from openpype.pipeline import (
+from quadpype.client import get_representation_by_name
+from quadpype.pipeline import (
     get_current_project_name,
     get_representation_path,
 )
-import openpype.hosts.maya.api.plugin
-from openpype.hosts.maya.api import lib
-from openpype.widgets.message_window import ScrollMessageBox
+import quadpype.hosts.maya.api.plugin
+from quadpype.hosts.maya.api import lib
+from quadpype.widgets.message_window import ScrollMessageBox
 
-from openpype.hosts.maya.api.lib import get_reference_node
+from quadpype.hosts.maya.api.lib import get_reference_node
 
 
-class LookLoader(openpype.hosts.maya.api.plugin.ReferenceLoader):
+class LookLoader(quadpype.hosts.maya.api.plugin.ReferenceLoader):
     """Specific loader for lookdev"""
 
     families = ["look"]

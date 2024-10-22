@@ -8,15 +8,15 @@ import requests
 
 import pyblish.api
 
-from openpype.client import (
+from quadpype.client import (
     get_last_version_by_subset_name,
 )
-from openpype.pipeline import publish, legacy_io
-from openpype.lib import EnumDef, is_running_from_build
-from openpype.tests.lib import is_in_tests
-from openpype.pipeline.version_start import get_versioning_start
+from quadpype.pipeline import publish, legacy_io
+from quadpype.lib import EnumDef, is_running_from_build
+from quadpype.tests.lib import is_in_tests
+from quadpype.pipeline.version_start import get_versioning_start
 
-from openpype.pipeline.farm.pyblish_functions import (
+from quadpype.pipeline.farm.pyblish_functions import (
     create_skeleton_instance_cache,
     create_instances_for_cache,
     attach_instances_to_subset,
@@ -26,7 +26,7 @@ from openpype.pipeline.farm.pyblish_functions import (
 
 
 class ProcessSubmittedCacheJobOnFarm(pyblish.api.InstancePlugin,
-                                     publish.OpenPypePyblishPluginMixin,
+                                     publish.QuadPypePyblishPluginMixin,
                                      publish.ColormanagedPyblishPluginMixin):
     """Process Cache Job submitted on farm
     This is replicated version of submit publish job
@@ -142,8 +142,8 @@ class ProcessSubmittedCacheJobOnFarm(pyblish.api.InstancePlugin,
         environment["QUADPYPE_PUBLISH_JOB"] = "1"
         environment["QUADPYPE_RENDER_JOB"] = "0"
         environment["QUADPYPE_REMOTE_PUBLISH"] = "0"
-        deadline_plugin = "OpenPype"
-        # Add OpenPype version if we are running from build.
+        deadline_plugin = "QuadPype"
+        # Add QuadPype version if we are running from build.
         if is_running_from_build():
             self.environ_keys.append("QUADPYPE_VERSION")
 
@@ -417,7 +417,7 @@ class ProcessSubmittedCacheJobOnFarm(pyblish.api.InstancePlugin,
                     get publish_path
 
         Args:
-            anatomy (openpype.pipeline.anatomy.Anatomy):
+            anatomy (quadpype.pipeline.anatomy.Anatomy):
             template_data (dict): pre-calculated collected data for process
             asset (string): asset name
             subset (string): subset name (actually group name of subset)

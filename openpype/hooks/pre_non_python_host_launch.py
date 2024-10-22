@@ -1,13 +1,13 @@
 import os
 
-from openpype.lib import get_openpype_execute_args
-from openpype.lib.applications import (
+from quadpype.lib import get_quadpype_execute_args
+from quadpype.lib.applications import (
     get_non_python_host_kwargs,
     PreLaunchHook,
     LaunchTypes,
 )
 
-from openpype import PACKAGE_DIR as QUADPYPE_DIR
+from quadpype import PACKAGE_DIR as QUADPYPE_DIR
 
 
 class NonPythonHostHook(PreLaunchHook):
@@ -15,7 +15,7 @@ class NonPythonHostHook(PreLaunchHook):
 
     Non python host implementation do not launch host directly but use
     python script which launch the host. For these cases it is necessary to
-    prepend python (or openpype) executable and script path before application's.
+    prepend python (or quadpype) executable and script path before application's.
     """
     app_groups = {"harmony", "photoshop", "aftereffects"}
 
@@ -37,7 +37,7 @@ class NonPythonHostHook(PreLaunchHook):
             "non_python_host_launch.py"
         )
 
-        new_launch_args = get_openpype_execute_args(
+        new_launch_args = get_quadpype_execute_args(
             "run", script_path, executable_path
         )
         # Add workfile path if exists

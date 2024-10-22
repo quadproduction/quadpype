@@ -9,19 +9,19 @@ import collections
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 
-from openpype.lib.attribute_definitions import UnknownDef
-from openpype.tools.attribute_defs import create_widget_for_attr_def
-from openpype.tools import resources
-from openpype.tools.flickcharm import FlickCharm
-from openpype.tools.utils import (
+from quadpype.lib.attribute_definitions import UnknownDef
+from quadpype.tools.attribute_defs import create_widget_for_attr_def
+from quadpype.tools import resources
+from quadpype.tools.flickcharm import FlickCharm
+from quadpype.tools.utils import (
     PlaceholderLineEdit,
     IconButton,
     PixmapLabel,
     BaseClickableFrame,
     set_style_property,
 )
-from openpype.style import get_objected_colors
-from openpype.pipeline.create import (
+from quadpype.style import get_objected_colors
+from quadpype.pipeline.create import (
     SUBSET_NAME_ALLOWED_SYMBOLS,
     TaskNotSetError,
 )
@@ -1330,8 +1330,8 @@ class CreatorAttrsWidget(QtWidgets.QWidget):
 
     Attributes are defined on creator so are dynamic. Their look and type is
     based on attribute definitions that are defined in
-    `~/openpype/pipeline/lib/attribute_definitions.py` and their widget
-    representation in `~/openpype/tools/attribute_defs/*`.
+    `~/quadpype/pipeline/lib/attribute_definitions.py` and their widget
+    representation in `~/quadpype/tools/attribute_defs/*`.
 
     Widgets are disabled if context of instance is not valid.
 
@@ -1463,13 +1463,13 @@ class PublishPluginAttrsWidget(QtWidgets.QWidget):
     """Widget showing publsish plugin attributes for selected instances.
 
     Attributes are defined on publish plugins. Publish plugin may define
-    attribute definitions but must inherit `OpenPypePyblishPluginMixin`
-    (~/openpype/pipeline/publish). At the moment requires to implement
+    attribute definitions but must inherit `QuadPypePyblishPluginMixin`
+    (~/quadpype/pipeline/publish). At the moment requires to implement
     `get_attribute_defs` and `convert_attribute_values` class methods.
 
     Look and type of attributes is based on attribute definitions that are
-    defined in `~/openpype/pipeline/lib/attribute_definitions.py` and their
-    widget representation in `~/openpype/tools/attribute_defs/*`.
+    defined in `~/quadpype/pipeline/lib/attribute_definitions.py` and their
+    widget representation in `~/quadpype/tools/attribute_defs/*`.
 
     Widgets are disabled if context of instance is not valid.
 

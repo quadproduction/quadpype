@@ -1,7 +1,7 @@
 import pyblish.api
 
-from openpype.lib import version_up
-from openpype.pipeline import registered_host
+from quadpype.lib import version_up
+from quadpype.pipeline import registered_host
 
 
 class IncrementWorkfileVersion(pyblish.api.ContextPlugin):

@@ -3,19 +3,19 @@ import sys
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.tools.utils import host_tools
-from openpype.style import load_stylesheet
-from openpype.lib import register_event_callback
-from openpype.hosts.fusion.scripts import (
+from quadpype.tools.utils import host_tools
+from quadpype.style import load_stylesheet
+from quadpype.lib import register_event_callback
+from quadpype.hosts.fusion.scripts import (
     duplicate_with_inputs,
 )
-from openpype.hosts.fusion.api.lib import (
+from quadpype.hosts.fusion.api.lib import (
     set_asset_framerange,
     set_asset_resolution,
 )
-from openpype.pipeline import get_current_asset_name
-from openpype.resources import get_app_icon_filepath
-from openpype.tools.utils import get_qt_app
+from quadpype.pipeline import get_current_asset_name
+from quadpype.resources import get_app_icon_filepath
+from quadpype.tools.utils import get_qt_app
 
 from .pipeline import FusionEventHandler
 from .pulse import FusionPulse
@@ -28,7 +28,7 @@ self = sys.modules[__name__]
 self.menu = None
 
 
-class OpenPypeMenu(QtWidgets.QWidget):
+class QuadPypeMenu(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -125,7 +125,7 @@ class OpenPypeMenu(QtWidgets.QWidget):
         self._pulse = FusionPulse(parent=self)
         self._pulse.start()
 
-        # Detect Fusion events as OpenPype events
+        # Detect Fusion events as QuadPype events
         self._event_handler = FusionEventHandler(parent=self)
         self._event_handler.start()
 
@@ -174,11 +174,11 @@ class OpenPypeMenu(QtWidgets.QWidget):
         set_asset_framerange()
 
 
-def launch_openpype_menu():
+def launch_quadpype_menu():
 
     app = get_qt_app()
 
-    pype_menu = OpenPypeMenu()
+    pype_menu = QuadPypeMenu()
 
     stylesheet = load_stylesheet()
     pype_menu.setStyleSheet(stylesheet)

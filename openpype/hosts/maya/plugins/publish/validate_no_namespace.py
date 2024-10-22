@@ -1,14 +1,14 @@
 import maya.cmds as cmds
 
 import pyblish.api
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
 
-import openpype.hosts.maya.api.action
+import quadpype.hosts.maya.api.action
 
 
 def _as_report_list(values, prefix="- ", suffix="\n"):
@@ -33,7 +33,7 @@ class ValidateNoNamespace(pyblish.api.InstancePlugin,
     hosts = ['maya']
     families = ['model']
     label = 'No Namespaces'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction,
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction,
                RepairAction]
     optional = False
 

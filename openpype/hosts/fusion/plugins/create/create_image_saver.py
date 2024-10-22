@@ -1,7 +1,7 @@
-from openpype.lib import NumberDef
+from quadpype.lib import NumberDef
 
-from openpype.hosts.fusion.api.plugin import GenericCreateSaver
-from openpype.hosts.fusion.api import get_current_comp
+from quadpype.hosts.fusion.api.plugin import GenericCreateSaver
+from quadpype.hosts.fusion.api import get_current_comp
 
 
 class CreateImageSaver(GenericCreateSaver):
@@ -14,7 +14,7 @@ class CreateImageSaver(GenericCreateSaver):
     implemented to limit creation of additional product types with similar, but
     not the same workflows.
     """
-    identifier = "io.openpype.creators.fusion.imagesaver"
+    identifier = "io.quadpype.creators.fusion.imagesaver"
     label = "Image (saver)"
     name = "image"
     family = "image"

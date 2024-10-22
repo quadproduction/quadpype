@@ -1,8 +1,8 @@
 from qtpy import QtWidgets, QtGui
 
-from openpype import style
+from quadpype import style
 
-from openpype.settings import (
+from quadpype.settings import (
     SystemSettings,
     ProjectSettings,
 
@@ -12,19 +12,19 @@ from openpype.settings import (
     MODULES_SETTINGS_KEY,
     PROJECTS_SETTINGS_KEY
 )
-from openpype.settings.lib import (
+from quadpype.settings.lib import (
     get_local_settings,
     save_local_settings
 )
-from openpype.lib import Logger
-from openpype.tools.settings import CHILD_OFFSET
-from openpype.tools.utils import MessageOverlayObject
-from openpype.modules import ModulesManager
+from quadpype.lib import Logger
+from quadpype.tools.settings import CHILD_OFFSET
+from quadpype.tools.utils import MessageOverlayObject
+from quadpype.modules import ModulesManager
 
 from .widgets import (
     ExpandingWidget
 )
-from .mongo_widget import OpenPypeMongoWidget
+from .mongo_widget import QuadPypeMongoWidget
 from .general_widget import LocalGeneralWidgets
 from .experimental_widget import (
     LocalExperimentalToolsWidgets,
@@ -67,13 +67,13 @@ class LocalSettingsWidget(QtWidgets.QWidget):
         self.main_layout.addStretch(1)
 
     def _create_mongo_url_ui(self):
-        pype_mongo_expand_widget = ExpandingWidget("OpenPype Mongo URL", self)
+        pype_mongo_expand_widget = ExpandingWidget("QuadPype Mongo URL", self)
         pype_mongo_content = QtWidgets.QWidget(self)
         pype_mongo_layout = QtWidgets.QVBoxLayout(pype_mongo_content)
         pype_mongo_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 0)
         pype_mongo_expand_widget.set_content_widget(pype_mongo_content)
 
-        pype_mongo_widget = OpenPypeMongoWidget(self)
+        pype_mongo_widget = QuadPypeMongoWidget(self)
         pype_mongo_layout.addWidget(pype_mongo_widget)
 
         self.main_layout.addWidget(pype_mongo_expand_widget)
@@ -245,7 +245,7 @@ class LocalSettingsWindow(QtWidgets.QWidget):
 
         self.resize(1000, 600)
 
-        self.setWindowTitle("OpenPype Local settings")
+        self.setWindowTitle("QuadPype Local settings")
 
         overlay_object = MessageOverlayObject(self)
 
@@ -326,7 +326,7 @@ class LocalSettingsWindow(QtWidgets.QWidget):
         title = "Something went wrong"
         msg = (
             "Bug: Loading of settings failed."
-            " Please contact your project manager or OpenPype team."
+            " Please contact your project manager or QuadPype team."
             "\n\nError message:\n{}"
         ).format(error_msg)
 

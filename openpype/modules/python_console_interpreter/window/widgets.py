@@ -7,13 +7,13 @@ from code import InteractiveInterpreter
 import appdirs
 from qtpy import QtCore, QtWidgets, QtGui
 
-from openpype import resources
-from openpype.style import load_stylesheet
-from openpype.lib import JSONSettingRegistry
+from quadpype import resources
+from quadpype.style import load_stylesheet
+from quadpype.lib import JSONSettingRegistry
 
 
 class PythonInterpreterRegistry(JSONSettingRegistry):
-    """Class handling OpenPype general settings registry.
+    """Class handling QuadPype general settings registry.
 
     Attributes:
         vendor (str): Name used for path construction.

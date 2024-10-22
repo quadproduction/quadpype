@@ -1,3 +1,3 @@
-QUADPYPE_TAG_NAME = "openpypeData"
-DEFAULT_SEQUENCE_NAME = "openpypeSequence"
-DEFAULT_BIN_NAME = "openpypeBin"
+QUADPYPE_TAG_NAME = "quadpypeData"
+DEFAULT_SEQUENCE_NAME = "quadpypeSequence"
+DEFAULT_BIN_NAME = "quadpypeBin"

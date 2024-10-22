@@ -13,7 +13,7 @@ from .plugin import (
     NukeCreator,
     NukeWriteCreator,
     NukeCreatorError,
-    OpenPypeCreator,
+    QuadPypeCreator,
     get_instance_group_node_childs,
     get_colorspace_from_node
 )
@@ -69,7 +69,7 @@ __all__ = (
     "NukeCreator",
     "NukeWriteCreator",
     "NukeCreatorError",
-    "OpenPypeCreator",
+    "QuadPypeCreator",
     "NukeHost",
     "get_instance_group_node_childs",
     "get_colorspace_from_node",

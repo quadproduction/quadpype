@@ -2,13 +2,13 @@ import os
 
 import maya.cmds as cmds
 
-from openpype.hosts.maya.api.pipeline import containerise
-from openpype.hosts.maya.api.lib import unique_namespace
-from openpype.pipeline import (
+from quadpype.hosts.maya.api.pipeline import containerise
+from quadpype.hosts.maya.api.lib import unique_namespace
+from quadpype.pipeline import (
     load,
     get_representation_path
 )
-from openpype.settings import get_project_settings
+from quadpype.settings import get_project_settings
 
 
 class GpuCacheLoader(load.LoaderPlugin):

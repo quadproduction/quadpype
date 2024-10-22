@@ -11,14 +11,14 @@ from . import ops
 
 import pyblish.api
 
-from openpype.host import (
+from quadpype.host import (
     HostBase,
     IWorkfileHost,
     IPublishHost,
     ILoadHost
 )
-from openpype.client import get_asset_by_name
-from openpype.pipeline import (
+from quadpype.client import get_asset_by_name
+from quadpype.pipeline import (
     schema,
     legacy_io,
     get_current_project_name,
@@ -31,15 +31,15 @@ from openpype.pipeline import (
     Anatomy,
 )
 
-from openpype.pipeline.context_tools import get_template_data_from_session
-from openpype.lib import (
+from quadpype.pipeline.context_tools import get_template_data_from_session
+from quadpype.lib import (
     Logger,
     register_event_callback,
     emit_event,
     StringTemplate
 )
-import openpype.hosts.blender
-from openpype.settings import get_project_settings
+import quadpype.hosts.blender
+from quadpype.settings import get_project_settings
 from .workio import (
     open_file,
     save_file,
@@ -50,7 +50,7 @@ from .workio import (
 )
 
 
-HOST_DIR = os.path.dirname(os.path.abspath(openpype.hosts.blender.__file__))
+HOST_DIR = os.path.dirname(os.path.abspath(quadpype.hosts.blender.__file__))
 PLUGINS_DIR = os.path.join(HOST_DIR, "plugins")
 PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
 LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
@@ -203,7 +203,7 @@ def uninstall():
 
 
 def show_message(title, message):
-    from openpype.widgets.message_window import Window
+    from quadpype.widgets.message_window import Window
     from .ops import BlenderApplication
 
     BlenderApplication.get_app()
@@ -485,7 +485,7 @@ def containerise(name: str,
         container.objects.link(obj)
 
     data = {
-        "schema": "openpype:container-2.0",
+        "schema": "quadpype:container-2.0",
         "id": AVALON_CONTAINER_ID,
         "name": name,
         "namespace": namespace or '',
@@ -524,7 +524,7 @@ def containerise_existing(
         node_name = f"{node_name}_{suffix}"
     container.name = node_name
     data = {
-        "schema": "openpype:container-2.0",
+        "schema": "quadpype:container-2.0",
         "id": AVALON_CONTAINER_ID,
         "name": name,
         "namespace": namespace or '',

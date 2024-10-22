@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating pointcache alembics."""
-from openpype.hosts.houdini.api import plugin
-from openpype.pipeline import CreatedInstance
-from openpype.lib import BoolDef
+from quadpype.hosts.houdini.api import plugin
+from quadpype.pipeline import CreatedInstance
+from quadpype.lib import BoolDef
 
 
 class CreateMantraIFD(plugin.HoudiniCreator):
     """Mantra .ifd Archive"""
-    identifier = "io.openpype.creators.houdini.mantraifd"
+    identifier = "io.quadpype.creators.houdini.mantraifd"
     label = "Mantra IFD"
     family = "mantraifd"
     icon = "gears"

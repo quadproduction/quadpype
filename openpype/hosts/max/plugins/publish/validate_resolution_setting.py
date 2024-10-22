@@ -1,13 +1,13 @@
 import pyblish.api
 from pymxs import runtime as rt
-from openpype.pipeline import (
+from quadpype.pipeline import (
     OptionalPyblishPluginMixin
 )
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     RepairAction,
     PublishValidationError
 )
-from openpype.hosts.max.api.lib import reset_scene_resolution
+from quadpype.hosts.max.api.lib import reset_scene_resolution
 
 
 class ValidateResolutionSetting(pyblish.api.InstancePlugin,

@@ -3,18 +3,18 @@ import uuid
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 
-from openpype.client import get_projects
-from openpype.style import get_objected_colors
-from openpype.tools.utils.widgets import ImageButton
-from openpype.tools.utils.lib import paint_image_with_color
+from quadpype.client import get_projects
+from quadpype.style import get_objected_colors
+from quadpype.tools.utils.widgets import ImageButton
+from quadpype.tools.utils.lib import paint_image_with_color
 
-from openpype.widgets.nice_checkbox import NiceCheckbox
-from openpype.tools.utils import (
+from quadpype.widgets.nice_checkbox import NiceCheckbox
+from quadpype.tools.utils import (
     PlaceholderLineEdit,
     DynamicQThread
 )
-from openpype.settings.lib import find_closest_version_for_projects
-from openpype.lib import get_openpype_version
+from quadpype.settings.lib import find_closest_version_for_projects
+from quadpype.lib import get_quadpype_version
 from .images import (
     get_pixmap,
     get_image
@@ -853,7 +853,7 @@ class ProjectModel(QtGui.QStandardItemModel):
         font_color = get_objected_colors("font").get_qcolor()
         font_color.setAlpha(67)
         self._version_font_color = font_color
-        self._current_version = get_openpype_version()
+        self._current_version = get_quadpype_version()
 
         self._version_refresh_threads = []
         self._version_refresh_id = None

@@ -1535,21 +1535,21 @@ def get_workfile_info(
 - Webpublisher - jobs
 - Ftrack - events
 - Maya - Shaders
-    - openpype/hosts/maya/api/shader_definition_editor.py
-    - openpype/hosts/maya/plugins/publish/validate_model_name.py
+    - quadpype/hosts/maya/api/shader_definition_editor.py
+    - quadpype/hosts/maya/plugins/publish/validate_model_name.py
 
 ## Global publish plugins
-- openpype/plugins/publish/extract_hierarchy_avalon.py
+- quadpype/plugins/publish/extract_hierarchy_avalon.py
     Create:
     - asset
     Update:
     - asset
 
 ## Lib
-- openpype/lib/avalon_context.py
+- quadpype/lib/avalon_context.py
     Update:
     - workfile data
-- openpype/lib/project_backpack.py
+- quadpype/lib/project_backpack.py
     Update:
     - project
 """

@@ -2,13 +2,13 @@ import os
 import platform
 
 
-from openpype.client import get_asset_by_name
-from openpype.modules import (
-    OpenPypeModule,
+from quadpype.client import get_asset_by_name
+from quadpype.modules import (
+    QuadPypeModule,
     ITrayService,
     IPluginPaths
 )
-from openpype.lib.events import register_event_callback
+from quadpype.lib.events import register_event_callback
 
 from .exceptions import InvalidContextError
 
@@ -76,7 +76,7 @@ class ExampleTimersManagerConnector:
 
 
 class TimersManager(
-    OpenPypeModule,
+    QuadPypeModule,
     ITrayService,
     IPluginPaths
 ):
@@ -395,7 +395,7 @@ class TimersManager(
         """Prepared method for calling change timers on REST api.
 
         Webserver must be active. At the moment is Webserver running only when
-        OpenPype Tray is used.
+        QuadPype Tray is used.
 
         Args:
             project_name (str): Project name.

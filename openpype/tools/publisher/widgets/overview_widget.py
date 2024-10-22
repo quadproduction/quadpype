@@ -377,7 +377,7 @@ class OverviewWidget(QtWidgets.QFrame):
 
         Returns:
             list[str]: Selected legacy convertor identifiers.
-                Example: ['io.openpype.creators.houdini.legacy']
+                Example: ['io.quadpype.creators.houdini.legacy']
         """
 
         _, _, convertor_identifiers = self.get_selected_items()

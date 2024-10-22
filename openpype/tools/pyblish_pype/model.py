@@ -34,7 +34,7 @@ import qtawesome
 from six import text_type
 from .constants import PluginStates, InstanceStates, GroupStates, Roles
 
-from openpype.settings import get_system_settings, MODULES_SETTINGS_KEY
+from quadpype.settings import get_system_settings, MODULES_SETTINGS_KEY
 
 
 # ItemTypes

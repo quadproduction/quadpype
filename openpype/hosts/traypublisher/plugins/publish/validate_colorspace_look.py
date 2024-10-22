@@ -1,13 +1,13 @@
 import pyblish.api
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     publish,
     PublishValidationError
 )
 
 
 class ValidateColorspaceLook(pyblish.api.InstancePlugin,
-                             publish.OpenPypePyblishPluginMixin):
+                             publish.QuadPypePyblishPluginMixin):
     """Validate colorspace look attributes"""
 
     label = "Validate colorspace look attributes"

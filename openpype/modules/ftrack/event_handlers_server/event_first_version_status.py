@@ -1,7 +1,7 @@
 import collections
 
-from openpype.client import get_project
-from openpype_modules.ftrack.lib import BaseEvent
+from quadpype.client import get_project
+from quadpype_modules.ftrack.lib import BaseEvent
 
 
 class FirstVersionStatus(BaseEvent):
@@ -89,7 +89,7 @@ class FirstVersionStatus(BaseEvent):
         )
         if get_project(project_name) is None:
             self.log.debug(
-                f"Project '{project_name}' not found in OpenPype. Skipping"
+                f"Project '{project_name}' not found in QuadPype. Skipping"
             )
             return
 

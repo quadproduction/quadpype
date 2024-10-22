@@ -4,12 +4,12 @@ import bpy
 
 import pyblish.api
 
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     OptionalPyblishPluginMixin,
     PublishValidationError
 )
-import openpype.hosts.blender.api.action
+import quadpype.hosts.blender.api.action
 
 
 class ValidateMeshNoNegativeScale(pyblish.api.Validator,
@@ -20,7 +20,7 @@ class ValidateMeshNoNegativeScale(pyblish.api.Validator,
     hosts = ["blender"]
     families = ["model"]
     label = "Mesh No Negative Scale"
-    actions = [openpype.hosts.blender.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.blender.api.action.SelectInvalidAction]
 
     @staticmethod
     def get_invalid(instance) -> List:

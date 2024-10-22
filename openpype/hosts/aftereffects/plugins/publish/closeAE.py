@@ -2,7 +2,7 @@
 """Close AE after publish. For Webpublishing only."""
 import pyblish.api
 
-from openpype.hosts.aftereffects.api import get_stub
+from quadpype.hosts.aftereffects.api import get_stub
 
 
 class CloseAE(pyblish.api.ContextPlugin):

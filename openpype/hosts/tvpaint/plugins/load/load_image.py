@@ -1,6 +1,6 @@
-from openpype.lib.attribute_definitions import BoolDef
-from openpype.hosts.tvpaint.api import plugin
-from openpype.hosts.tvpaint.api.lib import execute_george_through_file
+from quadpype.lib.attribute_definitions import BoolDef
+from quadpype.hosts.tvpaint.api import plugin
+from quadpype.hosts.tvpaint.api.lib import execute_george_through_file
 
 
 class ImportImage(plugin.Loader):

@@ -3,7 +3,7 @@ import sys
 import pyblish.api
 import six
 
-from openpype.pipeline import PublishValidationError
+from quadpype.pipeline import PublishValidationError
 
 
 class ValidateCopOutputNode(pyblish.api.InstancePlugin):

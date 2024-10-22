@@ -7,17 +7,17 @@ import datetime
 
 import ftrack_api
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_assets,
 )
-from openpype.settings import get_project_settings, get_system_settings
-from openpype.lib import StringTemplate
-from openpype.pipeline import Anatomy
-from openpype.pipeline.template_data import get_template_data
-from openpype.pipeline.workfile import get_workfile_template_key
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
-from openpype_modules.ftrack.lib.avalon_sync import create_chunks
+from quadpype.settings import get_project_settings, get_system_settings
+from quadpype.lib import StringTemplate
+from quadpype.pipeline import Anatomy
+from quadpype.pipeline.template_data import get_template_data
+from quadpype.pipeline.workfile import get_workfile_template_key
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype_modules.ftrack.lib.avalon_sync import create_chunks
 
 NOT_SYNCHRONIZED_TITLE = "Not synchronized"
 
@@ -31,10 +31,10 @@ class FillWorkfileAttributeAction(BaseAction):
     """
 
     identifier = "fill.workfile.attr"
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     variant = "- Fill workfile attribute"
     description = "Precalculate and fill workfile name into a custom attribute"
-    icon = statics_icon("ftrack", "action_icons", "OpenPypeAdmin.svg")
+    icon = statics_icon("ftrack", "action_icons", "QuadPypeAdmin.svg")
 
     settings_key = "fill_workfile_attribute"
 
@@ -163,7 +163,7 @@ class FillWorkfileAttributeAction(BaseAction):
         if report:
             temp_obj = tempfile.NamedTemporaryFile(
                 mode="w",
-                prefix="openpype_ftrack_",
+                prefix="quadpype_ftrack_",
                 suffix=".json",
                 delete=False
             )

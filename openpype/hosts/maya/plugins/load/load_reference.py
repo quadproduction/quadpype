@@ -5,9 +5,9 @@ import contextlib
 from maya import cmds
 import qargparse
 
-from openpype.settings import get_project_settings
-import openpype.hosts.maya.api.plugin
-from openpype.hosts.maya.api.lib import (
+from quadpype.settings import get_project_settings
+import quadpype.hosts.maya.api.plugin
+from quadpype.hosts.maya.api.lib import (
     maintained_selection,
     get_container_members,
     parent_nodes,
@@ -87,7 +87,7 @@ def preserve_modelpanel_cameras(container, log=None):
             cmds.modelPanel(panel, edit=True, camera=new_camera)
 
 
-class ReferenceLoader(openpype.hosts.maya.api.plugin.ReferenceLoader):
+class ReferenceLoader(quadpype.hosts.maya.api.plugin.ReferenceLoader):
     """Reference file"""
 
     families = ["model",

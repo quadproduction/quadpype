@@ -1,5 +1,5 @@
-from openpype.resources import get_image_path
-from openpype.tools.flickcharm import FlickCharm
+from quadpype.resources import get_image_path
+from quadpype.tools.flickcharm import FlickCharm
 
 from qtpy import QtWidgets, QtCore, QtGui, QtSvg
 

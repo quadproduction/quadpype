@@ -1,9 +1,9 @@
 import re
 
-from openpype.pipeline import get_representation_path
-from openpype.hosts.aftereffects import api
+from quadpype.pipeline import get_representation_path
+from quadpype.hosts.aftereffects import api
 
-from openpype.hosts.aftereffects.api.lib import (
+from quadpype.hosts.aftereffects.api.lib import (
     get_background_layers,
     get_unique_layer_name,
 )

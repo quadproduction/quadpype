@@ -1,6 +1,6 @@
 from maya import cmds
 
-from openpype.pipeline.action import BuilderAction
+from quadpype.pipeline.action import BuilderAction
 
 
 class ConnectShape(BuilderAction):

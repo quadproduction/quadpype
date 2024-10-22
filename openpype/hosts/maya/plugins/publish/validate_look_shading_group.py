@@ -1,8 +1,8 @@
 from maya import cmds
 
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
     PublishValidationError,
@@ -21,7 +21,7 @@ class ValidateShadingEngine(pyblish.api.InstancePlugin,
     hosts = ["maya"]
     label = "Look Shading Engine Naming"
     actions = [
-        openpype.hosts.maya.api.action.SelectInvalidAction, RepairAction
+        quadpype.hosts.maya.api.action.SelectInvalidAction, RepairAction
     ]
     optional = True
 

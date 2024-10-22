@@ -6,14 +6,14 @@ from collections import OrderedDict
 from maya import cmds, mel
 
 import pyblish.api
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline.publish import (
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
     PublishValidationError,
 )
-from openpype.hosts.maya.api import lib
-from openpype.hosts.maya.api.lib_rendersettings import RenderSettings
+from quadpype.hosts.maya.api import lib
+from quadpype.hosts.maya.api.lib_rendersettings import RenderSettings
 
 
 def convert_to_int_or_float(string_value):

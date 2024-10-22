@@ -2,8 +2,8 @@ import json
 
 from maya import cmds
 
-from openpype.pipeline import registered_host, get_current_asset_name
-from openpype.pipeline.workfile.workfile_template_builder import (
+from quadpype.pipeline import registered_host, get_current_asset_name
+from quadpype.pipeline.workfile.workfile_template_builder import (
     TemplateAlreadyImported,
     AbstractTemplateBuilder,
     PlaceholderPlugin,
@@ -12,7 +12,7 @@ from openpype.pipeline.workfile.workfile_template_builder import (
     PlaceholderLoadMixin,
     PlaceholderCreateMixin
 )
-from openpype.tools.workfile_template_build import (
+from quadpype.tools.workfile_template_build import (
     WorkfileBuildPlaceholderDialog,
 )
 

@@ -4,13 +4,13 @@ from collections import defaultdict
 
 import maya.cmds as cmds
 
-from openpype.client import get_assets, get_asset_name_identifier
-from openpype.pipeline import (
+from quadpype.client import get_assets, get_asset_name_identifier
+from quadpype.pipeline import (
     remove_container,
     registered_host,
     get_current_project_name,
 )
-from openpype.hosts.maya.api import lib
+from quadpype.hosts.maya.api import lib
 
 from .vray_proxies import get_alembic_ids_cache
 from . import arnold_standin

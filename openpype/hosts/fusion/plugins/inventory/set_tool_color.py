@@ -1,8 +1,8 @@
 from qtpy import QtGui, QtWidgets
 
-from openpype.pipeline import InventoryAction
-from openpype import style
-from openpype.hosts.fusion.api import (
+from quadpype.pipeline import InventoryAction
+from quadpype import style
+from quadpype.hosts.fusion.api import (
     get_current_comp,
     comp_lock_and_undo_chunk
 )

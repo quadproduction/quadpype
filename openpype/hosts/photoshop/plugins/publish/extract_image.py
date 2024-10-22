@@ -1,8 +1,8 @@
 import os
 
 import pyblish.api
-from openpype.pipeline import publish
-from openpype.hosts.photoshop import api as photoshop
+from quadpype.pipeline import publish
+from quadpype.hosts.photoshop import api as photoshop
 
 
 class ExtractImage(pyblish.api.ContextPlugin):
@@ -100,6 +100,6 @@ class ExtractImage(pyblish.api.ContextPlugin):
         the instance.data['stagingDir']
         """
 
-        from openpype.pipeline.publish import get_instance_staging_dir
+        from quadpype.pipeline.publish import get_instance_staging_dir
 
         return get_instance_staging_dir(instance)

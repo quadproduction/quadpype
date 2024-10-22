@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import pyblish.api
-from openpype.pipeline import (
+from quadpype.pipeline import (
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
-from openpype.pipeline.publish import RepairAction
-from openpype.hosts.houdini.api.action import SelectROPAction
+from quadpype.pipeline.publish import RepairAction
+from quadpype.hosts.houdini.api.action import SelectROPAction
 
 import os
 import hou
@@ -68,7 +68,7 @@ class ValidateReviewColorspace(pyblish.api.InstancePlugin,
         It is a helper action more than a repair action,
         used to set colorspace on opengl node to the default view.
         """
-        from openpype.hosts.houdini.api.colorspace import get_default_display_view_colorspace  # noqa
+        from quadpype.hosts.houdini.api.colorspace import get_default_display_view_colorspace  # noqa
 
         rop_node = hou.node(instance.data["instance_node"])
 

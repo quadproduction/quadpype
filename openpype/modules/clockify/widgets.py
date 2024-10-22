@@ -1,5 +1,5 @@
 from qtpy import QtCore, QtGui, QtWidgets
-from openpype import resources, style
+from quadpype import resources, style
 
 
 class MessageWidget(QtWidgets.QWidget):

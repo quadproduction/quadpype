@@ -1,8 +1,8 @@
-from openpype.hosts.maya.api import (
+from quadpype.hosts.maya.api import (
     lib,
     plugin
 )
-from openpype.lib import (
+from quadpype.lib import (
     BoolDef,
     TextDef
 )
@@ -11,7 +11,7 @@ from openpype.lib import (
 class CreateProxyAlembic(plugin.MayaCreator):
     """Proxy Alembic for animated data"""
 
-    identifier = "io.openpype.creators.maya.proxyabc"
+    identifier = "io.quadpype.creators.maya.proxyabc"
     label = "Proxy Alembic"
     family = "proxyAbc"
     icon = "gears"

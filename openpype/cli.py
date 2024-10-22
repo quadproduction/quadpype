@@ -35,7 +35,7 @@ class AliasedGroup(click.Group):
 @click.option("--debug", is_flag=True, expose_value=False,
               help="Enable debug")
 @click.option("--verbose", expose_value=False,
-              help=("Change OpenPype log level (debug - critical or 0-50)"))
+              help=("Change QuadPype log level (debug - critical or 0-50)"))
 @click.option("--automatic-tests", is_flag=True, expose_value=False,
               help=("Run in automatic tests mode"))
 def main(ctx):
@@ -72,7 +72,7 @@ def tray():
 
 
 @PypeCommands.add_modules
-@main.group(help="Run command line arguments of OpenPype addons")
+@main.group(help="Run command line arguments of QuadPype addons")
 @click.pass_context
 def module(ctx):
     """Addon specific commands created dynamically.
@@ -188,7 +188,7 @@ def projectmanager():
 
 @main.command(context_settings={"ignore_unknown_options": True})
 def publish_report_viewer():
-    from openpype.tools.publisher.publish_report_viewer import main
+    from quadpype.tools.publisher.publish_report_viewer import main
 
     sys.exit(main())
 
@@ -299,7 +299,7 @@ def syncserver(ctx, active_site):
 
     Deprecated:
         This command is deprecated and will be removed in future versions.
-        Use '~/openpype_console module sync_server syncservice' instead.
+        Use '~/quadpype_console module sync_server syncservice' instead.
 
     Details:
         Some Site Sync use cases need to expose site to another one.
@@ -315,7 +315,7 @@ def syncserver(ctx, active_site):
         var QUADPYPE_LOCAL_ID set to 'active_site'.
     """
 
-    from openpype.modules.sync_server.sync_server_module import (
+    from quadpype.modules.sync_server.sync_server_module import (
         syncservice)
     ctx.invoke(syncservice, active_site=active_site)
 
@@ -323,7 +323,7 @@ def syncserver(ctx, active_site):
 @main.command()
 @click.argument("directory")
 def repack_version(directory):
-    """Repack OpenPype version from directory.
+    """Repack QuadPype version from directory.
 
     This command will re-create zip file from specified directory,
     recalculating file checksums. It will try to use version detected in
@@ -363,9 +363,9 @@ def interactive():
     interpreter.
 
     Warning:
-        Executable 'openpype_gui' on Windows won't work.
+        Executable 'quadpype_gui' on Windows won't work.
     """
-    from openpype.version import __version__
+    from quadpype.version import __version__
 
     banner = (
         f"QuadPype {__version__}\nPython {sys.version} on {sys.platform}"
@@ -378,15 +378,15 @@ def interactive():
               is_flag=True, default=False)
 def version(build):
     """Print QuadPype version."""
-    from openpype.version import __version__
-    from igniter.bootstrap_repos import BootstrapRepos, OpenPypeVersion
+    from quadpype.version import __version__
+    from igniter.bootstrap_repos import BootstrapRepos, QuadPypeVersion
     from pathlib import Path
 
     if getattr(sys, 'frozen', False):
         local_version = BootstrapRepos.get_version(
             Path(os.getenv("QUADPYPE_ROOT")))
     else:
-        local_version = OpenPypeVersion.get_installed_version_str()
+        local_version = QuadPypeVersion.get_installed_version_str()
 
     if build:
         print(local_version)

@@ -1,9 +1,9 @@
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.client import get_subset_by_name
-from openpype.pipeline import legacy_io
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.client import get_subset_by_name
+from quadpype.pipeline import legacy_io
+from quadpype.pipeline.publish import (
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
@@ -30,7 +30,7 @@ class ValidateRenderLayerAOVs(pyblish.api.InstancePlugin,
     label = "Render Passes / AOVs Are Registered"
     hosts = ["maya"]
     families = ["renderlayer"]
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = False
 
     def process(self, instance):

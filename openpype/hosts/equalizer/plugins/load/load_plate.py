@@ -15,11 +15,11 @@ TODO:
 """
 import tde4
 
-import openpype.pipeline.load as load
-from openpype.client import get_version_by_id
-from openpype.hosts.equalizer.api import Container, EqualizerHost
-from openpype.lib.transcoding import IMAGE_EXTENSIONS
-from openpype.pipeline import (
+import quadpype.pipeline.load as load
+from quadpype.client import get_version_by_id
+from quadpype.hosts.equalizer.api import Container, EqualizerHost
+from quadpype.lib.transcoding import IMAGE_EXTENSIONS
+from quadpype.pipeline import (
     get_current_project_name,
     get_representation_context,
 )

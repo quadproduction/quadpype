@@ -1,13 +1,13 @@
 import contextlib
 
-import openpype.pipeline.load as load
-from openpype.pipeline.load import get_representation_context
-from openpype.hosts.fusion.api import (
+import quadpype.pipeline.load as load
+from quadpype.pipeline.load import get_representation_context
+from quadpype.hosts.fusion.api import (
     imprint_container,
     get_current_comp,
     comp_lock_and_undo_chunk,
 )
-from openpype.lib.transcoding import IMAGE_EXTENSIONS, VIDEO_EXTENSIONS
+from quadpype.lib.transcoding import IMAGE_EXTENSIONS, VIDEO_EXTENSIONS
 
 comp = get_current_comp()
 

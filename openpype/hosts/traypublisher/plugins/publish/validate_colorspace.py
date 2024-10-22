@@ -1,17 +1,17 @@
 import pyblish.api
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     publish,
     PublishValidationError
 )
 
-from openpype.pipeline.colorspace import (
+from quadpype.pipeline.colorspace import (
     get_ocio_config_colorspaces
 )
 
 
 class ValidateColorspace(pyblish.api.InstancePlugin,
-                         publish.OpenPypePyblishPluginMixin,
+                         publish.QuadPypePyblishPluginMixin,
                          publish.ColormanagedPyblishPluginMixin):
     """Validate representation colorspaces"""
 

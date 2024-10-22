@@ -1,24 +1,24 @@
 import os
 
-from openpype.lib import StringTemplate
-from openpype.pipeline import (
+from quadpype.lib import StringTemplate
+from quadpype.pipeline import (
     registered_host,
     get_current_context,
     Anatomy,
 )
-from openpype.pipeline.workfile import (
+from quadpype.pipeline.workfile import (
     get_workfile_template_key_from_context,
     get_last_workfile_with_version,
 )
-from openpype.pipeline.template_data import get_template_data_with_names
-from openpype.hosts.tvpaint.api import plugin
-from openpype.hosts.tvpaint.api.lib import (
+from quadpype.pipeline.template_data import get_template_data_with_names
+from quadpype.hosts.tvpaint.api import plugin
+from quadpype.hosts.tvpaint.api.lib import (
     execute_george_through_file,
 )
-from openpype.hosts.tvpaint.api.pipeline import (
+from quadpype.hosts.tvpaint.api.pipeline import (
     get_current_workfile_context,
 )
-from openpype.pipeline.version_start import get_versioning_start
+from quadpype.pipeline.version_start import get_versioning_start
 
 
 class LoadWorkfile(plugin.Loader):

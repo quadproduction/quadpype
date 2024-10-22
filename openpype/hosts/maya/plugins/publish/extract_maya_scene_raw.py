@@ -4,14 +4,14 @@ import os
 
 from maya import cmds
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.hosts.maya.api.lib import maintained_selection
-from openpype.pipeline import AVALON_CONTAINER_ID, publish
-from openpype.pipeline.publish import OpenPypePyblishPluginMixin
-from openpype.lib import BoolDef
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.hosts.maya.api.lib import maintained_selection
+from quadpype.pipeline import AVALON_CONTAINER_ID, publish
+from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
+from quadpype.lib import BoolDef
 
 
-class ExtractMayaSceneRaw(publish.Extractor, OpenPypePyblishPluginMixin):
+class ExtractMayaSceneRaw(publish.Extractor, QuadPypePyblishPluginMixin):
     """Extract as Maya Scene (raw).
 
     This will preserve all references, construction history, etc.

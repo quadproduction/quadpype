@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 MAX_HOST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class MaxAddon(OpenPypeModule, IHostAddon):
+class MaxAddon(QuadPypeModule, IHostAddon):
     name = "max"
     host_name = "max"
 

@@ -2,14 +2,14 @@ from maya import cmds
 
 import pyblish.api
 
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     RepairAction,
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api.lib import undo_chunk
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api.lib import undo_chunk
 
 
 class ValidateRigControllers(pyblish.api.InstancePlugin,
@@ -37,7 +37,7 @@ class ValidateRigControllers(pyblish.api.InstancePlugin,
     families = ["rig"]
     optional = True
     actions = [RepairAction,
-               openpype.hosts.maya.api.action.SelectInvalidAction]
+               quadpype.hosts.maya.api.action.SelectInvalidAction]
 
     # Default controller values
     CONTROLLER_DEFAULTS = {

@@ -5,15 +5,15 @@ import qtpy
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_assets,
 )
-from openpype.style import (
+from quadpype.style import (
     get_objected_colors,
     get_default_tools_icon_color,
 )
-from openpype.tools.flickcharm import FlickCharm
+from quadpype.tools.flickcharm import FlickCharm
 
 from .views import (
     TreeViewSpinner,

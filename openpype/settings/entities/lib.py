@@ -11,7 +11,7 @@ from .exceptions import (
     SchemaDuplicatedEnvGroupKeys
 )
 
-from openpype.settings.constants import (
+from quadpype.settings.constants import (
     SYSTEM_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     SCHEMA_KEY_SYSTEM_SETTINGS,
@@ -145,7 +145,7 @@ class SchemasHub:
         self._load_schemas()
 
     def _load_modules_settings_defs(self):
-        from openpype.modules import get_module_settings_defs
+        from quadpype.modules import get_module_settings_defs
 
         module_settings_defs = get_module_settings_defs()
         for module_settings_def_cls in module_settings_defs:
@@ -363,7 +363,7 @@ class SchemasHub:
     def _load_types(self):
         """Prepare entity types for cretion of their objects.
 
-        Currently all classes in `openpype.settings.entities` that inherited
+        Currently all classes in `quadpype.settings.entities` that inherited
         from `BaseEntity` are stored as loaded types. GUI types are stored to
         separated attribute to not mess up api access of entities.
 
@@ -372,7 +372,7 @@ class SchemasHub:
             better handling of abstract classes. Skipping them is dangerous.
         """
 
-        from openpype.settings import entities
+        from quadpype.settings import entities
 
         # Define known abstract classes
         known_abstract_classes = (

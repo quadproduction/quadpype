@@ -9,17 +9,17 @@ import clique
 import six
 import pyblish.api
 
-from openpype import resources, PACKAGE_DIR
-from openpype.pipeline import publish
-from openpype.lib import (
-    run_openpype_process,
+from quadpype import resources, PACKAGE_DIR
+from quadpype.pipeline import publish
+from quadpype.lib import (
+    run_quadpype_process,
 
     get_transcode_temp_directory,
     convert_input_paths_for_ffmpeg,
     should_convert_for_ffmpeg
 )
-from openpype.lib.profiles_filtering import filter_profiles
-from openpype.pipeline.publish.lib import add_repre_files_for_cleanup
+from quadpype.lib.profiles_filtering import filter_profiles
+from quadpype.pipeline.publish.lib import add_repre_files_for_cleanup
 
 
 class ExtractBurnin(publish.Extractor):
@@ -352,7 +352,7 @@ class ExtractBurnin(publish.Extractor):
                     "logger": self.log
                 }
 
-                run_openpype_process(*args, **process_kwargs)
+                run_quadpype_process(*args, **process_kwargs)
                 # Remove the temporary json
                 os.remove(temporary_json_filepath)
 
@@ -429,7 +429,7 @@ class ExtractBurnin(publish.Extractor):
             if not os.path.exists(font_filepath):
                 font_filepath = None
 
-        # Use OpenPype default font
+        # Use QuadPype default font
         if not font_filepath:
             font_filepath = resources.get_liberation_font_path()
 

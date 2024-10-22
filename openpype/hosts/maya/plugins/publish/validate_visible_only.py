@@ -1,8 +1,8 @@
 import pyblish.api
 
-from openpype.hosts.maya.api.lib import iter_visible_nodes_in_range
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+from quadpype.hosts.maya.api.lib import iter_visible_nodes_in_range
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishValidationError,
     OptionalPyblishPluginMixin
@@ -21,7 +21,7 @@ class ValidateAlembicVisibleOnly(pyblish.api.InstancePlugin,
     label = "Alembic Visible Only"
     hosts = ["maya"]
     families = ["pointcache", "animation"]
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = False
 
     def process(self, instance):

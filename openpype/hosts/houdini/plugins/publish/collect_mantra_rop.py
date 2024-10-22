@@ -4,11 +4,11 @@ import os
 import hou
 import pyblish.api
 
-from openpype.hosts.houdini.api.lib import (
+from quadpype.hosts.houdini.api.lib import (
     evalParmNoFrame,
     get_color_management_preferences
 )
-from openpype.hosts.houdini.api import (
+from quadpype.hosts.houdini.api import (
     colorspace
 )
 

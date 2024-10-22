@@ -4,10 +4,10 @@ from pathlib import Path
 
 import attr
 
-from openpype.lib import get_formatted_current_time
-from openpype.pipeline import publish
-from openpype.pipeline.publish import RenderInstance
-import openpype.hosts.harmony.api as harmony
+from quadpype.lib import get_formatted_current_time
+from quadpype.pipeline import publish
+from quadpype.pipeline.publish import RenderInstance
+import quadpype.hosts.harmony.api as harmony
 
 
 @attr.s

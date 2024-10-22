@@ -1,10 +1,10 @@
 import os
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 CELACTION_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class CelactionAddon(OpenPypeModule, IHostAddon):
+class CelactionAddon(QuadPypeModule, IHostAddon):
     name = "celaction"
     host_name = "celaction"
 

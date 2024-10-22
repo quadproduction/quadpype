@@ -1,6 +1,6 @@
 import pyblish.api
-from openpype.pipeline.publish import OptionalPyblishPluginMixin
-from openpype.hosts.blender.api.workio import save_file
+from quadpype.pipeline.publish import OptionalPyblishPluginMixin
+from quadpype.hosts.blender.api.workio import save_file
 
 
 class IncrementWorkfileVersion(
@@ -23,7 +23,7 @@ class IncrementWorkfileVersion(
         assert all(result["success"] for result in context.data["results"]), (
             "Publishing not successful so version is not increased.")
 
-        from openpype.lib import version_up
+        from quadpype.lib import version_up
         path = context.data["currentFile"]
         filepath = version_up(path)
 

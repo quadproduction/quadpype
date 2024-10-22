@@ -2,7 +2,7 @@ import inspect
 from abc import ABCMeta
 import pyblish.api
 from pyblish.plugin import MetaPlugin, ExplicitMetaPlugin
-from openpype.lib import BoolDef
+from quadpype.lib import BoolDef
 
 from .lib import (
     load_help_content_from_plugin,
@@ -11,7 +11,7 @@ from .lib import (
     get_instance_staging_dir,
 )
 
-from openpype.pipeline.colorspace import (
+from quadpype.pipeline.colorspace import (
     get_colorspace_settings_from_publish_context,
     set_colorspace_data_to_representation
 )
@@ -77,7 +77,7 @@ class KnownPublishError(Exception):
     pass
 
 
-class OpenPypePyblishPluginMixin:
+class QuadPypePyblishPluginMixin:
     # TODO
     # executable_in_thread = False
     #
@@ -165,7 +165,7 @@ class OpenPypePyblishPluginMixin:
         return self.get_attr_values_from_data_for_plugin(self.__class__, data)
 
 
-class OptionalPyblishPluginMixin(OpenPypePyblishPluginMixin):
+class OptionalPyblishPluginMixin(QuadPypePyblishPluginMixin):
     """Prepare mixin for optional plugins.
 
     Defined active attribute definition prepared for published and

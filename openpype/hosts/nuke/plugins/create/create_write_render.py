@@ -2,14 +2,14 @@ import nuke
 import sys
 import six
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     CreatedInstance
 )
-from openpype.lib import (
+from quadpype.lib import (
     BoolDef
 )
-from openpype.hosts.nuke import api as napi
-from openpype.hosts.nuke.api.plugin import exposed_write_knobs
+from quadpype.hosts.nuke import api as napi
+from quadpype.hosts.nuke.api.plugin import exposed_write_knobs
 
 
 class CreateWriteRender(napi.NukeWriteCreator):

@@ -6,12 +6,12 @@ from typing import Dict, List, Optional
 
 import bpy
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
 )
-from openpype.hosts.blender.api import plugin
-from openpype.hosts.blender.api.pipeline import (
+from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
     AVALON_PROPERTY,
 )
@@ -76,7 +76,7 @@ class AudioLoader(plugin.AssetLoader):
         audio = p.name
 
         asset_group[AVALON_PROPERTY] = {
-            "schema": "openpype:container-2.0",
+            "schema": "quadpype:container-2.0",
             "id": AVALON_CONTAINER_ID,
             "name": name,
             "namespace": namespace or '',
@@ -98,9 +98,9 @@ class AudioLoader(plugin.AssetLoader):
         """Update an audio strip in the sequence editor.
 
         Arguments:
-            container (openpype:container-1.0): Container to update,
+            container (quadpype:container-1.0): Container to update,
                 from `host.ls()`.
-            representation (openpype:representation-1.0): Representation to
+            representation (quadpype:representation-1.0): Representation to
                 update, from `host.ls()`.
         """
         object_name = container["objectName"]
@@ -181,7 +181,7 @@ class AudioLoader(plugin.AssetLoader):
         """Remove an audio strip from the sequence editor and the container.
 
         Arguments:
-            container (openpype:container-1.0): Container to remove,
+            container (quadpype:container-1.0): Container to remove,
                 from `host.ls()`.
 
         Returns:

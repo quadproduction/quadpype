@@ -1,11 +1,11 @@
-from openpype.client import get_project, get_asset_by_name
-from openpype.lib.applications import (
+from quadpype.client import get_project, get_asset_by_name
+from quadpype.lib.applications import (
     PreLaunchHook,
     EnvironmentPrepData,
     prepare_app_environments,
     prepare_context_environments
 )
-from openpype.pipeline import Anatomy
+from quadpype.pipeline import Anatomy
 
 
 class GlobalHostDataHook(PreLaunchHook):

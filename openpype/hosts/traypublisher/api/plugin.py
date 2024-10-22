@@ -1,17 +1,17 @@
-from openpype.client import (
+from quadpype.client import (
     get_assets,
     get_subsets,
     get_last_versions,
     get_asset_name_identifier,
 )
-from openpype.lib.attribute_definitions import (
+from quadpype.lib.attribute_definitions import (
     FileDef,
     BoolDef,
     NumberDef,
     UISeparatorDef,
 )
-from openpype.lib.transcoding import IMAGE_EXTENSIONS, VIDEO_EXTENSIONS
-from openpype.pipeline.create import (
+from quadpype.lib.transcoding import IMAGE_EXTENSIONS, VIDEO_EXTENSIONS
+from quadpype.pipeline.create import (
     Creator,
     HiddenCreator,
     CreatedInstance,
@@ -26,7 +26,7 @@ from .pipeline import (
 )
 
 REVIEW_EXTENSIONS = set(IMAGE_EXTENSIONS) | set(VIDEO_EXTENSIONS)
-SHARED_DATA_KEY = "openpype.traypublisher.instances"
+SHARED_DATA_KEY = "quadpype.traypublisher.instances"
 
 
 class HiddenTrayPublishCreator(HiddenCreator):

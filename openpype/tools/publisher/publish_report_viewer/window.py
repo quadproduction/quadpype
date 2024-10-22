@@ -7,15 +7,15 @@ import appdirs
 import arrow
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import style
-from openpype.resources import get_app_icon_filepath
-from openpype.tools import resources
-from openpype.tools.utils import (
+from quadpype import style
+from quadpype.resources import get_app_icon_filepath
+from quadpype.tools import resources
+from quadpype.tools.utils import (
     IconButton,
     paint_image_with_color
 )
 
-from openpype.tools.utils.delegates import PrettyTimeDelegate
+from quadpype.tools.utils.delegates import PrettyTimeDelegate
 
 if __package__:
     from .widgets import PublishReportViewerWidget

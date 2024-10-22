@@ -3,8 +3,8 @@ Temporary folder operations
 """
 
 import os
-from openpype.lib import StringTemplate
-from openpype.pipeline import Anatomy
+from quadpype.lib import StringTemplate
+from quadpype.pipeline import Anatomy
 
 
 def create_custom_tempdir(project_name, anatomy=None):
@@ -18,17 +18,17 @@ def create_custom_tempdir(project_name, anatomy=None):
 
     Args:
         project_name (str): project name
-        anatomy (openpype.pipeline.Anatomy)[optional]: Anatomy object
+        anatomy (quadpype.pipeline.Anatomy)[optional]: Anatomy object
 
     Returns:
         str | None: formatted path or None
     """
-    openpype_tempdir = os.getenv("QUADPYPE_TMPDIR")
-    if not openpype_tempdir:
+    quadpype_tempdir = os.getenv("QUADPYPE_TMPDIR")
+    if not quadpype_tempdir:
         return
 
     custom_tempdir = None
-    if "{" in openpype_tempdir:
+    if "{" in quadpype_tempdir:
         if anatomy is None:
             anatomy = Anatomy(project_name)
         # create base formate data
@@ -41,11 +41,11 @@ def create_custom_tempdir(project_name, anatomy=None):
         }
         # path is anatomy template
         custom_tempdir = StringTemplate.format_template(
-            openpype_tempdir, data).normalized()
+            quadpype_tempdir, data).normalized()
 
     else:
         # path is absolute
-        custom_tempdir = openpype_tempdir
+        custom_tempdir = quadpype_tempdir
 
     # create the dir path if it doesn't exists
     if not os.path.exists(custom_tempdir):

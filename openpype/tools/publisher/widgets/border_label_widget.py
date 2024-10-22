@@ -2,7 +2,7 @@
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.style import get_objected_colors
+from quadpype.style import get_objected_colors
 
 
 class _VLineWidget(QtWidgets.QWidget):

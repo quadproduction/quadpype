@@ -5,12 +5,12 @@ from datetime import datetime
 
 import pyblish.api
 
-from openpype.pipeline import legacy_io
-from openpype.tests.lib import is_in_tests
-from openpype_modules.deadline import abstract_submit_deadline
-from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
-from openpype.modules.deadline.utils import DeadlineDefaultJobAttrs, set_custom_deadline_name
-from openpype.lib import (
+from quadpype.pipeline import legacy_io
+from quadpype.tests.lib import is_in_tests
+from quadpype_modules.deadline import abstract_submit_deadline
+from quadpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from quadpype.modules.deadline.utils import DeadlineDefaultJobAttrs, set_custom_deadline_name
+from quadpype.lib import (
     is_running_from_build,
     BoolDef,
     TextDef,
@@ -231,7 +231,7 @@ class HoudiniSubmitDeadline(
             "QUADPYPE_LOG_NO_COLORS",
         ]
 
-        # Add OpenPype version if we are running from build.
+        # Add QuadPype version if we are running from build.
         if is_running_from_build():
             keys.append("QUADPYPE_VERSION")
 

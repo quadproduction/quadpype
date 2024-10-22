@@ -1,7 +1,7 @@
 import os
 import pyblish.api
 import hou
-from openpype.hosts.houdini.api import lib
+from quadpype.hosts.houdini.api import lib
 
 
 class CollectDataforCache(pyblish.api.InstancePlugin):

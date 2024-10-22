@@ -1,6 +1,6 @@
 from copy import deepcopy
-import openpype.hosts.hiero.api as phiero
-# from openpype.hosts.hiero.api import plugin, lib
+import quadpype.hosts.hiero.api as phiero
+# from quadpype.hosts.hiero.api import plugin, lib
 # reload(lib)
 # reload(plugin)
 # reload(phiero)

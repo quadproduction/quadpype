@@ -1,8 +1,8 @@
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api import lib
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api import lib
+from quadpype.pipeline.publish import (
     OptionalPyblishPluginMixin, PublishValidationError, ValidatePipelineOrder)
 
 
@@ -20,8 +20,8 @@ class ValidateNodeIDsRelated(pyblish.api.InstancePlugin,
                 "rig"]
     optional = True
 
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction,
-               openpype.hosts.maya.api.action.GenerateUUIDsOnInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction,
+               quadpype.hosts.maya.api.action.GenerateUUIDsOnInvalidAction]
 
     def process(self, instance):
         """Process all nodes in instance (including hierarchy)"""

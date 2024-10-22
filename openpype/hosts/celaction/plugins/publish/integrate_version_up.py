@@ -1,5 +1,5 @@
 import shutil
-import openpype
+import quadpype
 import pyblish.api
 
 
@@ -12,7 +12,7 @@ class VersionUpScene(pyblish.api.ContextPlugin):
 
     def process(self, context):
         current_file = context.data.get('currentFile')
-        v_up = openpype.lib.version_up(current_file)
+        v_up = quadpype.lib.version_up(current_file)
         self.log.debug('Current file is: {}'.format(current_file))
         self.log.debug('Version up: {}'.format(v_up))
 

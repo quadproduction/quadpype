@@ -163,20 +163,20 @@ def validate_mongo_connection(mongo_uri):
 
     """
 
-    client = OpenPypeMongoConnection.create_connection(
+    client = QuadPypeMongoConnection.create_connection(
         mongo_uri, retry_attempts=1
     )
     client.close()
 
 
-class OpenPypeMongoConnection:
+class QuadPypeMongoConnection:
     """Singleton MongoDB connection.
 
     Keeps MongoDB connections by url.
     """
 
     mongo_clients = {}
-    log = logging.getLogger("OpenPypeMongoConnection")
+    log = logging.getLogger("QuadPypeMongoConnection")
 
     @staticmethod
     def get_default_mongo_url():
@@ -275,7 +275,7 @@ def get_collection_documents(database_name, collection_name, as_json=False):
         Union[list[dict[str, Any]], str]: Queried documents.
     """
 
-    client = OpenPypeMongoConnection.get_mongo_client()
+    client = QuadPypeMongoConnection.get_mongo_client()
     output = list(client[database_name][collection_name].find({}))
     if as_json:
         output = documents_to_json(output)
@@ -314,7 +314,7 @@ def replace_collection_documents(docs, database_name, collection_name):
             uploaded.
     """
 
-    client = OpenPypeMongoConnection.get_mongo_client()
+    client = QuadPypeMongoConnection.get_mongo_client()
     database = client[database_name]
     if collection_name in database.list_collection_names():
         database.drop_collection(collection_name)
@@ -351,7 +351,7 @@ def get_project_database(database_name=None):
 
     if not database_name:
         database_name = get_project_database_name()
-    return OpenPypeMongoConnection.get_mongo_client()[database_name]
+    return QuadPypeMongoConnection.get_mongo_client()[database_name]
 
 
 def get_project_connection(project_name, database_name=None):

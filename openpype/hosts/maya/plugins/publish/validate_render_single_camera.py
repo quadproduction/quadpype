@@ -3,9 +3,9 @@ import re
 import pyblish.api
 from maya import cmds
 
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api.lib_rendersettings import RenderSettings
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api.lib_rendersettings import RenderSettings
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishValidationError,
     OptionalPyblishPluginMixin
@@ -25,7 +25,7 @@ class ValidateRenderSingleCamera(pyblish.api.InstancePlugin,
     hosts = ['maya']
     families = ["renderlayer",
                 "vrayscene"]
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = False
 
     R_CAMERA_TOKEN = re.compile(r'%c|<camera>', re.IGNORECASE)

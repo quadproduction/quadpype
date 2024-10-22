@@ -7,8 +7,8 @@ import unreal
 from unreal import EditorLevelLibrary as ell
 from unreal import EditorAssetLibrary as eal
 
-from openpype.client import get_representation_by_name
-from openpype.pipeline import publish
+from quadpype.client import get_representation_by_name
+from quadpype.pipeline import publish
 
 
 class ExtractLayout(publish.Extractor):

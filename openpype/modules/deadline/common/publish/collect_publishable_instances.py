@@ -5,7 +5,7 @@
 import os
 
 import pyblish.api
-from openpype.pipeline import PublishValidationError
+from quadpype.pipeline import PublishValidationError
 
 
 class CollectDeadlinePublishableInstances(pyblish.api.InstancePlugin):

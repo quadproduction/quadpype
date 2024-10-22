@@ -1,4 +1,4 @@
-from ._openpype_window import ContextDialog, main
+from ._quadpype_window import ContextDialog, main
 
 
 __all__ = (

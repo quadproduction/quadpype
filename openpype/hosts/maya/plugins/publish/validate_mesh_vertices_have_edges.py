@@ -1,9 +1,9 @@
 import pyblish.api
 from maya import cmds
 
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api.lib import len_flattened
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api.lib import len_flattened
+from quadpype.pipeline.publish import (
     PublishValidationError,
     RepairAction,
     ValidateMeshOrder,
@@ -35,7 +35,7 @@ class ValidateMeshVerticesHaveEdges(pyblish.api.InstancePlugin,
     hosts = ['maya']
     families = ['model']
     label = 'Mesh Vertices Have Edges'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction,
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction,
                RepairAction]
     optional = True
 

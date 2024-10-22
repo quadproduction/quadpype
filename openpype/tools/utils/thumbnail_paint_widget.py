@@ -1,6 +1,6 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.style import get_objected_colors
+from quadpype.style import get_objected_colors
 
 from .lib import paint_image_with_color
 from .images import get_image

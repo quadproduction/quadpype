@@ -1,5 +1,5 @@
 import os
-from openpype.lib.applications import PreLaunchHook, LaunchTypes
+from quadpype.lib.applications import PreLaunchHook, LaunchTypes
 
 
 class PreLaunchResolveLastWorkfile(PreLaunchHook):

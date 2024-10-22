@@ -8,7 +8,7 @@ import tempfile
 from .log import Logger
 from .vendor_bin_utils import find_executable
 
-from .openpype_version import is_running_from_build
+from .quadpype_version import is_running_from_build
 
 # MSDN process creation flag (Windows only)
 CREATE_NO_WINDOW = 0x08000000
@@ -162,8 +162,8 @@ def run_subprocess(*args, **kwargs):
     return full_output
 
 
-def clean_envs_for_openpype_process(env=None):
-    """Modify environments that may affect OpenPype process.
+def clean_envs_for_quadpype_process(env=None):
+    """Modify environments that may affect QuadPype process.
 
     Main reason to implement this function is to pop PYTHONPATH which may be
     affected by in-host environments.
@@ -180,33 +180,33 @@ def clean_envs_for_openpype_process(env=None):
     return env
 
 
-def run_openpype_process(*args, **kwargs):
-    """Execute OpenPype process with passed arguments and wait.
+def run_quadpype_process(*args, **kwargs):
+    """Execute QuadPype process with passed arguments and wait.
 
-    Wrapper for 'run_process' which prepends OpenPype executable arguments
+    Wrapper for 'run_process' which prepends QuadPype executable arguments
     before passed arguments and define environments if are not passed.
 
     Values from 'os.environ' are used for environments if are not passed.
-    They are cleaned using 'clean_envs_for_openpype_process' function.
+    They are cleaned using 'clean_envs_for_quadpype_process' function.
 
     Example:
-        >>> run_openpype_process("version")
+        >>> run_quadpype_process("version")
 
     Args:
-        *args (tuple): OpenPype cli arguments.
+        *args (tuple): QuadPype cli arguments.
         **kwargs (dict): Keyword arguments for subprocess.Popen.
     """
 
 
-    args = get_openpype_execute_args(*args)
+    args = get_quadpype_execute_args(*args)
     env = kwargs.pop("env", None)
     # Keep env untouched if are passed and not empty
     if not env:
-        # Skip envs that can affect OpenPype process
+        # Skip envs that can affect QuadPype process
         # - fill more if you find more
-        env = clean_envs_for_openpype_process(os.environ)
+        env = clean_envs_for_quadpype_process(os.environ)
 
-    # Only keep OpenPype version if we are running from build.
+    # Only keep QuadPype version if we are running from build.
     if not is_running_from_build():
         env.pop("QUADPYPE_VERSION", None)
 
@@ -217,14 +217,14 @@ def run_detached_process(args, **kwargs):
     """Execute process with passed arguments as separated process.
 
     Values from 'os.environ' are used for environments if are not passed.
-    They are cleaned using 'clean_envs_for_openpype_process' function.
+    They are cleaned using 'clean_envs_for_quadpype_process' function.
 
     Example:
         >>> run_detached_process("run", "./path_to.py")
 
 
     Args:
-        *args (tuple): OpenPype cli arguments.
+        *args (tuple): QuadPype cli arguments.
         **kwargs (dict): Keyword arguments for subprocess.Popen.
 
     Returns:
@@ -295,7 +295,7 @@ def path_to_subprocess_arg(path):
     return subprocess.list2cmdline([path])
 
 
-def get_openpype_execute_args(*args):
+def get_quadpype_execute_args(*args):
     """Arguments to run pype command.
 
     Arguments for subprocess when need to spawn new pype process. Which may be
@@ -311,12 +311,12 @@ def get_openpype_execute_args(*args):
     executables.
     """
 
-    executable = os.environ["OPENPYPE_EXECUTABLE"]
+    executable = os.environ["QUADPYPE_EXECUTABLE"]
     launch_args = [executable]
 
     executable_filename = os.path.basename(executable)
     if "python" in executable_filename.lower():
-        filepath = os.path.join(os.environ["OPENPYPE_ROOT"], "start.py")
+        filepath = os.path.join(os.environ["QUADPYPE_ROOT"], "start.py")
         launch_args.append(filepath)
 
     if args:
@@ -331,7 +331,7 @@ def get_linux_launcher_args(*args):
     This function should be able as arguments are different when used
     from code and build.
 
-    It is possible that this function is used in OpenPype build which does
+    It is possible that this function is used in QuadPype build which does
     not have yet the new executable. In that case 'None' is returned.
 
     Todos:
@@ -347,11 +347,11 @@ def get_linux_launcher_args(*args):
     """
 
     filename = "app_launcher"
-    executable = os.environ["OPENPYPE_EXECUTABLE"]
+    executable = os.environ["QUADPYPE_EXECUTABLE"]
 
     executable_filename = os.path.basename(executable)
     if "python" in executable_filename.lower():
-        root = os.environ["OPENPYPE_ROOT"]
+        root = os.environ["QUADPYPE_ROOT"]
         script_path = os.path.join(root, "{}.py".format(filename))
         launch_args = [executable, script_path]
     else:

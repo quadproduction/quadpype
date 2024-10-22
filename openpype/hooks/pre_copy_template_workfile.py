@@ -1,8 +1,8 @@
 import os
 import shutil
-from openpype.settings import get_project_settings
-from openpype.lib.applications import PreLaunchHook, LaunchTypes
-from openpype.pipeline.workfile import (
+from quadpype.settings import get_project_settings
+from quadpype.lib.applications import PreLaunchHook, LaunchTypes
+from quadpype.pipeline.workfile import (
     get_custom_workfile_template,
     get_custom_workfile_template_by_string_context
 )

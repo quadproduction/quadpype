@@ -19,11 +19,11 @@ import os
 import clique
 from pyblish import api
 
-from openpype.lib import (
+from quadpype.lib import (
     get_ffmpeg_tool_args,
     run_subprocess,
 )
-from openpype.pipeline import publish
+from quadpype.pipeline import publish
 
 
 class ExtractOTIOReview(publish.Extractor):
@@ -57,7 +57,7 @@ class ExtractOTIOReview(publish.Extractor):
     def process(self, instance):
         # Not all hosts can import these modules.
         import opentimelineio as otio
-        from openpype.pipeline.editorial import (
+        from quadpype.pipeline.editorial import (
             otio_range_to_frame_range,
             make_sequence_collection
         )
@@ -104,10 +104,10 @@ class ExtractOTIOReview(publish.Extractor):
             media_metadata = otio_media.metadata
 
             # get from media reference metadata source
-            if media_metadata.get("openpype.source.width"):
-                width = int(media_metadata.get("openpype.source.width"))
-            if media_metadata.get("openpype.source.height"):
-                height = int(media_metadata.get("openpype.source.height"))
+            if media_metadata.get("quadpype.source.width"):
+                width = int(media_metadata.get("quadpype.source.width"))
+            if media_metadata.get("quadpype.source.height"):
+                height = int(media_metadata.get("quadpype.source.height"))
 
             # compare and reset
             if width != self.to_width:
@@ -282,7 +282,7 @@ class ExtractOTIOReview(publish.Extractor):
             otio.time.TimeRange: trimmed available range
         """
         # Not all hosts can import these modules.
-        from openpype.pipeline.editorial import (
+        from quadpype.pipeline.editorial import (
             trim_media_range,
             range_from_frames
         )
@@ -345,7 +345,7 @@ class ExtractOTIOReview(publish.Extractor):
             otio.time.TimeRange: trimmed available range
         """
         # Not all hosts can import this module.
-        from openpype.pipeline.editorial import frames_to_seconds
+        from quadpype.pipeline.editorial import frames_to_seconds
 
         # create path  and frame start to destination
         output_path, out_frame_start = self._get_ffmpeg_output()

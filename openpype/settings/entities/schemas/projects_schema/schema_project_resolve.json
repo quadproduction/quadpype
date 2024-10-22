@@ -7,8 +7,8 @@
     "children": [
         {
             "type": "boolean",
-            "key": "launch_openpype_menu_on_start",
-            "label": "Launch OpenPype menu on start of Resolve"
+            "key": "launch_quadpype_menu_on_start",
+            "label": "Launch QuadPype menu on start of Resolve"
         },
         {
             "key": "imageio",

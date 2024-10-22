@@ -1,5 +1,5 @@
-from openpype.hosts.maya.api import plugin, lib
-from openpype.lib import (
+from quadpype.hosts.maya.api import plugin, lib
+from quadpype.lib import (
     BoolDef,
     NumberDef,
     EnumDef
@@ -9,7 +9,7 @@ from openpype.lib import (
 class CreateMultiverseUsdOver(plugin.MayaCreator):
     """Create Multiverse USD Override"""
 
-    identifier = "io.openpype.creators.maya.mvusdoverride"
+    identifier = "io.quadpype.creators.maya.mvusdoverride"
     label = "Multiverse USD Override"
     family = "mvUsdOverride"
     icon = "cubes"

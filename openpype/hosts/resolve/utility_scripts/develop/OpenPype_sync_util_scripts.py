@@ -2,13 +2,13 @@
 import os
 import sys
 
-from openpype.pipeline import install_host
+from quadpype.pipeline import install_host
 
 
 def main(env):
-    from openpype.hosts.resolve.utils import setup
-    import openpype.hosts.resolve.api as bmdvr
-    # Registers openpype's Global pyblish plugins
+    from quadpype.hosts.resolve.utils import setup
+    import quadpype.hosts.resolve.api as bmdvr
+    # Registers quadpype's Global pyblish plugins
     install_host(bmdvr)
     setup(env)
 

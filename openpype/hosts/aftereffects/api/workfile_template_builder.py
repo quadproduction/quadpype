@@ -2,11 +2,11 @@ import os.path
 import uuid
 import shutil
 
-from openpype.pipeline import registered_host
-from openpype.tools.workfile_template_build import (
+from quadpype.pipeline import registered_host
+from quadpype.tools.workfile_template_build import (
     WorkfileBuildPlaceholderDialog,
 )
-from openpype.pipeline.workfile.workfile_template_builder import (
+from quadpype.pipeline.workfile.workfile_template_builder import (
     AbstractTemplateBuilder,
     PlaceholderPlugin,
     LoadPlaceholderItem,
@@ -14,11 +14,11 @@ from openpype.pipeline.workfile.workfile_template_builder import (
     PlaceholderLoadMixin,
     PlaceholderCreateMixin
 )
-from openpype.hosts.aftereffects.api import get_stub
-from openpype.hosts.aftereffects.api.lib import set_settings
+from quadpype.hosts.aftereffects.api import get_stub
+from quadpype.hosts.aftereffects.api.lib import set_settings
 
 PLACEHOLDER_SET = "PLACEHOLDERS_SET"
-PLACEHOLDER_ID = "openpype.placeholder"
+PLACEHOLDER_ID = "quadpype.placeholder"
 
 
 class AETemplateBuilder(AbstractTemplateBuilder):
@@ -124,7 +124,7 @@ class AEPlaceholderPlugin(PlaceholderPlugin):
         if not item_id:
             raise ValueError("Couldn't create a placeholder")
         container_data = {
-            "id": "openpype.placeholder",
+            "id": "quadpype.placeholder",
             "name": name,
             "is_placeholder": True,
             "plugin_identifier": self.identifier,

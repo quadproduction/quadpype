@@ -1,9 +1,9 @@
-from openpype.pipeline import (
+from quadpype.pipeline import (
     load,
     get_representation_path,
     AVALON_CONTAINER_ID,
 )
-from openpype.hosts.houdini.api import lib
+from quadpype.hosts.houdini.api import lib
 
 
 class USDSublayerLoader(load.LoaderPlugin):
@@ -44,7 +44,7 @@ class USDSublayerLoader(load.LoaderPlugin):
 
         # Imprint it manually
         data = {
-            "schema": "openpype:container-2.0",
+            "schema": "quadpype:container-2.0",
             "id": AVALON_CONTAINER_ID,
             "name": node_name,
             "namespace": namespace,

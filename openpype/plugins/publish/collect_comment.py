@@ -24,13 +24,13 @@ Todos:
 """
 
 import pyblish.api
-from openpype.lib.attribute_definitions import TextDef
-from openpype.pipeline.publish import OpenPypePyblishPluginMixin
+from quadpype.lib.attribute_definitions import TextDef
+from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
 
 
 class CollectInstanceCommentDef(
     pyblish.api.InstancePlugin,
-    OpenPypePyblishPluginMixin
+    QuadPypePyblishPluginMixin
 ):
     label = "Comment per instance"
     targets = ["local"]
@@ -64,7 +64,7 @@ class CollectInstanceCommentDef(
 
 class CollectComment(
     pyblish.api.ContextPlugin,
-    OpenPypePyblishPluginMixin
+    QuadPypePyblishPluginMixin
 ):
     """Collect comment per each instance.
 

@@ -9,8 +9,8 @@ import time
 
 import pyblish.api
 
-from openpype.client import get_asset_by_name, get_assets
-from openpype.pipeline import (
+from quadpype.client import get_asset_by_name, get_assets
+from quadpype.pipeline import (
     register_loader_plugin_path,
     register_creator_plugin_path,
     register_inventory_action_path,
@@ -20,14 +20,14 @@ from openpype.pipeline import (
     AYON_CONTAINER_ID,
     legacy_io,
 )
-from openpype.tools.utils import host_tools
-import openpype.hosts.unreal
-from openpype.host import HostBase, ILoadHost, IPublishHost
+from quadpype.tools.utils import host_tools
+import quadpype.hosts.unreal
+from quadpype.host import HostBase, ILoadHost, IPublishHost
 
 import unreal  # noqa
 
 # Rename to Ayon once parent module renames
-logger = logging.getLogger("openpype.hosts.unreal")
+logger = logging.getLogger("quadpype.hosts.unreal")
 
 AYON_CONTAINERS = "AyonContainers"
 AYON_ASSET_DIR = "/Game/Ayon/Assets"
@@ -36,7 +36,7 @@ UNREAL_VERSION = semver.VersionInfo(
     *os.getenv("AYON_UNREAL_VERSION").split(".")
 )
 
-HOST_DIR = os.path.dirname(os.path.abspath(openpype.hosts.unreal.__file__))
+HOST_DIR = os.path.dirname(os.path.abspath(quadpype.hosts.unreal.__file__))
 PLUGINS_DIR = os.path.join(HOST_DIR, "plugins")
 PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
 LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
@@ -98,7 +98,7 @@ class UnrealHost(HostBase, ILoadHost, IPublishHost):
 
 
 def install():
-    """Install Unreal configuration for OpenPype."""
+    """Install Unreal configuration for QuadPype."""
     print("-=" * 40)
     logo = '''.
 .
@@ -324,7 +324,7 @@ def show_tools_popup():
 
     Popup will disappear on click or losing focus.
     """
-    from openpype.hosts.unreal.api import tools_ui
+    from quadpype.hosts.unreal.api import tools_ui
 
     tools_ui.show_tools_popup()
 
@@ -334,7 +334,7 @@ def show_tools_dialog():
 
     Dialog will stay visible.
     """
-    from openpype.hosts.unreal.api import tools_ui
+    from quadpype.hosts.unreal.api import tools_ui
 
     tools_ui.show_tools_dialog()
 

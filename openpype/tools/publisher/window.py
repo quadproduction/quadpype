@@ -5,18 +5,18 @@ import collections
 import copy
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import (
+from quadpype import (
     resources,
     style
 )
-from openpype.widgets import BaseToolDialog
-from openpype.tools.utils import (
+from quadpype.widgets import BaseToolDialog
+from quadpype.tools.utils import (
     ErrorMessageBox,
     PlaceholderLineEdit,
     MessageOverlayObject,
     PixmapLabel,
 )
-from openpype.tools.utils.lib import center_window
+from quadpype.tools.utils.lib import center_window
 
 from .constants import ResetKeySequence
 from .publish_report_viewer import PublishReportViewerWidget

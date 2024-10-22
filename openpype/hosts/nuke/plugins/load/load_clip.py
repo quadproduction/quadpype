@@ -2,33 +2,33 @@ import nuke
 import qargparse
 from pprint import pformat
 from copy import deepcopy
-from openpype.lib import Logger
-from openpype.client import (
+from quadpype.lib import Logger
+from quadpype.client import (
     get_version_by_id,
     get_last_version_by_subset_id,
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     get_current_project_name,
     get_representation_path,
 )
-from openpype.pipeline.colorspace import (
+from quadpype.pipeline.colorspace import (
     get_imageio_file_rules_colorspace_from_filepath
 )
-from openpype.hosts.nuke.api.lib import (
+from quadpype.hosts.nuke.api.lib import (
     get_imageio_input_colorspace,
     maintained_selection
 )
-from openpype.hosts.nuke.api import (
+from quadpype.hosts.nuke.api import (
     containerise,
     update_container,
     viewer_update_and_undo_stop,
     colorspace_exists_on_node
 )
-from openpype.lib.transcoding import (
+from quadpype.lib.transcoding import (
     VIDEO_EXTENSIONS,
     IMAGE_EXTENSIONS
 )
-from openpype.hosts.nuke.api import plugin
+from quadpype.hosts.nuke.api import plugin
 
 
 class LoadClip(plugin.NukeLoader):

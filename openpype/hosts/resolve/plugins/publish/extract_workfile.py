@@ -1,8 +1,8 @@
 import os
 import pyblish.api
 
-from openpype.pipeline import publish
-from openpype.hosts.resolve.api.lib import get_project_manager
+from quadpype.pipeline import publish
+from quadpype.hosts.resolve.api.lib import get_project_manager
 
 
 class ExtractWorkfile(publish.Extractor):

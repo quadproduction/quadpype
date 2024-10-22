@@ -4,8 +4,8 @@ from typing import Any
 
 import ftrack_api
 
-from openpype.client import get_project
-from openpype_modules.ftrack.lib import (
+from quadpype.client import get_project
+from quadpype_modules.ftrack.lib import (
     BaseEvent,
     query_custom_attributes,
 )
@@ -142,7 +142,7 @@ class PushHierValuesToNonHierEvent(BaseEvent):
             session, event, project_id
         )
         if get_project(project_name) is None:
-            self.log.debug("Project not found in OpenPype. Skipping")
+            self.log.debug("Project not found in QuadPype. Skipping")
             return set(), set()
 
         # Load settings

@@ -3,8 +3,8 @@ import requests
 
 import pyblish.api
 
-from openpype.lib import collect_frames
-from openpype_modules.deadline.abstract_submit_deadline import requests_get
+from quadpype.lib import collect_frames
+from quadpype_modules.deadline.abstract_submit_deadline import requests_get
 
 
 class ValidateExpectedFiles(pyblish.api.InstancePlugin):

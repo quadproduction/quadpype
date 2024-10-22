@@ -21,18 +21,18 @@ import platform
 # main DeadlinePlugin class.
 ######################################################################
 def GetDeadlinePlugin():
-    return OpenPypeDeadlinePlugin()
+    return QuadPypeDeadlinePlugin()
 
 
 def CleanupDeadlinePlugin(deadlinePlugin):
     deadlinePlugin.Cleanup()
 
 
-class OpenPypeDeadlinePlugin(DeadlinePlugin):
+class QuadPypeDeadlinePlugin(DeadlinePlugin):
     """
-        Standalone plugin for publishing from OpenPype.
+        Standalone plugin for publishing from QuadPype.
 
-        Calls OpenPype executable 'openpype_console' from first correctly found
+        Calls QuadPype executable 'quadpype_console' from first correctly found
         file based on plugin configuration. Uses 'publish' command and passes
         path to metadata json file, which contains all needed information
         for publish process.
@@ -63,27 +63,27 @@ class OpenPypeDeadlinePlugin(DeadlinePlugin):
             ".*Progress: (\d+)%.*").HandleCallback += self.HandleProgress
 
     @staticmethod
-    def get_openpype_version_from_path(path, build=True):
-        """Get OpenPype version from provided path.
+    def get_quadpype_version_from_path(path, build=True):
+        """Get QuadPype version from provided path.
              path (str): Path to scan.
              build (bool, optional): Get only builds, not sources
 
         Returns:
-            str or None: version of OpenPype if found.
+            str or None: version of QuadPype if found.
 
         """
         # fix path for application bundle on macos
         if platform.system().lower() == "darwin":
             path = os.path.join(path, "MacOS")
 
-        version_file = os.path.join(path, "openpype", "version.py")
+        version_file = os.path.join(path, "quadpype", "version.py")
         if not os.path.isfile(version_file):
             return None
 
         # skip if the version is not build
-        exe = os.path.join(path, "openpype_console.exe")
+        exe = os.path.join(path, "quadpype_console.exe")
         if platform.system().lower() in ["linux", "darwin"]:
-            exe = os.path.join(path, "openpype_console")
+            exe = os.path.join(path, "quadpype_console")
 
         # if only builds are requested
         if build and not os.path.isfile(exe):  # noqa: E501
@@ -99,15 +99,15 @@ class OpenPypeDeadlinePlugin(DeadlinePlugin):
 
     def RenderExecutable(self):
         job = self.GetJob()
-        openpype_versions = []
-        # if the job requires specific OpenPype version,
+        quadpype_versions = []
+        # if the job requires specific QuadPype version,
         # lets go over all available and find compatible build.
         requested_version = job.GetJobEnvironmentKeyValue("QUADPYPE_VERSION")
         if requested_version:
             self.LogInfo((
                 "Scanning for compatible requested "
                 f"version {requested_version}"))
-            dir_list = self.GetConfigEntry("OpenPypeInstallationDirs")
+            dir_list = self.GetConfigEntry("QuadPypeInstallationDirs")
 
             # clean '\ ' for MacOS pasting
             if platform.system().lower() == "darwin":
@@ -121,35 +121,35 @@ class OpenPypeDeadlinePlugin(DeadlinePlugin):
                         if f.is_dir()
                     ]
                     for subdir in sub_dirs:
-                        version = self.get_openpype_version_from_path(subdir)
+                        version = self.get_quadpype_version_from_path(subdir)
                         if not version:
                             continue
-                        openpype_versions.append((version, subdir))
+                        quadpype_versions.append((version, subdir))
 
-        exe_list = self.GetConfigEntry("OpenPypeExecutable")
+        exe_list = self.GetConfigEntry("QuadPypeExecutable")
         # clean '\ ' for MacOS pasting
         if platform.system().lower() == "darwin":
             exe_list = exe_list.replace("\\ ", " ")
         exe = FileUtils.SearchFileList(exe_list)
-        if openpype_versions:
+        if quadpype_versions:
             # if looking for requested compatible version,
             # add the implicitly specified to the list too.
-            version = self.get_openpype_version_from_path(
+            version = self.get_quadpype_version_from_path(
                 os.path.dirname(exe))
             if version:
-                openpype_versions.append((version, os.path.dirname(exe)))
+                quadpype_versions.append((version, os.path.dirname(exe)))
 
         if requested_version:
             # sort detected versions
-            if openpype_versions:
-                openpype_versions.sort(
+            if quadpype_versions:
+                quadpype_versions.sort(
                     key=lambda ver: [
                         int(t) if t.isdigit() else t.lower()
                         for t in re.split(r"(\d+)", ver[0])
                     ])
             requested_major, requested_minor, _ = requested_version.split(".")[:3]  # noqa: E501
             compatible_versions = []
-            for version in openpype_versions:
+            for version in quadpype_versions:
                 v = version[0].split(".")[:3]
                 if v[0] == requested_major and v[1] == requested_minor:
                     compatible_versions.append(version)
@@ -169,17 +169,17 @@ class OpenPypeDeadlinePlugin(DeadlinePlugin):
             # Deadline decide.
             exe_list = [
                 os.path.join(
-                    compatible_versions[-1][1], "openpype_console.exe"),
+                    compatible_versions[-1][1], "quadpype_console.exe"),
                 os.path.join(
-                    compatible_versions[-1][1], "openpype_console"),
+                    compatible_versions[-1][1], "quadpype_console"),
                 os.path.join(
-                    compatible_versions[-1][1], "MacOS", "openpype_console")
+                    compatible_versions[-1][1], "MacOS", "quadpype_console")
             ]
             exe = FileUtils.SearchFileList(";".join(exe_list))
 
         if exe == "":
             self.FailRender(
-                "OpenPype executable was not found " +
+                "QuadPype executable was not found " +
                 "in the semicolon separated list " +
                 "\"" + ";".join(exe_list) + "\". " +
                 "The path to the render executable can be configured " +

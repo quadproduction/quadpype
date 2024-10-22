@@ -1,6 +1,6 @@
 import os
 import shutil
-from openpype.lib import Logger, is_running_from_build
+from quadpype.lib import Logger, is_running_from_build
 
 RESOLVE_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -59,7 +59,7 @@ def setup(env):
                 continue
 
             # TODO: Make this a less hacky workaround
-            if script == "openpype_startup.scriptlib":
+            if script == "quadpype_startup.scriptlib":
                 # Handle special case for scriptlib that needs to be a folder
                 # up from the Comp folder in the Fusion scripts
                 dst = os.path.join(os.path.dirname(util_scripts_dir),

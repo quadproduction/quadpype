@@ -2,17 +2,17 @@ import os
 import shutil
 import filecmp
 
-from openpype.client.entities import get_representations
-from openpype.lib.applications import PreLaunchHook, LaunchTypes
-from openpype.lib.profiles_filtering import filter_profiles
-from openpype.modules.sync_server.sync_server import (
+from quadpype.client.entities import get_representations
+from quadpype.lib.applications import PreLaunchHook, LaunchTypes
+from quadpype.lib.profiles_filtering import filter_profiles
+from quadpype.modules.sync_server.sync_server import (
     download_last_published_workfile,
 )
-from openpype.pipeline.template_data import get_template_data
-from openpype.pipeline.workfile.path_resolving import (
+from quadpype.pipeline.template_data import get_template_data
+from quadpype.pipeline.workfile.path_resolving import (
     get_workfile_template_key,
 )
-from openpype.settings import get_project_settings, PROJECT_SETTINGS_KEY
+from quadpype.settings import get_project_settings, PROJECT_SETTINGS_KEY
 
 
 class CopyLastPublishedWorkfile(PreLaunchHook):

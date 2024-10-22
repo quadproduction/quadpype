@@ -4,23 +4,23 @@ import sys
 import pyblish.api
 import pyblish.util
 
-import openpype.hosts.celaction
-from openpype.lib import Logger
-from openpype.tools.utils import host_tools
-from openpype.pipeline import install_openpype_plugins
+import quadpype.hosts.celaction
+from quadpype.lib import Logger
+from quadpype.tools.utils import host_tools
+from quadpype.pipeline import install_quadpype_plugins
 
 
 log = Logger.get_logger("celaction")
 
 PUBLISH_HOST = "celaction"
-HOST_DIR = os.path.dirname(os.path.abspath(openpype.hosts.celaction.__file__))
+HOST_DIR = os.path.dirname(os.path.abspath(quadpype.hosts.celaction.__file__))
 PLUGINS_DIR = os.path.join(HOST_DIR, "plugins")
 PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
 
 
 def main():
     # Registers pype's Global pyblish plugins
-    install_openpype_plugins()
+    install_quadpype_plugins()
 
     if os.path.exists(PUBLISH_PATH):
         log.info(f"Registering path: {PUBLISH_PATH}")

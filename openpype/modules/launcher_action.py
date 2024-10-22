@@ -1,16 +1,16 @@
 import os
 
-from openpype import PLUGINS_DIR
-from openpype.modules import (
-    OpenPypeModule,
+from quadpype import PLUGINS_DIR
+from quadpype.modules import (
+    QuadPypeModule,
     ITrayAction,
 )
 
-from openpype.widgets import PasswordDialog
-from openpype.lib import is_admin_password_required
+from quadpype.widgets import PasswordDialog
+from quadpype.lib import is_admin_password_required
 
 
-class LauncherAction(OpenPypeModule, ITrayAction):
+class LauncherAction(QuadPypeModule, ITrayAction):
     label = "Launcher"
     name = "launcher_tool"
 
@@ -34,7 +34,7 @@ class LauncherAction(OpenPypeModule, ITrayAction):
         if not self.tray_initialized:
             return
 
-        from openpype.pipeline.actions import register_launcher_action_path
+        from quadpype.pipeline.actions import register_launcher_action_path
 
         actions_dir = os.path.join(PLUGINS_DIR, "actions")
         if os.path.exists(actions_dir):
@@ -56,7 +56,7 @@ class LauncherAction(OpenPypeModule, ITrayAction):
     def _create_window(self):
         if self._window:
             return
-        from openpype.tools.launcher import LauncherWindow
+        from quadpype.tools.launcher import LauncherWindow
         self._window = LauncherWindow()
 
     def _show_launcher(self):

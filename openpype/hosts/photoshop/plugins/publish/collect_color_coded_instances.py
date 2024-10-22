@@ -3,10 +3,10 @@ import re
 
 import pyblish.api
 
-from openpype.lib import prepare_template_data
-from openpype.hosts.photoshop import api as photoshop
-from openpype.settings import get_project_settings
-from openpype.tests.lib import is_in_tests
+from quadpype.lib import prepare_template_data
+from quadpype.hosts.photoshop import api as photoshop
+from quadpype.settings import get_project_settings
+from quadpype.tests.lib import is_in_tests
 
 
 class CollectColorCodedInstances(pyblish.api.ContextPlugin):

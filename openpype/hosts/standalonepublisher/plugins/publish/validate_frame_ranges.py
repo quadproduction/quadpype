@@ -2,8 +2,8 @@ import re
 
 import pyblish.api
 
-from openpype.pipeline.context_tools import get_current_project_asset
-from openpype.pipeline.publish import (
+from quadpype.pipeline.context_tools import get_current_project_asset
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishXmlValidationError,
 )

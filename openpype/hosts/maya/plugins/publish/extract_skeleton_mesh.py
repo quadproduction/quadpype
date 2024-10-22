@@ -4,9 +4,9 @@ import os
 from maya import cmds  # noqa
 import pyblish.api
 
-from openpype.pipeline import publish
-from openpype.pipeline.publish import OptionalPyblishPluginMixin
-from openpype.hosts.maya.api import fbx
+from quadpype.pipeline import publish
+from quadpype.pipeline.publish import OptionalPyblishPluginMixin
+from quadpype.hosts.maya.api import fbx
 
 
 class ExtractSkeletonMesh(publish.Extractor,

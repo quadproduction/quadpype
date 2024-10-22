@@ -5,21 +5,21 @@
 def test_backward_compatibility(printer):
     printer("Test if imports still work")
     try:
-        from openpype.lib import execute_hook
-        from openpype.lib import PypeHook
+        from quadpype.lib import execute_hook
+        from quadpype.lib import PypeHook
 
-        from openpype.lib import ApplicationLaunchFailed
+        from quadpype.lib import ApplicationLaunchFailed
 
-        from openpype.lib import get_ffmpeg_tool_path
-        from openpype.lib import get_last_version_from_path
-        from openpype.lib import get_paths_from_environ
-        from openpype.lib import get_version_from_path
-        from openpype.lib import version_up
+        from quadpype.lib import get_ffmpeg_tool_path
+        from quadpype.lib import get_last_version_from_path
+        from quadpype.lib import get_paths_from_environ
+        from quadpype.lib import get_version_from_path
+        from quadpype.lib import version_up
 
-        from openpype.lib import get_ffprobe_streams
+        from quadpype.lib import get_ffprobe_streams
 
-        from openpype.lib import source_hash
-        from openpype.lib import run_subprocess
+        from quadpype.lib import source_hash
+        from quadpype.lib import run_subprocess
 
     except ImportError as e:
         raise

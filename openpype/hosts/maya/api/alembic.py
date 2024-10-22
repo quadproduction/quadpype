@@ -4,7 +4,7 @@ import os
 
 from maya import cmds  # noqa
 
-from openpype.hosts.maya.api.lib import evaluation
+from quadpype.hosts.maya.api.lib import evaluation
 
 log = logging.getLogger(__name__)
 

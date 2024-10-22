@@ -90,38 +90,38 @@ QAbstractSpinBox:up-button:focus, QAbstractSpinBox:down-button:focus {
     border-color: {color:border-focus};
 }
 QAbstractSpinBox::up-arrow, QAbstractSpinBox::up-arrow:off {
-    image: url(:/openpype/images/up_arrow.png);
+    image: url(:/quadpype/images/up_arrow.png);
     width: 0.5em;
     height: 1em;
     border-width: 1px;
 }
 QAbstractSpinBox::up-arrow:hover {
-    image: url(:/openpype/images/up_arrow_on.png);
+    image: url(:/quadpype/images/up_arrow_on.png);
     bottom: 1;
 }
 QAbstractSpinBox::up-arrow:disabled {
-    image: url(:/openpype/images/up_arrow_disabled.png);
+    image: url(:/quadpype/images/up_arrow_disabled.png);
 }
 QAbstractSpinBox::up-arrow:pressed {
-    image: url(:/openpype/images/up_arrow_on.png);
+    image: url(:/quadpype/images/up_arrow_on.png);
     bottom: 0;
 }
 
 QAbstractSpinBox::down-arrow, QAbstractSpinBox::down-arrow:off {
-    image: url(:/openpype/images/down_arrow.png);
+    image: url(:/quadpype/images/down_arrow.png);
     width: 0.5em;
     height: 1em;
     border-width: 1px;
 }
 QAbstractSpinBox::down-arrow:hover {
-    image: url(:/openpype/images/down_arrow_on.png);
+    image: url(:/quadpype/images/down_arrow_on.png);
     bottom: 1;
 }
 QAbstractSpinBox::down-arrow:disabled {
-    image: url(:/openpype/images/down_arrow_disabled.png);
+    image: url(:/quadpype/images/down_arrow_disabled.png);
 }
 QAbstractSpinBox::down-arrow:hover:pressed {
-    image: url(:/openpype/images/down_arrow_on.png);
+    image: url(:/quadpype/images/down_arrow_on.png);
     bottom: 0;
 }
 
@@ -270,7 +270,7 @@ QComboBox::drop-down {
 }
 QComboBox::down-arrow, QComboBox::down-arrow:on, QComboBox::down-arrow:hover, QComboBox::down-arrow:focus
 {
-    image: url(:/openpype/images/combobox_arrow.png);
+    image: url(:/quadpype/images/combobox_arrow.png);
 }
 
 /* Splitter */
@@ -405,14 +405,14 @@ QHeaderView::section:only-one {
 }
 
 QHeaderView::down-arrow {
-    image: url(:/openpype/images/down_arrow.png);
+    image: url(:/quadpype/images/down_arrow.png);
     padding-right: 4px;
     subcontrol-origin: padding;
     subcontrol-position: center right;
 }
 
 QHeaderView::up-arrow {
-    image: url(:/openpype/images/up_arrow.png);
+    image: url(:/quadpype/images/up_arrow.png);
     padding-right: 4px;
     subcontrol-origin: padding;
     subcontrol-position: center right;
@@ -429,42 +429,42 @@ QCheckBox::indicator {
 }
 
 QAbstractItemView::indicator:checked, QCheckBox::indicator:checked {
-    image: url(:/openpype/images/checkbox_checked.png);
+    image: url(:/quadpype/images/checkbox_checked.png);
 }
 QAbstractItemView::indicator:checked:focus, QCheckBox::indicator:checked:focus {
-    image: url(:/openpype/images/checkbox_checked_focus.png);
+    image: url(:/quadpype/images/checkbox_checked_focus.png);
 }
 QAbstractItemView::indicator:checked:hover, QAbstractItemView::indicator:checked:pressed, QCheckBox::indicator:checked:hover, QCheckBox::indicator:checked:pressed {
-    image: url(:/openpype/images/checkbox_checked_hover.png);
+    image: url(:/quadpype/images/checkbox_checked_hover.png);
 }
 QAbstractItemView::indicator:checked:disabled, QCheckBox::indicator:checked:disabled {
-    image: url(:/openpype/images/checkbox_checked_disabled.png);
+    image: url(:/quadpype/images/checkbox_checked_disabled.png);
 }
 
 QAbstractItemView::indicator:unchecked, QCheckBox::indicator:unchecked {
-    image: url(:/openpype/images/checkbox_unchecked.png);
+    image: url(:/quadpype/images/checkbox_unchecked.png);
 }
 QAbstractItemView::indicator:unchecked:focus, QCheckBox::indicator:unchecked:focus {
-    image: url(:/openpype/images/checkbox_unchecked_focus.png);
+    image: url(:/quadpype/images/checkbox_unchecked_focus.png);
 }
 QAbstractItemView::indicator:unchecked:hover, QAbstractItemView::indicator:unchecked:pressed, QCheckBox::indicator:unchecked:hover, QCheckBox::indicator:unchecked:pressed {
-    image: url(:/openpype/images/checkbox_unchecked_hover.png);
+    image: url(:/quadpype/images/checkbox_unchecked_hover.png);
 }
 QAbstractItemView::indicator:unchecked:disabled, QCheckBox::indicator:unchecked:disabled {
-    image: url(:/openpype/images/checkbox_unchecked_disabled.png);
+    image: url(:/quadpype/images/checkbox_unchecked_disabled.png);
 }
 
 QAbstractItemView::indicator:indeterminate, QCheckBox::indicator:indeterminate {
-    image: url(:/openpype/images/checkbox_indeterminate.png);
+    image: url(:/quadpype/images/checkbox_indeterminate.png);
 }
 QAbstractItemView::indicator:indeterminate:focus, QCheckBox::indicator:indeterminate:focus {
-    image: url(:/openpype/images/checkbox_indeterminate_focus.png);
+    image: url(:/quadpype/images/checkbox_indeterminate_focus.png);
 }
 QAbstractItemView::indicator:indeterminate:hover, QAbstractItemView::indicator:indeterminate:pressed, QCheckBox::indicator:indeterminate:hover, QCheckBox::indicator:indeterminate:pressed {
-    image: url(:/openpype/images/checkbox_indeterminate_hover.png);
+    image: url(:/quadpype/images/checkbox_indeterminate_hover.png);
 }
 QAbstractItemView::indicator:indeterminate:disabled, QCheckBox::indicator:indeterminate:disabled {
-    image: url(:/openpype/images/checkbox_indeterminate_disabled.png);
+    image: url(:/quadpype/images/checkbox_indeterminate_disabled.png);
 }
 
 /* Views QListView QTreeView QTableView */
@@ -525,44 +525,44 @@ QTreeView::branch:selected {
 QAbstractItemView::branch:open:has-children:!has-siblings,
 QAbstractItemView::branch:open:has-children:has-siblings {
     border-image: none;
-    image: url(:/openpype/images/branch_open.png);
+    image: url(:/quadpype/images/branch_open.png);
     background: {color:bg-view};
 }
 QAbstractItemView::branch:open:has-children:!has-siblings:hover,
 QAbstractItemView::branch:open:has-children:has-siblings:hover {
     border-image: none;
-    image: url(:/openpype/images/branch_open_on.png);
+    image: url(:/quadpype/images/branch_open_on.png);
     background: {color:bg-view};
 }
 
 QAbstractItemView::branch:has-children:!has-siblings:closed,
 QAbstractItemView::branch:closed:has-children:has-siblings {
     border-image: none;
-    image: url(:/openpype/images/branch_closed.png);
+    image: url(:/quadpype/images/branch_closed.png);
     background: {color:bg-view};
 }
 QAbstractItemView::branch:has-children:!has-siblings:closed:hover,
 QAbstractItemView::branch:closed:has-children:has-siblings:hover {
     border-image: none;
-    image: url(:/openpype/images/branch_closed_on.png);
+    image: url(:/quadpype/images/branch_closed_on.png);
     background: {color:bg-view};
 }
 
 QAbstractItemView::branch:has-siblings:!adjoins-item {
     border-image: none;
-    image: url(:/openpype/images/transparent.png);
+    image: url(:/quadpype/images/transparent.png);
     background: {color:bg-view};
 }
 
 QAbstractItemView::branch:has-siblings:adjoins-item {
     border-image: none;
-    image: url(:/openpype/images/transparent.png);
+    image: url(:/quadpype/images/transparent.png);
     background: {color:bg-view};
 }
 
 QAbstractItemView::branch:!has-children:!has-siblings:adjoins-item {
     border-image: none;
-    image: url(:/openpype/images/transparent.png);
+    image: url(:/quadpype/images/transparent.png);
     background: {color:bg-view};
 }
 

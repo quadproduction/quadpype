@@ -9,21 +9,21 @@ import contextlib
 import pyblish.api
 from qtpy import QtCore
 
-from openpype.lib import (
+from quadpype.lib import (
     Logger,
     register_event_callback,
     emit_event
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     register_loader_plugin_path,
     register_creator_plugin_path,
     register_inventory_action_path,
     AVALON_CONTAINER_ID,
 )
-from openpype.pipeline.load import any_outdated_containers
-from openpype.hosts.fusion import FUSION_HOST_DIR
-from openpype.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
-from openpype.tools.utils import host_tools
+from quadpype.pipeline.load import any_outdated_containers
+from quadpype.hosts.fusion import FUSION_HOST_DIR
+from quadpype.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
+from quadpype.tools.utils import host_tools
 
 
 from .lib import (
@@ -70,13 +70,13 @@ class FusionHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     name = "fusion"
 
     def install(self):
-        """Install fusion-specific functionality of OpenPype.
+        """Install fusion-specific functionality of QuadPype.
 
         This is where you install menus and register families, data
         and loaders into fusion.
 
         It is called automatically when installing via
-        `openpype.pipeline.install_host(openpype.hosts.fusion.api)`
+        `quadpype.pipeline.install_host(quadpype.hosts.fusion.api)`
 
         See the Maya equivalent for inspiration on how to implement this.
 
@@ -121,7 +121,7 @@ class FusionHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
     def open_workfile(self, filepath):
         # Hack to get fusion, see
-        #   openpype.hosts.fusion.api.pipeline.get_current_comp()
+        #   quadpype.hosts.fusion.api.pipeline.get_current_comp()
         fusion = getattr(sys.modules["__main__"], "fusion", None)
 
         return fusion.LoadComp(filepath)
@@ -153,11 +153,11 @@ class FusionHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
     def update_context_data(self, data, changes):
         comp = get_current_comp()
-        comp.SetData("openpype", data)
+        comp.SetData("quadpype", data)
 
     def get_context_data(self):
         comp = get_current_comp()
-        return comp.GetData("openpype") or {}
+        return comp.GetData("quadpype") or {}
 
 
 def on_new(event):
@@ -177,7 +177,7 @@ def on_after_open(event):
     if any_outdated_containers():
         log.warning("Scene has outdated content.")
 
-        # Find OpenPype menu to attach to
+        # Find QuadPype menu to attach to
         from . import menu
 
         def _on_show_scene_inventory():
@@ -189,8 +189,8 @@ def on_after_open(event):
             frame.ActivateFrame()   # raise comp window
             host_tools.show_scene_inventory()
 
-        from openpype.widgets import popup
-        from openpype.style import load_stylesheet
+        from quadpype.widgets import popup
+        from quadpype.style import load_stylesheet
         dialog = popup.Popup(parent=menu.menu)
         dialog.setWindowTitle("Fusion comp has outdated content")
         dialog.setMessage("There are outdated containers in "
@@ -247,7 +247,7 @@ def imprint_container(tool,
     """
 
     data = [
-        ("schema", "openpype:container-2.0"),
+        ("schema", "quadpype:container-2.0"),
         ("id", AVALON_CONTAINER_ID),
         ("name", str(name)),
         ("namespace", str(namespace)),
@@ -326,9 +326,9 @@ class FusionEventThread(QtCore.QThread):
 
 
 class FusionEventHandler(QtCore.QObject):
-    """Emits OpenPype events based on Fusion events captured in a QThread.
+    """Emits QuadPype events based on Fusion events captured in a QThread.
 
-    This will emit the following OpenPype events based on Fusion actions:
+    This will emit the following QuadPype events based on Fusion actions:
         save: Comp_Save, Comp_SaveAs
         open: Comp_Opened
         new: Comp_New
@@ -374,7 +374,7 @@ class FusionEventHandler(QtCore.QObject):
         self._event_thread.stop()
 
     def _on_event(self, event):
-        """Handle Fusion events to emit OpenPype events"""
+        """Handle Fusion events to emit QuadPype events"""
         if not event:
             return
 

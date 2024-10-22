@@ -1,6 +1,6 @@
 import pyblish.api
 
-from openpype.pipeline.publish import PublishValidationError
+from quadpype.pipeline.publish import PublishValidationError
 
 
 class ValidateFileSequences(pyblish.api.ContextPlugin):

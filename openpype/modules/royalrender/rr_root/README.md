@@ -1,4 +1,4 @@
-## OpenPype RoyalRender integration plugins
+## QuadPype RoyalRender integration plugins
 
 ### Installation
 

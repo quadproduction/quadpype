@@ -146,7 +146,7 @@
         },
         {
             "type": "collapsible-wrap",
-            "label": "OpenPype deployment control",
+            "label": "QuadPype deployment control",
             "collapsible": true,
             "children": [
                 {
@@ -155,7 +155,7 @@
                 },
                 {
                     "type": "path",
-                    "key": "openpype_path",
+                    "key": "quadpype_path",
                     "label": "Versions Repository",
                     "multiplatform": true,
                     "multipath": true,
@@ -167,7 +167,7 @@
                 },
                 {
                     "type": "path",
-                    "key": "local_openpype_path",
+                    "key": "local_quadpype_path",
                     "label": "Custom Local Versions Folder",
                     "multiplatform": true,
                     "multipath": false,
@@ -178,7 +178,7 @@
                 },
                 {
                     "type": "label",
-                    "label": "Define explicit OpenPype version that should be used. Keep empty to use latest available version."
+                    "label": "Define explicit QuadPype version that should be used. Keep empty to use latest available version."
                 },
                 {
                     "type": "versions-text",
@@ -195,7 +195,7 @@
                 },
                 {
                     "type": "label",
-                    "label": "Trigger validation if running OpenPype is using studio defined version each 'n' <b>minutes</b>. Validation happens in OpenPype tray application."
+                    "label": "Trigger validation if running QuadPype is using studio defined version each 'n' <b>minutes</b>. Validation happens in QuadPype tray application."
                 },
                 {
                     "type": "number",

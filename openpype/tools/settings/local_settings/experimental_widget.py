@@ -1,5 +1,5 @@
 from qtpy import QtWidgets
-from openpype.tools.experimental_tools import (
+from quadpype.tools.experimental_tools import (
     ExperimentalTools,
     LOCAL_EXPERIMENTAL_KEY
 )

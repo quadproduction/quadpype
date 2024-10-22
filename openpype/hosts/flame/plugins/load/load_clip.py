@@ -2,9 +2,9 @@ from copy import deepcopy
 import os
 import flame
 from pprint import pformat
-import openpype.hosts.flame.api as opfapi
-from openpype.lib import StringTemplate
-from openpype.lib.transcoding import (
+import quadpype.hosts.flame.api as opfapi
+from quadpype.lib import StringTemplate
+from quadpype.lib.transcoding import (
     VIDEO_EXTENSIONS,
     IMAGE_EXTENSIONS
 )
@@ -29,7 +29,7 @@ class LoadClip(opfapi.ClipLoader):
     color = "orange"
 
     # settings
-    reel_group_name = "OpenPype_Reels"
+    reel_group_name = "QuadPype_Reels"
     reel_name = "Loaded"
     clip_name_template = "{asset}_{subset}<_{output}>"
 
@@ -95,7 +95,7 @@ class LoadClip(opfapi.ClipLoader):
         ))
         self.log.debug(openclip_path)
 
-        # make openpype clip file
+        # make quadpype clip file
         opfapi.OpenClipSolver(
             openclip_path, loading_context, logger=self.log).make()
 

@@ -18,9 +18,9 @@ import collections
 import six
 import pyblish.api
 
-from openpype.client import get_versions
-from openpype.client.operations import OperationsSession, new_thumbnail_doc
-from openpype.pipeline.publish import get_publish_instance_label
+from quadpype.client import get_versions
+from quadpype.client.operations import OperationsSession, new_thumbnail_doc
+from quadpype.pipeline.publish import get_publish_instance_label
 
 InstanceFilterResult = collections.namedtuple(
     "InstanceFilterResult",

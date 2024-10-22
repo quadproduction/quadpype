@@ -5,13 +5,13 @@ import contextlib
 import socket
 from pprint import pformat
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.lib import (
-    get_openpype_username,
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.lib import (
+    get_quadpype_username,
     run_subprocess,
 )
-from openpype.lib.applications import PreLaunchHook, LaunchTypes
-from openpype.hosts import flame as opflame
+from quadpype.lib.applications import PreLaunchHook, LaunchTypes
+from quadpype.hosts import flame as opflame
 
 
 class FlamePrelaunch(PreLaunchHook):
@@ -58,7 +58,7 @@ class FlamePrelaunch(PreLaunchHook):
             colormanaged = True
 
         # get user name and host name
-        user_name = get_openpype_username()
+        user_name = get_quadpype_username()
         user_name = user_name.replace(".", "_")
 
         hostname = socket.gethostname()  # not returning wiretap host name
@@ -73,7 +73,7 @@ class FlamePrelaunch(PreLaunchHook):
         project_data = {
             "Name": project_doc["name"],
             "Nickname": _db_p_data["code"],
-            "Description": "Created by OpenPype",
+            "Description": "Created by QuadPype",
             "SetupDir": project_doc["name"],
             "FrameWidth": int(width),
             "FrameHeight": int(height),

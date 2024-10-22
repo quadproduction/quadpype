@@ -7,23 +7,23 @@ import re
 
 import pyblish.api
 
-from openpype.modules.royalrender.rr_job import (
+from quadpype.modules.royalrender.rr_job import (
     RRJob,
     RREnvList,
     get_rr_platform
 )
-from openpype.pipeline.publish import KnownPublishError
-from openpype.pipeline import (
+from quadpype.pipeline.publish import KnownPublishError
+from quadpype.pipeline import (
     legacy_io,
 )
-from openpype.pipeline.farm.pyblish_functions import (
+from quadpype.pipeline.farm.pyblish_functions import (
     create_skeleton_instance,
     create_instances_for_aov,
     attach_instances_to_subset,
     prepare_representations,
     create_metadata_path
 )
-from openpype.pipeline import publish
+from quadpype.pipeline import publish
 
 
 class CreatePublishRoyalRenderJob(pyblish.api.InstancePlugin,
@@ -222,7 +222,7 @@ class CreatePublishRoyalRenderJob(pyblish.api.InstancePlugin,
         # rr requires absolut path or all jobs won't show up in rControl
         abs_metadata_path = self.anatomy.fill_root(rootless_metadata_path)
 
-        # command line set in E01__OpenPype__PublishJob.cfg, here only
+        # command line set in E01__QuadPype__PublishJob.cfg, here only
         # additional logging
         args = [
             ">", os.path.join(os.path.dirname(abs_metadata_path),

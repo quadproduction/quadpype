@@ -55,7 +55,7 @@ from .publish import (
     PublishValidationError,
     PublishXmlValidationError,
     KnownPublishError,
-    OpenPypePyblishPluginMixin,
+    QuadPypePyblishPluginMixin,
     OptionalPyblishPluginMixin
 )
 
@@ -76,7 +76,7 @@ from .actions import (
 )
 
 from .context_tools import (
-    install_openpype_plugins,
+    install_quadpype_plugins,
     install_host,
     uninstall_host,
     is_installed,
@@ -172,7 +172,7 @@ __all__ = (
     "PublishValidationError",
     "PublishXmlValidationError",
     "KnownPublishError",
-    "OpenPypePyblishPluginMixin",
+    "QuadPypePyblishPluginMixin",
     "OptionalPyblishPluginMixin",
 
     # --- Actions ---
@@ -190,7 +190,7 @@ __all__ = (
     "deregister_inventory_action_path",
 
     # --- Process context ---
-    "install_openpype_plugins",
+    "install_quadpype_plugins",
     "install_host",
     "uninstall_host",
     "is_installed",

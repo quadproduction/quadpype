@@ -6,12 +6,12 @@ import concurrent.futures
 from time import sleep
 
 from .providers import lib
-from openpype.client.entity_links import get_linked_representation_id
-from openpype.lib import Logger
-from openpype.lib.local_settings import get_local_site_id
-from openpype.modules.base import ModulesManager
-from openpype.pipeline import Anatomy
-from openpype.pipeline.load.utils import get_representation_path_with_anatomy
+from quadpype.client.entity_links import get_linked_representation_id
+from quadpype.lib import Logger
+from quadpype.lib.local_settings import get_local_site_id
+from quadpype.modules.base import ModulesManager
+from quadpype.pipeline import Anatomy
+from quadpype.pipeline.load.utils import get_representation_path_with_anatomy
 
 from .utils import SyncStatus, ResumableError
 

@@ -1,5 +1,5 @@
 from qtpy import QtWidgets, QtCore
-from openpype.tools.utils import set_style_property
+from quadpype.tools.utils import set_style_property
 
 
 class PublisherTabBtn(QtWidgets.QPushButton):

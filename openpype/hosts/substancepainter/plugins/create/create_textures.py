@@ -1,28 +1,28 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating textures."""
 
-from openpype.pipeline import CreatedInstance, Creator, CreatorError
-from openpype.lib import (
+from quadpype.pipeline import CreatedInstance, Creator, CreatorError
+from quadpype.lib import (
     EnumDef,
     UILabelDef,
     NumberDef,
     BoolDef
 )
 
-from openpype.hosts.substancepainter.api.pipeline import (
+from quadpype.hosts.substancepainter.api.pipeline import (
     get_instances,
     set_instance,
     set_instances,
     remove_instance
 )
-from openpype.hosts.substancepainter.api.lib import get_export_presets
+from quadpype.hosts.substancepainter.api.lib import get_export_presets
 
 import substance_painter.project
 
 
 class CreateTextures(Creator):
     """Create a texture set."""
-    identifier = "io.openpype.creators.substancepainter.textureset"
+    identifier = "io.quadpype.creators.substancepainter.textureset"
     label = "Textures"
     family = "textureSet"
     icon = "picture-o"

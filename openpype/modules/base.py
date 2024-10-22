@@ -18,8 +18,8 @@ from abc import ABCMeta, abstractmethod
 import six
 import appdirs
 
-from openpype.client import get_ayon_server_api_connection
-from openpype.settings import (
+from quadpype.client import get_ayon_server_api_connection
+from quadpype.settings import (
     get_system_settings,
     SYSTEM_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
@@ -28,22 +28,22 @@ from openpype.settings import (
     MODULES_SETTINGS_KEY
 )
 
-from openpype.settings.lib import (
+from quadpype.settings.lib import (
     get_studio_system_settings_overrides,
     load_json_file,
 )
-from openpype.settings.ayon_settings import (
+from quadpype.settings.ayon_settings import (
     is_dev_mode_enabled
 )
 
-from openpype.lib import (
+from quadpype.lib import (
     Logger,
     import_filepath,
     import_module_from_dirpath,
 )
 
 from .interfaces import (
-    OpenPypeInterface,
+    QuadPypeInterface,
     IPluginPaths,
     IHostAddon,
     ITrayModule,
@@ -54,7 +54,7 @@ from .interfaces import (
 IGNORED_FILENAMES = (
     "__pycache__",
 )
-# Files ignored on addons import from "./openpype/modules"
+# Files ignored on addons import from "./quadpype/modules"
 IGNORED_DEFAULT_FILENAMES = (
     "__init__.py",
     "base.py",
@@ -62,7 +62,7 @@ IGNORED_DEFAULT_FILENAMES = (
     "example_addons",
     "default_modules",
 )
-# Addons that won't be loaded in AYON mode from "./openpype/modules"
+# Addons that won't be loaded in AYON mode from "./quadpype/modules"
 # - the same addons are ignored in "./server_addon/create_ayon_addons.py"
 IGNORED_FILENAMES_IN_AYON = {
     "ftrack",
@@ -79,7 +79,7 @@ IGNORED_HOSTS_IN_AYON = {
 
 # Inherit from `object` for Python 2 hosts
 class _ModuleClass(object):
-    """Fake module class for storing OpenPype modules.
+    """Fake module class for storing QuadPype modules.
 
     Object of this class can be stored to `sys.modules` and used for storing
     dynamically imported modules.
@@ -146,7 +146,7 @@ class _ModuleClass(object):
 
 
 class _InterfacesClass(_ModuleClass):
-    """Fake module class for storing OpenPype interfaces.
+    """Fake module class for storing QuadPype interfaces.
 
     MissingInterface object is returned if interfaces does not exists.
     - this is because interfaces must be available even if are missing
@@ -159,16 +159,16 @@ class _InterfacesClass(_ModuleClass):
                 return None
 
             raise AttributeError((
-                "cannot import name '{}' from 'openpype_interfaces'"
+                "cannot import name '{}' from 'quadpype_interfaces'"
             ).format(attr_name))
 
         if _LoadCache.interfaces_loaded and attr_name != "log":
             stack = list(traceback.extract_stack())
             stack.pop(-1)
             self.log.warning((
-                "Using deprecated import of \"{}\" from 'openpype_interfaces'."
+                "Using deprecated import of \"{}\" from 'quadpype_interfaces'."
                 " Please switch to use import"
-                " from 'openpype.modules.interfaces'"
+                " from 'quadpype.modules.interfaces'"
                 " (will be removed after 3.16.x).{}"
             ).format(attr_name, "".join(traceback.format_list(stack))))
         return self.__attributes__[attr_name]
@@ -182,7 +182,7 @@ class _LoadCache:
 
 
 def get_default_modules_dir():
-    """Path to default OpenPype modules."""
+    """Path to default QuadPype modules."""
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -196,7 +196,7 @@ def get_default_modules_dir():
 
 
 def get_dynamic_modules_dirs():
-    """Possible paths to OpenPype Addons of Modules.
+    """Possible paths to QuadPype Addons of Modules.
 
     Paths are loaded from studio settings under:
         `modules -> addon_paths -> {platform name}`
@@ -230,7 +230,7 @@ def get_dynamic_modules_dirs():
 
 
 def get_module_dirs():
-    """List of paths where OpenPype modules can be found."""
+    """List of paths where QuadPype modules can be found."""
     _dirpaths = []
     _dirpaths.extend(get_default_modules_dir())
     _dirpaths.extend(get_dynamic_modules_dirs())
@@ -246,9 +246,9 @@ def get_module_dirs():
 
 
 def load_interfaces(force=False):
-    """Load interfaces from modules into `openpype_interfaces`.
+    """Load interfaces from modules into `quadpype_interfaces`.
 
-    Only classes which inherit from `OpenPypeInterface` are loaded and stored.
+    Only classes which inherit from `QuadPypeInterface` are loaded and stored.
 
     Args:
         force(bool): Force to load interfaces even if are already loaded.
@@ -270,9 +270,9 @@ def load_interfaces(force=False):
 
 def _load_interfaces():
     # Key under which will be modules imported in `sys.modules`
-    modules_key = "openpype_interfaces"
+    modules_key = "quadpype_interfaces"
 
-    sys.modules[modules_key] = openpype_interfaces = (
+    sys.modules[modules_key] = quadpype_interfaces = (
         _InterfacesClass(modules_key)
     )
 
@@ -282,15 +282,15 @@ def _load_interfaces():
         attr = getattr(interfaces, attr_name)
         if (
             not inspect.isclass(attr)
-            or attr is OpenPypeInterface
-            or not issubclass(attr, OpenPypeInterface)
+            or attr is QuadPypeInterface
+            or not issubclass(attr, QuadPypeInterface)
         ):
             continue
-        setattr(openpype_interfaces, attr_name, attr)
+        setattr(quadpype_interfaces, attr_name, attr)
 
 
 def load_modules(force=False):
-    """Load OpenPype modules as python modules.
+    """Load QuadPype modules as python modules.
 
     Modules does not load only classes (like in Interfaces) because there must
     be ability to use inner code of module and be able to import it from one
@@ -372,17 +372,17 @@ def _get_ayon_addons_information(bundle_info):
 
 def _load_modules():
     # Key under which will be modules imported in `sys.modules`
-    modules_key = "openpype_modules"
+    modules_key = "quadpype_modules"
 
     # Change `sys.modules`
-    sys.modules[modules_key] = openpype_modules = _ModuleClass(modules_key)
+    sys.modules[modules_key] = quadpype_modules = _ModuleClass(modules_key)
 
     log = Logger.get_logger("ModulesLoader")
 
     ignore_addon_names = []
 
-    # Look for OpenPype modules in paths defined with `get_module_dirs`
-    #   - dynamically imported OpenPype modules and addons
+    # Look for QuadPype modules in paths defined with `get_module_dirs`
+    #   - dynamically imported QuadPype modules and addons
     module_dirs = get_module_dirs()
 
     # Add current directory at first place
@@ -408,7 +408,7 @@ def _load_modules():
 
         if not os.path.exists(dirpath):
             log.warning((
-                "Could not find path when loading OpenPype modules \"{}\""
+                "Could not find path when loading QuadPype modules \"{}\""
             ).format(dirpath))
             continue
 
@@ -457,14 +457,14 @@ def _load_modules():
             try:
                 # Don't import dynamically current directory modules
                 if is_in_current_dir:
-                    import_str = "openpype.modules.{}".format(basename)
+                    import_str = "quadpype.modules.{}".format(basename)
                     new_import_str = "{}.{}".format(modules_key, basename)
                     default_module = __import__(import_str, fromlist=("", ))
                     sys.modules[new_import_str] = default_module
-                    setattr(openpype_modules, basename, default_module)
+                    setattr(quadpype_modules, basename, default_module)
 
                 elif is_in_host_dir:
-                    import_str = "openpype.hosts.{}".format(basename)
+                    import_str = "quadpype.hosts.{}".format(basename)
                     new_import_str = "{}.{}".format(modules_key, basename)
                     # Until all hosts are converted to be able use them as
                     #   modules is this error check needed
@@ -473,7 +473,7 @@ def _load_modules():
                             import_str, fromlist=("", )
                         )
                         sys.modules[new_import_str] = default_module
-                        setattr(openpype_modules, basename, default_module)
+                        setattr(quadpype_modules, basename, default_module)
 
                     except Exception:
                         log.warning(
@@ -486,7 +486,7 @@ def _load_modules():
 
                 else:
                     module = import_filepath(fullpath)
-                    setattr(openpype_modules, basename, module)
+                    setattr(quadpype_modules, basename, module)
 
             except Exception:
                 if is_in_current_dir:
@@ -639,21 +639,21 @@ class AYONAddon(object):
         pass
 
 
-class OpenPypeModule(AYONAddon):
-    """Base class of OpenPype module.
+class QuadPypeModule(AYONAddon):
+    """Base class of QuadPype module.
 
     Instead of 'AYONAddon' are passed in module settings.
 
     Args:
         manager (ModulesManager): Manager object who discovered addon.
-        settings (dict[str, Any]): OpenPype settings.
+        settings (dict[str, Any]): QuadPype settings.
     """
 
     # Disable by default
     enabled = False
 
 
-class OpenPypeAddOn(OpenPypeModule):
+class QuadPypeAddOn(QuadPypeModule):
     # Enable Addon by default
     enabled = True
 
@@ -666,7 +666,7 @@ class ModulesManager:
     """Manager of Pype modules helps to load and prepare them to work.
 
     Args:
-        system_settings (Optional[dict[str, Any]]): OpenPype system settings.
+        system_settings (Optional[dict[str, Any]]): QuadPype system settings.
         ayon_settings (Optional[dict[str, Any]]): AYON studio settings.
     """
 
@@ -730,9 +730,9 @@ class ModulesManager:
         # Make sure modules are loaded
         load_modules()
 
-        import openpype_modules
+        import quadpype_modules
 
-        self.log.debug("*** {} initialization.".format("OpenPype modules"))
+        self.log.debug("*** {} initialization.".format("QuadPype modules"))
         # Prepare settings for modules
         system_settings = self._system_settings
         if system_settings is None:
@@ -746,7 +746,7 @@ class ModulesManager:
         prev_start_time = time_start
 
         module_classes = []
-        for module in openpype_modules:
+        for module in quadpype_modules:
             # Go through globals in `pype.modules`
             for name in dir(module):
                 modules_item = getattr(module, name, None)
@@ -755,8 +755,8 @@ class ModulesManager:
                 if (
                     not inspect.isclass(modules_item)
                     or modules_item is AYONAddon
-                    or modules_item is OpenPypeModule
-                    or modules_item is OpenPypeAddOn
+                    or modules_item is QuadPypeModule
+                    or modules_item is QuadPypeAddOn
                     or not issubclass(modules_item, AYONAddon)
                 ):
                     continue
@@ -782,9 +782,9 @@ class ModulesManager:
                 module_classes.append(modules_item)
 
         for modules_item in module_classes:
-            is_openpype_module = issubclass(modules_item, OpenPypeModule)
+            is_quadpype_module = issubclass(modules_item, QuadPypeModule)
             settings = (
-                modules_settings if is_openpype_module else ayon_settings
+                modules_settings if is_quadpype_module else ayon_settings
             )
             name = modules_item.__name__
             try:
@@ -1368,24 +1368,24 @@ class TrayModulesManager(ModulesManager):
 def get_module_settings_defs():
     """Check loaded addons/modules for existence of their settings definition.
 
-    Check if OpenPype addon/module as python module has class that inherit
+    Check if QuadPype addon/module as python module has class that inherit
     from `ModuleSettingsDef` in python module variables (imported
     in `__init__py`).
 
     Returns:
         list: All valid and not abstract settings definitions from imported
-            openpype addons and modules.
+            quadpype addons and modules.
     """
     # Make sure modules are loaded
     load_modules()
 
-    import openpype_modules
+    import quadpype_modules
 
     settings_defs = []
 
     log = Logger.get_logger("ModuleSettingsLoad")
 
-    for raw_module in openpype_modules:
+    for raw_module in quadpype_modules:
         for attr_name in dir(raw_module):
             attr = getattr(raw_module, attr_name)
             if (
@@ -1422,7 +1422,7 @@ def get_module_settings_defs():
 
 @six.add_metaclass(ABCMeta)
 class BaseModuleSettingsDef:
-    """Definition of settings for OpenPype module or AddOn."""
+    """Definition of settings for QuadPype module or AddOn."""
     _id = None
 
     @property
@@ -1469,7 +1469,7 @@ class BaseModuleSettingsDef:
         Should return exactly what was passed with `save_defaults`.
 
         Returns:
-            dict: Default values by path to first key in OpenPype defaults.
+            dict: Default values by path to first key in QuadPype defaults.
         """
         pass
 
@@ -1527,7 +1527,7 @@ class ModuleSettingsDef(BaseModuleSettingsDef):
 
         Returns:
             dict: Schemas and templates by it's names. Names must be unique
-                across whole OpenPype.
+                across whole QuadPype.
         """
         pass
 
@@ -1537,7 +1537,7 @@ class ModuleSettingsDef(BaseModuleSettingsDef):
 
         Returns:
             dict: Schemas and templates by it's names. Names must be unique
-                across whole OpenPype.
+                across whole QuadPype.
         """
         pass
 
@@ -1624,7 +1624,7 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
           ┕ ...
 
     Schemas can be loaded with prefix to avoid duplicated schema/template names
-    across all OpenPype addons/modules. Prefix can be defined with class
+    across all QuadPype addons/modules. Prefix can be defined with class
     attribute `schema_prefix`.
 
     Only think which must be implemented in `get_settings_root_path` which
@@ -1772,7 +1772,7 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
 
         Returns:
             dict: Schemas and templates by it's names. Names must be unique
-                across whole OpenPype.
+                across whole QuadPype.
         """
         return self._load_files_from_path(self.system_schemas_dir)
 
@@ -1781,6 +1781,6 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
 
         Returns:
             dict: Schemas and templates by it's names. Names must be unique
-                across whole OpenPype.
+                across whole QuadPype.
         """
         return self._load_files_from_path(self.project_schemas_dir)

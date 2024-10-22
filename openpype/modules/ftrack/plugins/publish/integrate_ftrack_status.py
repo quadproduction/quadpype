@@ -1,7 +1,7 @@
 import copy
 
 import pyblish.api
-from openpype.lib import filter_profiles
+from quadpype.lib import filter_profiles
 
 
 def create_chunks(iterable, chunk_size=None):

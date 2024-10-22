@@ -123,7 +123,7 @@
             "label": "3ds Max",
             "icon": "{}/app_icons/3dsmax.png",
             "host_name": "max",
-            "environment": "{\n    \"ADSK_3DSMAX_STARTUPSCRIPTS_ADDON_DIR\": \"{QUADPYPE_ROOT}/openpype/hosts/max/startup\"\n}",
+            "environment": "{\n    \"ADSK_3DSMAX_STARTUPSCRIPTS_ADDON_DIR\": \"{QUADPYPE_ROOT}/quadpype/hosts/max/startup\"\n}",
             "variants": [
                 {
                     "name": "2024",
@@ -1082,7 +1082,7 @@
             "label": "CelAction 2D",
             "icon": "app_icons/celaction.png",
             "host_name": "celaction",
-            "environment": "{\n    \"CELACTION_TEMPLATE\": \"{QUADPYPE_REPOS_ROOT}/openpype/hosts/celaction/celaction_template_scene.scn\"\n}",
+            "environment": "{\n    \"CELACTION_TEMPLATE\": \"{QUADPYPE_REPOS_ROOT}/quadpype/hosts/celaction/celaction_template_scene.scn\"\n}",
             "variants": [
                 {
                     "name": "local",

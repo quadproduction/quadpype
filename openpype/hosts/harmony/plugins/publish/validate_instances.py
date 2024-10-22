@@ -1,8 +1,8 @@
 import pyblish.api
 
-import openpype.hosts.harmony.api as harmony
-from openpype.pipeline import get_current_asset_name
-from openpype.pipeline.publish import (
+import quadpype.hosts.harmony.api as harmony
+from quadpype.pipeline import get_current_asset_name
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishXmlValidationError,
 )

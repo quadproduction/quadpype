@@ -2,18 +2,18 @@ import json
 from collections import OrderedDict
 import six
 
-from openpype.client import (
+from quadpype.client import (
     get_version_by_id
 )
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     AVALON_CONTAINER_ID,
     load,
     get_representation_path,
     get_current_project_name
 )
-from openpype.hosts.hiero import api as phiero
-from openpype.lib import Logger
+from quadpype.hosts.hiero import api as phiero
+from quadpype.lib import Logger
 
 
 class LoadEffects(load.LoaderPlugin):
@@ -181,7 +181,7 @@ class LoadEffects(load.LoaderPlugin):
             stitem.name(): stitem
             for stitem in phiero.flatten(active_track.subTrackItems())
         }
-        container = phiero.get_track_openpype_data(
+        container = phiero.get_track_quadpype_data(
             active_track, object_name
         )
 
@@ -293,7 +293,7 @@ class LoadEffects(load.LoaderPlugin):
 
         data_imprint = {
             object_name: {
-                "schema": "openpype:container-2.0",
+                "schema": "quadpype:container-2.0",
                 "id": AVALON_CONTAINER_ID,
                 "name": str(name),
                 "namespace": str(namespace),
@@ -307,4 +307,4 @@ class LoadEffects(load.LoaderPlugin):
                 data_imprint[object_name].update({k: v})
 
         self.log.debug("_ data_imprint: {}".format(data_imprint))
-        phiero.set_track_openpype_tag(track, data_imprint)
+        phiero.set_track_quadpype_tag(track, data_imprint)

@@ -1,7 +1,7 @@
 import os
 
-from openpype.settings import get_project_settings
-from openpype.pipeline import (
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import (
     load,
     get_representation_path
 )
@@ -85,8 +85,8 @@ class LoadVDBtoVRay(load.LoaderPlugin):
 
     def load(self, context, name, namespace, data):
 
-        from openpype.hosts.maya.api.lib import unique_namespace
-        from openpype.hosts.maya.api.pipeline import containerise
+        from quadpype.hosts.maya.api.lib import unique_namespace
+        from quadpype.hosts.maya.api.pipeline import containerise
 
         path = self.filepath_from_context(context)
         assert os.path.exists(path), (
@@ -166,7 +166,7 @@ class LoadVDBtoVRay(load.LoaderPlugin):
 
     def _set_path(self, grid_node, path, show_preset_popup=True):
 
-        from openpype.hosts.maya.api.lib import attribute_values
+        from quadpype.hosts.maya.api.lib import attribute_values
         from maya import cmds
 
         def _get_filename_from_folder(path):

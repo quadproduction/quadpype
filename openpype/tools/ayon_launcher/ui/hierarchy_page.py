@@ -1,12 +1,12 @@
 import qtawesome
 from qtpy import QtWidgets, QtCore
 
-from openpype.tools.utils import (
+from quadpype.tools.utils import (
     PlaceholderLineEdit,
     SquareButton,
     RefreshButton,
 )
-from openpype.tools.ayon_utils.widgets import (
+from quadpype.tools.ayon_utils.widgets import (
     ProjectsCombobox,
     FoldersWidget,
     TasksWidget,

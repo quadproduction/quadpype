@@ -26,9 +26,9 @@ import collections
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.style import get_objected_colors
-from openpype.widgets.nice_checkbox import NiceCheckbox
-from openpype.tools.utils.lib import html_escape, checkstate_int_to_enum
+from quadpype.style import get_objected_colors
+from quadpype.widgets.nice_checkbox import NiceCheckbox
+from quadpype.tools.utils.lib import html_escape, checkstate_int_to_enum
 from .widgets import AbstractInstanceView
 from ..constants import (
     INSTANCE_ID_ROLE,

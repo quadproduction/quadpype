@@ -2,13 +2,13 @@
 
 import bpy
 
-from openpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api import plugin, lib
 
 
 class CreateLayout(plugin.BaseCreator):
     """Layout output for character rigs."""
 
-    identifier = "io.openpype.creators.blender.layout"
+    identifier = "io.quadpype.creators.blender.layout"
     label = "Layout"
     family = "layout"
     icon = "cubes"

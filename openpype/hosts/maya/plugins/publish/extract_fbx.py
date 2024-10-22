@@ -5,9 +5,9 @@ from maya import cmds  # noqa
 import maya.mel as mel  # noqa
 import pyblish.api
 
-from openpype.pipeline import publish
-from openpype.hosts.maya.api.lib import maintained_selection
-from openpype.hosts.maya.api import fbx
+from quadpype.pipeline import publish
+from quadpype.hosts.maya.api.lib import maintained_selection
+from quadpype.hosts.maya.api import fbx
 
 
 class ExtractFBX(publish.Extractor):

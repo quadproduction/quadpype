@@ -1,13 +1,13 @@
-from openpype.pipeline import (
+from quadpype.pipeline import (
     load,
     get_representation_path,
 )
-from openpype.hosts.fusion.api import (
+from quadpype.hosts.fusion.api import (
     imprint_container,
     get_current_comp,
     comp_lock_and_undo_chunk
 )
-from openpype.hosts.fusion.api.lib import get_fusion_module
+from quadpype.hosts.fusion.api.lib import get_fusion_module
 
 
 class FusionLoadUSD(load.LoaderPlugin):

@@ -1,7 +1,7 @@
 from math import floor, sqrt, ceil
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.style import get_objected_colors
+from quadpype.style import get_objected_colors
 
 
 class NiceCheckbox(QtWidgets.QFrame):

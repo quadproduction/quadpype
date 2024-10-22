@@ -1,10 +1,10 @@
 import pyblish.api
 from pprint import pformat
 
-from openpype.pipeline import get_current_asset_name
+from quadpype.pipeline import get_current_asset_name
 
-from openpype.hosts.resolve import api as rapi
-from openpype.hosts.resolve.otio import davinci_export
+from quadpype.hosts.resolve import api as rapi
+from quadpype.hosts.resolve.otio import davinci_export
 
 
 class PrecollectWorkfile(pyblish.api.ContextPlugin):

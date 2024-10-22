@@ -2,13 +2,13 @@ import os
 import shutil
 import platform
 from pathlib import Path
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.hosts.fusion import (
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.hosts.fusion import (
     FUSION_HOST_DIR,
     FUSION_VERSIONS_DICT,
     get_fusion_version,
 )
-from openpype.lib.applications import (
+from quadpype.lib.applications import (
     PreLaunchHook,
     LaunchTypes,
     ApplicationLaunchFailed,
@@ -20,10 +20,10 @@ class FusionCopyPrefsPrelaunch(PreLaunchHook):
     Prepares local Fusion profile directory, copies existing Fusion profile.
     This also sets FUSION MasterPrefs variable, which is used
     to apply Master.prefs file to override some Fusion profile settings to:
-        - enable the OpenPype menu
+        - enable the QuadPype menu
         - force Python 3 over Python 2
         - force English interface
-    Master.prefs is defined in openpype/hosts/fusion/deploy/fusion_shared.prefs
+    Master.prefs is defined in quadpype/hosts/fusion/deploy/fusion_shared.prefs
     """
 
     app_groups = {"fusion"}
@@ -164,7 +164,7 @@ class FusionCopyPrefsPrelaunch(PreLaunchHook):
         master_prefs_variable = f"FUSION{profile_version}_MasterPrefs"
 
         master_prefs = Path(
-            FUSION_HOST_DIR, "deploy", "openpype", "fusion_shared.prefs")
+            FUSION_HOST_DIR, "deploy", "quadpype", "fusion_shared.prefs")
 
         self.log.info(f"Setting {master_prefs_variable}: {master_prefs}")
         self.launch_context.env[master_prefs_variable] = str(master_prefs)

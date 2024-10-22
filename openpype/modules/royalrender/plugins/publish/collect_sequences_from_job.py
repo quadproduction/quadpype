@@ -8,8 +8,8 @@ from pprint import pformat
 
 import pyblish.api
 
-from openpype.pipeline import legacy_io
-from openpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline import legacy_io
+from quadpype.settings import PROJECT_SETTINGS_KEY
 
 
 def collect(root,

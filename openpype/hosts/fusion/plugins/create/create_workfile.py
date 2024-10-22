@@ -1,8 +1,8 @@
-from openpype.hosts.fusion.api import (
+from quadpype.hosts.fusion.api import (
     get_current_comp
 )
-from openpype.client import get_asset_by_name
-from openpype.pipeline import (
+from quadpype.client import get_asset_by_name
+from quadpype.pipeline import (
     AutoCreator,
     CreatedInstance,
 )
@@ -18,7 +18,7 @@ class FusionWorkfileCreator(AutoCreator):
 
     create_allow_context_change = False
 
-    data_key = "openpype_workfile"
+    data_key = "quadpype_workfile"
 
     def collect_instances(self):
 

@@ -6,7 +6,7 @@ Requires:
 
 import pyblish.api
 
-from openpype.settings import MODULES_SETTINGS_KEY, SYSTEM_SETTINGS_KEY
+from quadpype.settings import MODULES_SETTINGS_KEY, SYSTEM_SETTINGS_KEY
 
 
 class StartTimer(pyblish.api.ContextPlugin):

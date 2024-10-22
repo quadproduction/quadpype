@@ -5,7 +5,7 @@ import getpass
 import requests
 import pyblish.api
 
-from openpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs
+from quadpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs
 
 class CelactionSubmitDeadline(pyblish.api.InstancePlugin, DeadlineDefaultJobAttrs):
     """Submit CelAction2D scene to Deadline

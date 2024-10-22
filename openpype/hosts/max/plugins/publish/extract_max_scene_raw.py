@@ -1,6 +1,6 @@
 import os
 import pyblish.api
-from openpype.pipeline import publish, OptionalPyblishPluginMixin
+from quadpype.pipeline import publish, OptionalPyblishPluginMixin
 from pymxs import runtime as rt
 
 

@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 import os
 import maya.cmds as cmds  # noqa
-from openpype.settings import get_project_settings
-from openpype.pipeline import (
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import (
     load,
     get_representation_path
 )
-from openpype.hosts.maya.api.lib import (
+from quadpype.hosts.maya.api.lib import (
     maintained_selection,
     namespaced,
     unique_namespace
 )
-from openpype.hosts.maya.api.pipeline import containerise
+from quadpype.hosts.maya.api.pipeline import containerise
 
 
 class VRaySceneLoader(load.LoaderPlugin):

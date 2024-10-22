@@ -1,5 +1,5 @@
-from openpype.lib import get_openpype_execute_args
-from openpype.lib.applications import PreLaunchHook, LaunchTypes
+from quadpype.lib import get_quadpype_execute_args
+from quadpype.lib.applications import PreLaunchHook, LaunchTypes
 
 
 class TvpaintPrelaunchHook(PreLaunchHook):
@@ -23,7 +23,7 @@ class TvpaintPrelaunchHook(PreLaunchHook):
         while self.launch_context.launch_args:
             remainders.append(self.launch_context.launch_args.pop(0))
 
-        new_launch_args = get_openpype_execute_args(
+        new_launch_args = get_quadpype_execute_args(
             "run", self.launch_script_path(), executable_path
         )
 
@@ -37,6 +37,6 @@ class TvpaintPrelaunchHook(PreLaunchHook):
             self.launch_context.launch_args.extend(remainders)
 
     def launch_script_path(self):
-        from openpype.hosts.tvpaint import get_launch_script_path
+        from quadpype.hosts.tvpaint import get_launch_script_path
 
         return get_launch_script_path()

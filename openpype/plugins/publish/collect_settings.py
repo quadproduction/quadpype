@@ -1,5 +1,5 @@
 from pyblish import api
-from openpype.settings import (
+from quadpype.settings import (
     get_current_project_settings,
     get_system_settings,
     PROJECT_SETTINGS_KEY,

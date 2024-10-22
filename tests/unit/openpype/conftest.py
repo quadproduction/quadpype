@@ -29,7 +29,7 @@ import os
 if not os.environ.get("IS_TEST"):  # running tests from cmd or CI
     os.environ["QUADPYPE_MONGO"] = "mongodb://localhost:27017"
     os.environ["AVALON_DB"] = "avalon"
-    os.environ["QUADPYPE_DATABASE_NAME"] = "openpype"
+    os.environ["QUADPYPE_DATABASE_NAME"] = "quadpype"
     os.environ["AVALON_TIMEOUT"] = '3000'
     os.environ["QUADPYPE_DEBUG"] = "1"
     os.environ["AVALON_ASSET"] = "test_asset"

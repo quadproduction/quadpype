@@ -1,12 +1,12 @@
 import ayon_api
 
-from openpype.lib.events import QueuedEventSystem
-from openpype.host import ILoadHost
-from openpype.pipeline import (
+from quadpype.lib.events import QueuedEventSystem
+from quadpype.host import ILoadHost
+from quadpype.pipeline import (
     registered_host,
     get_current_context,
 )
-from openpype.tools.ayon_utils.models import HierarchyModel
+from quadpype.tools.ayon_utils.models import HierarchyModel
 
 from .models import SiteSyncModel
 

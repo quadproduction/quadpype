@@ -5,9 +5,9 @@ ARG BUILD_DATE
 ARG VERSION
 
 LABEL maintainer="dev@quad.fr"
-LABEL description="Docker Image to build and run OpenPype under Ubuntu 20.04"
+LABEL description="Docker Image to build and run QuadPype under Ubuntu 20.04"
 LABEL org.opencontainers.image.name="quad/quadpype"
-LABEL org.opencontainers.image.title="OpenPype Docker Image"
+LABEL org.opencontainers.image.title="QuadPype Docker Image"
 LABEL org.opencontainers.image.url="https://github.com/quadproduction/quadpype"
 LABEL org.opencontainers.image.source="https://github.com/quadproduction/quadpype"
 LABEL org.opencontainers.image.documentation="https://github.com/quadproduction/quadpype/wiki"
@@ -48,7 +48,7 @@ RUN apt-get update \
 SHELL ["/bin/bash", "-c"]
 
 
-RUN mkdir /opt/openpype
+RUN mkdir /opt/quadpype
 
 # download and install pyenv
 RUN curl https://pyenv.run | bash \
@@ -61,14 +61,14 @@ RUN curl https://pyenv.run | bash \
 RUN source $HOME/init_pyenv.sh \
     && pyenv install ${QUADPYPE_PYTHON_VERSION}
 
-COPY . /opt/openpype/
+COPY . /opt/quadpype/
 
-RUN chmod +x /opt/openpype/tools/create_env.sh && chmod +x /opt/openpype/tools/build.sh
+RUN chmod +x /opt/quadpype/tools/create_env.sh && chmod +x /opt/quadpype/tools/build.sh
 
-WORKDIR /opt/openpype
+WORKDIR /opt/quadpype
 
 # set local python version
-RUN cd /opt/openpype \
+RUN cd /opt/quadpype \
     && source $HOME/init_pyenv.sh \
     && pyenv local ${QUADPYPE_PYTHON_VERSION}
 
@@ -77,6 +77,6 @@ RUN source $HOME/init_pyenv.sh \
     && ./tools/create_env.sh \
     && ./tools/fetch_thirdparty_libs.sh
 
-# build openpype
+# build quadpype
 RUN source $HOME/init_pyenv.sh \
     && bash ./tools/build.sh

@@ -1,19 +1,19 @@
 import os
 from copy import deepcopy
 import opentimelineio as otio
-from openpype.client import (
+from quadpype.client import (
     get_asset_by_name,
     get_project
 )
-from openpype.hosts.traypublisher.api.plugin import (
+from quadpype.hosts.traypublisher.api.plugin import (
     TrayPublishCreator,
     HiddenTrayPublishCreator
 )
-from openpype.hosts.traypublisher.api.editorial import (
+from quadpype.hosts.traypublisher.api.editorial import (
     ShotMetadataSolver
 )
-from openpype.pipeline import CreatedInstance
-from openpype.lib import (
+from quadpype.pipeline import CreatedInstance
+from quadpype.lib import (
     get_ffprobe_data,
     convert_ffprobe_fps_value,
 

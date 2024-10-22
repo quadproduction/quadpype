@@ -24,10 +24,10 @@ import traceback
 import threading
 import copy
 
-from openpype.client.mongo import (
+from quadpype.client.mongo import (
     MongoEnvNotSet,
     get_default_components,
-    OpenPypeMongoConnection,
+    QuadPypeMongoConnection,
 )
 from . import Terminal
 
@@ -424,8 +424,8 @@ class Logger:
     def get_process_name(cls):
         """Process name that is like "label" of a process.
 
-        OpenPype's logging can be used from OpenPyppe itself of from hosts.
-        Even in OpenPype process it's good to know if logs are from tray or
+        QuadPype's logging can be used from OpenPyppe itself of from hosts.
+        Even in QuadPype process it's good to know if logs are from tray or
         from other cli commands. This should help to identify that information.
         """
         if cls._process_name is not None:
@@ -492,4 +492,4 @@ class Logger:
         if not cls.initialized:
             cls.initialize()
 
-        return OpenPypeMongoConnection.get_mongo_client()
+        return QuadPypeMongoConnection.get_mongo_client()

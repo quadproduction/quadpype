@@ -1,7 +1,7 @@
 from qtpy import QtWidgets
 
-from openpype.settings import MODULES_SETTINGS_KEY
-from openpype.tools.settings.settings.categories import (
+from quadpype.settings import MODULES_SETTINGS_KEY
+from quadpype.tools.settings.settings.categories import (
     StandaloneCategoryWidget
 )
 

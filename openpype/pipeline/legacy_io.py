@@ -29,7 +29,7 @@ def install():
 
     session = session_data_from_environment(context_keys=True)
 
-    session["schema"] = "openpype:session-4.0"
+    session["schema"] = "quadpype:session-4.0"
     try:
         schema.validate(session)
     except schema.ValidationError as e:

@@ -7,9 +7,9 @@ from maya import cmds
 
 import pyblish.api
 
-from openpype.pipeline import legacy_io
-from openpype.lib import get_formatted_current_time
-from openpype.hosts.maya.api import lib
+from quadpype.pipeline import legacy_io
+from quadpype.lib import get_formatted_current_time
+from quadpype.hosts.maya.api import lib
 
 
 class CollectVrayScene(pyblish.api.InstancePlugin):

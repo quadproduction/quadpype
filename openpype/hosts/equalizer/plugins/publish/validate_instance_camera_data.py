@@ -1,7 +1,7 @@
 import pyblish.api
 
-from openpype.pipeline import PublishValidationError
-from openpype.pipeline.publish import ValidateContentsOrder
+from quadpype.pipeline import PublishValidationError
+from quadpype.pipeline.publish import ValidateContentsOrder
 
 
 class ValidateInstanceCameraData(pyblish.api.InstancePlugin):

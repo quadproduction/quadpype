@@ -5,8 +5,8 @@ import copy
 import qargparse
 from qtpy import QtWidgets, QtCore
 
-from openpype.settings import get_current_project_settings
-from openpype.pipeline import (
+from quadpype.settings import get_current_project_settings
+from quadpype.pipeline import (
     LegacyCreator,
     LoaderPlugin,
     Anatomy
@@ -33,7 +33,7 @@ class CreatorWidget(QtWidgets.QDialog):
             | QtCore.Qt.WindowCloseButtonHint
             | QtCore.Qt.WindowStaysOnTopHint
         )
-        self.setWindowTitle(name or "OpenPype Creator Input")
+        self.setWindowTitle(name or "QuadPype Creator Input")
         self.resize(500, 700)
 
         # Where inputs and labels are set
@@ -296,7 +296,7 @@ class ClipLoader:
         """ Initialize object
 
         Arguments:
-            loader_obj (openpype.pipeline.load.LoaderPlugin): plugin object
+            loader_obj (quadpype.pipeline.load.LoaderPlugin): plugin object
             context (dict): loader plugin context
             options (dict)[optional]: possible keys:
                 projectBinPath: "path/to/binItem"
@@ -590,7 +590,7 @@ class PublishClip:
         kwargs (optional): additional data needed for rename=True (presets)
 
     Returns:
-        hiero.core.TrackItem: hiero track item object with openpype tag
+        hiero.core.TrackItem: hiero track item object with quadpype tag
     """
     vertical_clip_match = {}
     tag_data = {}
@@ -694,7 +694,7 @@ class PublishClip:
                 "track_data": self.timeline_item_data["track"]
             })
 
-        # create openpype tag on timeline_item and add data
+        # create quadpype tag on timeline_item and add data
         lib.imprint(self.timeline_item, self.tag_data)
 
         return self.timeline_item

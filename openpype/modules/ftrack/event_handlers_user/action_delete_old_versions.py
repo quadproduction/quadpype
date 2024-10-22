@@ -5,31 +5,31 @@ import uuid
 import clique
 from pymongo import UpdateOne
 
-from openpype.client import (
+from quadpype.client import (
     get_assets,
     get_subsets,
     get_versions,
     get_representations
 )
-from openpype.lib import (
+from quadpype.lib import (
     StringTemplate,
     TemplateUnsolved,
     format_file_size,
 )
-from openpype.pipeline import AvalonMongoDB, Anatomy
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype.pipeline import AvalonMongoDB, Anatomy
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 
 
 class DeleteOldVersions(BaseAction):
 
     identifier = "delete.old.versions"
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     variant = "- Delete old versions"
     description = (
         "Delete files from older publishes so project can be"
         " archived with only latest versions."
     )
-    icon = statics_icon("ftrack", "action_icons", "OpenPypeAdmin.svg")
+    icon = statics_icon("ftrack", "action_icons", "QuadPypeAdmin.svg")
 
     settings_key = "delete_old_versions"
 

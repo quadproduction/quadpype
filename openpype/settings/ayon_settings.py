@@ -1,4 +1,4 @@
-"""Helper functionality to convert AYON settings to OpenPype v3 settings.
+"""Helper functionality to convert AYON settings to QuadPype v3 settings.
 
 The settings are converted, so we can use v3 code with AYON settings. Once
 the code of and addon is converted to full AYON addon which expect AYON
@@ -21,7 +21,7 @@ import time
 
 import six
 
-from openpype.client import get_ayon_server_api_connection
+from quadpype.client import get_ayon_server_api_connection
 
 from .constants import (
     APPS_SETTINGS_KEY,
@@ -1456,7 +1456,7 @@ class _AyonSettingsCache:
     @classmethod
     def _get_variant(cls):
         if _AyonSettingsCache.variant is None:
-            from openpype.lib.openpype_version import is_staging_enabled
+            from quadpype.lib.quadpype_version import is_staging_enabled
 
             variant = "production"
             if is_dev_mode_enabled():

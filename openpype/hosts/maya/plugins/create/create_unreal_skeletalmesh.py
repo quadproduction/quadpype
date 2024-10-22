@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Creator for Unreal Skeletal Meshes."""
-from openpype.hosts.maya.api import plugin, lib
-from openpype.lib import (
+from quadpype.hosts.maya.api import plugin, lib
+from quadpype.lib import (
     BoolDef,
     TextDef
 )
@@ -12,7 +12,7 @@ from maya import cmds  # noqa
 class CreateUnrealSkeletalMesh(plugin.MayaCreator):
     """Unreal Static Meshes with collisions."""
 
-    identifier = "io.openpype.creators.maya.unrealskeletalmesh"
+    identifier = "io.quadpype.creators.maya.unrealskeletalmesh"
     label = "Unreal - Skeletal Mesh"
     family = "skeletalMesh"
     icon = "thumbs-up"

@@ -12,10 +12,10 @@ PS> .\run_mongo.ps1
 #>
 
 $script_dir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$openpype_root = (Get-Item $script_dir).parent.FullName
+$quadpype_root = (Get-Item $script_dir).parent.FullName
 
 # Install PSWriteColor to support colorized output to terminal
-$env:PSModulePath = $env:PSModulePath + ";$($openpype_root)\tools\modules\powershell"
+$env:PSModulePath = $env:PSModulePath + ";$($quadpype_root)\tools\modules\powershell"
 
 
 function Exit-WithCode($exitcode) {
@@ -84,7 +84,7 @@ function Find-Mongo ($preferred_version) {
 $port = 2707
 
 # path to database
-$dbpath = (Get-Item $openpype_root).parent.FullName + "\mongo_db_data"
+$dbpath = (Get-Item $quadpype_root).parent.FullName + "\mongo_db_data"
 
 $preferred_version = "5.0"
 

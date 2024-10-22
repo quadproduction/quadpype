@@ -1,4 +1,4 @@
-"""Functions to update Kitsu DB (a.k.a Zou) using OpenPype Data."""
+"""Functions to update Kitsu DB (a.k.a Zou) using QuadPype Data."""
 
 import re
 from typing import List
@@ -6,18 +6,18 @@ from typing import List
 import gazu
 from pymongo import UpdateOne
 
-from openpype.client import (
+from quadpype.client import (
     get_projects,
     get_project,
     get_assets,
 )
-from openpype.pipeline import AvalonMongoDB
-from openpype.settings import get_project_settings
-from openpype.modules.kitsu.utils.credentials import validate_credentials
+from quadpype.pipeline import AvalonMongoDB
+from quadpype.settings import get_project_settings
+from quadpype.modules.kitsu.utils.credentials import validate_credentials
 
 
 def sync_zou(login: str, password: str):
-    """Synchronize Zou database (Kitsu backend) with openpype database.
+    """Synchronize Zou database (Kitsu backend) with quadpype database.
     This is an utility function to help updating zou data with OP's, it may not
     handle correctly all cases, a human intervention might
     be required after all.
@@ -68,7 +68,7 @@ def sync_zou_from_op_project(
     if zou_project is None:
         raise RuntimeError(
             f"Project '{project_name}' doesn't exist in Zou database, "
-            "please create it in Kitsu and add OpenPype user to it before "
+            "please create it in Kitsu and add QuadPype user to it before "
             "running synchronization."
         )
 

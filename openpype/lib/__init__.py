@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # flake8: noqa E402
-"""OpenPype lib functions."""
+"""QuadPype lib functions."""
 # add vendor to sys path based on Python version
 import sys
 import os
 import site
-from openpype import PACKAGE_DIR
+from quadpype import PACKAGE_DIR
 
 # Add Python version specific vendor folder
 python_version_dir = os.path.join(
@@ -55,14 +55,14 @@ from .env_tools import (
 
 from .terminal import Terminal
 from .execute import (
-    get_openpype_execute_args,
+    get_quadpype_execute_args,
     get_linux_launcher_args,
     open_in_explorer,
     execute,
     run_subprocess,
     run_detached_process,
-    run_openpype_process,
-    clean_envs_for_openpype_process,
+    run_quadpype_process,
+    clean_envs_for_quadpype_process,
     path_to_subprocess_arg,
     CREATE_NO_WINDOW
 )
@@ -116,11 +116,11 @@ from .transcoding import (
 from .local_settings import (
     IniSettingRegistry,
     JSONSettingRegistry,
-    OpenPypeSecureRegistry,
-    OpenPypeSettingsRegistry,
+    QuadPypeSecureRegistry,
+    QuadPypeSettingsRegistry,
     get_local_site_id,
-    change_openpype_mongo_url,
-    get_openpype_username,
+    change_quadpype_mongo_url,
+    get_quadpype_username,
     is_admin_password_required
 )
 
@@ -155,9 +155,9 @@ from .path_tools import (
     get_last_version_from_path,
 )
 
-from .openpype_version import (
+from .quadpype_version import (
     op_version_control_available,
-    get_openpype_version,
+    get_quadpype_version,
     get_build_version,
     get_expected_version,
     is_running_from_build,
@@ -179,14 +179,14 @@ __all__ = [
     "emit_event",
     "register_event_callback",
 
-    "get_openpype_execute_args",
+    "get_quadpype_execute_args",
     "get_linux_launcher_args",
     "open_in_explorer",
     "execute",
     "run_subprocess",
     "run_detached_process",
-    "run_openpype_process",
-    "clean_envs_for_openpype_process",
+    "run_quadpype_process",
+    "clean_envs_for_quadpype_process",
     "path_to_subprocess_arg",
     "CREATE_NO_WINDOW",
 
@@ -237,11 +237,11 @@ __all__ = [
 
     "IniSettingRegistry",
     "JSONSettingRegistry",
-    "OpenPypeSecureRegistry",
-    "OpenPypeSettingsRegistry",
+    "QuadPypeSecureRegistry",
+    "QuadPypeSettingsRegistry",
     "get_local_site_id",
-    "change_openpype_mongo_url",
-    "get_openpype_username",
+    "change_quadpype_mongo_url",
+    "get_quadpype_username",
     "is_admin_password_required",
 
     "ApplicationLaunchFailed",
@@ -286,7 +286,7 @@ __all__ = [
     "Logger",
 
     "op_version_control_available",
-    "get_openpype_version",
+    "get_quadpype_version",
     "get_build_version",
     "get_expected_version",
     "is_running_from_build",

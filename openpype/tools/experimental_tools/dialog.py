@@ -1,6 +1,6 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.style import (
+from quadpype.style import (
     load_stylesheet,
     app_icon_path
 )

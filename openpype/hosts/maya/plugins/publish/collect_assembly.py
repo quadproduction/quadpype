@@ -2,8 +2,8 @@ from collections import defaultdict
 import pyblish.api
 
 from maya import cmds, mel
-from openpype.hosts.maya import api
-from openpype.hosts.maya.api import lib
+from quadpype.hosts.maya import api
+from quadpype.hosts.maya.api import lib
 
 # TODO : Publish of assembly: -unique namespace for all assets, VALIDATOR!
 

@@ -3,12 +3,12 @@
 import six
 import sys
 
-from openpype.lib import Logger
-from openpype.settings import get_project_settings
+from quadpype.lib import Logger
+from quadpype.settings import get_project_settings
 
-from openpype.pipeline import CreatorError, get_current_project_name
-from openpype.pipeline.context_tools import get_current_project_asset
-from openpype.hosts.maya.api.lib import reset_frame_range
+from quadpype.pipeline import CreatorError, get_current_project_name
+from quadpype.pipeline.context_tools import get_current_project_asset
+from quadpype.hosts.maya.api.lib import reset_frame_range
 
 
 class RenderSettings(object):

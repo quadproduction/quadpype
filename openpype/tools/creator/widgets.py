@@ -5,8 +5,8 @@ from qtpy import QtWidgets, QtCore, QtGui
 
 import qtawesome
 
-from openpype.pipeline.create import SUBSET_NAME_ALLOWED_SYMBOLS
-from openpype.tools.utils import ErrorMessageBox
+from quadpype.pipeline.create import SUBSET_NAME_ALLOWED_SYMBOLS
+from quadpype.tools.utils import ErrorMessageBox
 
 if hasattr(QtGui, "QRegularExpressionValidator"):
     RegularExpressionValidatorClass = QtGui.QRegularExpressionValidator

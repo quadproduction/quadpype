@@ -3,8 +3,8 @@ from abc import abstractmethod, abstractproperty
 
 from qtpy import QtCore
 
-from openpype.lib.events import Event
-from openpype.pipeline.create import CreatedInstance
+from quadpype.lib.events import Event
+from quadpype.pipeline.create import CreatedInstance
 
 from .control import (
     MainThreadItem,

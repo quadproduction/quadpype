@@ -16,11 +16,11 @@ import uuid
 import json
 import shutil
 import pyblish.api
-from openpype.hosts.tvpaint.worker import (
+from quadpype.hosts.tvpaint.worker import (
     SenderTVPaintCommands,
     CollectSceneData
 )
-from openpype_modules.webpublisher.lib import parse_json
+from quadpype_modules.webpublisher.lib import parse_json
 
 
 class CollectTVPaintWorkfileData(pyblish.api.ContextPlugin):

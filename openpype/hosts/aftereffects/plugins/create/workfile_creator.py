@@ -1,10 +1,10 @@
-import openpype.hosts.aftereffects.api as api
-from openpype.client import get_asset_by_name
-from openpype.pipeline import (
+import quadpype.hosts.aftereffects.api as api
+from quadpype.client import get_asset_by_name
+from quadpype.pipeline import (
     AutoCreator,
     CreatedInstance
 )
-from openpype.hosts.aftereffects.api.pipeline import cache_and_get_instances
+from quadpype.hosts.aftereffects.api.pipeline import cache_and_get_instances
 
 
 class AEWorkfileCreator(AutoCreator):

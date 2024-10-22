@@ -13,8 +13,8 @@ import os
 
 import pyblish.api
 
-from openpype.pipeline import legacy_io
-from openpype_modules.webpublisher.lib import (
+from quadpype.pipeline import legacy_io
+from quadpype_modules.webpublisher.lib import (
     parse_json,
     get_batch_asset_task_info,
     get_webpublish_conn,

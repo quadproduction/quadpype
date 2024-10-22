@@ -3,22 +3,22 @@ import copy
 import json
 import collections
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_assets,
     get_subsets,
     get_versions,
     get_representations
 )
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
-from openpype_modules.ftrack.lib.avalon_sync import CUST_ATTR_ID_KEY
-from openpype_modules.ftrack.lib.custom_attributes import (
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype_modules.ftrack.lib.avalon_sync import CUST_ATTR_ID_KEY
+from quadpype_modules.ftrack.lib.custom_attributes import (
     query_custom_attributes
 )
-from openpype.lib.dateutils import get_datetime_data
-from openpype.pipeline import Anatomy
-from openpype.pipeline.load import get_representation_path_with_anatomy
-from openpype.pipeline.delivery import (
+from quadpype.lib.dateutils import get_datetime_data
+from quadpype.pipeline import Anatomy
+from quadpype.pipeline.load import get_representation_path_with_anatomy
+from quadpype.pipeline.delivery import (
     get_format_dict,
     check_destination_path,
     deliver_single_file,

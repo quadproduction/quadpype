@@ -3,13 +3,13 @@
 from __future__ import absolute_import
 
 import pyblish.api
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
-from openpype.hosts.max.api.action import SelectInvalidAction
+from quadpype.hosts.max.api.action import SelectInvalidAction
 from pymxs import runtime as rt
 
 

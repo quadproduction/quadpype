@@ -8,15 +8,15 @@ from qtpy import QtCore
 
 from .bootstrap_repos import (
     BootstrapRepos,
-    OpenPypeVersionInvalid,
-    OpenPypeVersionIOError,
-    OpenPypeVersionExists,
-    OpenPypeVersion
+    QuadPypeVersionInvalid,
+    QuadPypeVersionIOError,
+    QuadPypeVersionExists,
+    QuadPypeVersion
 )
 
 from .tools import (
-    get_openpype_global_settings,
-    get_local_openpype_path_from_settings,
+    get_quadpype_global_settings,
+    get_local_quadpype_path_from_settings,
     validate_mongo_connection
 )
 
@@ -24,9 +24,9 @@ from .tools import (
 class InstallThread(QtCore.QThread):
     """Install Worker thread.
 
-    This class takes care of finding OpenPype version on user entered path
+    This class takes care of finding QuadPype version on user entered path
     (or loading this path from database). If nothing is entered by user,
-    OpenPype will create its zip files from repositories that comes with it.
+    QuadPype will create its zip files from repositories that comes with it.
 
     If path contains plain repositories, they are zipped and installed to
     user data dir.
@@ -53,17 +53,17 @@ class InstallThread(QtCore.QThread):
     def run(self):
         """Thread entry point.
 
-        Using :class:`BootstrapRepos` to either install OpenPype as zip files
+        Using :class:`BootstrapRepos` to either install QuadPype as zip files
         or copy them from location specified by user or retrieved from
         database.
 
         """
-        self.message.emit("Installing OpenPype ...", False)
+        self.message.emit("Installing QuadPype ...", False)
 
-        # find local version of OpenPype
+        # find local version of QuadPype
         bs = BootstrapRepos(
             progress_callback=self.set_progress, log_signal=self.message)
-        local_version = OpenPypeVersion.get_installed_version_str()
+        local_version = QuadPypeVersion.get_installed_version_str()
 
         # user did not entered url
         if self._mongo:
@@ -89,32 +89,32 @@ class InstallThread(QtCore.QThread):
             self._set_result(-1)
             return
 
-        global_settings = get_openpype_global_settings(self._mongo)
-        data_dir = get_local_openpype_path_from_settings(global_settings)
+        global_settings = get_quadpype_global_settings(self._mongo)
+        data_dir = get_local_quadpype_path_from_settings(global_settings)
         bs.set_data_dir(data_dir)
 
         self.message.emit(
-            f"Detecting installed OpenPype versions in {bs.data_dir}",
+            f"Detecting installed QuadPype versions in {bs.data_dir}",
             False)
-        detected = bs.find_openpype(include_zips=True)
+        detected = bs.find_quadpype(include_zips=True)
         if not detected and getattr(sys, 'frozen', False):
             self.message.emit("None detected.", True)
-            self.message.emit(("We will use OpenPype coming with "
+            self.message.emit(("We will use QuadPype coming with "
                                "installer."), False)
-            openpype_version = bs.create_version_from_frozen_code()
-            if not openpype_version:
+            quadpype_version = bs.create_version_from_frozen_code()
+            if not quadpype_version:
                 self.message.emit(
-                    f"!!! Install failed - {openpype_version}", True)
+                    f"!!! Install failed - {quadpype_version}", True)
                 self._set_result(-1)
                 return
-            self.message.emit(f"Using: {openpype_version}", False)
-            bs.install_version(openpype_version)
-            self.message.emit(f"Installed as {openpype_version}", False)
+            self.message.emit(f"Using: {quadpype_version}", False)
+            bs.install_version(quadpype_version)
+            self.message.emit(f"Installed as {quadpype_version}", False)
             self.progress.emit(100)
             self._set_result(1)
             return
 
-        if detected and not OpenPypeVersion.get_installed_version().is_compatible(detected[-1]):  # noqa: E501
+        if detected and not QuadPypeVersion.get_installed_version().is_compatible(detected[-1]):  # noqa: E501
             self.message.emit((
                 f"Latest detected version {detected[-1]} "
                 "is not compatible with the currently running "
@@ -128,28 +128,28 @@ class InstallThread(QtCore.QThread):
         detected = [
             version for version in detected
             if version.is_compatible(
-                OpenPypeVersion.get_installed_version())
+                QuadPypeVersion.get_installed_version())
         ]
 
         if detected:
-            if OpenPypeVersion(
+            if QuadPypeVersion(
                     version=local_version, path=Path()) < detected[-1]:
                 self.message.emit((
                     f"Latest installed version {detected[-1]} is newer "
                     f"then currently running {local_version}"
                 ), False)
-                self.message.emit("Skipping OpenPype install ...", False)
+                self.message.emit("Skipping QuadPype install ...", False)
                 if detected[-1].path.suffix.lower() == ".zip":
-                    bs.extract_openpype(detected[-1])
+                    bs.extract_quadpype(detected[-1])
                 self._set_result(0)
                 return
 
-            if OpenPypeVersion(version=local_version).get_main_version() == detected[-1].get_main_version():  # noqa: E501
+            if QuadPypeVersion(version=local_version).get_main_version() == detected[-1].get_main_version():  # noqa: E501
                 self.message.emit((
                     f"Latest installed version is the same as "
                     f"currently running {local_version}"
                 ), False)
-                self.message.emit("Skipping OpenPype install ...", False)
+                self.message.emit("Skipping QuadPype install ...", False)
                 self._set_result(0)
                 return
 
@@ -161,26 +161,26 @@ class InstallThread(QtCore.QThread):
         self.message.emit("None detected.", False)
 
         self.message.emit(
-            f"We will use local OpenPype version {local_version}", False)
+            f"We will use local QuadPype version {local_version}", False)
 
-        local_openpype = bs.create_version_from_live_code()
-        if not local_openpype:
+        local_quadpype = bs.create_version_from_live_code()
+        if not local_quadpype:
             self.message.emit(
-                f"!!! Install failed - {local_openpype}", True)
+                f"!!! Install failed - {local_quadpype}", True)
             self._set_result(-1)
             return
 
         try:
-            bs.install_version(local_openpype)
-        except (OpenPypeVersionExists,
-                OpenPypeVersionInvalid,
-                OpenPypeVersionIOError) as e:
+            bs.install_version(local_quadpype)
+        except (QuadPypeVersionExists,
+                QuadPypeVersionInvalid,
+                QuadPypeVersionIOError) as e:
             self.message.emit(f"Installed failed: ", True)
             self.message.emit(str(e), True)
             self._set_result(-1)
             return
 
-        self.message.emit(f"Installed as {local_openpype}", False)
+        self.message.emit(f"Installed as {local_quadpype}", False)
         self.progress.emit(100)
         self._set_result(1)
         return

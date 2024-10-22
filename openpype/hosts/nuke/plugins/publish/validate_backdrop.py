@@ -1,8 +1,8 @@
 import nuke
 import pyblish
-from openpype.hosts.nuke import api as napi
+from quadpype.hosts.nuke import api as napi
 
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishXmlValidationError,
     OptionalPyblishPluginMixin

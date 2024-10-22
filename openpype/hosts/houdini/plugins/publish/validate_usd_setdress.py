@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import pyblish.api
 
-import openpype.hosts.houdini.api.usd as hou_usdlib
-from openpype.pipeline import PublishValidationError
+import quadpype.hosts.houdini.api.usd as hou_usdlib
+from quadpype.pipeline import PublishValidationError
 
 
 class ValidateUsdSetDress(pyblish.api.InstancePlugin):

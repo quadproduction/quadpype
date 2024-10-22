@@ -1,24 +1,24 @@
 import re
 import platform
 
-from openpype.client import get_projects, create_project
+from quadpype.client import get_projects, create_project
 from .constants import (
     NAME_ALLOWED_SYMBOLS,
     NAME_REGEX
 )
-from openpype.client.operations import (
+from quadpype.client.operations import (
     PROJECT_NAME_ALLOWED_SYMBOLS,
     PROJECT_NAME_REGEX,
     OperationsSession,
 )
-from openpype.style import load_stylesheet
-from openpype.pipeline import AvalonMongoDB
-from openpype.tools.utils import (
+from quadpype.style import load_stylesheet
+from quadpype.pipeline import AvalonMongoDB
+from quadpype.tools.utils import (
     PlaceholderLineEdit,
     get_warning_pixmap,
     PixmapLabel,
 )
-from openpype.settings.lib import get_default_anatomy_settings
+from quadpype.settings.lib import get_default_anatomy_settings
 
 from qtpy import QtWidgets, QtCore, QtGui
 

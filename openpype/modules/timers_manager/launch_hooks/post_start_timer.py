@@ -1,4 +1,4 @@
-from openpype.lib.applications import PostLaunchHook, LaunchTypes
+from quadpype.lib.applications import PostLaunchHook, LaunchTypes
 
 
 class PostStartTimerHook(PostLaunchHook):

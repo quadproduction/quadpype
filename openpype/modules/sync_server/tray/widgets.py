@@ -4,11 +4,11 @@ from functools import partial
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 
-from openpype.tools.settings import style
+from quadpype.tools.settings import style
 
-from openpype.lib import Logger, get_local_site_id, open_in_explorer
+from quadpype.lib import Logger, get_local_site_id, open_in_explorer
 
-from openpype.tools.utils.delegates import pretty_timestamp
+from quadpype.tools.utils.delegates import pretty_timestamp
 
 from .models import (
     SyncRepresentationSummaryModel,
@@ -18,7 +18,7 @@ from .models import (
 from . import lib
 from . import delegates
 
-from openpype.tools.utils.constants import (
+from quadpype.tools.utils.constants import (
     LOCAL_PROGRESS_ROLE,
     REMOTE_PROGRESS_ROLE,
     HEADER_NAME_ROLE,

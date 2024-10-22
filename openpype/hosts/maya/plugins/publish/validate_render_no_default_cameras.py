@@ -2,8 +2,8 @@ from maya import cmds
 
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishValidationError,
     OptionalPyblishPluginMixin
@@ -18,7 +18,7 @@ class ValidateRenderNoDefaultCameras(pyblish.api.InstancePlugin,
     hosts = ['maya']
     families = ['renderlayer']
     label = "No Default Cameras Renderable"
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = False
 
     @staticmethod

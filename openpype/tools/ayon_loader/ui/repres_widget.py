@@ -3,9 +3,9 @@ import collections
 from qtpy import QtWidgets, QtGui, QtCore
 import qtawesome
 
-from openpype.style import get_default_entity_icon_color
-from openpype.tools.ayon_utils.widgets import get_qt_icon
-from openpype.tools.utils import DeselectableTreeView
+from quadpype.style import get_default_entity_icon_color
+from quadpype.tools.ayon_utils.widgets import get_qt_icon
+from quadpype.tools.utils import DeselectableTreeView
 
 from .actions_utils import show_actions_menu
 

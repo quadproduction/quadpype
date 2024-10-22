@@ -1,6 +1,6 @@
 from qtpy import QtWidgets
 
-from openpype.style import load_stylesheet
+from quadpype.style import load_stylesheet
 
 
 class MyExampleDialog(QtWidgets.QDialog):

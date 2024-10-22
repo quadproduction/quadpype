@@ -1,7 +1,7 @@
 from maya import cmds
 
-from openpype.pipeline import InventoryAction, registered_host
-from openpype.hosts.maya.api.lib import get_container_members
+from quadpype.pipeline import InventoryAction, registered_host
+from quadpype.hosts.maya.api.lib import get_container_members
 
 
 class SelectInScene(InventoryAction):

@@ -7,7 +7,7 @@ Provides:
 import os
 import pyblish.api
 
-from openpype.lib import ApplicationManager
+from quadpype.lib import ApplicationManager
 
 
 class CollectHostName(pyblish.api.ContextPlugin):

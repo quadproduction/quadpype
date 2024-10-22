@@ -1,6 +1,6 @@
 import pyblish.api
-from openpype.pipeline.load import any_outdated_containers
-from openpype.pipeline import (
+from quadpype.pipeline.load import any_outdated_containers
+from quadpype.pipeline import (
     PublishXmlValidationError,
     OptionalPyblishPluginMixin
 )
@@ -13,7 +13,7 @@ class ShowInventory(pyblish.api.Action):
     on = "failed"
 
     def process(self, context, plugin):
-        from openpype.tools.utils import host_tools
+        from quadpype.tools.utils import host_tools
 
         host_tools.show_scene_inventory()
 

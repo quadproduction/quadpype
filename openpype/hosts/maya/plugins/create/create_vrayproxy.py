@@ -1,14 +1,14 @@
-from openpype.hosts.maya.api import (
+from quadpype.hosts.maya.api import (
     plugin,
     lib
 )
-from openpype.lib import BoolDef
+from quadpype.lib import BoolDef
 
 
 class CreateVrayProxy(plugin.MayaCreator):
     """Alembic pointcache for animated data"""
 
-    identifier = "io.openpype.creators.maya.vrayproxy"
+    identifier = "io.quadpype.creators.maya.vrayproxy"
     label = "VRay Proxy"
     family = "vrayproxy"
     icon = "gears"

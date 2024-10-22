@@ -1,5 +1,5 @@
 import pyblish.api
-from openpype.pipeline.publish import ValidateContentsOrder
+from quadpype.pipeline.publish import ValidateContentsOrder
 
 
 class ValidateFtrackAttributes(pyblish.api.InstancePlugin):

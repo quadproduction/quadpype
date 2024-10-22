@@ -5,7 +5,7 @@
 The easiest way to setup for using Toon Boom Harmony is to use the built-in launch:
 
 ```
-python -c "import openpype.hosts.harmony.api as harmony;harmony.launch("path/to/harmony/executable")"
+python -c "import quadpype.hosts.harmony.api as harmony;harmony.launch("path/to/harmony/executable")"
 ```
 
 Communication with Harmony happens with a server/client relationship where the server is in the Python process and the client is in the Harmony process. Messages between Python and Harmony are required to be dictionaries, which are serialized to strings:
@@ -59,7 +59,7 @@ You can show the Workfiles app when Harmony launches by setting environment vari
 ### Low level messaging
 To send from Python to Harmony you can use the exposed method:
 ```python
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 from uuid import uuid4
 
 
@@ -75,7 +75,7 @@ print(harmony.send({"function": func, "args": ["Python"]})["result"])
 
 To send a function with multiple arguments its best to declare the arguments within the function:
 ```python
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 from uuid import uuid4
 
 signature = str(uuid4()).replace("-", "_")
@@ -113,7 +113,7 @@ PypeHarmony.myAwesomeFunction = function() {
 Then you can call that javascript code from your Python like:
 
 ```Python
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 harmony.send({"function": "PypeHarmony.myAwesomeFunction"});
 
@@ -158,7 +158,7 @@ Now in python, just read all those files and send them to Harmony.
 
 ```python
 from pathlib import Path
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 path_to_js = Path('/path/to/my/js')
 script_to_send = ""
@@ -177,7 +177,7 @@ harmony.send({"function": "Master.Boo.B"})
 ### Scene Save
 Instead of sending a request to Harmony with `scene.saveAll` please use:
 ```python
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 harmony.save_scene()
 ```
 
@@ -194,7 +194,7 @@ These plugins were made with the [polly config](https://github.com/mindbender-st
 
 #### Creator Plugin
 ```python
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 from uuid import uuid4
 
 
@@ -211,7 +211,7 @@ class CreateComposite(harmony.Creator):
 
 The creator plugin can be configured to use other node types. For example here is a write node creator:
 ```python
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 
 class CreateRender(harmony.Creator):
@@ -241,7 +241,7 @@ class CreateRender(harmony.Creator):
 #### Collector Plugin
 ```python
 import pyblish.api
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 
 class CollectInstances(pyblish.api.ContextPlugin):
@@ -288,7 +288,7 @@ class CollectInstances(pyblish.api.ContextPlugin):
 import os
 
 import pyblish.api
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 import clique
 
@@ -418,7 +418,7 @@ class ExtractImage(pyblish.api.InstancePlugin):
 ```python
 import os
 
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 signature = str(uuid4()).replace("-", "_")
 copy_files = """function copyFile(srcFilename, dstFilename)

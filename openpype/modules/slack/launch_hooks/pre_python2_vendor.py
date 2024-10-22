@@ -1,6 +1,6 @@
 import os
-from openpype.lib.applications import PreLaunchHook
-from openpype_modules.slack import SLACK_MODULE_DIR
+from quadpype.lib.applications import PreLaunchHook
+from quadpype_modules.slack import SLACK_MODULE_DIR
 
 
 class PrePython2Support(PreLaunchHook):

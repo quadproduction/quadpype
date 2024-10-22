@@ -3,15 +3,15 @@ import json
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import style
-from openpype.pipeline import AvalonMongoDB
-from openpype.tools.utils.lib import center_window, get_openpype_qt_app
-from openpype.tools.utils.assets_widget import SingleSelectAssetsWidget
-from openpype.tools.utils.constants import (
+from quadpype import style
+from quadpype.pipeline import AvalonMongoDB
+from quadpype.tools.utils.lib import center_window, get_quadpype_qt_app
+from quadpype.tools.utils.assets_widget import SingleSelectAssetsWidget
+from quadpype.tools.utils.constants import (
     PROJECT_NAME_ROLE
 )
-from openpype.tools.utils.tasks_widget import TasksWidget
-from openpype.tools.utils.models import (
+from quadpype.tools.utils.tasks_widget import TasksWidget
+from quadpype.tools.utils.models import (
     ProjectModel,
     ProjectSortFilterProxy
 )
@@ -376,7 +376,7 @@ def main(
     strict=True
 ):
     # Run Qt application
-    app = get_openpype_qt_app()
+    app = get_quadpype_qt_app()
     window = ContextDialog()
     window.set_strict(strict)
     window.set_context(project_name, asset_name)

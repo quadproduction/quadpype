@@ -1,11 +1,11 @@
-from openpype.hosts.maya.api import plugin
-from openpype.lib import BoolDef
+from quadpype.hosts.maya.api import plugin
+from quadpype.lib import BoolDef
 
 
 class CreateSetDress(plugin.MayaCreator):
     """A grouped package of loaded content"""
 
-    identifier = "io.openpype.creators.maya.setdress"
+    identifier = "io.quadpype.creators.maya.setdress"
     label = "Set Dress"
     family = "setdress"
     icon = "cubes"

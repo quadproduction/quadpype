@@ -5,7 +5,7 @@ it need only access to settings. Disadvantage is that it is hard to focus
 build per context and being explicit about loaded content.
 
 For more explicit workfile build is recommended 'AbstractTemplateBuilder'
-from '~/openpype/pipeline/workfile/workfile_template_builder'. Which gives
+from '~/quadpype/pipeline/workfile/workfile_template_builder'. Which gives
 more abilities to define how build happens but require more code to achive it.
 """
 
@@ -13,19 +13,19 @@ import re
 import collections
 import json
 
-from openpype.client import (
+from quadpype.client import (
     get_asset_by_name,
     get_subsets,
     get_last_versions,
     get_representations,
     get_linked_assets,
 )
-from openpype.settings import get_project_settings
-from openpype.lib import (
+from quadpype.settings import get_project_settings
+from quadpype.lib import (
     filter_profiles,
     Logger,
 )
-from openpype.pipeline.load import (
+from quadpype.pipeline.load import (
     discover_loader_plugins,
     IncompatibleLoaderError,
     load_container,
@@ -100,7 +100,7 @@ class BuildWorkfile:
             List[Dict[str, Any]]: Loaded containers during build.
         """
 
-        from openpype.pipeline.context_tools import (
+        from quadpype.pipeline.context_tools import (
             get_current_project_name,
             get_current_asset_name,
             get_current_task_name,
@@ -240,7 +240,7 @@ class BuildWorkfile:
             Dict[str, Any]: preset per entered task name
         """
 
-        from openpype.pipeline.context_tools import (
+        from quadpype.pipeline.context_tools import (
             get_current_host_name,
             get_current_project_name,
         )
@@ -660,7 +660,7 @@ class BuildWorkfile:
         ```
         """
 
-        from openpype.pipeline.context_tools import get_current_project_name
+        from quadpype.pipeline.context_tools import get_current_project_name
 
         output = {}
         if not asset_docs:

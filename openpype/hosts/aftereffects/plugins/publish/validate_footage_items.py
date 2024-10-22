@@ -6,10 +6,10 @@ import os
 
 import pyblish.api
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     PublishXmlValidationError
 )
-from openpype.hosts.aftereffects.api import get_stub
+from quadpype.hosts.aftereffects.api import get_stub
 
 
 class ValidateFootageItems(pyblish.api.InstancePlugin):

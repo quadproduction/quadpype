@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from openpype.hosts.blender.hooks import pre_add_run_python_script_arg
-from openpype.lib import PreLaunchHook
+from quadpype.hosts.blender.hooks import pre_add_run_python_script_arg
+from quadpype.lib import PreLaunchHook
 
 
 class InstallCustomAddons(PreLaunchHook):

@@ -2,9 +2,9 @@ import os
 import attr
 import pyblish.api
 
-from openpype.pipeline import publish
-from openpype.pipeline.publish import RenderInstance
-from openpype.hosts.fusion.api.lib import get_frame_path
+from quadpype.pipeline import publish
+from quadpype.pipeline.publish import RenderInstance
+from quadpype.hosts.fusion.api.lib import get_frame_path
 
 
 @attr.s

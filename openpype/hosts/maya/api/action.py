@@ -3,8 +3,8 @@ from __future__ import absolute_import
 
 import pyblish.api
 
-from openpype.client import get_asset_by_name
-from openpype.pipeline.publish import get_errored_instances_from_context
+from quadpype.client import get_asset_by_name
+from quadpype.pipeline.publish import get_errored_instances_from_context
 
 
 class GenerateUUIDsOnInvalidAction(pyblish.api.Action):

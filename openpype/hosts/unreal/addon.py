@@ -1,11 +1,11 @@
 import os
 import re
-from openpype.modules import IHostAddon, OpenPypeModule
+from quadpype.modules import IHostAddon, QuadPypeModule
 
 UNREAL_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class UnrealAddon(OpenPypeModule, IHostAddon):
+class UnrealAddon(QuadPypeModule, IHostAddon):
     name = "unreal"
     host_name = "unreal"
 
@@ -25,7 +25,7 @@ class UnrealAddon(OpenPypeModule, IHostAddon):
 
         from .lib import get_compatible_integration
 
-        from openpype.widgets.message_window import Window
+        from quadpype.widgets.message_window import Window
 
         pattern = re.compile(r'^\d+-\d+$')
 

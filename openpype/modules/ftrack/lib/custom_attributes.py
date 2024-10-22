@@ -50,7 +50,7 @@ def tool_definitions_from_app_manager(app_manager):
     return tools_data
 
 
-def get_openpype_attr(session, split_hierarchical=True, query_keys=None):
+def get_quadpype_attr(session, split_hierarchical=True, query_keys=None):
     custom_attributes = []
     hier_custom_attributes = []
     if not query_keys:

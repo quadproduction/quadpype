@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Progress window to show when OpenPype is updating/installing locally."""
+"""Progress window to show when QuadPype is updating/installing locally."""
 import os
 import logging as log
 
@@ -7,20 +7,20 @@ from pathlib import Path
 from qtpy import QtCore, QtGui, QtWidgets
 
 from .update_thread import UpdateThread
-from .bootstrap_repos import OpenPypeVersion, ZXPExtensionData
+from .bootstrap_repos import QuadPypeVersion, ZXPExtensionData
 from .nice_progress_bar import NiceProgressBar
 from .tools import load_stylesheet, get_app_icon_path, get_fonts_dir_path
 
 
 class UpdateWindow(QtWidgets.QDialog):
-    """OpenPype update window."""
+    """QuadPype update window."""
 
     _width = 500
     _height = 100
 
-    def __init__(self, version: OpenPypeVersion, zxp_hosts: [ZXPExtensionData], parent=None):
+    def __init__(self, version: QuadPypeVersion, zxp_hosts: [ZXPExtensionData], parent=None):
         super().__init__(parent)
-        self._openpype_version = version
+        self._quadpype_version = version
         self._zxp_hosts = zxp_hosts
         self._result_version_path = None
         self._log = log.getLogger(str(__class__))
@@ -64,7 +64,7 @@ class UpdateWindow(QtWidgets.QDialog):
         # Main info
         # --------------------------------------------------------------------
         main_label = QtWidgets.QLabel(
-            f"<b>QuadPype</b> is updating to {self._openpype_version}", self)
+            f"<b>QuadPype</b> is updating to {self._quadpype_version}", self)
         main_label.setWordWrap(True)
         main_label.setObjectName("MainLabel")
 
@@ -106,7 +106,7 @@ class UpdateWindow(QtWidgets.QDialog):
             return
         self._progress_bar.setRange(0, 0)
         update_thread = UpdateThread(self)
-        update_thread.set_version(self._openpype_version)
+        update_thread.set_version(self._quadpype_version)
         update_thread.set_zxp_hosts(self._zxp_hosts)
         update_thread.log_signal.connect(self._print)
         update_thread.step_text_signal.connect(self.update_step_text)

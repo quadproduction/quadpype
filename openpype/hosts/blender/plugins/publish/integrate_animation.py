@@ -1,7 +1,7 @@
 import json
 
 import pyblish.api
-from openpype.pipeline.publish import OptionalPyblishPluginMixin
+from quadpype.pipeline.publish import OptionalPyblishPluginMixin
 
 
 class IntegrateAnimation(

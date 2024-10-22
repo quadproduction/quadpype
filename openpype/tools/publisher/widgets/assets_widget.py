@@ -2,12 +2,12 @@ import collections
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.tools.utils import (
+from quadpype.tools.utils import (
     PlaceholderLineEdit,
     RecursiveSortFilterProxyModel,
     get_asset_icon,
 )
-from openpype.tools.utils.assets_widget import (
+from quadpype.tools.utils.assets_widget import (
     SingleSelectAssetsWidget,
     ASSET_ID_ROLE,
     ASSET_NAME_ROLE,

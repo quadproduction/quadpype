@@ -1,12 +1,12 @@
 import pyblish.api
-from openpype.pipeline import (
+from quadpype.pipeline import (
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
 from maya import cmds
-from openpype.pipeline.publish import RepairAction
-from openpype.hosts.maya.api import lib
-from openpype.hosts.maya.api.lib import reset_scene_resolution
+from quadpype.pipeline.publish import RepairAction
+from quadpype.hosts.maya.api import lib
+from quadpype.hosts.maya.api.lib import reset_scene_resolution
 
 
 class ValidateResolution(pyblish.api.InstancePlugin,

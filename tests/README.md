@@ -1,4 +1,4 @@
-Automatic tests for OpenPype
+Automatic tests for QuadPype
 ============================
 
 Requirements:
@@ -12,7 +12,7 @@ You can test that `mongorestore` is available by running this in console, or cmd
 
 Structure:
 - integration - end to end tests, slow (see README.md in the integration folder for more info)
-    - openpype/modules/MODULE_NAME - structure follow directory structure in code base
+    - quadpype/modules/MODULE_NAME - structure follow directory structure in code base
         - fixture - sample data `(MongoDB dumps, test files etc.)`
         - `tests.py` - single or more pytest files for MODULE_NAME
 - unit - quick unit test
@@ -43,7 +43,7 @@ In that case you might add this dummy configuration BEFORE any imports in your t
 import os
 os.environ["QUADPYPE_DEBUG"] = "1"
 os.environ["QUADPYPE_MONGO"] = "mongodb://localhost:27017"
-os.environ["QUADPYPE_DATABASE_NAME"] = "openpype"
+os.environ["QUADPYPE_DATABASE_NAME"] = "quadpype"
 os.environ["AVALON_DB"] = "avalon"
 os.environ["AVALON_TIMEOUT"] = "3000"
 os.environ["AVALON_ASSET"] = "Asset"

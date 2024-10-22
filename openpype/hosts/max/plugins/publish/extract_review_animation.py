@@ -1,7 +1,7 @@
 import os
 import pyblish.api
-from openpype.pipeline import publish
-from openpype.hosts.max.api.preview_animation import (
+from quadpype.pipeline import publish
+from quadpype.hosts.max.api.preview_animation import (
     render_preview_animation
 )
 

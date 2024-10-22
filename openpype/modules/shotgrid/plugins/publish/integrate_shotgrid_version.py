@@ -1,6 +1,6 @@
 import pyblish.api
 
-from openpype.pipeline.publish import get_publish_repre_path
+from quadpype.pipeline.publish import get_publish_repre_path
 
 
 class IntegrateShotgridVersion(pyblish.api.InstancePlugin):

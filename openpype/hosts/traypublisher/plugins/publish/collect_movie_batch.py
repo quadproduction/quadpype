@@ -1,11 +1,11 @@
 import os
 
 import pyblish.api
-from openpype.pipeline import OpenPypePyblishPluginMixin
+from quadpype.pipeline import QuadPypePyblishPluginMixin
 
 
 class CollectMovieBatch(
-    pyblish.api.InstancePlugin, OpenPypePyblishPluginMixin
+    pyblish.api.InstancePlugin, QuadPypePyblishPluginMixin
 ):
     """Collect file url for batch movies and create representation.
 

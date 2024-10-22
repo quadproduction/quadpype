@@ -15,7 +15,7 @@ class CollectPointcacheType(pyblish.api.InstancePlugin):
     label = "Collect type of pointcache"
 
     def process(self, instance):
-        if instance.data["creator_identifier"] == "io.openpype.creators.houdini.bgeo":  # noqa: E501
+        if instance.data["creator_identifier"] == "io.quadpype.creators.houdini.bgeo":  # noqa: E501
             instance.data["families"] += ["bgeo"]
-        elif instance.data["creator_identifier"] == "io.openpype.creators.houdini.pointcache":  # noqa: E501
+        elif instance.data["creator_identifier"] == "io.quadpype.creators.houdini.pointcache":  # noqa: E501
             instance.data["families"] += ["abc"]

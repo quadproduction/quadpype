@@ -1,13 +1,13 @@
 from qtpy import QtWidgets, QtGui, QtCore
 
-from openpype import style
+from quadpype import style
 
-from openpype.lib import is_admin_password_required
-from openpype.lib.events import EventSystem
-from openpype.widgets import PasswordDialog
+from quadpype.lib import is_admin_password_required
+from quadpype.lib.events import EventSystem
+from quadpype.widgets import PasswordDialog
 
-from openpype.settings import get_system_settings
-from openpype.settings.lib import (
+from quadpype.settings import get_system_settings
+from quadpype.settings.lib import (
     get_last_opened_info,
     opened_settings_ui,
     closed_settings_ui
@@ -110,7 +110,7 @@ class MainWidget(QtWidgets.QWidget):
 
     widget_width = 1000
     widget_height = 600
-    window_title = "OpenPype Settings"
+    window_title = "QuadPype Settings"
 
     def __init__(self, user_role, parent=None, reset_on_show=True):
         super().__init__(parent)

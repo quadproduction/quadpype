@@ -1,13 +1,13 @@
 import os
 
-from openpype.modules import OpenPypeModule, ITrayAction
-from openpype.settings import get_system_settings
+from quadpype.modules import QuadPypeModule, ITrayAction
+from quadpype.settings import get_system_settings
 
 import igniter  # noqa: E402
 from igniter import BootstrapRepos  # noqa: E402
 
 
-class UpdateZXPExtensionsAction(OpenPypeModule, ITrayAction):
+class UpdateZXPExtensionsAction(QuadPypeModule, ITrayAction):
     name = "update_zxp_extensions"
     label = "Update ZXP Extensions"
     submenu = "More Tools"
@@ -33,8 +33,8 @@ class UpdateZXPExtensionsAction(OpenPypeModule, ITrayAction):
         # install latest version to user data dir
         bootstrap = BootstrapRepos()
 
-        openpype_version = bootstrap.find_openpype_version(os.environ["QUADPYPE_VERSION"])
+        quadpype_version = bootstrap.find_quadpype_version(os.environ["QUADPYPE_VERSION"])
 
         system_settings = get_system_settings()
-        zxp_hosts_to_update = bootstrap.get_zxp_extensions_to_update(openpype_version, system_settings, force=True)
-        igniter.open_update_window(openpype_version, zxp_hosts_to_update)
+        zxp_hosts_to_update = bootstrap.get_zxp_extensions_to_update(quadpype_version, system_settings, force=True)
+        igniter.open_update_window(quadpype_version, zxp_hosts_to_update)

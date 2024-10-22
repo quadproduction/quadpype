@@ -152,10 +152,10 @@ def create_otio_reference(clip):
 
     # add resolution metadata
     metadata.update({
-        "openpype.source.colourtransform": clip.sourceMediaColourTransform(),
-        "openpype.source.width": int(media_source.width()),
-        "openpype.source.height": int(media_source.height()),
-        "openpype.source.pixelAspect": float(media_source.pixelAspect())
+        "quadpype.source.colourtransform": clip.sourceMediaColourTransform(),
+        "quadpype.source.width": int(media_source.width()),
+        "quadpype.source.height": int(media_source.height()),
+        "quadpype.source.pixelAspect": float(media_source.pixelAspect())
     })
 
     otio_ex_ref_item = None
@@ -312,19 +312,19 @@ def _create_otio_timeline():
     metadata = _get_metadata(CTX.timeline)
 
     metadata.update({
-        "openpype.timeline.width": int(CTX.timeline.format().width()),
-        "openpype.timeline.height": int(CTX.timeline.format().height()),
-        "openpype.timeline.pixelAspect": int(CTX.timeline.format().pixelAspect()),  # noqa
-        "openpype.project.useOCIOEnvironmentOverride": project.useOCIOEnvironmentOverride(),  # noqa
-        "openpype.project.lutSetting16Bit": project.lutSetting16Bit(),
-        "openpype.project.lutSetting8Bit": project.lutSetting8Bit(),
-        "openpype.project.lutSettingFloat": project.lutSettingFloat(),
-        "openpype.project.lutSettingLog": project.lutSettingLog(),
-        "openpype.project.lutSettingViewer": project.lutSettingViewer(),
-        "openpype.project.lutSettingWorkingSpace": project.lutSettingWorkingSpace(),  # noqa
-        "openpype.project.lutUseOCIOForExport": project.lutUseOCIOForExport(),
-        "openpype.project.ocioConfigName": project.ocioConfigName(),
-        "openpype.project.ocioConfigPath": project.ocioConfigPath()
+        "quadpype.timeline.width": int(CTX.timeline.format().width()),
+        "quadpype.timeline.height": int(CTX.timeline.format().height()),
+        "quadpype.timeline.pixelAspect": int(CTX.timeline.format().pixelAspect()),  # noqa
+        "quadpype.project.useOCIOEnvironmentOverride": project.useOCIOEnvironmentOverride(),  # noqa
+        "quadpype.project.lutSetting16Bit": project.lutSetting16Bit(),
+        "quadpype.project.lutSetting8Bit": project.lutSetting8Bit(),
+        "quadpype.project.lutSettingFloat": project.lutSettingFloat(),
+        "quadpype.project.lutSettingLog": project.lutSettingLog(),
+        "quadpype.project.lutSettingViewer": project.lutSettingViewer(),
+        "quadpype.project.lutSettingWorkingSpace": project.lutSettingWorkingSpace(),  # noqa
+        "quadpype.project.lutUseOCIOForExport": project.lutUseOCIOForExport(),
+        "quadpype.project.ocioConfigName": project.ocioConfigName(),
+        "quadpype.project.ocioConfigPath": project.ocioConfigPath()
     })
 
     start_time = create_otio_rational_time(

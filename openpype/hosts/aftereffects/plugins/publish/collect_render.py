@@ -5,11 +5,11 @@ import attr
 
 import pyblish.api
 
-from openpype.settings import get_project_settings
-from openpype.pipeline import publish
-from openpype.pipeline.publish import RenderInstance
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import publish
+from quadpype.pipeline.publish import RenderInstance
 
-from openpype.hosts.aftereffects.api import get_stub
+from quadpype.hosts.aftereffects.api import get_stub
 
 
 @attr.s

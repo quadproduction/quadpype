@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
 
-    "title": "openpype:version-2.0",
+    "title": "quadpype:version-2.0",
     "description": "An individual version",
 
     "type": "object",
@@ -20,8 +20,8 @@
         "schema": {
             "description": "The schema associated with this document",
             "type": "string",
-            "enum": ["openpype:version-2.0"],
-            "example": "openpype:version-2.0"
+            "enum": ["quadpype:version-2.0"],
+            "example": "quadpype:version-2.0"
         },
         "type": {
             "description": "The type of document",

@@ -17,12 +17,12 @@ import attr
 import requests
 
 import pyblish.api
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     AbstractMetaInstancePlugin,
     KnownPublishError,
-    OpenPypePyblishPluginMixin
+    QuadPypePyblishPluginMixin
 )
-from openpype.pipeline.publish.lib import (
+from quadpype.pipeline.publish.lib import (
     replace_with_published_scene_path
 )
 
@@ -404,7 +404,7 @@ class DeadlineJobInfo(object):
 
 @six.add_metaclass(AbstractMetaInstancePlugin)
 class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
-                             OpenPypePyblishPluginMixin):
+                             QuadPypePyblishPluginMixin):
     """Class abstracting access to Deadline."""
 
     label = "Submit to Deadline"

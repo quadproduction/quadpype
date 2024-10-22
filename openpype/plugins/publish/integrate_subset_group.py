@@ -9,8 +9,8 @@ Provides:
 """
 import pyblish.api
 
-from openpype.lib.profiles_filtering import filter_profiles
-from openpype.lib import (
+from quadpype.lib.profiles_filtering import filter_profiles
+from quadpype.lib import (
     prepare_template_data,
     StringTemplate,
     TemplateUnsolved
@@ -30,7 +30,7 @@ class IntegrateSubsetGroup(pyblish.api.InstancePlugin):
     def process(self, instance):
         """Look into subset group profiles set by settings.
 
-        Attribute 'subset_grouping_profiles' is defined by OpenPype settings.
+        Attribute 'subset_grouping_profiles' is defined by QuadPype settings.
         """
 
         # Skip if 'subset_grouping_profiles' is empty

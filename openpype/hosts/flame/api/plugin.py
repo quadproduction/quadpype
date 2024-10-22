@@ -7,11 +7,11 @@ from xml.etree import ElementTree as ET
 import qargparse
 from qtpy import QtCore, QtWidgets
 
-from openpype import style
-from openpype.lib import Logger, StringTemplate
-from openpype.pipeline import LegacyCreator, LoaderPlugin
-from openpype.pipeline.colorspace import get_remapped_colorspace_to_native
-from openpype.settings import get_current_project_settings
+from quadpype import style
+from quadpype.lib import Logger, StringTemplate
+from quadpype.pipeline import LegacyCreator, LoaderPlugin
+from quadpype.pipeline.colorspace import get_remapped_colorspace_to_native
+from quadpype.settings import get_current_project_settings
 
 from . import constants
 from . import lib as flib

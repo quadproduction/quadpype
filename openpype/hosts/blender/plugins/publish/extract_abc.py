@@ -2,8 +2,8 @@ import os
 
 import bpy
 
-from openpype.pipeline import publish
-from openpype.hosts.blender.api import plugin
+from quadpype.pipeline import publish
+from quadpype.hosts.blender.api import plugin
 
 
 class ExtractABC(publish.Extractor, publish.OptionalPyblishPluginMixin):

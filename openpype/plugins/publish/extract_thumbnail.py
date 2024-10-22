@@ -5,7 +5,7 @@ import tempfile
 import re
 
 import pyblish.api
-from openpype.lib import (
+from quadpype.lib import (
     get_ffmpeg_tool_args,
     get_ffprobe_data,
 
@@ -15,7 +15,7 @@ from openpype.lib import (
     path_to_subprocess_arg,
     run_subprocess,
 )
-from openpype.lib.transcoding import (
+from quadpype.lib.transcoding import (
     convert_colorspace,
     VIDEO_EXTENSIONS,
 )

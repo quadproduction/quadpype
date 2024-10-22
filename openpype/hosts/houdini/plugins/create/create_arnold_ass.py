@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating Arnold ASS files."""
-from openpype.hosts.houdini.api import plugin
-from openpype.lib import BoolDef
+from quadpype.hosts.houdini.api import plugin
+from quadpype.lib import BoolDef
 
 
 class CreateArnoldAss(plugin.HoudiniCreator):
     """Arnold .ass Archive"""
 
-    identifier = "io.openpype.creators.houdini.ass"
+    identifier = "io.quadpype.creators.houdini.ass"
     label = "Arnold ASS"
     family = "ass"
     icon = "magic"

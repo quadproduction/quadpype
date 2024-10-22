@@ -1,13 +1,13 @@
 from maya import cmds
 
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     ValidateMeshOrder,
     OptionalPyblishPluginMixin,
     PublishValidationError
 )
-from openpype.hosts.maya.api.lib import len_flattened
+from quadpype.hosts.maya.api.lib import len_flattened
 
 
 class ValidateMeshHasUVs(pyblish.api.InstancePlugin,
@@ -24,7 +24,7 @@ class ValidateMeshHasUVs(pyblish.api.InstancePlugin,
     hosts = ['maya']
     families = ['model']
     label = 'Mesh Has UVs'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = True
 
     @classmethod

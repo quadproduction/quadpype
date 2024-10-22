@@ -163,7 +163,7 @@ def save_studio_settings(data):
         SaveWarningExc: If any module raises the exception.
     """
     # Notify Pype modules
-    from openpype.modules import ModulesManager, ISettingsChangeListener
+    from quadpype.modules import ModulesManager, ISettingsChangeListener
 
     old_data = get_system_settings()
     default_values = get_default_settings()[SYSTEM_SETTINGS_KEY]
@@ -211,7 +211,7 @@ def save_project_settings(project_name, overrides):
         SaveWarningExc: If any module raises the exception.
     """
     # Notify Pype modules
-    from openpype.modules import ModulesManager, ISettingsChangeListener
+    from quadpype.modules import ModulesManager, ISettingsChangeListener
 
     default_values = get_default_settings()[PROJECT_SETTINGS_KEY]
     if project_name:
@@ -273,7 +273,7 @@ def save_project_anatomy(project_name, anatomy_data):
     """
     bypass_protect_attrs = anatomy_data.pop("bypass_protect_anatomy_attributes", None)
     # Notify Pype modules
-    from openpype.modules import ModulesManager, ISettingsChangeListener
+    from quadpype.modules import ModulesManager, ISettingsChangeListener
 
     default_values = get_default_settings()[PROJECT_ANATOMY_KEY]
     if project_name:
@@ -530,8 +530,8 @@ def get_local_settings():
     return _get_local_settings()
 
 
-def load_openpype_default_settings():
-    """Load openpype default settings."""
+def load_quadpype_default_settings():
+    """Load quadpype default settings."""
     return load_jsons_from_dir(DEFAULTS_DIR)
 
 
@@ -542,9 +542,9 @@ def reset_default_settings():
 
 
 def _get_default_settings():
-    from openpype.modules import get_module_settings_defs
+    from quadpype.modules import get_module_settings_defs
 
-    defaults = load_openpype_default_settings()
+    defaults = load_quadpype_default_settings()
 
     module_settings_defs = get_module_settings_defs()
     for module_settings_def_cls in module_settings_defs:
@@ -1091,7 +1091,7 @@ def get_current_project_settings():
 
 @require_handler
 def _get_global_settings():
-    default_settings = load_openpype_default_settings()
+    default_settings = load_quadpype_default_settings()
     default_values = default_settings[SYSTEM_SETTINGS_KEY][GENERAL_SETTINGS_KEY]
     studio_values = _SETTINGS_HANDLER.get_global_settings()
     return {
@@ -1110,10 +1110,10 @@ def _get_general_environments():
     Function is implemented to be able to load general environments without using
     `get_default_settings`.
     """
-    # Use only openpype defaults.
+    # Use only quadpype defaults.
     # - prevent to use `get_system_settings` where `get_default_settings`
     #   is used
-    default_values = load_openpype_default_settings()
+    default_values = load_quadpype_default_settings()
     system_settings = default_values[SYSTEM_SETTINGS_KEY]
     studio_overrides = get_studio_system_settings_overrides()
 

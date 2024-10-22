@@ -1,7 +1,7 @@
 import os
 
-from openpype.modules import (
-    OpenPypeModule,
+from quadpype.modules import (
+    QuadPypeModule,
     ITrayModule,
     IPluginPaths,
 )
@@ -9,7 +9,7 @@ from openpype.modules import (
 SHOTGRID_MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class ShotgridModule(OpenPypeModule, ITrayModule, IPluginPaths):
+class ShotgridModule(QuadPypeModule, ITrayModule, IPluginPaths):
     leecher_manager_url = None
     name = "shotgrid"
     enabled = False

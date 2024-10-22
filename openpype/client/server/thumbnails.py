@@ -3,7 +3,7 @@
 Thumbnails are cached to appdirs to predefined directory.
 
 This should be moved to thumbnails logic in pipeline but because it would
-overflow OpenPype logic it's here for now.
+overflow QuadPype logic it's here for now.
 """
 
 import os

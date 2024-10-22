@@ -60,18 +60,18 @@ def extract_annotated_frame(filepath=None, frame_to_export=None):
 
 def review_attributes(node=None):
     # TODO: Implement
-    # prop_status = node + ".openpype" + ".review_status"
-    # prop_comment = node + ".openpype" + ".review_comment"
+    # prop_status = node + ".quadpype" + ".review_status"
+    # prop_comment = node + ".quadpype" + ".review_comment"
     pass
 
 
 def get_review_attribute(node=None, attribute=None):
-    attr = node + ".openpype" + "." + attribute
+    attr = node + ".quadpype" + "." + attribute
     return rv.commands.getStringProperty(attr)[0]
 
 
 def write_review_attribute(node=None, attribute=None, att_value=None):
-    att_prop = node + ".openpype" + ".{}".format(attribute)
+    att_prop = node + ".quadpype" + ".{}".format(attribute)
     if not rv.commands.propertyExists(att_prop):
         rv.commands.newProperty(att_prop, rv.commands.StringType, 1)
     rv.commands.setStringProperty(att_prop, [str(att_value)], True)

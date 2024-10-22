@@ -25,10 +25,10 @@ import collections
 
 from qtpy import QtWidgets, QtCore
 
-from openpype.widgets.nice_checkbox import NiceCheckbox
+from quadpype.widgets.nice_checkbox import NiceCheckbox
 
-from openpype.tools.utils import BaseClickableFrame
-from openpype.tools.utils.lib import html_escape
+from quadpype.tools.utils import BaseClickableFrame
+from quadpype.tools.utils.lib import html_escape
 from .widgets import (
     AbstractInstanceView,
     ContextWarningLabel,

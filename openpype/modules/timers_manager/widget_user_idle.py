@@ -1,7 +1,7 @@
 from qtpy import QtCore, QtGui, QtWidgets
 
-from openpype import resources, style
-from openpype.widgets import BaseToolWidget
+from quadpype import resources, style
+from quadpype.widgets import BaseToolWidget
 
 
 class WidgetUserIdle(BaseToolWidget):
@@ -11,7 +11,7 @@ class WidgetUserIdle(BaseToolWidget):
     def __init__(self, module):
         super().__init__()
 
-        self.setWindowTitle("OpenPype - Stop timers")
+        self.setWindowTitle("QuadPype - Stop timers")
 
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)

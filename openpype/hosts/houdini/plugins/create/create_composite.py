@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating composite sequences."""
-from openpype.hosts.houdini.api import plugin
-from openpype.pipeline import CreatedInstance, CreatorError
+from quadpype.hosts.houdini.api import plugin
+from quadpype.pipeline import CreatedInstance, CreatorError
 
 import hou
 
@@ -9,7 +9,7 @@ import hou
 class CreateCompositeSequence(plugin.HoudiniCreator):
     """Composite ROP to Image Sequence"""
 
-    identifier = "io.openpype.creators.houdini.imagesequence"
+    identifier = "io.quadpype.creators.houdini.imagesequence"
     label = "Composite (Image Sequence)"
     family = "imagesequence"
     icon = "gears"

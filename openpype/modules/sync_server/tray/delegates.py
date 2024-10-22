@@ -1,9 +1,9 @@
 import os
 from qtpy import QtCore, QtWidgets, QtGui
 
-from openpype.lib import Logger
+from quadpype.lib import Logger
 
-from openpype.tools.utils.constants import (
+from quadpype.tools.utils.constants import (
     LOCAL_PROVIDER_ROLE,
     REMOTE_PROVIDER_ROLE,
     LOCAL_PROGRESS_ROLE,

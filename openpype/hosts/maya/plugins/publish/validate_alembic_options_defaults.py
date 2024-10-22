@@ -1,7 +1,7 @@
 import pyblish.api
 
-from openpype.pipeline import OptionalPyblishPluginMixin
-from openpype.pipeline.publish import RepairAction, PublishValidationError
+from quadpype.pipeline import OptionalPyblishPluginMixin
+from quadpype.pipeline.publish import RepairAction, PublishValidationError
 
 
 class ValidateAlembicOptionsDefaults(

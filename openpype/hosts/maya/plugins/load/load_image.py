@@ -1,22 +1,22 @@
 import os
 import copy
 
-from openpype.lib import EnumDef
-from openpype.pipeline import (
+from quadpype.lib import EnumDef
+from quadpype.pipeline import (
     load,
     get_representation_context,
     get_current_host_name,
 )
-from openpype.pipeline.load.utils import get_representation_path_from_context
-from openpype.pipeline.colorspace import (
+from quadpype.pipeline.load.utils import get_representation_path_from_context
+from quadpype.pipeline.colorspace import (
     get_imageio_file_rules_colorspace_from_filepath,
     get_imageio_config,
     get_imageio_file_rules
 )
-from openpype.settings import get_project_settings
+from quadpype.settings import get_project_settings
 
-from openpype.hosts.maya.api.pipeline import containerise
-from openpype.hosts.maya.api.lib import (
+from quadpype.hosts.maya.api.pipeline import containerise
+from quadpype.hosts.maya.api.lib import (
     unique_namespace,
     namespaced
 )

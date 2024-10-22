@@ -6,19 +6,19 @@ import importlib
 import rv.qtutils
 from rv.rvtypes import MinorMode
 
-from openpype.tools.utils import host_tools
-from openpype.client import get_representations
-from openpype.pipeline import (
+from quadpype.tools.utils import host_tools
+from quadpype.client import get_representations
+from quadpype.pipeline import (
     registered_host,
     install_host,
     discover_loader_plugins,
     load_container
 )
-from openpype.hosts.openrv.api import OpenRVHost
+from quadpype.hosts.openrv.api import OpenRVHost
 
 # TODO (Critical) Remove this temporary hack to avoid clash with PyOpenColorIO
-#   that is contained within OpenPype's venv
-# Ensure PyOpenColorIO is loaded from RV instead of from OpenPype lib by
+#   that is contained within QuadPype's venv
+# Ensure PyOpenColorIO is loaded from RV instead of from QuadPype lib by
 # moving all rv related paths to start of sys.path so RV libs are imported
 # We consider the `/openrv` folder the root to  `/openrv/bin/rv` executable
 rv_root = os.path.normpath(os.path.dirname(os.path.dirname(sys.executable)))
@@ -35,24 +35,24 @@ import PyOpenColorIO  # noqa
 importlib.reload(PyOpenColorIO)
 
 
-def install_openpype_to_host():
+def install_quadpype_to_host():
     host = OpenRVHost()
     install_host(host)
 
 
-class OpenPypeMenus(MinorMode):
+class QuadPypeMenus(MinorMode):
 
     def __init__(self):
         MinorMode.__init__(self)
         self.init(
-            name="py-openpype",
+            name="py-quadpype",
             globalBindings=None,
             overrideBindings=None,
             menu=[
                 # Menu name
                 # NOTE: If it already exists it will merge with existing
                 # and add submenus / menuitems to the existing one
-                ("OpenPype", [
+                ("QuadPype", [
                     # Menuitem name, actionHook (event), key, stateHook
                     ("Create...", self.create, None, None),
                     ("Load...", self.load, None, None),
@@ -126,6 +126,6 @@ def createMode():
     # we only want to trigger the startup install when the host is not
     # registered yet.
     if not registered_host():
-        install_openpype_to_host()
+        install_quadpype_to_host()
         data_loader()
-    return OpenPypeMenus()
+    return QuadPypeMenus()

@@ -3,7 +3,7 @@ import re
 
 import pyblish.api
 
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     PublishValidationError,
     OptionalPyblishPluginMixin
 )

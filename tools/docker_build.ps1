@@ -43,11 +43,11 @@ function Change-Cwd() {
 }
 
 function New-DockerBuild {
-    $version_file = Get-Content -Path "$($repo_root)\openpype\version.py"
+    $version_file = Get-Content -Path "$($repo_root)\quadpype\version.py"
     $result = [regex]::Matches($version_file, '__version__ = "(?<version>\d+\.\d+.\d+.*)"')
-    $openpype_version = $result[0].Groups['version'].Value
+    $quadpype_version = $result[0].Groups['version'].Value
     $startTime = [int][double]::Parse((Get-Date -UFormat %s))
-    Write-Color -Text ">>> ", "Building OpenPype using Docker ..." -Color Green, Gray, White
+    Write-Color -Text ">>> ", "Building QuadPype using Docker ..." -Color Green, Gray, White
     $variant = $args[0]
     if ($variant.Length -eq 0) {
         $dockerfile = "$($repo_root)\Dockerfile"
@@ -75,7 +75,7 @@ function New-DockerBuild {
     }
 
     Write-Color -Text ">>> ", "Running Docker build ..." -Color Green, Gray, White
-    docker build --pull --iidfile $repo_root/build/docker-image.id --build-arg BUILD_DATE=$(Get-Date -UFormat %Y-%m-%dT%H:%M:%SZ) --build-arg VERSION=$openpype_version -t quad/quadpype:$openpype_version -f $dockerfile .
+    docker build --pull --iidfile $repo_root/build/docker-image.id --build-arg BUILD_DATE=$(Get-Date -UFormat %Y-%m-%dT%H:%M:%SZ) --build-arg VERSION=$quadpype_version -t quad/quadpype:$quadpype_version -f $dockerfile .
     if ($LASTEXITCODE -ne 0) {
         Write-Color -Text "!!! ", "Docker command failed.", $LASTEXITCODE -Color Red, Yellow, Red
         Restore-Cwd
@@ -84,14 +84,14 @@ function New-DockerBuild {
     Write-Color -Text ">>> ", "Copying build from container ..." -Color Green, Gray, White
     $cid = Get-Container
 
-    docker cp "$($cid):/opt/openpype/build/exe.linux-x86_64-3.9" "$($repo_root)/build"
-    docker cp "$($cid):/opt/openpype/build/build.log" "$($repo_root)/build"
+    docker cp "$($cid):/opt/quadpype/build/exe.linux-x86_64-3.9" "$($repo_root)/build"
+    docker cp "$($cid):/opt/quadpype/build/build.log" "$($repo_root)/build"
 
     $endTime = [int][double]::Parse((Get-Date -UFormat %s))
     try {
-        New-BurntToastNotification -AppLogo "$openpype_root/openpype/resources/icons/quadpype_icon_default.png" -Text "OpenPype build complete!", "All done in $( $endTime - $startTime ) secs. You will find OpenPype and build log in build directory."
+        New-BurntToastNotification -AppLogo "$quadpype_root/quadpype/resources/icons/quadpype_icon_default.png" -Text "QuadPype build complete!", "All done in $( $endTime - $startTime ) secs. You will find QuadPype and build log in build directory."
     } catch {}
-    Write-Color -Text "*** ", "All done in ", $($endTime - $startTime), " secs. You will find OpenPype and build log in ", "'.\build'", " directory." -Color Green, Gray, White, Gray, White, Gray
+    Write-Color -Text "*** ", "All done in ", $($endTime - $startTime), " secs. You will find QuadPype and build log in ", "'.\build'", " directory." -Color Green, Gray, White, Gray, White, Gray
 }
 
 Change-Cwd

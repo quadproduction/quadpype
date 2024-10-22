@@ -7,7 +7,7 @@ from .lib import (
     NOT_SET,
     STRING_TYPE
 )
-from openpype.settings.constants import (
+from quadpype.settings.constants import (
     METADATA_KEYS,
     M_OVERRIDDEN_KEY,
     KEY_REGEX
@@ -827,7 +827,7 @@ class SyncServerSites(DictImmutableKeysEntity):
         return super(SyncServerSites, self).has_project_override
 
     def _get_children(self):
-        from openpype_modules import sync_server
+        from quadpype_modules import sync_server
 
         # Load system settings to find out all created sites
         modules_entity = self.get_entity_from_path("system_settings/modules")

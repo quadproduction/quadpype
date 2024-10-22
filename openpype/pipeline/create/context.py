@@ -11,24 +11,24 @@ from contextlib import contextmanager
 import pyblish.logic
 import pyblish.api
 
-from openpype.client import (
+from quadpype.client import (
     get_assets,
     get_asset_by_name,
     get_asset_name_identifier,
 )
-from openpype.settings import (
+from quadpype.settings import (
     get_system_settings,
     get_project_settings
 )
-from openpype.lib.attribute_definitions import (
+from quadpype.lib.attribute_definitions import (
     UnknownDef,
     serialize_attr_defs,
     deserialize_attr_defs,
     get_default_values,
 )
-from openpype.host import IPublishHost, IWorkfileHost
-from openpype.pipeline import legacy_io, Anatomy
-from openpype.pipeline.plugin_discover import DiscoverResult
+from quadpype.host import IPublishHost, IWorkfileHost
+from quadpype.pipeline import legacy_io, Anatomy
+from quadpype.pipeline.plugin_discover import DiscoverResult
 
 from .creator_plugins import (
     Creator,
@@ -1201,7 +1201,7 @@ class CreatedInstance:
 
         Args:
             attr_plugins (List[pyblish.api.Plugin]): Pyblish plugins which
-                inherit from 'OpenPypePyblishPluginMixin' and may contain
+                inherit from 'QuadPypePyblishPluginMixin' and may contain
                 attribute definitions.
         """
 
@@ -1736,8 +1736,8 @@ class CreateContext:
         self._reset_convertor_plugins()
 
     def _reset_publish_plugins(self, discover_publish_plugins):
-        from openpype.pipeline import OpenPypePyblishPluginMixin
-        from openpype.pipeline.publish import (
+        from quadpype.pipeline import QuadPypePyblishPluginMixin
+        from quadpype.pipeline.publish import (
             publish_plugins_discover
         )
 
@@ -1760,7 +1760,7 @@ class CreateContext:
 
             # Collect plugins that can have attribute definitions
             for plugin in publish_plugins:
-                if OpenPypePyblishPluginMixin in inspect.getmro(plugin):
+                if QuadPypePyblishPluginMixin in inspect.getmro(plugin):
                     plugins_with_defs.append(plugin)
 
             plugins_mismatch_targets = [

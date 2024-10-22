@@ -1,4 +1,4 @@
-from openpype.tools.utils.host_tools import qt_app_context
+from quadpype.tools.utils.host_tools import qt_app_context
 
 
 class MayaToolsSingleton:

@@ -1,9 +1,9 @@
 import re
 from types import NoneType
 import pyblish
-import openpype.hosts.flame.api as opfapi
-from openpype.hosts.flame.otio import flame_export
-from openpype.pipeline.editorial import (
+import quadpype.hosts.flame.api as opfapi
+from quadpype.hosts.flame.otio import flame_export
+from quadpype.pipeline.editorial import (
     is_overlapping_otio_ranges,
     get_media_range_with_retimes
 )
@@ -38,7 +38,7 @@ class CollectTimelineInstances(pyblish.api.ContextPlugin):
 
         # process all sellected
         for segment in selected_segments:
-            # get openpype tag data
+            # get quadpype tag data
             marker_data = opfapi.get_segment_data_marker(segment)
 
             self.log.debug("__ marker_data: {}".format(
@@ -306,20 +306,20 @@ class CollectTimelineInstances(pyblish.api.ContextPlugin):
                 "otioClip"].media_reference.metadata
             data.update({
                 "resolutionWidth": otio_clip_metadata[
-                        "openpype.source.width"],
+                        "quadpype.source.width"],
                 "resolutionHeight": otio_clip_metadata[
-                    "openpype.source.height"],
+                    "quadpype.source.height"],
                 "pixelAspect": otio_clip_metadata[
-                    "openpype.source.pixelAspect"]
+                    "quadpype.source.pixelAspect"]
             })
         else:
             otio_tl_metadata = context.data["otioTimeline"].metadata
             data.update({
-                "resolutionWidth": otio_tl_metadata["openpype.timeline.width"],
+                "resolutionWidth": otio_tl_metadata["quadpype.timeline.width"],
                 "resolutionHeight": otio_tl_metadata[
-                    "openpype.timeline.height"],
+                    "quadpype.timeline.height"],
                 "pixelAspect": otio_tl_metadata[
-                    "openpype.timeline.pixelAspect"]
+                    "quadpype.timeline.pixelAspect"]
             })
 
     def _create_shot_instance(self, context, clip_name, **data):

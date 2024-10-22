@@ -4,9 +4,9 @@ import os
 
 from maya import cmds
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline import publish
-from openpype.hosts.maya.api.lib import maintained_selection
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline import publish
+from quadpype.hosts.maya.api.lib import maintained_selection
 
 
 class ExtractRig(publish.Extractor):

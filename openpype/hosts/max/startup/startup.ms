@@ -1,4 +1,4 @@
--- OpenPype Init Script
+-- QuadPype Init Script
 (
     local sysPath = dotNetClass "System.IO.Path"
 	local sysDir = dotNetClass "System.IO.Directory"

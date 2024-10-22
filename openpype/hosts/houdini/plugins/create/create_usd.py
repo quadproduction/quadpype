@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating USDs."""
-from openpype.hosts.houdini.api import plugin
-from openpype.pipeline import CreatedInstance
+from quadpype.hosts.houdini.api import plugin
+from quadpype.pipeline import CreatedInstance
 
 import hou
 
 
 class CreateUSD(plugin.HoudiniCreator):
     """Universal Scene Description"""
-    identifier = "io.openpype.creators.houdini.usd"
+    identifier = "io.quadpype.creators.houdini.usd"
     label = "USD (experimental)"
     family = "usd"
     icon = "gears"

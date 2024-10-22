@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating pointcache alembics."""
-from openpype.hosts.houdini.api import plugin
-from openpype.lib import BoolDef
+from quadpype.hosts.houdini.api import plugin
+from quadpype.lib import BoolDef
 
 import hou
 
@@ -9,7 +9,7 @@ import hou
 
 class CreatePointCache(plugin.HoudiniCreator):
     """Alembic ROP to pointcache"""
-    identifier = "io.openpype.creators.houdini.pointcache"
+    identifier = "io.quadpype.creators.houdini.pointcache"
     label = "PointCache (Abc)"
     family = "pointcache"
     icon = "gears"

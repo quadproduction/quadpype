@@ -2,9 +2,9 @@ import os
 import glob
 
 import pyblish.api
-from openpype.pipeline import publish
-from openpype.hosts.blender.api import capture
-from openpype.hosts.blender.api.lib import maintained_time
+from quadpype.pipeline import publish
+from quadpype.hosts.blender.api import capture
+from quadpype.hosts.blender.api.lib import maintained_time
 
 import bpy
 

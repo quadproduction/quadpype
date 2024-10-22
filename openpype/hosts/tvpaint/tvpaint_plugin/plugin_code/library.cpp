@@ -487,7 +487,7 @@ static char* GetLocalString( PIFilter* iFilter, int iNum, char* iDefault )
 // in the localized file (or the localized file doesn't exist).
 std::string label_from_evn()
 {
-    std::string _plugin_label = "OpenPype";
+    std::string _plugin_label = "QuadPype";
     if (std::getenv("AVALON_LABEL") && std::getenv("AVALON_LABEL") != "")
     {
         _plugin_label = std::getenv("AVALON_LABEL");
@@ -496,7 +496,7 @@ std::string label_from_evn()
 }
 std::string plugin_label = label_from_evn();
 
-#define TXT_REQUESTER               GetLocalString( iFilter, 100, "OpenPype Tools" )
+#define TXT_REQUESTER               GetLocalString( iFilter, 100, "QuadPype Tools" )
 
 #define TXT_REQUESTER_ERROR         GetLocalString( iFilter, 30001, "Can't Open Requester !" )
 

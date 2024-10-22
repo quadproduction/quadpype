@@ -2,7 +2,7 @@ import os
 from abc import ABCMeta, abstractmethod
 
 import six
-from openpype.style import get_default_entity_icon_color
+from quadpype.style import get_default_entity_icon_color
 
 
 class WorkfileInfo:

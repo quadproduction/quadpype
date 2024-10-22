@@ -12,10 +12,10 @@ import platform
 
 import six
 
-from openpype.lib import Logger
-from openpype.modules import ModulesManager
-from openpype.settings import get_project_settings
-from openpype.settings.lib import get_site_local_overrides
+from quadpype.lib import Logger
+from quadpype.modules import ModulesManager
+from quadpype.settings import get_project_settings
+from quadpype.settings.lib import get_site_local_overrides
 
 
 @six.add_metaclass(ABCMeta)

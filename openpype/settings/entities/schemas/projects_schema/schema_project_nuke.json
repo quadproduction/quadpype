@@ -15,7 +15,7 @@
                     "type": "dict",
                     "collapsible": true,
                     "key": "menu",
-                    "label": "OpenPype Menu shortcuts",
+                    "label": "QuadPype Menu shortcuts",
                     "children": [
                         {
                             "type": "text",

@@ -2,16 +2,16 @@ import os
 import copy
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline import publish
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline import publish
 
 import substance_painter.textureset
-from openpype.hosts.substancepainter.api.lib import (
+from quadpype.hosts.substancepainter.api.lib import (
     get_parsed_export_maps,
     strip_template
 )
-from openpype.pipeline.create import get_subset_name
-from openpype.client import get_asset_by_name
+from quadpype.pipeline.create import get_subset_name
+from quadpype.client import get_asset_by_name
 
 
 class CollectTextureSet(pyblish.api.InstancePlugin):

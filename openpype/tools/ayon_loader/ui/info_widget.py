@@ -2,7 +2,7 @@ import datetime
 
 from qtpy import QtWidgets
 
-from openpype.tools.utils.lib import format_version
+from quadpype.tools.utils.lib import format_version
 
 
 class VersionTextEdit(QtWidgets.QTextEdit):

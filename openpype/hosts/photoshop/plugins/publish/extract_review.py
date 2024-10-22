@@ -2,12 +2,12 @@ import os
 import shutil
 from PIL import Image
 
-from openpype.lib import (
+from quadpype.lib import (
     run_subprocess,
     get_ffmpeg_tool_args,
 )
-from openpype.pipeline import publish
-from openpype.hosts.photoshop import api as photoshop
+from quadpype.pipeline import publish
+from quadpype.hosts.photoshop import api as photoshop
 
 
 class ExtractReview(publish.Extractor):

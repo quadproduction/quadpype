@@ -7,14 +7,14 @@ from pymongo import UpdateOne, DeleteOne
 
 from qtpy import QtCore, QtGui
 
-from openpype.client import (
+from quadpype.client import (
     get_projects,
     get_project,
     get_assets,
     get_asset_ids_with_subsets,
 )
-from openpype.client.operations import CURRENT_ASSET_DOC_SCHEMA
-from openpype.lib import Logger
+from quadpype.client.operations import CURRENT_ASSET_DOC_SCHEMA
+from quadpype.lib import Logger
 
 from .constants import (
     IDENTIFIER_ROLE,

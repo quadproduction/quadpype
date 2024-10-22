@@ -8,9 +8,9 @@ import logging
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import style
-from openpype.pipeline import install_host
-from openpype.hosts.tvpaint.api import (
+from quadpype import style
+from quadpype.pipeline import install_host
+from quadpype.hosts.tvpaint.api import (
     TVPaintHost,
     CommunicationWrapper,
 )

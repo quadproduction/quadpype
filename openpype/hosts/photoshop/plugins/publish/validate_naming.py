@@ -2,9 +2,9 @@ import re
 
 import pyblish.api
 
-from openpype.hosts.photoshop import api as photoshop
-from openpype.pipeline.create import SUBSET_NAME_ALLOWED_SYMBOLS
-from openpype.pipeline.publish import (
+from quadpype.hosts.photoshop import api as photoshop
+from quadpype.pipeline.create import SUBSET_NAME_ALLOWED_SYMBOLS
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishXmlValidationError,
 )

@@ -1,6 +1,6 @@
-from openpype.lib import Logger
-from openpype.pipeline import InventoryAction
-from openpype.hosts.nuke.api.lib import set_avalon_knob_data
+from quadpype.lib import Logger
+from quadpype.pipeline import InventoryAction
+from quadpype.hosts.nuke.api.lib import set_avalon_knob_data
 
 
 class RepairOldLoaders(InventoryAction):

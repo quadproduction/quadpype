@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-  Helper script create distributable OpenPype zip.
+  Helper script create distributable QuadPype zip.
 
 .DESCRIPTION
-  This script will detect Python installation and run OpenPype to create
+  This script will detect Python installation and run QuadPype to create
   zip. It will create zip from current source code
   version and copy it top `%LOCALAPPDATA%/quad/quadpype` if `--path` or `-p`
   argument is not used.
@@ -14,17 +14,17 @@ PS> .\create_zip.ps1
 
 .EXAMPLE
 
-To put generated zip to C:\OpenPype directory:
-PS> .\create_zip.ps1 --path C:\OpenPype
+To put generated zip to C:\QuadPype directory:
+PS> .\create_zip.ps1 --path C:\QuadPype
 
 #>
 
 $current_dir = Get-Location
 $script_dir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$openpype_root = (Get-Item $script_dir).parent.FullName
+$quadpype_root = (Get-Item $script_dir).parent.FullName
 
 # Install PSWriteColor to support colorized output to terminal
-$env:PSModulePath = $env:PSModulePath + ";$($openpype_root)\tools\modules\powershell"
+$env:PSModulePath = $env:PSModulePath + ";$($quadpype_root)\tools\modules\powershell"
 
 function Exit-WithCode($exitcode) {
    # Only exit this host process if it's a child of another PowerShell parent process...
@@ -47,19 +47,19 @@ function Show-PSWarning() {
 $env:_INSIDE_QUADPYPE_TOOL = "1"
 
 if (-not (Test-Path 'env:POETRY_HOME')) {
-    $env:POETRY_HOME = "$openpype_root\.poetry"
+    $env:POETRY_HOME = "$quadpype_root\.poetry"
 }
 
-Set-Location -Path $openpype_root
+Set-Location -Path $quadpype_root
 
 # Enable if PS 7.x is needed.
 # Show-PSWarning
 
-$version_file = Get-Content -Path "$($openpype_root)\openpype\version.py"
+$version_file = Get-Content -Path "$($quadpype_root)\quadpype\version.py"
 $result = [regex]::Matches($version_file, '__version__ = "(?<version>\d+\.\d+.\d+.*)"')
-$openpype_version = $result[0].Groups['version'].Value
-if (-not $openpype_version) {
-  Write-Color -Text "!!! ", "Cannot determine OpenPype version." -Color Yellow, Gray
+$quadpype_version = $result[0].Groups['version'].Value
+if (-not $quadpype_version) {
+  Write-Color -Text "!!! ", "Cannot determine QuadPype version." -Color Yellow, Gray
   Exit-WithCode 1
 }
 
@@ -67,7 +67,7 @@ Write-Color -Text ">>> ", "Reading Poetry ... " -Color Green, Gray -NoNewline
 if (-not (Test-Path -PathType Container -Path "$($env:POETRY_HOME)\bin")) {
     Write-Color -Text "NOT FOUND" -Color Yellow
     Write-Color -Text "*** ", "We need to install Poetry create virtual env first ..." -Color Yellow, Gray
-    & "$openpype_root\tools\create_env.ps1"
+    & "$quadpype_root\tools\create_env.ps1"
 } else {
     Write-Color -Text "OK" -Color Green
 }
@@ -76,15 +76,15 @@ Write-Color -Text ">>> ", "Re-generating ZXP files ... " -Color Green, Gray -NoN
 powershell "$PSScriptRoot\zxp\generate_zxp.ps1"
 
 Write-Color -Text ">>> ", "Cleaning cache files ... " -Color Green, Gray -NoNewline
-Get-ChildItem $openpype_root -Filter "__pycache__" -Force -Recurse|  Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force -Recurse
-Get-ChildItem $openpype_root -Filter "*.pyc" -Force -Recurse | Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force
-Get-ChildItem $openpype_root -Filter "*.pyo" -Force -Recurse | Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force
+Get-ChildItem $quadpype_root -Filter "__pycache__" -Force -Recurse|  Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force -Recurse
+Get-ChildItem $quadpype_root -Filter "*.pyc" -Force -Recurse | Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force
+Get-ChildItem $quadpype_root -Filter "*.pyo" -Force -Recurse | Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force
 Write-Color -Text "OK" -Color Green
 
 Write-Color -Text ">>> ", "Generating zip from current sources ..." -Color Green, Gray
-$env:PYTHONPATH="$($openpype_root);$($env:PYTHONPATH)"
-$env:QUADPYPE_ROOT="$($openpype_root)"
-& "$($env:POETRY_HOME)\bin\poetry" run python "$($openpype_root)\tools\create_zip.py" $ARGS
+$env:PYTHONPATH="$($quadpype_root);$($env:PYTHONPATH)"
+$env:QUADPYPE_ROOT="$($quadpype_root)"
+& "$($env:POETRY_HOME)\bin\poetry" run python "$($quadpype_root)\tools\create_zip.py" $ARGS
 Set-Location -Path $current_dir
 
 Write-Host ""

@@ -1,10 +1,10 @@
 import os
 import pyblish.api
 
-from openpype.pipeline.publish import RepairAction
-from openpype.pipeline import PublishValidationError
+from quadpype.pipeline.publish import RepairAction
+from quadpype.pipeline import PublishValidationError
 
-from openpype.hosts.fusion.api.action import SelectInvalidAction
+from quadpype.hosts.fusion.api.action import SelectInvalidAction
 
 
 class ValidateLocalFramesExistence(pyblish.api.InstancePlugin):
@@ -58,7 +58,7 @@ class ValidateLocalFramesExistence(pyblish.api.InstancePlugin):
         if invalid:
             tool = instance.data["tool"]
             # Change render target to local to render locally
-            tool.SetData("openpype.creator_attributes.render_target", "local")
+            tool.SetData("quadpype.creator_attributes.render_target", "local")
 
             cls.log.info(
                 f"Reload the publisher and {tool.Name} "

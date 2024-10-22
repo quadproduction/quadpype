@@ -14,10 +14,10 @@ from attrs import asdict
 from attrs.exceptions import NotAnAttrsClassError
 from qtpy import QtCore, QtWidgets
 
-from openpype.host import HostBase, ILoadHost, IPublishHost, IWorkfileHost
-from openpype.hosts.equalizer import EQUALIZER_HOST_DIR
-from openpype.hosts.equalizer.api.pipeline import Container
-from openpype.pipeline import (
+from quadpype.host import HostBase, ILoadHost, IPublishHost, IWorkfileHost
+from quadpype.hosts.equalizer import EQUALIZER_HOST_DIR
+from quadpype.hosts.equalizer.api.pipeline import Container
+from quadpype.pipeline import (
     register_creator_plugin_path,
     register_loader_plugin_path,
 )

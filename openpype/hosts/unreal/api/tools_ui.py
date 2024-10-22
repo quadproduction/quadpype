@@ -1,13 +1,13 @@
 import sys
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import (
+from quadpype import (
     resources,
     style
 )
-from openpype.tools.utils import host_tools
-from openpype.tools.utils.lib import qt_app_context
-from openpype.hosts.unreal.api import rendering
+from quadpype.tools.utils import host_tools
+from quadpype.tools.utils.lib import qt_app_context
+from quadpype.hosts.unreal.api import rendering
 
 
 class ToolsBtnsWidget(QtWidgets.QWidget):

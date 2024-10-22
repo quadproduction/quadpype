@@ -1,8 +1,8 @@
 import os
 
-from openpype.settings import get_project_settings
-from openpype.lib import filter_profiles, prepare_template_data
-from openpype.pipeline import legacy_io
+from quadpype.settings import get_project_settings
+from quadpype.lib import filter_profiles, prepare_template_data
+from quadpype.pipeline import legacy_io
 
 from .constants import DEFAULT_SUBSET_TEMPLATE
 
@@ -80,7 +80,7 @@ def get_subset_name(
     project_settings=None,
     family_filter=None,
 ):
-    """Calculate subset name based on passed context and OpenPype settings.
+    """Calculate subset name based on passed context and QuadPype settings.
 
     Subst name templates are defined in `project_settings/global/tools/creator
     /subset_name_profiles` where are profiles with host name, family, task name

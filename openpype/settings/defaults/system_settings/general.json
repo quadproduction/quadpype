@@ -13,12 +13,12 @@
         "protect_anatomy_attributes": false
     },
     "local_env_white_list": [],
-    "openpype_path": {
+    "quadpype_path": {
         "windows": [],
         "darwin": [],
         "linux": []
     },
-    "local_openpype_path": {
+    "local_quadpype_path": {
         "windows": "",
         "darwin": "",
         "linux": ""

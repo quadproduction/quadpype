@@ -1,10 +1,10 @@
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.client import get_asset_name_identifier
-import openpype.hosts.flame.api as opfapi
-from openpype.hosts.flame.otio import flame_export
-from openpype.pipeline.create import get_subset_name
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.client import get_asset_name_identifier
+import quadpype.hosts.flame.api as opfapi
+from quadpype.hosts.flame.otio import flame_export
+from quadpype.pipeline.create import get_subset_name
 
 
 class CollecTimelineOTIO(pyblish.api.ContextPlugin):

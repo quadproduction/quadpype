@@ -15,7 +15,7 @@ import subprocess
 from pathlib import Path
 from platform import system
 
-from openpype.lib.applications import LaunchTypes, PreLaunchHook
+from quadpype.lib.applications import LaunchTypes, PreLaunchHook
 
 
 class InstallPySide2(PreLaunchHook):

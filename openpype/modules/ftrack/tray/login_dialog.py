@@ -1,9 +1,9 @@
 import requests
 from qtpy import QtCore, QtGui, QtWidgets
 
-from openpype import style
-from openpype_modules.ftrack.lib import credentials
-from openpype import resources
+from quadpype import style
+from quadpype_modules.ftrack.lib import credentials
+from quadpype import resources
 
 from . import login_tools
 
@@ -18,7 +18,7 @@ class CredentialsDialog(QtWidgets.QDialog):
     def __init__(self, module, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("OpenPype - Ftrack Login")
+        self.setWindowTitle("QuadPype - Ftrack Login")
 
         self._module = module
 

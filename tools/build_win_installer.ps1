@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-  Helper script to build OpenPype Installer.
+  Helper script to build QuadPype Installer.
 
 .DESCRIPTION
-  This script will use already built OpenPype (in `build` directory) and
+  This script will use already built QuadPype (in `build` directory) and
   create Windows installer from it using Inno Setup (https://jrsoftware.org/)
 
 .EXAMPLE
@@ -13,10 +13,10 @@ PS> .\build_win_installer.ps1
 #>
 $current_dir = Get-Location
 $script_dir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$openpype_root = (Get-Item $script_dir).parent.FullName
+$quadpype_root = (Get-Item $script_dir).parent.FullName
 
 # Install PSWriteColor to support colorized output to terminal
-$env:PSModulePath = $env:PSModulePath + ";$($openpype_root)\tools\modules\powershell"
+$env:PSModulePath = $env:PSModulePath + ";$($quadpype_root)\tools\modules\powershell"
 
 function Start-Progress {
     param([ScriptBlock]$code)
@@ -71,17 +71,17 @@ function Show-PSWarning() {
 # Show-PSWarning
 
 
-Set-Location -Path $openpype_root
+Set-Location -Path $quadpype_root
 
-$version_file = Get-Content -Path "$($openpype_root)\openpype\version.py"
+$version_file = Get-Content -Path "$($quadpype_root)\quadpype\version.py"
 $result = [regex]::Matches($version_file, '__version__ = "(?<version>\d+\.\d+.\d+.*)"')
-$openpype_version = $result[0].Groups['version'].Value
-if (-not $openpype_version) {
-  Write-Color -Text "!!! ", "Cannot determine OpenPype version." -Color Yellow, Gray
+$quadpype_version = $result[0].Groups['version'].Value
+if (-not $quadpype_version) {
+  Write-Color -Text "!!! ", "Cannot determine QuadPype version." -Color Yellow, Gray
   Exit-WithCode 1
 }
 
-$env:BUILD_VERSION = $openpype_version
+$env:BUILD_VERSION = $quadpype_version
 
 iscc 
 
@@ -119,12 +119,12 @@ if (($matches[1] -lt 3) -or ($matches[2] -lt 9)) {
 } elseif (($matches[1] -eq 3) -and ($matches[2] -gt 9)) {
     Write-Host "WARNING Version [ $p ] is unsupported, use at your own risk." -ForegroundColor yellow
     Write-Host "*** " -NoNewline -ForegroundColor yellow
-    Write-Host "OpenPype supports only Python 3.9" -ForegroundColor white
+    Write-Host "QuadPype supports only Python 3.9" -ForegroundColor white
 } else {
     Write-Host "OK [ $p ]" -ForegroundColor green
 }
 
-Write-Color -Text ">>> ", "Creating OpenPype installer ... " -Color Green, White
+Write-Color -Text ">>> ", "Creating QuadPype installer ... " -Color Green, White
 
 $build_dir_command = @"
 import sys
@@ -142,7 +142,7 @@ if (-not (Get-Command iscc -errorAction SilentlyContinue -ErrorVariable ProcessE
   Exit-WithCode 1
 }
 
-& iscc "$openpype_root\inno_setup.iss"
+& iscc "$quadpype_root\inno_setup.iss"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Color -Text "!!! ", "Creating installer failed." -Color Red, Yellow
@@ -152,6 +152,6 @@ if ($LASTEXITCODE -ne 0) {
 Write-Color -Text ">>> ", "Restoring current directory" -Color Green, Gray
 Set-Location -Path $current_dir
 try {
-    New-BurntToastNotification -AppLogo "$openpype_root/openpype/resources/icons/quadpype_icon_default.png" -Text "OpenPype build complete!", "All done. You will find You will find OpenPype installer in '.\build' directory."
+    New-BurntToastNotification -AppLogo "$quadpype_root/quadpype/resources/icons/quadpype_icon_default.png" -Text "QuadPype build complete!", "All done. You will find You will find QuadPype installer in '.\build' directory."
 } catch {}
-Write-Color -Text "*** ", "All done. You will find OpenPype installer in ", "'.\build'", " directory." -Color Green, Gray, White, Gray
+Write-Color -Text "*** ", "All done. You will find QuadPype installer in ", "'.\build'", " directory." -Color Green, Gray, White, Gray

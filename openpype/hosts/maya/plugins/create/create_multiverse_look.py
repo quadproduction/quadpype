@@ -1,5 +1,5 @@
-from openpype.hosts.maya.api import plugin
-from openpype.lib import (
+from quadpype.hosts.maya.api import plugin
+from quadpype.lib import (
     BoolDef,
     EnumDef
 )
@@ -8,7 +8,7 @@ from openpype.lib import (
 class CreateMultiverseLook(plugin.MayaCreator):
     """Create Multiverse Look"""
 
-    identifier = "io.openpype.creators.maya.mvlook"
+    identifier = "io.quadpype.creators.maya.mvlook"
     label = "Multiverse Look"
     family = "mvLook"
     icon = "cubes"

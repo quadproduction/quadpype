@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-"""Collect OpenPype modules."""
-from openpype.modules import ModulesManager
+"""Collect QuadPype modules."""
+from quadpype.modules import ModulesManager
 import pyblish.api
 
 
 class CollectModules(pyblish.api.ContextPlugin):
-    """Collect OpenPype modules."""
+    """Collect QuadPype modules."""
 
     order = pyblish.api.CollectorOrder - 0.5
-    label = "OpenPype Modules"
+    label = "QuadPype Modules"
 
     def process(self, context):
         manager = ModulesManager()

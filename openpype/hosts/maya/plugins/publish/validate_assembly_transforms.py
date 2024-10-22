@@ -1,8 +1,8 @@
 import pyblish.api
 from maya import cmds
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     PublishValidationError,
     RepairAction,
     OptionalPyblishPluginMixin
@@ -32,7 +32,7 @@ class ValidateAssemblyModelTransforms(pyblish.api.InstancePlugin,
     order = pyblish.api.ValidatorOrder + 0.49
     label = "Assembly Model Transforms"
     families = ["assembly"]
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction,
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction,
                RepairAction]
 
     prompt_message = ("You are about to reset the matrix to the default values."
@@ -53,7 +53,7 @@ class ValidateAssemblyModelTransforms(pyblish.api.InstancePlugin,
     @classmethod
     def get_invalid(cls, instance):
 
-        from openpype.hosts.maya.api import lib
+        from quadpype.hosts.maya.api import lib
 
         # Get all transforms in the loaded containers
         container_roots = cmds.listRelatives(instance.data["nodesHierarchy"],
@@ -100,7 +100,7 @@ class ValidateAssemblyModelTransforms(pyblish.api.InstancePlugin,
 
         from qtpy import QtWidgets
 
-        from openpype.hosts.maya.api import lib
+        from quadpype.hosts.maya.api import lib
 
         # Store namespace in variable, cosmetics thingy
         choice = QtWidgets.QMessageBox.warning(

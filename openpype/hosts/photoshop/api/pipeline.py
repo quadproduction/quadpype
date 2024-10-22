@@ -4,23 +4,23 @@ from qtpy import QtWidgets
 
 import pyblish.api
 
-from openpype.lib import register_event_callback, Logger
-from openpype.pipeline import (
+from quadpype.lib import register_event_callback, Logger
+from quadpype.pipeline import (
     register_loader_plugin_path,
     register_creator_plugin_path,
     AVALON_CONTAINER_ID,
 )
 
-from openpype.host import (
+from quadpype.host import (
     HostBase,
     IWorkfileHost,
     ILoadHost,
     IPublishHost
 )
 
-from openpype.pipeline.load import any_outdated_containers
-from openpype.hosts.photoshop import PHOTOSHOP_HOST_DIR
-from openpype.tools.utils import get_openpype_qt_app
+from quadpype.pipeline.load import any_outdated_containers
+from quadpype.hosts.photoshop import PHOTOSHOP_HOST_DIR
+from quadpype.tools.utils import get_quadpype_qt_app
 
 from . import lib
 
@@ -42,7 +42,7 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         This function is called automatically on calling
         `api.install(photoshop)`.
         """
-        log.info("Installing OpenPype Photoshop...")
+        log.info("Installing QuadPype Photoshop...")
         pyblish.api.register_host("photoshop")
 
         pyblish.api.register_plugin_path(PUBLISH_PATH)
@@ -164,7 +164,7 @@ def check_inventory():
         return
 
     # Warn about outdated containers.
-    _app = get_openpype_qt_app()
+    _app = get_quadpype_qt_app()
 
     message_box = QtWidgets.QMessageBox()
     message_box.setIcon(QtWidgets.QMessageBox.Warning)
@@ -261,7 +261,7 @@ def containerise(
     layer.name = name + suffix
 
     data = {
-        "schema": "openpype:container-2.0",
+        "schema": "quadpype:container-2.0",
         "id": AVALON_CONTAINER_ID,
         "name": name,
         "namespace": namespace,
@@ -284,7 +284,7 @@ def cache_and_get_instances(creator):
     Returns:
         List[]: list of all instances stored in metadata
     """
-    shared_key = "openpype.photoshop.instances"
+    shared_key = "quadpype.photoshop.instances"
     if shared_key not in creator.collection_shared_data:
         creator.collection_shared_data[shared_key] = \
             creator.host.list_instances()

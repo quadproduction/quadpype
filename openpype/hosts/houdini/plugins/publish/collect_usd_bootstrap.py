@@ -1,11 +1,11 @@
 import pyblish.api
 
-from openpype.client import (
+from quadpype.client import (
     get_subset_by_name,
     get_asset_by_name,
     get_asset_name_identifier,
 )
-import openpype.lib.usdlib as usdlib
+import quadpype.lib.usdlib as usdlib
 
 
 class CollectUsdBootstrap(pyblish.api.InstancePlugin):

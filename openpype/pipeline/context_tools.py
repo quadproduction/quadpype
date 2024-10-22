@@ -10,9 +10,9 @@ import uuid
 import pyblish.api
 from pyblish.lib import MessageHandler
 
-import openpype
-from openpype.host import HostBase
-from openpype.client import (
+import quadpype
+from quadpype.host import HostBase
+from quadpype.client import (
     get_project,
     get_asset_by_id,
     get_asset_by_name,
@@ -20,10 +20,10 @@ from openpype.client import (
     get_asset_name_identifier,
     get_ayon_server_api_connection,
 )
-from openpype.lib.events import emit_event
-from openpype.modules import load_modules, ModulesManager
-from openpype.settings import get_project_settings
-from openpype.tests.lib import is_in_tests
+from quadpype.lib.events import emit_event
+from quadpype.modules import load_modules, ModulesManager
+from quadpype.settings import get_project_settings
+from quadpype.tests.lib import is_in_tests
 
 from .publish.lib import filter_pyblish_plugins
 from .anatomy import Anatomy
@@ -56,7 +56,7 @@ _modules_manager = None
 
 log = logging.getLogger(__name__)
 
-PACKAGE_DIR = os.path.dirname(os.path.abspath(openpype.__file__))
+PACKAGE_DIR = os.path.dirname(os.path.abspath(quadpype.__file__))
 PLUGINS_DIR = os.path.join(PACKAGE_DIR, "plugins")
 
 # Global plugin paths
@@ -167,10 +167,10 @@ def install_host(host):
     for module in modules_manager.get_enabled_modules():
         module.on_host_install(host, host_name, project_name)
 
-    install_openpype_plugins(project_name, host_name)
+    install_quadpype_plugins(project_name, host_name)
 
 
-def install_openpype_plugins(project_name=None, host_name=None):
+def install_quadpype_plugins(project_name=None, host_name=None):
     # Make sure modules are loaded
     load_modules()
 
@@ -307,7 +307,7 @@ def debug_host():
         containers = [
             {
                 "representation": "ee-ft-a-uuid1",
-                "schema": "openpype:container-1.0",
+                "schema": "quadpype:container-1.0",
                 "name": "Bruce01",
                 "objectName": "Bruce01_node",
                 "namespace": "_bruce01_",
@@ -315,7 +315,7 @@ def debug_host():
             },
             {
                 "representation": "aa-bc-s-uuid2",
-                "schema": "openpype:container-1.0",
+                "schema": "quadpype:container-1.0",
                 "name": "Bruce02",
                 "objectName": "Bruce01_node",
                 "namespace": "_bruce02_",

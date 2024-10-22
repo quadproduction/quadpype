@@ -4,8 +4,8 @@ import json
 
 import ftrack_api
 
-from openpype_modules.ftrack.lib import ServerAction
-from openpype_modules.ftrack.lib.avalon_sync import SyncEntitiesFactory
+from quadpype_modules.ftrack.lib import ServerAction
+from quadpype_modules.ftrack.lib.avalon_sync import SyncEntitiesFactory
 
 
 class SyncToAvalonServer(ServerAction):
@@ -35,7 +35,7 @@ class SyncToAvalonServer(ServerAction):
     #: Action identifier.
     identifier = "sync.to.avalon.server"
     #: Action label.
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     variant = "- Sync To Avalon (Server)"
     #: Action description.
     description = "Send data from Ftrack to Avalon"
@@ -189,7 +189,7 @@ class SyncToAvalonServer(ServerAction):
 
             if self.entities_factory.project_created:
                 event = ftrack_api.event.base.Event(
-                    topic="openpype.project.created",
+                    topic="quadpype.project.created",
                     data={"project_name": project_name}
                 )
                 self.session.event_hub.publish(event)

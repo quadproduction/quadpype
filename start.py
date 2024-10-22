@@ -7,9 +7,9 @@ Bootstrapping process of QuadPype is as follows:
 from user settings. Precedence takes the one set by environment.
 
 On this path we try to find QuadPype in directories version string in their
-names. For example: `openpype-v3.0.1-foo` is valid name, or
+names. For example: `quadpype-v3.0.1-foo` is valid name, or
 even `foo_3.0.2` - as long as version can be determined from its name
-_AND_ file `openpype/openpype/version.py` can be found inside, it is
+_AND_ file `quadpype/quadpype/version.py` can be found inside, it is
 considered QuadPype installation.
 
 If no QuadPype repositories are found in `QUADPYPE_PATH` (user data dir)
@@ -129,12 +129,12 @@ else:
     os.environ["PYTHONPATH"] = os.pathsep.join(paths)
 
 # Vendored python modules that must not be in PYTHONPATH environment but
-#   are required for OpenPype processes
+#   are required for QuadPype processes
 vendor_python_path = os.path.join(QUADPYPE_ROOT, "vendor", "python")
 sys.path.insert(0, vendor_python_path)
 
 # Add common package to sys path
-# - common contains common code for bootstraping and OpenPype processes
+# - common contains common code for bootstraping and QuadPype processes
 sys.path.insert(0, os.path.join(QUADPYPE_ROOT, "common"))
 
 import blessed  # noqa: E402
@@ -186,7 +186,7 @@ else:
         print(message)
 
 
-# if SSL_CERT_FILE is not set prior to OpenPype launch, we set it to point
+# if SSL_CERT_FILE is not set prior to QuadPype launch, we set it to point
 # to certifi bundle to make sure we have reasonably new CA certificates.
 if os.getenv("SSL_CERT_FILE") and \
         os.getenv("SSL_CERT_FILE") != certifi.where():
@@ -272,42 +272,42 @@ if "--use-staging" in sys.argv:
 import igniter  # noqa: E402
 from igniter import BootstrapRepos  # noqa: E402
 from igniter.tools import (
-    get_openpype_global_settings,
-    get_openpype_path_from_settings,
-    get_local_openpype_path_from_settings,
+    get_quadpype_global_settings,
+    get_quadpype_path_from_settings,
+    get_local_quadpype_path_from_settings,
     validate_mongo_connection,
-    OpenPypeVersionNotFound,
-    OpenPypeVersionIncompatible
+    QuadPypeVersionNotFound,
+    QuadPypeVersionIncompatible
 )  # noqa
-from igniter.bootstrap_repos import OpenPypeVersion  # noqa: E402
+from igniter.bootstrap_repos import QuadPypeVersion  # noqa: E402
 
 bootstrap = BootstrapRepos()
 silent_commands = {"run", "igniter", "standalonepublisher",
                    "extractenvironments", "version"}
 
 
-def list_versions(openpype_versions: list, local_version=None) -> None:
+def list_versions(quadpype_versions: list, local_version=None) -> None:
     """Print list of detected versions."""
     _print("  - Detected versions:")
-    for v in sorted(openpype_versions):
+    for v in sorted(quadpype_versions):
         _print(f"     - {v}: {v.path}")
-    if not openpype_versions:
+    if not quadpype_versions:
         _print("     ! none in repository detected")
     if local_version:
         _print(f"     * local version {local_version}")
 
 
-def set_openpype_global_environments() -> None:
-    """Set global OpenPype's environments."""
+def set_quadpype_global_environments() -> None:
+    """Set global QuadPype's environments."""
     import acre
 
-    from openpype.settings import get_general_environments
+    from quadpype.settings import get_general_environments
 
     general_env = get_general_environments()
 
     # first resolve general environment because merge doesn't expect
     # values to be list.
-    # TODO: switch to OpenPype environment functions
+    # TODO: switch to QuadPype environment functions
     merged_env = acre.merge(
         acre.compute(acre.parse(general_env), cleanup=False),
         dict(os.environ)
@@ -329,13 +329,13 @@ def set_openpype_global_environments() -> None:
 def run(arguments: list, env: dict = None) -> int:
     """Use correct executable to run stuff.
 
-    This passing arguments to correct OpenPype executable. If OpenPype is run
+    This passing arguments to correct QuadPype executable. If QuadPype is run
     from live sources, executable will be `python` in virtual environment.
-    If running from frozen code, executable will be `openpype_console` or
-    `openpype_gui`. Its equivalent in live code is `python start.py`.
+    If running from frozen code, executable will be `quadpype_console` or
+    `quadpype_gui`. Its equivalent in live code is `python start.py`.
 
     Args:
-        arguments (list): Argument list to pass OpenPype.
+        arguments (list): Argument list to pass QuadPype.
         env (dict, optional): Dictionary containing environment.
 
     Returns:
@@ -416,32 +416,32 @@ def set_avalon_environments():
         # Mongo DB name where avalon docs are stored
         "AVALON_DB": avalon_db,
         # Name of config
-        "AVALON_LABEL": "OpenPype"
+        "AVALON_LABEL": "QuadPype"
     })
 
 
-def update_zxp_extensions(openpype_version):
-    from openpype.settings import get_system_settings
+def update_zxp_extensions(quadpype_version):
+    from quadpype.settings import get_system_settings
 
     system_settings = get_system_settings()
-    zxp_hosts_to_update = bootstrap.get_zxp_extensions_to_update(openpype_version, system_settings)
+    zxp_hosts_to_update = bootstrap.get_zxp_extensions_to_update(quadpype_version, system_settings)
     if not zxp_hosts_to_update:
         return
 
     in_headless_mode = os.getenv("QUADPYPE_HEADLESS_MODE") == "1"
     if in_headless_mode:
-        bootstrap.update_zxp_extensions(openpype_version, zxp_hosts_to_update)
+        bootstrap.update_zxp_extensions(quadpype_version, zxp_hosts_to_update)
     else:
-        igniter.open_update_window(openpype_version, zxp_hosts_to_update)
+        igniter.open_update_window(quadpype_version, zxp_hosts_to_update)
 
 
 def set_modules_environments():
-    """Set global environments for OpenPype modules.
+    """Set global environments for QuadPype modules.
 
-    This requires to have OpenPype in `sys.path`.
+    This requires to have QuadPype in `sys.path`.
     """
 
-    from openpype.modules import ModulesManager
+    from quadpype.modules import ModulesManager
     import acre
 
     modules_manager = ModulesManager()
@@ -457,7 +457,7 @@ def set_modules_environments():
 
 
 def _startup_validations():
-    """Validations before OpenPype starts."""
+    """Validations before QuadPype starts."""
     try:
         _validate_thirdparty_binaries()
     except Exception as exc:
@@ -537,7 +537,7 @@ def _process_arguments() -> tuple:
     use_version = None
     commands = []
 
-    # OpenPype version specification through arguments
+    # QuadPype version specification through arguments
     use_version_arg = "--use-version"
 
     for arg in sys.argv:
@@ -609,7 +609,7 @@ def _process_arguments() -> tuple:
 
         return_code = igniter.open_dialog()
 
-        # this is when we want to run OpenPype without installing anything.
+        # this is when we want to run QuadPype without installing anything.
         # or we are ready to run.
         if return_code not in [2, 3]:
             sys.exit(return_code)
@@ -635,23 +635,23 @@ def _determine_mongodb() -> str:
 
     """
 
-    openpype_mongo = os.getenv("QUADPYPE_MONGO", None)
-    if not openpype_mongo:
+    quadpype_mongo = os.getenv("QUADPYPE_MONGO", None)
+    if not quadpype_mongo:
         # try system keyring
         try:
-            openpype_mongo = bootstrap.secure_registry.get_item(
+            quadpype_mongo = bootstrap.secure_registry.get_item(
                 "quadpypeMongo"
             )
         except ValueError:
             pass
 
-    if openpype_mongo:
-        result, msg = validate_mongo_connection(openpype_mongo)
+    if quadpype_mongo:
+        result, msg = validate_mongo_connection(quadpype_mongo)
         if not result:
             _print(msg)
-            openpype_mongo = None
+            quadpype_mongo = None
 
-    if not openpype_mongo:
+    if not quadpype_mongo:
         _print("*** No DB connection string specified.")
         if os.getenv("QUADPYPE_HEADLESS_MODE") == "1":
             _print("!!! Cannot open Igniter dialog in headless mode.", True)
@@ -664,43 +664,43 @@ def _determine_mongodb() -> str:
         if result == 0:
             raise RuntimeError("MongoDB URL was not defined")
 
-        openpype_mongo = os.getenv("QUADPYPE_MONGO")
-        if not openpype_mongo:
+        quadpype_mongo = os.getenv("QUADPYPE_MONGO")
+        if not quadpype_mongo:
             try:
-                openpype_mongo = bootstrap.secure_registry.get_item(
+                quadpype_mongo = bootstrap.secure_registry.get_item(
                     "quadpypeMongo")
             except ValueError as e:
                 raise RuntimeError("Missing MongoDB url") from e
 
-    return openpype_mongo
+    return quadpype_mongo
 
 
-def _initialize_environment(openpype_version: OpenPypeVersion) -> None:
-    version_path = openpype_version.path
+def _initialize_environment(quadpype_version: QuadPypeVersion) -> None:
+    version_path = quadpype_version.path
     if not version_path:
-        _print(f"!!! Version {openpype_version} doesn't have path set.")
-        raise ValueError("No path set in specified OpenPype version.")
-    os.environ["QUADPYPE_VERSION"] = str(openpype_version)
-    # set QUADPYPE_REPOS_ROOT to point to currently used OpenPype version.
+        _print(f"!!! Version {quadpype_version} doesn't have path set.")
+        raise ValueError("No path set in specified QuadPype version.")
+    os.environ["QUADPYPE_VERSION"] = str(quadpype_version)
+    # set QUADPYPE_REPOS_ROOT to point to currently used QuadPype version.
     os.environ["QUADPYPE_REPOS_ROOT"] = os.path.normpath(
         version_path.as_posix()
     )
     # inject version to Python environment (sys.path, ...)
-    _print(">>> Injecting OpenPype version to running environment  ...")
+    _print(">>> Injecting QuadPype version to running environment  ...")
     bootstrap.add_paths_from_directory(version_path)
 
     # Additional sys paths related to QUADPYPE_REPOS_ROOT directory
     # TODO move additional paths to `boot` part when QUADPYPE_REPOS_ROOT will
-    # point to same hierarchy from code and from frozen OpenPype
+    # point to same hierarchy from code and from frozen QuadPype
     additional_paths = [
         os.environ["QUADPYPE_REPOS_ROOT"],
-        # add OpenPype tools
-        os.path.join(os.environ["QUADPYPE_REPOS_ROOT"], "openpype", "tools"),
-        # add common OpenPype vendor
+        # add QuadPype tools
+        os.path.join(os.environ["QUADPYPE_REPOS_ROOT"], "quadpype", "tools"),
+        # add common QuadPype vendor
         # (common for multiple Python interpreter versions)
         os.path.join(
             os.environ["QUADPYPE_REPOS_ROOT"],
-            "openpype",
+            "quadpype",
             "vendor",
             "python",
             "common"
@@ -715,26 +715,26 @@ def _initialize_environment(openpype_version: OpenPypeVersion) -> None:
     os.environ["PYTHONPATH"] = os.pathsep.join(split_paths)
 
 
-def _install_and_initialize_version(openpype_version: OpenPypeVersion, delete_zip=True):
-    if openpype_version.path.is_file():
+def _install_and_initialize_version(quadpype_version: QuadPypeVersion, delete_zip=True):
+    if quadpype_version.path.is_file():
         _print(">>> Extracting zip file ...")
         try:
-            version_path = bootstrap.extract_openpype(openpype_version)
-            openpype_version.path = version_path
+            version_path = bootstrap.extract_quadpype(quadpype_version)
+            quadpype_version.path = version_path
         except OSError as e:
             _print("!!! failed: {}".format(str(e)), True)
             sys.exit(1)
         else:
             # cleanup zip after extraction, we don't touch prod dir
-            if delete_zip and openpype_version not in OpenPypeVersion.get_remote_versions():
-                os.unlink(openpype_version.path)
+            if delete_zip and quadpype_version not in QuadPypeVersion.get_remote_versions():
+                os.unlink(quadpype_version.path)
 
-    _initialize_environment(openpype_version)
+    _initialize_environment(quadpype_version)
 
 
-def _find_frozen_openpype(use_version: str = None,
-                          use_staging: bool = False) -> OpenPypeVersion:
-    """Find OpenPype to run from frozen code.
+def _find_frozen_quadpype(use_version: str = None,
+                          use_staging: bool = False) -> QuadPypeVersion:
+    """Find QuadPype to run from frozen code.
 
     This will process and modify environment variables:
     ``PYTHONPATH``, ``QUADPYPE_VERSION``, ``QUADPYPE_REPOS_ROOT``
@@ -744,41 +744,41 @@ def _find_frozen_openpype(use_version: str = None,
         use_staging (bool, optional): Prefer *staging* flavor over production.
 
     Returns:
-        OpenPypeVersion: Version to be used.
+        QuadPypeVersion: Version to be used.
 
     Raises:
-        RuntimeError: If no OpenPype version are found.
+        RuntimeError: If no QuadPype version are found.
 
     """
-    # Collect OpenPype versions
-    installed_version = OpenPypeVersion.get_installed_version()
+    # Collect QuadPype versions
+    installed_version = QuadPypeVersion.get_installed_version()
     # Expected version that should be used by studio settings
     #   - this option is used only if version is not explicitly set and if
     #       studio has set explicit version in settings
-    studio_version = OpenPypeVersion.get_expected_studio_version(use_staging)
+    studio_version = QuadPypeVersion.get_expected_studio_version(use_staging)
 
     if use_version is not None:
         # Specific version is defined
         if use_version.lower() == "latest":
             # Version says to use latest version
             _print(">>> Finding latest version defined by use version")
-            openpype_version = bootstrap.find_latest_openpype_version()
+            quadpype_version = bootstrap.find_latest_quadpype_version()
         else:
             _print(f">>> Finding specified version \"{use_version}\"")
-            openpype_version = bootstrap.find_openpype_version(use_version)
+            quadpype_version = bootstrap.find_quadpype_version(use_version)
 
-        if openpype_version is None:
-            raise OpenPypeVersionNotFound(
+        if quadpype_version is None:
+            raise QuadPypeVersionNotFound(
                 f"Requested version \"{use_version}\" was not found."
             )
 
     elif studio_version is not None:
         # Studio has defined a version to use
         _print(f">>> Finding studio version \"{studio_version}\"")
-        openpype_version = bootstrap.find_openpype_version(studio_version)
-        if openpype_version is None:
-            raise OpenPypeVersionNotFound((
-                "Requested OpenPype version "
+        quadpype_version = bootstrap.find_quadpype_version(studio_version)
+        if quadpype_version is None:
+            raise QuadPypeVersionNotFound((
+                "Requested QuadPype version "
                 f"\"{studio_version}\" defined by settings"
                 " was not found."
             ))
@@ -788,70 +788,70 @@ def _find_frozen_openpype(use_version: str = None,
         _print((
             ">>> Finding latest version "
             f"with [ {installed_version} ]"))
-        openpype_version = bootstrap.find_latest_openpype_version()
+        quadpype_version = bootstrap.find_latest_quadpype_version()
 
-        if openpype_version is None:
-            raise OpenPypeVersionNotFound("Didn't find any versions.")
+        if quadpype_version is None:
+            raise QuadPypeVersionNotFound("Didn't find any versions.")
 
     # get local frozen version and add it to detected version so if it is
     # newer it will be used instead.
-    if installed_version == openpype_version:
-        openpype_version = _bootstrap_from_code(use_version)
-        _initialize_environment(openpype_version)
-        return openpype_version
+    if installed_version == quadpype_version:
+        quadpype_version = _bootstrap_from_code(use_version)
+        _initialize_environment(quadpype_version)
+        return quadpype_version
 
     in_headless_mode = os.getenv("QUADPYPE_HEADLESS_MODE") == "1"
-    if not installed_version.is_compatible(openpype_version):
+    if not installed_version.is_compatible(quadpype_version):
         message = "Version {} is not compatible with installed version {}."
         # Show UI to user
         if not in_headless_mode:
             igniter.show_message_dialog(
-                "Incompatible OpenPype installation",
+                "Incompatible QuadPype installation",
                 message.format(
-                    "<b>{}</b>".format(openpype_version),
+                    "<b>{}</b>".format(quadpype_version),
                     "<b>{}</b>".format(installed_version)
                 )
             )
         # Raise incompatible error
-        raise OpenPypeVersionIncompatible(
-            message.format(openpype_version, installed_version)
+        raise QuadPypeVersionIncompatible(
+            message.format(quadpype_version, installed_version)
         )
 
     # test if latest detected is installed (in user data dir)
     is_inside = False
     try:
-        is_inside = openpype_version.path.resolve().relative_to(
+        is_inside = quadpype_version.path.resolve().relative_to(
             bootstrap.data_dir)
     except ValueError:
-        # if relative path cannot be calculated, openpype version is not
+        # if relative path cannot be calculated, quadpype version is not
         # inside user data dir
         pass
 
     if not is_inside:
-        from openpype.settings import get_system_settings
+        from quadpype.settings import get_system_settings
 
         system_settings = get_system_settings()
         # install latest version to user data dir
-        zxp_hosts_to_update = bootstrap.get_zxp_extensions_to_update(openpype_version, system_settings, force=True)
+        zxp_hosts_to_update = bootstrap.get_zxp_extensions_to_update(quadpype_version, system_settings, force=True)
         if in_headless_mode:
             version_path = bootstrap.install_version(
-                openpype_version, force=True
+                quadpype_version, force=True
             )
-            bootstrap.update_zxp_extensions(openpype_version, zxp_hosts_to_update)
+            bootstrap.update_zxp_extensions(quadpype_version, zxp_hosts_to_update)
         else:
-            version_path = igniter.open_update_window(openpype_version, zxp_hosts_to_update)
+            version_path = igniter.open_update_window(quadpype_version, zxp_hosts_to_update)
 
-        openpype_version.path = version_path
-        _initialize_environment(openpype_version)
-        return openpype_version
+        quadpype_version.path = version_path
+        _initialize_environment(quadpype_version)
+        return quadpype_version
 
-    _install_and_initialize_version(openpype_version)
+    _install_and_initialize_version(quadpype_version)
 
-    return openpype_version
+    return quadpype_version
 
 
-def _bootstrap_from_code(use_version) -> OpenPypeVersion:
-    """Bootstrap live code (or the one coming with frozen OpenPype).
+def _bootstrap_from_code(use_version) -> QuadPypeVersion:
+    """Bootstrap live code (or the one coming with frozen QuadPype).
 
     Args:
         use_version: (str): specific version to use.
@@ -862,62 +862,62 @@ def _bootstrap_from_code(use_version) -> OpenPypeVersion:
     """
     # run through repos and add them to `sys.path` and `PYTHONPATH`
     # set root
-    _openpype_root = QUADPYPE_ROOT
+    _quadpype_root = QUADPYPE_ROOT
     # Unset use version if latest should be used
     #   - when executed from code then code is expected as latest
     #   - when executed from build then build is already marked as latest
-    #       in '_find_frozen_openpype'
+    #       in '_find_frozen_quadpype'
     if use_version and use_version.lower() == "latest":
         use_version = None
 
     if getattr(sys, 'frozen', False):
-        local_version = bootstrap.get_version(Path(_openpype_root))
+        local_version = bootstrap.get_version(Path(_quadpype_root))
         local_version_str = str(local_version)
         switch_str = f" - will switch to {use_version}" if use_version and use_version != local_version_str else ""  # noqa
         _print(f"  - booting version: {local_version_str}{switch_str}")
         if not local_version_str:
-            raise OpenPypeVersionNotFound(
-                f"Cannot find version at {_openpype_root}")
+            raise QuadPypeVersionNotFound(
+                f"Cannot find version at {_quadpype_root}")
     else:
-        # Get current version of OpenPype
-        local_version = OpenPypeVersion.get_installed_version()
+        # Get current version of QuadPype
+        local_version = QuadPypeVersion.get_installed_version()
 
     # All cases when should be used different version than build
     if use_version and use_version != str(local_version):
         if use_version:
             # Explicit version should be used
-            version_to_use = bootstrap.find_openpype_version(use_version)
+            version_to_use = bootstrap.find_quadpype_version(use_version)
             if version_to_use is None:
-                raise OpenPypeVersionIncompatible(
+                raise QuadPypeVersionIncompatible(
                     f"Requested version \"{use_version}\" was not found.")
         else:
-            version_to_use = bootstrap.find_latest_openpype_version()
+            version_to_use = bootstrap.find_latest_quadpype_version()
             if version_to_use is None:
-                raise OpenPypeVersionNotFound("Didn't find any versions.")
+                raise QuadPypeVersionNotFound("Didn't find any versions.")
 
         # Start extraction of version if needed
         if version_to_use.path.is_file():
-            version_to_use.path = bootstrap.extract_openpype(version_to_use)
+            version_to_use.path = bootstrap.extract_quadpype(version_to_use)
         bootstrap.add_paths_from_directory(version_to_use.path)
         os.environ["QUADPYPE_VERSION"] = use_version
         version_path = version_to_use.path
         os.environ["QUADPYPE_REPOS_ROOT"] = (
-            version_path / "openpype"
+            version_path / "quadpype"
         ).as_posix()
-        _openpype_root = version_to_use.path.as_posix()
+        _quadpype_root = version_to_use.path.as_posix()
 
     else:
         os.environ["QUADPYPE_VERSION"] = str(local_version)
-        os.environ["QUADPYPE_REPOS_ROOT"] = _openpype_root
+        os.environ["QUADPYPE_REPOS_ROOT"] = _quadpype_root
 
     # add self to sys.path of current process
     # NOTE: this seems to be duplicate of 'add_paths_from_directory'
-    sys.path.insert(0, _openpype_root)
+    sys.path.insert(0, _quadpype_root)
     # add venv 'site-packages' to PYTHONPATH
     python_path = os.getenv("PYTHONPATH", "")
     split_paths = python_path.split(os.pathsep)
     # add self to python paths
-    split_paths.insert(0, _openpype_root)
+    split_paths.insert(0, _quadpype_root)
 
     # last one should be venv site-packages
     # this is slightly convoluted as we can get here from frozen code too
@@ -925,15 +925,15 @@ def _bootstrap_from_code(use_version) -> OpenPypeVersion:
     if not getattr(sys, 'frozen', False):
         split_paths.append(site.getsitepackages()[-1])
         # TODO move additional paths to `boot` part when QUADPYPE_ROOT will
-        # point to same hierarchy from code and from frozen OpenPype
+        # point to same hierarchy from code and from frozen QuadPype
         additional_paths = [
-            # add OpenPype tools
-            os.path.join(_openpype_root, "openpype", "tools"),
-            # add common OpenPype vendor
+            # add QuadPype tools
+            os.path.join(_quadpype_root, "quadpype", "tools"),
+            # add common QuadPype vendor
             # (common for multiple Python interpreter versions)
             os.path.join(
-                _openpype_root,
-                "openpype",
+                _quadpype_root,
+                "quadpype",
                 "vendor",
                 "python",
                 "common"
@@ -950,64 +950,64 @@ def _bootstrap_from_code(use_version) -> OpenPypeVersion:
 
 def _boot_validate_versions(use_version, local_version):
     _print(f">>> Validating version [ {use_version} ]")
-    openpype_versions = bootstrap.find_openpype(include_zips=True)
-    v: OpenPypeVersion
-    found = [v for v in openpype_versions if str(v) == use_version]
+    quadpype_versions = bootstrap.find_quadpype(include_zips=True)
+    v: QuadPypeVersion
+    found = [v for v in quadpype_versions if str(v) == use_version]
     if not found:
         _print(f"!!! Version [ {use_version} ] not found.", True)
-        list_versions(openpype_versions, local_version)
+        list_versions(quadpype_versions, local_version)
         sys.exit(1)
 
     # print result
     version_path = bootstrap.get_version_path_from_list(
-        use_version, openpype_versions
+        use_version, quadpype_versions
     )
-    valid, message = bootstrap.validate_openpype_version(version_path)
+    valid, message = bootstrap.validate_quadpype_version(version_path)
     _print(f'{">>> " if valid else "!!! "}{message}', not valid)
     return valid
 
 
-def _boot_print_versions(openpype_root):
+def _boot_print_versions(quadpype_root):
     if getattr(sys, 'frozen', False):
-        local_version = bootstrap.get_version(Path(openpype_root))
+        local_version = bootstrap.get_version(Path(quadpype_root))
     else:
-        local_version = OpenPypeVersion.get_installed_version_str()
+        local_version = QuadPypeVersion.get_installed_version_str()
 
-    compatible_with = OpenPypeVersion(version=local_version)
+    compatible_with = QuadPypeVersion(version=local_version)
     if "--all" in sys.argv:
         _print("--- Showing all version (even those not compatible).")
     else:
         _print(("--- Showing only compatible versions "
                 f"with [ {compatible_with.major}.{compatible_with.minor} ]"))
 
-    openpype_versions = bootstrap.find_openpype(include_zips=True)
-    openpype_versions = [
-        version for version in openpype_versions
+    quadpype_versions = bootstrap.find_quadpype(include_zips=True)
+    quadpype_versions = [
+        version for version in quadpype_versions
         if version.is_compatible(
-            OpenPypeVersion.get_installed_version())
+            QuadPypeVersion.get_installed_version())
     ]
 
-    list_versions(openpype_versions, local_version)
+    list_versions(quadpype_versions, local_version)
 
 
 def _boot_handle_missing_version(local_version, message):
     _print(message, True)
     if os.environ.get("QUADPYPE_HEADLESS_MODE") == "1":
-        openpype_versions = bootstrap.find_openpype(
+        quadpype_versions = bootstrap.find_quadpype(
             include_zips=True)
-        list_versions(openpype_versions, local_version)
+        list_versions(quadpype_versions, local_version)
     else:
         igniter.show_message_dialog("Version not found", message)
 
 
 def boot():
-    """Bootstrap OpenPype."""
+    """Bootstrap QuadPype."""
     global silent_mode
     if any(arg in silent_commands for arg in sys.argv):
         silent_mode = True
 
     # ------------------------------------------------------------------------
-    # Set environment to OpenPype root path
+    # Set environment to QuadPype root path
     # ------------------------------------------------------------------------
     os.environ["QUADPYPE_ROOT"] = QUADPYPE_ROOT
 
@@ -1036,16 +1036,16 @@ def boot():
     # ------------------------------------------------------------------------
 
     try:
-        openpype_mongo = _determine_mongodb()
+        quadpype_mongo = _determine_mongodb()
     except RuntimeError as e:
         # without mongodb url we are done for.
         _print(f"!!! {e}", True)
         sys.exit(1)
 
-    os.environ["QUADPYPE_MONGO"] = openpype_mongo
+    os.environ["QUADPYPE_MONGO"] = quadpype_mongo
     # name of Pype database
     os.environ["QUADPYPE_DATABASE_NAME"] = \
-        os.environ.get("QUADPYPE_DATABASE_NAME") or "openpype"
+        os.environ.get("QUADPYPE_DATABASE_NAME") or "quadpype"
 
     if os.environ.get("IS_TEST") == "1":
         # change source DBs to predefined ones set for automatic testing
@@ -1055,7 +1055,7 @@ def boot():
         if "_tests" not in avalon_db:
             os.environ["AVALON_DB"] = avalon_db + "_tests"
 
-    global_settings = get_openpype_global_settings(openpype_mongo)
+    global_settings = get_quadpype_global_settings(quadpype_mongo)
 
     _print(">>> run disk mapping command ...")
     run_disk_mapping_commands(global_settings)
@@ -1070,41 +1070,41 @@ def boot():
         log_to_server_msg = "OFF"
     _print(f">>> Logging to server is turned {log_to_server_msg}")
 
-    # Get path to the folder containing OpenPype patch versions, then set it to
-    # environment so openpype can find its versions there and bootstrap them.
-    openpype_path = get_openpype_path_from_settings(global_settings)
+    # Get path to the folder containing QuadPype patch versions, then set it to
+    # environment so quadpype can find its versions there and bootstrap them.
+    quadpype_path = get_quadpype_path_from_settings(global_settings)
 
     # Check if local versions should be installed in custom folder and not in
     # user app data
-    data_dir = get_local_openpype_path_from_settings(global_settings)
+    data_dir = get_local_quadpype_path_from_settings(global_settings)
     bootstrap.set_data_dir(data_dir)
     if getattr(sys, 'frozen', False):
         local_version = bootstrap.get_version(Path(QUADPYPE_ROOT))
     else:
-        local_version = OpenPypeVersion.get_installed_version_str()
+        local_version = QuadPypeVersion.get_installed_version_str()
 
     if "validate" in commands:
         valid = _boot_validate_versions(use_version, local_version)
         sys.exit(0 if valid else 1)
 
-    if not openpype_path:
-        _print("*** Cannot get OpenPype path from database.")
+    if not quadpype_path:
+        _print("*** Cannot get QuadPype path from database.")
 
-    if not os.getenv("QUADPYPE_PATH") and openpype_path:
-        os.environ["QUADPYPE_PATH"] = openpype_path
+    if not os.getenv("QUADPYPE_PATH") and quadpype_path:
+        os.environ["QUADPYPE_PATH"] = quadpype_path
 
     if "print_versions" in commands:
         _boot_print_versions(QUADPYPE_ROOT)
         sys.exit(0)
 
     # ------------------------------------------------------------------------
-    # Ensure patch version of OpenPype is on the user/local dir
+    # Ensure patch version of QuadPype is on the user/local dir
     # ------------------------------------------------------------------------
     curr_version = local_version
     if isinstance(local_version, str):
-        curr_version = OpenPypeVersion(version=local_version)
-    user_dir_version = bootstrap.find_openpype_local_version(curr_version)
-    prod_dir_version = bootstrap.find_openpype_remote_version(curr_version)
+        curr_version = QuadPypeVersion(version=local_version)
+    user_dir_version = bootstrap.find_quadpype_local_version(curr_version)
+    prod_dir_version = bootstrap.find_quadpype_remote_version(curr_version)
     dev_mode = "python" in os.path.basename(sys.executable).lower()
 
     op_version_to_extract = None
@@ -1115,31 +1115,31 @@ def boot():
 
     if prod_dir_version and not user_dir_version:
         # Need to copy the prod version into the correct user/artist directory
-        # Get OpenPypeVersion() Object
+        # Get QuadPypeVersion() Object
         op_version_to_extract = prod_dir_version
 
-    if not prod_dir_version and dev_mode and openpype_path:
+    if not prod_dir_version and dev_mode and quadpype_path:
         # This isn't a released version, we are in developer mode
         # Generate the version, then copy it on the user/artist directory
 
         # Generate Zip
-        debug_dir = Path(openpype_path, "debug")
+        debug_dir = Path(quadpype_path, "debug")
         op_version_to_extract = bootstrap.create_version_from_live_code(data_dir=debug_dir)
 
     if op_version_to_extract:
         _install_and_initialize_version(op_version_to_extract, delete_zip=False)
 
     # ------------------------------------------------------------------------
-    # Find OpenPype versions
+    # Find QuadPype versions
     # ------------------------------------------------------------------------
-    openpype_version = None
-    # WARNING: Environment QUADPYPE_REPOS_ROOT may change if frozen OpenPype
+    quadpype_version = None
+    # WARNING: Environment QUADPYPE_REPOS_ROOT may change if frozen QuadPype
     # is executed
     if getattr(sys, 'frozen', False):
-        # find versions of OpenPype to be used with frozen code
+        # find versions of QuadPype to be used with frozen code
         try:
-            openpype_version = _find_frozen_openpype(use_version, use_staging)
-        except OpenPypeVersionNotFound as exc:
+            quadpype_version = _find_frozen_quadpype(use_version, use_staging)
+        except QuadPypeVersionNotFound as exc:
             _boot_handle_missing_version(local_version, str(exc))
             sys.exit(1)
         except RuntimeError as e:
@@ -1148,8 +1148,8 @@ def boot():
             sys.exit(1)
 
         # validate version
-        _print(f">>> Validating version in frozen [ {str(openpype_version.path)} ]")
-        result = bootstrap.validate_openpype_version(openpype_version.path)
+        _print(f">>> Validating version in frozen [ {str(quadpype_version.path)} ]")
+        result = bootstrap.validate_quadpype_version(quadpype_version.path)
 
         if not result[0]:
             _print(f"!!! Invalid version: {result[1]}", True)
@@ -1158,21 +1158,21 @@ def boot():
         _print("--- version is valid")
     else:
         try:
-            openpype_version = _bootstrap_from_code(use_version)
-        except OpenPypeVersionNotFound as exc:
+            quadpype_version = _bootstrap_from_code(use_version)
+        except QuadPypeVersionNotFound as exc:
             _boot_handle_missing_version(local_version, str(exc))
             sys.exit(1)
 
     # set this to point either to `python` from venv in case of live code
-    # or to `openpype` or `openpype_console` in case of frozen code
+    # or to `quadpype` or `quadpype_console` in case of frozen code
     os.environ["QUADPYPE_EXECUTABLE"] = sys.executable
 
-    # delete OpenPype module and it's submodules from cache so it is used from
+    # delete QuadPype module and it's submodules from cache so it is used from
     # specific version
     modules_to_del = [
         sys.modules.pop(module_name)
         for module_name in tuple(sys.modules)
-        if module_name == "openpype" or module_name.startswith("openpype.")
+        if module_name == "quadpype" or module_name.startswith("quadpype.")
     ]
 
     try:
@@ -1189,25 +1189,25 @@ def boot():
     # Avalon environments must be set before avalon module is imported
     _print("  - for Avalon ...")
     set_avalon_environments()
-    _print("  - global OpenPype ...")
-    set_openpype_global_environments()
+    _print("  - global QuadPype ...")
+    set_quadpype_global_environments()
     _print("  - for modules ...")
     set_modules_environments()
     if os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE"):
         _print(">>> skip ZXP extensions ...")
     else:
         _print(">>> check ZXP extensions ...")
-        update_zxp_extensions(openpype_version)
+        update_zxp_extensions(quadpype_version)
 
-    assert openpype_version, "Version path not defined."
+    assert quadpype_version, "Version path not defined."
 
     # print info when not running scripts defined in 'silent commands'
     if all(arg not in silent_commands for arg in sys.argv):
-        from openpype.lib import terminal as t
-        from openpype.version import __version__
+        from quadpype.lib import terminal as t
+        from quadpype.version import __version__
 
         info = get_info(use_staging)
-        info.insert(0, f">>> Using OpenPype from [ {str(openpype_version.path.resolve())} ]")
+        info.insert(0, f">>> Using QuadPype from [ {str(quadpype_version.path.resolve())} ]")
 
         t_width = 20
         try:
@@ -1216,40 +1216,40 @@ def boot():
             # running without terminal
             pass
 
-        _header = f"*** OpenPype [{__version__}] "
+        _header = f"*** QuadPype [{__version__}] "
         info.insert(0, _header + "-" * (t_width - len(_header)))
 
         for i in info:
             t.echo(i)
 
-    from openpype import cli
+    from quadpype import cli
     try:
-        cli.main(obj={}, prog_name="openpype")
+        cli.main(obj={}, prog_name="quadpype")
     except Exception:  # noqa
         exc_info = sys.exc_info()
-        _print("!!! OpenPype crashed:", True)
+        _print("!!! QuadPype crashed:", True)
         traceback.print_exception(*exc_info)
         sys.exit(1)
 
 
 def get_info(use_staging=None) -> list:
     """Print additional information to console."""
-    from openpype.client.mongo import get_default_components
+    from quadpype.client.mongo import get_default_components
     try:
-        from openpype.lib.log import Logger
+        from quadpype.lib.log import Logger
     except ImportError:
         # Backwards compatibility for 'PypeLogger'
-        from openpype.lib.log import PypeLogger as Logger
+        from quadpype.lib.log import PypeLogger as Logger
 
     components = get_default_components()
 
     inf = []
     if use_staging:
-        inf.append(("OpenPype variant", "staging"))
+        inf.append(("QuadPype variant", "staging"))
     else:
-        inf.append(("OpenPype variant", "production"))
+        inf.append(("QuadPype variant", "production"))
     inf.extend([
-        ("Running OpenPype from", os.environ.get('QUADPYPE_REPOS_ROOT')),
+        ("Running QuadPype from", os.environ.get('QUADPYPE_REPOS_ROOT')),
         ("Using mongodb", components["host"])]
     )
 

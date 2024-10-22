@@ -3,15 +3,15 @@ from pathlib import Path
 
 import bpy
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
     registered_host
 )
-from openpype.pipeline.create import CreateContext
-from openpype.hosts.blender.api import plugin
-from openpype.hosts.blender.api.lib import imprint
-from openpype.hosts.blender.api.pipeline import (
+from quadpype.pipeline.create import CreateContext
+from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api.lib import imprint
+from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
     AVALON_PROPERTY,
 )
@@ -61,7 +61,7 @@ class BlendLoader(plugin.AssetLoader):
             return
 
         # Create animation instances for each rig
-        creator_identifier = "io.openpype.creators.blender.animation"
+        creator_identifier = "io.quadpype.creators.blender.animation"
         host = registered_host()
         create_context = CreateContext(host)
 
@@ -155,7 +155,7 @@ class BlendLoader(plugin.AssetLoader):
         avalon_container.objects.link(container)
 
         data = {
-            "schema": "openpype:container-2.0",
+            "schema": "quadpype:container-2.0",
             "id": AVALON_CONTAINER_ID,
             "name": name,
             "namespace": namespace or '',

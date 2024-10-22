@@ -1,5 +1,5 @@
 import ftrack_api
-from openpype_modules.ftrack.lib import BaseEvent
+from quadpype_modules.ftrack.lib import BaseEvent
 
 
 class RadioButtons(BaseEvent):

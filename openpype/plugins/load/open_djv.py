@@ -1,6 +1,6 @@
 import os
-from openpype.lib import ApplicationManager
-from openpype.pipeline import load
+from quadpype.lib import ApplicationManager
+from quadpype.pipeline import load
 
 
 def existing_djv_path():

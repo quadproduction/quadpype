@@ -1,19 +1,19 @@
 import os
-from openpype.pipeline import load, get_representation_path
-from openpype.pipeline.load import LoadError
-from openpype.hosts.max.api.pipeline import (
+from quadpype.pipeline import load, get_representation_path
+from quadpype.pipeline.load import LoadError
+from quadpype.hosts.max.api.pipeline import (
     containerise,
     get_previous_loaded_object,
     update_custom_attribute_data
 )
 
-from openpype.hosts.max.api.lib import (
+from quadpype.hosts.max.api.lib import (
     unique_namespace,
     get_namespace,
     object_transform_set,
     get_plugins
 )
-from openpype.hosts.max.api import lib
+from quadpype.hosts.max.api import lib
 from pymxs import runtime as rt
 
 

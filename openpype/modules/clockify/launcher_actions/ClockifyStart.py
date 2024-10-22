@@ -1,6 +1,6 @@
-from openpype.client import get_asset_by_name
-from openpype.pipeline import LauncherAction
-from openpype_modules.clockify.clockify_api import ClockifyAPI
+from quadpype.client import get_asset_by_name
+from quadpype.pipeline import LauncherAction
+from quadpype_modules.clockify.clockify_api import ClockifyAPI
 
 
 class ClockifyStart(LauncherAction):

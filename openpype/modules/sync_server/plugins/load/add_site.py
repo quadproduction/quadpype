@@ -1,7 +1,7 @@
-from openpype.client import get_linked_representation_id
-from openpype.modules import ModulesManager
-from openpype.pipeline import load
-from openpype.modules.sync_server.utils import SiteAlreadyPresentError
+from quadpype.client import get_linked_representation_id
+from quadpype.modules import ModulesManager
+from quadpype.pipeline import load
+from quadpype.modules.sync_server.utils import SiteAlreadyPresentError
 
 
 class AddSyncSite(load.LoaderPlugin):

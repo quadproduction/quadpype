@@ -2,7 +2,7 @@ import os
 import pyblish.api
 import maya.cmds as cmds
 
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     RepairContextAction,
     PublishValidationError,
     OptionalPyblishPluginMixin
@@ -24,7 +24,7 @@ class ValidateLoadedPlugin(pyblish.api.ContextPlugin,
 
         invalid = []
         loaded_plugin = cmds.pluginInfo(query=True, listPlugins=True)
-        # get variable from OpenPype settings
+        # get variable from QuadPype settings
         whitelist_native_plugins = cls.whitelist_native_plugins
         authorized_plugins = cls.authorized_plugins or []
 

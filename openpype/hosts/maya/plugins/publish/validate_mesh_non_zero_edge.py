@@ -1,9 +1,9 @@
 from maya import cmds
 
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api import lib
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api import lib
+from quadpype.pipeline.publish import (
     ValidateMeshOrder,
     OptionalPyblishPluginMixin,
     PublishValidationError
@@ -25,7 +25,7 @@ class ValidateMeshNonZeroEdgeLength(pyblish.api.InstancePlugin,
     families = ['model']
     hosts = ['maya']
     label = 'Mesh Edge Length Non Zero'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = True
 
     __tolerance = 1e-5

@@ -1,11 +1,11 @@
 import pyblish.api
 
-from openpype.lib import EnumDef, TextDef
-from openpype.pipeline.publish import OpenPypePyblishPluginMixin
+from quadpype.lib import EnumDef, TextDef
+from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
 
 
 class CollectTyCacheData(pyblish.api.InstancePlugin,
-                         OpenPypePyblishPluginMixin):
+                         QuadPypePyblishPluginMixin):
     """Collect Channel Attributes for TyCache Export"""
 
     order = pyblish.api.CollectorOrder + 0.02

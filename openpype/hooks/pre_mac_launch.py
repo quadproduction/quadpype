@@ -1,5 +1,5 @@
 import os
-from openpype.lib.applications import PreLaunchHook, LaunchTypes
+from quadpype.lib.applications import PreLaunchHook, LaunchTypes
 
 
 class LaunchWithTerminal(PreLaunchHook):
@@ -22,7 +22,7 @@ class LaunchWithTerminal(PreLaunchHook):
             return
 
         # Check if first argument match executable path
-        # - Few applications are not executed directly but through OpenPype
+        # - Few applications are not executed directly but through QuadPype
         #   process (Photoshop, AfterEffects, Harmony, ...). These should not
         #   use `open`.
         if self.launch_context.launch_args[0] != executable:

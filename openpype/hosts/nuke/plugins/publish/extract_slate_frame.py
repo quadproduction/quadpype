@@ -6,8 +6,8 @@ import copy
 import pyblish.api
 import six
 
-from openpype.pipeline import publish
-from openpype.hosts.nuke.api import (
+from quadpype.pipeline import publish
+from quadpype.hosts.nuke.api import (
     maintained_selection,
     duplicate_node,
     get_view_process_node

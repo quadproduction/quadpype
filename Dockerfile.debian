@@ -47,7 +47,7 @@ RUN apt-get update \
 SHELL ["/bin/bash", "-c"]
 
 
-RUN mkdir /opt/openpype
+RUN mkdir /opt/quadpype
 
 # download and install pyenv
 RUN curl https://pyenv.run | bash \
@@ -60,14 +60,14 @@ RUN curl https://pyenv.run | bash \
 RUN source $HOME/init_pyenv.sh \
     && pyenv install ${QUADPYPE_PYTHON_VERSION}
 
-COPY . /opt/openpype/
+COPY . /opt/quadpype/
 
-RUN chmod +x /opt/openpype/tools/create_env.sh && chmod +x /opt/openpype/tools/build.sh
+RUN chmod +x /opt/quadpype/tools/create_env.sh && chmod +x /opt/quadpype/tools/build.sh
 
-WORKDIR /opt/openpype
+WORKDIR /opt/quadpype
 
 # set local python version
-RUN cd /opt/openpype \
+RUN cd /opt/quadpype \
     && source $HOME/init_pyenv.sh \
     && pyenv local ${QUADPYPE_PYTHON_VERSION}
 
@@ -76,6 +76,6 @@ RUN source $HOME/init_pyenv.sh \
     && ./tools/create_env.sh \
     && ./tools/fetch_thirdparty_libs.sh
 
-# build openpype
+# build quadpype
 RUN source $HOME/init_pyenv.sh \
     && bash ./tools/build.sh

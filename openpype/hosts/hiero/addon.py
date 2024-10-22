@@ -1,11 +1,11 @@
 import os
 import platform
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 HIERO_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class HieroAddon(OpenPypeModule, IHostAddon):
+class HieroAddon(QuadPypeModule, IHostAddon):
     name = "hiero"
     host_name = "hiero"
 

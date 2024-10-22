@@ -3,10 +3,10 @@ import uuid
 
 import ayon_api
 
-from openpype.lib.events import QueuedEventSystem
-from openpype.pipeline import Anatomy, get_current_context
-from openpype.host import ILoadHost
-from openpype.tools.ayon_utils.models import (
+from quadpype.lib.events import QueuedEventSystem
+from quadpype.pipeline import Anatomy, get_current_context
+from quadpype.host import ILoadHost
+from quadpype.tools.ayon_utils.models import (
     ProjectsModel,
     HierarchyModel,
     NestedCacheItem,

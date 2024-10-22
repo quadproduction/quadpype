@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """Pre-launch to force 3ds max startup script."""
 import os
-from openpype.hosts.max import MAX_HOST_DIR
-from openpype.lib.applications import PreLaunchHook, LaunchTypes
+from quadpype.hosts.max import MAX_HOST_DIR
+from quadpype.lib.applications import PreLaunchHook, LaunchTypes
 
 
 class ForceStartupScript(PreLaunchHook):
-    """Inject OpenPype environment to 3ds max.
+    """Inject QuadPype environment to 3ds max.
 
     Note that this works in combination whit 3dsmax startup script that
     is translating it back to PYTHONPATH for cases when 3dsmax drops PYTHONPATH

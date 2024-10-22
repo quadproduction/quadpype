@@ -2,7 +2,7 @@ import time
 from qtpy import QtCore
 from pynput import mouse, keyboard
 
-from openpype.lib import Logger
+from quadpype.lib import Logger
 
 
 class IdleItem:

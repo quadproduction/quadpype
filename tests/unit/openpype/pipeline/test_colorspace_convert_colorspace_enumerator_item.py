@@ -1,5 +1,5 @@
 import unittest
-from openpype.pipeline.colorspace import convert_colorspace_enumerator_item
+from quadpype.pipeline.colorspace import convert_colorspace_enumerator_item
 
 
 class TestConvertColorspaceEnumeratorItem(unittest.TestCase):

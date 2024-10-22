@@ -1,5 +1,5 @@
 import pyblish.api
-from openpype.pipeline.publish import ValidateContentsOrder
+from quadpype.pipeline.publish import ValidateContentsOrder
 
 
 class ValidateShotgridUser(pyblish.api.ContextPlugin):
@@ -14,7 +14,7 @@ class ValidateShotgridUser(pyblish.api.ContextPlugin):
         sg = context.data.get("shotgridSession")
 
         login = context.data.get("shotgridUser")
-        self.log.info("Login shotgrid set in OpenPype is {}".format(login))
+        self.log.info("Login shotgrid set in QuadPype is {}".format(login))
         project = context.data.get("shotgridProject")
         self.log.info("Current shotgun project is {}".format(project))
 

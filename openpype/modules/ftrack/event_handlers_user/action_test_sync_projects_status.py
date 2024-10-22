@@ -1,8 +1,8 @@
 from pymongo import UpdateOne
 
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
-from openpype.client import get_projects, get_project
-from openpype.pipeline import AvalonMongoDB
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype.client import get_projects, get_project
+from quadpype.pipeline import AvalonMongoDB
 
 
 class TestActionSyncProjectsStatus(BaseAction):

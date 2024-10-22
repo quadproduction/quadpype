@@ -2,13 +2,13 @@
 
 import bpy
 
-from openpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api import plugin, lib
 
 
 class CreateModel(plugin.BaseCreator):
     """Polygonal static geometry."""
 
-    identifier = "io.openpype.creators.blender.model"
+    identifier = "io.quadpype.creators.blender.model"
     label = "Model"
     family = "model"
     icon = "cube"

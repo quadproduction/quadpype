@@ -4,7 +4,7 @@ import json
 import collections
 import six
 
-from openpype import resources
+from quadpype import resources
 
 from .color_defs import parse_color
 

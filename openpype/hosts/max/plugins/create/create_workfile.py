@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating workfiles."""
-from openpype.pipeline import CreatedInstance, AutoCreator
-from openpype.client import get_asset_by_name, get_asset_name_identifier
-from openpype.hosts.max.api import plugin
-from openpype.hosts.max.api.lib import read, imprint
+from quadpype.pipeline import CreatedInstance, AutoCreator
+from quadpype.client import get_asset_by_name, get_asset_name_identifier
+from quadpype.hosts.max.api import plugin
+from quadpype.hosts.max.api.lib import read, imprint
 from pymxs import runtime as rt
 
 
 class CreateWorkfile(plugin.MaxCreatorBase, AutoCreator):
     """Workfile auto-creator."""
-    identifier = "io.openpype.creators.max.workfile"
+    identifier = "io.quadpype.creators.max.workfile"
     label = "Workfile"
     family = "workfile"
     icon = "fa5.file"

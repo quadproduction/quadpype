@@ -2,24 +2,24 @@ import nuke
 
 import qargparse
 
-from openpype.client import (
+from quadpype.client import (
     get_version_by_id,
     get_last_version_by_subset_id,
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     load,
     get_current_project_name,
     get_representation_path,
 )
-from openpype.hosts.nuke.api.lib import (
+from quadpype.hosts.nuke.api.lib import (
     get_imageio_input_colorspace
 )
-from openpype.hosts.nuke.api import (
+from quadpype.hosts.nuke.api import (
     containerise,
     update_container,
     viewer_update_and_undo_stop
 )
-from openpype.lib.transcoding import (
+from quadpype.lib.transcoding import (
     IMAGE_EXTENSIONS
 )
 

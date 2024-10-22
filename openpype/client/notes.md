@@ -1,8 +1,8 @@
 # Client functionality
 ## Reason
-Preparation for OpenPype v4 server. Goal is to remove direct mongo calls in code to prepare a little bit for different source of data for code before. To start think about database calls less as mongo calls but more universally. To do so was implemented simple wrapper around database calls to not use pymongo specific code.
+Preparation for QuadPype v4 server. Goal is to remove direct mongo calls in code to prepare a little bit for different source of data for code before. To start think about database calls less as mongo calls but more universally. To do so was implemented simple wrapper around database calls to not use pymongo specific code.
 
-Current goal is not to make universal database model which can be easily replaced with any different source of data but to make it close as possible. Current implementation of OpenPype is too tightly connected to pymongo and it's abilities so we're trying to get closer with long term changes that can be used even in current state.
+Current goal is not to make universal database model which can be easily replaced with any different source of data but to make it close as possible. Current implementation of QuadPype is too tightly connected to pymongo and it's abilities so we're trying to get closer with long term changes that can be used even in current state.
 
 ## Queries
 Query functions don't use full potential of mongo queries like very specific queries based on subdictionaries or unknown structures. We try to avoid these calls as much as possible because they'll probably won't be available in future. If it's really necessary a new function can be added but only if it's reasonable for overall logic. All query functions were moved to `~/client/entities.py`. Each function has arguments with available filters and possible reduce of returned keys for each entity.
@@ -22,8 +22,8 @@ Delete operation need entity id. Entity will be deleted from mongo.
 
 ## What (probably) won't be replaced
 Some parts of code are still using direct mongo calls. In most of cases it is for very specific calls that are module specific or their usage will completely change in future.
-- Mongo calls that are not project specific (out of `avalon` collection) will be removed or will have to use different mechanism how the data are stored. At this moment it is related to OpenPype settings and logs, ftrack server events, some other data.
-- Sync server queries. They're complex and very specific for sync server module. Their replacement will require specific calls to OpenPype server in v4 thus their abstraction with wrapper is irrelevant and would complicate production in v3.
+- Mongo calls that are not project specific (out of `avalon` collection) will be removed or will have to use different mechanism how the data are stored. At this moment it is related to QuadPype settings and logs, ftrack server events, some other data.
+- Sync server queries. They're complex and very specific for sync server module. Their replacement will require specific calls to QuadPype server in v4 thus their abstraction with wrapper is irrelevant and would complicate production in v3.
 - Project managers (ftrack, kitsu, shotgrid, embedded Project Manager, etc.). Project managers are creating, updating or removing assets in v3, but in v4 will create folders with different structure. Wrapping creation of assets would not help to prepare for v4 because of new data structures. The same can be said about editorial Extract Hierarchy Avalon plugin which create project structure.
 - Code parts that is marked as deprecated in v3 or will be deprecated in v4.
     - integrate asset legacy publish plugin - already is legacy kept for safety
@@ -33,7 +33,7 @@ Some parts of code are still using direct mongo calls. In most of cases it is fo
 ## Known missing replacements
 - change subset group in loader tool
 - integrate subset group
-- query input links in openpype lib
-- create project in openpype lib
-- save/create workfile doc in openpype lib
+- query input links in quadpype lib
+- create project in quadpype lib
+- save/create workfile doc in quadpype lib
 - integrate hero version

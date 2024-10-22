@@ -6,9 +6,9 @@ from collections import OrderedDict
 import pyblish
 import rv
 
-from openpype.host import HostBase, ILoadHost, IWorkfileHost, IPublishHost
-from openpype.hosts.openrv import OPENRV_ROOT_DIR
-from openpype.pipeline import (
+from quadpype.host import HostBase, ILoadHost, IWorkfileHost, IPublishHost
+from quadpype.hosts.openrv import OPENRV_ROOT_DIR
+from quadpype.pipeline import (
     register_loader_plugin_path,
     register_inventory_action_path,
     register_creator_plugin_path,
@@ -21,7 +21,7 @@ LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
 CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 INVENTORY_PATH = os.path.join(PLUGINS_DIR, "inventory")
 
-QUADPYPE_ATTR_PREFIX = "openpype."
+QUADPYPE_ATTR_PREFIX = "quadpype."
 JSON_PREFIX = "JSON:::"
 
 
@@ -174,7 +174,7 @@ def imprint_container(node, name, namespace, context, loader):
     """
 
     data = [
-        ("schema", "openpype:container-2.0"),
+        ("schema", "quadpype:container-2.0"),
         ("id", str(AVALON_CONTAINER_ID)),
         ("name", str(name)),
         ("namespace", str(namespace)),

@@ -3,9 +3,9 @@ from collections import defaultdict
 
 from qtpy import QtWidgets, QtCore
 
-from openpype.client import get_asset_name_identifier
-from openpype.tools.utils.models import TreeModel
-from openpype.tools.utils.lib import (
+from quadpype.client import get_asset_name_identifier
+from quadpype.tools.utils.models import TreeModel
+from quadpype.tools.utils.lib import (
     preserve_expanded_rows,
     preserve_selection,
 )

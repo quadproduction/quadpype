@@ -1,8 +1,8 @@
 from maya import cmds
 
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateMeshOrder,
     OptionalPyblishPluginMixin
@@ -25,7 +25,7 @@ class ValidateMeshUVSetMap1(pyblish.api.InstancePlugin,
     families = ['model']
     optional = True
     label = "Mesh has map1 UV Set"
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction,
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction,
                RepairAction]
 
     @staticmethod

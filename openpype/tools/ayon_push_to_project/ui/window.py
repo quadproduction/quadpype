@@ -1,17 +1,17 @@
 from qtpy import QtWidgets, QtGui, QtCore
 
-from openpype.style import load_stylesheet, get_app_icon_path
-from openpype.tools.utils import (
+from quadpype.style import load_stylesheet, get_app_icon_path
+from quadpype.tools.utils import (
     PlaceholderLineEdit,
     SeparatorWidget,
     set_style_property,
 )
-from openpype.tools.ayon_utils.widgets import (
+from quadpype.tools.ayon_utils.widgets import (
     ProjectsCombobox,
     FoldersWidget,
     TasksWidget,
 )
-from openpype.tools.ayon_push_to_project.control import (
+from quadpype.tools.ayon_push_to_project.control import (
     PushToContextController,
 )
 

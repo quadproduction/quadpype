@@ -1,5 +1,5 @@
 from copy import deepcopy
-import openpype.hosts.flame.api as opfapi
+import quadpype.hosts.flame.api as opfapi
 
 
 class CreateShotClip(opfapi.Creator):

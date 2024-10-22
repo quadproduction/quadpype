@@ -5,7 +5,7 @@ from .widgets import (
     ExpandingWidget,
     GridLabelWidget
 )
-from openpype.tools.settings import CHILD_OFFSET
+from quadpype.tools.settings import CHILD_OFFSET
 
 
 class WrapperWidget(QtWidgets.QWidget):

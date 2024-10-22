@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Creator for Unreal Static Meshes."""
-from openpype.hosts.maya.api import plugin, lib
+from quadpype.hosts.maya.api import plugin, lib
 from maya import cmds  # noqa
 
 
 class CreateUnrealStaticMesh(plugin.MayaCreator):
     """Unreal Static Meshes with collisions."""
 
-    identifier = "io.openpype.creators.maya.unrealstaticmesh"
+    identifier = "io.quadpype.creators.maya.unrealstaticmesh"
     label = "Unreal - Static Mesh"
     family = "staticMesh"
     icon = "cube"

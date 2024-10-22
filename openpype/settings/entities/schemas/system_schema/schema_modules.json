@@ -8,7 +8,7 @@
         {
             "type": "path",
             "key": "addon_paths",
-            "label": "OpenPype AddOn Paths",
+            "label": "QuadPype AddOn Paths",
             "use_label_wrap": true,
             "multiplatform": true,
             "multipath": true,

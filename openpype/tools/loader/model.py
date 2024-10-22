@@ -7,7 +7,7 @@ from uuid import uuid4
 from qtpy import QtCore, QtGui
 import qtawesome
 
-from openpype.client import (
+from quadpype.client import (
     get_assets,
     get_subsets,
     get_last_versions,
@@ -16,19 +16,19 @@ from openpype.client import (
     get_version_by_name,
     get_representations
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     registered_host,
     HeroVersionType,
     schema,
 )
 
-from openpype.style import get_default_entity_icon_color
-from openpype.tools.utils.models import TreeModel, Item
-from openpype.tools.utils import lib
-from openpype.host import ILoadHost
+from quadpype.style import get_default_entity_icon_color
+from quadpype.tools.utils.models import TreeModel, Item
+from quadpype.tools.utils import lib
+from quadpype.host import ILoadHost
 
-from openpype.modules import ModulesManager
-from openpype.tools.utils.constants import (
+from quadpype.modules import ModulesManager
+from quadpype.tools.utils.constants import (
     LOCAL_PROVIDER_ROLE,
     REMOTE_PROVIDER_ROLE,
     LOCAL_AVAILABILITY_ROLE,

@@ -3,8 +3,8 @@ Locked = true,
 Global = {
   Paths = {
     Map = {
-      ["OpenPype:"] = "$(QUADPYPE_FUSION)/deploy/openpype",
-      ["Config:"] = "UserPaths:Config;OpenPype:Config",
+      ["QuadPype:"] = "$(QUADPYPE_FUSION)/deploy/quadpype",
+      ["Config:"] = "UserPaths:Config;QuadPype:Config",
       ["Scripts:"] = "UserPaths:Scripts;Reactor:System/Scripts",
     },
   },

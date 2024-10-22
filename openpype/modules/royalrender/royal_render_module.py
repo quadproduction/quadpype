@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """Module providing support for Royal Render."""
 import os
-import openpype.modules
-from openpype.modules import OpenPypeModule, IPluginPaths
-from openpype.lib import Logger
+import quadpype.modules
+from quadpype.modules import QuadPypeModule, IPluginPaths
+from quadpype.lib import Logger
 
 
-class RoyalRenderModule(OpenPypeModule, IPluginPaths):
+class RoyalRenderModule(QuadPypeModule, IPluginPaths):
     """Class providing basic Royal Render implementation logic."""
     name = "royalrender"
 
@@ -20,7 +20,7 @@ class RoyalRenderModule(OpenPypeModule, IPluginPaths):
         return self._api
 
     def __init__(self, manager, settings):
-        # type: (openpype.modules.base.ModulesManager, dict) -> None
+        # type: (quadpype.modules.base.ModulesManager, dict) -> None
         self.rr_paths = {}
         self._api = None
         self.settings = settings

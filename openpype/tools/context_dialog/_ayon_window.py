@@ -4,20 +4,20 @@ import json
 import ayon_api
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import style
-from openpype.lib.events import QueuedEventSystem
-from openpype.tools.ayon_utils.models import (
+from quadpype import style
+from quadpype.lib.events import QueuedEventSystem
+from quadpype.tools.ayon_utils.models import (
     ProjectsModel,
     HierarchyModel,
 )
-from openpype.tools.ayon_utils.widgets import (
+from quadpype.tools.ayon_utils.widgets import (
     ProjectsCombobox,
     FoldersWidget,
     TasksWidget,
 )
-from openpype.tools.utils.lib import (
+from quadpype.tools.utils.lib import (
     center_window,
-    get_openpype_qt_app,
+    get_quadpype_qt_app,
 )
 
 
@@ -788,7 +788,7 @@ def main(
     strict=True
 ):
     # Run Qt application
-    app = get_openpype_qt_app()
+    app = get_quadpype_qt_app()
     controller = ContextDialogController()
     controller.set_strict(strict)
     controller.set_initial_context(project_name, asset_name)

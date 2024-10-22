@@ -1,5 +1,5 @@
 import pyblish.api
-from openpype.pipeline import PublishXmlValidationError
+from quadpype.pipeline import PublishXmlValidationError
 
 
 class ValidateMissingLayers(pyblish.api.InstancePlugin):

@@ -1,11 +1,11 @@
 import os
 
-from openpype.modules import click_wrap, OpenPypeModule, IHostAddon
+from quadpype.modules import click_wrap, QuadPypeModule, IHostAddon
 
 WEBPUBLISHER_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class WebpublisherAddon(OpenPypeModule, IHostAddon):
+class WebpublisherAddon(QuadPypeModule, IHostAddon):
     name = "webpublisher"
     host_name = "webpublisher"
 

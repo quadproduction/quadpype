@@ -5,9 +5,9 @@ from .widgets import (
     Separator,
     ExpandingWidget
 )
-from openpype.settings import APPS_SETTINGS_KEY
-from openpype.tools.settings import CHILD_OFFSET
-from openpype.tools.utils import PlaceholderLineEdit
+from quadpype.settings import APPS_SETTINGS_KEY
+from quadpype.tools.settings import CHILD_OFFSET
+from quadpype.tools.utils import PlaceholderLineEdit
 
 
 class AppVariantWidget(QtWidgets.QWidget):

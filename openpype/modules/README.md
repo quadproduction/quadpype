@@ -1,17 +1,17 @@
-# OpenPype modules/addons
-OpenPype modules should contain separated logic of specific kind of implementation, such as Ftrack connection and its usage code, Deadline farm rendering or may contain only special plugins. Addons work the same way currently, there is no difference between module and addon functionality.
+# QuadPype modules/addons
+QuadPype modules should contain separated logic of specific kind of implementation, such as Ftrack connection and its usage code, Deadline farm rendering or may contain only special plugins. Addons work the same way currently, there is no difference between module and addon functionality.
 
 ## Modules concept
-- modules and addons are dynamically imported to virtual python module `openpype_modules` from which it is possible to import them no matter where is the module located
+- modules and addons are dynamically imported to virtual python module `quadpype_modules` from which it is possible to import them no matter where is the module located
 - modules or addons should never be imported directly, even if you know possible full import path
  - it is because all of their content must be imported in specific order and should not be imported without defined functions as it may also break few implementation parts
 
 ### TODOs
 - add module/addon manifest
- - definition of module (not 100% defined content e.g. minimum required OpenPype version etc.)
+ - definition of module (not 100% defined content e.g. minimum required QuadPype version etc.)
  - defining a folder as a content of a module or an addon
 
-## Base class `OpenPypeModule`
+## Base class `QuadPypeModule`
 - abstract class as base for each module
 - implementation should contain module's api without GUI parts
 - may implement `get_global_environments` method which should return dictionary of environments that are globally applicable and value is the same for whole studio if launched at any workstation (except os specific paths)
@@ -25,20 +25,20 @@ OpenPype modules should contain separated logic of specific kind of implementati
 - `cli` method - add cli commands specific for the module
     - command line arguments are handled using `click` python module
     - `cli` method should expect single argument which is click group on which can be called any group specific methods (e.g. `add_command` to add another click group as children see `ExampleAddon`)
-    - it is possible to add trigger cli commands using `./openpype_console module <module_name> <command> *args`
+    - it is possible to add trigger cli commands using `./quadpype_console module <module_name> <command> *args`
 
-## Addon class `OpenPypeAddOn`
-- inherits from `OpenPypeModule` but is enabled by default and doesn't have to implement `initialize` and `connect_with_modules` methods
+## Addon class `QuadPypeAddOn`
+- inherits from `QuadPypeModule` but is enabled by default and doesn't have to implement `initialize` and `connect_with_modules` methods
  - that is because it is expected that addons don't need to have system settings and `enabled` value on it (but it is possible...)
 
 ## How to add addons/modules
-- in System settings go to `modules/addon_paths` (`Modules/OpenPype AddOn Paths`) where you have to add path to addon root folder
-- for openpype example addons use `{QUADPYPE_REPOS_ROOT}/openpype/modules/example_addons`
+- in System settings go to `modules/addon_paths` (`Modules/QuadPype AddOn Paths`) where you have to add path to addon root folder
+- for quadpype example addons use `{QUADPYPE_REPOS_ROOT}/quadpype/modules/example_addons`
 
 ## Addon/module settings
 - addons/modules may have defined custom settings definitions with default values
 - it is based on settings type `dynamic_schema` which has `name`
- - that item defines that it can be replaced dynamically with any schemas from module or module which won't be saved to openpype core defaults
+ - that item defines that it can be replaced dynamically with any schemas from module or module which won't be saved to quadpype core defaults
  - they can't be added to any schema hierarchy
  - item must not be in settings group (under overrides) or in dynamic item (e.g. `list` of `dict-modifiable`)
  - addons may define it's dynamic schema items
@@ -54,9 +54,9 @@ OpenPype modules should contain separated logic of specific kind of implementati
 - interfaces can be defined in `interfaces.py` inside module directory
  - the file can't use relative imports or import anything from other parts
  of module itself at the header of file
- - this is one of reasons why modules/addons can't be imported directly without using defined functions in OpenPype modules implementation
+ - this is one of reasons why modules/addons can't be imported directly without using defined functions in QuadPype modules implementation
 
-## Base class `OpenPypeInterface`
+## Base class `QuadPypeInterface`
 - has nothing implemented
 - has ABCMeta as metaclass
 - is defined to be able find out classes which inherit from this base to be
@@ -114,7 +114,7 @@ OpenPype modules should contain separated logic of specific kind of implementati
 - Clockify inherits from more interfaces. It's class definition looks like:
 ```
 class ClockifyModule(
- OpenPypeModule, # Says it's Pype module so ModulesManager will try to initialize.
+ QuadPypeModule, # Says it's Pype module so ModulesManager will try to initialize.
  ITrayModule, # Says has special implementation when used in tray.
  IPluginPaths, # Says has plugin paths that want to register (paths to clockify actions for launcher).
  IFtrackEventHandlerPaths, # Says has Ftrack actions/events for user/server.

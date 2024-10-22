@@ -2,7 +2,7 @@ import os
 from qtpy import QtGui
 
 import qtawesome
-from openpype.tools.utils import paint_image_with_color
+from quadpype.tools.utils import paint_image_with_color
 
 
 class ResourceCache:

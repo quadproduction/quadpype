@@ -1,10 +1,10 @@
 import os
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 BLENDER_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class BlenderAddon(OpenPypeModule, IHostAddon):
+class BlenderAddon(QuadPypeModule, IHostAddon):
     name = "blender"
     host_name = "blender"
 
@@ -35,10 +35,10 @@ class BlenderAddon(OpenPypeModule, IHostAddon):
         #   loops - will be removed at the end
         previous_user_scripts.add(implementation_user_script_path)
 
-        openpype_blender_user_scripts = (
+        quadpype_blender_user_scripts = (
             env.get("QUADPYPE_BLENDER_USER_SCRIPTS") or ""
         )
-        for path in openpype_blender_user_scripts.split(os.pathsep):
+        for path in quadpype_blender_user_scripts.split(os.pathsep):
             if path:
                 previous_user_scripts.add(os.path.normpath(path))
 

@@ -7,9 +7,9 @@ from datetime import datetime
 from abc import ABCMeta, abstractmethod
 import time
 
-from openpype.client import OpenPypeMongoConnection
-from openpype.pipeline.publish import get_publish_repre_path
-from openpype.lib.plugin_tools import prepare_template_data
+from quadpype.client import QuadPypeMongoConnection
+from quadpype.pipeline.publish import get_publish_repre_path
+from quadpype.lib.plugin_tools import prepare_template_data
 
 
 class IntegrateSlackAPI(pyblish.api.InstancePlugin):
@@ -88,7 +88,7 @@ class IntegrateSlackAPI(pyblish.api.InstancePlugin):
                     "project": project,
                     "created_dt": datetime.now()
                 }
-                mongo_client = OpenPypeMongoConnection.get_mongo_client()
+                mongo_client = QuadPypeMongoConnection.get_mongo_client()
                 database_name = os.environ["QUADPYPE_DATABASE_NAME"]
                 dbcon = mongo_client[database_name]["notification_messages"]
                 dbcon.insert_one(msg)

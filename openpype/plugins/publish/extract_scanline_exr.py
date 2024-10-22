@@ -5,12 +5,12 @@ import shutil
 
 import pyblish.api
 
-from openpype.lib import (
+from quadpype.lib import (
     run_subprocess,
     get_oiio_tool_args,
     ToolNotFoundError,
 )
-from openpype.pipeline import KnownPublishError
+from quadpype.pipeline import KnownPublishError
 
 
 class ExtractScanlineExr(pyblish.api.InstancePlugin):

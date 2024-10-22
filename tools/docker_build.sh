@@ -21,11 +21,11 @@ realpath () {
 }
 
 create_container () {
-  if [ ! -f "$openpype_root/build/docker-image.id" ]; then
+  if [ ! -f "$quadpype_root/build/docker-image.id" ]; then
     echo -e "${BIRed}!!!${RST} Docker command failed, cannot find image id."
     exit 1
   fi
-  local id=$(<"$openpype_root/build/docker-image.id")
+  local id=$(<"$quadpype_root/build/docker-image.id")
   echo -e "${BIYellow}---${RST} Creating container from $id ..."
   cid="$(docker create $id bash)"
   if [ $? -ne 0 ] ; then
@@ -36,18 +36,18 @@ create_container () {
 
 retrieve_build_log () {
   create_container
-  echo -e "${BIYellow}***${RST} Copying build log to ${BIWhite}$openpype_root/build/build.log${RST}"
-  docker cp "$cid:/opt/openpype/build/build.log" "$openpype_root/build"
+  echo -e "${BIYellow}***${RST} Copying build log to ${BIWhite}$quadpype_root/build/build.log${RST}"
+  docker cp "$cid:/opt/quadpype/build/build.log" "$quadpype_root/build"
 }
 
-openpype_root=$(realpath $(dirname $(dirname "${BASH_SOURCE[0]}")))
+quadpype_root=$(realpath $(dirname $(dirname "${BASH_SOURCE[0]}")))
 
 
 if [ -z $1 ]; then
     dockerfile="Dockerfile"
 else
   dockerfile="Dockerfile.$1"
-  if [ ! -f "$openpype_root/$dockerfile" ]; then
+  if [ ! -f "$quadpype_root/$dockerfile" ]; then
     echo -e "${BIRed}!!!${RST} Dockerfile for specifed platform ${BIWhite}$1${RST} doesn't exist."
     exit 1
   else
@@ -57,18 +57,18 @@ fi
 
 # Main
 main () {
-  openpype_root=$(realpath $(dirname $(dirname "${BASH_SOURCE[0]}")))
-  pushd "$openpype_root" > /dev/null || return > /dev/null
+  quadpype_root=$(realpath $(dirname $(dirname "${BASH_SOURCE[0]}")))
+  pushd "$quadpype_root" > /dev/null || return > /dev/null
 
   echo -e "${BIYellow}---${RST} Cleaning build directory ..."
-  rm -rf "$openpype_root/build" && mkdir "$openpype_root/build" > /dev/null
+  rm -rf "$quadpype_root/build" && mkdir "$quadpype_root/build" > /dev/null
 
-  local version_command="import os;exec(open(os.path.join('$openpype_root', 'openpype', 'version.py')).read());print(__version__);"
-  local openpype_version="$(python3 <<< ${version_command})"
+  local version_command="import os;exec(open(os.path.join('$quadpype_root', 'quadpype', 'version.py')).read());print(__version__);"
+  local quadpype_version="$(python3 <<< ${version_command})"
 
   echo -e "${BIGreen}>>>${RST} Running docker build ..."
-  # docker build --pull --no-cache -t quad/quadpype:$openpype_version .
-  docker build --pull --iidfile $openpype_root/build/docker-image.id --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') --build-arg VERSION=$openpype_version -t quad/quadpype:$openpype_version -f $dockerfile .
+  # docker build --pull --no-cache -t quad/quadpype:$quadpype_version .
+  docker build --pull --iidfile $quadpype_root/build/docker-image.id --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') --build-arg VERSION=$quadpype_version -t quad/quadpype:$quadpype_version -f $dockerfile .
   if [ $? -ne 0 ] ; then
     echo $?
     echo -e "${BIRed}!!!${RST} Docker build failed."
@@ -79,8 +79,8 @@ main () {
   echo -e "${BIGreen}>>>${RST} Copying build from container ..."
   create_container
   echo -e "${BIYellow}---${RST} Copying ..."
-  docker cp "$cid:/opt/openpype/build/exe.linux-x86_64-3.9" "$openpype_root/build"
-  docker cp "$cid:/opt/openpype/build/build.log" "$openpype_root/build"
+  docker cp "$cid:/opt/quadpype/build/exe.linux-x86_64-3.9" "$quadpype_root/build"
+  docker cp "$cid:/opt/quadpype/build/build.log" "$quadpype_root/build"
   if [ $? -ne 0 ] ; then
     echo -e "${BIRed}!!!${RST} Copying failed."
     return 1

@@ -2,8 +2,8 @@ from pathlib import Path
 
 import bpy
 
-from openpype.settings import get_project_settings
-from openpype.pipeline import get_current_project_name
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import get_current_project_name
 
 
 def get_default_render_folder(settings):

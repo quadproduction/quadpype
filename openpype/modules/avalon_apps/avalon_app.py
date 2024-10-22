@@ -1,9 +1,9 @@
 import os
 
-from openpype.modules import OpenPypeModule, ITrayModule
+from quadpype.modules import QuadPypeModule, ITrayModule
 
 
-class AvalonModule(OpenPypeModule, ITrayModule):
+class AvalonModule(QuadPypeModule, ITrayModule):
     name = "avalon"
 
     def initialize(self, modules_settings):
@@ -43,7 +43,7 @@ class AvalonModule(OpenPypeModule, ITrayModule):
         # Add library tool
         self._library_loader_imported = False
         try:
-            from openpype.tools.libraryloader import LibraryLoaderWindow
+            from quadpype.tools.libraryloader import LibraryLoaderWindow
 
             self._library_loader_imported = True
         except Exception:
@@ -75,10 +75,10 @@ class AvalonModule(OpenPypeModule, ITrayModule):
 
     def show_library_loader(self):
         if self._library_loader_window is None:
-            from openpype.pipeline import install_openpype_plugins
+            from quadpype.pipeline import install_quadpype_plugins
             self._init_library_loader()
 
-            install_openpype_plugins()
+            install_quadpype_plugins()
 
         self._library_loader_window.show()
 
@@ -97,7 +97,7 @@ class AvalonModule(OpenPypeModule, ITrayModule):
 
     def _init_library_loader(self):
         from qtpy import QtCore
-        from openpype.tools.libraryloader import LibraryLoaderWindow
+        from quadpype.tools.libraryloader import LibraryLoaderWindow
 
         libraryloader = LibraryLoaderWindow(
             show_projects=True,

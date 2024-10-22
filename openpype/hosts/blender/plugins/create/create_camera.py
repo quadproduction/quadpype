@@ -2,14 +2,14 @@
 
 import bpy
 
-from openpype.hosts.blender.api import plugin, lib
-from openpype.hosts.blender.api.pipeline import AVALON_INSTANCES
+from quadpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api.pipeline import AVALON_INSTANCES
 
 
 class CreateCamera(plugin.BaseCreator):
     """Polygonal static geometry."""
 
-    identifier = "io.openpype.creators.blender.camera"
+    identifier = "io.quadpype.creators.blender.camera"
     label = "Camera"
     family = "camera"
     icon = "video-camera"

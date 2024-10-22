@@ -183,7 +183,7 @@ def create_addon_zip(
         shutil.rmtree(str(output_dir / addon_name))
 
 
-def create_openpype_package(
+def create_quadpype_package(
     addon_dir: Path,
     output_dir: Path,
     root_dir: Path,
@@ -193,11 +193,11 @@ def create_openpype_package(
     server_dir = addon_dir / "server"
     pyproject_path = addon_dir / "client" / "pyproject.toml"
 
-    openpype_dir = root_dir / "openpype"
-    version_path = openpype_dir / "version.py"
+    quadpype_dir = root_dir / "quadpype"
+    version_path = quadpype_dir / "version.py"
     addon_version = read_addon_version(version_path)
 
-    addon_output_dir = output_dir / "openpype" / addon_version
+    addon_output_dir = output_dir / "quadpype" / addon_version
     private_dir = addon_output_dir / "private"
     if addon_output_dir.exists():
         shutil.rmtree(str(addon_output_dir))
@@ -235,12 +235,12 @@ def create_openpype_package(
     with ZipFileLongPaths(zip_filepath, "w", zipfile.ZIP_DEFLATED) as zipf:
         # Add client code content to zip
         for path, sub_path in find_files_in_subdir(
-            str(openpype_dir), ignore_subdirs=ignored_subpaths
+            str(quadpype_dir), ignore_subdirs=ignored_subpaths
         ):
-            zipf.write(path, f"{openpype_dir.name}/{sub_path}")
+            zipf.write(path, f"{quadpype_dir.name}/{sub_path}")
 
     if create_zip:
-        create_addon_zip(output_dir, "openpype", addon_version, keep_source)
+        create_addon_zip(output_dir, "quadpype", addon_version, keep_source)
 
 
 def create_addon_package(
@@ -316,8 +316,8 @@ def main(
         if not server_dir.exists():
             continue
 
-        if addon_dir.name == "openpype":
-            create_openpype_package(
+        if addon_dir.name == "quadpype":
+            create_quadpype_package(
                 addon_dir, output_dir, root_dir, create_zip, keep_source
             )
 

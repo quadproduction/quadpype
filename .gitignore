@@ -74,7 +74,7 @@ package-lock.json
 package.json
 yarn.lock
 
-openpype/premiere/ppro/js/debug.log
+quadpype/premiere/ppro/js/debug.log
 
 
 # IDEA
@@ -117,5 +117,5 @@ tools/dev_*
 
 # Addons
 ########
-/openpype/addons/*
-!/openpype/addons/README.md
+/quadpype/addons/*
+!/quadpype/addons/README.md

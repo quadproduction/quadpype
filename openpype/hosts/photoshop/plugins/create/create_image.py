@@ -1,16 +1,16 @@
 import re
 
-from openpype.hosts.photoshop import api
-from openpype.lib import BoolDef
-from openpype.pipeline import (
+from quadpype.hosts.photoshop import api
+from quadpype.lib import BoolDef
+from quadpype.pipeline import (
     Creator,
     CreatedInstance,
     CreatorError
 )
-from openpype.lib import prepare_template_data
-from openpype.pipeline.create import SUBSET_NAME_ALLOWED_SYMBOLS
-from openpype.hosts.photoshop.api.pipeline import cache_and_get_instances
-from openpype.hosts.photoshop.lib import clean_subset_name
+from quadpype.lib import prepare_template_data
+from quadpype.pipeline.create import SUBSET_NAME_ALLOWED_SYMBOLS
+from quadpype.hosts.photoshop.api.pipeline import cache_and_get_instances
+from quadpype.hosts.photoshop.lib import clean_subset_name
 
 
 class ImageCreator(Creator):

@@ -2,9 +2,9 @@ import os
 
 import pyblish.api
 
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
-from openpype.pipeline import PublishXmlValidationError
+from quadpype.pipeline import PublishXmlValidationError
 
 
 class ValidateAudio(pyblish.api.InstancePlugin):

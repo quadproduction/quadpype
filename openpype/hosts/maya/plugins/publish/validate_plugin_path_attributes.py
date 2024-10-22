@@ -4,9 +4,9 @@ from maya import cmds
 
 import pyblish.api
 
-from openpype.hosts.maya.api.lib import pairwise
-from openpype.hosts.maya.api.action import SelectInvalidAction
-from openpype.pipeline.publish import (
+from quadpype.hosts.maya.api.lib import pairwise
+from quadpype.hosts.maya.api.action import SelectInvalidAction
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishValidationError,
     OptionalPyblishPluginMixin

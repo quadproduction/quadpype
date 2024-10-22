@@ -1,9 +1,9 @@
 import os
 from pymxs import runtime as rt
-from openpype.lib import Logger
-from openpype.settings import get_project_settings
-from openpype.pipeline import get_current_project_name
-from openpype.pipeline.context_tools import get_current_project_asset
+from quadpype.lib import Logger
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import get_current_project_name
+from quadpype.pipeline.context_tools import get_current_project_asset
 
 try:
     from pymxs import runtime as rt
@@ -12,7 +12,7 @@ except ImportError:
     # Because the farm publish function imports every publish file before filtering.
     pass
 
-from openpype.hosts.max.api.lib import (
+from quadpype.hosts.max.api.lib import (
     set_render_frame_range,
     get_current_renderer,
     get_default_render_folder

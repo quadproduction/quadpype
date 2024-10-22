@@ -6,16 +6,16 @@ from collections import OrderedDict, defaultdict
 
 import pyblish.api
 
-import openpype
-from openpype.host import (
+import quadpype
+from quadpype.host import (
     HostBase,
     IWorkfileHost,
     ILoadHost,
     IPublishHost
 )
-from openpype.settings import get_current_project_settings
-from openpype.lib import register_event_callback, emit_event, Logger
-from openpype.pipeline import (
+from quadpype.settings import get_current_project_settings
+from quadpype.lib import register_event_callback, emit_event, Logger
+from quadpype.pipeline import (
     register_loader_plugin_path,
     register_creator_plugin_path,
     register_inventory_action_path,
@@ -23,9 +23,9 @@ from openpype.pipeline import (
     get_current_asset_name,
     get_current_task_name,
 )
-from openpype.pipeline.workfile import BuildWorkfile
-from openpype.tools.utils import host_tools
-from openpype.lib.applications import ApplicationManager
+from quadpype.pipeline.workfile import BuildWorkfile
+from quadpype.tools.utils import host_tools
+from quadpype.lib.applications import ApplicationManager
 from .command import viewer_update_and_undo_stop
 from .lib import (
     Context,
@@ -68,7 +68,7 @@ from . import push_to_project
 
 log = Logger.get_logger(__name__)
 
-HOST_DIR = os.path.dirname(os.path.abspath(openpype.hosts.nuke.__file__))
+HOST_DIR = os.path.dirname(os.path.abspath(quadpype.hosts.nuke.__file__))
 PLUGINS_DIR = os.path.join(HOST_DIR, "plugins")
 PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
 LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
@@ -202,10 +202,10 @@ def reload_config():
     """
 
     for module in (
-        "openpype.hosts.nuke.api.actions",
-        "openpype.hosts.nuke.api.menu",
-        "openpype.hosts.nuke.api.plugin",
-        "openpype.hosts.nuke.api.lib",
+        "quadpype.hosts.nuke.api.actions",
+        "quadpype.hosts.nuke.api.menu",
+        "quadpype.hosts.nuke.api.plugin",
+        "quadpype.hosts.nuke.api.lib",
     ):
         log.info("Reloading module: {}...".format(module))
 
@@ -488,7 +488,7 @@ def containerise(node,
     """
     data = OrderedDict(
         [
-            ("schema", "openpype:container-2.0"),
+            ("schema", "quadpype:container-2.0"),
             ("id", AVALON_CONTAINER_ID),
             ("name", name),
             ("namespace", namespace),

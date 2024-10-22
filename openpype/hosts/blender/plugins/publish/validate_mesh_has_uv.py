@@ -4,12 +4,12 @@ import bpy
 
 import pyblish.api
 
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     OptionalPyblishPluginMixin,
     PublishValidationError
 )
-import openpype.hosts.blender.api.action
+import quadpype.hosts.blender.api.action
 
 
 class ValidateMeshHasUvs(
@@ -22,7 +22,7 @@ class ValidateMeshHasUvs(
     hosts = ["blender"]
     families = ["model"]
     label = "Mesh Has UVs"
-    actions = [openpype.hosts.blender.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.blender.api.action.SelectInvalidAction]
     optional = True
 
     @staticmethod

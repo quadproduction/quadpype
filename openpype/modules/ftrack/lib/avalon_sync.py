@@ -6,7 +6,7 @@ import numbers
 
 import six
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_assets,
     get_archived_assets,
@@ -14,17 +14,17 @@ from openpype.client import (
     get_versions,
     get_representations
 )
-from openpype.client.operations import (
+from quadpype.client.operations import (
     CURRENT_ASSET_DOC_SCHEMA,
     CURRENT_PROJECT_SCHEMA,
     CURRENT_PROJECT_CONFIG_SCHEMA,
 )
-from openpype.settings import get_anatomy_settings, APPS_SETTINGS_KEY
-from openpype.lib import ApplicationManager, Logger
-from openpype.pipeline import AvalonMongoDB, schema
+from quadpype.settings import get_anatomy_settings, APPS_SETTINGS_KEY
+from quadpype.lib import ApplicationManager, Logger
+from quadpype.pipeline import AvalonMongoDB, schema
 
 from .constants import CUST_ATTR_ID_KEY, FPS_KEYS
-from .custom_attributes import get_openpype_attr, query_custom_attributes
+from .custom_attributes import get_quadpype_attr, query_custom_attributes
 
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
@@ -965,7 +965,7 @@ class SyncEntitiesFactory:
     def set_cutom_attributes(self):
         self.log.debug("* Preparing custom attributes")
         # Get custom attributes and values
-        custom_attrs, hier_attrs = get_openpype_attr(
+        custom_attrs, hier_attrs = get_quadpype_attr(
             self.session, query_keys=self.cust_attr_query_keys
         )
         ent_types_by_name = self.object_types_by_name
@@ -2646,7 +2646,7 @@ class SyncEntitiesFactory:
         if new_entity_id not in p_chilren:
             self.entities_dict[parent_id]["children"].append(new_entity_id)
 
-        cust_attr, _ = get_openpype_attr(self.session)
+        cust_attr, _ = get_quadpype_attr(self.session)
         for _attr in cust_attr:
             key = _attr["key"]
             if key not in av_entity["data"]:

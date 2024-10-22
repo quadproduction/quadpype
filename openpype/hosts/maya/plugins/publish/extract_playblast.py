@@ -2,9 +2,9 @@ import os
 
 import clique
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline import publish
-from openpype.hosts.maya.api import lib
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline import publish
+from quadpype.hosts.maya.api import lib
 
 from maya import cmds
 from maya.plugin.evaluator.cache_preferences import CachePreferenceEnabled

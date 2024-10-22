@@ -3,16 +3,16 @@ import traceback
 import json
 from collections import defaultdict
 
-from openpype.client import (
+from quadpype.client import (
     get_asset_by_name,
     get_subset_by_name,
     get_version_by_name,
     get_representation_by_name, get_project
 )
-from openpype.lib import ApplicationManager
-from openpype.pipeline import AvalonMongoDB
+from quadpype.lib import ApplicationManager
+from quadpype.pipeline import AvalonMongoDB
 
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 
 
 class RVActionReview(BaseAction):

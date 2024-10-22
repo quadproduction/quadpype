@@ -1,6 +1,6 @@
-from openpype.lib import EnumDef
+from quadpype.lib import EnumDef
 
-from openpype.hosts.fusion.api.plugin import GenericCreateSaver
+from quadpype.hosts.fusion.api.plugin import GenericCreateSaver
 
 
 class CreateSaver(GenericCreateSaver):
@@ -9,7 +9,7 @@ class CreateSaver(GenericCreateSaver):
      Original Saver creator targeted for 'render' product type. It uses
      original not to descriptive name because of values in Settings.
     """
-    identifier = "io.openpype.creators.fusion.saver"
+    identifier = "io.quadpype.creators.fusion.saver"
     label = "Render (saver)"
     name = "render"
     family = "render"

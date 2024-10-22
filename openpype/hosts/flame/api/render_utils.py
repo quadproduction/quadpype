@@ -1,6 +1,6 @@
 import os
 from xml.etree import ElementTree as ET
-from openpype.lib import Logger
+from quadpype.lib import Logger
 
 log = Logger.get_logger(__name__)
 

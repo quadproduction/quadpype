@@ -11,21 +11,21 @@ import maya.api.OpenMaya as om
 
 import pyblish.api
 
-from openpype.settings import get_project_settings
-from openpype.host import (
+from quadpype.settings import get_project_settings
+from quadpype.host import (
     HostBase,
     IWorkfileHost,
     ILoadHost,
     IPublishHost,
     HostDirmap,
 )
-from openpype.tools.utils import host_tools
-from openpype.tools.workfiles.lock_dialog import WorkfileLockDialog
-from openpype.lib import (
+from quadpype.tools.utils import host_tools
+from quadpype.tools.workfiles.lock_dialog import WorkfileLockDialog
+from quadpype.lib import (
     register_event_callback,
     emit_event
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     legacy_io,
     get_current_project_name,
     register_loader_plugin_path,
@@ -38,19 +38,19 @@ from openpype.pipeline import (
     deregister_builder_action_path,
     AVALON_CONTAINER_ID,
 )
-from openpype.pipeline.load import any_outdated_containers
-from openpype.pipeline.workfile.workfile_template_builder import (
+from quadpype.pipeline.load import any_outdated_containers
+from quadpype.pipeline.workfile.workfile_template_builder import (
     is_last_workfile_exists,
     should_build_first_workfile
 )
-from openpype.pipeline.workfile.lock_workfile import (
+from quadpype.pipeline.workfile.lock_workfile import (
     create_workfile_lock,
     remove_workfile_lock,
     is_workfile_locked,
     is_workfile_lock_enabled
 )
-from openpype.hosts.maya import MAYA_ROOT_DIR
-from openpype.hosts.maya.lib import create_workspace_mel
+from quadpype.hosts.maya import MAYA_ROOT_DIR
+from quadpype.hosts.maya.lib import create_workspace_mel
 
 from . import menu, lib
 from .workfile_template_builder import (
@@ -67,7 +67,7 @@ from .workio import (
     current_file
 )
 
-log = logging.getLogger("openpype.hosts.maya")
+log = logging.getLogger("quadpype.hosts.maya")
 
 PLUGINS_DIR = os.path.join(MAYA_ROOT_DIR, "plugins")
 PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
@@ -169,7 +169,7 @@ class MayaHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
             yield
 
     def get_context_data(self):
-        data = cmds.fileInfo("OpenPypeContext", query=True)
+        data = cmds.fileInfo("QuadPypeContext", query=True)
         if not data:
             return {}
 
@@ -180,7 +180,7 @@ class MayaHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     def update_context_data(self, data, changes):
         json_str = json.dumps(data)
         encoded = base64.b64encode(json_str.encode("utf-8"))
-        return cmds.fileInfo("OpenPypeContext", encoded)
+        return cmds.fileInfo("QuadPypeContext", encoded)
 
     def _register_callbacks(self):
         for handler, event in self._op_events.copy().items():
@@ -366,7 +366,7 @@ def parse_container(container):
     data = lib.read(container)
 
     # Backwards compatibility pre-schemas for containers
-    data["schema"] = data.get("schema", "openpype:container-1.0")
+    data["schema"] = data.get("schema", "quadpype:container-1.0")
 
     # Append transient data
     data["objectName"] = container
@@ -456,7 +456,7 @@ def containerise(name,
     container = cmds.sets(nodes, name="%s_%s_%s" % (namespace, name, suffix))
 
     data = [
-        ("schema", "openpype:container-2.0"),
+        ("schema", "quadpype:container-2.0"),
         ("id", AVALON_CONTAINER_ID),
         ("name", name),
         ("namespace", namespace),
@@ -602,7 +602,7 @@ def _autobuild_first_workfile():
 def on_open():
     """On scene open let's assume the containers have changed."""
 
-    from openpype.widgets import popup
+    from quadpype.widgets import popup
 
     utils.executeDeferred(_autobuild_first_workfile)
     # Validate FPS after update_task_from_path to
@@ -693,7 +693,7 @@ def workfile_save_before_xgen(event):
     switching context.
 
     Args:
-        event (Event) - openpype/lib/events.py
+        event (Event) - quadpype/lib/events.py
     """
     if not cmds.pluginInfo("xgenToolkit", query=True, loaded=True):
         return

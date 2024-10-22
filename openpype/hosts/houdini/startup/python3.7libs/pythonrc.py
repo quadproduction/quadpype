@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""OpenPype startup script."""
-from openpype.pipeline import install_host
-from openpype.hosts.houdini.api import HoudiniHost
+"""QuadPype startup script."""
+from quadpype.pipeline import install_host
+from quadpype.hosts.houdini.api import HoudiniHost
 
 
 def main():

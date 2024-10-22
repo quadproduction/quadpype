@@ -31,16 +31,16 @@ class HostBase(object):
 
     # Installation of host before (avalon concept):
     ```python
-    from openpype.pipeline import install_host
-    import openpype.hosts.maya.api as host
+    from quadpype.pipeline import install_host
+    import quadpype.hosts.maya.api as host
 
     install_host(host)
     ```
 
     # Installation of host now:
     ```python
-    from openpype.pipeline import install_host
-    from openpype.hosts.maya.api import MayaHost
+    from quadpype.pipeline import install_host
+    from quadpype.hosts.maya.api import MayaHost
 
     host = MayaHost()
     install_host(host)
@@ -83,7 +83,7 @@ class HostBase(object):
         This is where should be added menu with tools, registered callbacks
         and other host integration initialization.
 
-        It is called automatically when 'openpype.pipeline.install_host' is
+        It is called automatically when 'quadpype.pipeline.install_host' is
         triggered.
         """
 

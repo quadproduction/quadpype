@@ -1,5 +1,5 @@
-from openpype.hosts.maya.api import plugin
-from openpype.lib import (
+from quadpype.hosts.maya.api import plugin
+from quadpype.lib import (
     BoolDef,
     TextDef
 )
@@ -8,7 +8,7 @@ from openpype.lib import (
 class CreateModel(plugin.MayaCreator):
     """Polygonal static geometry"""
 
-    identifier = "io.openpype.creators.maya.model"
+    identifier = "io.quadpype.creators.maya.model"
     label = "Model"
     family = "model"
     icon = "cube"

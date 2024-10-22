@@ -1,13 +1,13 @@
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.lib.profiles_filtering import filter_profiles
-from openpype.lib import attribute_definitions
-from openpype.pipeline import OpenPypePyblishPluginMixin
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.lib.profiles_filtering import filter_profiles
+from quadpype.lib import attribute_definitions
+from quadpype.pipeline import QuadPypePyblishPluginMixin
 
 
 class CollectSlackFamilies(pyblish.api.InstancePlugin,
-                           OpenPypePyblishPluginMixin):
+                           QuadPypePyblishPluginMixin):
     """Collect family for Slack notification
 
         Expects configured profile in

@@ -1,8 +1,8 @@
-from openpype.settings import PROJECT_SETTINGS_KEY, SYSTEM_SETTINGS_KEY
-from openpype.lib.applications import PreLaunchHook
+from quadpype.settings import PROJECT_SETTINGS_KEY, SYSTEM_SETTINGS_KEY
+from quadpype.lib.applications import PreLaunchHook
 
-from openpype.pipeline.colorspace import get_imageio_config
-from openpype.pipeline.template_data import get_template_data_with_names
+from quadpype.pipeline.colorspace import get_imageio_config
+from quadpype.pipeline.template_data import get_template_data_with_names
 
 
 class OCIOEnvHook(PreLaunchHook):

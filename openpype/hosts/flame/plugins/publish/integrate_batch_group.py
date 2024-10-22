@@ -4,10 +4,10 @@ from collections import OrderedDict
 from pprint import pformat
 import pyblish
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-import openpype.hosts.flame.api as opfapi
-import openpype.pipeline as op_pipeline
-from openpype.pipeline.workfile import get_workdir
+from quadpype.settings import PROJECT_SETTINGS_KEY
+import quadpype.hosts.flame.api as opfapi
+import quadpype.pipeline as op_pipeline
+from quadpype.pipeline.workfile import get_workdir
 
 
 class IntegrateBatchGroup(pyblish.api.InstancePlugin):

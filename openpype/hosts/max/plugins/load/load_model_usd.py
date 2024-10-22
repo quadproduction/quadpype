@@ -1,21 +1,21 @@
 import os
 
 from pymxs import runtime as rt
-from openpype.pipeline.load import LoadError
-from openpype.hosts.max.api import lib
-from openpype.hosts.max.api.lib import (
+from quadpype.pipeline.load import LoadError
+from quadpype.hosts.max.api import lib
+from quadpype.hosts.max.api.lib import (
     unique_namespace,
     get_namespace,
     object_transform_set,
     get_plugins
 )
-from openpype.hosts.max.api.lib import maintained_selection
-from openpype.hosts.max.api.pipeline import (
+from quadpype.hosts.max.api.lib import maintained_selection
+from quadpype.hosts.max.api.pipeline import (
     containerise,
     get_previous_loaded_object,
     update_custom_attribute_data
 )
-from openpype.pipeline import get_representation_path, load
+from quadpype.pipeline import get_representation_path, load
 
 
 class ModelUSDLoader(load.LoaderPlugin):

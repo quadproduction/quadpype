@@ -1,8 +1,8 @@
 import pyblish.api
 
-from openpype.hosts.nuke import api as napi
-from openpype.pipeline.publish import RepairAction
-from openpype.pipeline import (
+from quadpype.hosts.nuke import api as napi
+from quadpype.pipeline.publish import RepairAction
+from quadpype.pipeline import (
     PublishXmlValidationError,
     OptionalPyblishPluginMixin
 )

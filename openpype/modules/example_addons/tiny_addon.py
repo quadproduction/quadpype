@@ -1,9 +1,9 @@
-from openpype.modules import OpenPypeAddOn
+from quadpype.modules import QuadPypeAddOn
 
 
-class TinyAddon(OpenPypeAddOn):
+class TinyAddon(QuadPypeAddOn):
     """This is tiniest possible addon.
 
-    This addon won't do much but will exist in OpenPype modules environment.
+    This addon won't do much but will exist in QuadPype modules environment.
     """
     name = "tiniest_addon_ever"

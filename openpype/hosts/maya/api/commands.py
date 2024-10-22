@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""OpenPype script commands to be used directly in Maya."""
+"""QuadPype script commands to be used directly in Maya."""
 from maya import cmds
 
-from openpype.client import get_asset_by_name, get_project
-from openpype.pipeline import get_current_project_name, get_current_asset_name
+from quadpype.client import get_asset_by_name, get_project
+from quadpype.pipeline import get_current_project_name, get_current_asset_name
 
 
 class ToolWindows:
@@ -40,10 +40,10 @@ class ToolWindows:
 
 def edit_shader_definitions():
     from qtpy import QtWidgets
-    from openpype.hosts.maya.api.shader_definition_editor import (
+    from quadpype.hosts.maya.api.shader_definition_editor import (
         ShaderDefinitionsEditor
     )
-    from openpype.tools.utils import qt_app_context
+    from quadpype.tools.utils import qt_app_context
 
     top_level_widgets = QtWidgets.QApplication.topLevelWidgets()
     main_window = next(widget for widget in top_level_widgets

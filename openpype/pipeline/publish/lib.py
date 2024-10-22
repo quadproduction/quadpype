@@ -9,21 +9,21 @@ import pyblish.util
 import pyblish.plugin
 import pyblish.api
 
-from openpype.lib import (
+from quadpype.lib import (
     Logger,
     import_filepath,
     filter_profiles,
     is_func_signature_supported,
 )
-from openpype.settings import (
+from quadpype.settings import (
     get_project_settings,
     get_system_settings,
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     tempdir,
     Anatomy
 )
-from openpype.pipeline.plugin_discover import DiscoverResult
+from quadpype.pipeline.plugin_discover import DiscoverResult
 
 from .constants import (
     DEFAULT_PUBLISH_TEMPLATE,
@@ -386,7 +386,7 @@ def get_publish_plugin_settings(plugin, project_settings, category=None, logger=
     plugin_kind = split_path[-2]
 
     # TODO: change after all plugins are moved one level up
-    if category_from_file == "openpype":
+    if category_from_file == "quadpype":
         category_from_file = "global"
 
     try:
@@ -423,9 +423,9 @@ def apply_plugin_settings(plugin, settings, logger=None):
 
 
 def filter_pyblish_plugins(plugins):
-    """Pyblish plugin filter which applies OpenPype settings.
+    """Pyblish plugin filter which applies QuadPype settings.
 
-    Apply OpenPype settings on discovered plugins. On plugin with implemented
+    Apply QuadPype settings on discovered plugins. On plugin with implemented
     class method 'def apply_settings(cls, project_settings, system_settings)'
     is called the method. Default behavior looks for plugin name and current
     host name to look for

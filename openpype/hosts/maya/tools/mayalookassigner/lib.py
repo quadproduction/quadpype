@@ -1,7 +1,7 @@
 import json
 import logging
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     legacy_io,
     get_representation_path,
     registered_host,
@@ -9,8 +9,8 @@ from openpype.pipeline import (
     loaders_from_representation,
     load_container
 )
-from openpype.client import get_representation_by_name
-from openpype.hosts.maya.api import lib
+from quadpype.client import get_representation_by_name
+from quadpype.hosts.maya.api import lib
 
 
 log = logging.getLogger(__name__)

@@ -1,12 +1,12 @@
 import os
 import logging
 
-from openpype.settings import get_system_settings, get_project_settings
-from openpype.pipeline import (
+from quadpype.settings import get_system_settings, get_project_settings
+from quadpype.pipeline import (
     schema,
     legacy_io,
 )
-from openpype.pipeline.plugin_discover import (
+from quadpype.pipeline.plugin_discover import (
     discover,
     register_plugin,
     register_plugin_path,
@@ -241,7 +241,7 @@ class LoaderPlugin(list):
         self.log.warning((
             "DEPRECATION WARNING: Source - Loader plugin {}."
             " The 'fname' property on the Loader plugin will be removed in"
-            " future versions of OpenPype. Planned version to drop the support"
+            " future versions of QuadPype. Planned version to drop the support"
             " is 3.16.6 or 3.17.0."
         ).format(self.__class__.__name__))
         if hasattr(self, "_fname"):
@@ -258,7 +258,7 @@ class SubsetLoaderPlugin(LoaderPlugin):
 
 
 def discover_loader_plugins(project_name=None):
-    from openpype.lib import Logger
+    from quadpype.lib import Logger
 
     log = Logger.get_logger("LoaderDiscover")
     plugins = discover(LoaderPlugin)

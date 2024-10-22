@@ -11,9 +11,9 @@ from abc import ABCMeta, abstractmethod
 
 import six
 
-from openpype import PACKAGE_DIR
-from openpype.client import get_asset_name_identifier
-from openpype.settings import (
+from quadpype import PACKAGE_DIR
+from quadpype.client import get_asset_name_identifier
+from quadpype.settings import (
     get_system_settings,
     get_project_settings,
     get_local_settings,
@@ -23,13 +23,13 @@ from openpype.settings import (
     PROJECT_SETTINGS_KEY,
     SYSTEM_SETTINGS_KEY
 )
-from openpype.settings.constants import (
+from quadpype.settings.constants import (
     METADATA_KEYS,
     M_DYNAMIC_KEY_LABEL
 )
 from .log import Logger
 from .profiles_filtering import filter_profiles
-from .local_settings import get_openpype_username
+from .local_settings import get_quadpype_username
 
 from .python_module_tools import (
     modules_from_path,
@@ -965,7 +965,7 @@ class ApplicationLaunchContext:
         launch_type=None,
         **data
     ):
-        from openpype.modules import ModulesManager
+        from quadpype.modules import ModulesManager
 
         # Application object
         self.application = application
@@ -1120,10 +1120,10 @@ class ApplicationLaunchContext:
         paths = []
 
         # TODO load additional studio paths from settings
-        import openpype
-        openpype_dir = os.path.dirname(os.path.abspath(openpype.__file__))
+        import quadpype
+        quadpype_dir = os.path.dirname(os.path.abspath(quadpype.__file__))
 
-        global_hooks_dir = os.path.join(openpype_dir, "hooks")
+        global_hooks_dir = os.path.join(quadpype_dir, "hooks")
 
         hooks_dirs = [
             global_hooks_dir
@@ -1135,7 +1135,7 @@ class ApplicationLaunchContext:
             host_module = self.modules_manager.get_host_module(self.host_name)
             if not host_module:
                 hooks_dirs.append(os.path.join(
-                    openpype_dir, "hosts", self.host_name, "hooks"
+                    quadpype_dir, "hosts", self.host_name, "hooks"
                 ))
 
         for path in hooks_dirs:
@@ -1263,7 +1263,7 @@ class ApplicationLaunchContext:
 
         # Linux uses mid process
         # - it is possible that the mid process executable is not
-        #   available for this version of OpenPype in that case use standard
+        #   available for this version of QuadPype in that case use standard
         #   launch
         launch_args = get_linux_launcher_args()
         if launch_args is None:
@@ -1562,7 +1562,7 @@ def prepare_app_environments(
     source_env = data["env"].copy()
 
     if modules_manager is None:
-        from openpype.modules import ModulesManager
+        from quadpype.modules import ModulesManager
 
         modules_manager = ModulesManager()
 
@@ -1650,7 +1650,7 @@ def prepare_app_environments(
     if app.host_name and implementation_envs:
         host_module = modules_manager.get_host_module(app.host_name)
         if not host_module:
-            module = __import__("openpype.hosts", fromlist=[app.host_name])
+            module = __import__("quadpype.hosts", fromlist=[app.host_name])
             host_module = getattr(module, app.host_name, None)
         add_implementation_envs = None
         if host_module:
@@ -1718,7 +1718,7 @@ def prepare_context_environments(data, env_group=None, modules_manager=None):
             result will be stored.
     """
 
-    from openpype.pipeline.template_data import get_template_data
+    from quadpype.pipeline.template_data import get_template_data
 
     # Context environments
     log = data["log"]
@@ -1789,7 +1789,7 @@ def prepare_context_environments(data, env_group=None, modules_manager=None):
     data["task_type"] = task_type
 
     try:
-        from openpype.pipeline.workfile import get_workdir_with_workdir_data
+        from quadpype.pipeline.workfile import get_workdir_with_workdir_data
 
         workdir = get_workdir_with_workdir_data(
             workdir_data,
@@ -1835,8 +1835,8 @@ def _prepare_last_workfile(data, workdir, modules_manager):
         workdir (str): Path to folder where workfiles should be stored.
     """
 
-    from openpype.modules import ModulesManager
-    from openpype.pipeline import HOST_WORKFILE_EXTENSIONS
+    from quadpype.modules import ModulesManager
+    from quadpype.pipeline import HOST_WORKFILE_EXTENSIONS
 
     if not modules_manager:
         modules_manager = ModulesManager()
@@ -1895,7 +1895,7 @@ def _prepare_last_workfile(data, workdir, modules_manager):
             extensions = HOST_WORKFILE_EXTENSIONS.get(app.host_name)
 
         if extensions:
-            from openpype.pipeline.workfile import (
+            from quadpype.pipeline.workfile import (
                 get_workfile_template_key,
                 get_last_workfile
             )
@@ -1914,7 +1914,7 @@ def _prepare_last_workfile(data, workdir, modules_manager):
 
             workdir_data.update({
                 "version": 1,
-                "user": get_openpype_username(),
+                "user": get_quadpype_username(),
                 "ext": extensions[0]
             })
 
@@ -2039,8 +2039,8 @@ def get_non_python_host_kwargs(kwargs, allow_console=True):
     """Explicit setting of kwargs for Popen for AE/PS/Harmony.
 
     Expected behavior
-    - openpype_console opens window with logs
-    - openpype_gui has stdout/stderr available for capturing
+    - quadpype_console opens window with logs
+    - quadpype_gui has stdout/stderr available for capturing
 
     Args:
         kwargs (dict) or None
@@ -2060,7 +2060,7 @@ def get_non_python_host_kwargs(kwargs, allow_console=True):
     if executable_path:
         executable_filename = os.path.basename(executable_path)
 
-    is_gui_executable = "openpype_gui" in executable_filename
+    is_gui_executable = "quadpype_gui" in executable_filename
     if is_gui_executable:
         kwargs.update({
             "creationflags": subprocess.CREATE_NO_WINDOW,

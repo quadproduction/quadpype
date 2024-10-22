@@ -37,8 +37,8 @@ Todos:
 import collections
 from typing import Any, Optional, Union
 
-from openpype.client import get_asset_by_name, get_asset_name_identifier
-from openpype.lib import (
+from quadpype.client import get_asset_by_name, get_asset_name_identifier
+from quadpype.lib import (
     prepare_template_data,
     AbstractAttrDef,
     UILabelDef,
@@ -47,15 +47,15 @@ from openpype.lib import (
     TextDef,
     BoolDef,
 )
-from openpype.pipeline.create import (
+from quadpype.pipeline.create import (
     CreatedInstance,
     CreatorError,
 )
-from openpype.hosts.tvpaint.api.plugin import (
+from quadpype.hosts.tvpaint.api.plugin import (
     TVPaintCreator,
     TVPaintAutoCreator,
 )
-from openpype.hosts.tvpaint.api.lib import (
+from quadpype.hosts.tvpaint.api.lib import (
     get_layers_data,
     get_groups_data,
     execute_george_through_file,

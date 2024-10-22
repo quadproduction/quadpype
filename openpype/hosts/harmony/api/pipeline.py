@@ -4,22 +4,22 @@ import logging
 
 import pyblish.api
 
-from openpype.lib import register_event_callback
-from openpype.pipeline import (
+from quadpype.lib import register_event_callback
+from quadpype.pipeline import (
     register_loader_plugin_path,
     register_creator_plugin_path,
     deregister_loader_plugin_path,
     deregister_creator_plugin_path,
     AVALON_CONTAINER_ID,
 )
-from openpype.pipeline.load import get_outdated_containers
-from openpype.pipeline.context_tools import get_current_project_asset
+from quadpype.pipeline.load import get_outdated_containers
+from quadpype.pipeline.context_tools import get_current_project_asset
 
-from openpype.hosts.harmony import HARMONY_HOST_DIR
-import openpype.hosts.harmony.api as harmony
+from quadpype.hosts.harmony import HARMONY_HOST_DIR
+import quadpype.hosts.harmony.api as harmony
 
 
-log = logging.getLogger("openpype.hosts.harmony")
+log = logging.getLogger("quadpype.hosts.harmony")
 
 PLUGINS_DIR = os.path.join(HARMONY_HOST_DIR, "plugins")
 PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
@@ -331,7 +331,7 @@ def containerise(name,
         nodes = []
 
     data = {
-        "schema": "openpype:container-2.0",
+        "schema": "quadpype:container-2.0",
         "id": AVALON_CONTAINER_ID,
         "name": name,
         "namespace": namespace,

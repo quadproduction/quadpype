@@ -1535,7 +1535,7 @@
         "icon": "app_icons/celaction.png",
         "host_name": "celaction",
         "environment": {
-            "CELACTION_TEMPLATE": "{QUADPYPE_REPOS_ROOT}/openpype/hosts/celaction/celaction_template_scene.scn"
+            "CELACTION_TEMPLATE": "{QUADPYPE_REPOS_ROOT}/quadpype/hosts/celaction/celaction_template_scene.scn"
         },
         "variants": {
             "current": {

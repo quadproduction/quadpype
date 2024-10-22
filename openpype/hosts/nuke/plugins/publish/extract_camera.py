@@ -7,8 +7,8 @@ import nuke
 
 import pyblish.api
 
-from openpype.pipeline import publish
-from openpype.hosts.nuke.api.lib import maintained_selection
+from quadpype.pipeline import publish
+from quadpype.hosts.nuke.api.lib import maintained_selection
 
 
 class ExtractCamera(publish.Extractor):

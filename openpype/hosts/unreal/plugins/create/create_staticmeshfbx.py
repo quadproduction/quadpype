@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from openpype.hosts.unreal.api.plugin import (
+from quadpype.hosts.unreal.api.plugin import (
     UnrealAssetCreator,
 )
 

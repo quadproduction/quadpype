@@ -1,7 +1,7 @@
 import pyblish.api
 import maya.cmds as cmds
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
@@ -17,7 +17,7 @@ class ValidateAssemblyName(pyblish.api.InstancePlugin,
     label = "Validate Assembly Name"
     order = pyblish.api.ValidatorOrder
     families = ["assembly"]
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     active = False
     optional = True
 

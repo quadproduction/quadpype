@@ -1,12 +1,12 @@
 """Create review."""
 
-from openpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api import plugin, lib
 
 
 class CreateReview(plugin.BaseCreator):
     """Single baked camera."""
 
-    identifier = "io.openpype.creators.blender.review"
+    identifier = "io.quadpype.creators.blender.review"
     label = "Review"
     family = "review"
     icon = "video-camera"

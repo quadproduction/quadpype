@@ -16,7 +16,7 @@ from .tools import (
 )
 
 from .nice_progress_bar import NiceProgressBar
-from .user_settings import OpenPypeSecureRegistry
+from .user_settings import QuadPypeSecureRegistry
 from .tools import load_stylesheet
 from .version import __version__
 
@@ -200,7 +200,7 @@ class InstallDialog(QtWidgets.QDialog):
         # Set logo as icon of the window
         self.setWindowIcon(QtGui.QIcon(pixmap_app_logo))
 
-        secure_registry = OpenPypeSecureRegistry("mongodb")
+        secure_registry = QuadPypeSecureRegistry("mongodb")
         mongo_url = ""
         try:
             mongo_url = (
@@ -295,7 +295,7 @@ class InstallDialog(QtWidgets.QDialog):
         bottom_layout = QtWidgets.QHBoxLayout(bottom_widget)
         bottom_layout.setContentsMargins(0, 0, 0, 0)
         bottom_layout.setAlignment(QtCore.Qt.AlignHCenter)
-        bottom_layout.addWidget(openpype_logo_label, 0)
+        bottom_layout.addWidget(quadpype_logo_label, 0)
         bottom_layout.addStretch(1)
         bottom_layout.addWidget(btns_widget, 0)
 
@@ -350,13 +350,13 @@ class InstallDialog(QtWidgets.QDialog):
             return
 
         if option == "run":
-            self._run_openpype()
+            self._run_quadpype()
         elif option == "run_from_code":
-            self._run_openpype_from_code()
+            self._run_quadpype_from_code()
         else:
             raise AssertionError("BUG: Unknown variant \"{}\"".format(option))
 
-    def _run_openpype_from_code(self):
+    def _run_quadpype_from_code(self):
         os.environ["QUADPYPE_MONGO"] = self.mongo_url
         try:
             self._secure_registry.set_item("quadpypeMongo", self.mongo_url)
@@ -365,7 +365,7 @@ class InstallDialog(QtWidgets.QDialog):
 
         self.done(2)
 
-    def _run_openpype(self):
+    def _run_quadpype(self):
         """Start install process.
 
         This will once again validate entered path and mongo if ok, start

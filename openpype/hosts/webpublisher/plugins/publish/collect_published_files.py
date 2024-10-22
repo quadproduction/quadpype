@@ -14,19 +14,19 @@ import math
 
 import pyblish.api
 
-from openpype.client import (
+from quadpype.client import (
     get_asset_by_name,
     get_last_version_by_subset_name
 )
-from openpype.lib import (
+from quadpype.lib import (
     prepare_template_data,
     get_ffprobe_streams,
     convert_ffprobe_fps_value,
 )
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline.create import get_subset_name
-from openpype_modules.webpublisher.lib import parse_json
-from openpype.pipeline.version_start import get_versioning_start
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline.create import get_subset_name
+from quadpype_modules.webpublisher.lib import parse_json
+from quadpype.pipeline.version_start import get_versioning_start
 
 
 class CollectPublishedFiles(pyblish.api.ContextPlugin):

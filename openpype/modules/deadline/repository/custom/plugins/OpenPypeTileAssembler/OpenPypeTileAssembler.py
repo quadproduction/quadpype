@@ -236,7 +236,7 @@ def info_about_input(oiiotool_path, filepath):
 
 def GetDeadlinePlugin():  # noqa: N802
     """Helper."""
-    return OpenPypeTileAssembler()
+    return QuadPypeTileAssembler()
 
 
 def CleanupDeadlinePlugin(deadlinePlugin):  # noqa: N802, N803
@@ -244,7 +244,7 @@ def CleanupDeadlinePlugin(deadlinePlugin):  # noqa: N802, N803
     deadlinePlugin.cleanup()
 
 
-class OpenPypeTileAssembler(DeadlinePlugin):
+class QuadPypeTileAssembler(DeadlinePlugin):
     """Deadline plugin for assembling tiles using OIIO."""
 
     def __init__(self):
@@ -357,7 +357,7 @@ class OpenPypeTileAssembler(DeadlinePlugin):
 
     def pre_render_tasks(self):
         """Load config file and do remapping."""
-        self.LogInfo("OpenPype Tile Assembler starting...")
+        self.LogInfo("QuadPype Tile Assembler starting...")
         config_file = self.GetPluginInfoEntry("ConfigFile")
 
         temp_scene_directory = self.CreateTempDirectory(
@@ -391,7 +391,7 @@ class OpenPypeTileAssembler(DeadlinePlugin):
                         tile["filepath"]))
                     pass
 
-        self.LogInfo("OpenPype Tile Assembler Job finished.")
+        self.LogInfo("QuadPype Tile Assembler Job finished.")
 
     def handle_stdout_error(self):
         """Handle errors in stdout."""

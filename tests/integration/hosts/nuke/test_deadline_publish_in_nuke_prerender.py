@@ -34,7 +34,7 @@ class TestDeadlinePublishInNukePrerender(NukeDeadlinePublishTestClass):
         runtests ../tests/integration/hosts/nuke  # noqa: E501
 
         To check log/errors from launched app's publish process keep PERSIST
-        to True and check `test_openpype.logs` collection.
+        to True and check `test_quadpype.logs` collection.
     """
     TEST_FILES = [
         ("1aQaKo3cF-fvbTfvODIRFMxgherjbJ4Ql",
@@ -48,7 +48,7 @@ class TestDeadlinePublishInNukePrerender(NukeDeadlinePublishTestClass):
     # could be overwritten by command line arguments
     # keep empty to locate latest installed variant or explicit
     APP_VARIANT = ""
-    PERSIST = False  # True - keep test_db, test_openpype, outputted test files
+    PERSIST = False  # True - keep test_db, test_quadpype, outputted test files
     TEST_DATA_FOLDER = None
 
     def test_db_asserts(self, dbcon, publish_finished):

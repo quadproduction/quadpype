@@ -1,7 +1,7 @@
 import pyblish.api
 import maya.cmds as cmds
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     RepairAction,
     PublishValidationError,
     OptionalPyblishPluginMixin
@@ -23,7 +23,7 @@ class ValidateYetiRigCacheState(pyblish.api.InstancePlugin,
     hosts = ["maya"]
     families = ["yetiRig"]
     actions = [RepairAction,
-               openpype.hosts.maya.api.action.SelectInvalidAction]
+               quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = False
 
     def process(self, instance):

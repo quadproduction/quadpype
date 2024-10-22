@@ -3,7 +3,7 @@ import re
 import pyblish.api
 import json
 
-from openpype.lib import (
+from quadpype.lib import (
     prepare_template_data,
     StringTemplate,
 )

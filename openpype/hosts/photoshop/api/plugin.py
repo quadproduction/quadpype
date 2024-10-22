@@ -1,6 +1,6 @@
 import re
 
-from openpype.pipeline import LoaderPlugin
+from quadpype.pipeline import LoaderPlugin
 from .launch_logic import stub
 
 

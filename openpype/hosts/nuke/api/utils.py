@@ -3,7 +3,7 @@ import re
 
 import nuke
 
-from openpype import resources
+from quadpype import resources
 from qtpy import QtWidgets
 
 

@@ -4,8 +4,8 @@ from copy import deepcopy
 import opentimelineio as otio
 import pyblish.api
 
-from openpype import lib as plib
-from openpype.pipeline.context_tools import get_current_project_asset
+from quadpype import lib as plib
+from quadpype.pipeline.context_tools import get_current_project_asset
 
 
 class CollectInstances(pyblish.api.InstancePlugin):

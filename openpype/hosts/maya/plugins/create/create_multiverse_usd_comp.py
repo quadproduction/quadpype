@@ -1,5 +1,5 @@
-from openpype.hosts.maya.api import plugin, lib
-from openpype.lib import (
+from quadpype.hosts.maya.api import plugin, lib
+from quadpype.lib import (
     BoolDef,
     NumberDef,
     EnumDef
@@ -9,7 +9,7 @@ from openpype.lib import (
 class CreateMultiverseUsdComp(plugin.MayaCreator):
     """Create Multiverse USD Composition"""
 
-    identifier = "io.openpype.creators.maya.mvusdcomposition"
+    identifier = "io.quadpype.creators.maya.mvusdcomposition"
     label = "Multiverse USD Composition"
     family = "mvUsdComposition"
     icon = "cubes"

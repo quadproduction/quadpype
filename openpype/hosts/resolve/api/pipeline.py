@@ -7,14 +7,14 @@ from collections import OrderedDict
 
 from pyblish import api as pyblish
 
-from openpype.lib import Logger
-from openpype.pipeline import (
+from quadpype.lib import Logger
+from quadpype.pipeline import (
     schema,
     register_loader_plugin_path,
     register_creator_plugin_path,
     AVALON_CONTAINER_ID,
 )
-from openpype.host import (
+from quadpype.host import (
     HostBase,
     IWorkfileHost,
     ILoadHost
@@ -57,7 +57,7 @@ class ResolveHost(HostBase, IWorkfileHost, ILoadHost):
 
         """
 
-        log.info("openpype.hosts.resolve installed")
+        log.info("quadpype.hosts.resolve installed")
 
         pyblish.register_host(self.name)
         pyblish.register_plugin_path(PUBLISH_PATH)
@@ -118,7 +118,7 @@ def containerise(timeline_item,
     """
 
     data_imprint = OrderedDict({
-        "schema": "openpype:container-2.0",
+        "schema": "quadpype:container-2.0",
         "id": AVALON_CONTAINER_ID,
         "name": str(name),
         "namespace": str(namespace),
@@ -156,7 +156,7 @@ def ls():
 
 
 def parse_container(timeline_item, validate=True):
-    """Return container data from timeline_item's openpype tag.
+    """Return container data from timeline_item's quadpype tag.
 
     Args:
         timeline_item (hiero.core.TrackItem): A containerised track item.
@@ -193,7 +193,7 @@ def parse_container(timeline_item, validate=True):
 
 
 def update_container(timeline_item, data=None):
-    """Update container data to input timeline_item's openpype tag.
+    """Update container data to input timeline_item's quadpype tag.
 
     Args:
         timeline_item (hiero.core.TrackItem): A containerised track item.
@@ -246,7 +246,7 @@ def on_pyblish_instance_toggled(instance, old_value, new_value):
     log.info("instance toggle: {}, old_value: {}, new_value:{} ".format(
         instance, old_value, new_value))
 
-    from openpype.hosts.resolve.api import (
+    from quadpype.hosts.resolve.api import (
         set_publish_attribute
     )
 
@@ -266,7 +266,7 @@ def remove_instance(instance):
     for timeline_item_data in selected_timeline_items:
         timeline_item = timeline_item_data["clip"]["item"]
 
-        # get openpype tag data
+        # get quadpype tag data
         tag_data = lib.get_timeline_item_pype_tag(timeline_item)
         _ti_id = tag_data.get("uuid")
         if _ti_id == instance_id:
@@ -291,7 +291,7 @@ def list_instances():
         timeline_item = timeline_item_data["clip"]["item"]
         ti_name = timeline_item.GetName().split(".")[0]
 
-        # get openpype tag data
+        # get quadpype tag data
         tag_data = lib.get_timeline_item_pype_tag(timeline_item)
 
         if tag_data:

@@ -5,19 +5,19 @@ import platform
 import getpass
 import socket
 
-from openpype.settings.lib import get_local_settings
-from .execute import get_openpype_execute_args
+from quadpype.settings.lib import get_local_settings
+from .execute import get_quadpype_execute_args
 from .local_settings import get_local_site_id
-from .openpype_version import (
+from .quadpype_version import (
     is_running_from_build,
-    get_openpype_version,
+    get_quadpype_version,
     get_build_version
 )
 
 
-def get_openpype_info():
+def get_quadpype_info():
     """Information about currently used Pype process."""
-    executable_args = get_openpype_execute_args()
+    executable_args = get_quadpype_execute_args()
     if is_running_from_build():
         version_type = "build"
     else:
@@ -25,7 +25,7 @@ def get_openpype_info():
 
     return {
         "build_verison": get_build_version(),
-        "version": get_openpype_version(),
+        "version": get_quadpype_version(),
         "version_type": version_type,
         "executable": executable_args[-1],
         "pype_root": os.environ["QUADPYPE_REPOS_ROOT"],
@@ -58,7 +58,7 @@ def get_all_current_info():
         "env": os.environ.copy(),
         "local_settings": get_local_settings()
     }
-    output["openpype"] = get_openpype_info()
+    output["quadpype"] = get_quadpype_info()
     return output
 
 
@@ -75,7 +75,7 @@ def extract_pype_info_to_file(dirpath):
         filepath (str): Full path to file where data were extracted.
     """
     filename = "{}_{}_{}.json".format(
-        get_openpype_version(),
+        get_quadpype_version(),
         get_local_site_id(),
         datetime.datetime.now().strftime("%y%m%d%H%M%S")
     )

@@ -4,8 +4,8 @@ import collections
 from qtpy import QtCore, QtGui
 import qtawesome
 
-from openpype.client import get_assets
-from openpype.style import (
+from quadpype.client import get_assets
+from quadpype.style import (
     get_default_entity_icon_color,
     get_deprecated_entity_font_color,
 )

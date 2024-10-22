@@ -11,8 +11,8 @@ import appdirs
 import pytest
 
 from igniter.bootstrap_repos import BootstrapRepos
-from igniter.bootstrap_repos import OpenPypeVersion
-from igniter.user_settings import OpenPypeSettingsRegistry
+from igniter.bootstrap_repos import QuadPypeVersion
+from igniter.user_settings import QuadPypeSettingsRegistry
 
 
 @pytest.fixture
@@ -24,57 +24,57 @@ def fix_bootstrap(tmp_path, pytestconfig):
     return bs
 
 
-def test_openpype_version(printer):
-    """Test determination of OpenPype versions."""
-    v1 = OpenPypeVersion(1, 2, 3)
+def test_quadpype_version(printer):
+    """Test determination of QuadPype versions."""
+    v1 = QuadPypeVersion(1, 2, 3)
     assert str(v1) == "1.2.3"
 
-    v2 = OpenPypeVersion(1, 2, 3, prerelease="x")
+    v2 = QuadPypeVersion(1, 2, 3, prerelease="x")
     assert str(v2) == "1.2.3-x"
     assert v1 > v2
 
-    v3 = OpenPypeVersion(1, 2, 3)
+    v3 = QuadPypeVersion(1, 2, 3)
     assert str(v3) == "1.2.3"
 
-    v4 = OpenPypeVersion(1, 2, 3, prerelease="rc.1")
+    v4 = QuadPypeVersion(1, 2, 3, prerelease="rc.1")
     assert str(v4) == "1.2.3-rc.1"
     assert v3 > v4
     assert v1 > v4
-    assert v4 < OpenPypeVersion(1, 2, 3, prerelease="rc.1")
+    assert v4 < QuadPypeVersion(1, 2, 3, prerelease="rc.1")
 
-    v5 = OpenPypeVersion(1, 2, 3, build="foo", prerelease="x")
+    v5 = QuadPypeVersion(1, 2, 3, build="foo", prerelease="x")
     assert str(v5) == "1.2.3-x+foo"
     assert v4 < v5
 
-    v6 = OpenPypeVersion(1, 2, 3, prerelease="foo")
+    v6 = QuadPypeVersion(1, 2, 3, prerelease="foo")
     assert str(v6) == "1.2.3-foo"
 
-    v7 = OpenPypeVersion(2, 0, 0)
+    v7 = QuadPypeVersion(2, 0, 0)
     assert v1 < v7
 
-    v8 = OpenPypeVersion(0, 1, 5)
+    v8 = QuadPypeVersion(0, 1, 5)
     assert v8 < v7
 
-    v9 = OpenPypeVersion(1, 2, 4)
+    v9 = QuadPypeVersion(1, 2, 4)
     assert v9 > v1
 
-    v10 = OpenPypeVersion(1, 2, 2)
+    v10 = QuadPypeVersion(1, 2, 2)
     assert v10 < v1
 
-    v11 = OpenPypeVersion(1, 2, 3, path=Path("/foo/bar"))
+    v11 = QuadPypeVersion(1, 2, 3, path=Path("/foo/bar"))
     assert v10 < v11
 
     assert v5 == v2
 
     sort_versions = [
-        OpenPypeVersion(3, 2, 1),
-        OpenPypeVersion(1, 2, 3),
-        OpenPypeVersion(0, 0, 1),
-        OpenPypeVersion(4, 8, 10),
-        OpenPypeVersion(4, 8, 20),
-        OpenPypeVersion(4, 8, 9),
-        OpenPypeVersion(1, 2, 3),
-        OpenPypeVersion(1, 2, 3, build="foo")
+        QuadPypeVersion(3, 2, 1),
+        QuadPypeVersion(1, 2, 3),
+        QuadPypeVersion(0, 0, 1),
+        QuadPypeVersion(4, 8, 10),
+        QuadPypeVersion(4, 8, 20),
+        QuadPypeVersion(4, 8, 9),
+        QuadPypeVersion(1, 2, 3),
+        QuadPypeVersion(1, 2, 3, build="foo")
     ]
     res = sorted(sort_versions)
 
@@ -92,19 +92,19 @@ def test_openpype_version(printer):
         "5.6.3",
         "5.6.3+staging"
     ]
-    res_versions = [OpenPypeVersion(version=v) for v in str_versions]
+    res_versions = [QuadPypeVersion(version=v) for v in str_versions]
     sorted_res_versions = sorted(res_versions)
 
     assert str(sorted_res_versions[0]) == str_versions[0]
     assert str(sorted_res_versions[-1]) == str_versions[5]
 
     with pytest.raises(TypeError):
-        _ = OpenPypeVersion()
+        _ = QuadPypeVersion()
 
     with pytest.raises(ValueError):
-        _ = OpenPypeVersion(version="booobaa")
+        _ = QuadPypeVersion(version="booobaa")
 
-    v11 = OpenPypeVersion(version="4.6.7-foo")
+    v11 = QuadPypeVersion(version="4.6.7-foo")
     assert v11.major == 4
     assert v11.minor == 6
     assert v11.patch == 7
@@ -112,15 +112,15 @@ def test_openpype_version(printer):
 
 
 def test_get_main_version():
-    ver = OpenPypeVersion(1, 2, 3, prerelease="foo")
+    ver = QuadPypeVersion(1, 2, 3, prerelease="foo")
     assert ver.get_main_version() == "1.2.3"
 
 
 def test_get_version_path_from_list():
     versions = [
-        OpenPypeVersion(1, 2, 3, path=Path('/foo/bar')),
-        OpenPypeVersion(3, 4, 5, path=Path("/bar/baz")),
-        OpenPypeVersion(6, 7, 8, prerelease="x", path=Path("boo/goo"))
+        QuadPypeVersion(1, 2, 3, path=Path('/foo/bar')),
+        QuadPypeVersion(3, 4, 5, path=Path("/bar/baz")),
+        QuadPypeVersion(6, 7, 8, prerelease="x", path=Path("boo/goo"))
     ]
     path = BootstrapRepos.get_version_path_from_list(
         "3.4.5", versions)
@@ -128,7 +128,7 @@ def test_get_version_path_from_list():
     assert path == Path("/bar/baz")
 
 
-def test_search_string_for_openpype_version(printer):
+def test_search_string_for_quadpype_version(printer):
     strings = [
         ("3.0.1", True),
         ("foo-3.0", False),
@@ -140,109 +140,109 @@ def test_search_string_for_openpype_version(printer):
     for ver_string in strings:
         printer(f"testing {ver_string[0]} should be {ver_string[1]}")
         assert isinstance(
-            OpenPypeVersion.version_in_str(ver_string[0]),
-            OpenPypeVersion if ver_string[1] else type(None)
+            QuadPypeVersion.version_in_str(ver_string[0]),
+            QuadPypeVersion if ver_string[1] else type(None)
         )
 
 @pytest.mark.slow
 def test_install_live_repos(fix_bootstrap, printer, monkeypatch, pytestconfig):
     monkeypatch.setenv("QUADPYPE_ROOT", pytestconfig.rootpath.as_posix())
     monkeypatch.setenv("QUADPYPE_DATABASE_NAME", str(uuid4()))
-    openpype_version = fix_bootstrap.create_version_from_live_code()
+    quadpype_version = fix_bootstrap.create_version_from_live_code()
     sep = os.path.sep
     expected_paths = [
-        f"{openpype_version.path}"
+        f"{quadpype_version.path}"
     ]
     printer("testing zip creation")
-    assert os.path.exists(openpype_version.path), "zip archive was not created"
-    fix_bootstrap.add_paths_from_archive(openpype_version.path)
+    assert os.path.exists(quadpype_version.path), "zip archive was not created"
+    fix_bootstrap.add_paths_from_archive(quadpype_version.path)
     for ep in expected_paths:
         assert ep in sys.path, f"{ep} not set correctly"
 
-    printer("testing openpype imported")
+    printer("testing quadpype imported")
     try:
-        del sys.modules["openpype"]
+        del sys.modules["quadpype"]
     except KeyError:
         # wasn't imported before
         pass
-    import openpype  # noqa: F401
+    import quadpype  # noqa: F401
 
-    # test if openpype is imported from specific location in zip
-    assert "openpype" in sys.modules.keys(), "OpenPype not imported"
-    assert sys.modules["openpype"].__file__ == \
-        f"{openpype_version.path}{sep}openpype{sep}__init__.py"
+    # test if quadpype is imported from specific location in zip
+    assert "quadpype" in sys.modules.keys(), "QuadPype not imported"
+    assert sys.modules["quadpype"].__file__ == \
+        f"{quadpype_version.path}{sep}quadpype{sep}__init__.py"
 
 
-def test_find_openpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
-    test_openpype = namedtuple("OpenPype", "prefix version suffix type valid")
+def test_find_quadpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
+    test_quadpype = namedtuple("QuadPype", "prefix version suffix type valid")
 
     test_versions_1 = [
-        test_openpype(prefix="foo-v", version="5.5.1",
+        test_quadpype(prefix="foo-v", version="5.5.1",
                       suffix=".zip", type="zip", valid=False),
-        test_openpype(prefix="bar-v", version="5.5.2-rc.1",
+        test_quadpype(prefix="bar-v", version="5.5.2-rc.1",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="baz-v", version="5.5.3-foo-strange",
+        test_quadpype(prefix="baz-v", version="5.5.3-foo-strange",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="bum-v", version="5.5.4+staging",
+        test_quadpype(prefix="bum-v", version="5.5.4+staging",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="zum-v", version="5.5.5-foo+staging",
+        test_quadpype(prefix="zum-v", version="5.5.5-foo+staging",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="fam-v", version="5.6.3",
+        test_quadpype(prefix="fam-v", version="5.6.3",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="foo-v", version="5.6.3+staging",
+        test_quadpype(prefix="foo-v", version="5.6.3+staging",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="fim-v", version="5.6.3",
+        test_quadpype(prefix="fim-v", version="5.6.3",
                       suffix=".zip", type="zip", valid=False),
-        test_openpype(prefix="foo-v", version="5.6.4",
+        test_quadpype(prefix="foo-v", version="5.6.4",
                       suffix=".txt", type="txt", valid=False),
-        test_openpype(prefix="foo-v", version="5.7.1",
+        test_quadpype(prefix="foo-v", version="5.7.1",
                       suffix="", type="dir", valid=False),
     ]
 
     test_versions_2 = [
-        test_openpype(prefix="foo-v", version="10.0.0",
+        test_quadpype(prefix="foo-v", version="10.0.0",
                       suffix=".txt", type="txt", valid=False),
-        test_openpype(prefix="lom-v", version="7.2.6",
+        test_quadpype(prefix="lom-v", version="7.2.6",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="bom-v", version="7.2.7-rc.3",
+        test_quadpype(prefix="bom-v", version="7.2.7-rc.3",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="woo-v", version="7.2.8-foo-strange",
+        test_quadpype(prefix="woo-v", version="7.2.8-foo-strange",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="loo-v", version="7.2.10-foo+staging",
+        test_quadpype(prefix="loo-v", version="7.2.10-foo+staging",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="kok-v", version="7.0.1",
+        test_quadpype(prefix="kok-v", version="7.0.1",
                       suffix=".zip", type="zip", valid=True)
     ]
 
     test_versions_3 = [
-        test_openpype(prefix="foo-v", version="3.0.0",
+        test_quadpype(prefix="foo-v", version="3.0.0",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="goo-v", version="3.0.1",
+        test_quadpype(prefix="goo-v", version="3.0.1",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="hoo-v", version="4.1.0",
+        test_quadpype(prefix="hoo-v", version="4.1.0",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="foo-v", version="4.1.2",
+        test_quadpype(prefix="foo-v", version="4.1.2",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="foo-v", version="3.0.1-foo",
+        test_quadpype(prefix="foo-v", version="3.0.1-foo",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="foo-v", version="3.0.1-foo-strange",
+        test_quadpype(prefix="foo-v", version="3.0.1-foo-strange",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="foo-v", version="3.0.1+staging",
+        test_quadpype(prefix="foo-v", version="3.0.1+staging",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="foo-v", version="3.0.1-foo+staging",
+        test_quadpype(prefix="foo-v", version="3.0.1-foo+staging",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="foo-v", version="3.2.0",
+        test_quadpype(prefix="foo-v", version="3.2.0",
                       suffix=".zip", type="zip", valid=True)
     ]
 
     test_versions_4 = [
-        test_openpype(prefix="foo-v", version="10.0.0",
+        test_quadpype(prefix="foo-v", version="10.0.0",
                       suffix="", type="dir", valid=True),
-        test_openpype(prefix="lom-v", version="11.2.6",
+        test_quadpype(prefix="lom-v", version="11.2.6",
                       suffix=".zip", type="dir", valid=False),
-        test_openpype(prefix="bom-v", version="7.2.7-foo",
+        test_quadpype(prefix="bom-v", version="7.2.7-foo",
                       suffix=".zip", type="zip", valid=True),
-        test_openpype(prefix="woo-v", version="7.2.8-foo-strange",
+        test_quadpype(prefix="woo-v", version="7.2.8-foo-strange",
                       suffix=".zip", type="txt", valid=False)
     ]
 
@@ -253,7 +253,7 @@ def test_find_openpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
     def _create_valid_zip(path: Path, version: str):
         with ZipFile(path, "w") as zf:
             zf.writestr(
-                "openpype/version.py", f"__version__ = '{version}'\n\n")
+                "quadpype/version.py", f"__version__ = '{version}'\n\n")
 
     def _create_invalid_dir(path: Path):
         path.mkdir(parents=True, exist_ok=True)
@@ -261,9 +261,9 @@ def test_find_openpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
             fp.write("invalid")
 
     def _create_valid_dir(path: Path, version: str):
-        openpype_path = path / "openpype"
-        version_path = openpype_path / "version.py"
-        openpype_path.mkdir(parents=True, exist_ok=True)
+        quadpype_path = path / "quadpype"
+        version_path = quadpype_path / "version.py"
+        quadpype_path.mkdir(parents=True, exist_ok=True)
         with open(version_path, "w") as fp:
             fp.write(f"__version__ = '{version}'\n\n")
 
@@ -312,10 +312,10 @@ def test_find_openpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
     for test_file in test_versions_4:
         _build_test_item(dir_path, test_file)
 
-    printer("testing finding OpenPype in given path ...")
-    result = fix_bootstrap.find_openpype(g_path, include_zips=True)
+    printer("testing finding QuadPype in given path ...")
+    result = fix_bootstrap.find_quadpype(g_path, include_zips=True)
     # we should have results as file were created
-    assert result is not None, "no OpenPype version found"
+    assert result is not None, "no QuadPype version found"
     # latest item in `result` should be latest version found.
     expected_path = Path(
         g_path / "{}{}{}".format(
@@ -326,13 +326,13 @@ def test_find_openpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
     )
     assert result, "nothing found"
     assert result[-1].path == expected_path, ("not a latest version of "
-                                              "OpenPype 3")
+                                              "QuadPype 3")
 
-    printer("testing finding OpenPype in QUADPYPE_PATH ...")
+    printer("testing finding QuadPype in QUADPYPE_PATH ...")
     monkeypatch.setenv("QUADPYPE_PATH", e_path.as_posix())
-    result = fix_bootstrap.find_openpype(include_zips=True)
+    result = fix_bootstrap.find_quadpype(include_zips=True)
     # we should have results as file were created
-    assert result is not None, "no OpenPype version found"
+    assert result is not None, "no QuadPype version found"
     # latest item in `result` should be latest version found.
     expected_path = Path(
         e_path / "{}{}{}".format(
@@ -343,11 +343,11 @@ def test_find_openpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
     )
     assert result, "nothing found"
     assert result[-1].path == expected_path, ("not a latest version of "
-                                              "OpenPype 1")
+                                              "QuadPype 1")
 
     monkeypatch.delenv("QUADPYPE_PATH", raising=False)
 
-    printer("testing finding OpenPype in user data dir ...")
+    printer("testing finding QuadPype in user data dir ...")
 
     # mock appdirs user_data_dir
     def mock_user_data_dir(*args, **kwargs):
@@ -355,12 +355,12 @@ def test_find_openpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
         return d_path.as_posix()
 
     monkeypatch.setattr(appdirs, "user_data_dir", mock_user_data_dir)
-    fix_bootstrap.registry = OpenPypeSettingsRegistry()
+    fix_bootstrap.registry = QuadPypeSettingsRegistry()
     fix_bootstrap.registry.set_item("quadpypePath", d_path.as_posix())
 
-    result = fix_bootstrap.find_openpype(include_zips=True)
+    result = fix_bootstrap.find_quadpype(include_zips=True)
     # we should have results as file were created
-    assert result is not None, "no OpenPype version found"
+    assert result is not None, "no QuadPype version found"
     # latest item in `result` should be the latest version found.
     # this will be `7.2.10-foo+staging` even with *staging* in since we've
     # dropped the logic to handle staging separately and in alphabetical
@@ -374,11 +374,11 @@ def test_find_openpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
     )
     assert result, "nothing found"
     assert result[-1].path == expected_path, ("not a latest version of "
-                                              "OpenPype 2")
+                                              "QuadPype 2")
 
-    printer("testing finding OpenPype zip/dir precedence ...")
-    result = fix_bootstrap.find_openpype(dir_path, include_zips=True)
-    assert result is not None, "no OpenPype versions found"
+    printer("testing finding QuadPype zip/dir precedence ...")
+    result = fix_bootstrap.find_quadpype(dir_path, include_zips=True)
+    assert result is not None, "no QuadPype versions found"
     expected_path = Path(
         dir_path / "{}{}{}".format(
             test_versions_4[0].prefix,
@@ -387,4 +387,4 @@ def test_find_openpype(fix_bootstrap, tmp_path_factory, monkeypatch, printer):
         )
     )
     assert result[-1].path == expected_path, ("not a latest version of "
-                                              "OpenPype 4")
+                                              "QuadPype 4")

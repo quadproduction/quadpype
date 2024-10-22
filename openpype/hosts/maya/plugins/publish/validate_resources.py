@@ -2,7 +2,7 @@ import os
 from collections import defaultdict
 
 import pyblish.api
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishValidationError
 )

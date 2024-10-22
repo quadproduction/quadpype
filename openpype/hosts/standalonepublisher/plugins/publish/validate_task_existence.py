@@ -1,7 +1,7 @@
 import pyblish.api
 
-from openpype.client import get_assets
-from openpype.pipeline import PublishXmlValidationError
+from quadpype.client import get_assets
+from quadpype.pipeline import PublishXmlValidationError
 
 
 class ValidateTaskExistence(pyblish.api.ContextPlugin):

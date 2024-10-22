@@ -4,8 +4,8 @@ import os
 
 from maya.OpenMaya import MGlobal  # noqa: F401
 
-from openpype.modules.royalrender import lib
-from openpype.pipeline.farm.tools import iter_expected_files
+from quadpype.modules.royalrender import lib
+from quadpype.pipeline.farm.tools import iter_expected_files
 
 
 class CreateMayaRoyalRenderJob(lib.BaseCreateRoyalRenderJob):

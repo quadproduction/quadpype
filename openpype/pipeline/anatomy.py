@@ -8,23 +8,23 @@ import numbers
 import six
 import time
 
-from openpype.settings.lib import (
+from quadpype.settings.lib import (
     get_local_settings,
 )
-from openpype.settings.constants import (
+from quadpype.settings.constants import (
     DEFAULT_PROJECT_KEY,
     PROJECTS_SETTINGS_KEY
 )
-from openpype.client import get_project, get_ayon_server_api_connection
-from openpype.lib import Logger, get_local_site_id
-from openpype.lib.path_templates import (
+from quadpype.client import get_project, get_ayon_server_api_connection
+from quadpype.lib import Logger, get_local_site_id
+from quadpype.lib.path_templates import (
     TemplateUnsolved,
     TemplateResult,
     StringTemplate,
     TemplatesDict,
     FormatObject,
 )
-from openpype.modules import ModulesManager
+from quadpype.modules import ModulesManager
 
 log = Logger.get_logger(__name__)
 

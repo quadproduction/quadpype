@@ -6,14 +6,14 @@ import datetime
 from qtpy import QtCore
 import qtawesome
 
-from openpype.tools.utils.delegates import pretty_timestamp
+from quadpype.tools.utils.delegates import pretty_timestamp
 
-from openpype.lib import Logger, get_local_site_id
-from openpype.client import get_representation_by_id
+from quadpype.lib import Logger, get_local_site_id
+from quadpype.client import get_representation_by_id
 
 from . import lib
 
-from openpype.tools.utils.constants import (
+from quadpype.tools.utils.constants import (
     LOCAL_PROVIDER_ROLE,
     REMOTE_PROVIDER_ROLE,
     LOCAL_PROGRESS_ROLE,

@@ -3,8 +3,8 @@ import tempfile
 import subprocess
 
 import pyblish.api
-import openpype.hosts.harmony.api as harmony
-import openpype.lib
+import quadpype.hosts.harmony.api as harmony
+import quadpype.lib
 
 import clique
 
@@ -94,7 +94,7 @@ class ExtractRender(pyblish.api.InstancePlugin):
 
         # Generate thumbnail.
         thumbnail_path = os.path.join(path, "thumbnail.png")
-        args = openpype.lib.get_ffmpeg_tool_args(
+        args = quadpype.lib.get_ffmpeg_tool_args(
             "ffmpeg",
             "-y",
             "-i", os.path.join(path, list(collections[0])[0]),

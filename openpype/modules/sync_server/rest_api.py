@@ -1,5 +1,5 @@
 from aiohttp.web_response import Response
-from openpype.lib import Logger
+from quadpype.lib import Logger
 
 
 class SyncServerModuleRestApi:

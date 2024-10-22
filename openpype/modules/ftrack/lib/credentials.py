@@ -7,7 +7,7 @@ except ImportError:
     from urlparse import urlparse
 
 
-from openpype.lib import OpenPypeSecureRegistry
+from quadpype.lib import QuadPypeSecureRegistry
 
 USERNAME_KEY = "username"
 API_KEY_KEY = "api_key"
@@ -43,8 +43,8 @@ def get_credentials(ftrack_server=None):
     username_name = _get_ftrack_secure_key(hostname, USERNAME_KEY)
     api_key_name = _get_ftrack_secure_key(hostname, API_KEY_KEY)
 
-    username_registry = OpenPypeSecureRegistry(username_name)
-    api_key_registry = OpenPypeSecureRegistry(api_key_name)
+    username_registry = QuadPypeSecureRegistry(username_name)
+    api_key_registry = QuadPypeSecureRegistry(api_key_name)
 
     output[USERNAME_KEY] = username_registry.get_item(USERNAME_KEY, None)
     output[API_KEY_KEY] = api_key_registry.get_item(API_KEY_KEY, None)
@@ -60,8 +60,8 @@ def save_credentials(username, api_key, ftrack_server=None):
     # Clear credentials
     clear_credentials(ftrack_server)
 
-    username_registry = OpenPypeSecureRegistry(username_name)
-    api_key_registry = OpenPypeSecureRegistry(api_key_name)
+    username_registry = QuadPypeSecureRegistry(username_name)
+    api_key_registry = QuadPypeSecureRegistry(api_key_name)
 
     username_registry.set_item(USERNAME_KEY, username)
     api_key_registry.set_item(API_KEY_KEY, api_key)
@@ -72,8 +72,8 @@ def clear_credentials(ftrack_server=None):
     username_name = _get_ftrack_secure_key(hostname, USERNAME_KEY)
     api_key_name = _get_ftrack_secure_key(hostname, API_KEY_KEY)
 
-    username_registry = OpenPypeSecureRegistry(username_name)
-    api_key_registry = OpenPypeSecureRegistry(api_key_name)
+    username_registry = QuadPypeSecureRegistry(username_name)
+    api_key_registry = QuadPypeSecureRegistry(api_key_name)
 
     current_username = username_registry.get_item(USERNAME_KEY, None)
     current_api_key = api_key_registry.get_item(API_KEY_KEY, None)

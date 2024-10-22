@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 import platform
-from openpype.lib.applications import PreLaunchHook, LaunchTypes
-from openpype.hosts.resolve.utils import setup
+from quadpype.lib.applications import PreLaunchHook, LaunchTypes
+from quadpype.hosts.resolve.utils import setup
 
 
 class PreLaunchResolveSetup(PreLaunchHook):
@@ -18,12 +18,12 @@ class PreLaunchResolveSetup(PreLaunchHook):
     It adds $RESOLVE_SCRIPT_API/Modules to PYTHONPATH.
 
     Additionally it sets up the Python home for Python 3 based on the
-    RESOLVE_PYTHON3_HOME in the environment (usually defined in OpenPype's
+    RESOLVE_PYTHON3_HOME in the environment (usually defined in QuadPype's
     Application environment for Resolve by the admin). For this it sets
     PYTHONHOME and PATH variables.
 
     It also defines:
-    - `RESOLVE_UTILITY_SCRIPTS_DIR`: Destination directory for OpenPype
+    - `RESOLVE_UTILITY_SCRIPTS_DIR`: Destination directory for QuadPype
         Fusion scripts to be copied to for Resolve to pick them up.
     - `QUADPYPE_LOG_NO_COLORS` to True to ensure QuadPype doesn't try to
         use logging with terminal colors as it fails in Resolve.
@@ -77,7 +77,7 @@ class PreLaunchResolveSetup(PreLaunchHook):
             f"setting RESOLVE_SCRIPT_LIB variable to {resolve_script_lib}"
         )
 
-        # TODO: add OTIO installation from `openpype/requirements.py`
+        # TODO: add OTIO installation from `quadpype/requirements.py`
         # making sure python <3.9.* is installed at provided path
         python3_home = Path(
             self.launch_context.env.get("RESOLVE_PYTHON3_HOME", "")

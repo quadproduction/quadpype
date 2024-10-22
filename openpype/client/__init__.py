@@ -1,5 +1,5 @@
 from .mongo import (
-    OpenPypeMongoConnection,
+    QuadPypeMongoConnection,
 )
 from .server.utils import get_ayon_server_api_connection
 
@@ -60,7 +60,7 @@ from .operations import (
 
 
 __all__ = (
-    "OpenPypeMongoConnection",
+    "QuadPypeMongoConnection",
 
     "get_ayon_server_api_connection",
 

@@ -6,11 +6,11 @@ import requests
 import json
 import subprocess
 
-from openpype.client import OpenPypeMongoConnection
-from openpype.modules import ModulesManager
-from openpype.lib import Logger
+from quadpype.client import QuadPypeMongoConnection
+from quadpype.modules import ModulesManager
+from quadpype.lib import Logger
 
-from openpype_modules.webpublisher.lib import (
+from quadpype_modules.webpublisher.lib import (
     ERROR_STATUS,
     REPROCESS_STATUS,
     SENT_REPROCESSING_STATUS
@@ -126,7 +126,7 @@ def run_webserver(executable, upload_dir, host=None, port=None):
 
 def reprocess_failed(upload_dir, webserver_url):
     # log.info("check_reprocesable_records")
-    mongo_client = OpenPypeMongoConnection.get_mongo_client()
+    mongo_client = QuadPypeMongoConnection.get_mongo_client()
     database_name = os.environ["QUADPYPE_DATABASE_NAME"]
     dbcon = mongo_client[database_name]["webpublishes"]
 

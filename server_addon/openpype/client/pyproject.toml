@@ -1,6 +1,6 @@
 [project]
 name="quadpype"
-description="OpenPype addon for AYON server."
+description="QuadPype addon for AYON server."
 
 [tool.poetry.dependencies]
 python = ">=3.9.1,<3.10"

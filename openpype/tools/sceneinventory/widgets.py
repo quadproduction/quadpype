@@ -1,5 +1,5 @@
 from qtpy import QtWidgets, QtCore
-from openpype import style
+from quadpype import style
 
 
 class ButtonWithMenu(QtWidgets.QToolButton):

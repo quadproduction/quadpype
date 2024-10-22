@@ -1,8 +1,8 @@
-from openpype.pipeline import (
+from quadpype.pipeline import (
     InventoryAction,
     get_representation_context
 )
-from openpype.hosts.maya.api.lib import (
+from quadpype.hosts.maya.api.lib import (
     create_rig_animation_instance,
     get_container_members,
 )

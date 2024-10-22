@@ -2,7 +2,7 @@ import collections
 import json
 import arrow
 import ftrack_api
-from openpype_modules.ftrack.lib import (
+from quadpype_modules.ftrack.lib import (
     BaseAction,
     statics_icon,
 
@@ -18,8 +18,8 @@ from openpype_modules.ftrack.lib import (
     tool_definitions_from_app_manager
 )
 
-from openpype.settings import get_system_settings, MODULES_SETTINGS_KEY
-from openpype.lib import ApplicationManager
+from quadpype.settings import get_system_settings, MODULES_SETTINGS_KEY
+from quadpype.lib import ApplicationManager
 
 """
 This action creates/updates custom attributes.
@@ -29,7 +29,7 @@ This action creates/updates custom attributes.
     - `tools` based on tools usages
 
 ## Second part is based on json file in ftrack module.
-File location: `~/OpenPype/pype/modules/ftrack/ftrack_custom_attributes.json`
+File location: `~/QuadPype/pype/modules/ftrack/ftrack_custom_attributes.json`
 
 Data in json file is nested dictionary. Keys in first dictionary level
 represents Ftrack entity type (task, show, assetversion, user, list, asset)
@@ -45,7 +45,7 @@ dictionary level, task's attributes are nested more.
 
 group (string)
     - name of group
-    - based on attribute `openpype_modules.ftrack.lib.CUST_ATTR_GROUP`
+    - based on attribute `quadpype_modules.ftrack.lib.CUST_ATTR_GROUP`
         - "pype" by default
 
 *** Required ***************************************************************
@@ -139,11 +139,11 @@ class CustomAttributes(BaseAction):
     #: Action identifier.
     identifier = 'create.update.attributes'
     #: Action label.
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     variant = '- Create/Update Custom Attributes'
     #: Action description.
     description = 'Creates required custom attributes in ftrack'
-    icon = statics_icon("ftrack", "action_icons", "OpenPypeAdmin.svg")
+    icon = statics_icon("ftrack", "action_icons", "QuadPypeAdmin.svg")
     settings_key = "create_update_attributes"
 
     required_keys = ("key", "label", "type")

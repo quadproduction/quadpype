@@ -1,8 +1,8 @@
 from pymongo import UpdateOne
 
-from openpype.client import get_projects
-from openpype.pipeline import AvalonMongoDB
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype.client import get_projects
+from quadpype.pipeline import AvalonMongoDB
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 
 
 class HideObsoleteProjects(BaseAction):
@@ -12,7 +12,7 @@ class HideObsoleteProjects(BaseAction):
 
     identifier = "hide.obsolete.projects"
     show_identifier = "hide.obsolete.projects"
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     variant = "- Hide Obsolete projects"
     description = "Hide projects on QuadPype that no longer exist on Ftrack or have an FtrackId."
     icon = statics_icon("ftrack", "action_icons", "HideProjects.svg")

@@ -5,7 +5,7 @@ import json
 
 import pyblish.api
 
-from openpype.client import get_asset_name_identifier
+from quadpype.client import get_asset_name_identifier
 
 
 class CollectFrameTagInstances(pyblish.api.ContextPlugin):

@@ -1,7 +1,7 @@
-from openpype.modules import OpenPypeModule, ITrayAction
+from quadpype.modules import QuadPypeModule, ITrayAction
 
 
-class LogViewModule(OpenPypeModule, ITrayAction):
+class LogViewModule(QuadPypeModule, ITrayAction):
     name = "log_viewer"
     label = "Show Logs"
     submenu = "More Tools"

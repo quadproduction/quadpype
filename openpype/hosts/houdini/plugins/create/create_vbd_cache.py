@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating VDB Caches."""
-from openpype.hosts.houdini.api import plugin
-from openpype.pipeline import CreatedInstance
-from openpype.lib import BoolDef
+from quadpype.hosts.houdini.api import plugin
+from quadpype.pipeline import CreatedInstance
+from quadpype.lib import BoolDef
 
 import hou
 
 
 class CreateVDBCache(plugin.HoudiniCreator):
     """OpenVDB from Geometry ROP"""
-    identifier = "io.openpype.creators.houdini.vdbcache"
+    identifier = "io.quadpype.creators.houdini.vdbcache"
     name = "vbdcache"
     label = "VDB Cache"
     family = "vdbcache"

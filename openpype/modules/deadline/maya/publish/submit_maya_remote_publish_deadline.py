@@ -2,15 +2,15 @@ import os
 import attr
 from datetime import datetime
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline import legacy_io, PublishXmlValidationError
-from openpype.pipeline.context_tools import get_current_project_name
-from openpype.tests.lib import is_in_tests
-from openpype.lib import is_running_from_build
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline import legacy_io, PublishXmlValidationError
+from quadpype.pipeline.context_tools import get_current_project_name
+from quadpype.tests.lib import is_in_tests
+from quadpype.lib import is_running_from_build
 
-from openpype_modules.deadline import abstract_submit_deadline
-from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
-from openpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs, get_deadline_job_profile
+from quadpype_modules.deadline import abstract_submit_deadline
+from quadpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from quadpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs, get_deadline_job_profile
 
 import pyblish.api
 
@@ -37,7 +37,7 @@ class MayaSubmitRemotePublishDeadline(
     Artist having to wait for the publish to finish on their local machine.
 
     Submission is done through the Deadline Web Service. DL then triggers
-    `openpype/scripts/remote_publish.py`.
+    `quadpype/scripts/remote_publish.py`.
 
     Each publishable instance creates its own full publish job.
 
@@ -117,7 +117,7 @@ class MayaSubmitRemotePublishDeadline(
             "FTRACK_SERVER"
         ]
 
-        # Add OpenPype version if we are running from build.
+        # Add QuadPype version if we are running from build.
         if is_running_from_build():
             keys.append("QUADPYPE_VERSION")
 
@@ -145,7 +145,7 @@ class MayaSubmitRemotePublishDeadline(
 
         plugin_info = MayaPluginInfo()
         plugin_info.SceneFile = scene
-        plugin_info.ScriptFilename = "{QUADPYPE_REPOS_ROOT}/openpype/scripts/remote_publish.py"  # noqa
+        plugin_info.ScriptFilename = "{QUADPYPE_REPOS_ROOT}/quadpype/scripts/remote_publish.py"  # noqa
         plugin_info.Version = cmds.about(version=True)
         plugin_info.ProjectPath = cmds.workspace(query=True,
                                                  rootDirectory=True)

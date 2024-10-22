@@ -4,9 +4,9 @@ import tempfile
 import ftrack_api
 import rv
 
-from openpype.pipeline import publish
-from openpype.client import get_project
-from openpype.hosts.openrv.api.review import (
+from quadpype.pipeline import publish
+from quadpype.client import get_project
+from quadpype.hosts.openrv.api.review import (
     get_path_annotated_frame,
     extract_annotated_frame
 )
@@ -74,7 +74,7 @@ class ExtractOpenRVAnnotatedFrames(publish.Extractor):
         asset_version = session.query(asset_query).one()
 
         # Set up note details
-        properties_name = "{0}.openpype_review.comment".format(node)
+        properties_name = "{0}.quadpype_review.comment".format(node)
         note_text = ""
         if rv.commands.propertyExists(properties_name):
             note_text = rv.commands.getStringProperty(properties_name)[0]

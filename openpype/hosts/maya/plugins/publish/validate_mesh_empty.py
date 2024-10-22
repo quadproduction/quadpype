@@ -1,8 +1,8 @@
 from maya import cmds
 
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateMeshOrder,
     PublishValidationError
@@ -21,7 +21,7 @@ class ValidateMeshEmpty(pyblish.api.InstancePlugin):
     families = ["model"]
     label = "Mesh Empty"
     actions = [
-        openpype.hosts.maya.api.action.SelectInvalidAction, RepairAction
+        quadpype.hosts.maya.api.action.SelectInvalidAction, RepairAction
     ]
 
     @classmethod

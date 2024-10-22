@@ -1,6 +1,6 @@
 import pyblish
-from openpype.pipeline import PublishXmlValidationError
-from openpype.hosts.nuke import api as napi
+from quadpype.pipeline import PublishXmlValidationError
+from quadpype.hosts.nuke import api as napi
 import nuke
 
 

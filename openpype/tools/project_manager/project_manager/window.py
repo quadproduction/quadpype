@@ -1,11 +1,11 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import resources
-from openpype.style import load_stylesheet
-from openpype.widgets import PasswordDialog
-from openpype.lib import is_admin_password_required, Logger
-from openpype.pipeline import AvalonMongoDB
-from openpype.pipeline.project_folders import create_project_folders
+from quadpype import resources
+from quadpype.style import load_stylesheet
+from quadpype.widgets import PasswordDialog
+from quadpype.lib import is_admin_password_required, Logger
+from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline.project_folders import create_project_folders
 
 from . import (
     ProjectModel,

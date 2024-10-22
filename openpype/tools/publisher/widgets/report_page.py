@@ -9,8 +9,8 @@ except Exception:
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.style import get_objected_colors
-from openpype.tools.utils import (
+from quadpype.style import get_objected_colors
+from quadpype.tools.utils import (
     BaseClickableFrame,
     ClickableFrame,
     ExpandingTextEdit,

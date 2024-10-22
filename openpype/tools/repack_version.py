@@ -9,7 +9,7 @@ from zipfile import ZipFile
 from typing import List
 import hashlib
 import sys
-from igniter.bootstrap_repos import OpenPypeVersion
+from igniter.bootstrap_repos import QuadPypeVersion
 
 
 class VersionRepacker:
@@ -21,7 +21,7 @@ class VersionRepacker:
         self.version_path = Path(directory)
         self.zip_path = self.version_path.parent
         _version = {}
-        with open(self.version_path / "openpype" / "version.py") as fp:
+        with open(self.version_path / "quadpype" / "version.py") as fp:
             exec(fp.read(), _version)
         self._version_py = _version["__version__"]
         del _version
@@ -82,11 +82,11 @@ class VersionRepacker:
     def process(self):
         if (self.version_path / "pyproject.toml").exists():
             self._print(
-                ("This cannot run on OpenPype sources. "
+                ("This cannot run on QuadPype sources. "
                  "Please run it on extracted version."), 1)
             return
         self._print(f"Rehashing and zipping {self.version_path}")
-        version = OpenPypeVersion.version_in_str(self.version_path.name)
+        version = QuadPypeVersion.version_in_str(self.version_path.name)
         if not version:
             self._print("Cannot get version from directory", 1)
             return
@@ -115,7 +115,7 @@ class VersionRepacker:
             total=len(checksums), desc="Zipping directory",
             nits="%", color=(56, 211, 159))
 
-        zip_filename = self.zip_path / f"openpype-v{version}.zip"
+        zip_filename = self.zip_path / f"quadpype-v{version}.zip"
         with ZipFile(zip_filename, "w") as zip_file:
 
             for item in checksums:
@@ -137,15 +137,15 @@ class VersionRepacker:
         self._print(f"All done, you can find new zip here: {zip_filename}")
 
     @staticmethod
-    def _replace_version(version: OpenPypeVersion, path: Path):
+    def _replace_version(version: QuadPypeVersion, path: Path):
         """Replace version in version.py.
 
         Args:
-            version (OpenPypeVersion): OpenPype version to set
+            version (QuadPypeVersion): QuadPype version to set
             path (Path): Path to unzipped version.
 
         """
-        with open(path / "openpype" / "version.py", "r") as op_version_file:
+        with open(path / "quadpype" / "version.py", "r") as op_version_file:
             replacement = ""
 
             for line in op_version_file:
@@ -154,7 +154,7 @@ class VersionRepacker:
                     line = f'__version__ = "{version}"\n'
                 replacement += line
 
-        with open(path / "openpype" / "version.py", "w") as op_version_file:
+        with open(path / "quadpype" / "version.py", "w") as op_version_file:
             op_version_file.write(replacement)
 
 

@@ -12,14 +12,14 @@ from qtpy import QtWidgets, QtCore
 import qtawesome
 import appdirs
 
-from openpype.lib import JSONSettingRegistry
-from openpype.pipeline import install_host
-from openpype.hosts.traypublisher.api import TrayPublisherHost
-from openpype.tools.publisher.control_qt import QtPublisherController
-from openpype.tools.publisher.window import PublisherWindow
-from openpype.tools.utils import PlaceholderLineEdit, get_openpype_qt_app
-from openpype.tools.utils.constants import PROJECT_NAME_ROLE
-from openpype.tools.utils.models import (
+from quadpype.lib import JSONSettingRegistry
+from quadpype.pipeline import install_host
+from quadpype.hosts.traypublisher.api import TrayPublisherHost
+from quadpype.tools.publisher.control_qt import QtPublisherController
+from quadpype.tools.publisher.window import PublisherWindow
+from quadpype.tools.utils import PlaceholderLineEdit, get_quadpype_qt_app
+from quadpype.tools.utils.constants import PROJECT_NAME_ROLE
+from quadpype.tools.utils.models import (
     ProjectModel,
     ProjectSortFilterProxy
 )
@@ -35,7 +35,7 @@ class TrayPublisherController(QtPublisherController):
 
 
 class TrayPublisherRegistry(JSONSettingRegistry):
-    """Class handling OpenPype general settings registry.
+    """Class handling QuadPype general settings registry.
 
     Attributes:
         vendor (str): Name used for path construction.
@@ -263,7 +263,7 @@ def main():
     host = TrayPublisherHost()
     install_host(host)
 
-    app_instance = get_openpype_qt_app()
+    app_instance = get_quadpype_qt_app()
 
     if platform.system().lower() == "windows":
         import ctypes

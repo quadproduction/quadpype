@@ -2,7 +2,7 @@ import re
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.pipeline.create import (
+from quadpype.pipeline.create import (
     SUBSET_NAME_ALLOWED_SYMBOLS,
     PRE_CREATE_THUMBNAIL_KEY,
     DEFAULT_VARIANT_VALUE,

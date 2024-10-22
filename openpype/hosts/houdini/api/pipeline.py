@@ -1,35 +1,35 @@
 # -*- coding: utf-8 -*-
-"""Pipeline tools for OpenPype Houdini integration."""
+"""Pipeline tools for QuadPype Houdini integration."""
 import os
 import sys
 import logging
 
 import hou  # noqa
 
-from openpype.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
+from quadpype.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
 
 import pyblish.api
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     register_creator_plugin_path,
     register_loader_plugin_path,
     register_inventory_action_path,
     AVALON_CONTAINER_ID,
 )
-from openpype.pipeline.load import any_outdated_containers
-from openpype.hosts.houdini import HOUDINI_HOST_DIR
-from openpype.hosts.houdini.api import lib, shelves, creator_node_shelves
+from quadpype.pipeline.load import any_outdated_containers
+from quadpype.hosts.houdini import HOUDINI_HOST_DIR
+from quadpype.hosts.houdini.api import lib, shelves, creator_node_shelves
 
-from openpype.lib import (
+from quadpype.lib import (
     register_event_callback,
     emit_event,
 )
 
 
-log = logging.getLogger("openpype.hosts.houdini")
+log = logging.getLogger("quadpype.hosts.houdini")
 
 AVALON_CONTAINERS = "/obj/AVALON_CONTAINERS"
-CONTEXT_CONTAINER = "/obj/OpenPypeContext"
+CONTEXT_CONTAINER = "/obj/QuadPypeContext"
 IS_HEADLESS = not hasattr(hou, "ui")
 
 PLUGINS_DIR = os.path.join(HOUDINI_HOST_DIR, "plugins")
@@ -147,14 +147,14 @@ class HoudiniHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         """
         obj_network = hou.node("/obj")
         op_ctx = obj_network.createNode("subnet",
-                                        node_name="OpenPypeContext",
+                                        node_name="QuadPypeContext",
                                         run_init_scripts=False,
                                         load_contents=False)
 
         op_ctx.moveToGoodPosition()
         op_ctx.setBuiltExplicitly(False)
-        op_ctx.setCreatorState("OpenPype")
-        op_ctx.setComment("OpenPype node to hold context metadata")
+        op_ctx.setCreatorState("QuadPype")
+        op_ctx.setComment("QuadPype node to hold context metadata")
         op_ctx.setColor(hou.Color((0.081, 0.798, 0.810)))
         op_ctx.setDisplayFlag(False)
         op_ctx.hide(True)
@@ -230,7 +230,7 @@ def containerise(name,
     container.setName(container_name, unique_name=True)
 
     data = {
-        "schema": "openpype:container-2.0",
+        "schema": "quadpype:container-2.0",
         "id": AVALON_CONTAINER_ID,
         "name": name,
         "namespace": namespace,
@@ -261,7 +261,7 @@ def parse_container(container):
     data = lib.read(container)
 
     # Backwards compatibility pre-schemas for containers
-    data["schema"] = data.get("schema", "openpype:container-1.0")
+    data["schema"] = data.get("schema", "quadpype:container-1.0")
 
     # Append transient data
     data["objectName"] = container.path()
@@ -307,11 +307,11 @@ def _show_outdated_content_popup():
         log.info("Skipping outdated content pop-up "
                  "because Houdini window can't be found.")
     else:
-        from openpype.widgets import popup
+        from quadpype.widgets import popup
 
         # Show outdated pop-up
         def _on_show_inventory():
-            from openpype.tools.utils import host_tools
+            from quadpype.tools.utils import host_tools
             host_tools.show_scene_inventory(parent=parent)
 
         dialog = popup.Popup(parent=parent)

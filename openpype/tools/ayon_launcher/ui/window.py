@@ -1,9 +1,9 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import style
-from openpype import resources
+from quadpype import style
+from quadpype import resources
 
-from openpype.tools.ayon_launcher.control import BaseLauncherController
+from quadpype.tools.ayon_launcher.control import BaseLauncherController
 
 from .projects_widget import ProjectsWidget
 from .hierarchy_page import HierarchyPage

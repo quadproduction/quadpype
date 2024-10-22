@@ -1,10 +1,10 @@
 import os
 
-from openpype.lib import get_openpype_execute_args
-from openpype.lib.execute import run_detached_process
-from openpype.modules import (
+from quadpype.lib import get_quadpype_execute_args
+from quadpype.lib.execute import run_detached_process
+from quadpype.modules import (
     click_wrap,
-    OpenPypeModule,
+    QuadPypeModule,
     ITrayAction,
     IHostAddon,
 )
@@ -12,7 +12,7 @@ from openpype.modules import (
 TRAYPUBLISH_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class TrayPublishAddon(OpenPypeModule, IHostAddon, ITrayAction):
+class TrayPublishAddon(QuadPypeModule, IHostAddon, ITrayAction):
     label = "Publisher"
     name = "traypublisher"
     host_name = "traypublisher"
@@ -35,7 +35,7 @@ class TrayPublishAddon(OpenPypeModule, IHostAddon, ITrayAction):
         self.publish_paths.extend(publish_paths)
 
     def run_traypublisher(self):
-        args = get_openpype_execute_args(
+        args = get_quadpype_execute_args(
             "module", self.name, "launch"
         )
         run_detached_process(args)
@@ -55,6 +55,6 @@ def cli_main():
 def launch():
     """Launch TrayPublish tool UI."""
 
-    from openpype.tools import traypublisher
+    from quadpype.tools import traypublisher
 
     traypublisher.main()

@@ -1,6 +1,6 @@
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishValidationError
 )
@@ -12,7 +12,7 @@ class ValidateInstanceHasMembers(pyblish.api.InstancePlugin):
     order = ValidateContentsOrder
     hosts = ["maya"]
     label = 'Instance has members'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
 
     @classmethod
     def get_invalid(cls, instance):

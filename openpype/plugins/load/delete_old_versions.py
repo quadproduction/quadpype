@@ -7,12 +7,12 @@ from pymongo import UpdateOne
 import qargparse
 from qtpy import QtWidgets, QtCore
 
-from openpype import style
-from openpype.client import get_versions, get_representations
-from openpype.modules import ModulesManager
-from openpype.lib import format_file_size
-from openpype.pipeline import load, AvalonMongoDB, Anatomy
-from openpype.pipeline.load import (
+from quadpype import style
+from quadpype.client import get_versions, get_representations
+from quadpype.modules import ModulesManager
+from quadpype.lib import format_file_size
+from quadpype.pipeline import load, AvalonMongoDB, Anatomy
+from quadpype.pipeline.load import (
     get_representation_path_with_anatomy,
     InvalidRepresentationContext,
 )

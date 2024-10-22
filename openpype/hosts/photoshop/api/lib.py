@@ -3,12 +3,12 @@ import sys
 import contextlib
 import traceback
 
-from openpype.lib import env_value_to_bool, Logger
-from openpype.modules import ModulesManager
-from openpype.pipeline import install_host
-from openpype.tools.utils import host_tools
-from openpype.tools.utils import get_openpype_qt_app
-from openpype.tests.lib import is_in_tests
+from quadpype.lib import env_value_to_bool, Logger
+from quadpype.modules import ModulesManager
+from quadpype.pipeline import install_host
+from quadpype.tools.utils import host_tools
+from quadpype.tools.utils import get_quadpype_qt_app
+from quadpype.tests.lib import is_in_tests
 
 from .launch_logic import ProcessLauncher, stub
 
@@ -20,7 +20,7 @@ def safe_excepthook(*args):
 
 
 def main(*subprocess_args):
-    from openpype.hosts.photoshop.api import PhotoshopHost
+    from quadpype.hosts.photoshop.api import PhotoshopHost
 
     host = PhotoshopHost()
     install_host(host)
@@ -29,7 +29,7 @@ def main(*subprocess_args):
 
     # coloring in StdOutBroker
     os.environ["QUADPYPE_LOG_NO_COLORS"] = "False"
-    app = get_openpype_qt_app()
+    app = get_quadpype_qt_app()
     app.setQuitOnLastWindowClosed(False)
 
     launcher = ProcessLauncher(subprocess_args)

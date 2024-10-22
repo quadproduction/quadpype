@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from maya import cmds, mel  # noqa: F401
 
-from openpype.hosts.maya.api.pipeline import containerise
-from openpype.hosts.maya.api import lib, Loader
-from openpype.pipeline.load import get_representation_path, LoadError
+from quadpype.hosts.maya.api.pipeline import containerise
+from quadpype.hosts.maya.api import lib, Loader
+from quadpype.pipeline.load import get_representation_path, LoadError
 
 
 class MatchmoveLoader(Loader):

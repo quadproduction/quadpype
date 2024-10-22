@@ -1,10 +1,10 @@
 import qtawesome
 
-from openpype.hosts.openrv.api.pipeline import (
+from quadpype.hosts.openrv.api.pipeline import (
     read, imprint
 )
-from openpype.client import get_asset_by_name
-from openpype.pipeline import (
+from quadpype.client import get_asset_by_name
+from quadpype.pipeline import (
     AutoCreator,
     CreatedInstance,
     legacy_io
@@ -19,7 +19,7 @@ class OpenRVWorkfileCreator(AutoCreator):
     default_variant = "Main"
     create_allow_context_change = False
     data_store_node = "root"
-    data_store_prefix = "openpype_workfile."
+    data_store_prefix = "quadpype_workfile."
 
     def collect_instances(self):
 

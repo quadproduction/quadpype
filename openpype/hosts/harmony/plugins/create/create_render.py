@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Create render node."""
-import openpype.hosts.harmony.api as harmony
-from openpype.hosts.harmony.api import plugin
+import quadpype.hosts.harmony.api as harmony
+from quadpype.hosts.harmony.api import plugin
 
 
 class CreateRender(plugin.Creator):

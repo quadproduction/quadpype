@@ -4,7 +4,7 @@ import json
 import re
 
 import pyblish.api
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 
 class CollectPalettes(pyblish.api.ContextPlugin):

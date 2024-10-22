@@ -4,9 +4,9 @@ import collections
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 
-from openpype.tools.flickcharm import FlickCharm
-from openpype.tools.utils.assets_widget import SingleSelectAssetsWidget
-from openpype.tools.utils.tasks_widget import TasksWidget
+from quadpype.tools.flickcharm import FlickCharm
+from quadpype.tools.utils.assets_widget import SingleSelectAssetsWidget
+from quadpype.tools.utils.tasks_widget import TasksWidget
 
 from .delegates import ActionDelegate
 from . import lib

@@ -1,18 +1,18 @@
 import re
 
-from openpype.pipeline import LoaderPlugin
-from openpype.pipeline.create import (
+from quadpype.pipeline import LoaderPlugin
+from quadpype.pipeline.create import (
     CreatedInstance,
     get_subset_name,
     AutoCreator,
     Creator,
 )
-from openpype.pipeline.create.creator_plugins import cache_and_get_instances
+from quadpype.pipeline.create.creator_plugins import cache_and_get_instances
 
 from .lib import get_layers_data
 
 
-SHARED_DATA_KEY = "openpype.tvpaint.instances"
+SHARED_DATA_KEY = "quadpype.tvpaint.instances"
 
 
 class TVPaintCreatorCommon:

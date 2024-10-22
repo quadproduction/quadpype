@@ -4,23 +4,23 @@ from rv.rvtypes import MinorMode
 
 from qtpy import QtCore
 
-# On OpenPype installation it moves `openpype.modules` entries into
-# `openpype_modules`. However, if OpenPype installation has not triggered yet.
-# For example when the openpype_menus RV package hasn't loaded then the move
+# On QuadPype installation it moves `quadpype.modules` entries into
+# `quadpype_modules`. However, if QuadPype installation has not triggered yet.
+# For example when the quadpype_menus RV package hasn't loaded then the move
 # of that package hasn't happened. So we'll allow both ways to import to ensure
 # it is found
 try:
-    from openpype_modules.python_console_interpreter.window import PythonInterpreterWidget  # noqa
+    from quadpype_modules.python_console_interpreter.window import PythonInterpreterWidget  # noqa
 except ModuleNotFoundError:
-    from openpype.modules.python_console_interpreter.window import PythonInterpreterWidget  # noqa
+    from quadpype.modules.python_console_interpreter.window import PythonInterpreterWidget  # noqa
 
 
-class OpenPypeMenus(MinorMode):
+class QuadPypeMenus(MinorMode):
 
     def __init__(self):
         MinorMode.__init__(self)
         self.init(
-            name="py-openpype-scripteditor",
+            name="py-quadpype-scripteditor",
             globalBindings=None,
             overrideBindings=None,
             menu=[
@@ -79,4 +79,4 @@ class OpenPypeMenus(MinorMode):
 
 
 def createMode():
-    return OpenPypeMenus()
+    return QuadPypeMenus()

@@ -1,11 +1,11 @@
 import os
 
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 from .utils import RESOLVE_ROOT_DIR
 
 
-class ResolveAddon(OpenPypeModule, IHostAddon):
+class ResolveAddon(QuadPypeModule, IHostAddon):
     name = "resolve"
     host_name = "resolve"
 

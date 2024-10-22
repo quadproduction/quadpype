@@ -5,13 +5,13 @@ from bson.objectid import ObjectId
 
 from aiohttp.web_response import Response
 
-from openpype.client import (
+from quadpype.client import (
     get_projects,
     get_project,
     get_assets,
     get_asset_by_name,
 )
-from openpype_modules.webserver.base_routes import RestApiEndpoint
+from quadpype_modules.webserver.base_routes import RestApiEndpoint
 
 
 class _RestApiEndpoint(RestApiEndpoint):

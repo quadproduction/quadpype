@@ -15,16 +15,16 @@ from pymongo.collection import Collection
 from qtpy import QtCore, QtWidgets
 from qtpy.QtGui import QClipboard, QColor
 
-from openpype import style
-from openpype.client import OpenPypeMongoConnection
-from openpype.lib import JSONSettingRegistry
-from openpype.tools.utils import PlaceholderLineEdit, get_openpype_qt_app
-from openpype.tools.utils.constants import PROJECT_NAME_ROLE
-from openpype.tools.utils.models import ProjectModel, ProjectSortFilterProxy
+from quadpype import style
+from quadpype.client import QuadPypeMongoConnection
+from quadpype.lib import JSONSettingRegistry
+from quadpype.tools.utils import PlaceholderLineEdit, get_quadpype_qt_app
+from quadpype.tools.utils.constants import PROJECT_NAME_ROLE
+from quadpype.tools.utils.models import ProjectModel, ProjectSortFilterProxy
 
 
 class AssetReporterRegistry(JSONSettingRegistry):
-    """Class handling OpenPype general settings registry.
+    """Class handling QuadPype general settings registry.
 
     This is used to store last selected project.
 
@@ -348,7 +348,7 @@ class AssetReporterWindow(QtWidgets.QDialog):
             }
         ]
 
-        client = OpenPypeMongoConnection.get_mongo_client()
+        client = QuadPypeMongoConnection.get_mongo_client()
         db = client["avalon"]
 
         result = db[project].aggregate(pipeline)
@@ -408,7 +408,7 @@ class AssetReporterWindow(QtWidgets.QDialog):
 
 
 def main():
-    app_instance = get_openpype_qt_app()
+    app_instance = get_quadpype_qt_app()
     window = AssetReporterWindow()
     window.show()
     app_instance.exec_()

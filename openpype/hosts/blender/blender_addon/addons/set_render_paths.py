@@ -3,8 +3,8 @@ import os
 
 import bpy
 
-from openpype.hosts.blender.api.pipeline import get_path_from_template
-from openpype.lib import open_in_explorer
+from quadpype.hosts.blender.api.pipeline import get_path_from_template
+from quadpype.lib import open_in_explorer
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)

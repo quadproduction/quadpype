@@ -3,11 +3,11 @@ from typing import List
 import bpy
 
 import pyblish.api
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     OptionalPyblishPluginMixin,
     PublishValidationError
 )
-import openpype.hosts.blender.api.action
+import quadpype.hosts.blender.api.action
 
 
 class ValidateObjectIsInObjectMode(
@@ -20,7 +20,7 @@ class ValidateObjectIsInObjectMode(
     hosts = ["blender"]
     families = ["model", "rig", "layout"]
     label = "Validate Object Mode"
-    actions = [openpype.hosts.blender.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.blender.api.action.SelectInvalidAction]
     optional = False
 
     @staticmethod

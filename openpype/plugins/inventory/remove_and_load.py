@@ -1,12 +1,12 @@
-from openpype.pipeline import InventoryAction
-from openpype.pipeline import get_current_project_name
-from openpype.pipeline.load.plugins import discover_loader_plugins
-from openpype.pipeline.load.utils import (
+from quadpype.pipeline import InventoryAction
+from quadpype.pipeline import get_current_project_name
+from quadpype.pipeline.load.plugins import discover_loader_plugins
+from quadpype.pipeline.load.utils import (
     get_loader_identifier,
     remove_container,
     load_container,
 )
-from openpype.client import get_representation_by_id
+from quadpype.client import get_representation_by_id
 
 
 class RemoveAndLoad(InventoryAction):

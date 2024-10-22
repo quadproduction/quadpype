@@ -1,5 +1,5 @@
-from openpype.settings import get_system_settings, get_project_settings, MODULES_SETTINGS_KEY
-from openpype.modules.shotgrid.lib.const import MODULE_NAME
+from quadpype.settings import get_system_settings, get_project_settings, MODULES_SETTINGS_KEY
+from quadpype.modules.shotgrid.lib.const import MODULE_NAME
 
 
 def get_shotgrid_project_settings(project):

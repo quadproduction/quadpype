@@ -14,7 +14,7 @@ from .custom_attributes import (
     default_custom_attributes_definition,
     app_definitions_from_app_manager,
     tool_definitions_from_app_manager,
-    get_openpype_attr,
+    get_quadpype_attr,
     query_custom_attributes
 )
 
@@ -39,7 +39,7 @@ __all__ = (
     "default_custom_attributes_definition",
     "app_definitions_from_app_manager",
     "tool_definitions_from_app_manager",
-    "get_openpype_attr",
+    "get_quadpype_attr",
     "query_custom_attributes",
 
     "avalon_sync",

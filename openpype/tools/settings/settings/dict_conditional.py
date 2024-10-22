@@ -10,7 +10,7 @@ from .wrapper_widgets import (
     FormWrapper
 )
 from .base import BaseWidget
-from openpype.tools.settings import CHILD_OFFSET
+from quadpype.tools.settings import CHILD_OFFSET
 
 
 class DictConditionalWidget(BaseWidget):

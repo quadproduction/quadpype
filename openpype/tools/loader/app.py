@@ -3,18 +3,18 @@ import traceback
 
 from qtpy import QtWidgets, QtCore
 
-from openpype.client import get_projects, get_project
-from openpype import style
-from openpype.lib import register_event_callback
-from openpype.pipeline import (
-    install_openpype_plugins,
+from quadpype.client import get_projects, get_project
+from quadpype import style
+from quadpype.lib import register_event_callback
+from quadpype.pipeline import (
+    install_quadpype_plugins,
     legacy_io,
 )
-from openpype.tools.utils import (
+from quadpype.tools.utils import (
     lib,
     PlaceholderLineEdit
 )
-from openpype.tools.utils.assets_widget import MultiSelectAssetsWidget
+from quadpype.tools.utils.assets_widget import MultiSelectAssetsWidget
 
 from .widgets import (
     SubsetWidget,
@@ -25,7 +25,7 @@ from .widgets import (
     OverlayFrame
 )
 
-from openpype.modules import ModulesManager
+from quadpype.modules import ModulesManager
 
 module = sys.modules[__name__]
 module.window = None
@@ -620,6 +620,6 @@ def cli(args):
     # Store settings
     legacy_io.Session["AVALON_PROJECT"] = project
 
-    install_openpype_plugins(project)
+    install_quadpype_plugins(project)
 
     show()

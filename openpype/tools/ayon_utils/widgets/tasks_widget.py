@@ -1,7 +1,7 @@
 from qtpy import QtWidgets, QtGui, QtCore
 
-from openpype.style import get_disabled_entity_icon_color
-from openpype.tools.utils import DeselectableTreeView
+from quadpype.style import get_disabled_entity_icon_color
+from quadpype.tools.utils import DeselectableTreeView
 
 from .utils import RefreshThread, get_qt_icon
 

@@ -2,7 +2,7 @@ import os
 
 from maya import cmds
 
-from openpype.pipeline import publish
+from quadpype.pipeline import publish
 
 
 class ExtractUnrealYetiCache(publish.Extractor):

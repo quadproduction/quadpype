@@ -1,8 +1,8 @@
 import pyblish.api
 from maya import cmds
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     PublishValidationError, ValidateContentsOrder)
 
 
@@ -17,7 +17,7 @@ class ValidateSingleShader(pyblish.api.InstancePlugin):
     families = ['look']
     hosts = ['maya']
     label = 'Look Single Shader Per Shape'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
 
     # The default connections to check
     def process(self, instance):

@@ -3,8 +3,8 @@ from pathlib import Path
 
 import unreal
 
-from openpype.pipeline import CreatorError
-from openpype.hosts.unreal.api.plugin import (
+from quadpype.pipeline import CreatorError
+from quadpype.hosts.unreal.api.plugin import (
     UnrealAssetCreator,
 )
 

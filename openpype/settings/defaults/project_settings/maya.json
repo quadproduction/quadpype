@@ -461,11 +461,11 @@
         "enabled": true
     },
     "scriptsmenu": {
-        "name": "OpenPype Tools",
+        "name": "QuadPype Tools",
         "definition": [
             {
                 "type": "action",
-                "command": "import openpype.hosts.maya.api.commands as op_cmds; op_cmds.edit_shader_definitions()",
+                "command": "import quadpype.hosts.maya.api.commands as op_cmds; op_cmds.edit_shader_definitions()",
                 "sourcetype": "python",
                 "title": "Edit shader name definitions",
                 "tooltip": "Edit shader name definitions used in validation and renaming.",

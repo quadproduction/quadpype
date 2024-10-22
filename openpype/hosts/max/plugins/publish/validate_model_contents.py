@@ -2,7 +2,7 @@
 import pyblish.api
 from pymxs import runtime as rt
 
-from openpype.pipeline import PublishValidationError
+from quadpype.pipeline import PublishValidationError
 
 
 class ValidateModelContent(pyblish.api.InstancePlugin):

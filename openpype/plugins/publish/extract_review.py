@@ -11,13 +11,13 @@ import clique
 import speedcopy
 import pyblish.api
 
-from openpype.lib import (
+from quadpype.lib import (
     get_ffmpeg_tool_args,
     filter_profiles,
     path_to_subprocess_arg,
     run_subprocess,
 )
-from openpype.lib.transcoding import (
+from quadpype.lib.transcoding import (
     IMAGE_EXTENSIONS,
     get_ffprobe_streams,
     get_video_metadata,
@@ -26,11 +26,11 @@ from openpype.lib.transcoding import (
     convert_input_paths_for_ffmpeg,
     get_transcode_temp_directory,
 )
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     KnownPublishError,
     get_publish_instance_label,
 )
-from openpype.pipeline.publish.lib import add_repre_files_for_cleanup
+from quadpype.pipeline.publish.lib import add_repre_files_for_cleanup
 
 
 class ExtractReview(pyblish.api.InstancePlugin):
@@ -40,7 +40,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
     otherwise the representation is ignored.
 
     All new representations are created and encoded by ffmpeg following
-    presets found in OpenPype Settings interface at
+    presets found in QuadPype Settings interface at
     `project_settings/global/publish/ExtractReview/profiles:outputs`.
     """
 

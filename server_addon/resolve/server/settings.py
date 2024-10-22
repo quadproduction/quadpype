@@ -77,8 +77,8 @@ class CreatorPluginsModel(BaseSettingsModel):
 
 
 class ResolveSettings(BaseSettingsModel):
-    launch_openpype_menu_on_start: bool = SettingsField(
-        False, title="Launch OpenPype menu on start of Resolve"
+    launch_quadpype_menu_on_start: bool = SettingsField(
+        False, title="Launch QuadPype menu on start of Resolve"
     )
     imageio: ResolveImageIOModel = SettingsField(
         default_factory=ResolveImageIOModel,
@@ -91,7 +91,7 @@ class ResolveSettings(BaseSettingsModel):
 
 
 DEFAULT_VALUES = {
-    "launch_openpype_menu_on_start": False,
+    "launch_quadpype_menu_on_start": False,
     "create": {
         "CreateShotClip": {
             "hierarchy": "{folder}/{sequence}",

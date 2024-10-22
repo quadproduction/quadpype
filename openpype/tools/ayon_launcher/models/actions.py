@@ -1,8 +1,8 @@
 import os
 
-from openpype import resources
-from openpype.lib import Logger, OpenPypeSettingsRegistry
-from openpype.pipeline.actions import (
+from quadpype import resources
+from quadpype.lib import Logger, QuadPypeSettingsRegistry
+from quadpype.pipeline.actions import (
     discover_launcher_actions,
     LauncherAction,
 )
@@ -47,7 +47,7 @@ class ApplicationAction(LauncherAction):
 
     Handling of applications in launcher is not ideal and should be completely
     redone from scratch. This is just a temporary solution to keep backwards
-    compatibility with OpenPype launcher.
+    compatibility with QuadPype launcher.
 
     Todos:
         Move handling of errors to frontend.
@@ -99,7 +99,7 @@ class ApplicationAction(LauncherAction):
 
     def _show_message_box(self, title, message, details=None):
         from qtpy import QtWidgets, QtGui
-        from openpype import style
+        from quadpype import style
 
         dialog = QtWidgets.QMessageBox()
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
@@ -114,7 +114,7 @@ class ApplicationAction(LauncherAction):
     def process(self, session, **kwargs):
         """Process the full Application action"""
 
-        from openpype.lib import (
+        from quadpype.lib import (
             ApplictionExecutableNotFound,
             ApplicationLaunchFailed,
         )
@@ -276,7 +276,7 @@ class ActionsModel:
         self._actions = None
         self._action_items = {}
 
-        self._launcher_tool_reg = OpenPypeSettingsRegistry("launcher_tool")
+        self._launcher_tool_reg = QuadPypeSettingsRegistry("launcher_tool")
 
     @property
     def log(self):
@@ -474,7 +474,7 @@ class ActionsModel:
         return action_items
 
     def _get_applications_action_classes(self):
-        from openpype.lib.applications import (
+        from quadpype.lib.applications import (
             CUSTOM_LAUNCH_APP_GROUPS,
             ApplicationManager,
         )

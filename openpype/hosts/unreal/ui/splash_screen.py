@@ -1,5 +1,5 @@
 from qtpy import QtWidgets, QtCore, QtGui
-from openpype import style, resources
+from quadpype import style, resources
 
 
 class SplashScreen(QtWidgets.QDialog):

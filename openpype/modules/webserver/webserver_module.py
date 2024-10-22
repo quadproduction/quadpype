@@ -1,6 +1,6 @@
 """WebServerModule spawns aiohttp server in asyncio loop.
 
-Main usage of the module is in OpenPype tray where make sense to add ability
+Main usage of the module is in QuadPype tray where make sense to add ability
 of other modules to add theirs routes. Module which would want use that
 option must have implemented method `webserver_initialization` which must
 expect `WebServerManager` object where is possible to add routes or paths
@@ -23,11 +23,11 @@ of server.
 import os
 import socket
 
-from openpype import resources
-from openpype.modules import OpenPypeModule, ITrayService
+from quadpype import resources
+from quadpype.modules import QuadPypeModule, ITrayService
 
 
-class WebServerModule(OpenPypeModule, ITrayService):
+class WebServerModule(QuadPypeModule, ITrayService):
     name = "webserver"
     label = "WebServer"
 
@@ -79,7 +79,7 @@ class WebServerModule(OpenPypeModule, ITrayService):
         )
 
     def _add_listeners(self):
-        from openpype_modules.webserver import host_console_listener
+        from quadpype_modules.webserver import host_console_listener
 
         self._host_listener = host_console_listener.HostListener(
             self.server_manager, self

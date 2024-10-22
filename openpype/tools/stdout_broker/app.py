@@ -6,8 +6,8 @@ import websocket
 import json
 from datetime import datetime
 
-from openpype.lib import Logger
-from openpype_modules.webserver.host_console_listener import MsgAction
+from quadpype.lib import Logger
+from quadpype_modules.webserver.host_console_listener import MsgAction
 
 log = Logger.get_logger(__name__)
 

@@ -5,11 +5,11 @@ import tempfile
 import shutil
 import asyncio
 
-from openpype.hosts.tvpaint.api.communication_server import (
+from quadpype.hosts.tvpaint.api.communication_server import (
     BaseCommunicator,
     CommunicationWrapper
 )
-from openpype_modules.job_queue.job_workers import WorkerJobsConnection
+from quadpype_modules.job_queue.job_workers import WorkerJobsConnection
 
 from .worker_job import ProcessTVPaintCommands
 

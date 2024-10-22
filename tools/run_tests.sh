@@ -48,7 +48,7 @@ BIWhite='\033[1;97m'      # White
 ###############################################################################
 clean_pyc () {
   local path
-  path=$openpype_root
+  path=$quadpype_root
   echo -e "${BIGreen}>>>${RST} Cleaning pyc at [ ${BIWhite}$path${RST} ] ... \c"
   find "$path" -path ./build -prune -o -regex '^.*\(__pycache__\|\.py[co]\)$' -delete
   echo -e "${BIGreen}DONE${RST}"
@@ -70,12 +70,12 @@ realpath () {
 # Main
 main () {
   # Directories
-  openpype_root=$(realpath $(dirname $(dirname "${BASH_SOURCE[0]}")))
+  quadpype_root=$(realpath $(dirname $(dirname "${BASH_SOURCE[0]}")))
 
-  _inside_openpype_tool="1"
+  _inside_quadpype_tool="1"
 
   if [[ -z $POETRY_HOME ]]; then
-    export POETRY_HOME="$openpype_root/.poetry"
+    export POETRY_HOME="$quadpype_root/.poetry"
   fi
 
   echo -e "${BIGreen}>>>${RST} Reading Poetry ... \c"
@@ -84,15 +84,15 @@ main () {
   else
     echo -e "${BIYellow}NOT FOUND${RST}"
     echo -e "${BIYellow}***${RST} We need to install Poetry and virtual env ..."
-    . "$openpype_root/tools/create_env.sh" || { echo -e "${BIRed}!!!${RST} Poetry installation failed"; return; }
+    . "$quadpype_root/tools/create_env.sh" || { echo -e "${BIRed}!!!${RST} Poetry installation failed"; return; }
   fi
 
-  pushd "$openpype_root" || return > /dev/null
+  pushd "$quadpype_root" || return > /dev/null
 
   echo -e "${BIGreen}>>>${RST} Starting QuadPype tests ..."
   original_pythonpath=$PYTHONPATH
-  export PYTHONPATH="$openpype_root:$PYTHONPATH"
-  "$POETRY_HOME/bin/poetry" run pytest -x --capture=sys --print -W ignore::DeprecationWarning "$openpype_root/tests"
+  export PYTHONPATH="$quadpype_root:$PYTHONPATH"
+  "$POETRY_HOME/bin/poetry" run pytest -x --capture=sys --print -W ignore::DeprecationWarning "$quadpype_root/tests"
   PYTHONPATH=$original_pythonpath
 }
 

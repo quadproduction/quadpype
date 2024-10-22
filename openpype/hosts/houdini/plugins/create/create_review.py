@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating openGL reviews."""
-from openpype.hosts.houdini.api import plugin
-from openpype.lib import EnumDef, BoolDef, NumberDef
+from quadpype.hosts.houdini.api import plugin
+from quadpype.lib import EnumDef, BoolDef, NumberDef
 
 import os
 import hou
@@ -10,7 +10,7 @@ import hou
 class CreateReview(plugin.HoudiniCreator):
     """Review with OpenGL ROP"""
 
-    identifier = "io.openpype.creators.houdini.review"
+    identifier = "io.quadpype.creators.houdini.review"
     label = "Review"
     family = "review"
     icon = "video-camera"
@@ -134,7 +134,7 @@ class CreateReview(plugin.HoudiniCreator):
     def set_colorcorrect_to_default_view_space(self,
                                                instance_node):
         """Set ociocolorspace to the default output space."""
-        from openpype.hosts.houdini.api.colorspace import get_default_display_view_colorspace  # noqa
+        from quadpype.hosts.houdini.api.colorspace import get_default_display_view_colorspace  # noqa
 
         # set Color Correction parameter to OpenColorIO
         instance_node.setParms({"colorcorrect": 2})

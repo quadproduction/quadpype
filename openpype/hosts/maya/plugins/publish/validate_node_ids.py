@@ -1,11 +1,11 @@
 import pyblish.api
 
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     ValidatePipelineOrder,
     PublishXmlValidationError
 )
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api import lib
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api import lib
 
 
 class ValidateNodeIDs(pyblish.api.InstancePlugin):
@@ -28,8 +28,8 @@ class ValidateNodeIDs(pyblish.api.InstancePlugin):
                 "yetiRig",
                 "assembly"]
 
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction,
-               openpype.hosts.maya.api.action.GenerateUUIDsOnInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction,
+               quadpype.hosts.maya.api.action.GenerateUUIDsOnInvalidAction]
 
     def process(self, instance):
         """Process all meshes"""

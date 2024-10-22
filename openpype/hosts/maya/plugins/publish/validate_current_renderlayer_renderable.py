@@ -1,7 +1,7 @@
 import pyblish.api
 
 from maya import cmds
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     context_plugin_should_run,
     OptionalPyblishPluginMixin
 )

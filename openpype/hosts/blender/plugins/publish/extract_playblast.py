@@ -4,10 +4,10 @@ import clique
 import bpy
 
 import pyblish.api
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline import publish
-from openpype.hosts.blender.api import capture
-from openpype.hosts.blender.api.lib import maintained_time
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline import publish
+from quadpype.hosts.blender.api import capture
+from quadpype.hosts.blender.api.lib import maintained_time
 
 
 class ExtractPlayblast(publish.Extractor, publish.OptionalPyblishPluginMixin):

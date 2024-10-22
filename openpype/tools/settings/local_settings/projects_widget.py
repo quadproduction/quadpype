@@ -1,9 +1,9 @@
 import platform
 import copy
 from qtpy import QtWidgets, QtCore, QtGui
-from openpype.tools.settings.settings import ProjectListWidget
-from openpype.tools.utils import PlaceholderLineEdit
-from openpype.settings import (
+from quadpype.tools.settings.settings import ProjectListWidget
+from quadpype.tools.utils import PlaceholderLineEdit
+from quadpype.settings import (
     DEFAULT_PROJECT_KEY,
     PROJECT_SETTINGS_KEY
 )

@@ -8,31 +8,31 @@ from datetime import datetime
 import requests
 import pyblish.api
 
-from openpype.pipeline import legacy_io
-from openpype.pipeline.publish import (
-    OpenPypePyblishPluginMixin
+from quadpype.pipeline import legacy_io
+from quadpype.pipeline.publish import (
+    QuadPypePyblishPluginMixin
 )
-from openpype.pipeline.context_tools import _get_modules_manager
-from openpype.modules.deadline.utils import (
+from quadpype.pipeline.context_tools import _get_modules_manager
+from quadpype.modules.deadline.utils import (
     set_custom_deadline_name,
     get_deadline_job_profile,
     DeadlineDefaultJobAttrs
 )
-from openpype.tests.lib import is_in_tests
-from openpype.lib import (
+from quadpype.tests.lib import is_in_tests
+from quadpype.lib import (
     is_running_from_build,
     BoolDef,
     NumberDef,
     EnumDef
 )
 
-from openpype_modules.deadline import (
+from quadpype_modules.deadline import (
     get_deadline_limits_plugin
 )
 
 
 class NukeSubmitDeadline(pyblish.api.InstancePlugin,
-                         OpenPypePyblishPluginMixin,
+                         QuadPypePyblishPluginMixin,
                          DeadlineDefaultJobAttrs):
     """Submit write to Deadline
 
@@ -445,7 +445,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
             "QUADPYPE_SG_USER",
         ]
 
-        # Add OpenPype version if we are running from build.
+        # Add QuadPype version if we are running from build.
         if is_running_from_build():
             keys.append("QUADPYPE_VERSION")
 
@@ -471,7 +471,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
                             if key in os.environ}, **legacy_io.Session)
 
         for _path in os.environ:
-            if _path.lower().startswith('openpype_'):
+            if _path.lower().startswith('quadpype_'):
                 environment[_path] = os.environ[_path]
 
         # to recognize render jobs

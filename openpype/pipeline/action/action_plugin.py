@@ -1,7 +1,7 @@
 import os
 import logging
 
-from openpype.pipeline.plugin_discover import (
+from quadpype.pipeline.plugin_discover import (
     discover,
     register_plugin,
     register_plugin_path,

@@ -1,6 +1,6 @@
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     PublishValidationError,
     ValidateContentsOrder,
     OptionalPyblishPluginMixin
@@ -17,7 +17,7 @@ class ValidateAnimatedReferenceRig(pyblish.api.InstancePlugin,
     families = ["animation.fbx"]
     label = "Animated Reference Rig"
     accepted_controllers = ["transform", "locator"]
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = False
 
     def process(self, instance):

@@ -71,16 +71,16 @@ $HOSTS="aftereffects","photoshop"
 # Set Poetry Python Environment
 $current_dir = Get-Location
 $script_dir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$openpype_root = (Get-Item $script_dir).parent.parent.FullName
+$quadpype_root = (Get-Item $script_dir).parent.parent.FullName
 if (-not (Test-Path 'env:POETRY_HOME')) {
-    $env:POETRY_HOME = "$openpype_root\.poetry"
+    $env:POETRY_HOME = "$quadpype_root\.poetry"
 }
-$env:PYTHONPATH="$($openpype_root);$($env:PYTHONPATH)"
-$env:QUADPYPE_ROOT="$($openpype_root)"
+$env:PYTHONPATH="$($quadpype_root);$($env:PYTHONPATH)"
+$env:QUADPYPE_ROOT="$($quadpype_root)"
 Set-Location -Path $current_dir
 
 foreach ($CURR_HOST in $HOSTS) {
-    $HOST_PATH="$PATH_QUADPYPE_DIR\openpype\hosts\$CURR_HOST"
+    $HOST_PATH="$PATH_QUADPYPE_DIR\quadpype\hosts\$CURR_HOST"
     $HOST_ZXP_SOURCE="$HOST_PATH\api\extension\"
     $HOST_ZXP_CHECKSUMS="$HOST_PATH\api\checksums"
     $HOST_ZXP_DEST="$HOST_PATH\api\extension.zxp"
@@ -105,7 +105,7 @@ foreach ($CURR_HOST in $HOSTS) {
     }
 
     # Bump xml version
-    & "$($env:POETRY_HOME)\bin\poetry" run python "$($openpype_root)\tools\zxp\generate_zxp.py" --upgrade-xml-version $HOST_ZXP_XML
+    & "$($env:POETRY_HOME)\bin\poetry" run python "$($quadpype_root)\tools\zxp\generate_zxp.py" --upgrade-xml-version $HOST_ZXP_XML
     # Generate and sign the ZXP file with the QuadPype certificate
     & $PATH_ZXP_SIGN_SOFTWARE -sign $HOST_ZXP_SOURCE $HOST_ZXP_DEST $PATH_ZXP_CERTIFICATE QuadPype
     # Generate new checksum

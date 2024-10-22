@@ -1,10 +1,10 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import style
-from openpype.resources import get_resource
+from quadpype import style
+from quadpype.resources import get_resource
 
-from openpype.settings import get_system_settings, GENERAL_SETTINGS_KEY
-from openpype.settings.lib import (
+from quadpype.settings import get_system_settings, GENERAL_SETTINGS_KEY
+from quadpype.settings.lib import (
     get_local_settings,
     save_local_settings
 )

@@ -15,8 +15,8 @@ import time
 
 from tests.lib.db_handler import DBHandler
 from tests.lib.file_handler import RemoteFileHandler, LocalFileHandler
-from openpype.modules import ModulesManager
-from openpype.settings import get_project_settings
+from quadpype.modules import ModulesManager
+from quadpype.settings import get_project_settings
 
 
 class BaseTest:
@@ -34,10 +34,10 @@ class ModuleUnitTest(BaseTest):
             project_settings - fixture for project settings with session scope
             download_test_data - tmp folder with extracted data from GDrive
             env_var - sets env vars from input file
-            db_setup - prepares avalon AND openpype DBs for testing from
+            db_setup - prepares avalon AND quadpype DBs for testing from
                         binary dumps from input data
             dbcon - returns DBConnection to AvalonDB
-            dbcon_openpype - returns DBConnection for QuadPypeMongoDB
+            dbcon_quadpype - returns DBConnection for QuadPypeMongoDB
 
     """
     PERSIST = False  # True to not purge temporary folder nor test DB
@@ -45,7 +45,7 @@ class ModuleUnitTest(BaseTest):
     TEST_QUADPYPE_MONGO = "mongodb://localhost:27017"
     TEST_DB_NAME = "avalon_tests"
     TEST_PROJECT_NAME = "test_project"
-    TEST_QUADPYPE_NAME = "openpype_tests"
+    TEST_QUADPYPE_NAME = "quadpype_tests"
 
     TEST_FILES = []
 
@@ -143,22 +143,22 @@ class ModuleUnitTest(BaseTest):
             print("Setting {}:{}".format(key, value))
             monkeypatch_session.setenv(key, str(value))
 
-        #reset connection to openpype DB with new env var
+        #reset connection to quadpype DB with new env var
         if mongo_url:
             monkeypatch_session.setenv("QUADPYPE_MONGO", mongo_url)
 
-        import openpype.settings.lib as sett_lib
+        import quadpype.settings.lib as sett_lib
         sett_lib._SETTINGS_HANDLER = None
         sett_lib._LOCAL_SETTINGS_HANDLER = None
         sett_lib.create_settings_handler()
         sett_lib.create_local_settings_handler()
 
-        import openpype
-        openpype_root = os.path.dirname(os.path.dirname(openpype.__file__))
+        import quadpype
+        quadpype_root = os.path.dirname(os.path.dirname(quadpype.__file__))
 
         # ?? why 2 of those
-        monkeypatch_session.setenv("QUADPYPE_ROOT", openpype_root)
-        monkeypatch_session.setenv("QUADPYPE_REPOS_ROOT", openpype_root)
+        monkeypatch_session.setenv("QUADPYPE_ROOT", quadpype_root)
+        monkeypatch_session.setenv("QUADPYPE_REPOS_ROOT", quadpype_root)
 
         # for remapping purposes (currently in Nuke)
         monkeypatch_session.setenv("TEST_SOURCE_FOLDER", download_test_data)
@@ -201,7 +201,7 @@ class ModuleUnitTest(BaseTest):
 
             Database prepared from dumps with 'db_setup' fixture.
         """
-        from openpype.pipeline import AvalonMongoDB
+        from quadpype.pipeline import AvalonMongoDB
         dbcon = AvalonMongoDB()
         dbcon.Session["AVALON_PROJECT"] = self.PROJECT
         dbcon.Session["AVALON_ASSET"] = self.ASSET
@@ -220,13 +220,13 @@ class ModuleUnitTest(BaseTest):
         yield dbcon
 
     @pytest.fixture(scope="module")
-    def dbcon_openpype(self, db_setup):
+    def dbcon_quadpype(self, db_setup):
         """Provide test database connection for QuadPype settings.
 
             Database prepared from dumps with 'db_setup' fixture.
         """
-        from openpype.lib import OpenPypeMongoConnection
-        mongo_client = OpenPypeMongoConnection.get_mongo_client()
+        from quadpype.lib import QuadPypeMongoConnection
+        mongo_client = QuadPypeMongoConnection.get_mongo_client()
         yield mongo_client[self.TEST_QUADPYPE_NAME]["settings"]
 
     def is_test_failed(self, request):
@@ -263,7 +263,7 @@ class PublishTest(ModuleUnitTest):
 
     # keep empty to locate latest installed variant or explicit
     APP_VARIANT = ""
-    PERSIST = True  # True - keep test_db, test_openpype, outputted test files
+    PERSIST = True  # True - keep test_db, test_quadpype, outputted test files
     TEST_DATA_FOLDER = None  # use specific folder of unzipped test file
 
     SETUP_ONLY = False
@@ -271,7 +271,7 @@ class PublishTest(ModuleUnitTest):
     @pytest.fixture(scope="module")
     def app_name(self, app_variant, app_group):
         """Returns calculated value for ApplicationManager. Eg.(nuke/12-2)"""
-        from openpype.lib import ApplicationManager
+        from quadpype.lib import ApplicationManager
         app_variant = app_variant or self.APP_VARIANT
         app_group = app_group or self.APP_GROUP
 
@@ -322,8 +322,8 @@ class PublishTest(ModuleUnitTest):
             yield
             return
         # set schema - for integrate_new
-        from openpype import PACKAGE_DIR
-        # Path to OpenPype's schema
+        from quadpype import PACKAGE_DIR
+        # Path to QuadPype's schema
         schema_path = os.path.join(
             os.path.dirname(PACKAGE_DIR),
             "schema"
@@ -331,7 +331,7 @@ class PublishTest(ModuleUnitTest):
         os.environ["AVALON_SCHEMA"] = schema_path
 
         os.environ["QUADPYPE_EXECUTABLE"] = sys.executable
-        from openpype.lib import ApplicationManager
+        from quadpype.lib import ApplicationManager
 
         application_manager = ApplicationManager()
         data = {

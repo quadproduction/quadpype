@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pyblish.api
 
-from openpype.settings import (
+from quadpype.settings import (
     MODULES_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     SYSTEM_SETTINGS_KEY

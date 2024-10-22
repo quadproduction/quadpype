@@ -13,7 +13,7 @@ from collections import OrderedDict
 import nuke
 from qtpy import QtCore, QtWidgets
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_asset_by_name,
     get_versions,
@@ -21,37 +21,37 @@ from openpype.client import (
     get_representations,
 )
 
-from openpype.host import HostDirmap
-from openpype.tools.utils import host_tools
-from openpype.pipeline.workfile.workfile_template_builder import (
+from quadpype.host import HostDirmap
+from quadpype.tools.utils import host_tools
+from quadpype.pipeline.workfile.workfile_template_builder import (
     TemplateProfileNotFound
 )
-from openpype.lib import (
+from quadpype.lib import (
     env_value_to_bool,
     Logger,
     get_version_from_path,
     StringTemplate,
 )
 
-from openpype.settings import (
+from quadpype.settings import (
     get_project_settings,
     get_current_project_settings,
     GENERAL_SETTINGS_KEY
 )
-from openpype.modules import ModulesManager
-from openpype.pipeline.template_data import get_template_data_with_names
-from openpype.pipeline import (
+from quadpype.modules import ModulesManager
+from quadpype.pipeline.template_data import get_template_data_with_names
+from quadpype.pipeline import (
     discover_legacy_creator_plugins,
     Anatomy,
     get_current_host_name,
     get_current_project_name,
     get_current_asset_name,
 )
-from openpype.pipeline.context_tools import (
+from quadpype.pipeline.context_tools import (
     get_custom_workfile_template_from_session
 )
-from openpype.pipeline.colorspace import get_imageio_config
-from openpype.pipeline.workfile import BuildWorkfile
+from quadpype.pipeline.colorspace import get_imageio_config
+from quadpype.pipeline.workfile import BuildWorkfile
 from . import gizmo_menu
 from .constants import ASSIST
 
@@ -360,7 +360,7 @@ def imprint(node, data, tab=None):
     Examples:
         ```
         import nuke
-        from openpype.hosts.nuke.api import lib
+        from quadpype.hosts.nuke.api import lib
 
         node = nuke.createNode("NoOp")
         data = {
@@ -419,7 +419,7 @@ def add_publish_knob(node):
     return node
 
 
-@deprecated("openpype.hosts.nuke.api.lib.set_node_data")
+@deprecated("quadpype.hosts.nuke.api.lib.set_node_data")
 def set_avalon_knob_data(node, data=None, prefix="avalon:"):
     """[DEPRECATED] Sets data into nodes's avalon knob
 
@@ -485,7 +485,7 @@ def set_avalon_knob_data(node, data=None, prefix="avalon:"):
     return node
 
 
-@deprecated("openpype.hosts.nuke.api.lib.get_node_data")
+@deprecated("quadpype.hosts.nuke.api.lib.get_node_data")
 def get_avalon_knob_data(node, prefix="avalon:", create=True):
     """[DEPRECATED]  Gets a data from nodes's avalon knob
 
@@ -711,7 +711,7 @@ def get_nuke_imageio_settings():
     return get_project_settings(Context.project_name)["nuke"]["imageio"]
 
 
-@deprecated("openpype.hosts.nuke.api.lib.get_nuke_imageio_settings")
+@deprecated("quadpype.hosts.nuke.api.lib.get_nuke_imageio_settings")
 def get_created_node_imageio_setting_legacy(nodeclass, creator, subset):
     '''[DEPRECATED]  Get preset data for dataflow (fileType, compression, bitDepth)
     '''
@@ -1410,7 +1410,7 @@ def create_write_node(
     return GN
 
 
-@deprecated("openpype.hosts.nuke.api.lib.create_write_node")
+@deprecated("quadpype.hosts.nuke.api.lib.create_write_node")
 def create_write_node_legacy(
     name, data, input=None, prenodes=None,
     review=True, linked_knobs=None, farm=True
@@ -3018,7 +3018,7 @@ def _launch_workfile_app():
     host_tools.show_workfiles(parent=None, on_top=True)
 
 
-@deprecated("openpype.hosts.nuke.api.lib.start_workfile_template_builder")
+@deprecated("quadpype.hosts.nuke.api.lib.start_workfile_template_builder")
 def process_workfile_builder():
     """ [DEPRECATED] Process workfile builder on nuke start
 
@@ -3345,7 +3345,7 @@ def node_tempfile():
     """
 
     tmp_file = tempfile.NamedTemporaryFile(
-        mode="w", prefix="openpype_nuke_temp_", suffix=".nk", delete=False
+        mode="w", prefix="quadpype_nuke_temp_", suffix=".nk", delete=False
     )
     tmp_file.close()
     node_tempfile_path = tmp_file.name

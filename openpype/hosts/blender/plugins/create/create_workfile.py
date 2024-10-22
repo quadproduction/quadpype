@@ -1,9 +1,9 @@
 import bpy
 
-from openpype.pipeline import CreatedInstance, AutoCreator
-from openpype.client import get_asset_by_name
-from openpype.hosts.blender.api.plugin import BaseCreator
-from openpype.hosts.blender.api.pipeline import (
+from quadpype.pipeline import CreatedInstance, AutoCreator
+from quadpype.client import get_asset_by_name
+from quadpype.hosts.blender.api.plugin import BaseCreator
+from quadpype.hosts.blender.api.pipeline import (
     AVALON_PROPERTY,
     AVALON_CONTAINERS
 )
@@ -17,7 +17,7 @@ class CreateWorkfile(BaseCreator, AutoCreator):
     instance node of its own.
 
     """
-    identifier = "io.openpype.creators.blender.workfile"
+    identifier = "io.quadpype.creators.blender.workfile"
     label = "Workfile"
     family = "workfile"
     icon = "fa5.file"

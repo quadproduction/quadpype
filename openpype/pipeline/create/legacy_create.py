@@ -9,7 +9,7 @@ import os
 import logging
 import collections
 
-from openpype.client import get_asset_by_id
+from quadpype.client import get_asset_by_id
 
 from .subset_name import get_subset_name
 
@@ -43,7 +43,7 @@ class LegacyCreator(object):
 
     @classmethod
     def apply_settings(cls, project_settings, system_settings):
-        """Apply OpenPype settings to a plugin class."""
+        """Apply QuadPype settings to a plugin class."""
 
         host_name = os.environ.get("AVALON_APP")
         plugin_type = "create"
@@ -191,7 +191,7 @@ def legacy_create(Creator, name, asset, options=None, data=None):
         Name of instance
 
     """
-    from openpype.pipeline import registered_host
+    from quadpype.pipeline import registered_host
 
     host = registered_host()
     plugin = Creator(name, asset, options, data)

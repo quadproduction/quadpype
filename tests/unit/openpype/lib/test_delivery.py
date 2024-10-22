@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Test suite for delivery functions."""
-from openpype.lib import collect_frames
+from quadpype.lib import collect_frames
 
 
 def test_collect_frames_multi_sequence():

@@ -7,13 +7,13 @@ from qtpy import QtWidgets, QtGui
 import maya.utils
 import maya.cmds as cmds
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     get_current_asset_name,
     get_current_task_name
 )
-from openpype.pipeline.workfile import BuildWorkfile
-from openpype.tools.utils import host_tools
-from openpype.hosts.maya.api import lib, lib_rendersettings
+from quadpype.pipeline.workfile import BuildWorkfile
+from quadpype.tools.utils import host_tools
+from quadpype.hosts.maya.api import lib, lib_rendersettings
 from .lib import get_main_window, IS_HEADLESS
 from ..tools import show_look_assigner
 
@@ -47,7 +47,7 @@ def get_context_label():
 
 def install(project_settings):
     if cmds.about(batch=True):
-        log.info("Skipping openpype.menu initialization in batch mode..")
+        log.info("Skipping quadpype.menu initialization in batch mode..")
         return
 
     def add_menu():
@@ -55,7 +55,7 @@ def install(project_settings):
         parent_widget = get_main_window()
         cmds.menu(
             MENU_NAME,
-            label=os.environ.get("AVALON_LABEL") or "OpenPype",
+            label=os.environ.get("AVALON_LABEL") or "QuadPype",
             tearOff=True,
             parent="MayaWindow"
         )

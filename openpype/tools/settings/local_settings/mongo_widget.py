@@ -5,8 +5,8 @@ import traceback
 from qtpy import QtWidgets
 from pymongo.errors import ServerSelectionTimeoutError
 
-from openpype.lib import change_openpype_mongo_url
-from openpype.tools.utils import PlaceholderLineEdit
+from quadpype.lib import change_quadpype_mongo_url
+from quadpype.tools.utils import PlaceholderLineEdit
 
 
 class QuadPypeMongoWidget(QtWidgets.QWidget):
@@ -57,7 +57,7 @@ class QuadPypeMongoWidget(QtWidgets.QWidget):
         details = None
 
         try:
-            change_openpype_mongo_url(value)
+            change_quadpype_mongo_url(value)
         except Exception as exc:
             if isinstance(exc, ServerSelectionTimeoutError):
                 error_message = (

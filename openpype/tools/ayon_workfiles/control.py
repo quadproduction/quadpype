@@ -3,20 +3,20 @@ import shutil
 
 import ayon_api
 
-from openpype.client import get_asset_by_id
-from openpype.host import IWorkfileHost
-from openpype.lib import Logger, emit_event
-from openpype.lib.events import QueuedEventSystem
-from openpype.settings import get_project_settings
-from openpype.pipeline import Anatomy, registered_host
-from openpype.pipeline.context_tools import (
+from quadpype.client import get_asset_by_id
+from quadpype.host import IWorkfileHost
+from quadpype.lib import Logger, emit_event
+from quadpype.lib.events import QueuedEventSystem
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import Anatomy, registered_host
+from quadpype.pipeline.context_tools import (
     change_current_context,
     get_current_host_name,
     get_global_context,
 )
-from openpype.pipeline.workfile import create_workdir_extra_folders
+from quadpype.pipeline.workfile import create_workdir_extra_folders
 
-from openpype.tools.ayon_utils.models import (
+from quadpype.tools.ayon_utils.models import (
     HierarchyModel,
     HierarchyExpectedSelection,
     ProjectsModel,

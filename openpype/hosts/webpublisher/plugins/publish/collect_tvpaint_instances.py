@@ -10,8 +10,8 @@ import re
 import copy
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline.create import get_subset_name
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline.create import get_subset_name
 
 
 class CollectTVPaintInstances(pyblish.api.ContextPlugin):

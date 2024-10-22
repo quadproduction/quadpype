@@ -4,11 +4,11 @@ import collections
 
 import ftrack_api
 
-from openpype_modules.ftrack.lib import (
+from quadpype_modules.ftrack.lib import (
     ServerAction,
     statics_icon,
 )
-from openpype_modules.ftrack.lib.avalon_sync import create_chunks
+from quadpype_modules.ftrack.lib.avalon_sync import create_chunks
 
 
 class TransferHierarchicalValues(ServerAction):
@@ -21,13 +21,13 @@ class TransferHierarchicalValues(ServerAction):
     """
 
     identifier = "transfer.hierarchical.values"
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     variant = "- Transfer values between 2 custom attributes"
     description = (
         "Move values from a hierarchical attribute to"
         " second hierarchical attribute."
     )
-    icon = statics_icon("ftrack", "action_icons", "OpenPypeAdmin.svg")
+    icon = statics_icon("ftrack", "action_icons", "QuadPypeAdmin.svg")
 
     all_project_entities_query = (
         "select id, name, parent_id, link"

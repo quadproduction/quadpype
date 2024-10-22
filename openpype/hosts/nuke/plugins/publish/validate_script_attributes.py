@@ -1,11 +1,11 @@
 from copy import deepcopy
 import pyblish.api
-from openpype.pipeline import (
+from quadpype.pipeline import (
     PublishXmlValidationError,
     OptionalPyblishPluginMixin
 )
-from openpype.pipeline.publish import RepairAction
-from openpype.hosts.nuke.api.lib import (
+from quadpype.pipeline.publish import RepairAction
+from quadpype.hosts.nuke.api.lib import (
     WorkfileSettings
 )
 

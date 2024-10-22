@@ -1,18 +1,18 @@
 import collections
 import ftrack_api
-from openpype_modules.ftrack.lib import (
+from quadpype_modules.ftrack.lib import (
     BaseAction,
     statics_icon,
-    get_openpype_attr
+    get_quadpype_attr
 )
 
 
 class CleanHierarchicalAttrsAction(BaseAction):
     identifier = "clean.hierarchical.attr"
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     variant = "- Clean hierarchical custom attributes"
     description = "Unset empty hierarchical attribute values."
-    icon = statics_icon("ftrack", "action_icons", "OpenPypeAdmin.svg")
+    icon = statics_icon("ftrack", "action_icons", "QuadPypeAdmin.svg")
 
     all_project_entities_query = (
         "select id, name, parent_id, link"
@@ -55,7 +55,7 @@ class CleanHierarchicalAttrsAction(BaseAction):
         )
         entity_ids_joined = ", ".join(all_entities_ids)
 
-        attrs, hier_attrs = get_openpype_attr(session)
+        attrs, hier_attrs = get_quadpype_attr(session)
 
         for attr in hier_attrs:
             configuration_key = attr["key"]

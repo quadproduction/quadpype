@@ -4,11 +4,11 @@ Requires:
     context -> projectName
 
 Provides:
-    context -> anatomy (openpype.pipeline.anatomy.Anatomy)
+    context -> anatomy (quadpype.pipeline.anatomy.Anatomy)
 """
 
 import pyblish.api
-from openpype.pipeline import Anatomy, KnownPublishError
+from quadpype.pipeline import Anatomy, KnownPublishError
 
 
 class CollectAnatomyObject(pyblish.api.ContextPlugin):

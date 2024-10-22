@@ -1,9 +1,9 @@
 import pyblish
 
-from openpype.pipeline.editorial import is_overlapping_otio_ranges
+from quadpype.pipeline.editorial import is_overlapping_otio_ranges
 
-from openpype.hosts.hiero import api as phiero
-from openpype.hosts.hiero.api.otio import hiero_export
+from quadpype.hosts.hiero import api as phiero
+from quadpype.hosts.hiero.api.otio import hiero_export
 
 import hiero
 # # developer reload modules
@@ -49,8 +49,8 @@ class PrecollectInstances(pyblish.api.ContextPlugin):
             source_clip = track_item.source()
             self.log.debug("clip_name: {}".format(clip_name))
 
-            # get openpype tag data
-            tag_data = phiero.get_trackitem_openpype_data(track_item)
+            # get quadpype tag data
+            tag_data = phiero.get_trackitem_quadpype_data(track_item)
             self.log.debug("__ tag_data: {}".format(pformat(tag_data)))
 
             if not tag_data:
@@ -160,20 +160,20 @@ class PrecollectInstances(pyblish.api.ContextPlugin):
                 "otioClip"].media_reference.metadata
             data.update({
                 "resolutionWidth": otio_clip_metadata[
-                        "openpype.source.width"],
+                        "quadpype.source.width"],
                 "resolutionHeight": otio_clip_metadata[
-                    "openpype.source.height"],
+                    "quadpype.source.height"],
                 "pixelAspect": otio_clip_metadata[
-                    "openpype.source.pixelAspect"]
+                    "quadpype.source.pixelAspect"]
             })
         else:
             otio_tl_metadata = context.data["otioTimeline"].metadata
             data.update({
-                "resolutionWidth": otio_tl_metadata["openpype.timeline.width"],
+                "resolutionWidth": otio_tl_metadata["quadpype.timeline.width"],
                 "resolutionHeight": otio_tl_metadata[
-                    "openpype.timeline.height"],
+                    "quadpype.timeline.height"],
                 "pixelAspect": otio_tl_metadata[
-                    "openpype.timeline.pixelAspect"]
+                    "quadpype.timeline.pixelAspect"]
             })
 
     def create_shot_instance(self, context, **data):

@@ -19,13 +19,13 @@ import os
 import sys
 import revitron_sphinx_theme
 
-openpype_root = os.path.abspath('../..')
-sys.path.insert(0, openpype_root)
+quadpype_root = os.path.abspath('../..')
+sys.path.insert(0, quadpype_root)
 # app = QApplication([])
 
 """
 repos = os.listdir(os.path.abspath("../../repos"))
-repos = [os.path.join(openpype_root, "repos", repo) for repo in repos]
+repos = [os.path.join(quadpype_root, "repos", repo) for repo in repos]
 for repo in repos:
     sys.path.append(repo)
 """
@@ -37,7 +37,7 @@ autodoc_mock_imports = ["maya", "pymel", "nuke", "nukestudio", "nukescripts",
 
 # -- Project information -----------------------------------------------------
 
-project = 'OpenPype'
+project = 'QuadPype'
 copyright = '2023 Ynput'
 author = 'Ynput'
 
@@ -73,7 +73,7 @@ extensions = [
 # Autoapi settings
 ##############################
 
-autoapi_dirs = ['../../openpype', '../../igniter']
+autoapi_dirs = ['../../quadpype', '../../igniter']
 
 # bypass modules with a lot of python2 content for now
 autoapi_ignore = [
@@ -81,9 +81,9 @@ autoapi_ignore = [
     "*schemas*",
     "*startup/*",
     "*/website*",
-    "*openpype/hooks*",
-    "*openpype/style*",
-    "openpype/tests*",
+    "*quadpype/hooks*",
+    "*quadpype/style*",
+    "quadpype/tests*",
     # to many levels of relative import:
     "*/modules/sync_server/*"
 ]
@@ -121,8 +121,8 @@ language = "English"
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = [
-    "openpype.hosts.resolve.*",
-    "openpype.tools.*"
+    "quadpype.hosts.resolve.*",
+    "quadpype.tools.*"
     ]
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -204,7 +204,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'openpype.tex', 'OpenPype Documentation',
+    (master_doc, 'quadpype.tex', 'QuadPype Documentation',
      'Ynput', 'manual'),
 ]
 
@@ -214,7 +214,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'openpype', 'OpenPype Documentation',
+    (master_doc, 'quadpype', 'QuadPype Documentation',
      [author], 1)
 ]
 
@@ -225,8 +225,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'OpenPype', 'OpenPype Documentation',
-     author, 'OpenPype', 'Pipeline for studios',
+    (master_doc, 'QuadPype', 'QuadPype Documentation',
+     author, 'QuadPype', 'Pipeline for studios',
      'Miscellaneous'),
 ]
 

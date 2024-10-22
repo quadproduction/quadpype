@@ -1,7 +1,7 @@
-from openpype.modules import OpenPypeModule, ITrayAction
+from quadpype.modules import QuadPypeModule, ITrayAction
 
 
-class ProjectManagerAction(OpenPypeModule, ITrayAction):
+class ProjectManagerAction(QuadPypeModule, ITrayAction):
     label = "Project Manager (beta)"
     name = "project_manager"
     submenu = "Admin"
@@ -29,7 +29,7 @@ class ProjectManagerAction(OpenPypeModule, ITrayAction):
         """Initializa Settings Qt window."""
         if self.project_manager_window:
             return
-        from openpype.tools.project_manager import ProjectManagerWindow
+        from quadpype.tools.project_manager import ProjectManagerWindow
 
         self.project_manager_window = ProjectManagerWindow()
 

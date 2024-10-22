@@ -5,14 +5,14 @@ import collections
 import ayon_api
 from qtpy import QtCore, QtGui, QtWidgets
 
-from openpype import style
-import openpype.version
-from openpype import resources
-from openpype.settings.lib import get_local_settings
-from openpype.lib import get_openpype_execute_args
-from openpype.lib.pype_info import (
+from quadpype import style
+import quadpype.version
+from quadpype import resources
+from quadpype.settings.lib import get_local_settings
+from quadpype.lib import get_quadpype_execute_args
+from quadpype.lib.pype_info import (
     get_all_current_info,
-    get_openpype_info,
+    get_quadpype_info,
     get_workstation_info,
     extract_pype_info_to_file
 )
@@ -327,7 +327,7 @@ class PypeInfoSubWidget(QtWidgets.QWidget):
         main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setAlignment(QtCore.Qt.AlignTop)
-        main_layout.addWidget(self._create_openpype_info_widget(), 0)
+        main_layout.addWidget(self._create_quadpype_info_widget(), 0)
         main_layout.addWidget(self._create_separator(), 0)
         main_layout.addWidget(self._create_workstation_widget(), 0)
         main_layout.addWidget(self._create_separator(), 0)
@@ -425,11 +425,11 @@ class PypeInfoSubWidget(QtWidgets.QWidget):
 
         return env_widget
 
-    def _create_openpype_info_widget(self):
-        """Create widget with information about OpenPype application."""
+    def _create_quadpype_info_widget(self):
+        """Create widget with information about QuadPype application."""
 
         # Get pype info data
-        info_values = get_openpype_info()
+        info_values = get_quadpype_info()
         # Modify version key/values
         version_value = "{} ({})".format(
             info_values.pop("version", self.not_applicable),
@@ -440,9 +440,9 @@ class PypeInfoSubWidget(QtWidgets.QWidget):
         key_label_mapping = {
             "version_value": "Running version:",
             "build_verison": "Build version:",
-            "executable": "OpenPype executable:",
-            "pype_root": "OpenPype location:",
-            "mongo_url": "OpenPype Mongo URL:"
+            "executable": "QuadPype executable:",
+            "pype_root": "QuadPype location:",
+            "mongo_url": "QuadPype Mongo URL:"
         }
         # Prepare keys order
         keys_order = [

@@ -1,11 +1,11 @@
 import maya.cmds as cmds
 
-from openpype.settings import get_current_project_settings
-import openpype.hosts.maya.api.plugin
-from openpype.hosts.maya.api import lib
+from quadpype.settings import get_current_project_settings
+import quadpype.hosts.maya.api.plugin
+from quadpype.hosts.maya.api import lib
 
 
-class YetiRigLoader(openpype.hosts.maya.api.plugin.ReferenceLoader):
+class YetiRigLoader(quadpype.hosts.maya.api.plugin.ReferenceLoader):
     """This loader will load Yeti rig."""
 
     families = ["yetiRig"]

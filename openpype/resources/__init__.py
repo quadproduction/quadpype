@@ -1,5 +1,5 @@
 import os
-from openpype.lib.openpype_version import is_running_staging, is_running_locally
+from quadpype.lib.quadpype_version import is_running_staging, is_running_locally
 
 RESOURCES_DIR = os.path.dirname(os.path.abspath(__file__))
 

@@ -4,7 +4,7 @@ import sys
 import errno
 import six
 
-from openpype.lib import create_hardlink, create_symlink
+from quadpype.lib import create_hardlink, create_symlink
 
 # this is needed until speedcopy for linux is fixed
 if sys.platform == "win32":

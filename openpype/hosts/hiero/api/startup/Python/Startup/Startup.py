@@ -1,12 +1,12 @@
 import traceback
 
 # activate hiero from pype
-from openpype.pipeline import install_host
-import openpype.hosts.hiero.api as phiero
+from quadpype.pipeline import install_host
+import quadpype.hosts.hiero.api as phiero
 install_host(phiero)
 
 try:
-    __import__("openpype.hosts.hiero.api")
+    __import__("quadpype.hosts.hiero.api")
     __import__("pyblish")
 
 except ImportError as e:
@@ -15,5 +15,5 @@ except ImportError as e:
 
 else:
     # Setup integration
-    import openpype.hosts.hiero.api as phiero
+    import quadpype.hosts.hiero.api as phiero
     phiero.lib.setup()

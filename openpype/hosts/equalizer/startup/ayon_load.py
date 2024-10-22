@@ -4,9 +4,9 @@
 # 3DE4.script.comment:  Open AYON Loader tool
 #
 
-from openpype.pipeline import install_host, is_installed
-from openpype.hosts.equalizer.api import EqualizerHost
-from openpype.tools.utils import host_tools
+from quadpype.pipeline import install_host, is_installed
+from quadpype.hosts.equalizer.api import EqualizerHost
+from quadpype.tools.utils import host_tools
 
 
 def install_3de_host():

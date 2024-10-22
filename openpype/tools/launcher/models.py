@@ -9,27 +9,27 @@ import appdirs
 from qtpy import QtCore, QtGui
 import qtawesome
 
-from openpype.client import (
+from quadpype.client import (
     get_projects,
     get_project,
     get_assets,
 )
-from openpype.lib import JSONSettingRegistry
-from openpype.lib.applications import (
+from quadpype.lib import JSONSettingRegistry
+from quadpype.lib.applications import (
     CUSTOM_LAUNCH_APP_GROUPS,
     ApplicationManager
 )
-from openpype.settings import get_project_settings, APPS_SETTINGS_KEY
-from openpype.pipeline import discover_launcher_actions
-from openpype.tools.utils.lib import (
+from quadpype.settings import get_project_settings, APPS_SETTINGS_KEY
+from quadpype.pipeline import discover_launcher_actions
+from quadpype.tools.utils.lib import (
     DynamicQThread,
     get_project_icon,
 )
-from openpype.tools.utils.assets_widget import (
+from quadpype.tools.utils.assets_widget import (
     AssetModel,
     ASSET_NAME_ROLE
 )
-from openpype.tools.utils.tasks_widget import (
+from quadpype.tools.utils.tasks_widget import (
     TasksModel,
     TasksProxyModel,
     TASK_TYPE_ROLE,

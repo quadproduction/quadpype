@@ -1,16 +1,16 @@
 import pyblish.api
 
 from pymxs import runtime as rt
-from openpype.pipeline import (
+from quadpype.pipeline import (
     OptionalPyblishPluginMixin
 )
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
     PublishValidationError,
     KnownPublishError
 )
-from openpype.hosts.max.api.lib import get_frame_range, set_timeline
+from quadpype.hosts.max.api.lib import get_frame_range, set_timeline
 
 
 class ValidateFrameRange(pyblish.api.InstancePlugin,

@@ -7,18 +7,18 @@ import requests
 
 import pyblish.api
 
-from openpype.client import get_asset_by_name
-from openpype.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
-from openpype.hosts.tvpaint import TVPAINT_ROOT_DIR
-from openpype.settings import get_current_project_settings
-from openpype.lib import register_event_callback
-from openpype.pipeline import (
+from quadpype.client import get_asset_by_name
+from quadpype.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
+from quadpype.hosts.tvpaint import TVPAINT_ROOT_DIR
+from quadpype.settings import get_current_project_settings
+from quadpype.lib import register_event_callback
+from quadpype.pipeline import (
     legacy_io,
     register_loader_plugin_path,
     register_creator_plugin_path,
     AVALON_CONTAINER_ID,
 )
-from openpype.pipeline.context_tools import get_global_context
+from quadpype.pipeline.context_tools import get_global_context
 
 from .lib import (
     execute_george,
@@ -66,7 +66,7 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     def install(self):
         """Install TVPaint-specific functionality."""
 
-        log.info("OpenPype - Installing TVPaint integration")
+        log.info("QuadPype - Installing TVPaint integration")
         legacy_io.install()
 
         # Create workdir folder if does not exist yet
@@ -166,7 +166,7 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     def get_current_workfile(self):
         # tvPaint return a '\' character when no scene is currently
         # opened instead of a None value, which causes interferences
-        # in OpenPype's core code.
+        # in QuadPype's core code.
         # So we check the returned value and send None if this
         # character is retrieved.
         current_workfile = execute_george("tv_GetProjectName")
@@ -240,7 +240,7 @@ def containerise(
     """
 
     container_data = {
-        "schema": "openpype:container-2.0",
+        "schema": "quadpype:container-2.0",
         "id": AVALON_CONTAINER_ID,
         "members": members,
         "name": name,

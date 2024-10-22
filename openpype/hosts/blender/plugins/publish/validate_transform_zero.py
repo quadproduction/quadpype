@@ -5,8 +5,8 @@ import bpy
 
 import pyblish.api
 
-import openpype.hosts.blender.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.blender.api.action
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     OptionalPyblishPluginMixin,
     PublishValidationError
@@ -27,7 +27,7 @@ class ValidateTransformZero(pyblish.api.InstancePlugin,
     hosts = ["blender"]
     families = ["model"]
     label = "Transform Zero"
-    actions = [openpype.hosts.blender.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.blender.api.action.SelectInvalidAction]
 
     _identity = mathutils.Matrix()
 

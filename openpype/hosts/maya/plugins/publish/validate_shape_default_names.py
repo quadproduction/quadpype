@@ -4,8 +4,8 @@ from maya import cmds
 
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     RepairAction,
     OptionalPyblishPluginMixin
@@ -42,7 +42,7 @@ class ValidateShapeDefaultNames(pyblish.api.InstancePlugin,
     families = ['model']
     optional = True
     label = "Shape Default Naming"
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction,
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction,
                RepairAction]
 
     @staticmethod

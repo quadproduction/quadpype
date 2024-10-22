@@ -2,13 +2,13 @@ import os
 import threading
 import time
 
-from openpype.modules import OpenPypeModule, ITrayModule, IPluginPaths
-from openpype.client import get_asset_by_name
+from quadpype.modules import QuadPypeModule, ITrayModule, IPluginPaths
+from quadpype.client import get_asset_by_name
 
 from .constants import CLOCKIFY_FTRACK_USER_PATH, CLOCKIFY_FTRACK_SERVER_PATH
 
 
-class ClockifyModule(OpenPypeModule, ITrayModule, IPluginPaths):
+class ClockifyModule(QuadPypeModule, ITrayModule, IPluginPaths):
     name = "clockify"
 
     def initialize(self, modules_settings):

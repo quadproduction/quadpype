@@ -4,10 +4,10 @@ import json
 import contextlib
 import logging
 
-from openpype.settings import GENERAL_SETTINGS_KEY
-from openpype.pipeline.context_tools import get_current_context, get_project_settings
-from openpype.client import get_asset_by_name
-from openpype.pipeline import get_current_host_name
+from quadpype.settings import GENERAL_SETTINGS_KEY
+from quadpype.pipeline.context_tools import get_current_context, get_project_settings
+from quadpype.client import get_asset_by_name
+from quadpype.pipeline import get_current_host_name
 from .ws_stub import get_stub
 
 log = logging.getLogger(__name__)

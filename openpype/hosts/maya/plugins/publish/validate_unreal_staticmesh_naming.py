@@ -4,10 +4,10 @@ import re
 
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline import legacy_io
-from openpype.settings import get_project_settings
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline import legacy_io
+from quadpype.settings import get_project_settings
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     OptionalPyblishPluginMixin,
     PublishValidationError
@@ -60,7 +60,7 @@ class ValidateUnrealStaticMeshName(pyblish.api.InstancePlugin,
     hosts = ["maya"]
     families = ["staticMesh"]
     label = "Unreal Static Mesh Name"
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     regex_mesh = r"(?P<renderName>.*))"
     regex_collision = r"(?P<renderName>.*)"
 

@@ -13,7 +13,7 @@ import copy
 
 import six
 import pyblish.api
-from openpype.lib import StringTemplate
+from quadpype.lib import StringTemplate
 
 
 class IntegrateFtrackNote(pyblish.api.InstancePlugin):

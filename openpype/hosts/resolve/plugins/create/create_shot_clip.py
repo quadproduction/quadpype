@@ -1,6 +1,6 @@
 # from pprint import pformat
-from openpype.hosts.resolve.api import plugin, lib
-from openpype.hosts.resolve.api.lib import (
+from quadpype.hosts.resolve.api import plugin, lib
+from quadpype.hosts.resolve.api.lib import (
     get_video_track_names,
     create_bin,
 )
@@ -15,7 +15,7 @@ class CreateShotClip(plugin.Creator):
     defaults = ["Main"]
 
     gui_tracks = get_video_track_names()
-    gui_name = "OpenPype publish attributes creator"
+    gui_name = "QuadPype publish attributes creator"
     gui_info = "Define sequential rename and fill hierarchy data."
     gui_inputs = {
         "renameHierarchy": {

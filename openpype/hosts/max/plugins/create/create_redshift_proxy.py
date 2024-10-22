@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating camera."""
-from openpype.hosts.max.api import plugin
-from openpype.pipeline import CreatedInstance
+from quadpype.hosts.max.api import plugin
+from quadpype.pipeline import CreatedInstance
 
 
 class CreateRedshiftProxy(plugin.MaxCreator):
-    identifier = "io.openpype.creators.max.redshiftproxy"
+    identifier = "io.quadpype.creators.max.redshiftproxy"
     label = "Redshift Proxy"
     family = "redshiftproxy"
     icon = "gear"

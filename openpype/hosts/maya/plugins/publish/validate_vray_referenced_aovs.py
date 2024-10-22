@@ -4,7 +4,7 @@ import pyblish.api
 import types
 from maya import cmds
 
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     RepairContextAction,
     OptionalPyblishPluginMixin
 )

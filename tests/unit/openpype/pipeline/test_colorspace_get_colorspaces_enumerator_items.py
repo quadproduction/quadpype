@@ -1,6 +1,6 @@
 import unittest
 
-from openpype.pipeline.colorspace import get_colorspaces_enumerator_items
+from quadpype.pipeline.colorspace import get_colorspaces_enumerator_items
 
 
 class TestGetColorspacesEnumeratorItems(unittest.TestCase):

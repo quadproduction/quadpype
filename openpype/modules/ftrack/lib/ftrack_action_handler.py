@@ -408,7 +408,7 @@ class LocalAction(BaseAction):
             return {
                 "success": False,
                 "message": (
-                    "There are running more OpenPype processes"
+                    "There are running more QuadPype processes"
                     " where this action could be launched."
                 )
             }

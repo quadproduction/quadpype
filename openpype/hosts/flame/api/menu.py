@@ -3,10 +3,10 @@ from pprint import pformat
 
 from qtpy import QtWidgets
 
-from openpype.pipeline import get_current_project_name
-from openpype.tools.utils.host_tools import HostToolsHelper
+from quadpype.pipeline import get_current_project_name
+from quadpype.tools.utils.host_tools import HostToolsHelper
 
-menu_group_name = 'OpenPype'
+menu_group_name = 'QuadPype'
 
 default_flame_export_presets = {
     'Publish': {
@@ -28,7 +28,7 @@ default_flame_export_presets = {
 
 
 def callback_selection(selection, function):
-    import openpype.hosts.flame.api as opfapi
+    import quadpype.hosts.flame.api as opfapi
     opfapi.CTX.selection = selection
     print("Hook Selection: \n\t{}".format(
         pformat({

@@ -15,9 +15,9 @@ import threading
 
 import gazu
 
-from openpype.client import get_project, get_assets, get_asset_by_name
-from openpype.pipeline import AvalonMongoDB
-from openpype.lib import Logger
+from quadpype.client import get_project, get_assets, get_asset_by_name
+from quadpype.pipeline import AvalonMongoDB
+from quadpype.lib import Logger
 from .credentials import validate_credentials
 from .update_op_with_zou import (
     create_op_asset,
@@ -620,7 +620,7 @@ class Listener:
 
 
 def start_listeners(login: str, password: str):
-    """Start listeners to keep OpenPype up-to-date with Kitsu.
+    """Start listeners to keep QuadPype up-to-date with Kitsu.
 
     Args:
         login (str): Kitsu user login

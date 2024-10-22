@@ -1,4 +1,4 @@
-"""Functions to update OpenPype data using Kitsu DB (a.k.a Zou)."""
+"""Functions to update QuadPype data using Kitsu DB (a.k.a Zou)."""
 from copy import deepcopy
 import re
 from typing import Dict, List
@@ -6,17 +6,17 @@ from typing import Dict, List
 from pymongo import DeleteOne, UpdateOne
 import gazu
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_assets,
     get_asset_by_id,
     get_asset_by_name,
     create_project,
 )
-from openpype.pipeline import AvalonMongoDB
-from openpype.modules.kitsu.utils.credentials import validate_credentials
+from quadpype.pipeline import AvalonMongoDB
+from quadpype.modules.kitsu.utils.credentials import validate_credentials
 
-from openpype.lib import Logger
+from quadpype.lib import Logger
 
 log = Logger.get_logger(__name__)
 
@@ -37,7 +37,7 @@ def create_op_asset(gazu_entity: dict) -> dict:
     return {
         "name": gazu_entity["name"],
         "type": "asset",
-        "schema": "openpype:asset-3.0",
+        "schema": "quadpype:asset-3.0",
         "data": {"zou": gazu_entity, "tasks": {}},
     }
 
@@ -74,7 +74,7 @@ def update_op_assets(
     entities_list: List[dict],
     asset_doc_ids: Dict[str, dict],
 ) -> List[Dict[str, dict]]:
-    """Update OpenPype assets.
+    """Update QuadPype assets.
     Set 'data' and 'parent' fields.
 
     Args:
@@ -264,7 +264,7 @@ def update_op_assets(
             else:
                 ancestor_id = None
 
-        # Build OpenPype compatible name
+        # Build QuadPype compatible name
         if item_type in ["Shot", "Sequence"] and parent_zou_id is not None:
             # Name with parents hierarchy "({episode}_){sequence}_{shot}"
             # to avoid duplicate name issue
@@ -462,7 +462,7 @@ def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict):
             project["project_status_name"] = status["name"]
             break
 
-    # Get the project from OpenPype DB
+    # Get the project from QuadPype DB
     project_name = project["name"]
     project_dict = get_project(project_name)
     project_active_state_kitsu = KitsuStateToBool[project["project_status_name"]]
@@ -470,13 +470,13 @@ def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict):
     # Early exit condition if the project is deactivated (closed) on Kitsu
     if not project_active_state_kitsu:
         if not project_dict:
-            # The project doesn't exist on OpenPype DB, skip
+            # The project doesn't exist on QuadPype DB, skip
             return
 
-        # Deactivate the project on the OpenPype DB (if not already), then return
+        # Deactivate the project on the QuadPype DB (if not already), then return
         op_active_state = project_dict.get('data', {}).get('active', False)
         if op_active_state != project_active_state_kitsu:
-            log.info(f"Deactivate {project['name']} on OpenPype DB...")
+            log.info(f"Deactivate {project['name']} on QuadPype DB...")
             update_project_state_in_db(
                 dbcon,
                 project_dict,
@@ -508,7 +508,7 @@ def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict):
     bulk_writes.append(write_project_to_op(project, dbcon))
 
     if not project_dict:
-        # Try to find the newly created project document on OpenPype DB
+        # Try to find the newly created project document on QuadPype DB
         project_dict = get_project(project_name)
 
     dbcon.Session["AVALON_PROJECT"] = project_name
@@ -526,7 +526,7 @@ def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict):
         {
             "name": r,
             "type": "asset",
-            "schema": "openpype:asset-3.0",
+            "schema": "quadpype:asset-3.0",
             "data": {
                 "root_of": r,
                 "tasks": {},

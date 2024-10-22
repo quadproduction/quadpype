@@ -9,7 +9,7 @@ class LoadClipModel(BaseSettingsModel):
         title="Product types"
     )
     reel_group_name: str = SettingsField(
-        "OpenPype_Reels",
+        "QuadPype_Reels",
         title="Reel group name"
     )
     reel_name: str = SettingsField(

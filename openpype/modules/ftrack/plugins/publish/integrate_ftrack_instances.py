@@ -3,14 +3,14 @@ import json
 import copy
 import pyblish.api
 
-from openpype.pipeline.publish import get_publish_repre_path
-from openpype.lib.openpype_version import get_openpype_version
-from openpype.lib.transcoding import (
+from quadpype.pipeline.publish import get_publish_repre_path
+from quadpype.lib.quadpype_version import get_quadpype_version
+from quadpype.lib.transcoding import (
     get_ffprobe_streams,
     convert_ffprobe_fps_to_float,
 )
-from openpype.lib.profiles_filtering import filter_profiles
-from openpype.lib.transcoding import VIDEO_EXTENSIONS
+from quadpype.lib.profiles_filtering import filter_profiles
+from quadpype.lib.transcoding import VIDEO_EXTENSIONS
 
 
 class IntegrateFtrackInstance(pyblish.api.InstancePlugin):
@@ -24,7 +24,7 @@ class IntegrateFtrackInstance(pyblish.api.InstancePlugin):
     families = ["ftrack"]
 
     metadata_keys_to_label = {
-        "openpype_version": "OpenPype version",
+        "quadpype_version": "QuadPype version",
         "frame_start": "Frame start",
         "frame_end": "Frame end",
         "duration": "Duration",
@@ -541,9 +541,9 @@ class IntegrateFtrackInstance(pyblish.api.InstancePlugin):
         self, instance, repre, component_path, is_review=None
     ):
         metadata = {}
-        if "openpype_version" in self.additional_metadata_keys:
-            label = self.metadata_keys_to_label["openpype_version"]
-            metadata[label] = get_openpype_version()
+        if "quadpype_version" in self.additional_metadata_keys:
+            label = self.metadata_keys_to_label["quadpype_version"]
+            metadata[label] = get_quadpype_version()
 
         extension = os.path.splitext(component_path)[-1]
         streams = []
