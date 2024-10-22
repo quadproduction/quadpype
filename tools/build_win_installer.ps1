@@ -172,6 +172,6 @@ if ($LASTEXITCODE -ne 0) {
 Write-Color -Text ">>> ", "Restoring current directory" -Color Green, Gray
 Set-Location -Path $current_dir
 try {
-    New-BurntToastNotification -AppLogo "$openpype_root/openpype/resources/icons/openpype_icon.png" -Text "OpenPype build complete!", "All done. You will find You will find OpenPype installer in '.\build' directory."
+    New-BurntToastNotification -AppLogo "$openpype_root/openpype/resources/icons/quadpype_icon_default.png" -Text "OpenPype build complete!", "All done. You will find You will find OpenPype installer in '.\build' directory."
 } catch {}
 Write-Color -Text "*** ", "All done. You will find OpenPype installer in ", "'.\build'", " directory." -Color Green, Gray, White, Gray

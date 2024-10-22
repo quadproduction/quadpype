@@ -228,20 +228,39 @@ def get_expected_studio_version_str(
 
 
 def load_stylesheet() -> str:
-    """Load css style sheet.
+    """Load the CSS stylesheet.
 
     Returns:
         str: content of the stylesheet
 
     """
-    stylesheet_path = Path(__file__).parent.resolve() / "stylesheet.css"
+    stylesheet_path = Path(__file__).parent.resolve().joinpath(
+        "resources", "style", "stylesheet.css")
 
     return stylesheet_path.read_text()
 
 
-def get_openpype_icon_path() -> str:
-    """Path to OpenPype icon png file."""
-    return os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        "openpype_icon.png"
-    )
+def get_app_icon_path(variation_name=None) -> str:
+    """Path to the app icon png file.
+
+    Returns:
+        str: path of the png icon file
+
+    """
+    if not variation_name:
+        variation_name = "default"
+
+    icon_path = Path(__file__).parent.resolve().joinpath(
+        "resources", "icons", "quadpype_icon_{}.png".format(variation_name))
+
+    return str(icon_path)
+
+
+def get_fonts_dir_path() -> str:
+    """Path to the igniter fonts directory.
+
+    Returns:
+        str: path to the directory containing the font files
+
+    """
+    return str(Path(__file__).parent.resolve().joinpath("resources", "fonts"))

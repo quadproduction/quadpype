@@ -40,5 +40,5 @@ $endTime = [int][double]::Parse((Get-Date -UFormat %s))
 Set-Location -Path $current_dir
 try
 {
-    New-BurntToastNotification -AppLogo "$openpype_root/openpype/resources/icons/openpype_icon.png" -Text "OpenPype", "Dependencies downloaded", "All done in $( $endTime - $startTime ) secs."
+    New-BurntToastNotification -AppLogo "$openpype_root/openpype/resources/icons/quadpype_icon_default.png" -Text "OpenPype", "Dependencies downloaded", "All done in $( $endTime - $startTime ) secs."
 } catch {}

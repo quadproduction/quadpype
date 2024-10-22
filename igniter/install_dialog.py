@@ -5,12 +5,14 @@ import sys
 import re
 import collections
 
+from pathlib import Path
 from qtpy import QtCore, QtGui, QtWidgets
 
 from .install_thread import InstallThread
 from .tools import (
     validate_mongo_connection,
-    get_openpype_icon_path
+    get_app_icon_path,
+    get_fonts_dir_path
 )
 
 from .nice_progress_bar import NiceProgressBar
@@ -175,28 +177,28 @@ class InstallDialog(QtWidgets.QDialog):
         super(InstallDialog, self).__init__(parent)
 
         self.setWindowTitle(
-            f"OpenPype Igniter {__version__}"
+            f"QuadPype Igniter {__version__}"
         )
         self.setWindowFlags(
             QtCore.Qt.WindowCloseButtonHint
             | QtCore.Qt.WindowMinimizeButtonHint
         )
 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        roboto_font_path = os.path.join(current_dir, "RobotoMono-Regular.ttf")
-        poppins_font_path = os.path.join(current_dir, "Poppins")
+        fonts_dir = Path(get_fonts_dir_path())
+        roboto_font_path = str(fonts_dir.joinpath("RobotoMono-Regular.ttf"))
+        poppins_font_path = str(fonts_dir.joinpath("Poppins"))
 
-        # Install roboto font
+        # Install fonts
         QtGui.QFontDatabase.addApplicationFont(roboto_font_path)
         for filename in os.listdir(poppins_font_path):
             if os.path.splitext(filename)[1] == ".ttf":
                 QtGui.QFontDatabase.addApplicationFont(filename)
 
         # Load logo
-        icon_path = get_openpype_icon_path()
-        pixmap_openpype_logo = QtGui.QPixmap(icon_path)
-        # Set logo as icon of window
-        self.setWindowIcon(QtGui.QIcon(pixmap_openpype_logo))
+        icon_path = get_app_icon_path()
+        pixmap_app_logo = QtGui.QPixmap(icon_path)
+        # Set logo as icon of the window
+        self.setWindowIcon(QtGui.QIcon(pixmap_app_logo))
 
         secure_registry = OpenPypeSecureRegistry("mongodb")
         mongo_url = ""
@@ -209,7 +211,7 @@ class InstallDialog(QtWidgets.QDialog):
             pass
 
         self.mongo_url = mongo_url
-        self._pixmap_openpype_logo = pixmap_openpype_logo
+        self._pixmap_app_logo = pixmap_app_logo
 
         self._secure_registry = secure_registry
         self._controls_disabled = False
@@ -229,7 +231,7 @@ class InstallDialog(QtWidgets.QDialog):
 
         # Main info
         # --------------------------------------------------------------------
-        main_label = QtWidgets.QLabel("Welcome to <b>OpenPype</b>", self)
+        main_label = QtWidgets.QLabel("Welcome to <b>QuadPype</b>", self)
         main_label.setWordWrap(True)
         main_label.setObjectName("MainLabel")
 
@@ -268,15 +270,15 @@ class InstallDialog(QtWidgets.QDialog):
 
         btns_widget = QtWidgets.QWidget(bottom_widget)
 
-        openpype_logo_label = QtWidgets.QLabel("openpype logo", bottom_widget)
-        openpype_logo_label.setPixmap(self._pixmap_openpype_logo)
+        app_logo_label = QtWidgets.QLabel("QuadPype logo", bottom_widget)
+        app_logo_label.setPixmap(self._pixmap_app_logo)
 
         run_button = ButtonWithOptions(
             self.commands,
             btns_widget
         )
         run_button.setMinimumSize(64, 24)
-        run_button.setToolTip("Run OpenPype")
+        run_button.setToolTip("Run QuadPype")
 
         # install button - - - - - - - - - - - - - - - - - - - - - - - - - - -
         exit_button = QtWidgets.QPushButton("Exit", btns_widget)
