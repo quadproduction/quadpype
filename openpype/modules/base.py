@@ -32,9 +32,6 @@ from openpype.settings.lib import (
     get_studio_system_settings_overrides,
     load_json_file,
 )
-from openpype.settings.ayon_settings import (
-    is_dev_mode_enabled
-)
 
 from openpype.lib import (
     Logger,
@@ -667,19 +664,16 @@ class ModulesManager:
 
     Args:
         system_settings (Optional[dict[str, Any]]): OpenPype system settings.
-        ayon_settings (Optional[dict[str, Any]]): AYON studio settings.
     """
 
     # Helper attributes for report
     _report_total_key = "Total"
     _system_settings = None
-    _ayon_settings = None
 
-    def __init__(self, system_settings=None, ayon_settings=None):
+    def __init__(self, system_settings=None):
         self.log = logging.getLogger(self.__class__.__name__)
 
         self._system_settings = system_settings
-        self._ayon_settings = ayon_settings
 
         self.modules = []
         self.modules_by_id = {}
@@ -738,7 +732,6 @@ class ModulesManager:
         if system_settings is None:
             system_settings = get_system_settings()
 
-        ayon_settings = self._ayon_settings
         modules_settings = system_settings[MODULES_SETTINGS_KEY]
 
         report = {}
@@ -783,9 +776,7 @@ class ModulesManager:
 
         for modules_item in module_classes:
             is_openpype_module = issubclass(modules_item, OpenPypeModule)
-            settings = (
-                modules_settings if is_openpype_module else ayon_settings
-            )
+            settings = modules_settings
             name = modules_item.__name__
             try:
                 # Try initialize module

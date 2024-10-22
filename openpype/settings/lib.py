@@ -25,10 +25,6 @@ from .constants import (
     PROJECTS_SETTINGS_KEY
 )
 
-from .ayon_settings import (
-    get_ayon_project_settings,
-    get_ayon_system_settings
-)
 
 log = logging.getLogger(__name__)
 
