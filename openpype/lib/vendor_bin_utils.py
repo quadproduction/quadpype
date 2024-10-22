@@ -292,21 +292,6 @@ def _oiio_executable_validation(args):
     return _check_args_returncode(args + ["--help"])
 
 
-def _get_ayon_oiio_tool_args(tool_name):
-    try:
-        # Use 'ayon-third-party' addon to get oiio arguments
-        from ayon_third_party import get_oiio_arguments
-    except Exception:
-        print("!!! Failed to import 'ayon_third_party' addon.")
-        return None
-
-    try:
-        return get_oiio_arguments(tool_name)
-    except Exception as exc:
-        print("!!! Failed to get OpenImageIO args. Reason: {}".format(exc))
-    return None
-
-
 def get_oiio_tools_path(tool="oiiotool"):
     """Path to OpenImageIO tool executables.
 
@@ -399,22 +384,6 @@ def _ffmpeg_executable_validation(args):
             return False
         args = [filepath]
     return _check_args_returncode(args + ["--help"])
-
-
-def _get_ayon_ffmpeg_tool_args(tool_name):
-    try:
-        # Use 'ayon-third-party' addon to get ffmpeg arguments
-        from ayon_third_party import get_ffmpeg_arguments
-
-    except Exception:
-        print("!!! Failed to import 'ayon_third_party' addon.")
-        return None
-
-    try:
-        return get_ffmpeg_arguments(tool_name)
-    except Exception as exc:
-        print("!!! Failed to get FFmpeg args. Reason: {}".format(exc))
-    return None
 
 
 def get_ffmpeg_tool_path(tool="ffmpeg"):

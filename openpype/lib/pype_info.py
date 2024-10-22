@@ -33,21 +33,6 @@ def get_openpype_info():
     }
 
 
-def get_ayon_info():
-    executable_args = get_openpype_execute_args()
-    if is_running_from_build():
-        version_type = "build"
-    else:
-        version_type = "code"
-    return {
-        "build_verison": get_build_version(),
-        "version_type": version_type,
-        "executable": executable_args[-1],
-        "ayon_root": os.environ["AYON_ROOT"],
-        "server_url": os.environ["AYON_SERVER_URL"]
-    }
-
-
 def get_workstation_info():
     """Basic information about workstation."""
     host_name = socket.gethostname()

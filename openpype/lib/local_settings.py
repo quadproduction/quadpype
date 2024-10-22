@@ -539,29 +539,6 @@ def get_ayon_appdirs(*args):
     )
 
 
-def _get_ayon_local_site_id():
-    # used for background syncing
-    site_id = os.environ.get("AYON_SITE_ID")
-    if site_id:
-        return site_id
-
-    site_id_path = get_ayon_appdirs("site_id")
-    if os.path.exists(site_id_path):
-        with open(site_id_path, "r") as stream:
-            site_id = stream.read()
-
-    if site_id:
-        return site_id
-
-    try:
-        from ayon_common.utils import get_local_site_id as _get_local_site_id
-        site_id = _get_local_site_id()
-    except ImportError:
-        raise ValueError("Couldn't access local site id")
-
-    return site_id
-
-
 def get_local_site_id():
     """Get local site identifier.
 

@@ -47,12 +47,6 @@ class HostToolsHelper:
             self._log = Logger.get_logger(self.__class__.__name__)
         return self._log
 
-    def _init_ayon_workfiles_tool(self, parent):
-        from openpype.tools.ayon_workfiles.widgets import WorkfilesToolWindow
-
-        workfiles_window = WorkfilesToolWindow(parent=parent)
-        self._workfiles_tool = workfiles_window
-
     def _init_openpype_workfiles_tool(self, parent):
         from openpype.tools.workfiles.app import Window
 

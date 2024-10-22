@@ -25,19 +25,6 @@ def get_openpype_version():
     return openpype.version.__version__
 
 
-def get_ayon_launcher_version():
-    version_filepath = os.path.join(
-        os.environ["AYON_ROOT"],
-        "version.py"
-    )
-    if not os.path.exists(version_filepath):
-        return None
-    content = {}
-    with open(version_filepath, "r") as stream:
-        exec(stream.read(), content)
-    return content["__version__"]
-
-
 def get_build_version():
     """OpenPype version of build."""
 

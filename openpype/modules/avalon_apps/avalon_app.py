@@ -109,10 +109,3 @@ class AvalonModule(OpenPypeModule, ITrayModule):
             window_flags ^= QtCore.Qt.WindowStaysOnTopHint
             libraryloader.setWindowFlags(window_flags)
         self._library_loader_window = libraryloader
-
-    def _init_ayon_loader(self):
-        from openpype.tools.ayon_loader.ui import LoaderWindow
-
-        libraryloader = LoaderWindow()
-
-        self._library_loader_window = libraryloader
