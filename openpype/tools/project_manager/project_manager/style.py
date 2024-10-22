@@ -2,11 +2,11 @@ import os
 from qtpy import QtGui
 
 import qtawesome
-from openpype.tools.utils import paint_image_with_color
+from quadpype.tools.utils import paint_image_with_color
 
 
 class ResourceCache:
-    # TODO use colors from OpenPype style
+    # TODO use colors from QuadPype style
     colors = {
         "standard": "#bfccd6",
         "disabled": "#969696",

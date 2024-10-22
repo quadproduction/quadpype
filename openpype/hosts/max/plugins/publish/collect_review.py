@@ -3,16 +3,16 @@
 import pyblish.api
 
 from pymxs import runtime as rt
-from openpype.lib import BoolDef
-from openpype.hosts.max.api.lib import get_max_version
-from openpype.pipeline.publish import (
-    OpenPypePyblishPluginMixin,
+from quadpype.lib import BoolDef
+from quadpype.hosts.max.api.lib import get_max_version
+from quadpype.pipeline.publish import (
+    QuadPypePyblishPluginMixin,
     KnownPublishError
 )
 
 
 class CollectReview(pyblish.api.InstancePlugin,
-                    OpenPypePyblishPluginMixin):
+                    QuadPypePyblishPluginMixin):
     """Collect Review Data for Preview Animation"""
 
     order = pyblish.api.CollectorOrder + 0.02

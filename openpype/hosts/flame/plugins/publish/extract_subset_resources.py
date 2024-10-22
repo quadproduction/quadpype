@@ -5,10 +5,10 @@ from copy import deepcopy
 
 import pyblish.api
 
-from openpype.pipeline import publish
-from openpype.hosts.flame import api as opfapi
-from openpype.hosts.flame.api import MediaInfoFile
-from openpype.pipeline.editorial import (
+from quadpype.pipeline import publish
+from quadpype.hosts.flame import api as opfapi
+from quadpype.hosts.flame.api import MediaInfoFile
+from quadpype.pipeline.editorial import (
     get_media_range_with_retimes
 )
 

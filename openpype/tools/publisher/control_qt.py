@@ -3,8 +3,8 @@ from abc import abstractmethod, abstractproperty
 
 from qtpy import QtCore
 
-from openpype.lib.events import Event
-from openpype.pipeline.create import CreatedInstance
+from quadpype.lib.events import Event
+from quadpype.pipeline.create import CreatedInstance
 
 from .control import (
     MainThreadItem,
@@ -24,7 +24,7 @@ class MainThreadProcess(QtCore.QObject):
     count_timeout = 2
 
     def __init__(self):
-        super(MainThreadProcess, self).__init__()
+        super().__init__()
         self._items_to_process = collections.deque()
 
         timer = QtCore.QTimer()
@@ -73,7 +73,7 @@ class QtPublisherController(PublisherController):
     def __init__(self, *args, **kwargs):
         self._main_thread_processor = MainThreadProcess()
 
-        super(QtPublisherController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.event_system.add_callback(
             "publish.process.started", self._qt_on_publish_start

@@ -16,13 +16,13 @@ from pymongo.errors import (
 )
 
 
-class OpenPypeVersionNotFound(Exception):
-    """OpenPype version was not found in remote and local repository."""
+class QuadPypeVersionNotFound(Exception):
+    """QuadPype version was not found in remote and local repository."""
     pass
 
 
-class OpenPypeVersionIncompatible(Exception):
-    """OpenPype version is not compatible with the installed one (build)."""
+class QuadPypeVersionIncompatible(Exception):
+    """QuadPype version is not compatible with the installed one (build)."""
     pass
 
 
@@ -109,7 +109,7 @@ def validate_mongo_string(mongo: str) -> (bool, str):
 
 
 def validate_path_string(path: str) -> (bool, str):
-    """Validate string if it is path to OpenPype repository.
+    """Validate string if it is path to QuadPype repository.
 
     Args:
         path (str): Path to validate.
@@ -133,10 +133,10 @@ def validate_path_string(path: str) -> (bool, str):
     return True, "valid path"
 
 
-def get_openpype_global_settings(url: str) -> dict:
+def get_quadpype_global_settings(url: str) -> dict:
     """Load global settings from Mongo database.
 
-    We are loading data from database `openpype` and collection `settings`.
+    We are loading data from database `quadpype` and collection `settings`.
     There we expect document type `global_settings`.
 
     Args:
@@ -153,8 +153,8 @@ def get_openpype_global_settings(url: str) -> dict:
         # Create mongo connection
         client = MongoClient(url, **kwargs)
         # Access settings collection
-        openpype_db = os.environ.get("OPENPYPE_DATABASE_NAME") or "openpype"
-        col = client[openpype_db]["settings"]
+        quadpype_db = os.environ.get("QUADPYPE_DATABASE_NAME") or "quadpype"
+        col = client[quadpype_db]["settings"]
         # Query global settings
         global_settings = col.find_one({"type": "global_settings"}) or {}
         # Close Mongo connection
@@ -167,40 +167,40 @@ def get_openpype_global_settings(url: str) -> dict:
     return global_settings.get("data") or {}
 
 
-def get_openpype_path_from_settings(settings: dict) -> Union[str, None]:
-    """Get OpenPype path from global settings.
+def get_quadpype_path_from_settings(settings: dict) -> Union[str, None]:
+    """Get QuadPype path from global settings.
 
     Args:
         settings (dict): mongodb url.
 
     Returns:
-        path to OpenPype or None if not found
+        path to QuadPype or None if not found
     """
     paths = (
         settings
-        .get("openpype_path", {})
+        .get("quadpype_path", {})
         .get(platform.system().lower())
     ) or []
-    # For cases when `openpype_path` is a single path
+    # For cases when `quadpype_path` is a single path
     if paths and isinstance(paths, str):
         paths = [paths]
 
     return next((path for path in paths if os.path.exists(path)), None)
 
 
-def get_local_openpype_path_from_settings(settings: dict) -> Union[Path, None]:
-    """Get OpenPype local path from global settings.
+def get_local_quadpype_path_from_settings(settings: dict) -> Union[Path, None]:
+    """Get QuadPype local path from global settings.
 
-    Used to download and unzip OP versions.
+    Used to download and unzip QuadPype versions.
     Args:
         settings (dict): settings from DB.
 
     Returns:
-        path to OpenPype or None if not found
+        path to QuadPype or None if not found
     """
     path = (
         settings
-        .get("local_openpype_path", {})
+        .get("local_quadpype_path", {})
         .get(platform.system().lower())
     )
     if path:
@@ -218,11 +218,11 @@ def get_expected_studio_version_str(
         global_settings (dict): Optional precached global settings.
 
     Returns:
-        str: OpenPype version which should be used. Empty string means latest.
+        str: QuadPype version which should be used. Empty string means latest.
     """
-    mongo_url = os.environ.get("OPENPYPE_MONGO")
+    mongo_url = os.environ.get("QUADPYPE_MONGO")
     if global_settings is None:
-        global_settings = get_openpype_global_settings(mongo_url)
+        global_settings = get_quadpype_global_settings(mongo_url)
     key = "staging_version" if staging else "production_version"
     return global_settings.get(key) or ""
 

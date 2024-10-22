@@ -2,15 +2,15 @@
 """Creator plugin to create VRay ROP."""
 import hou
 
-from openpype.hosts.houdini.api import plugin
-from openpype.pipeline import CreatedInstance
-from openpype.lib import EnumDef, BoolDef
+from quadpype.hosts.houdini.api import plugin
+from quadpype.pipeline import CreatedInstance
+from quadpype.lib import EnumDef, BoolDef
 
 
 class CreateVrayROP(plugin.HoudiniCreator):
     """VRay ROP"""
 
-    identifier = "io.openpype.creators.houdini.vray_rop"
+    identifier = "io.quadpype.creators.houdini.vray_rop"
     label = "VRay ROP"
     family = "vray_rop"
     icon = "magic"
@@ -42,7 +42,7 @@ class CreateVrayROP(plugin.HoudiniCreator):
                 "vray", node_name=basename + "_IPR"
             )
         except hou.OperationFailed:
-            raise plugin.OpenPypeCreatorError(
+            raise plugin.QuadPypeCreatorError(
                 "Cannot create Vray render node. "
                 "Make sure Vray installed and enabled!"
             )

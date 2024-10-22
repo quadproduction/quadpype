@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating camera."""
 import os
-from openpype.hosts.max.api import plugin
-from openpype.lib import BoolDef
-from openpype.hosts.max.api.lib_rendersettings import RenderSettings
+from quadpype.hosts.max.api import plugin
+from quadpype.lib import BoolDef
+from quadpype.hosts.max.api.lib_rendersettings import RenderSettings
 
 
 class CreateRender(plugin.MaxCreator):
     """Creator plugin for Renders."""
-    identifier = "io.openpype.creators.max.render"
+    identifier = "io.quadpype.creators.max.render"
     label = "Render"
     family = "maxrender"
     icon = "gear"

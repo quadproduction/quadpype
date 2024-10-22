@@ -1,11 +1,11 @@
 import os
 import pyblish.api
 
-from openpype.lib import (
+from quadpype.lib import (
     get_oiio_tool_args,
     run_subprocess,
 )
-from openpype.pipeline import publish
+from quadpype.pipeline import publish
 
 
 class ExtractFrames(publish.Extractor):

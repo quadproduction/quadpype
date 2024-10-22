@@ -1,8 +1,8 @@
 import hou
 import pyblish.api
-from openpype.hosts.houdini.api import lib
-import openpype.hosts.houdini.api.usd as hou_usdlib
-import openpype.lib.usdlib as usdlib
+from quadpype.hosts.houdini.api import lib
+import quadpype.hosts.houdini.api.usd as hou_usdlib
+import quadpype.lib.usdlib as usdlib
 
 
 class CollectInstancesUsdLayered(pyblish.api.ContextPlugin):

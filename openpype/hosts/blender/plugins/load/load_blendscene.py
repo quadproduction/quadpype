@@ -3,13 +3,13 @@ from pathlib import Path
 
 import bpy
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
 )
-from openpype.hosts.blender.api import plugin
-from openpype.hosts.blender.api.lib import imprint
-from openpype.hosts.blender.api.pipeline import (
+from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api.lib import imprint
+from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
     AVALON_PROPERTY,
 )
@@ -105,7 +105,7 @@ class BlendSceneLoader(plugin.AssetLoader):
         avalon_container.children.link(container)
 
         data = {
-            "schema": "openpype:container-2.0",
+            "schema": "quadpype:container-2.0",
             "id": AVALON_CONTAINER_ID,
             "name": name,
             "namespace": namespace or '',

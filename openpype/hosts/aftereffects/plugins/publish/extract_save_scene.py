@@ -1,7 +1,7 @@
 import pyblish.api
 
-from openpype.pipeline import publish
-from openpype.hosts.aftereffects.api import get_stub
+from quadpype.pipeline import publish
+from quadpype.hosts.aftereffects.api import get_stub
 
 
 class ExtractSaveScene(pyblish.api.ContextPlugin):

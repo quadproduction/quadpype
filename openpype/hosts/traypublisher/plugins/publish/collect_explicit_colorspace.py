@@ -1,15 +1,15 @@
 import pyblish.api
-from openpype.pipeline import (
+from quadpype.pipeline import (
     publish,
     registered_host
 )
-from openpype.lib import EnumDef
-from openpype.pipeline import colorspace
-from openpype.pipeline.publish import KnownPublishError
+from quadpype.lib import EnumDef
+from quadpype.pipeline import colorspace
+from quadpype.pipeline.publish import KnownPublishError
 
 
 class CollectColorspace(pyblish.api.InstancePlugin,
-                        publish.OpenPypePyblishPluginMixin,
+                        publish.QuadPypePyblishPluginMixin,
                         publish.ColormanagedPyblishPluginMixin):
     """Collect explicit user defined representation colorspaces"""
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pyblish.api
-from openpype.pipeline import PublishValidationError
-from openpype.pipeline.publish import (
+from quadpype.pipeline import PublishValidationError
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     RepairAction,
 )

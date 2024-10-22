@@ -2,7 +2,7 @@
 import os
 from pprint import pformat
 import pyblish.api
-from openpype.pipeline import publish
+from quadpype.pipeline import publish
 import hou
 
 

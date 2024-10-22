@@ -1,5 +1,5 @@
 {
-    "launch_openpype_menu_on_start": false,
+    "launch_quadpype_menu_on_start": false,
     "imageio": {
         "activate_host_color_management": true,
         "remapping": {

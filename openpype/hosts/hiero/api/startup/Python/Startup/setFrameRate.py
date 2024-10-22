@@ -16,7 +16,7 @@ except:
 class SetFrameRateDialog(QDialog):
 
   def __init__(self,itemSelection=None,parent=None):
-    super(SetFrameRateDialog, self).__init__(parent)
+    super().__init__(parent)
     self.setWindowTitle("Set Custom Frame Rate")
     self.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Fixed )
     layout = QFormLayout()

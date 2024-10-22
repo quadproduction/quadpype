@@ -1,7 +1,7 @@
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline.workfile.lock_workfile import (
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline.workfile.lock_workfile import (
     is_workfile_lock_enabled,
     remove_workfile_lock
 )

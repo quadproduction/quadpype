@@ -24,13 +24,13 @@ try:
     from weakref import WeakMethod
 except ImportError:
     from ftrack_api._weakref import WeakMethod
-from openpype_modules.ftrack.lib import get_ftrack_event_mongo_info
+from quadpype_modules.ftrack.lib import get_ftrack_event_mongo_info
 
-from openpype.client import OpenPypeMongoConnection
-from openpype.lib import Logger
+from quadpype.client import QuadPypeMongoConnection
+from quadpype.lib import Logger
 
-TOPIC_STATUS_SERVER = "openpype.event.server.status"
-TOPIC_STATUS_SERVER_RESULT = "openpype.event.server.status.result"
+TOPIC_STATUS_SERVER = "quadpype.event.server.status"
+TOPIC_STATUS_SERVER_RESULT = "quadpype.event.server.status.result"
 
 
 def get_host_ip():
@@ -50,7 +50,7 @@ class SocketBaseEventHub(ftrack_api.event.hub.EventHub):
 
     def __init__(self, *args, **kwargs):
         self.sock = kwargs.pop("sock")
-        super(SocketBaseEventHub, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _handle_packet(self, code, packet_identifier, path, data):
         """Override `_handle_packet` which extend heartbeat"""
@@ -74,7 +74,7 @@ class StatusEventHub(SocketBaseEventHub):
         code_name = self._code_name_mapping[code]
         if code_name == "connect":
             event = ftrack_api.event.base.Event(
-                topic="openpype.status.started",
+                topic="quadpype.status.started",
                 data={},
                 source={
                     "id": self.id,
@@ -97,7 +97,7 @@ class StorerEventHub(SocketBaseEventHub):
         code_name = self._code_name_mapping[code]
         if code_name == "connect":
             event = ftrack_api.event.base.Event(
-                topic="openpype.storer.started",
+                topic="quadpype.storer.started",
                 data={},
                 source={
                     "id": self.id,
@@ -121,19 +121,19 @@ class ProcessEventHub(SocketBaseEventHub):
         self.mongo_url = None
         self.dbcon = None
 
-        super(ProcessEventHub, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def prepare_dbcon(self):
         try:
             database_name, collection_name = get_ftrack_event_mongo_info()
-            mongo_client = OpenPypeMongoConnection.get_mongo_client()
+            mongo_client = QuadPypeMongoConnection.get_mongo_client()
             self.dbcon = mongo_client[database_name][collection_name]
             self.mongo_client = mongo_client
 
         except pymongo.errors.AutoReconnect:
             self.pypelog.error((
                 "Mongo server \"{}\" is not responding, exiting."
-            ).format(OpenPypeMongoConnection.get_default_mongo_url()))
+            ).format(QuadPypeMongoConnection.get_default_mongo_url()))
             sys.exit(0)
 
         except pymongo.errors.OperationFailure:
@@ -174,7 +174,7 @@ class ProcessEventHub(SocketBaseEventHub):
                 except pymongo.errors.AutoReconnect:
                     self.pypelog.error((
                         "Mongo server \"{}\" is not responding, exiting."
-                    ).format(os.environ["OPENPYPE_MONGO"]))
+                    ).format(os.environ["QUADPYPE_MONGO"]))
                     sys.exit(0)
                 # Additional special processing of events.
                 if event['topic'] == 'ftrack.meta.disconnected':
@@ -237,7 +237,7 @@ class CustomEventHubSession(ftrack_api.session.Session):
     ):
         self.kwargs = kwargs
 
-        super(ftrack_api.session.Session, self).__init__()
+        super().__init__()
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
@@ -289,7 +289,7 @@ class CustomEventHubSession(ftrack_api.session.Session):
         # Currently pending operations.
         self.recorded_operations = ftrack_api.operation.Operations()
 
-        # OpenPype change - In new API are operations properties
+        # QuadPype change - In new API are operations properties
         new_api = hasattr(self.__class__, "record_operations")
 
         if new_api:

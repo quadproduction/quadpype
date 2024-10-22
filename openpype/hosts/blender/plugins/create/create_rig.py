@@ -2,13 +2,13 @@
 
 import bpy
 
-from openpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api import plugin, lib
 
 
 class CreateRig(plugin.BaseCreator):
     """Artist-friendly rig with controls to direct motion."""
 
-    identifier = "io.openpype.creators.blender.rig"
+    identifier = "io.quadpype.creators.blender.rig"
     label = "Rig"
     family = "rig"
     icon = "wheelchair"

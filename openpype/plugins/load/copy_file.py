@@ -1,5 +1,5 @@
-from openpype.style import get_default_entity_icon_color
-from openpype.pipeline import load
+from quadpype.style import get_default_entity_icon_color
+from quadpype.pipeline import load
 
 
 class CopyFile(load.LoaderPlugin):

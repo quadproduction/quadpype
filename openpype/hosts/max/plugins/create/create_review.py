@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating review in Max."""
-from openpype.hosts.max.api import plugin
-from openpype.lib import BoolDef, EnumDef, NumberDef
+from quadpype.hosts.max.api import plugin
+from quadpype.lib import BoolDef, EnumDef, NumberDef
 
 
 class CreateReview(plugin.MaxCreator):
     """Review in 3dsMax"""
 
-    identifier = "io.openpype.creators.max.review"
+    identifier = "io.quadpype.creators.max.review"
     label = "Review"
     family = "review"
     icon = "video-camera"

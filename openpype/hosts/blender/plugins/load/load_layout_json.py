@@ -7,7 +7,7 @@ from typing import Dict, Optional
 
 import bpy
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     discover_loader_plugins,
     remove_container,
     load_container,
@@ -15,12 +15,12 @@ from openpype.pipeline import (
     loaders_from_representation,
     AVALON_CONTAINER_ID,
 )
-from openpype.hosts.blender.api.pipeline import (
+from quadpype.hosts.blender.api.pipeline import (
     AVALON_INSTANCES,
     AVALON_CONTAINERS,
     AVALON_PROPERTY,
 )
-from openpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api import plugin
 
 
 class JsonLayoutLoader(plugin.AssetLoader):
@@ -168,7 +168,7 @@ class JsonLayoutLoader(plugin.AssetLoader):
         bpy.context.scene.collection.objects.link(asset_group)
 
         asset_group[AVALON_PROPERTY] = {
-            "schema": "openpype:container-2.0",
+            "schema": "quadpype:container-2.0",
             "id": AVALON_CONTAINER_ID,
             "name": name,
             "namespace": namespace or '',
@@ -268,7 +268,7 @@ class JsonLayoutLoader(plugin.AssetLoader):
         """Remove an existing container from a Blender scene.
 
         Arguments:
-            container (openpype:container-1.0): Container to remove,
+            container (quadpype:container-1.0): Container to remove,
                 from `host.ls()`.
 
         Returns:

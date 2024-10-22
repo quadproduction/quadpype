@@ -1,7 +1,7 @@
 import numbers
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.tools.utils.lib import format_version
+from quadpype.tools.utils.lib import format_version
 
 from .products_model import (
     PRODUCT_ID_ROLE,
@@ -20,7 +20,7 @@ class VersionComboBox(QtWidgets.QComboBox):
     value_changed = QtCore.Signal(str)
 
     def __init__(self, product_id, parent):
-        super(VersionComboBox, self).__init__(parent)
+        super().__init__(parent)
         self._product_id = product_id
         self._items_by_id = {}
 
@@ -79,7 +79,7 @@ class VersionDelegate(QtWidgets.QStyledItemDelegate):
     version_changed = QtCore.Signal()
 
     def __init__(self, *args, **kwargs):
-        super(VersionDelegate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._editor_by_product_id = {}
 
     def displayText(self, value, locale):
@@ -173,7 +173,7 @@ class LoadedInSceneDelegate(QtWidgets.QStyledItemDelegate):
     """
 
     def __init__(self, *args, **kwargs):
-        super(LoadedInSceneDelegate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._colors = {
             1: QtGui.QColor(80, 170, 80),
             0: QtGui.QColor(90, 90, 90),

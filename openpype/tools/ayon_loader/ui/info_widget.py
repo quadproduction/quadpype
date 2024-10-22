@@ -2,7 +2,7 @@ import datetime
 
 from qtpy import QtWidgets
 
-from openpype.tools.utils.lib import format_version
+from quadpype.tools.utils.lib import format_version
 
 
 class VersionTextEdit(QtWidgets.QTextEdit):
@@ -14,7 +14,7 @@ class VersionTextEdit(QtWidgets.QTextEdit):
 
     """
     def __init__(self, controller, parent):
-        super(VersionTextEdit, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self._version_item = None
         self._product_item = None
@@ -108,7 +108,7 @@ class VersionTextEdit(QtWidgets.QTextEdit):
 class InfoWidget(QtWidgets.QWidget):
     """A Widget that display information about a specific version"""
     def __init__(self, controller, parent):
-        super(InfoWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         label_widget = QtWidgets.QLabel("Version Info", self)
         info_text_widget = VersionTextEdit(controller, self)

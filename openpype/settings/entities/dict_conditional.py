@@ -4,7 +4,7 @@ from .lib import (
     OverrideState,
     NOT_SET
 )
-from openpype.settings.constants import (
+from quadpype.settings.constants import (
     METADATA_KEYS,
     M_OVERRIDDEN_KEY,
     KEY_REGEX
@@ -780,9 +780,9 @@ class SyncServerProviders(DictConditionalEntity):
         super(SyncServerProviders, self)._add_children()
 
     def _get_enum_children(self):
-        from openpype_modules import sync_server
+        from quadpype_modules import sync_server
 
-        from openpype_modules.sync_server.providers import lib as lib_providers
+        from quadpype_modules.sync_server.providers import lib as lib_providers
 
         provider_code_to_label = {}
         providers = lib_providers.factory.providers

@@ -7,11 +7,11 @@ import requests
 
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline import legacy_io
-from openpype.tests.lib import is_in_tests
-from openpype.lib import is_running_from_build
-from openpype.modules.deadline.utils import DeadlineDefaultJobAttrs, get_deadline_job_profile
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline import legacy_io
+from quadpype.tests.lib import is_in_tests
+from quadpype.lib import is_running_from_build
+from quadpype.modules.deadline.utils import DeadlineDefaultJobAttrs, get_deadline_job_profile
 
 
 class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin, DeadlineDefaultJobAttrs):
@@ -145,13 +145,13 @@ class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin, DeadlineDefaultJob
             "AVALON_TOOLS"
         ]
 
-        # Add OpenPype version if we are running from build.
+        # Add QuadPype version if we are running from build.
         if is_running_from_build():
-            keys.append("OPENPYPE_VERSION")
+            keys.append("QUADPYPE_VERSION")
 
         # Add mongo url if it's enabled
         if context.data.get("deadlinePassMongoUrl"):
-            keys.append("OPENPYPE_MONGO")
+            keys.append("QUADPYPE_MONGO")
 
         environment = dict(
             {key: os.environ[key] for key in keys if key in os.environ},

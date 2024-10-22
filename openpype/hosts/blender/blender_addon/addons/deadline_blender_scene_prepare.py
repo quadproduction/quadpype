@@ -4,8 +4,8 @@ import functools
 import logging
 import uuid
 
-from openpype.settings import get_system_settings
-from openpype.hosts.blender.api.pipeline import get_path_from_template
+from quadpype.settings import get_system_settings
+from quadpype.hosts.blender.api.pipeline import get_path_from_template
 
 import bpy
 

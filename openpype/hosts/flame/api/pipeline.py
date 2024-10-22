@@ -5,8 +5,8 @@ import os
 import contextlib
 from pyblish import api as pyblish
 
-from openpype.lib import Logger
-from openpype.pipeline import (
+from quadpype.lib import Logger
+from quadpype.pipeline import (
     register_loader_plugin_path,
     register_creator_plugin_path,
     deregister_loader_plugin_path,
@@ -38,12 +38,12 @@ def install():
     pyblish.register_plugin_path(PUBLISH_PATH)
     register_loader_plugin_path(LOAD_PATH)
     register_creator_plugin_path(CREATE_PATH)
-    log.info("OpenPype Flame plug-ins registered ...")
+    log.info("QuadPype Flame plug-ins registered ...")
 
     # register callback for switching publishable
     pyblish.register_callback("instanceToggled", on_pyblish_instance_toggled)
 
-    log.info("OpenPype Flame host installed ...")
+    log.info("QuadPype Flame host installed ...")
 
 
 def uninstall():
@@ -57,7 +57,7 @@ def uninstall():
     # register callback for switching publishable
     pyblish.deregister_callback("instanceToggled", on_pyblish_instance_toggled)
 
-    log.info("OpenPype Flame host uninstalled ...")
+    log.info("QuadPype Flame host uninstalled ...")
 
 
 def containerise(flame_clip_segment,
@@ -68,7 +68,7 @@ def containerise(flame_clip_segment,
                  data=None):
 
     data_imprint = {
-        "schema": "openpype:container-2.0",
+        "schema": "quadpype:container-2.0",
         "id": AVALON_CONTAINER_ID,
         "name": str(name),
         "namespace": str(namespace),
@@ -94,14 +94,14 @@ def ls():
 
 
 def parse_container(tl_segment, validate=True):
-    """Return container data from timeline_item's openpype tag.
+    """Return container data from timeline_item's quadpype tag.
     """
     # TODO: parse_container
     pass
 
 
 def update_container(tl_segment, data=None):
-    """Update container data to input timeline_item's openpype tag.
+    """Update container data to input timeline_item's quadpype tag.
     """
     # TODO: update_container
     pass
@@ -113,7 +113,7 @@ def on_pyblish_instance_toggled(instance, old_value, new_value):
     log.info("instance toggle: {}, old_value: {}, new_value:{} ".format(
         instance, old_value, new_value))
 
-    # from openpype.hosts.resolve import (
+    # from quadpype.hosts.resolve import (
     #     set_publish_attribute
     # )
 
@@ -136,7 +136,7 @@ def list_instances():
 
 def imprint(segment, data=None):
     """
-    Adding openpype data to Flame timeline segment.
+    Adding quadpype data to Flame timeline segment.
 
     Also including publish attribute into tag.
 

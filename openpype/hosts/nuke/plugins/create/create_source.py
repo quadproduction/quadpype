@@ -1,13 +1,13 @@
 import nuke
 import six
 import sys
-from openpype.hosts.nuke.api import (
+from quadpype.hosts.nuke.api import (
     INSTANCE_DATA_KNOB,
     NukeCreator,
     NukeCreatorError,
     set_node_data
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     CreatedInstance
 )
 

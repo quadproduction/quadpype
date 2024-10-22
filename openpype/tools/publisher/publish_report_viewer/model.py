@@ -3,7 +3,7 @@ from qtpy import QtCore, QtGui
 
 import pyblish.api
 
-from openpype.tools.utils.lib import html_escape
+from quadpype.tools.utils.lib import html_escape
 from .constants import (
     ITEM_ID_ROLE,
     ITEM_IS_GROUP_ROLE,
@@ -17,7 +17,7 @@ from .constants import (
 
 class InstancesModel(QtGui.QStandardItemModel):
     def __init__(self, *args, **kwargs):
-        super(InstancesModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._items_by_id = {}
         self._plugin_items_by_id = {}
@@ -83,7 +83,7 @@ class InstancesModel(QtGui.QStandardItemModel):
 
 class InstanceProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
-        super(InstanceProxyModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._ignore_removed = True
 
@@ -116,7 +116,7 @@ class PluginsModel(QtGui.QStandardItemModel):
     )
 
     def __init__(self, *args, **kwargs):
-        super(PluginsModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._items_by_id = {}
         self._plugin_items_by_id = {}
@@ -185,7 +185,7 @@ class PluginsModel(QtGui.QStandardItemModel):
 
 class PluginProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
-        super(PluginProxyModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._ignore_skipped = True
 

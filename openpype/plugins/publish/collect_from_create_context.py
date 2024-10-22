@@ -4,9 +4,9 @@
 import os
 import pyblish.api
 
-from openpype.host import IPublishHost
-from openpype.pipeline import legacy_io, registered_host
-from openpype.pipeline.create import CreateContext
+from quadpype.host import IPublishHost
+from quadpype.pipeline import legacy_io, registered_host
+from quadpype.pipeline.create import CreateContext
 
 
 class CollectFromCreateContext(pyblish.api.ContextPlugin):

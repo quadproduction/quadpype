@@ -1,7 +1,7 @@
 import os
 import pyblish.api
-from openpype.pipeline import Anatomy
-from openpype.pipeline.publish import ColormanagedPyblishPluginMixin
+from quadpype.pipeline import Anatomy
+from quadpype.pipeline.publish import ColormanagedPyblishPluginMixin
 from typing import Tuple, Union, List
 
 

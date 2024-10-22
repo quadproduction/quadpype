@@ -2,10 +2,10 @@ import os
 
 import unreal
 
-from openpype.settings import get_project_settings
-from openpype.pipeline import Anatomy
-from openpype.hosts.unreal.api import pipeline
-from openpype.widgets.message_window import Window
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import Anatomy
+from quadpype.hosts.unreal.api import pipeline
+from quadpype.widgets.message_window import Window
 
 
 queue = None

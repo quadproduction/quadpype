@@ -1,14 +1,14 @@
 from qtpy import QtWidgets
 
-from openpype.settings import MODULES_SETTINGS_KEY
-from openpype.tools.settings.settings.categories import (
+from quadpype.settings import MODULES_SETTINGS_KEY
+from quadpype.tools.settings.settings.categories import (
     StandaloneCategoryWidget
 )
 
 
 class LocalModulesWidgets(QtWidgets.QWidget):
     def __init__(self, system_settings_entity, parent):
-        super(LocalModulesWidgets, self).__init__(parent)
+        super().__init__(parent)
 
         self.modules_data = {}
         self.system_settings_entity = system_settings_entity

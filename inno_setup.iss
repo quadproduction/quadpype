@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 
-#define MyAppName "OpenPype"
+#define MyAppName "QuadPype"
 #define Build GetEnv("BUILD_DIR")
 #define AppVer GetEnv("BUILD_VERSION")
 
@@ -14,16 +14,16 @@ AppId={{B9E9DF6A-5BDA-42DD-9F35-C09D564C4D93}
 AppName={#MyAppName}
 AppVersion={#AppVer}
 AppVerName={#MyAppName} version {#AppVer}
-AppPublisher=Ynput s.r.o
-AppPublisherURL=https://ynput.io
-AppSupportURL=https://ynput.io
-AppUpdatesURL=https://ynput.io
+AppPublisher=QUAD PRODUCTIONS
+AppPublisherURL=https://github.com/quadproduction/quadpype
+AppSupportURL=https://github.com/quadproduction/quadpype
+AppUpdatesURL=https://github.com/quadproduction/quadpype
 DefaultDirName={autopf}\{#MyAppName}\{#AppVer}
 UsePreviousAppDir=no
 DisableProgramGroupPage=yes
 OutputBaseFilename={#MyAppName}-{#AppVer}-install
 AllowCancelDuringInstall=yes
-; Uncomment the following line to run in non administrative install mode (install for current user only.)
+; Uncomment the following line to run in non admin install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 SetupIconFile=igniter\resources\icons\quadpype.ico
@@ -48,8 +48,8 @@ Source: "build\{#build}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdir
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName} {#AppVer}"; Filename: "{app}\openpype_gui.exe"
-Name: "{autodesktop}\{#MyAppName} {#AppVer}"; Filename: "{app}\openpype_gui.exe"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName} {#AppVer}"; Filename: "{app}\quadpype_gui.exe"
+Name: "{autodesktop}\{#MyAppName} {#AppVer}"; Filename: "{app}\quadpype_gui.exe"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\openpype_gui.exe"; Description: "{cm:LaunchProgram,OpenPype}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\quadpype_gui.exe"; Description: "{cm:LaunchProgram,QuadPype}"; Flags: nowait postinstall skipifsilent

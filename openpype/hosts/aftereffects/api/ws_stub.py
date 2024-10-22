@@ -8,7 +8,7 @@ import logging
 import attr
 
 from wsrpc_aiohttp import WebSocketAsync
-from openpype.tools.adobe_webserver.app import WebServerTool
+from quadpype.tools.adobe_webserver.app import WebServerTool
 
 
 class ConnectionNotEstablishedYet(Exception):

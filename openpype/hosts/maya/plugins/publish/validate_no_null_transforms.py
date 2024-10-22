@@ -1,8 +1,8 @@
 import maya.cmds as cmds
 
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
     PublishValidationError,
@@ -55,7 +55,7 @@ class ValidateNoNullTransforms(pyblish.api.InstancePlugin,
     families = ['model']
     label = 'No Empty/Null Transforms'
     actions = [RepairAction,
-               openpype.hosts.maya.api.action.SelectInvalidAction]
+               quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = False
 
     @staticmethod

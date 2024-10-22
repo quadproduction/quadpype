@@ -2,13 +2,13 @@ import os
 import platform
 
 
-from openpype.client import get_asset_by_name
-from openpype.modules import (
-    OpenPypeModule,
+from quadpype.client import get_asset_by_name
+from quadpype.modules import (
+    QuadPypeModule,
     ITrayService,
     IPluginPaths
 )
-from openpype.lib.events import register_event_callback
+from quadpype.lib.events import register_event_callback
 
 from .exceptions import InvalidContextError
 
@@ -76,7 +76,7 @@ class ExampleTimersManagerConnector:
 
 
 class TimersManager(
-    OpenPypeModule,
+    QuadPypeModule,
     ITrayService,
     IPluginPaths
 ):
@@ -111,7 +111,7 @@ class TimersManager(
 
         auto_stop = timers_settings["auto_stop"]
         platform_name = platform.system().lower()
-        # Turn of auto stop on MacOs because pynput requires root permissions
+        # Turn off auto stop on MacOs because pynput requires root permissions
         #    and on linux can cause thread locks on application close
         if full_time <= 0 or platform_name in ("darwin", "linux"):
             auto_stop = False
@@ -395,7 +395,7 @@ class TimersManager(
         """Prepared method for calling change timers on REST api.
 
         Webserver must be active. At the moment is Webserver running only when
-        OpenPype Tray is used.
+        QuadPype Tray is used.
 
         Args:
             project_name (str): Project name.
@@ -405,7 +405,7 @@ class TimersManager(
                 passed.
         """
 
-        webserver_url = os.environ.get("OPENPYPE_WEBSERVER_URL")
+        webserver_url = os.environ.get("QUADPYPE_WEBSERVER_URL")
         if not webserver_url:
             msg = "Couldn't find webserver url"
             if logger is not None:
@@ -440,7 +440,7 @@ class TimersManager(
             logger (logging.Logger): Logger used for logging messages.
         """
 
-        webserver_url = os.environ.get("OPENPYPE_WEBSERVER_URL")
+        webserver_url = os.environ.get("QUADPYPE_WEBSERVER_URL")
         if not webserver_url:
             msg = "Couldn't find webserver url"
             if logger is not None:

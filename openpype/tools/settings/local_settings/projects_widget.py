@@ -1,9 +1,9 @@
 import platform
 import copy
 from qtpy import QtWidgets, QtCore, QtGui
-from openpype.tools.settings.settings import ProjectListWidget
-from openpype.tools.utils import PlaceholderLineEdit
-from openpype.settings import (
+from quadpype.tools.settings.settings import ProjectListWidget
+from quadpype.tools.utils import PlaceholderLineEdit
+from quadpype.settings import (
     DEFAULT_PROJECT_KEY,
     PROJECT_SETTINGS_KEY
 )
@@ -44,7 +44,7 @@ class DynamicInputItem(QtCore.QObject):
         label_widget,
         parent
     ):
-        super(DynamicInputItem, self).__init__()
+        super().__init__()
         input_widget = PlaceholderLineEdit(parent)
 
         settings_value = input_def.get("value")
@@ -215,7 +215,7 @@ class SiteValueItem:
 
 class SitesWidget(QtWidgets.QWidget):
     def __init__(self, modules_manager, project_settings, parent):
-        super(SitesWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.modules_manager = modules_manager
         self.project_settings = project_settings
@@ -443,7 +443,7 @@ class _SiteCombobox(QtWidgets.QWidget):
     value_changed = QtCore.Signal()
 
     def __init__(self, modules_manager, project_settings, parent):
-        super(_SiteCombobox, self).__init__(parent)
+        super().__init__(parent)
         self.project_settings = project_settings
 
         self.modules_manager = modules_manager
@@ -776,7 +776,7 @@ class RemoteSiteCombo(_SiteCombobox):
 class RootSiteWidget(QtWidgets.QWidget):
     def __init__(self, modules_manager, project_settings, parent):
         self._parent_widget = parent
-        super(RootSiteWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.modules_manager = modules_manager
         self.project_settings = project_settings
@@ -812,7 +812,7 @@ class ProjectValue(dict):
 
 class ProjectSettingsWidget(QtWidgets.QWidget):
     def __init__(self, modules_manager, project_settings, parent):
-        super(ProjectSettingsWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.local_project_settings = {}
 

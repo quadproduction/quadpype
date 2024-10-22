@@ -1,6 +1,6 @@
 from nukescripts import autoBackdrop
 
-from openpype.hosts.nuke.api import (
+from quadpype.hosts.nuke.api import (
     NukeCreator,
     maintained_selection,
     select_nodes

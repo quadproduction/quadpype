@@ -2,8 +2,8 @@ import pyblish.api
 
 from maya import cmds
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateMeshOrder,
     OptionalPyblishPluginMixin
@@ -18,7 +18,7 @@ class ValidateShapeRenderStats(pyblish.api.Validator,
     hosts = ['maya']
     families = ['model']
     label = 'Shape Default Render Stats'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction,
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction,
                RepairAction]
     optional = True
 

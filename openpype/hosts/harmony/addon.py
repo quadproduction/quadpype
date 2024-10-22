@@ -1,10 +1,10 @@
 import os
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 HARMONY_HOST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class HarmonyAddon(OpenPypeModule, IHostAddon):
+class HarmonyAddon(QuadPypeModule, IHostAddon):
     name = "harmony"
     host_name = "harmony"
 

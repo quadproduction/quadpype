@@ -1,9 +1,9 @@
-# from openpype import plugins
+# from quadpype import plugins
 import os
 import json
 import pyblish.api
 
-from openpype.pipeline import publish
+from quadpype.pipeline import publish
 
 
 class ExtractClipEffects(publish.Extractor):

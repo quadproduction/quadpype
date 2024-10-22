@@ -2,8 +2,8 @@ import os
 
 import pyblish.api
 
-from openpype.pipeline import publish
-from openpype.hosts.houdini.api.lib import render_rop
+from quadpype.pipeline import publish
+from quadpype.hosts.houdini.api.lib import render_rop
 
 import hou
 

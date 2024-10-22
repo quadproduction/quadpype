@@ -2,14 +2,14 @@ import os
 
 from maya import cmds
 
-from openpype.pipeline import publish
-from openpype.hosts.maya.api.alembic import extract_alembic
-from openpype.hosts.maya.api.lib import (
+from quadpype.pipeline import publish
+from quadpype.hosts.maya.api.alembic import extract_alembic
+from quadpype.hosts.maya.api.lib import (
     suspended_refresh,
     maintained_selection,
     iter_visible_nodes_in_range,
 )
-from openpype.lib import (
+from quadpype.lib import (
     BoolDef,
     TextDef,
     NumberDef,
@@ -17,10 +17,10 @@ from openpype.lib import (
     UISeparatorDef,
     UILabelDef,
 )
-from openpype.pipeline.publish import OpenPypePyblishPluginMixin
+from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
 
 
-class ExtractAlembic(publish.Extractor, OpenPypePyblishPluginMixin):
+class ExtractAlembic(publish.Extractor, QuadPypePyblishPluginMixin):
     """Produce an alembic of just point positions and normals.
 
     Positions and normals, uvs, creases are preserved, but nothing more,

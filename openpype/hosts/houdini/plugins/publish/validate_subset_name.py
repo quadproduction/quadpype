@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 """Validator for correct naming of Static Meshes."""
 import pyblish.api
-from openpype.pipeline import (
+from quadpype.pipeline import (
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     RepairAction,
 )
-from openpype.hosts.houdini.api.action import SelectInvalidAction
-from openpype.pipeline.create import get_subset_name
+from quadpype.hosts.houdini.api.action import SelectInvalidAction
+from quadpype.pipeline.create import get_subset_name
 
 import hou
 

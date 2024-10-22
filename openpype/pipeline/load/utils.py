@@ -7,8 +7,8 @@ import inspect
 import collections
 import numbers
 
-from openpype.host import ILoadHost
-from openpype.client import (
+from quadpype.host import ILoadHost
+from quadpype.client import (
     get_project,
     get_assets,
     get_subsets,
@@ -23,11 +23,11 @@ from openpype.client import (
     get_representation_by_name,
     get_representation_parents
 )
-from openpype.lib import (
+from quadpype.lib import (
     StringTemplate,
     TemplateUnsolved,
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     legacy_io,
     Anatomy,
 )
@@ -318,7 +318,7 @@ def load_with_repre_context(
 
     # Backwards compatibility: Originally the loader's __init__ required the
     # representation context to set `fname` attribute to the filename to load
-    # Deprecated - to be removed in OpenPype 3.16.6 or 3.17.0.
+    # Deprecated - to be removed in QuadPype 3.16.6 or 3.17.0.
     loader._fname = get_representation_path_from_context(repre_context)
 
     return loader.load(repre_context, name, namespace, options)
@@ -633,7 +633,7 @@ def get_representation_path(representation, root=None, dbcon=None):
         dbcon = legacy_io
 
     if root is None:
-        from openpype.pipeline import registered_root
+        from quadpype.pipeline import registered_root
 
         root = registered_root()
 
@@ -835,7 +835,7 @@ def get_outdated_containers(host=None, project_name=None):
     """
 
     if host is None:
-        from openpype.pipeline import registered_host
+        from quadpype.pipeline import registered_host
 
         host = registered_host()
 

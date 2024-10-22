@@ -3,19 +3,19 @@ import clique
 
 import maya.cmds as cmds
 
-from openpype.settings import get_project_settings
-from openpype.pipeline import (
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import (
     load,
     legacy_io,
     get_representation_path
 )
-from openpype.hosts.maya.api.lib import (
+from quadpype.hosts.maya.api.lib import (
     unique_namespace,
     get_attribute_input,
     maintained_selection,
     convert_to_maya_fps
 )
-from openpype.hosts.maya.api.pipeline import containerise
+from quadpype.hosts.maya.api.pipeline import containerise
 
 
 def is_sequence(files):

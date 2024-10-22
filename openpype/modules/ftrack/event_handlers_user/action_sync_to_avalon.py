@@ -4,8 +4,8 @@ import json
 
 import ftrack_api
 
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
-from openpype_modules.ftrack.lib.avalon_sync import SyncEntitiesFactory
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype_modules.ftrack.lib.avalon_sync import SyncEntitiesFactory
 
 
 class SyncToAvalonLocal(BaseAction):
@@ -34,10 +34,10 @@ class SyncToAvalonLocal(BaseAction):
     """
 
     identifier = "sync.to.avalon.local"
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     variant = "- Sync To Avalon (Local)"
     priority = 200
-    icon = statics_icon("ftrack", "action_icons", "OpenPypeAdmin.svg")
+    icon = statics_icon("ftrack", "action_icons", "QuadPypeAdmin.svg")
 
     settings_key = "sync_to_avalon_local"
 
@@ -187,7 +187,7 @@ class SyncToAvalonLocal(BaseAction):
 
             if self.entities_factory.project_created:
                 event = ftrack_api.event.base.Event(
-                    topic="openpype.project.created",
+                    topic="quadpype.project.created",
                     data={"project_name": project_name}
                 )
                 self.session.event_hub.publish(event)

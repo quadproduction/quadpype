@@ -1,11 +1,11 @@
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.settings import PROJECT_SETTINGS_KEY
 
 
 class CollectHandles(pyblish.api.InstancePlugin):
     """
-    OpenPype collector for handling animation-related tasks.
+    QuadPype collector for handling animation-related tasks.
     It checks the include handle settings of the project, determines whether to include/exclude handles
     based on the current task, and initializes handle values accordingly.
 

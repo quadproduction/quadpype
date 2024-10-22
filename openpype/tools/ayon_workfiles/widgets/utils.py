@@ -8,7 +8,7 @@ class BaseOverlayFrame(QtWidgets.QFrame):
     """
 
     def __init__(self, parent):
-        super(BaseOverlayFrame, self).__init__(parent)
+        super().__init__(parent)
         self.setObjectName("OverlayFrame")
 
         self._parent = parent

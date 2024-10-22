@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pyblish.api
 
-from openpype.settings import get_current_project_settings
-from openpype.modules.ftrack import get_asset_versions_by_task_id
+from quadpype.settings import get_current_project_settings
+from quadpype.modules.ftrack import get_asset_versions_by_task_id
 
 
 class IntegrateFtrackSourceWorkfile(pyblish.api.InstancePlugin):

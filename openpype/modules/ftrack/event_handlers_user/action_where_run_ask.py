@@ -2,18 +2,18 @@ import platform
 import socket
 import getpass
 
-from openpype_modules.ftrack.lib import BaseAction
-from openpype_modules.ftrack.ftrack_server.lib import get_host_ip
+from quadpype_modules.ftrack.lib import BaseAction
+from quadpype_modules.ftrack.ftrack_server.lib import get_host_ip
 
 
 class ActionWhereIRun(BaseAction):
-    """Show where same user has running OpenPype instances."""
+    """Show where same user has running QuadPype instances."""
 
     identifier = "ask.where.i.run"
     show_identifier = "show.where.i.run"
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     variant = "- Where I run"
-    description = "Show PC info where user have running OpenPype"
+    description = "Show PC info where user have running QuadPype"
 
     def _discover(self, _event):
         return {

@@ -3,23 +3,23 @@ import uuid
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.style import get_objected_colors
-from openpype.lib import (
+from quadpype.style import get_objected_colors
+from quadpype.lib import (
     run_subprocess,
     is_oiio_supported,
     get_oiio_tool_args,
     get_ffmpeg_tool_args,
 )
-from openpype.lib.transcoding import (
+from quadpype.lib.transcoding import (
     IMAGE_EXTENSIONS,
     VIDEO_EXTENSIONS,
 )
 
-from openpype.tools.utils import (
+from quadpype.tools.utils import (
     paint_image_with_color,
     PixmapButton,
 )
-from openpype.tools.publisher.control import CardMessageTypes
+from quadpype.tools.publisher.control import CardMessageTypes
 
 from .icons import get_image
 from .screenshot_widget import capture_to_file
@@ -34,7 +34,7 @@ class ThumbnailPainterWidget(QtWidgets.QWidget):
     checker_boxes_count = 20
 
     def __init__(self, parent):
-        super(ThumbnailPainterWidget, self).__init__(parent)
+        super().__init__(parent)
 
         border_color = get_objected_colors("bg-buttons").get_qcolor()
         thumbnail_bg_color = get_objected_colors("bg-view").get_qcolor()
@@ -302,7 +302,7 @@ class ThumbnailWidget(QtWidgets.QWidget):
     def __init__(self, controller, parent):
         # Missing implementation for thumbnail
         # - widget kept to make a visial offset of global attr widget offset
-        super(ThumbnailWidget, self).__init__(parent)
+        super().__init__(parent)
         self.setAcceptDrops(True)
 
         thumbnail_painter = ThumbnailPainterWidget(self)

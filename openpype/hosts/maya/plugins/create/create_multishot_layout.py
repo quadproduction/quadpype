@@ -5,15 +5,15 @@ from ayon_api import (
 )
 from maya import cmds  # noqa: F401
 
-from openpype.client import get_assets
-from openpype.hosts.maya.api import plugin
-from openpype.lib import BoolDef, EnumDef, TextDef
-from openpype.pipeline import (
+from quadpype.client import get_assets
+from quadpype.hosts.maya.api import plugin
+from quadpype.lib import BoolDef, EnumDef, TextDef
+from quadpype.pipeline import (
     Creator,
     get_current_asset_name,
     get_current_project_name,
 )
-from openpype.pipeline.create import CreatorError
+from quadpype.pipeline.create import CreatorError
 
 
 class CreateMultishotLayout(plugin.MayaCreator):
@@ -25,7 +25,7 @@ class CreateMultishotLayout(plugin.MayaCreator):
     shot a Layout will be created.
 
     """
-    identifier = "io.openpype.creators.maya.multishotlayout"
+    identifier = "io.quadpype.creators.maya.multishotlayout"
     label = "Multi-shot Layout"
     family = "layout"
     icon = "project-diagram"
@@ -121,14 +121,14 @@ class CreateMultishotLayout(plugin.MayaCreator):
                 f"folder: {pre_create_data['shotParent']}."))
 
         # Get layout creator
-        layout_creator_id = "io.openpype.creators.maya.layout"
+        layout_creator_id = "io.quadpype.creators.maya.layout"
         layout_creator: Creator = self.create_context.creators.get(
             layout_creator_id)
         if not layout_creator:
             raise CreatorError(
                 f"Creator {layout_creator_id} not found.")
 
-        # Get OpenPype style asset documents for the shots
+        # Get QuadPype style asset documents for the shots
         op_asset_docs = get_assets(
             self.project_name, [s["id"] for s in shots])
         asset_docs_by_id = {doc["_id"]: doc for doc in op_asset_docs}

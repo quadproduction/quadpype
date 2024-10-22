@@ -4,7 +4,7 @@ import asyncio
 
 from aiohttp import web
 
-from openpype.lib import Logger
+from quadpype.lib import Logger
 from .cors_middleware import cors_middleware
 
 
@@ -84,7 +84,7 @@ class WebServerThread(threading.Thread):
     def __init__(self, manager):
         self._log = None
 
-        super(WebServerThread, self).__init__()
+        super().__init__()
 
         self.is_running = False
         self.manager = manager

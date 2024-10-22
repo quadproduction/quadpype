@@ -4,8 +4,8 @@ import os
 
 import unreal
 
-from openpype.pipeline import publish
-from openpype.hosts.unreal.api.pipeline import UNREAL_VERSION
+from quadpype.pipeline import publish
+from quadpype.hosts.unreal.api.pipeline import UNREAL_VERSION
 
 
 class ExtractCamera(publish.Extractor):

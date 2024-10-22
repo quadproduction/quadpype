@@ -26,9 +26,9 @@ import collections
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.style import get_objected_colors
-from openpype.widgets.nice_checkbox import NiceCheckbox
-from openpype.tools.utils.lib import html_escape, checkstate_int_to_enum
+from quadpype.style import get_objected_colors
+from quadpype.widgets.nice_checkbox import NiceCheckbox
+from quadpype.tools.utils.lib import html_escape, checkstate_int_to_enum
 from .widgets import AbstractInstanceView
 from ..constants import (
     INSTANCE_ID_ROLE,
@@ -55,7 +55,7 @@ class ListItemDelegate(QtWidgets.QStyledItemDelegate):
     radius_ratio = 0.3
 
     def __init__(self, parent):
-        super(ListItemDelegate, self).__init__(parent)
+        super().__init__(parent)
 
         group_color_info = get_objected_colors("publisher", "list-view-group")
 
@@ -112,7 +112,7 @@ class InstanceListItemWidget(QtWidgets.QWidget):
     active_changed = QtCore.Signal(str, bool)
 
     def __init__(self, instance, parent):
-        super(InstanceListItemWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.instance = instance
 
@@ -210,7 +210,7 @@ class InstanceListItemWidget(QtWidgets.QWidget):
 class ListContextWidget(QtWidgets.QFrame):
     """Context (or global attributes) widget."""
     def __init__(self, parent):
-        super(ListContextWidget, self).__init__(parent)
+        super().__init__(parent)
 
         label_widget = QtWidgets.QLabel(CONTEXT_LABEL, self)
 
@@ -236,7 +236,7 @@ class InstanceListGroupWidget(QtWidgets.QFrame):
     toggle_requested = QtCore.Signal(str, int)
 
     def __init__(self, group_name, parent):
-        super(InstanceListGroupWidget, self).__init__(parent)
+        super().__init__(parent)
         self.setObjectName("InstanceListGroupWidget")
 
         self.group_name = group_name
@@ -319,7 +319,7 @@ class InstanceTreeView(QtWidgets.QTreeView):
     toggle_requested = QtCore.Signal(int)
 
     def __init__(self, *args, **kwargs):
-        super(InstanceTreeView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setObjectName("InstanceListView")
         self.setHeaderHidden(True)
@@ -426,7 +426,7 @@ class InstanceListView(AbstractInstanceView):
     This is public access to and from list view.
     """
     def __init__(self, controller, parent):
-        super(InstanceListView, self).__init__(parent)
+        super().__init__(parent)
 
         self._controller = controller
 

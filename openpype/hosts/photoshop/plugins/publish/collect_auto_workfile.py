@@ -1,9 +1,9 @@
 import os
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.hosts.photoshop import api as photoshop
-from openpype.pipeline.create import get_subset_name
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.hosts.photoshop import api as photoshop
+from quadpype.pipeline.create import get_subset_name
 
 
 class CollectAutoWorkfile(pyblish.api.ContextPlugin):

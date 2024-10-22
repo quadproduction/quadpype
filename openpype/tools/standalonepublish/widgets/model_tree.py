@@ -8,7 +8,7 @@ class TreeModel(QtCore.QAbstractItemModel):
     ItemRole = QtCore.Qt.UserRole + 1
 
     def __init__(self, parent=None):
-        super(TreeModel, self).__init__(parent)
+        super().__init__(parent)
         self._root_node = Node()
 
     def rowCount(self, parent):

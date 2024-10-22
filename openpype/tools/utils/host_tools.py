@@ -7,9 +7,9 @@ import os
 
 import pyblish.api
 
-from openpype.host import IWorkfileHost, ILoadHost
-from openpype.lib import Logger
-from openpype.pipeline import (
+from quadpype.host import IWorkfileHost, ILoadHost
+from quadpype.lib import Logger
+from quadpype.pipeline import (
     registered_host,
     get_current_asset_name,
 )
@@ -47,8 +47,8 @@ class HostToolsHelper:
             self._log = Logger.get_logger(self.__class__.__name__)
         return self._log
 
-    def _init_openpype_workfiles_tool(self, parent):
-        from openpype.tools.workfiles.app import Window
+    def _init_quadpype_workfiles_tool(self, parent):
+        from quadpype.tools.workfiles.app import Window
 
         # Host validation
         host = registered_host()
@@ -60,7 +60,7 @@ class HostToolsHelper:
     def get_workfiles_tool(self, parent):
         """Create, cache and return workfiles tool window."""
         if self._workfiles_tool is None:
-            self._init_openpype_workfiles_tool(parent)
+            self._init_quadpype_workfiles_tool(parent)
 
         return self._workfiles_tool
 
@@ -78,7 +78,7 @@ class HostToolsHelper:
         if self._loader_tool is None:
             host = registered_host()
             ILoadHost.validate_load_methods(host)
-            from openpype.tools.loader import LoaderWindow
+            from quadpype.tools.loader import LoaderWindow
             loader_window = LoaderWindow(parent=parent or self._parent)
             self._loader_tool = loader_window
 
@@ -99,7 +99,7 @@ class HostToolsHelper:
     def get_creator_tool(self, parent):
         """Create, cache and return creator tool window."""
         if self._creator_tool is None:
-            from openpype.tools.creator import CreatorWindow
+            from quadpype.tools.creator import CreatorWindow
 
             creator_window = CreatorWindow(parent=parent or self._parent)
             self._creator_tool = creator_window
@@ -120,7 +120,7 @@ class HostToolsHelper:
     def get_subset_manager_tool(self, parent):
         """Create, cache and return subset manager tool window."""
         if self._subset_manager_tool is None:
-            from openpype.tools.subsetmanager import SubsetManagerWindow
+            from quadpype.tools.subsetmanager import SubsetManagerWindow
 
             subset_manager_window = SubsetManagerWindow(
                 parent=parent or self._parent
@@ -144,7 +144,7 @@ class HostToolsHelper:
         if self._scene_inventory_tool is None:
             host = registered_host()
             ILoadHost.validate_load_methods(host)
-            from openpype.tools.sceneinventory import SceneInventoryWindow
+            from quadpype.tools.sceneinventory import SceneInventoryWindow
 
             scene_inventory_window = SceneInventoryWindow(
                 parent=parent or self._parent
@@ -168,7 +168,7 @@ class HostToolsHelper:
     def get_library_loader_tool(self, parent):
         """Create, cache and return library loader tool window."""
         if self._library_loader_tool is None:
-            from openpype.tools.libraryloader import LibraryLoaderWindow
+            from quadpype.tools.libraryloader import LibraryLoaderWindow
 
             library_window = LibraryLoaderWindow(
                 parent=parent or self._parent
@@ -224,7 +224,7 @@ class HostToolsHelper:
         experimental tools.
         """
         if self._experimental_tools_dialog is None:
-            from openpype.tools.experimental_tools import (
+            from quadpype.tools.experimental_tools import (
                 ExperimentalToolsDialog
             )
 
@@ -245,7 +245,7 @@ class HostToolsHelper:
         """Create, cache and return publisher window."""
 
         if self._publisher_tool is None:
-            from openpype.tools.publisher.window import PublisherWindow
+            from quadpype.tools.publisher.window import PublisherWindow
 
             host = registered_host()
             ILoadHost.validate_load_methods(host)

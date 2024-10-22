@@ -3,15 +3,15 @@ import logging
 import platform
 import getpass
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     legacy_io,
     Anatomy
 )
-from openpype.lib import (
+from quadpype.lib import (
     StringTemplate,
     TemplateUnsolved,
 )
-from openpype.client import get_representation_parents
+from quadpype.client import get_representation_parents
 
 log = logging.getLogger(__name__)
 
@@ -101,7 +101,7 @@ def get_representation_path(representation, root=None, dbcon=None):
         dbcon = legacy_io
 
     if root is None:
-        from openpype.pipeline import registered_root
+        from quadpype.pipeline import registered_root
 
         root = registered_root()
 

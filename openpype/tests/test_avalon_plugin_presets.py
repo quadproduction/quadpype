@@ -1,4 +1,4 @@
-from openpype.pipeline import (
+from quadpype.pipeline import (
     install_host,
     LegacyCreator,
     register_creator_plugin,
@@ -11,7 +11,7 @@ class MyTestCreator(LegacyCreator):
     my_test_property = "A"
 
     def __init__(self, name, asset, options=None, data=None):
-        super(MyTestCreator, self).__init__(self, name, asset,
+        super().__init__(self, name, asset,
                                             options=None, data=None)
 
 

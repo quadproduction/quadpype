@@ -6,7 +6,7 @@ import json
 import attr
 from wsrpc_aiohttp import WebSocketAsync
 
-from openpype.tools.adobe_webserver.app import WebServerTool
+from quadpype.tools.adobe_webserver.app import WebServerTool
 
 
 @attr.s
@@ -98,7 +98,7 @@ class PhotoshopServerStub:
                 'name': 'imageMainMiddle',
                 'namespace': 'Hero_imageMainMiddle_001',
                 'representation': '6203dc91e80934d9f6ee7d96',
-                'schema': 'openpype:container-2.0'
+                'schema': 'quadpype:container-2.0'
             }
         """
         if layers_meta is None:
@@ -126,7 +126,7 @@ class PhotoshopServerStub:
         }] - for created instances
         OR
         [{
-            "schema": "openpype:container-2.0",
+            "schema": "quadpype:container-2.0",
             "id": "pyblish.avalon.instance",
             "name": "imageMG",
             "namespace": "Jungle_imageMG_001",
@@ -511,7 +511,7 @@ class PhotoshopServerStub:
         # keep current implementation logic as its working
         if isinstance(layers_data, dict):
             for layer_id, layer_meta in layers_data.items():
-                if layer_meta.get("schema") != "openpype:container-2.0":
+                if layer_meta.get("schema") != "quadpype:container-2.0":
                     layer_meta["members"] = [str(layer_id)]
             layers_data = list(layers_data.values())
         return layers_data

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Create Composite node for render on farm."""
-import openpype.hosts.harmony.api as harmony
-from openpype.hosts.harmony.api import plugin
+import quadpype.hosts.harmony.api as harmony
+from quadpype.hosts.harmony.api import plugin
 
 
 class CreateFarmRender(plugin.Creator):
@@ -14,7 +14,7 @@ class CreateFarmRender(plugin.Creator):
 
     def __init__(self, *args, **kwargs):
         """Constructor."""
-        super(CreateFarmRender, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def setup_node(self, node):
         """Set render node."""

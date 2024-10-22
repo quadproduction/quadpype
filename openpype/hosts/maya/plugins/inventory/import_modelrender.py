@@ -1,16 +1,16 @@
 import re
 import json
 
-from openpype.client import (
+from quadpype.client import (
     get_representation_by_id,
     get_representations
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     InventoryAction,
     get_representation_context,
     get_current_project_name,
 )
-from openpype.hosts.maya.api.lib import (
+from quadpype.hosts.maya.api.lib import (
     maintained_selection,
     apply_shaders
 )

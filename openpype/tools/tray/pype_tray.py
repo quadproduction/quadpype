@@ -7,15 +7,15 @@ import platform
 
 from qtpy import QtCore, QtGui, QtWidgets
 
-import openpype.version
-from openpype import resources, style
-from openpype.lib import (
+import quadpype.version
+from quadpype import resources, style
+from quadpype.lib import (
     Logger,
-    get_openpype_execute_args,
+    get_quadpype_execute_args,
     run_detached_process,
 )
-from openpype.lib.local_settings import get_openpype_username
-from openpype.lib.openpype_version import (
+from quadpype.lib.local_settings import get_quadpype_username
+from quadpype.lib.quadpype_version import (
     op_version_control_available,
     get_expected_version,
     get_installed_version,
@@ -23,12 +23,12 @@ from openpype.lib.openpype_version import (
     is_current_version_higher_than_expected,
     is_version_checking_popup_enabled,
     is_running_from_build,
-    get_openpype_version,
+    get_quadpype_version,
     is_running_staging,
     is_staging_enabled,
 )
-from openpype.modules import TrayModulesManager
-from openpype.settings import (
+from quadpype.modules import TrayModulesManager
+from quadpype.settings import (
     get_system_settings,
     SystemSettings,
     ProjectSettings,
@@ -36,11 +36,11 @@ from openpype.settings import (
     GENERAL_SETTINGS_KEY,
     MODULES_SETTINGS_KEY
 )
-from openpype.tools.utils import (
+from quadpype.tools.utils import (
     WrappedCallbackItem,
     paint_image_with_color,
     get_warning_pixmap,
-    get_openpype_qt_app,
+    get_quadpype_qt_app,
 )
 
 from .pype_info_widget import PypeInfoWidget
@@ -51,7 +51,7 @@ from .pype_info_widget import PypeInfoWidget
 class PixmapLabel(QtWidgets.QLabel):
     """Label resizing image to height of font."""
     def __init__(self, pixmap, parent):
-        super(PixmapLabel, self).__init__(parent)
+        super().__init__(parent)
         self._empty_pixmap = QtGui.QPixmap(0, 0)
         self._source_pixmap = pixmap
 
@@ -91,7 +91,7 @@ class VersionUpdateDialog(QtWidgets.QDialog):
     _min_height = 130
 
     def __init__(self, parent=None):
-        super(VersionUpdateDialog, self).__init__(parent)
+        super().__init__(parent)
 
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
@@ -173,17 +173,17 @@ class VersionUpdateDialog(QtWidgets.QDialog):
         self, current_version, expected_version, current_is_higher
     ):
         if not current_is_higher:
-            title = "OpenPype update is needed"
+            title = "QuadPype update is needed"
             label_message = (
-                "Running OpenPype version is <b>{}</b>."
+                "Running QuadPype version is <b>{}</b>."
                 " Your production has been updated to version <b>{}</b>."
             ).format(str(current_version), str(expected_version))
             ignore_label = "Later"
             restart_label = "Restart && Update"
         else:
-            title = "OpenPype version is higher"
+            title = "QuadPype version is higher"
             label_message = (
-                "Running OpenPype version is <b>{}</b>."
+                "Running QuadPype version is <b>{}</b>."
                 " Your production uses version <b>{}</b>."
             ).format(str(current_version), str(expected_version))
             ignore_label = "Ignore"
@@ -216,7 +216,7 @@ class ProductionStagingDialog(QtWidgets.QDialog):
     """
 
     def __init__(self, parent=None):
-        super(ProductionStagingDialog, self).__init__(parent)
+        super().__init__(parent)
 
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
@@ -269,16 +269,16 @@ class ProductionStagingDialog(QtWidgets.QDialog):
 
 
 class BuildVersionDialog(QtWidgets.QDialog):
-    """Build/Installation version is too low for current OpenPype version.
+    """Build/Installation version is too low for current QuadPype version.
 
-    This dialog tells to user that it's build OpenPype is too old.
+    This dialog tells to user that it's build QuadPype is too old.
     """
     def __init__(self, parent=None):
-        super(BuildVersionDialog, self).__init__(parent)
+        super().__init__(parent)
 
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
-        self.setWindowTitle("Outdated OpenPype installation")
+        self.setWindowTitle("Outdated QuadPype installation")
         self.setWindowFlags(
             self.windowFlags()
             | QtCore.Qt.WindowStaysOnTopHint
@@ -290,8 +290,8 @@ class BuildVersionDialog(QtWidgets.QDialog):
         warning_icon_label = PixmapLabel(warning_pixmap, top_widget)
 
         message = (
-            "Your installation of OpenPype <b>does not match minimum"
-            " requirements</b>.<br/><br/>Please update OpenPype installation"
+            "Your installation of QuadPype <b>does not match minimum"
+            " requirements</b>.<br/><br/>Please update QuadPype installation"
             " to newer version."
         )
         content_label = QtWidgets.QLabel(message, self)
@@ -379,9 +379,9 @@ class TrayManager:
             self._version_check_timer.stop()
             return
 
-        self.validate_openpype_version()
+        self.validate_quadpype_version()
 
-    def validate_openpype_version(self):
+    def validate_quadpype_version(self):
         using_requested = is_current_version_studio_latest()
         # TODO Handle situations when version can't be detected
         if using_requested is None:
@@ -424,7 +424,7 @@ class TrayManager:
                 self._outdated_version_ignored
             )
 
-        current_version = get_openpype_version()
+        current_version = get_quadpype_version()
         current_is_higher = is_current_version_higher_than_expected()
 
         self._version_dialog.update_versions(
@@ -439,10 +439,10 @@ class TrayManager:
 
     def _outdated_version_ignored(self):
         self.show_tray_message(
-            "OpenPype version is outdated",
+            "QuadPype version is outdated",
             (
-                "Please update your OpenPype as soon as possible."
-                " To update, restart OpenPype Tray application."
+                "Please update your QuadPype as soon as possible."
+                " To update, restart QuadPype Tray application."
             )
         )
 
@@ -469,13 +469,13 @@ class TrayManager:
 
     def initialize_modules(self):
         """Add modules to the tray menu."""
-        from openpype.modules import ITrayService
+        from quadpype.modules import ITrayService
 
         # Menu header
         system_settings = get_system_settings()
         studio_name = system_settings[GENERAL_SETTINGS_KEY]["studio_name"]
 
-        header_label = QtWidgets.QLabel("OpenPype {}".format(studio_name))
+        header_label = QtWidgets.QLabel("QuadPype {}".format(studio_name))
         header_label.setStyleSheet(
             "background: qlineargradient(x1: 0, y1: 0, x2: 0.7, y2: 1, stop: 0 #3bebb9, stop: 1.0 #52abd7);"
             "font-weight: bold; color: #003740; margin: 0; padding: 8px 6px;")
@@ -487,7 +487,7 @@ class TrayManager:
 
         # Username info as a non-clickable item in the menu
         # Note: Double space before the username for readability
-        username_label = QtWidgets.QLabel("User:  {}".format(str(get_openpype_username())))
+        username_label = QtWidgets.QLabel("User:  {}".format(str(get_quadpype_username())))
         username_label.setStyleSheet("margin: 0; padding: 8px 6px;")
 
         username_widget = QtWidgets.QWidgetAction(self.tray_widget.menu)
@@ -571,9 +571,9 @@ class TrayManager:
 
         title = "Settings miss default values"
         msg = (
-            "Your OpenPype will not work as expected! \n"
+            "Your QuadPype will not work as expected! \n"
             "Some default values in settings are missing. \n\n"
-            "Please contact OpenPype team."
+            "Please contact QuadPype team."
         )
         msg_box = QtWidgets.QMessageBox(
             QtWidgets.QMessageBox.Warning,
@@ -618,10 +618,10 @@ class TrayManager:
 
     def _add_version_item(self):
 
-        subversion = os.environ.get("OPENPYPE_SUBVERSION")
-        client_name = os.environ.get("OPENPYPE_CLIENT")
+        subversion = os.environ.get("QUADPYPE_SUBVERSION")
+        client_name = os.environ.get("QUADPYPE_CLIENT")
 
-        version_string = "Ver.:  {}".format(openpype.version.__version__)  # double space for readability
+        version_string = "Ver.:  {}".format(quadpype.version.__version__)  # double space for readability
         if subversion:
             version_string += " ({})".format(subversion)
 
@@ -672,12 +672,12 @@ class TrayManager:
         First creates new process with same argument and close current tray.
 
         Args:
-            use_expected_version(bool): OpenPype version is set to expected
+            use_expected_version(bool): QuadPype version is set to expected
                 version.
-            reset_version(bool): OpenPype version is cleaned up so igniters
+            reset_version(bool): QuadPype version is cleaned up so igniters
                 logic will decide which version will be used.
         """
-        args = get_openpype_execute_args()
+        args = get_quadpype_execute_args()
         envs = dict(os.environ.items())
 
         # Create a copy of sys.argv
@@ -693,15 +693,15 @@ class TrayManager:
             expected_version = get_expected_version()
             if expected_version is not None:
                 reset_version = False
-                envs["OPENPYPE_VERSION"] = str(expected_version)
+                envs["QUADPYPE_VERSION"] = str(expected_version)
             else:
                 # Trigger reset of version if expected version was not found
                 reset_version = True
 
-        # Pop OPENPYPE_VERSION
+        # Pop QUADPYPE_VERSION
         if reset_version:
             cleanup_additional_args = True
-            envs.pop("OPENPYPE_VERSION", None)
+            envs.pop("QUADPYPE_VERSION", None)
 
         if cleanup_additional_args:
             _additional_args = []
@@ -742,7 +742,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def __init__(self, parent):
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
 
-        super(SystemTrayIcon, self).__init__(icon, parent)
+        super().__init__(icon, parent)
 
         self._exited = False
 
@@ -888,7 +888,7 @@ class PypeTrayStarter(QtCore.QObject):
 
 
 def main():
-    app = get_openpype_qt_app()
+    app = get_quadpype_qt_app()
 
     starter = PypeTrayStarter(app)
 

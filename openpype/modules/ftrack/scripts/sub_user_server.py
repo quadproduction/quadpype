@@ -2,13 +2,13 @@ import sys
 import signal
 import socket
 
-from openpype.lib import Logger
-from openpype_modules.ftrack.ftrack_server.ftrack_server import FtrackServer
-from openpype_modules.ftrack.ftrack_server.lib import (
+from quadpype.lib import Logger
+from quadpype_modules.ftrack.ftrack_server.ftrack_server import FtrackServer
+from quadpype_modules.ftrack.ftrack_server.lib import (
     SocketSession,
     SocketBaseEventHub
 )
-from openpype.modules import ModulesManager
+from quadpype.modules import ModulesManager
 
 log = Logger.get_logger("FtrackUserServer")
 

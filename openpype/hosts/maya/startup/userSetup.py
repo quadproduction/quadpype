@@ -1,8 +1,8 @@
 import os
 
-from openpype.settings import get_project_settings
-from openpype.pipeline import install_host, get_current_project_name
-from openpype.hosts.maya.api import MayaHost
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import install_host, get_current_project_name
+from quadpype.hosts.maya.api import MayaHost
 
 from maya import cmds
 
@@ -10,7 +10,7 @@ from maya import cmds
 host = MayaHost()
 install_host(host)
 
-print("Starting OpenPype usersetup...")
+print("Starting QuadPype usersetup...")
 
 project_name = get_current_project_name()
 settings = get_project_settings(project_name)
@@ -35,7 +35,7 @@ if explicit_plugins_loading["enabled"]:
     )
 
 # Open Workfile Post Initialization.
-key = "OPENPYPE_OPEN_WORKFILE_POST_INITIALIZATION"
+key = "QUADPYPE_OPEN_WORKFILE_POST_INITIALIZATION"
 if bool(int(os.environ.get(key, "0"))):
     def _log_and_open():
         path = os.environ["AVALON_LAST_WORKFILE"]
@@ -50,7 +50,7 @@ if bool(int(os.environ.get(key, "0"))):
 shelf_preset = settings['maya'].get('project_shelf')
 if shelf_preset:
     icon_path = os.path.join(
-        os.environ['OPENPYPE_PROJECT_SCRIPTS'],
+        os.environ['QUADPYPE_PROJECT_SCRIPTS'],
         project_name,
         "icons")
     icon_path = os.path.abspath(icon_path)
@@ -66,4 +66,4 @@ if shelf_preset:
     )
 
 
-print("Finished OpenPype usersetup.")
+print("Finished QuadPype usersetup.")

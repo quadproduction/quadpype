@@ -1,6 +1,6 @@
 from qtpy import QtWidgets, QtCore
 
-from openpype.tools.settings import (
+from quadpype.tools.settings import (
     CHILD_OFFSET
 )
 
@@ -16,7 +16,7 @@ from .lib import (
 
 class EmptyListItem(QtWidgets.QWidget):
     def __init__(self, entity_widget, parent):
-        super(EmptyListItem, self).__init__(parent)
+        super().__init__(parent)
 
         self._read_only = False
         self.entity_widget = entity_widget
@@ -48,7 +48,7 @@ class EmptyListItem(QtWidgets.QWidget):
 
 class ListItem(QtWidgets.QWidget):
     def __init__(self, entity, entity_widget):
-        super(ListItem, self).__init__(entity_widget.content_widget)
+        super().__init__(entity_widget.content_widget)
         self.entity_widget = entity_widget
         self.entity = entity
         self._read_only = False

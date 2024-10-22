@@ -22,8 +22,8 @@ class TestPublishInMaya(MayaLocalPublishTestClass):
         Checks tmp folder if all expected files were published.
 
         How to run:
-        (in cmd with activated {OPENPYPE_ROOT}/.venv)
-        {OPENPYPE_ROOT}/.venv/Scripts/python.exe {OPENPYPE_ROOT}/start.py runtests ../tests/integration/hosts/maya  # noqa: E501
+        (in cmd with activated {QUADPYPE_ROOT}/.venv)
+        {QUADPYPE_ROOT}/.venv/Scripts/python.exe {QUADPYPE_ROOT}/start.py runtests ../tests/integration/hosts/maya  # noqa: E501
 
     """
     PERSIST = False

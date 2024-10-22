@@ -1,9 +1,9 @@
 import os
 import pyblish.api
 
-from openpype.lib import get_version_from_path
-from openpype.tests.lib import is_in_tests
-from openpype.pipeline import KnownPublishError
+from quadpype.lib import get_version_from_path
+from quadpype.tests.lib import is_in_tests
+from quadpype.pipeline import KnownPublishError
 
 
 class CollectSceneVersion(pyblish.api.ContextPlugin):

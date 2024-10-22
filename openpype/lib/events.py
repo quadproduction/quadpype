@@ -603,7 +603,7 @@ class QueuedEventSystem(EventSystem):
     """
 
     def __init__(self, auto_execute=True):
-        super(QueuedEventSystem, self).__init__()
+        super().__init__()
         self._event_queue = collections.deque()
         self._current_event = None
         self._auto_execute = auto_execute

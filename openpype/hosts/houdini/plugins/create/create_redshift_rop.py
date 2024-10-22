@@ -2,14 +2,14 @@
 """Creator plugin to create Redshift ROP."""
 import hou  # noqa
 
-from openpype.hosts.houdini.api import plugin
-from openpype.lib import EnumDef, BoolDef
+from quadpype.hosts.houdini.api import plugin
+from quadpype.lib import EnumDef, BoolDef
 
 
 class CreateRedshiftROP(plugin.HoudiniCreator):
     """Redshift ROP"""
 
-    identifier = "io.openpype.creators.houdini.redshift_rop"
+    identifier = "io.quadpype.creators.houdini.redshift_rop"
     label = "Redshift ROP"
     family = "redshift_rop"
     icon = "magic"
@@ -42,7 +42,7 @@ class CreateRedshiftROP(plugin.HoudiniCreator):
                 "Redshift_IPR", node_name=f"{basename}_IPR"
             )
         except hou.OperationFailed as e:
-            raise plugin.OpenPypeCreatorError(
+            raise plugin.QuadPypeCreatorError(
                 (
                     "Cannot create Redshift node. Is Redshift "
                     "installed and enabled?"

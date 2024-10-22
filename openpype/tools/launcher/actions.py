@@ -2,15 +2,15 @@ import os
 
 from qtpy import QtWidgets, QtGui
 
-from openpype import PLUGINS_DIR
-from openpype import style
-from openpype import resources
-from openpype.lib import (
+from quadpype import PLUGINS_DIR
+from quadpype import style
+from quadpype import resources
+from quadpype.lib import (
     Logger,
     ApplictionExecutableNotFound,
     ApplicationLaunchFailed
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     LauncherAction,
     register_launcher_action_path,
 )
@@ -52,7 +52,7 @@ def register_environment_actions():
     register_actions_from_paths(paths_str.split(os.pathsep))
 
 
-# TODO move to 'openpype.pipeline.actions'
+# TODO move to 'quadpype.pipeline.actions'
 # - remove Qt related stuff and implement exceptions to show error in launcher
 class ApplicationAction(LauncherAction):
     """Pype's application launcher

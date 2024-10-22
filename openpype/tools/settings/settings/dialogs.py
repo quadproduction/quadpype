@@ -1,6 +1,6 @@
 from qtpy import QtWidgets, QtCore
 
-from openpype.tools.utils.delegates import pretty_date
+from quadpype.tools.utils.delegates import pretty_date
 
 
 class BaseInfoDialog(QtWidgets.QDialog):
@@ -8,7 +8,7 @@ class BaseInfoDialog(QtWidgets.QDialog):
     height = 400
 
     def __init__(self, message, title, info_obj, parent=None):
-        super(BaseInfoDialog, self).__init__(parent)
+        super().__init__(parent)
         self._result = 0
         self._info_obj = info_obj
 
@@ -109,7 +109,7 @@ class SettingsUIOpenedElsewhere(BaseInfoDialog):
             "<br/><br/>You can <b>take control</b> which will cause that"
             " all changes of settings on the other side will be lost.<br/>"
         )
-        super(SettingsUIOpenedElsewhere, self).__init__(
+        super().__init__(
             message, title, info_obj, parent
         )
 
@@ -149,7 +149,7 @@ class SettingsLastSavedChanged(BaseInfoDialog):
             "<br/><br/>It is <b>recommended to refresh settings</b>"
             " and re-apply changes in the new session."
         )
-        super(SettingsLastSavedChanged, self).__init__(
+        super().__init__(
             message, title, info_obj, parent
         )
 
@@ -189,7 +189,7 @@ class SettingsControlTaken(BaseInfoDialog):
             "<br/><br/>It is not possible to save changes of currently"
             " opened session. Copy changes you want to keep and hit refresh."
         )
-        super(SettingsControlTaken, self).__init__(
+        super().__init__(
             message, title, info_obj, parent
         )
 

@@ -1,6 +1,6 @@
 import pyblish.api
 from maya import cmds
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     PublishValidationError,
     OptionalPyblishPluginMixin
 )

@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
 
-    "title": "openpype:asset-3.0",
+    "title": "quadpype:asset-3.0",
     "description": "A unit of data",
 
     "type": "object",
@@ -19,8 +19,8 @@
         "schema": {
             "description": "Schema identifier for payload",
             "type": "string",
-            "enum": ["openpype:asset-3.0"],
-            "example": "openpype:asset-3.0"
+            "enum": ["quadpype:asset-3.0"],
+            "example": "quadpype:asset-3.0"
         },
         "type": {
             "description": "The type of document",

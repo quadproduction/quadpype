@@ -28,30 +28,30 @@ from collections import OrderedDict
 
 import attr
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline import (
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline import (
     legacy_io,
-    OpenPypePyblishPluginMixin
+    QuadPypePyblishPluginMixin
 )
-from openpype.lib import (
+from quadpype.lib import (
     BoolDef,
     NumberDef,
     TextDef,
     EnumDef
 )
-from openpype.hosts.maya.api.lib_rendersettings import RenderSettings
-from openpype.hosts.maya.api.lib import get_attr_in_layer
+from quadpype.hosts.maya.api.lib_rendersettings import RenderSettings
+from quadpype.hosts.maya.api.lib import get_attr_in_layer
 
-from openpype_modules.deadline import (
+from quadpype_modules.deadline import (
     abstract_submit_deadline,
     get_deadline_limits_plugin
 )
-from openpype.pipeline.context_tools import _get_modules_manager
-from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
-from openpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs, get_deadline_job_profile
-from openpype.tests.lib import is_in_tests
-from openpype.lib import is_running_from_build
-from openpype.pipeline.farm.tools import iter_expected_files
+from quadpype.pipeline.context_tools import _get_modules_manager
+from quadpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from quadpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs, get_deadline_job_profile
+from quadpype.tests.lib import is_in_tests
+from quadpype.lib import is_running_from_build
+from quadpype.pipeline.farm.tools import iter_expected_files
 
 
 def _validate_deadline_bool_value(instance, attribute, value):
@@ -106,7 +106,7 @@ class ArnoldPluginInfo(object):
 
 
 class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
-                         OpenPypePyblishPluginMixin,
+                         QuadPypePyblishPluginMixin,
                          DeadlineDefaultJobAttrs):
 
     label = "Submit Render to Deadline"
@@ -114,7 +114,7 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
     families = ["renderlayer"]
     targets = ["local"]
 
-    tile_assembler_plugin = "OpenPypeTileAssembler"
+    tile_assembler_plugin = "QuadPypeTileAssembler"
     tile_priority = 50
     jobInfo = {}
     pluginInfo = {}
@@ -200,23 +200,23 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
             "FTRACK_API_KEY",
             "FTRACK_API_USER",
             "FTRACK_SERVER",
-            "OPENPYPE_SG_USER",
+            "QUADPYPE_SG_USER",
             "AVALON_DB",
             "AVALON_PROJECT",
             "AVALON_ASSET",
             "AVALON_TASK",
             "AVALON_APP_NAME",
-            "OPENPYPE_DEV"
+            "QUADPYPE_DEV"
             "IS_TEST"
         ]
 
-        # Add OpenPype version if we are running from build.
+        # Add QuadPype version if we are running from build.
         if is_running_from_build():
-            keys.append("OPENPYPE_VERSION")
+            keys.append("QUADPYPE_VERSION")
 
         # Add mongo url if it's enabled
         if self._instance.context.data.get("deadlinePassMongoUrl"):
-            keys.append("OPENPYPE_MONGO")
+            keys.append("QUADPYPE_MONGO")
 
         environment = dict({key: os.environ[key] for key in keys
                             if key in os.environ}, **legacy_io.Session)

@@ -1,16 +1,16 @@
 import nuke
 
-from openpype.client import (
+from quadpype.client import (
     get_version_by_id,
     get_last_version_by_subset_id,
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     get_current_project_name,
     load,
     get_representation_path,
 )
-from openpype.hosts.nuke.api.lib import get_avalon_knob_data
-from openpype.hosts.nuke.api import (
+from quadpype.hosts.nuke.api.lib import get_avalon_knob_data
+from quadpype.hosts.nuke.api import (
     containerise,
     update_container,
     viewer_update_and_undo_stop

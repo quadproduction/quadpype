@@ -1,9 +1,9 @@
 from pymongo import UpdateOne
 from bson.objectid import ObjectId
 
-from openpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import AvalonMongoDB
 
-from openpype_modules.ftrack.lib import (
+from quadpype_modules.ftrack.lib import (
     CUST_ATTR_ID_KEY,
     query_custom_attributes,
 
@@ -19,7 +19,7 @@ class SyncLinksToAvalon(BaseEvent):
     def __init__(self, session):
         self.dbcon = AvalonMongoDB()
 
-        super(SyncLinksToAvalon, self).__init__(session)
+        super().__init__(session)
 
     def launch(self, session, event):
         # Try to commit and if any error happen then recreate session

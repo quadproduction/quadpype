@@ -8,19 +8,19 @@ from pathlib import Path
 
 from qtpy import QtCore
 
-from openpype import resources
-from openpype.lib.applications import (
+from quadpype import resources
+from quadpype.lib.applications import (
     PreLaunchHook,
     ApplicationLaunchFailed,
     LaunchTypes,
 )
-from openpype.pipeline.workfile import get_workfile_template_key
-import openpype.hosts.unreal.lib as unreal_lib
-from openpype.hosts.unreal.ue_workers import (
+from quadpype.pipeline.workfile import get_workfile_template_key
+import quadpype.hosts.unreal.lib as unreal_lib
+from quadpype.hosts.unreal.ue_workers import (
     UEProjectGenerationWorker,
     UEPluginInstallWorker
 )
-from openpype.hosts.unreal.ui import SplashScreen
+from quadpype.hosts.unreal.ui import SplashScreen
 
 
 class UnrealPrelaunchHook(PreLaunchHook):

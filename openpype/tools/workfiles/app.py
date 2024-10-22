@@ -1,12 +1,12 @@
 import sys
 import logging
 
-from openpype.host import IWorkfileHost
-from openpype.pipeline import (
+from quadpype.host import IWorkfileHost
+from quadpype.pipeline import (
     registered_host,
     legacy_io,
 )
-from openpype.tools.utils import qt_app_context
+from quadpype.tools.utils import qt_app_context
 from .window import Window
 
 log = logging.getLogger(__name__)

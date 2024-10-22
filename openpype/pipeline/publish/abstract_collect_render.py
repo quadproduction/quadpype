@@ -127,7 +127,7 @@ class AbstractCollectRender(pyblish.api.ContextPlugin):
 
     def __init__(self, *args, **kwargs):
         """Constructor."""
-        super(AbstractCollectRender, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._file_path = None
         self._context = None
 

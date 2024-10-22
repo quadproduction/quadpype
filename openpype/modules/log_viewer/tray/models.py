@@ -1,6 +1,6 @@
 import collections
 from qtpy import QtCore, QtGui
-from openpype.lib import Logger
+from quadpype.lib import Logger
 
 
 class LogModel(QtGui.QStandardItemModel):
@@ -35,7 +35,7 @@ class LogModel(QtGui.QStandardItemModel):
     ROLE_PROCESS_ID = QtCore.Qt.UserRole + 3
 
     def __init__(self, parent=None):
-        super(LogModel, self).__init__(parent)
+        super().__init__(parent)
 
         self.log_by_process = None
         self.dbcon = None
@@ -117,7 +117,7 @@ class LogModel(QtGui.QStandardItemModel):
 
 class LogsFilterProxy(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
-        super(LogsFilterProxy, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.col_usernames = None
         self.filter_usernames = set()
 

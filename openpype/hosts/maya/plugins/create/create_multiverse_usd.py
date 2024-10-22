@@ -1,5 +1,5 @@
-from openpype.hosts.maya.api import plugin, lib
-from openpype.lib import (
+from quadpype.hosts.maya.api import plugin, lib
+from quadpype.lib import (
     BoolDef,
     NumberDef,
     TextDef,
@@ -10,7 +10,7 @@ from openpype.lib import (
 class CreateMultiverseUsd(plugin.MayaCreator):
     """Create Multiverse USD Asset"""
 
-    identifier = "io.openpype.creators.maya.mvusdasset"
+    identifier = "io.quadpype.creators.maya.mvusdasset"
     label = "Multiverse USD Asset"
     family = "usd"
     icon = "cubes"

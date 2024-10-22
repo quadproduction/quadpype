@@ -1,11 +1,11 @@
 import collections
 
-from openpype.lib import Logger
-from openpype.client.entities import get_representations
-from openpype.client import get_linked_representation_id
-from openpype.modules import ModulesManager
-from openpype.tools.ayon_utils.models import NestedCacheItem
-from openpype.tools.ayon_loader.abstract import ActionItem
+from quadpype.lib import Logger
+from quadpype.client.entities import get_representations
+from quadpype.client import get_linked_representation_id
+from quadpype.modules import ModulesManager
+from quadpype.tools.ayon_utils.models import NestedCacheItem
+from quadpype.tools.ayon_loader.abstract import ActionItem
 
 DOWNLOAD_IDENTIFIER = "sitesync.download"
 UPLOAD_IDENTIFIER = "sitesync.upload"

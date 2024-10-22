@@ -1,10 +1,10 @@
 import os
 import pyblish.api
-from openpype.pipeline import publish, OptionalPyblishPluginMixin
+from quadpype.pipeline import publish, OptionalPyblishPluginMixin
 from pymxs import runtime as rt
-from openpype.hosts.max.api import maintained_selection
-from openpype.hosts.max.api.lib import suspended_refresh
-from openpype.pipeline.publish import KnownPublishError
+from quadpype.hosts.max.api import maintained_selection
+from quadpype.hosts.max.api.lib import suspended_refresh
+from quadpype.pipeline.publish import KnownPublishError
 
 
 class ExtractModelObj(publish.Extractor, OptionalPyblishPluginMixin):

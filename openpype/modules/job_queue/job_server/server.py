@@ -62,7 +62,7 @@ class WebServerManager:
 class WebServerThread(threading.Thread):
     """ Listener for requests in thread."""
     def __init__(self, manager, loop):
-        super(WebServerThread, self).__init__()
+        super().__init__()
 
         self._is_running = False
         self._stopped = False

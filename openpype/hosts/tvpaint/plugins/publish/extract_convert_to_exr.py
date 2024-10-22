@@ -8,12 +8,12 @@ import os
 import json
 
 import pyblish.api
-from openpype.lib import (
+from quadpype.lib import (
     get_oiio_tool_args,
     ToolNotFoundError,
     run_subprocess,
 )
-from openpype.pipeline import KnownPublishError
+from quadpype.pipeline import KnownPublishError
 
 
 class ExtractConvertToEXR(pyblish.api.InstancePlugin):

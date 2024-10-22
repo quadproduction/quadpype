@@ -1,16 +1,16 @@
 """Create render."""
 import bpy
 
-from openpype.lib import version_up
-from openpype.hosts.blender.api import plugin
-from openpype.hosts.blender.api.render_lib import prepare_rendering
-from openpype.hosts.blender.api.workio import save_file
+from quadpype.lib import version_up
+from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api.render_lib import prepare_rendering
+from quadpype.hosts.blender.api.workio import save_file
 
 
 class CreateRenderlayer(plugin.BaseCreator):
     """Single baked camera."""
 
-    identifier = "io.openpype.creators.blender.render"
+    identifier = "io.quadpype.creators.blender.render"
     label = "Render"
     family = "render"
     icon = "eye"

@@ -1,11 +1,11 @@
 import collections
 from copy import deepcopy
 import pyblish.api
-from openpype.client import (
+from quadpype.client import (
     get_assets,
     get_archived_assets
 )
-from openpype.pipeline import legacy_io
+from quadpype.pipeline import legacy_io
 
 
 class ExtractHierarchyToAvalon(pyblish.api.ContextPlugin):
@@ -255,7 +255,7 @@ class ExtractHierarchyToAvalon(pyblish.api.ContextPlugin):
         # Unarchived asset should not use same data
         asset_doc = {
             "_id": archived_doc["_id"],
-            "schema": "openpype:asset-3.0",
+            "schema": "quadpype:asset-3.0",
             "name": archived_doc["name"],
             "parent": project["_id"],
             "type": "asset",
@@ -270,7 +270,7 @@ class ExtractHierarchyToAvalon(pyblish.api.ContextPlugin):
 
     def create_avalon_asset(self, name, data, project):
         asset_doc = {
-            "schema": "openpype:asset-3.0",
+            "schema": "quadpype:asset-3.0",
             "name": name,
             "parent": project["_id"],
             "type": "asset",

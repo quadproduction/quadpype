@@ -2,15 +2,15 @@ import copy
 import os
 import clique
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     load,
     get_representation_context
 )
-from openpype.pipeline.load import get_representation_path_from_context
-from openpype.lib.transcoding import IMAGE_EXTENSIONS
+from quadpype.pipeline.load import get_representation_path_from_context
+from quadpype.lib.transcoding import IMAGE_EXTENSIONS
 
-from openpype.hosts.openrv.api.lib import clean_rv_sources
-from openpype.hosts.openrv.api.ocio import (
+from quadpype.hosts.openrv.api.lib import clean_rv_sources
+from quadpype.hosts.openrv.api.ocio import (
     set_group_ocio_active_state,
     set_group_ocio_colorspace
 )
@@ -60,7 +60,7 @@ class FramesLoader(load.LoaderPlugin):
                                       ["newname"], True)
         rv.commands.setStringProperty(node + ".media.repName",
                                       ["repname"], True)
-        rv.commands.setStringProperty(node + ".openpype.representation",
+        rv.commands.setStringProperty(node + ".quadpype.representation",
                                       [str(representation["_id"])], True)
 
     def remove(self, container):

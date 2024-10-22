@@ -2,8 +2,8 @@
 import os
 import pyblish.api
 
-from openpype.hosts.houdini.api import lib
-from openpype.pipeline import PublishValidationError
+from quadpype.hosts.houdini.api import lib
+from quadpype.pipeline import PublishValidationError
 
 import hou
 

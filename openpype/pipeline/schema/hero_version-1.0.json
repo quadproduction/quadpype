@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
 
-    "title": "openpype:hero_version-1.0",
+    "title": "quadpype:hero_version-1.0",
     "description": "Hero version of asset",
 
     "type": "object",
@@ -27,8 +27,8 @@
         "schema": {
             "description": "The schema associated with this document",
             "type": "string",
-            "enum": ["openpype:hero_version-1.0"],
-            "example": "openpype:hero_version-1.0"
+            "enum": ["quadpype:hero_version-1.0"],
+            "example": "quadpype:hero_version-1.0"
         },
         "type": {
             "description": "The type of document",

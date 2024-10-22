@@ -1,7 +1,7 @@
 import os
 import json
-from openpype_modules.ftrack.lib import ServerAction
-from openpype_modules.clockify.clockify_api import ClockifyAPI
+from quadpype_modules.ftrack.lib import ServerAction
+from quadpype_modules.clockify.clockify_api import ClockifyAPI
 
 
 class SyncClockifyServer(ServerAction):
@@ -14,7 +14,7 @@ class SyncClockifyServer(ServerAction):
     role_list = ["Pypeclub", "Administrator", "project Manager"]
 
     def __init__(self, *args, **kwargs):
-        super(SyncClockifyServer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         workspace_name = os.environ.get("CLOCKIFY_WORKSPACE")
         api_key = os.environ.get("CLOCKIFY_API_KEY")

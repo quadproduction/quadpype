@@ -1,8 +1,8 @@
-from openpype.pipeline import (
+from quadpype.pipeline import (
     load,
     get_representation_path,
 )
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 sig = harmony.signature()
 func = """

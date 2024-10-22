@@ -6,7 +6,7 @@ import traceback
 
 import ftrack_api
 
-from openpype.lib import (
+from quadpype.lib import (
     Logger,
     modules_from_path
 )

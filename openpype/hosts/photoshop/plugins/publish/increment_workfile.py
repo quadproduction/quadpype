@@ -1,9 +1,9 @@
 import os
 import pyblish.api
-from openpype.pipeline.publish import get_errored_plugins_from_context
-from openpype.lib import version_up
+from quadpype.pipeline.publish import get_errored_plugins_from_context
+from quadpype.lib import version_up
 
-from openpype.hosts.photoshop import api as photoshop
+from quadpype.hosts.photoshop import api as photoshop
 
 
 class IncrementWorkfile(pyblish.api.InstancePlugin):

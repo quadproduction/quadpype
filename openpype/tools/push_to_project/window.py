@@ -2,14 +2,14 @@ import collections
 
 from qtpy import QtWidgets, QtGui, QtCore
 
-from openpype.style import load_stylesheet, get_app_icon_path
-from openpype.tools.utils import (
+from quadpype.style import load_stylesheet, get_app_icon_path
+from quadpype.tools.utils import (
     PlaceholderLineEdit,
     SeparatorWidget,
     get_asset_icon_by_name,
     set_style_property,
 )
-from openpype.tools.utils.views import DeselectableTreeView
+from quadpype.tools.utils.views import DeselectableTreeView
 
 from .control_context import PushToContextController
 
@@ -28,7 +28,7 @@ class ProjectsModel(QtGui.QStandardItemModel):
     refreshed = QtCore.Signal()
 
     def __init__(self, controller):
-        super(ProjectsModel, self).__init__()
+        super().__init__()
         self._controller = controller
 
         self.event_system.add_callback(
@@ -83,7 +83,7 @@ class ProjectsModel(QtGui.QStandardItemModel):
 
 class ProjectProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self):
-        super(ProjectProxyModel, self).__init__()
+        super().__init__()
         self._filter_empty_projects = False
 
     def set_filter_empty_project(self, filter_empty_projects):
@@ -107,7 +107,7 @@ class AssetsModel(QtGui.QStandardItemModel):
     empty_text = "< Empty >"
 
     def __init__(self, controller):
-        super(AssetsModel, self).__init__()
+        super().__init__()
         self._controller = controller
 
         placeholder_item = QtGui.QStandardItem(self.empty_text)
@@ -246,7 +246,7 @@ class TasksModel(QtGui.QStandardItemModel):
     empty_text = "< Empty >"
 
     def __init__(self, controller):
-        super(TasksModel, self).__init__()
+        super().__init__()
         self._controller = controller
 
         placeholder_item = QtGui.QStandardItem(self.empty_text)
@@ -371,7 +371,7 @@ class PushToContextSelectWindow(QtWidgets.QDialog):
     def __init__(
         self, controller=None, library_filter=True, context_only=False
     ):
-        super(PushToContextSelectWindow, self).__init__()
+        super().__init__()
         if controller is None:
             controller = PushToContextController(library_filter=library_filter)
         self._controller = controller

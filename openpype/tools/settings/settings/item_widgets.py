@@ -2,11 +2,11 @@ import json
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.resources import get_resource
-from openpype.widgets.sliders import NiceSlider
-from openpype.tools.settings import CHILD_OFFSET
-from openpype.tools.utils import MultiSelectionComboBox
-from openpype.settings.entities.exceptions import BaseInvalidValue
+from quadpype.resources import get_resource
+from quadpype.widgets.sliders import NiceSlider
+from quadpype.tools.settings import CHILD_OFFSET
+from quadpype.tools.utils import MultiSelectionComboBox
+from quadpype.settings.entities.exceptions import BaseInvalidValue
 
 from .widgets import (
     ExpandingWidget,
@@ -46,7 +46,7 @@ class DictImmutableKeysWidget(BaseWidget):
         self._parent_widget_by_entity_id = {}
         self._added_wrapper_ids = set()
 
-        super(DictImmutableKeysWidget, self).__init__(category_widget, entity, entity_widget)
+        super().__init__(category_widget, entity, entity_widget)
 
     def create_ui(self):
         self.checkbox_child = None
@@ -505,15 +505,15 @@ class PasswordWidget(TextWidget):
         self.input_field.setEnabled(not self._read_only)
 
 
-class OpenPypeVersionText(TextWidget):
+class QuadPypeVersionText(TextWidget):
     def __init__(self, *args, **kwargs):
         self._info_widget = None
-        super(OpenPypeVersionText, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_ui(self):
-        super(OpenPypeVersionText, self).create_ui()
+        super(QuadPypeVersionText, self).create_ui()
         info_widget = QtWidgets.QLabel(self)
-        info_widget.setObjectName("OpenPypeVersionLabel")
+        info_widget.setObjectName("QuadPypeVersionLabel")
         self.content_layout.addWidget(info_widget, 1)
 
         self._info_widget = info_widget
@@ -525,12 +525,12 @@ class OpenPypeVersionText(TextWidget):
         tooltip = ""
         state = None
         if self._is_invalid:
-            message = "Invalid OpenPype version format"
+            message = "Invalid QuadPype version format"
 
         elif value == "":
             message = "Use latest available version"
             tooltip = (
-                "Latest version from OpenPype zip repository will be used"
+                "Latest version from QuadPype zip repository will be used"
             )
 
         elif value in self.entity.value_hints:
@@ -554,7 +554,7 @@ class OpenPypeVersionText(TextWidget):
         self.set_style_property(self._info_widget, "state", state)
 
     def set_entity_value(self):
-        super(OpenPypeVersionText, self).set_entity_value()
+        super(QuadPypeVersionText, self).set_entity_value()
         self._invalidate()
         self._update_info_widget()
 
@@ -581,7 +581,7 @@ class OpenPypeVersionText(TextWidget):
         self._is_invalid = is_invalid
 
     def _on_entity_change(self):
-        super(OpenPypeVersionText, self)._on_entity_change()
+        super(QuadPypeVersionText, self)._on_entity_change()
         self._refresh_completer()
 
 
@@ -671,7 +671,7 @@ class RawJsonInput(SettingsPlainTextEdit):
     tab_length = 4
 
     def __init__(self, valid_type, *args, **kwargs):
-        super(RawJsonInput, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setObjectName("RawJsonInput")
         self.setTabStopDistance(
             QtGui.QFontMetricsF(

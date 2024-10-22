@@ -13,11 +13,11 @@ from .widgets import (
     ExpandingWidget,
     IconButton
 )
-from openpype.tools.settings import (
+from quadpype.tools.settings import (
     BTN_FIXED_SIZE,
     CHILD_OFFSET
 )
-from openpype.settings.constants import KEY_REGEX
+from quadpype.settings.constants import KEY_REGEX
 
 
 KEY_INPUT_TOOLTIP = (
@@ -28,7 +28,7 @@ KEY_INPUT_TOOLTIP = (
 
 class ModifiableDictEmptyItem(QtWidgets.QWidget):
     def __init__(self, entity_widget, store_as_list, parent):
-        super(ModifiableDictEmptyItem, self).__init__(parent)
+        super().__init__(parent)
         self.entity_widget = entity_widget
         self.collapsible_key = entity_widget.entity.collapsible_key
         self.ignore_input_changes = entity_widget.ignore_input_changes
@@ -181,7 +181,7 @@ class ModifiableDictEmptyItem(QtWidgets.QWidget):
 
 class ModifiableDictItem(QtWidgets.QWidget):
     def __init__(self, collapsible_key, store_as_list, entity, entity_widget):
-        super(ModifiableDictItem, self).__init__(entity_widget.content_widget)
+        super().__init__(entity_widget.content_widget)
 
         self.store_as_list = store_as_list
 

@@ -5,8 +5,8 @@ from qtpy import QtWidgets, QtCore, QtGui
 
 import qtawesome
 
-from openpype.pipeline.create import SUBSET_NAME_ALLOWED_SYMBOLS
-from openpype.tools.utils import ErrorMessageBox
+from quadpype.pipeline.create import SUBSET_NAME_ALLOWED_SYMBOLS
+from quadpype.tools.utils import ErrorMessageBox
 
 if hasattr(QtGui, "QRegularExpressionValidator"):
     RegularExpressionValidatorClass = QtGui.QRegularExpressionValidator
@@ -31,7 +31,7 @@ class CreateErrorMessageBox(ErrorMessageBox):
         self._asset_name = asset_name
         self._exc_msg = exc_msg
         self._formatted_traceback = formatted_traceback
-        super(CreateErrorMessageBox, self).__init__("Creation failed", parent)
+        super().__init__("Creation failed", parent)
 
     def _create_top_widget(self, parent_widget):
         label_widget = QtWidgets.QLabel(parent_widget)
@@ -102,7 +102,7 @@ class SubsetNameValidator(RegularExpressionValidatorClass):
 
     def __init__(self):
         reg = RegularExpressionClass(self.pattern)
-        super(SubsetNameValidator, self).__init__(reg)
+        super().__init__(reg)
 
     def validate(self, text, pos):
         results = super(SubsetNameValidator, self).validate(text, pos)
@@ -131,7 +131,7 @@ class VariantLineEdit(QtWidgets.QLineEdit):
     }
 
     def __init__(self, *args, **kwargs):
-        super(VariantLineEdit, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         validator = SubsetNameValidator()
         self.setValidator(validator)
@@ -202,7 +202,7 @@ class FamilyDescriptionWidget(QtWidgets.QWidget):
     SIZE = 35
 
     def __init__(self, parent=None):
-        super(FamilyDescriptionWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         icon_label = QtWidgets.QLabel(self)
         icon_label.setSizePolicy(

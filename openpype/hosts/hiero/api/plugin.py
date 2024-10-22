@@ -8,10 +8,10 @@ import hiero
 from qtpy import QtWidgets, QtCore
 import qargparse
 
-from openpype.settings import get_current_project_settings
-from openpype.lib import Logger
-from openpype.pipeline import LoaderPlugin, LegacyCreator
-from openpype.pipeline.load import get_representation_path_from_context
+from quadpype.settings import get_current_project_settings
+from quadpype.lib import Logger
+from quadpype.pipeline import LoaderPlugin, LegacyCreator
+from quadpype.pipeline.load import get_representation_path_from_context
 from . import lib
 
 log = Logger.get_logger(__name__)
@@ -34,7 +34,7 @@ class CreatorWidget(QtWidgets.QDialog):
     items = {}
 
     def __init__(self, name, info, ui_inputs, parent=None):
-        super(CreatorWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName(name)
 
@@ -611,8 +611,8 @@ class Creator(LegacyCreator):
     rename_index = None
 
     def __init__(self, *args, **kwargs):
-        super(Creator, self).__init__(*args, **kwargs)
-        import openpype.hosts.hiero.api as phiero
+        super().__init__(*args, **kwargs)
+        import quadpype.hosts.hiero.api as phiero
         self.presets = get_current_project_settings()[
             "hiero"]["create"].get(self.__class__.__name__, {})
 

@@ -18,9 +18,9 @@ import pytest
 import shutil
 import logging
 
-from tests.unit.openpype.pipeline.lib import TestPipeline
-from openpype.pipeline.publish import publish_plugins
-from openpype.pipeline import colorspace
+from tests.unit.quadpype.pipeline.lib import TestPipeline
+from quadpype.pipeline.publish import publish_plugins
+from quadpype.pipeline import colorspace
 
 log = logging.getLogger(__name__)
 
@@ -29,9 +29,9 @@ class TestPipelinePublishPlugins(TestPipeline):
     """ Testing Pipeline publish_plugins.py
 
     Example:
-        cd to OpenPype repo root dir
+        cd to QuadPype repo root dir
         poetry run python ./start.py runtests \
-            ../tests/unit/openpype/pipeline/publish
+            ../tests/unit/quadpype/pipeline/publish
     """
 
     # files are the same as those used in `test_pipeline_colorspace`

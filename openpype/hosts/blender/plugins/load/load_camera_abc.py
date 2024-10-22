@@ -6,12 +6,12 @@ from typing import Dict, List, Optional
 import json
 import bpy
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
 )
-from openpype.hosts.blender.api import plugin, lib
-from openpype.hosts.blender.api.pipeline import (
+from quadpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
     AVALON_PROPERTY,
 )
@@ -125,7 +125,7 @@ class AbcCameraLoader(plugin.AssetLoader):
         bpy.context.scene.collection.objects.link(asset_group)
 
         asset_group[AVALON_PROPERTY] = {
-            "schema": "openpype:container-2.0",
+            "schema": "quadpype:container-2.0",
             "id": AVALON_CONTAINER_ID,
             "name": name,
             "namespace": namespace or "",
@@ -202,7 +202,7 @@ class AbcCameraLoader(plugin.AssetLoader):
         """Remove an existing container from a Blender scene.
 
         Arguments:
-            container (openpype:container-1.0): Container to remove,
+            container (quadpype:container-1.0): Container to remove,
                 from `host.ls()`.
 
         Returns:

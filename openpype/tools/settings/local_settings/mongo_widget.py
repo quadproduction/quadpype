@@ -5,17 +5,17 @@ import traceback
 from qtpy import QtWidgets
 from pymongo.errors import ServerSelectionTimeoutError
 
-from openpype.lib import change_openpype_mongo_url
-from openpype.tools.utils import PlaceholderLineEdit
+from quadpype.lib import change_quadpype_mongo_url
+from quadpype.tools.utils import PlaceholderLineEdit
 
 
-class OpenPypeMongoWidget(QtWidgets.QWidget):
+class QuadPypeMongoWidget(QtWidgets.QWidget):
     def __init__(self, parent):
-        super(OpenPypeMongoWidget, self).__init__(parent)
+        super().__init__(parent)
 
         # Warning label
         warning_label = QtWidgets.QLabel((
-            "WARNING: Requires restart. Change of OpenPype Mongo requires to"
+            "WARNING: Requires restart. Change of the QuadPype Mongo requires to"
             " restart of all running Pype processes and process using Pype"
             " (Including this)."
             "\n- all changes in different categories won't be saved."
@@ -23,12 +23,12 @@ class OpenPypeMongoWidget(QtWidgets.QWidget):
         warning_label.setStyleSheet("font-weight: bold;")
 
         # Label
-        mongo_url_label = QtWidgets.QLabel("OpenPype Mongo URL", self)
+        mongo_url_label = QtWidgets.QLabel("QuadPype Mongo URL", self)
 
         # Input
         mongo_url_input = PlaceholderLineEdit(self)
-        mongo_url_input.setPlaceholderText("< OpenPype Mongo URL >")
-        mongo_url_input.setText(os.environ["OPENPYPE_MONGO"])
+        mongo_url_input.setPlaceholderText("< QuadPype Mongo URL >")
+        mongo_url_input.setText(os.environ["QUADPYPE_MONGO"])
 
         # Confirm button
         mongo_url_change_btn = QtWidgets.QPushButton("Confirm Change", self)
@@ -49,15 +49,15 @@ class OpenPypeMongoWidget(QtWidgets.QWidget):
 
         dialog = QtWidgets.QMessageBox(self)
 
-        title = "OpenPype mongo changed"
+        title = "QuadPype Mongo URL Updated"
         message = (
-            "OpenPype mongo url was successfully changed."
-            " Restart OpenPype application please."
+            "QuadPype mongo url was successfully changed."
+            " Restart QuadPype application please."
         )
         details = None
 
         try:
-            change_openpype_mongo_url(value)
+            change_quadpype_mongo_url(value)
         except Exception as exc:
             if isinstance(exc, ServerSelectionTimeoutError):
                 error_message = (
@@ -67,10 +67,10 @@ class OpenPypeMongoWidget(QtWidgets.QWidget):
             else:
                 error_message = str(exc)
 
-            title = "OpenPype mongo change failed"
+            title = "QuadPype Mongo URL Update Failed!"
             # TODO catch exception message more gracefully
             message = (
-                "OpenPype mongo change was not successful."
+                "QuadPype Mongo URL was not successfully updated."
                 " Full traceback can be found in details section.\n\n"
                 "Error message:\n{}"
             ).format(error_message)

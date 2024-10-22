@@ -5,9 +5,9 @@ import arrow
 import ayon_api
 from ayon_api.operations import OperationsSession
 
-from openpype.style import get_default_entity_icon_color
-from openpype.tools.ayon_utils.models import NestedCacheItem
-from openpype.tools.ayon_loader.abstract import (
+from quadpype.style import get_default_entity_icon_color
+from quadpype.tools.ayon_utils.models import NestedCacheItem
+from quadpype.tools.ayon_loader.abstract import (
     ProductTypeItem,
     ProductItem,
     VersionItem,
@@ -142,7 +142,7 @@ class ProductsModel:
 
     Note:
         Data are not used for actions model because that would require to
-            break OpenPype compatibility of 'LoaderPlugin's.
+            break QuadPype compatibility of 'LoaderPlugin's.
     """
 
     lifetime = 60  # In seconds (minute by default)

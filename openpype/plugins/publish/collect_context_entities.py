@@ -14,8 +14,8 @@ Provides:
 
 import pyblish.api
 
-from openpype.client import get_project, get_asset_by_name
-from openpype.pipeline import KnownPublishError
+from quadpype.client import get_project, get_asset_by_name
+from quadpype.pipeline import KnownPublishError
 
 
 class CollectContextEntities(pyblish.api.ContextPlugin):

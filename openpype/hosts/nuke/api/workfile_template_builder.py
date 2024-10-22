@@ -1,7 +1,7 @@
 import collections
 import nuke
-from openpype.pipeline import registered_host
-from openpype.pipeline.workfile.workfile_template_builder import (
+from quadpype.pipeline import registered_host
+from quadpype.pipeline.workfile.workfile_template_builder import (
     AbstractTemplateBuilder,
     PlaceholderPlugin,
     LoadPlaceholderItem,
@@ -9,7 +9,7 @@ from openpype.pipeline.workfile.workfile_template_builder import (
     PlaceholderLoadMixin,
     PlaceholderCreateMixin
 )
-from openpype.tools.workfile_template_build import (
+from quadpype.tools.workfile_template_build import (
     WorkfileBuildPlaceholderDialog,
 )
 from .lib import (

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Converter for legacy Houdini subsets."""
-from openpype.pipeline.create.creator_plugins import SubsetConvertorPlugin
-from openpype.hosts.houdini.api.lib import imprint
+from quadpype.pipeline.create.creator_plugins import SubsetConvertorPlugin
+from quadpype.hosts.houdini.api.lib import imprint
 
 
 class HoudiniLegacyConvertor(SubsetConvertorPlugin):
@@ -14,25 +14,25 @@ class HoudiniLegacyConvertor(SubsetConvertorPlugin):
 
     Its limitation is that you can have multiple creators creating subset
     of the same family and there is no way to handle it. This code should
-    nevertheless cover all creators that came with OpenPype.
+    nevertheless cover all creators that came with QuadPype.
 
     """
-    identifier = "io.openpype.creators.houdini.legacy"
+    identifier = "io.quadpype.creators.houdini.legacy"
     family_to_id = {
-        "camera": "io.openpype.creators.houdini.camera",
-        "ass": "io.openpype.creators.houdini.ass",
-        "imagesequence": "io.openpype.creators.houdini.imagesequence",
-        "hda": "io.openpype.creators.houdini.hda",
-        "pointcache": "io.openpype.creators.houdini.pointcache",
-        "redshiftproxy": "io.openpype.creators.houdini.redshiftproxy",
-        "redshift_rop": "io.openpype.creators.houdini.redshift_rop",
-        "usd": "io.openpype.creators.houdini.usd",
-        "usdrender": "io.openpype.creators.houdini.usdrender",
-        "vdbcache": "io.openpype.creators.houdini.vdbcache"
+        "camera": "io.quadpype.creators.houdini.camera",
+        "ass": "io.quadpype.creators.houdini.ass",
+        "imagesequence": "io.quadpype.creators.houdini.imagesequence",
+        "hda": "io.quadpype.creators.houdini.hda",
+        "pointcache": "io.quadpype.creators.houdini.pointcache",
+        "redshiftproxy": "io.quadpype.creators.houdini.redshiftproxy",
+        "redshift_rop": "io.quadpype.creators.houdini.redshift_rop",
+        "usd": "io.quadpype.creators.houdini.usd",
+        "usdrender": "io.quadpype.creators.houdini.usdrender",
+        "vdbcache": "io.quadpype.creators.houdini.vdbcache"
     }
 
     def __init__(self, *args, **kwargs):
-        super(HoudiniLegacyConvertor, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.legacy_subsets = {}
 
     def find_instances(self):

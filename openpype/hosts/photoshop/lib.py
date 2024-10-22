@@ -1,13 +1,13 @@
 import re
 
-import openpype.hosts.photoshop.api as api
-from openpype.client import get_asset_by_name
-from openpype.lib import prepare_template_data
-from openpype.pipeline import (
+import quadpype.hosts.photoshop.api as api
+from quadpype.client import get_asset_by_name
+from quadpype.lib import prepare_template_data
+from quadpype.pipeline import (
     AutoCreator,
     CreatedInstance
 )
-from openpype.hosts.photoshop.api.pipeline import cache_and_get_instances
+from quadpype.hosts.photoshop.api.pipeline import cache_and_get_instances
 
 
 class PSAutoCreator(AutoCreator):

@@ -3,9 +3,9 @@ As all imported nodes are free floating and will probably be changed there
 is no update or reload function added for this plugin
 """
 
-from openpype.pipeline import load
+from quadpype.pipeline import load
 
-from openpype.hosts.fusion.api import (
+from quadpype.hosts.fusion.api import (
     get_current_comp,
     get_bmd_library,
 )

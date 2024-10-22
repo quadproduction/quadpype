@@ -3,8 +3,8 @@ import webbrowser
 
 from qtpy import QtWidgets
 
-from openpype.modules.shotgrid.lib import credentials
-from openpype.modules.shotgrid.tray.credential_dialog import (
+from quadpype.modules.shotgrid.lib import credentials
+from quadpype.modules.shotgrid.tray.credential_dialog import (
     CredentialsDialog,
 )
 
@@ -70,6 +70,6 @@ class ShotgridTrayWrapper:
         if not login:
             self.show_credential_dialog()
         else:
-            os.environ["OPENPYPE_SG_USER"] = login
+            os.environ["QUADPYPE_SG_USER"] = login
 
         return True

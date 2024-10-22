@@ -10,32 +10,32 @@ This code runs in a separate process to the main Resolve process.
 
 """
 import os
-from openpype.lib import Logger
-import openpype.hosts.resolve.api
+from quadpype.lib import Logger
+import quadpype.hosts.resolve.api
 
 log = Logger.get_logger(__name__)
 
 
 def ensure_installed_host():
-    """Install resolve host with openpype and return the registered host.
+    """Install resolve host with quadpype and return the registered host.
 
     This function can be called multiple times without triggering an
     additional install.
     """
-    from openpype.pipeline import install_host, registered_host
+    from quadpype.pipeline import install_host, registered_host
     host = registered_host()
     if host:
         return host
 
-    host = openpype.hosts.resolve.api.ResolveHost()
+    host = quadpype.hosts.resolve.api.ResolveHost()
     install_host(host)
     return registered_host()
 
 
 def launch_menu():
-    print("Launching Resolve OpenPype menu..")
+    print("Launching Resolve QuadPype menu..")
     ensure_installed_host()
-    openpype.hosts.resolve.api.launch_pype_menu()
+    quadpype.hosts.resolve.api.launch_pype_menu()
 
 
 def open_workfile(path):
@@ -46,7 +46,7 @@ def open_workfile(path):
 
 def main():
     # Open last workfile
-    workfile_path = os.environ.get("OPENPYPE_RESOLVE_OPEN_ON_LAUNCH")
+    workfile_path = os.environ.get("QUADPYPE_RESOLVE_OPEN_ON_LAUNCH")
 
     if workfile_path and os.path.exists(workfile_path):
         log.info(f"Opening last workfile: {workfile_path}")
@@ -54,15 +54,15 @@ def main():
     else:
         log.info("No last workfile set to open. Skipping..")
 
-    # Launch OpenPype menu
-    from openpype.settings import get_project_settings
-    from openpype.pipeline.context_tools import get_current_project_name
+    # Launch QuadPype menu
+    from quadpype.settings import get_project_settings
+    from quadpype.pipeline.context_tools import get_current_project_name
     project_name = get_current_project_name()
     log.info(f"Current project name in context: {project_name}")
 
     settings = get_project_settings(project_name)
-    if settings.get("resolve", {}).get("launch_openpype_menu_on_start", True):
-        log.info("Launching OpenPype menu..")
+    if settings.get("resolve", {}).get("launch_quadpype_menu_on_start", True):
+        log.info("Launching QuadPype menu..")
         launch_menu()
 
 

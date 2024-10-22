@@ -1,16 +1,16 @@
 import json
 import copy
 
-from openpype.client import get_project, create_project
-from openpype.settings import (
+from quadpype.client import get_project, create_project
+from quadpype.settings import (
     ProjectSettings,
     SaveWarningExc,
     APPS_SETTINGS_KEY,
     PROJECT_ANATOMY_KEY
 )
-from openpype_modules.ftrack.lib import (
+from quadpype_modules.ftrack.lib import (
     ServerAction,
-    get_openpype_attr,
+    get_quadpype_attr,
     CUST_ATTR_AUTO_SYNC
 )
 
@@ -19,7 +19,7 @@ class PrepareProjectServer(ServerAction):
     """Prepare project attributes in Anatomy."""
 
     identifier = "prepare.project.server"
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     variant = "- Prepare Project (Server)"
     description = "Set basic attributes on the project"
 
@@ -174,7 +174,7 @@ class PrepareProjectServer(ServerAction):
         for key, entity in project_anatom_settings["attributes"].items():
             attribute_values_by_key[key] = entity.value
 
-        cust_attrs, hier_cust_attrs = get_openpype_attr(self.session, True)
+        cust_attrs, hier_cust_attrs = get_quadpype_attr(self.session, True)
 
         for attr in hier_cust_attrs:
             key = attr["key"]
@@ -377,7 +377,7 @@ class PrepareProjectServer(ServerAction):
             ))
             create_project(project_name, project_code)
             self.trigger_event(
-                "openpype.project.created",
+                "quadpype.project.created",
                 {"project_name": project_name}
             )
 
@@ -409,7 +409,7 @@ class PrepareProjectServer(ServerAction):
 
         event_data = copy.deepcopy(in_data)
         event_data["project_name"] = project_name
-        self.trigger_event("openpype.project.prepared", event_data)
+        self.trigger_event("quadpype.project.prepared", event_data)
 
         return True
 

@@ -1,12 +1,12 @@
 import pyblish.api
 from pymxs import runtime as rt
 
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     RepairAction,
     OptionalPyblishPluginMixin,
     PublishValidationError
 )
-from openpype.hosts.max.api.action import SelectInvalidAction
+from quadpype.hosts.max.api.action import SelectInvalidAction
 
 
 class ValidateCameraAttributes(OptionalPyblishPluginMixin,

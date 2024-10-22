@@ -4,8 +4,8 @@ import contextlib
 import pyblish.api
 import hou
 
-from openpype.pipeline import PublishXmlValidationError
-from openpype.hosts.houdini.api.action import SelectInvalidAction
+from quadpype.pipeline import PublishXmlValidationError
+from quadpype.hosts.houdini.api.action import SelectInvalidAction
 
 
 def group_consecutive_numbers(nums):

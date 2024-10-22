@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 """Create instance of vrayscene."""
 
-from openpype.hosts.maya.api import (
+from quadpype.hosts.maya.api import (
     lib_rendersettings,
     plugin
 )
-from openpype.pipeline import CreatorError
-from openpype.lib import BoolDef
+from quadpype.pipeline import CreatorError
+from quadpype.lib import BoolDef
 
 
 class CreateVRayScene(plugin.RenderlayerCreator):
     """Create Vray Scene."""
 
-    identifier = "io.openpype.creators.maya.vrayscene"
+    identifier = "io.quadpype.creators.maya.vrayscene"
 
     family = "vrayscene"
     label = "VRay Scene"

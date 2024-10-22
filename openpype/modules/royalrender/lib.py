@@ -6,27 +6,27 @@ import re
 from datetime import datetime
 
 import pyblish.api
-from openpype.settings import (
+from quadpype.settings import (
     MODULES_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     SYSTEM_SETTINGS_KEY
 )
-from openpype.lib import BoolDef, NumberDef, is_running_from_build
-from openpype.modules.royalrender.api import Api as rrApi
-from openpype.modules.royalrender.rr_job import (
+from quadpype.lib import BoolDef, NumberDef, is_running_from_build
+from quadpype.modules.royalrender.api import Api as rrApi
+from quadpype.modules.royalrender.rr_job import (
     CustomAttribute,
     RRJob,
     RREnvList,
     get_rr_platform
 )
-from openpype.pipeline import OpenPypePyblishPluginMixin
-from openpype.pipeline.publish import KnownPublishError
-from openpype.pipeline.publish.lib import get_published_workfile_instance
-from openpype.tests.lib import is_in_tests
+from quadpype.pipeline import QuadPypePyblishPluginMixin
+from quadpype.pipeline.publish import KnownPublishError
+from quadpype.pipeline.publish.lib import get_published_workfile_instance
+from quadpype.tests.lib import is_in_tests
 
 
 class BaseCreateRoyalRenderJob(pyblish.api.InstancePlugin,
-                               OpenPypePyblishPluginMixin):
+                               QuadPypePyblishPluginMixin):
     """Creates separate rendering job for Royal Render"""
     label = "Create Nuke Render job in RR"
     order = pyblish.api.IntegratorOrder + 0.1
@@ -166,8 +166,8 @@ class BaseCreateRoyalRenderJob(pyblish.api.InstancePlugin,
         if is_running_from_build():
             custom_attributes = [
                 CustomAttribute(
-                    name="OpenPypeVersion",
-                    value=os.environ.get("OPENPYPE_VERSION"))
+                    name="QuadPypeVersion",
+                    value=os.environ.get("QUADPYPE_VERSION"))
             ]
 
         # this will append expected files to instance as needed.

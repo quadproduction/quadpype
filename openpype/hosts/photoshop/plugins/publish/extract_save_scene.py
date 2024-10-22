@@ -1,5 +1,5 @@
-from openpype.pipeline import publish
-from openpype.hosts.photoshop import api as photoshop
+from quadpype.pipeline import publish
+from quadpype.hosts.photoshop import api as photoshop
 
 
 class ExtractSaveScene(publish.Extractor):

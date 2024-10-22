@@ -5,8 +5,8 @@ from maya import cmds
 import maya.api.OpenMaya as om
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     ValidateMeshOrder,
     OptionalPyblishPluginMixin,
     PublishValidationError
@@ -248,7 +248,7 @@ class ValidateMeshHasOverlappingUVs(pyblish.api.InstancePlugin,
     hosts = ['maya']
     families = ['model']
     label = 'Mesh Has Overlapping UVs'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = True
 
     @classmethod

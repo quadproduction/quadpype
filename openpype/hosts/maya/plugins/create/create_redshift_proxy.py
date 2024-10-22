@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """Creator of Redshift proxy subset types."""
 
-from openpype.hosts.maya.api import plugin, lib
-from openpype.lib import BoolDef
+from quadpype.hosts.maya.api import plugin, lib
+from quadpype.lib import BoolDef
 
 
 class CreateRedshiftProxy(plugin.MayaCreator):
     """Create instance of Redshift Proxy subset."""
 
-    identifier = "io.openpype.creators.maya.redshiftproxy"
+    identifier = "io.quadpype.creators.maya.redshiftproxy"
     label = "Redshift Proxy"
     family = "redshiftproxy"
     icon = "gears"

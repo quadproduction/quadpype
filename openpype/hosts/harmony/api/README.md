@@ -5,7 +5,7 @@
 The easiest way to setup for using Toon Boom Harmony is to use the built-in launch:
 
 ```
-python -c "import openpype.hosts.harmony.api as harmony;harmony.launch("path/to/harmony/executable")"
+python -c "import quadpype.hosts.harmony.api as harmony;harmony.launch("path/to/harmony/executable")"
 ```
 
 Communication with Harmony happens with a server/client relationship where the server is in the Python process and the client is in the Harmony process. Messages between Python and Harmony are required to be dictionaries, which are serialized to strings:
@@ -42,7 +42,7 @@ First two bytes are *magic* bytes stands for **A**valon **H**armony. Next four b
 
 ## Usage
 
-The integration creates an `Openpype` menu entry where all related tools are located.
+The integration creates an `QuadPype` menu entry where all related tools are located.
 
 **NOTE: Menu creation can be temperamental. The best way is to launch Harmony and do nothing else until Harmony is fully launched.**
 
@@ -59,7 +59,7 @@ You can show the Workfiles app when Harmony launches by setting environment vari
 ### Low level messaging
 To send from Python to Harmony you can use the exposed method:
 ```python
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 from uuid import uuid4
 
 
@@ -75,7 +75,7 @@ print(harmony.send({"function": func, "args": ["Python"]})["result"])
 
 To send a function with multiple arguments its best to declare the arguments within the function:
 ```python
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 from uuid import uuid4
 
 signature = str(uuid4()).replace("-", "_")
@@ -93,8 +93,7 @@ print(harmony.send({"function": func, "args": ["Hello", "Python"]})["result"])
 ### Caution
 
 When naming your functions be aware that they are executed in global scope. They can potentially clash with Harmony own function and object names.
-For example `func` is already existing Harmony object. When you call your function `func` it will overwrite in global scope the one from Harmony, causing
-erratic behavior of Harmony. Openpype is prefixing those function names with [UUID4](https://docs.python.org/3/library/uuid.html) making chance of such clash minimal.
+For example `func` is already existing Harmony object. When you call your function `func` it will overwrite in global scope the one from Harmony, causing erratic behavior of Harmony. QuadPype is prefixing those function names with [UUID4](https://docs.python.org/3/library/uuid.html) making chance of such clash minimal.
 See above examples how that works. This will result in function named `38dfcef0_a6d7_4064_8069_51fe99ab276e_hello()`.
 You can find list of Harmony object and function in Harmony documentation.
 
@@ -114,7 +113,7 @@ PypeHarmony.myAwesomeFunction = function() {
 Then you can call that javascript code from your Python like:
 
 ```Python
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 harmony.send({"function": "PypeHarmony.myAwesomeFunction"});
 
@@ -159,7 +158,7 @@ Now in python, just read all those files and send them to Harmony.
 
 ```python
 from pathlib import Path
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 path_to_js = Path('/path/to/my/js')
 script_to_send = ""
@@ -178,14 +177,14 @@ harmony.send({"function": "Master.Boo.B"})
 ### Scene Save
 Instead of sending a request to Harmony with `scene.saveAll` please use:
 ```python
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 harmony.save_scene()
 ```
 
 <details>
   <summary>Click to expand for details on scene save.</summary>
 
-  Because Openpype tools does not deal well with folders for a single entity like a Harmony scene, this integration has implemented to use zip files to encapsulate the Harmony scene folders. Saving scene in Harmony via menu or CTRL+S will not result in producing zip file, only saving it from Workfiles will. This is because
+  Because QuadPype tools does not deal well with folders for a single entity like a Harmony scene, this integration has implemented to use zip files to encapsulate the Harmony scene folders. Saving scene in Harmony via menu or CTRL+S will not result in producing zip file, only saving it from Workfiles will. This is because
   zipping process can take some time in which we cannot block user from saving again. If xstage file is changed during zipping process it will produce corrupted zip
   archive.
 </details>
@@ -195,7 +194,7 @@ These plugins were made with the [polly config](https://github.com/mindbender-st
 
 #### Creator Plugin
 ```python
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 from uuid import uuid4
 
 
@@ -207,12 +206,12 @@ class CreateComposite(harmony.Creator):
     family = "mindbender.template"
 
     def __init__(self, *args, **kwargs):
-        super(CreateComposite, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 ```
 
 The creator plugin can be configured to use other node types. For example here is a write node creator:
 ```python
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 
 class CreateRender(harmony.Creator):
@@ -224,7 +223,7 @@ class CreateRender(harmony.Creator):
     node_type = "WRITE"
 
     def __init__(self, *args, **kwargs):
-        super(CreateRender, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def setup_node(self, node):
         signature = str(uuid4()).replace("-", "_")
@@ -242,7 +241,7 @@ class CreateRender(harmony.Creator):
 #### Collector Plugin
 ```python
 import pyblish.api
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 
 class CollectInstances(pyblish.api.ContextPlugin):
@@ -289,7 +288,7 @@ class CollectInstances(pyblish.api.ContextPlugin):
 import os
 
 import pyblish.api
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 import clique
 
@@ -419,7 +418,7 @@ class ExtractImage(pyblish.api.InstancePlugin):
 ```python
 import os
 
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 signature = str(uuid4()).replace("-", "_")
 copy_files = """function copyFile(srcFilename, dstFilename)

@@ -1,6 +1,6 @@
 import pyblish.api
-from openpype.pipeline import PublishXmlValidationError
-from openpype.hosts.tvpaint.api.lib import execute_george
+from quadpype.pipeline import PublishXmlValidationError
+from quadpype.hosts.tvpaint.api.lib import execute_george
 
 class ValidateLayersGroupSelect(pyblish.api.Action):
     """Select the layers in fault.

@@ -37,7 +37,7 @@ class SidePanelWidget(QtWidgets.QWidget):
     )
 
     def __init__(self, controller, parent):
-        super(SidePanelWidget, self).__init__(parent)
+        super().__init__(parent)
 
         details_label = QtWidgets.QLabel("Details", self)
         details_input = QtWidgets.QPlainTextEdit(self)

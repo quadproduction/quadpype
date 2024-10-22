@@ -12,8 +12,8 @@ import os.path
 
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline.publish.lib import get_custom_staging_dir_info
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline.publish.lib import get_custom_staging_dir_info
 
 
 class CollectCustomStagingDir(pyblish.api.InstancePlugin):

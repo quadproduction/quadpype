@@ -1,5 +1,5 @@
 import nuke
-from openpype.pipeline import load
+from quadpype.pipeline import load
 
 
 class MatchmoveLoader(load.LoaderPlugin):

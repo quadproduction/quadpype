@@ -1,18 +1,18 @@
 import os
 import re
 
-from openpype.lib import filter_profiles
-from openpype.pipeline.context_tools import (
+from quadpype.lib import filter_profiles
+from quadpype.pipeline.context_tools import (
     _get_modules_manager,
     get_current_task_name
 )
-from openpype.settings.lib import load_openpype_default_settings
-from openpype.settings import get_current_project_settings, PROJECT_SETTINGS_KEY
-from openpype.pipeline.publish import OpenPypePyblishPluginMixin
+from quadpype.settings.lib import load_quadpype_default_settings
+from quadpype.settings import get_current_project_settings, PROJECT_SETTINGS_KEY
+from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
 
 
 class DeadlineDefaultJobAttrs:
-    global_default_attrs_values = load_openpype_default_settings()[PROJECT_SETTINGS_KEY]["deadline"]\
+    global_default_attrs_values = load_quadpype_default_settings()[PROJECT_SETTINGS_KEY]["deadline"]\
                                     ["JobAttrsValues"]["DefaultValues"]
     deadline_attrs_names = ["pool", "pool_secondary", "priority", "limit_machine", "limits_plugin"]
 
@@ -63,7 +63,7 @@ class DeadlineDefaultJobAttrs:
         if attr_name in instance.data:
             return instance.data.get(attr_name)
 
-        attrs = OpenPypePyblishPluginMixin.get_attr_values_from_data_for_plugin(plugin, instance.data)
+        attrs = QuadPypePyblishPluginMixin.get_attr_values_from_data_for_plugin(plugin, instance.data)
         if attr_name in attrs:
             return attrs.get(attr_name)
 
@@ -120,7 +120,7 @@ def set_custom_deadline_name(instance, filename, setting):
             custom_name = custom_name[:-1]
     except Exception as e:
         raise KeyError(
-            "OpenPype Studio Settings (Deadline section): Syntax issue(s) "
+            "QuadPype Studio Settings (Deadline section): Syntax issue(s) "
             "in \"Job Name\" or \"Batch Name\" for the current project.\n"
             "Error: {}".format(e)
         )

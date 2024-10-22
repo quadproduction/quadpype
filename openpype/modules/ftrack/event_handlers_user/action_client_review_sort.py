@@ -1,4 +1,4 @@
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 try:
     from functools import cmp_to_key
 except Exception:

@@ -1,12 +1,12 @@
 import qtawesome
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.style import (
+from quadpype.style import (
     get_default_entity_icon_color,
     get_disabled_entity_icon_color,
 )
-from openpype.tools.utils import TreeView
-from openpype.tools.utils.delegates import PrettyTimeDelegate
+from quadpype.tools.utils import TreeView
+from quadpype.tools.utils.delegates import PrettyTimeDelegate
 
 from .utils import BaseOverlayFrame
 
@@ -24,7 +24,7 @@ class PublishedFilesModel(QtGui.QStandardItemModel):
     """
 
     def __init__(self, controller):
-        super(PublishedFilesModel, self).__init__()
+        super().__init__()
 
         self.setColumnCount(2)
 
@@ -251,7 +251,7 @@ class SelectContextOverlay(BaseOverlayFrame):
     """
 
     def __init__(self, parent):
-        super(SelectContextOverlay, self).__init__(parent)
+        super().__init__(parent)
 
         label_widget = QtWidgets.QLabel(
             "Please choose context on the left<br/>&lt",
@@ -278,7 +278,7 @@ class PublishedFilesWidget(QtWidgets.QWidget):
     save_as_requested = QtCore.Signal()
 
     def __init__(self, controller, parent):
-        super(PublishedFilesWidget, self).__init__(parent)
+        super().__init__(parent)
 
         view = TreeView(self)
         view.setSortingEnabled(True)

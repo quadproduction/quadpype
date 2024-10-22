@@ -1,7 +1,7 @@
 import pyblish.api
 
-from openpype.lib import filter_profiles
-from openpype.pipeline.publish import PublishValidationError
+from quadpype.lib import filter_profiles
+from quadpype.pipeline.publish import PublishValidationError
 
 
 class ValidateIntent(pyblish.api.ContextPlugin):

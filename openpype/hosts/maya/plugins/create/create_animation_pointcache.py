@@ -1,12 +1,12 @@
 from maya import cmds
 
-from openpype.hosts.maya.api import lib, plugin
+from quadpype.hosts.maya.api import lib, plugin
 
-from openpype.lib import (
+from quadpype.lib import (
     BoolDef,
     NumberDef,
 )
-from openpype.pipeline import CreatedInstance
+from quadpype.pipeline import CreatedInstance
 
 
 def _get_animation_attr_defs(cls):
@@ -79,7 +79,7 @@ class CreateAnimation(plugin.MayaHiddenCreator):
     for loaded rigs if by chance someone deleted the animation instance.
     """
 
-    identifier = "io.openpype.creators.maya.animation"
+    identifier = "io.quadpype.creators.maya.animation"
     name = "animationDefault"
     label = "Animation"
     family = "animation"
@@ -116,7 +116,7 @@ class CreateAnimation(plugin.MayaHiddenCreator):
 class CreatePointCache(plugin.MayaCreator):
     """Alembic pointcache for animated data"""
 
-    identifier = "io.openpype.creators.maya.pointcache"
+    identifier = "io.quadpype.creators.maya.pointcache"
     label = "Pointcache"
     family = "pointcache"
     icon = "gears"

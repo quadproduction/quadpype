@@ -1,7 +1,7 @@
 import json
 import tempfile
 
-from openpype.lib import PreLaunchHook
+from quadpype.lib import PreLaunchHook
 
 
 class PreFtrackData(PreLaunchHook):
@@ -16,4 +16,4 @@ class PreFtrackData(PreLaunchHook):
             with tempfile.NamedTemporaryFile(mode="w+", delete=False) as file:
                 json.dump(payload, file)
 
-            self.launch_context.env["OPENPYPE_LOADER_REPRESENTATIONS"] = str(file.name)  # noqa
+            self.launch_context.env["QUADPYPE_LOADER_REPRESENTATIONS"] = str(file.name)  # noqa

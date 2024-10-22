@@ -3,7 +3,7 @@ import re
 import pyblish.api
 import json
 
-from openpype.lib import (
+from quadpype.lib import (
     prepare_template_data,
     StringTemplate,
 )
@@ -136,7 +136,7 @@ class CollectTextures(pyblish.api.ContextPlugin):
 
                 if ext in self.main_workfile_extensions:
                     # workfiles can have only single representation
-                    # currently OP is not supporting different extensions in
+                    # currently QuadPype is not supporting different extensions in
                     # representation files
                     representations[workfile_subset] = [repre]
 

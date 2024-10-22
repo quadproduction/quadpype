@@ -8,15 +8,15 @@ os.chdir(os.path.dirname(__file__))  # for override sys.path in Deadline
 
 from .bootstrap_repos import (
     BootstrapRepos,
-    OpenPypeVersion
+    QuadPypeVersion
 )
 from .version import __version__ as version
 
-# Store OpenPypeVersion to 'sys.modules'
-#   - this makes it available in OpenPype processes without modifying
+# Store QuadPypeVersion to 'sys.modules'
+#   - this makes it available in QuadPype processes without modifying
 #       'sys.path' or 'PYTHONPATH'
-if "OpenPypeVersion" not in sys.modules:
-    sys.modules["OpenPypeVersion"] = OpenPypeVersion
+if "QuadPypeVersion" not in sys.modules:
+    sys.modules["QuadPypeVersion"] = QuadPypeVersion
 
 
 def _get_qt_app():
@@ -53,7 +53,7 @@ def _get_qt_app():
 
 def open_dialog():
     """Show Igniter dialog."""
-    if os.getenv("OPENPYPE_HEADLESS_MODE"):
+    if os.getenv("QUADPYPE_HEADLESS_MODE"):
         print("!!! Can't open dialog in headless mode. Exiting.")
         sys.exit(1)
     from .install_dialog import InstallDialog
@@ -71,11 +71,11 @@ def open_dialog():
     return d.result()
 
 
-def open_update_window(openpype_version, zxp_hosts=None):
+def open_update_window(quadpype_version, zxp_hosts=None):
     """Open update window."""
     if zxp_hosts is None:
         zxp_hosts = []
-    if os.getenv("OPENPYPE_HEADLESS_MODE"):
+    if os.getenv("QUADPYPE_HEADLESS_MODE"):
         print("!!! Can't open dialog in headless mode. Exiting.")
         sys.exit(1)
 
@@ -83,7 +83,7 @@ def open_update_window(openpype_version, zxp_hosts=None):
 
     app, is_event_loop_running = _get_qt_app()
 
-    d = UpdateWindow(version=openpype_version, zxp_hosts=zxp_hosts)
+    d = UpdateWindow(version=quadpype_version, zxp_hosts=zxp_hosts)
     d.open()
 
     if not is_event_loop_running:
@@ -98,7 +98,7 @@ def open_update_window(openpype_version, zxp_hosts=None):
 
 def show_message_dialog(title, message):
     """Show dialog with a message and title to user."""
-    if os.getenv("OPENPYPE_HEADLESS_MODE"):
+    if os.getenv("QUADPYPE_HEADLESS_MODE"):
         print("!!! Can't open dialog in headless mode. Exiting.")
         sys.exit(1)
 

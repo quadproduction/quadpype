@@ -10,7 +10,7 @@ import json
 
 import six
 import pyblish.api
-from openpype.lib import StringTemplate
+from quadpype.lib import StringTemplate
 
 
 class IntegrateFtrackDescription(pyblish.api.InstancePlugin):

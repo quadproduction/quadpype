@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import pyblish.api
 import hou
-from openpype.pipeline import (
+from quadpype.pipeline import (
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
-from openpype.pipeline.publish import RepairAction
+from quadpype.pipeline.publish import RepairAction
 
 
 class ValidateWorkfilePaths(

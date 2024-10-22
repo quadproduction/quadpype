@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Creator plugin to create Mantra ROP."""
-from openpype.hosts.houdini.api import plugin
-from openpype.pipeline import CreatedInstance
-from openpype.lib import EnumDef, BoolDef
+from quadpype.hosts.houdini.api import plugin
+from quadpype.pipeline import CreatedInstance
+from quadpype.lib import EnumDef, BoolDef
 
 
 class CreateMantraROP(plugin.HoudiniCreator):
     """Mantra ROP"""
-    identifier = "io.openpype.creators.houdini.mantra_rop"
+    identifier = "io.quadpype.creators.houdini.mantra_rop"
     label = "Mantra ROP"
     family = "mantra_rop"
     icon = "magic"

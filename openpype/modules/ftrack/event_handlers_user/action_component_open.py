@@ -1,6 +1,6 @@
 import os
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
-from openpype.lib import open_in_explorer
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype.lib import open_in_explorer
 
 
 class ComponentOpen(BaseAction):

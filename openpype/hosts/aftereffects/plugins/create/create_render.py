@@ -1,17 +1,17 @@
 import re
 
-from openpype import resources
-from openpype.lib import BoolDef, UISeparatorDef
-from openpype.hosts.aftereffects import api
-from openpype.pipeline import (
+from quadpype import resources
+from quadpype.lib import BoolDef, UISeparatorDef
+from quadpype.hosts.aftereffects import api
+from quadpype.pipeline import (
     Creator,
     CreatedInstance,
     CreatorError
 )
-from openpype.hosts.aftereffects.api.pipeline import cache_and_get_instances
-from openpype.hosts.aftereffects.api.lib import set_settings
-from openpype.lib import prepare_template_data
-from openpype.pipeline.create import SUBSET_NAME_ALLOWED_SYMBOLS
+from quadpype.hosts.aftereffects.api.pipeline import cache_and_get_instances
+from quadpype.hosts.aftereffects.api.lib import set_settings
+from quadpype.lib import prepare_template_data
+from quadpype.pipeline.create import SUBSET_NAME_ALLOWED_SYMBOLS
 
 
 class RenderCreator(Creator):

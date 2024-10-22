@@ -1,10 +1,10 @@
-import openpype.hosts.nuke.api as api
-from openpype.client import get_asset_by_name
-from openpype.pipeline import (
+import quadpype.hosts.nuke.api as api
+from quadpype.client import get_asset_by_name
+from quadpype.pipeline import (
     AutoCreator,
     CreatedInstance,
 )
-from openpype.hosts.nuke.api import (
+from quadpype.hosts.nuke.api import (
     INSTANCE_DATA_KNOB,
     set_node_data
 )

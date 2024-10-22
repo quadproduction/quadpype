@@ -10,10 +10,10 @@ import json
 
 import six
 
-from openpype.lib import StringTemplate
-from openpype.client import get_project, get_asset_by_name
-from openpype.settings import get_current_project_settings
-from openpype.pipeline import (
+from quadpype.lib import StringTemplate
+from quadpype.client import get_project, get_asset_by_name
+from quadpype.settings import get_current_project_settings
+from quadpype.pipeline import (
     Anatomy,
     get_current_project_name,
     get_current_asset_name,
@@ -21,11 +21,11 @@ from openpype.pipeline import (
     get_current_context,
     get_current_host_name,
 )
-from openpype.pipeline.create import CreateContext
-from openpype.pipeline.template_data import get_template_data
-from openpype.pipeline.context_tools import get_current_project_asset
-from openpype.widgets import popup
-from openpype.tools.utils.host_tools import get_tool_by_name
+from quadpype.pipeline.create import CreateContext
+from quadpype.pipeline.template_data import get_template_data
+from quadpype.pipeline.context_tools import get_current_project_asset
+from quadpype.widgets import popup
+from quadpype.tools.utils.host_tools import get_tool_by_name
 
 import hou
 
@@ -1045,7 +1045,7 @@ def add_self_publish_button(node):
     button_parm = hou.ButtonParmTemplate(
         "ayon_self_publish",
         "{} Publish".format(label),
-        script_callback="from openpype.hosts.houdini.api.lib import "
+        script_callback="from quadpype.hosts.houdini.api.lib import "
                         "self_publish; self_publish()",
         script_callback_language=hou.scriptLanguage.Python,
         join_with_next=True

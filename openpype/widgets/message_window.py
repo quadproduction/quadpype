@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 class Window(QtWidgets.QWidget):
     def __init__(self, parent, title, message, level):
-        super(Window, self).__init__()
+        super().__init__()
         self.parent = parent
         self.title = title
         self.message = message
@@ -112,7 +112,7 @@ class ScrollMessageBox(QtWidgets.QDialog):
             cancelable: <boolean> - True if Cancel button should be added
     """
     def __init__(self, icon, title, messages, cancelable=False):
-        super(ScrollMessageBox, self).__init__()
+        super().__init__()
         self.setWindowTitle(title)
         self.icon = icon
 

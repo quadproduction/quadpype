@@ -6,12 +6,12 @@ attribute or using default server if that attribute doesn't exists.
 
 """
 import pyblish.api
-from openpype.settings import (
+from quadpype.settings import (
     MODULES_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     SYSTEM_SETTINGS_KEY
 )
-from openpype.pipeline.publish import KnownPublishError
+from quadpype.pipeline.publish import KnownPublishError
 
 
 class CollectDeadlineServerFromInstance(pyblish.api.InstancePlugin):

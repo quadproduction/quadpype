@@ -2,10 +2,10 @@ import os
 import shutil
 import winreg
 import subprocess
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.lib import get_openpype_execute_args
-from openpype.lib.applications import PreLaunchHook, LaunchTypes
-from openpype.hosts.celaction import CELACTION_ROOT_DIR
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.lib import get_quadpype_execute_args
+from quadpype.lib.applications import PreLaunchHook, LaunchTypes
+from quadpype.hosts.celaction import CELACTION_ROOT_DIR
 
 
 class CelactionPrelaunchHook(PreLaunchHook):
@@ -39,8 +39,8 @@ class CelactionPrelaunchHook(PreLaunchHook):
         path_to_cli = os.path.join(
             CELACTION_ROOT_DIR, "scripts", "publish_cli.py"
         )
-        subprocess_args = get_openpype_execute_args("run", path_to_cli)
-        openpype_executable = subprocess_args.pop(0)
+        subprocess_args = get_quadpype_execute_args("run", path_to_cli)
+        quadpype_executable = subprocess_args.pop(0)
         workfile_settings = self.get_workfile_settings()
 
         winreg.SetValueEx(
@@ -48,7 +48,7 @@ class CelactionPrelaunchHook(PreLaunchHook):
             "SubmitAppTitle",
             0,
             winreg.REG_SZ,
-            openpype_executable
+            quadpype_executable
         )
 
         # add required arguments for workfile path

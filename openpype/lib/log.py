@@ -1,11 +1,11 @@
 """
 Logging to console and to mongo. For mongo logging, you need to set either
-``OPENPYPE_LOG_MONGO_URL`` to something like:
+``QUADPYPE_LOG_MONGO_URL`` to something like:
 
 .. example::
    mongo://user:password@hostname:port/database/collection?authSource=avalon
 
-or set ``OPENPYPE_LOG_MONGO_HOST`` and other variables.
+or set ``QUADPYPE_LOG_MONGO_HOST`` and other variables.
 See :func:`_mongo_settings`
 
 Best place for it is in ``repos/pype-config/environments/global.json``
@@ -24,10 +24,10 @@ import traceback
 import threading
 import copy
 
-from openpype.client.mongo import (
+from quadpype.client.mongo import (
     MongoEnvNotSet,
     get_default_components,
-    OpenPypeMongoConnection,
+    QuadPypeMongoConnection,
 )
 from . import Terminal
 
@@ -48,7 +48,7 @@ class LogStreamHandler(logging.StreamHandler):
     """
 
     def __init__(self, stream=None):
-        super(LogStreamHandler, self).__init__(stream)
+        super().__init__(stream)
         self.enabled = True
 
     def enable(self):
@@ -119,7 +119,7 @@ class LogFormatter(logging.Formatter):
     default_formatter = logging.Formatter(DFT)
 
     def __init__(self, formats):
-        super(LogFormatter, self).__init__()
+        super().__init__()
         self.formatters = {}
         for loglevel in formats:
             self.formatters[loglevel] = logging.Formatter(formats[loglevel])
@@ -218,11 +218,11 @@ class Logger:
     log_mongo_url_components = None
 
     # Database name in Mongo
-    log_database_name = os.environ.get("OPENPYPE_DATABASE_NAME")
+    log_database_name = os.environ.get("QUADPYPE_DATABASE_NAME")
     # Collection name under database in Mongo
     log_collection_name = "logs"
 
-    # Logging level - OPENPYPE_LOG_LEVEL
+    # Logging level - QUADPYPE_LOG_LEVEL
     log_level = None
 
     # Data same for all record documents
@@ -337,7 +337,7 @@ class Logger:
         # Define if should logging to mongo be used
         use_mongo_logging = (
             log4mongo is not None
-            and os.environ.get("OPENPYPE_LOG_TO_SERVER") == "1"
+            and os.environ.get("QUADPYPE_LOG_TO_SERVER") == "1"
         )
 
         # Set mongo id for process (ONLY ONCE)
@@ -352,7 +352,7 @@ class Logger:
             #   like Ftrack event server has 3 other subprocesses that should
             #   use same mongo id
             if use_mongo_logging:
-                mongo_id = os.environ.pop("OPENPYPE_PROCESS_MONGO_ID", None)
+                mongo_id = os.environ.pop("QUADPYPE_PROCESS_MONGO_ID", None)
                 if not mongo_id:
                     # Create new object id
                     mongo_id = ObjectId()
@@ -365,17 +365,17 @@ class Logger:
         cls.use_mongo_logging = use_mongo_logging
 
         # Define what is logging level
-        log_level = os.getenv("OPENPYPE_LOG_LEVEL")
+        log_level = os.getenv("QUADPYPE_LOG_LEVEL")
         if not log_level:
-            # Check OPENPYPE_DEBUG for backwards compatibility
-            op_debug = os.getenv("OPENPYPE_DEBUG")
+            # Check QUADPYPE_DEBUG for backwards compatibility
+            op_debug = os.getenv("QUADPYPE_DEBUG")
             if op_debug and int(op_debug) > 0:
                 log_level = 10
             else:
                 log_level = 20
         cls.log_level = int(log_level)
 
-        if not os.environ.get("OPENPYPE_MONGO"):
+        if not os.environ.get("QUADPYPE_MONGO"):
             cls.use_mongo_logging = False
 
         # Mark as initialized
@@ -424,8 +424,8 @@ class Logger:
     def get_process_name(cls):
         """Process name that is like "label" of a process.
 
-        OpenPype's logging can be used from OpenPyppe itself of from hosts.
-        Even in OpenPype process it's good to know if logs are from tray or
+        QuadPype's logging can be used from OpenPyppe itself of from hosts.
+        Even in QuadPype process it's good to know if logs are from tray or
         from other cli commands. This should help to identify that information.
         """
         if cls._process_name is not None:
@@ -492,4 +492,4 @@ class Logger:
         if not cls.initialized:
             cls.initialize()
 
-        return OpenPypeMongoConnection.get_mongo_client()
+        return QuadPypeMongoConnection.get_mongo_client()

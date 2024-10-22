@@ -1,4 +1,4 @@
-"""Library to register OpenPype Creators for Houdini TAB node search menu.
+"""Library to register QuadPype Creators for Houdini TAB node search menu.
 
 This can be used to install custom houdini tools for the TAB search
 menu which will trigger a publish instance to be created interactively.
@@ -12,10 +12,10 @@ import tempfile
 import logging
 import os
 
-from openpype.client import get_asset_by_name
-from openpype.pipeline import registered_host
-from openpype.pipeline.create import CreateContext
-from openpype.resources import get_app_icon_filepath
+from quadpype.client import get_asset_by_name
+from quadpype.pipeline import registered_host
+from quadpype.pipeline.create import CreateContext
+from quadpype.resources import get_app_icon_filepath
 
 import hou
 import stateutils
@@ -34,7 +34,7 @@ CATEGORY_GENERIC_TOOL = {
 
 
 CREATE_SCRIPT = """
-from openpype.hosts.houdini.api.creator_node_shelves import create_interactive
+from quadpype.hosts.houdini.api.creator_node_shelves import create_interactive
 create_interactive("{identifier}", **kwargs)
 """
 
@@ -146,7 +146,7 @@ def install():
     This function is re-entrant and can be called again to reinstall and
     update the node definitions. For example during development it can be
     useful to call it manually:
-        >>> from openpype.hosts.houdini.api.creator_node_shelves import install
+        >>> from quadpype.hosts.houdini.api.creator_node_shelves import install
         >>> install()
 
     Returns:
@@ -181,7 +181,7 @@ def install():
     create_context.reset_current_context()
     create_context._reset_creator_plugins()
 
-    log.debug("Writing OpenPype Creator nodes to shelf: {}".format(filepath))
+    log.debug("Writing QuadPype Creator nodes to shelf: {}".format(filepath))
     tools = []
 
     with shelves_change_block():

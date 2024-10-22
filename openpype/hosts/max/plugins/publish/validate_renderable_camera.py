@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import pyblish.api
-from openpype.pipeline import (
+from quadpype.pipeline import (
     PublishValidationError,
     OptionalPyblishPluginMixin)
-from openpype.pipeline.publish import RepairAction
-from openpype.hosts.max.api.lib import get_current_renderer
+from quadpype.pipeline.publish import RepairAction
+from quadpype.hosts.max.api.lib import get_current_renderer
 
 from pymxs import runtime as rt
 

@@ -3,25 +3,25 @@ import json
 import collections
 import platform
 
-from openpype.lib import register_event_callback
-from openpype.modules import (
+from quadpype.lib import register_event_callback
+from quadpype.modules import (
     click_wrap,
-    OpenPypeModule,
+    QuadPypeModule,
     ITrayModule,
     IPluginPaths,
     ISettingsChangeListener
 )
-from openpype.settings import (
+from quadpype.settings import (
     SaveWarningExc,
     get_project_settings,
     APPS_SETTINGS_KEY,
     GENERAL_SETTINGS_KEY,
     MODULES_SETTINGS_KEY
 )
-from openpype.settings.lib import get_system_settings
-from openpype.lib import Logger
+from quadpype.settings.lib import get_system_settings
+from quadpype.lib import Logger
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     get_current_project_name,
     get_current_asset_name,
     get_current_task_name
@@ -32,7 +32,7 @@ _URL_NOT_SET = object()
 
 
 class FtrackModule(
-    OpenPypeModule,
+    QuadPypeModule,
     ITrayModule,
     IPluginPaths,
     ISettingsChangeListener
@@ -325,7 +325,7 @@ class FtrackModule(
         if "ftrack_server" in ftrack_changes:
             url_change_msg = (
                 "Ftrack URL was changed."
-                " This change may need to restart OpenPype to take affect."
+                " This change may need to restart QuadPype to take affect."
             )
 
         try:
@@ -342,19 +342,19 @@ class FtrackModule(
             ))
 
         from .lib import (
-            get_openpype_attr,
+            get_quadpype_attr,
             CUST_ATTR_APPLICATIONS,
             CUST_ATTR_TOOLS,
             app_definitions_from_app_manager,
             tool_definitions_from_app_manager
         )
-        from openpype.lib import ApplicationManager
+        from quadpype.lib import ApplicationManager
         query_keys = [
             "id",
             "key",
             "config"
         ]
-        custom_attributes = get_openpype_attr(
+        custom_attributes = get_quadpype_attr(
             session,
             split_hierarchical=False,
             query_keys=query_keys
@@ -449,8 +449,8 @@ class FtrackModule(
             return
 
         import ftrack_api
-        from openpype_modules.ftrack.lib import (
-            get_openpype_attr,
+        from quadpype_modules.ftrack.lib import (
+            get_quadpype_attr,
             default_custom_attributes_definition,
             CUST_ATTR_TOOLS,
             CUST_ATTR_APPLICATIONS,
@@ -489,7 +489,7 @@ class FtrackModule(
             | {CUST_ATTR_TOOLS, CUST_ATTR_APPLICATIONS, CUST_ATTR_INTENT}
         )
 
-        cust_attr, hier_attr = get_openpype_attr(session)
+        cust_attr, hier_attr = get_quadpype_attr(session)
         cust_attr_by_key = {attr["key"]: attr for attr in cust_attr}
         hier_attrs_by_key = {attr["key"]: attr for attr in hier_attr}
 
@@ -573,7 +573,7 @@ class FtrackModule(
         api_key = session_kwargs.get("api_key")
         api_user = session_kwargs.get("api_user")
         # First look into environments
-        # - both OpenPype tray and ftrack event server should have set them
+        # - both QuadPype tray and ftrack event server should have set them
         # - ftrack event server may crash when credentials are tried to load
         #   from keyring
         if not api_key or not api_user:
@@ -737,7 +737,7 @@ def eventserver(
     on linux and window service).
     """
     if debug:
-        os.environ["OPENPYPE_DEBUG"] = "3"
+        os.environ["QUADPYPE_DEBUG"] = "3"
 
     from .ftrack_server.event_server_cli import run_event_server
 

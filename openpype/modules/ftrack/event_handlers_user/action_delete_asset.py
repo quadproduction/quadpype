@@ -4,10 +4,10 @@ from datetime import datetime
 
 from bson.objectid import ObjectId
 
-from openpype.client import get_assets, get_subsets
-from openpype.pipeline import AvalonMongoDB
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
-from openpype_modules.ftrack.lib.avalon_sync import create_chunks
+from quadpype.client import get_assets, get_subsets
+from quadpype.pipeline import AvalonMongoDB
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype_modules.ftrack.lib.avalon_sync import create_chunks
 
 
 class DeleteAssetSubset(BaseAction):
@@ -33,7 +33,7 @@ class DeleteAssetSubset(BaseAction):
     def __init__(self, *args, **kwargs):
         self.dbcon = AvalonMongoDB()
 
-        super(DeleteAssetSubset, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def discover(self, session, entities, event):
         """ Validation """

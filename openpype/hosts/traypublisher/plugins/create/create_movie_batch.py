@@ -2,21 +2,21 @@ import copy
 import os
 import re
 
-from openpype.client import get_asset_name_identifier
-from openpype.lib import (
+from quadpype.client import get_asset_name_identifier
+from quadpype.lib import (
     FileDef,
     BoolDef,
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     CreatedInstance,
 )
-from openpype.pipeline.create import (
+from quadpype.pipeline.create import (
     get_subset_name,
     TaskNotSetError,
 )
 
-from openpype.hosts.traypublisher.api.plugin import TrayPublishCreator
-from openpype.hosts.traypublisher.batch_parsing import (
+from quadpype.hosts.traypublisher.api.plugin import TrayPublishCreator
+from quadpype.hosts.traypublisher.batch_parsing import (
     get_asset_doc_from_file_name
 )
 

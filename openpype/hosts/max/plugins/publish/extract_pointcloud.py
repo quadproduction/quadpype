@@ -3,9 +3,9 @@ import os
 import pyblish.api
 from pymxs import runtime as rt
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.hosts.max.api import maintained_selection
-from openpype.pipeline import publish
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.hosts.max.api import maintained_selection
+from quadpype.pipeline import publish
 
 
 class ExtractPointCloud(publish.Extractor):
@@ -21,7 +21,7 @@ class ExtractPointCloud(publish.Extractor):
 
         self.get_operators(): get the export_particle operator
 
-        self.get_custom_attr(): get all custom channel attributes from Openpype
+        self.get_custom_attr(): get all custom channel attributes from QuadPype
             setting and sets it as job arguments before exporting
 
         self.get_files(): get the files with tyFlow naming convention

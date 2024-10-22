@@ -1,7 +1,7 @@
 import pyblish.api
 import tde4
 
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     PublishValidationError,
     ValidateContentsOrder,
 )

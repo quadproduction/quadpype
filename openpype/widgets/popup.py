@@ -15,7 +15,7 @@ class Popup(QtWidgets.QDialog):
     on_clicked = QtCore.Signal()
 
     def __init__(self, parent=None, *args, **kwargs):
-        super(Popup, self).__init__(parent=parent, *args, **kwargs)
+        super().__init__(parent=parent, *args, **kwargs)
         self.setContentsMargins(0, 0, 0, 0)
 
         # Layout

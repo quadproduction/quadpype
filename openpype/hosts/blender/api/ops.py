@@ -15,9 +15,9 @@ from qtpy import QtWidgets, QtCore
 import bpy
 import bpy.utils.previews
 
-from openpype import style
-from openpype.pipeline import get_current_asset_name, get_current_task_name
-from openpype.tools.utils import host_tools
+from quadpype import style
+from quadpype.pipeline import get_current_asset_name, get_current_task_name
+from quadpype.tools.utils import host_tools
 
 from .workio import OpenFileCacher
 from . import pipeline
@@ -43,7 +43,7 @@ class BlenderApplication(QtWidgets.QApplication):
     blender_windows = {}
 
     def __init__(self, *args, **kwargs):
-        super(BlenderApplication, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setQuitOnLastWindowClosed(False)
 
         self.setStyleSheet(style.load_stylesheet())

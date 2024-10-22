@@ -3,7 +3,7 @@ from queue import Queue
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.client import get_project
+from quadpype.client import get_project
 from .delegates import (
     NumberDelegate,
     NameDelegate,
@@ -11,7 +11,7 @@ from .delegates import (
     ToolsDelegate
 )
 
-from openpype.lib import ApplicationManager
+from quadpype.lib import ApplicationManager
 from .constants import (
     REMOVED_ROLE,
     IDENTIFIER_ROLE,
@@ -122,7 +122,7 @@ class HierarchyView(QtWidgets.QTreeView):
     }
 
     def __init__(self, dbcon, source_model, parent):
-        super(HierarchyView, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("HierarchyView")
 

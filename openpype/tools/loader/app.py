@@ -3,18 +3,18 @@ import traceback
 
 from qtpy import QtWidgets, QtCore
 
-from openpype.client import get_projects, get_project
-from openpype import style
-from openpype.lib import register_event_callback
-from openpype.pipeline import (
-    install_openpype_plugins,
+from quadpype.client import get_projects, get_project
+from quadpype import style
+from quadpype.lib import register_event_callback
+from quadpype.pipeline import (
+    install_quadpype_plugins,
     legacy_io,
 )
-from openpype.tools.utils import (
+from quadpype.tools.utils import (
     lib,
     PlaceholderLineEdit
 )
-from openpype.tools.utils.assets_widget import MultiSelectAssetsWidget
+from quadpype.tools.utils.assets_widget import MultiSelectAssetsWidget
 
 from .widgets import (
     SubsetWidget,
@@ -25,7 +25,7 @@ from .widgets import (
     OverlayFrame
 )
 
-from openpype.modules import ModulesManager
+from quadpype.modules import ModulesManager
 
 module = sys.modules[__name__]
 module.window = None
@@ -38,7 +38,7 @@ class LoaderWindow(QtWidgets.QDialog):
     message_timeout = 5000
 
     def __init__(self, parent=None):
-        super(LoaderWindow, self).__init__(parent)
+        super().__init__(parent)
         title = "Asset Loader 2.1"
         project_name = legacy_io.active_project()
         if project_name:
@@ -463,7 +463,7 @@ class SubsetGroupingDialog(QtWidgets.QDialog):
     grouped = QtCore.Signal()
 
     def __init__(self, items, groups_config, parent=None):
-        super(SubsetGroupingDialog, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setWindowTitle("Grouping Subsets")
         self.setMinimumWidth(250)
         self.setModal(True)
@@ -620,6 +620,6 @@ def cli(args):
     # Store settings
     legacy_io.Session["AVALON_PROJECT"] = project
 
-    install_openpype_plugins(project)
+    install_quadpype_plugins(project)
 
     show()

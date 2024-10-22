@@ -4,9 +4,9 @@ import os
 from maya import cmds  # noqa
 import pyblish.api
 
-from openpype.pipeline import publish
-from openpype.hosts.maya.api import fbx
-from openpype.hosts.maya.api.lib import (
+from quadpype.pipeline import publish
+from quadpype.hosts.maya.api import fbx
+from quadpype.hosts.maya.api.lib import (
     namespaced, get_namespace, strip_namespace
 )
 

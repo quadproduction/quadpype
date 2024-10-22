@@ -1,8 +1,8 @@
 import pyblish.api
 from maya import cmds
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     PublishValidationError,
     ValidateContentsOrder,
     OptionalPyblishPluginMixin)
@@ -23,7 +23,7 @@ class ValidateCameraContents(pyblish.api.InstancePlugin,
     families = ['camera']
     hosts = ['maya']
     label = 'Camera Contents'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     validate_shapes = True
     optional = False
 

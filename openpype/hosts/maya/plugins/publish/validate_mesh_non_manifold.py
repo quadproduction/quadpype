@@ -1,8 +1,8 @@
 from maya import cmds
 
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     ValidateMeshOrder,
     PublishValidationError,
     OptionalPyblishPluginMixin
@@ -29,7 +29,7 @@ class ValidateMeshNonManifold(pyblish.api.Validator,
     hosts = ['maya']
     families = ['model']
     label = 'Mesh Non-Manifold Edges/Vertices'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = True
 
     @staticmethod

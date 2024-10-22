@@ -1,17 +1,17 @@
 from qtpy import QtWidgets, QtCore
 
-from openpype.client import (
+from quadpype.client import (
     get_asset_by_id,
     get_subset_by_id,
     get_version_by_id,
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     load,
     get_representation_path,
     get_current_project_name,
 )
-from openpype.hosts.maya.api.pipeline import containerise
-from openpype.hosts.maya.api.lib import (
+from quadpype.hosts.maya.api.pipeline import containerise
+from quadpype.hosts.maya.api.lib import (
     unique_namespace,
     namespaced,
     pairwise,
@@ -34,7 +34,7 @@ def disconnect_inputs(plug):
 class CameraWindow(QtWidgets.QDialog):
 
     def __init__(self, cameras):
-        super(CameraWindow, self).__init__()
+        super().__init__()
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
 
         self.camera = None

@@ -4,11 +4,11 @@ import logging
 
 from qtpy import QtWidgets, QtCore
 
-from openpype import style
-from openpype.client import get_last_version_by_subset_id
-from openpype.pipeline import get_current_project_name
-from openpype.tools.utils.lib import qt_app_context
-from openpype.hosts.maya.api.lib import (
+from quadpype import style
+from quadpype.client import get_last_version_by_subset_id
+from quadpype.pipeline import get_current_project_name
+from quadpype.tools.utils.lib import qt_app_context
+from quadpype.hosts.maya.api.lib import (
     assign_look_by_version,
     get_main_window
 )
@@ -36,7 +36,7 @@ module.window = None
 class MayaLookAssignerWindow(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
-        super(MayaLookAssignerWindow, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.log = logging.getLogger(__name__)
 

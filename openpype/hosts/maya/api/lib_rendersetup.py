@@ -3,7 +3,7 @@
 
 https://github.com/Colorbleed/colorbleed-config/blob/acre/colorbleed/maya/lib_rendersetup.py
 Credits: Roy Nieterau (BigRoy) / Colorbleed
-Modified for use in OpenPype
+Modified for use in QuadPype
 
 """
 
@@ -19,7 +19,7 @@ from maya.app.renderSetup.model.override import (
     UniqueOverride
 )
 
-from openpype.hosts.maya.api.lib import get_attribute
+from quadpype.hosts.maya.api.lib import get_attribute
 
 EXACT_MATCH = 0
 PARENT_MATCH = 1

@@ -3,8 +3,8 @@
 import os
 import shutil
 
-from openpype.pipeline import publish
-import openpype.hosts.harmony.api as harmony
+from quadpype.pipeline import publish
+import quadpype.hosts.harmony.api as harmony
 
 
 class ExtractTemplate(publish.Extractor):

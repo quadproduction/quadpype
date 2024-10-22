@@ -1,7 +1,7 @@
 import uuid
 from qtpy import QtGui, QtCore
 
-from openpype.pipeline import discover_legacy_creator_plugins
+from quadpype.pipeline import discover_legacy_creator_plugins
 
 from . constants import (
     FAMILY_ROLE,
@@ -11,7 +11,7 @@ from . constants import (
 
 class CreatorsModel(QtGui.QStandardItemModel):
     def __init__(self, *args, **kwargs):
-        super(CreatorsModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._creators_by_id = {}
 

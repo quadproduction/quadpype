@@ -1,14 +1,14 @@
 import os
 import copy
 
-from openpype.hosts.tvpaint.worker import (
+from quadpype.hosts.tvpaint.worker import (
     SenderTVPaintCommands,
     ExecuteSimpleGeorgeScript,
     ExecuteGeorgeScript
 )
 
 import pyblish.api
-from openpype.hosts.tvpaint.lib import (
+from quadpype.hosts.tvpaint.lib import (
     calculate_layers_extraction_data,
     get_frame_filename_template,
     fill_reference_frames,
@@ -53,7 +53,7 @@ class ExtractTVPaintSequences(pyblish.api.Extractor):
         handle_end = context.data["handleEnd"]
 
         # Get JobQueue module
-        modules = context.data["openPypeModules"]
+        modules = context.data["quadpypeModules"]
         job_queue_module = modules["job_queue"]
 
         tvpaint_commands = SenderTVPaintCommands(

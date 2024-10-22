@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pyblish.api
 import hou
-from openpype.pipeline import PublishValidationError
+from quadpype.pipeline import PublishValidationError
 
 
 def cook_in_range(node, start, end):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Create render node."""
-import openpype.hosts.harmony.api as harmony
-from openpype.hosts.harmony.api import plugin
+import quadpype.hosts.harmony.api as harmony
+from quadpype.hosts.harmony.api import plugin
 
 
 class CreateRender(plugin.Creator):
@@ -14,7 +14,7 @@ class CreateRender(plugin.Creator):
 
     def __init__(self, *args, **kwargs):
         """Constructor."""
-        super(CreateRender, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def setup_node(self, node):
         """Set render node."""

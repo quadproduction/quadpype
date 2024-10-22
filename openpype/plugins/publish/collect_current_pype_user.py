@@ -1,5 +1,5 @@
 import pyblish.api
-from openpype.lib import get_openpype_username
+from quadpype.lib import get_quadpype_username
 
 
 class CollectCurrentUserPype(pyblish.api.ContextPlugin):
@@ -10,6 +10,6 @@ class CollectCurrentUserPype(pyblish.api.ContextPlugin):
     label = ("Collect QuadPype User")
 
     def process(self, context):
-        user = get_openpype_username()
+        user = get_quadpype_username()
         context.data["user"] = user
         self.log.debug("Collected user \"{}\"".format(user))

@@ -5,18 +5,18 @@ import collections
 import copy
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import (
+from quadpype import (
     resources,
     style
 )
-from openpype.widgets import BaseToolDialog
-from openpype.tools.utils import (
+from quadpype.widgets import BaseToolDialog
+from quadpype.tools.utils import (
     ErrorMessageBox,
     PlaceholderLineEdit,
     MessageOverlayObject,
     PixmapLabel,
 )
-from openpype.tools.utils.lib import center_window
+from quadpype.tools.utils.lib import center_window
 
 from .constants import ResetKeySequence
 from .publish_report_viewer import PublishReportViewerWidget
@@ -50,7 +50,7 @@ class PublisherWindow(BaseToolDialog):
     publish_footer_spacer = 2
 
     def __init__(self, parent=None, controller=None, reset_on_show=None):
-        super(PublisherWindow, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("PublishWindow")
 
@@ -1093,7 +1093,7 @@ class ErrorsMessageBox(ErrorMessageBox):
         self._tabs_widget = None
         self._stack_layout = None
 
-        super(ErrorsMessageBox, self).__init__(error_title, parent)
+        super().__init__(error_title, parent)
 
         layout = self.layout()
         layout.setContentsMargins(0, 0, 0, 0)

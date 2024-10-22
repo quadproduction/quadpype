@@ -15,7 +15,7 @@ class ScreenMarquee(QtWidgets.QDialog):
     """
 
     def __init__(self, parent=None):
-        super(ScreenMarquee, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.setWindowFlags(
             QtCore.Qt.Window

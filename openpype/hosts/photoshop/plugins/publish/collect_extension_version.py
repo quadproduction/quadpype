@@ -2,19 +2,16 @@ import os
 import re
 import pyblish.api
 
-from openpype.hosts.photoshop import api as photoshop
+from quadpype.hosts.photoshop import api as photoshop
 
 
 class CollectExtensionVersion(pyblish.api.ContextPlugin):
     """ Pulls and compares version of installed extension.
 
-        It is recommended to use same extension as in provided Openpype code.
+        It is recommended to use same extension as in provided QuadPype code.
 
-        Please use Anastasiy’s Extension Manager or ZXPInstaller to update
+        Please use Anastasiy's Extension Manager or ZXPInstaller to update
         extension in case of an error.
-
-        You can locate extension.zxp in your installed Openpype code in
-        `repos/avalon-core/avalon/photoshop`
     """
     # This technically should be a validator, but other collectors might be
     # impacted with usage of obsolete extension, so collector that runs first

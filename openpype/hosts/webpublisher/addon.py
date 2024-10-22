@@ -1,11 +1,11 @@
 import os
 
-from openpype.modules import click_wrap, OpenPypeModule, IHostAddon
+from quadpype.modules import click_wrap, QuadPypeModule, IHostAddon
 
 WEBPUBLISHER_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class WebpublisherAddon(OpenPypeModule, IHostAddon):
+class WebpublisherAddon(QuadPypeModule, IHostAddon):
     name = "webpublisher"
     host_name = "webpublisher"
 
@@ -91,7 +91,7 @@ def publishfromapp(project, path, host, user=None, targets=None):
 def webserver(executable, upload_dir, host=None, port=None):
     """Start service for communication with Webpublish Front end.
 
-        OP must be congigured on a machine, eg. OPENPYPE_MONGO filled AND
+        QuadPype must be congigured on a machine, eg. QUADPYPE_MONGO filled AND
         FTRACK_BOT_API_KEY provided with api key from Ftrack.
 
         Expect "pype.club" user created on Ftrack.

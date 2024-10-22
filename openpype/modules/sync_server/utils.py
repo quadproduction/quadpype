@@ -1,7 +1,7 @@
 import os
 import time
 
-from openpype.lib import Logger
+from quadpype.lib import Logger
 
 log = Logger.get_logger("SyncServer")
 

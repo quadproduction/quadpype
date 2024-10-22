@@ -6,13 +6,13 @@ from collections import defaultdict
 import clique
 from maya import cmds
 
-from openpype.settings import get_project_settings
-from openpype.pipeline import (
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import (
     load,
     get_representation_path
 )
-from openpype.hosts.maya.api import lib
-from openpype.hosts.maya.api.pipeline import containerise
+from quadpype.hosts.maya.api import lib
+from quadpype.hosts.maya.api.pipeline import containerise
 
 
 # Do not reset these values on update but only apply on first load

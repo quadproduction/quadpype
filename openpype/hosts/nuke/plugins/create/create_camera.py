@@ -1,10 +1,10 @@
 import nuke
-from openpype.hosts.nuke.api import (
+from quadpype.hosts.nuke.api import (
     NukeCreator,
     NukeCreatorError,
     maintained_selection
 )
-from openpype.hosts.nuke.api.lib import (
+from quadpype.hosts.nuke.api.lib import (
     create_camera_node_by_version
 )
 

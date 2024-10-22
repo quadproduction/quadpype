@@ -1,10 +1,10 @@
 import os
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 PHOTOSHOP_HOST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class PhotoshopAddon(OpenPypeModule, IHostAddon):
+class PhotoshopAddon(QuadPypeModule, IHostAddon):
     name = "photoshop"
     host_name = "photoshop"
 

@@ -1,14 +1,14 @@
 
 """
-OpenPype Flame api constances
+QuadPype Flame api constances
 """
-# OpenPype marker workflow variables
-MARKER_NAME = "OpenPypeData"
+# QuadPype marker workflow variables
+MARKER_NAME = "QuadPypeData"
 MARKER_DURATION = 0
 MARKER_COLOR = "cyan"
 MARKER_PUBLISH_DEFAULT = False
 
-# OpenPype color definitions
+# QuadPype color definitions
 COLOR_MAP = {
     "red": (1.0, 0.0, 0.0),
     "orange": (1.0, 0.5, 0.0),

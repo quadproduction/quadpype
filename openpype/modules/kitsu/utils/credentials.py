@@ -4,8 +4,8 @@ import os
 from typing import Tuple
 import gazu
 
-from openpype.lib.local_settings import OpenPypeSecureRegistry
-from openpype.lib import emit_event
+from quadpype.lib.local_settings import QuadPypeSecureRegistry
+from quadpype.lib import emit_event
 
 
 def validate_credentials(
@@ -61,7 +61,7 @@ def validate_host(kitsu_url: str) -> bool:
 def clear_credentials():
     """Clear credentials in Secure Registry."""
     # Get user registry
-    user_registry = OpenPypeSecureRegistry("kitsu_user")
+    user_registry = QuadPypeSecureRegistry("kitsu_user")
 
     # Set local settings
     if user_registry.get_item("login", None) is not None:
@@ -78,7 +78,7 @@ def save_credentials(login: str, password: str):
         password (str): Kitsu user password
     """
     # Get user registry
-    user_registry = OpenPypeSecureRegistry("kitsu_user")
+    user_registry = QuadPypeSecureRegistry("kitsu_user")
 
     # Set local settings
     user_registry.set_item("login", login)
@@ -92,7 +92,7 @@ def load_credentials() -> Tuple[str, str]:
         Tuple[str, str]: (Login, Password)
     """
     # Get user registry
-    user_registry = OpenPypeSecureRegistry("kitsu_user")
+    user_registry = QuadPypeSecureRegistry("kitsu_user")
 
     return (
         user_registry.get_item("login", None),

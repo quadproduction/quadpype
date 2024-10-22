@@ -7,9 +7,9 @@ import six
 from maya import cmds
 from maya.app.renderSetup.model import renderSetup
 
-from openpype.lib import BoolDef, Logger
-from openpype.settings import get_project_settings
-from openpype.pipeline import (
+from quadpype.lib import BoolDef, Logger
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import (
     AVALON_CONTAINER_ID,
     Anatomy,
 
@@ -23,10 +23,10 @@ from openpype.pipeline import (
     LoaderPlugin,
     get_representation_path,
 )
-from openpype.pipeline.action import BuilderAction
-from openpype.pipeline.load import LoadError
-from openpype.client import get_asset_by_name
-from openpype.pipeline.create import get_subset_name
+from quadpype.pipeline.action import BuilderAction
+from quadpype.pipeline.load import LoadError
+from quadpype.client import get_asset_by_name
+from quadpype.pipeline.create import get_subset_name
 
 from . import lib
 from .lib import imprint, read
@@ -792,7 +792,7 @@ class ReferenceLoader(Loader):
     def update(self, container, representation):
         from maya import cmds
 
-        from openpype.hosts.maya.api.lib import get_container_members
+        from quadpype.hosts.maya.api.lib import get_container_members
 
         node = container["objectName"]
 
@@ -939,7 +939,7 @@ class ReferenceLoader(Loader):
         Deprecated; this functionality is replaced by `api.remove()`
 
         Arguments:
-            container (openpype:container-1.0): Which container
+            container (quadpype:container-1.0): Which container
                 to remove from scene.
 
         """
@@ -976,7 +976,7 @@ class ReferenceLoader(Loader):
     def prepare_root_value(self, file_url, project_name):
         """Replace root value with env var placeholder.
 
-        Use ${OPENPYPE_ROOT_WORK} (or any other root) instead of proper root
+        Use ${QUADPYPE_ROOT_WORK} (or any other root) instead of proper root
         value when storing referenced url into a workfile.
         Useful for remote workflows with SiteSync.
 
@@ -1125,7 +1125,7 @@ class ActionBase(BuilderAction):
     def prepare_root_value(self, file_url, project_name):
         """Replace root value with env var placeholder.
 
-        Use ${OPENPYPE_ROOT_WORK} (or any other root) instead of proper root
+        Use ${QUADPYPE_ROOT_WORK} (or any other root) instead of proper root
         value when storing referenced url into a workfile.
         Useful for remote workflows with SiteSync.
 

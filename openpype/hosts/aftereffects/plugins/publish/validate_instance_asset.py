@@ -1,11 +1,11 @@
 import pyblish.api
 
-from openpype.pipeline import get_current_asset_name
-from openpype.pipeline.publish import (
+from quadpype.pipeline import get_current_asset_name
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishXmlValidationError,
 )
-from openpype.hosts.aftereffects.api import get_stub
+from quadpype.hosts.aftereffects.api import get_stub
 
 
 class ValidateInstanceAssetRepair(pyblish.api.Action):

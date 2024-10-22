@@ -4,8 +4,8 @@ import pyblish.api
 import shotgun_api3
 from shotgun_api3.shotgun import AuthenticationFault
 
-from openpype.lib import OpenPypeSettingsRegistry
-from openpype.modules.shotgrid.lib.settings import (
+from quadpype.lib import QuadPypeSettingsRegistry
+from quadpype.modules.shotgrid.lib.settings import (
     get_shotgrid_servers,
     get_shotgrid_project_settings,
 )
@@ -55,7 +55,7 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
         if not shotgrid_server:
             self.log.error(
                 "No Shotgrid server found, please choose a credential"
-                "in script name and script key in OpenPype settings"
+                "in script name and script key in QuadPype settings"
             )
 
         shotgrid_server_setting = shotgrid_servers_settings.get(
@@ -72,21 +72,21 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
         if not shotgrid_script_name and not shotgrid_script_key:
             self.log.error(
                 "No Shotgrid api credential found, please enter "
-                "script name and script key in OpenPype settings"
+                "script name and script key in QuadPype settings"
             )
 
-        login = get_login() or os.getenv("OPENPYPE_SG_USER")
+        login = get_login() or os.getenv("QUADPYPE_SG_USER")
 
         if not login:
             self.log.error(
                 "No Shotgrid login found, please "
-                "login to shotgrid withing openpype Tray"
+                "login to shotgrid withing quadpype Tray"
             )
 
-        # Set OPENPYPE_SG_USER with login so other deadline tasks can make
+        # Set QUADPYPE_SG_USER with login so other deadline tasks can make
         # use of it
-        self.log.info("Setting OPENPYPE_SG_USER to '%s'.", login)
-        os.environ["OPENPYPE_SG_USER"] = login
+        self.log.info("Setting QUADPYPE_SG_USER to '%s'.", login)
+        os.environ["QUADPYPE_SG_USER"] = login
 
         session = shotgun_api3.Shotgun(
             base_url=shotgrid_url,
@@ -121,7 +121,7 @@ def set_shotgrid_certificate(certificate):
 
 
 def get_login():
-    reg = OpenPypeSettingsRegistry()
+    reg = QuadPypeSettingsRegistry()
     try:
         return str(reg.get_item("shotgrid_login"))
     except Exception:

@@ -8,4 +8,4 @@ class SaveWarningExc(SaveSettingsValidation):
             warnings = [warnings]
         self.warnings = warnings
         msg = " | ".join(warnings)
-        super(SaveWarningExc, self).__init__(msg)
+        super().__init__(msg)

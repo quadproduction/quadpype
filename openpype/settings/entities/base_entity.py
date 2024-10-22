@@ -15,7 +15,7 @@ from .exceptions import (
     EntitySchemaError
 )
 
-from openpype.lib import Logger
+from quadpype.lib import Logger
 
 
 @six.add_metaclass(ABCMeta)
@@ -84,7 +84,7 @@ class BaseItemEntity(BaseEntity):
     gui_type = False
 
     def __init__(self, schema_data):
-        super(BaseItemEntity, self).__init__(schema_data)
+        super().__init__(schema_data)
 
         # Parent entity
         self.parent = None
@@ -108,7 +108,7 @@ class BaseItemEntity(BaseEntity):
         self.is_group = False
         # Entity's value will be stored into file with name of it's key
         self.is_file = False
-        # Default values are not stored to an openpype file
+        # Default values are not stored to an quadpype file
         # - these must not be set through schemas directly
         self.dynamic_schema_id = None
         self.is_dynamic_schema_node = False
@@ -121,7 +121,7 @@ class BaseItemEntity(BaseEntity):
         self.file_item = None
         # Reference to `RootEntity`
         self.root_item = None
-        # Change of value requires restart of OpenPype
+        # Change of value requires restart of QuadPype
         self._require_restart_on_change = False
 
         # Entity is in hierarchy of dynamically created entity
@@ -696,7 +696,7 @@ class BaseItemEntity(BaseEntity):
     def remove_from_studio_default(self, on_change_trigger=None):
         """Remove studio overrides from entity and it's children.
 
-        Reset values to openpype's default and mark entity to not store values
+        Reset values to quadpype's default and mark entity to not store values
         as studio overrides if entity is not under group.
 
         This is wrapper method that handles on_change callbacks only when all
@@ -757,7 +757,7 @@ class BaseItemEntity(BaseEntity):
     def remove_from_project_override(self, on_change_trigger=None):
         """Remove project overrides from entity and it's children.
 
-        Reset values to studio overrides or openpype's default and mark entity
+        Reset values to studio overrides or quadpype's default and mark entity
         to not store values as project overrides if entity is not under group.
 
         This is wrapper method that handles on_change callbacks only when all
@@ -826,7 +826,7 @@ class ItemEntity(BaseItemEntity):
     }
 
     def __init__(self, schema_data, parent, is_dynamic_item=False):
-        super(ItemEntity, self).__init__(schema_data)
+        super().__init__(schema_data)
 
         self.parent = parent
         self.is_dynamic_item = is_dynamic_item
@@ -975,7 +975,7 @@ class ItemEntity(BaseItemEntity):
     def update_default_value(self, parent_values, log_invalid_types=True):
         """Fill default values on startup or on refresh.
 
-        Default values stored in `openpype` repository should update all items
+        Default values stored in `quadpype` repository should update all items
         in schema. Each item should take values for his key and set it's value
         or pass values down to children items.
 

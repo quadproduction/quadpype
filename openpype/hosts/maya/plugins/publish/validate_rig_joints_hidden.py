@@ -2,9 +2,9 @@ from maya import cmds
 
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api import lib
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api import lib
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
     PublishValidationError,
@@ -28,7 +28,7 @@ class ValidateRigJointsHidden(pyblish.api.InstancePlugin,
     hosts = ['maya']
     families = ['rig']
     label = "Joints Hidden"
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction,
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction,
                RepairAction]
     optional = True
 

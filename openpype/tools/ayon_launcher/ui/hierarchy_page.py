@@ -1,12 +1,12 @@
 import qtawesome
 from qtpy import QtWidgets, QtCore
 
-from openpype.tools.utils import (
+from quadpype.tools.utils import (
     PlaceholderLineEdit,
     SquareButton,
     RefreshButton,
 )
-from openpype.tools.ayon_utils.widgets import (
+from quadpype.tools.ayon_utils.widgets import (
     ProjectsCombobox,
     FoldersWidget,
     TasksWidget,
@@ -15,7 +15,7 @@ from openpype.tools.ayon_utils.widgets import (
 
 class HierarchyPage(QtWidgets.QWidget):
     def __init__(self, controller, parent):
-        super(HierarchyPage, self).__init__(parent)
+        super().__init__(parent)
 
         # Header
         header_widget = QtWidgets.QWidget(self)

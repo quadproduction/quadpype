@@ -44,7 +44,7 @@ class WireTapCom(object):
         self.group_name = group_name or "staff"
 
         # wiretap tools dir path
-        self.wiretap_tools_dir = os.getenv("OPENPYPE_WIRETAP_TOOLS")
+        self.wiretap_tools_dir = os.getenv("QUADPYPE_WIRETAP_TOOLS")
 
         # initialize WireTap client
         WireTapClientInit()
@@ -61,7 +61,7 @@ class WireTapCom(object):
 
     def get_launch_args(
             self, project_name, project_data, user_name, *args, **kwargs):
-        """Forming launch arguments for OpenPype launcher.
+        """Forming launch arguments for QuadPype launcher.
 
         Args:
             project_name (str): name of project

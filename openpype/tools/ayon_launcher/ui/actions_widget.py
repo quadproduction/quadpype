@@ -3,8 +3,8 @@ import collections
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.tools.flickcharm import FlickCharm
-from openpype.tools.ayon_utils.widgets import get_qt_icon
+from quadpype.tools.flickcharm import FlickCharm
+from quadpype.tools.ayon_utils.widgets import get_qt_icon
 
 from .resources import get_options_image_path
 
@@ -44,7 +44,7 @@ class ActionsQtModel(QtGui.QStandardItemModel):
     refreshed = QtCore.Signal()
 
     def __init__(self, controller):
-        super(ActionsQtModel, self).__init__()
+        super().__init__()
 
         controller.register_event_callback(
             "selection.project.changed",
@@ -189,7 +189,7 @@ class ActionDelegate(QtWidgets.QStyledItemDelegate):
     _cached_extender = {}
 
     def __init__(self, *args, **kwargs):
-        super(ActionDelegate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._anim_start_color = QtGui.QColor(178, 255, 246)
         self._anim_end_color = QtGui.QColor(5, 44, 50)
 
@@ -292,7 +292,7 @@ class ActionDelegate(QtWidgets.QStyledItemDelegate):
 
 class ActionsWidget(QtWidgets.QWidget):
     def __init__(self, controller, parent):
-        super(ActionsWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self._controller = controller
 

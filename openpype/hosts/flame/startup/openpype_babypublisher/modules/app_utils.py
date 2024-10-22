@@ -8,7 +8,7 @@ PLUGIN_DIR = os.path.dirname(os.path.dirname(__file__))
 EXPORT_PRESETS_DIR = os.path.join(PLUGIN_DIR, "export_preset")
 
 CONFIG_DIR = os.path.join(os.path.expanduser(
-    "~/.openpype"), "openpype_babypublisher")
+    "~/.quadpype"), "quadpype_babypublisher")
 
 
 @contextmanager
@@ -117,7 +117,7 @@ def export_thumbnail(sequence, tempdir_path, data):
     import flame
     export_preset = os.path.join(
         EXPORT_PRESETS_DIR,
-        "openpype_seg_thumbnails_jpg.xml"
+        "quadpype_seg_thumbnails_jpg.xml"
     )
     new_path = configure_preset(export_preset, data)
     poster_frame_exporter = flame.PyExporter()
@@ -129,7 +129,7 @@ def export_video(sequence, tempdir_path, data):
     import flame
     export_preset = os.path.join(
         EXPORT_PRESETS_DIR,
-        "openpype_seg_video_h264.xml"
+        "quadpype_seg_video_h264.xml"
     )
     new_path = configure_preset(export_preset, data)
     poster_frame_exporter = flame.PyExporter()

@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating workfiles."""
-from openpype.hosts.houdini.api import plugin
-from openpype.hosts.houdini.api.lib import read, imprint
-from openpype.hosts.houdini.api.pipeline import CONTEXT_CONTAINER
-from openpype.pipeline import CreatedInstance, AutoCreator
-from openpype.client import get_asset_by_name
+from quadpype.hosts.houdini.api import plugin
+from quadpype.hosts.houdini.api.lib import read, imprint
+from quadpype.hosts.houdini.api.pipeline import CONTEXT_CONTAINER
+from quadpype.pipeline import CreatedInstance, AutoCreator
+from quadpype.client import get_asset_by_name
 import hou
 
 
 class CreateWorkfile(plugin.HoudiniCreatorBase, AutoCreator):
     """Workfile auto-creator."""
-    identifier = "io.openpype.creators.houdini.workfile"
+    identifier = "io.quadpype.creators.houdini.workfile"
     label = "Workfile"
     family = "workfile"
     icon = "fa5.file"

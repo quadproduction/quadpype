@@ -45,7 +45,7 @@ class TemplateMissingKey(Exception):
 
     def __init__(self, parents):
         parent_join = "".join(["[\"{0}\"]".format(key) for key in parents])
-        super(TemplateMissingKey, self).__init__(
+        super().__init__(
             self.msg.format(parent_join)
         )
 
@@ -75,7 +75,7 @@ class TemplateUnsolved(Exception):
             missing_keys_msg = self.missing_keys_msg.format(
                 ", ".join(missing_keys)
             )
-        super(TemplateUnsolved, self).__init__(
+        super().__init__(
             self.msg.format(template, missing_keys_msg, invalid_types_msg)
         )
 
@@ -449,7 +449,7 @@ class TemplatesResultDict(dict):
     """Holds and wrap TemplateResults for easy bug report."""
 
     def __init__(self, in_data, key=None, parent=None, strict=None):
-        super(TemplatesResultDict, self).__init__()
+        super().__init__()
         for _key, _value in in_data.items():
             if isinstance(_value, dict):
                 _value = self.__class__(_value, _key, self)

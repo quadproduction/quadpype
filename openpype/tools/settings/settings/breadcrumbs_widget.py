@@ -8,7 +8,7 @@ class BreadcrumbItem(QtGui.QStandardItem):
     def __init__(self, *args, **kwargs):
         self._display_value = None
         self._edit_value = None
-        super(BreadcrumbItem, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def data(self, role=None):
         if role == QtCore.Qt.DisplayRole:
@@ -41,7 +41,7 @@ class BreadcrumbItem(QtGui.QStandardItem):
 
 class BreadcrumbsModel(QtGui.QStandardItemModel):
     def __init__(self):
-        super(BreadcrumbsModel, self).__init__()
+        super().__init__()
         self.current_path = ""
 
         self.reset()
@@ -57,7 +57,7 @@ class SettingsBreadcrumbs(BreadcrumbsModel):
         self.entities_by_path = {}
         self.dynamic_paths = set()
 
-        super(SettingsBreadcrumbs, self).__init__()
+        super().__init__()
 
     def set_entity(self, entity):
         self.entities_by_path = {}
@@ -169,7 +169,7 @@ class ProjectSettingsBreadcrumbs(SettingsBreadcrumbs):
 
 class BreadcrumbsProxy(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
-        super(BreadcrumbsProxy, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._current_path = ""
 
@@ -198,7 +198,7 @@ class BreadcrumbsProxy(QtCore.QSortFilterProxyModel):
 
 class BreadcrumbsHintMenu(QtWidgets.QMenu):
     def __init__(self, model, path_prefix, parent):
-        super(BreadcrumbsHintMenu, self).__init__(parent)
+        super().__init__(parent)
 
         self._path_prefix = path_prefix
         self._model = model
@@ -237,7 +237,7 @@ class BreadcrumbsPathInput(QtWidgets.QLineEdit):
     confirmed = QtCore.Signal()
 
     def __init__(self, model, proxy_model, parent):
-        super(BreadcrumbsPathInput, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("BreadcrumbsPathInput")
 
@@ -314,7 +314,7 @@ class BreadcrumbsButton(QtWidgets.QToolButton):
     path_selected = QtCore.Signal(str)
 
     def __init__(self, path, model, parent):
-        super(BreadcrumbsButton, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("BreadcrumbsButton")
 
@@ -366,7 +366,7 @@ class BreadcrumbsAddressBar(QtWidgets.QFrame):
     path_edited = QtCore.Signal(str)
 
     def __init__(self, parent=None):
-        super(BreadcrumbsAddressBar, self).__init__(parent)
+        super().__init__(parent)
 
         self.setAutoFillBackground(True)
         self.setFrameShape(QtWidgets.QFrame.StyledPanel)

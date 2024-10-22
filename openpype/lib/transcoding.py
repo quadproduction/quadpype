@@ -266,7 +266,7 @@ def parse_oiio_xml_output(xml_string, logger=None):
     #   e.g. "&#01;"
     # WARNING: this will affect even valid character entities. If you need
     #   those values correctly, this must take care of valid character ranges.
-    #   See https://github.com/pypeclub/OpenPype/pull/2729
+    #   See https://github.com/quadproduction/quadpype/pull/2729
     matches = XML_CHAR_REF_REGEX_HEX.findall(xml_string)
     for match in matches:
         new_value = match.replace("&", "&amp;")
@@ -559,9 +559,9 @@ def convert_for_ffmpeg(
         logger = logging.getLogger(__name__)
 
     logger.warning((
-        "DEPRECATED: 'openpype.lib.transcoding.convert_for_ffmpeg' is"
+        "DEPRECATED: 'quadpype.lib.transcoding.convert_for_ffmpeg' is"
         " deprecated function of conversion for FFMpeg. Please replace usage"
-        " with 'openpype.lib.transcoding.convert_input_paths_for_ffmpeg'"
+        " with 'quadpype.lib.transcoding.convert_input_paths_for_ffmpeg'"
     ))
 
     ext = os.path.splitext(first_input_path)[1].lower()

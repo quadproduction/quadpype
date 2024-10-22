@@ -2,7 +2,7 @@ import copy
 
 from qtpy import QtWidgets, QtCore
 
-from openpype.lib.attribute_definitions import (
+from quadpype.lib.attribute_definitions import (
     AbstractAttrDef,
     UnknownDef,
     HiddenDef,
@@ -15,13 +15,13 @@ from openpype.lib.attribute_definitions import (
     UISeparatorDef,
     UILabelDef
 )
-from openpype.tools.utils import (
+from quadpype.tools.utils import (
     CustomTextComboBox,
     FocusSpinBox,
     FocusDoubleSpinBox,
     MultiSelectionComboBox,
 )
-from openpype.widgets.nice_checkbox import NiceCheckbox
+from quadpype.widgets.nice_checkbox import NiceCheckbox
 
 from .files_widget import FilesWidget
 
@@ -83,7 +83,7 @@ class AttributeDefinitionsWidget(QtWidgets.QWidget):
     """
 
     def __init__(self, attr_defs=None, parent=None):
-        super(AttributeDefinitionsWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self._widgets = []
         self._current_keys = set()
@@ -194,7 +194,7 @@ class _BaseAttrDefWidget(QtWidgets.QWidget):
     value_changed = QtCore.Signal(object, str)
 
     def __init__(self, attr_def, parent):
-        super(_BaseAttrDefWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.attr_def = attr_def
 
@@ -255,7 +255,7 @@ class ClickableLineEdit(QtWidgets.QLineEdit):
     clicked = QtCore.Signal()
 
     def __init__(self, text, parent):
-        super(ClickableLineEdit, self).__init__(parent)
+        super().__init__(parent)
         self.setText(text)
         self.setReadOnly(True)
 
@@ -487,7 +487,7 @@ class BoolAttrWidget(_BaseAttrDefWidget):
 class EnumAttrWidget(_BaseAttrDefWidget):
     def __init__(self, *args, **kwargs):
         self._multivalue = False
-        super(EnumAttrWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def multiselection(self):

@@ -1,10 +1,10 @@
 import os
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 HOST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class FlameAddon(OpenPypeModule, IHostAddon):
+class FlameAddon(QuadPypeModule, IHostAddon):
     name = "flame"
     host_name = "flame"
 

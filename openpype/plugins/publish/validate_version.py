@@ -1,11 +1,11 @@
 import pyblish.api
-from openpype.pipeline.publish import PublishValidationError
+from quadpype.pipeline.publish import PublishValidationError
 
 
 class ValidateVersion(pyblish.api.InstancePlugin):
     """Validate instance version.
 
-    OpenPype does not allow overwriting previously published versions.
+    QuadPype does not allow overwriting previously published versions.
     """
 
     order = pyblish.api.ValidatorOrder

@@ -36,7 +36,7 @@ class PublishFrame(QtWidgets.QWidget):
     details_page_requested = QtCore.Signal()
 
     def __init__(self, controller, borders, parent):
-        super(PublishFrame, self).__init__(parent)
+        super().__init__(parent)
 
         # Bottom part of widget where process and callback buttons are showed
         # - QFrame used to be able set background using stylesheets easily

@@ -1,6 +1,6 @@
 import pyblish.api
 
-from openpype.pipeline.publish import KnownPublishError
+from quadpype.pipeline.publish import KnownPublishError
 
 
 class CollectOutputSOPPath(pyblish.api.InstancePlugin):

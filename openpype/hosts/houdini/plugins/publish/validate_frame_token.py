@@ -1,6 +1,6 @@
 import pyblish.api
 
-from openpype.hosts.houdini.api import lib
+from quadpype.hosts.houdini.api import lib
 import hou
 
 

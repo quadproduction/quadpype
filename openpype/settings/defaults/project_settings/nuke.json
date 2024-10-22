@@ -211,34 +211,34 @@
         }
     },
     "scriptsmenu": {
-        "name": "OpenPype Tools",
+        "name": "QuadPype Tools",
         "definition": [
             {
                 "type": "action",
                 "sourcetype": "python",
-                "title": "OpenPype Docs",
-                "command": "import webbrowser;webbrowser.open(url='https://openpype.io/docs/artist_hosts_nuke_tut')",
-                "tooltip": "Open the OpenPype Nuke user doc page"
+                "title": "QuadPype Docs",
+                "command": "import webbrowser;webbrowser.open(url='https://quadpype.io/docs/artist_hosts_nuke_tut')",
+                "tooltip": "Open the QuadPype Nuke user doc page"
             },
             {
                 "type": "action",
                 "sourcetype": "python",
                 "title": "Set Frame Start (Read Node)",
-                "command": "from openpype.hosts.nuke.startup.frame_setting_for_read_nodes import main;main();",
+                "command": "from quadpype.hosts.nuke.startup.frame_setting_for_read_nodes import main;main();",
                 "tooltip": "Set frame start for read node(s)"
             },
             {
                 "type": "action",
                 "sourcetype": "python",
                 "title": "Set non publish output for Write Node",
-                "command": "from openpype.hosts.nuke.startup.custom_write_node import main;main();",
-                "tooltip": "Open the OpenPype Nuke user doc page"
+                "command": "from quadpype.hosts.nuke.startup.custom_write_node import main;main();",
+                "tooltip": "Open the QuadPype Nuke user doc page"
             }
         ]
     },
     "gizmo": [
         {
-            "toolbar_menu_name": "OpenPype Gizmo",
+            "toolbar_menu_name": "QuadPype Gizmo",
             "gizmo_source_dir": {
                 "windows": [],
                 "darwin": [],
@@ -256,7 +256,7 @@
                         {
                             "sourcetype": "python",
                             "title": "Gizmo Note",
-                            "command": "nuke.nodes.StickyNote(label='You can create your own toolbar menu in the Nuke GizmoMenu of OpenPype')",
+                            "command": "nuke.nodes.StickyNote(label='You can create your own toolbar menu in the Nuke GizmoMenu of QuadPype')",
                             "icon": "",
                             "shortcut": ""
                         }

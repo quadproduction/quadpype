@@ -6,7 +6,7 @@ from .color_view import draw_checkerboard_tile
 
 class AlphaSlider(QtWidgets.QSlider):
     def __init__(self, *args, **kwargs):
-        super(AlphaSlider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._mouse_clicked = False
         self._handle_size = 0
 
@@ -149,7 +149,7 @@ class AlphaInputs(QtWidgets.QWidget):
     alpha_changed = QtCore.Signal(int)
 
     def __init__(self, parent=None):
-        super(AlphaInputs, self).__init__(parent)
+        super().__init__(parent)
 
         self._block_changes = False
         self.alpha_value = None
@@ -218,7 +218,7 @@ class RGBInputs(QtWidgets.QWidget):
     value_changed = QtCore.Signal()
 
     def __init__(self, color, parent=None):
-        super(RGBInputs, self).__init__(parent)
+        super().__init__(parent)
 
         self._block_changes = False
 
@@ -296,7 +296,7 @@ class CMYKInputs(QtWidgets.QWidget):
     value_changed = QtCore.Signal()
 
     def __init__(self, color, parent=None):
-        super(CMYKInputs, self).__init__(parent)
+        super().__init__(parent)
 
         self.color = color
 
@@ -383,7 +383,7 @@ class HEXInputs(QtWidgets.QWidget):
     value_changed = QtCore.Signal()
 
     def __init__(self, color, parent=None):
-        super(HEXInputs, self).__init__(parent)
+        super().__init__(parent)
         self.color = color
 
         input_field = QtWidgets.QLineEdit(self)
@@ -427,7 +427,7 @@ class HSVInputs(QtWidgets.QWidget):
     value_changed = QtCore.Signal()
 
     def __init__(self, color, parent=None):
-        super(HSVInputs, self).__init__(parent)
+        super().__init__(parent)
 
         self._block_changes = False
 
@@ -501,7 +501,7 @@ class HSLInputs(QtWidgets.QWidget):
     value_changed = QtCore.Signal()
 
     def __init__(self, color, parent=None):
-        super(HSLInputs, self).__init__(parent)
+        super().__init__(parent)
 
         self._block_changes = False
 
@@ -575,7 +575,7 @@ class ColorInputsWidget(QtWidgets.QWidget):
     color_changed = QtCore.Signal(QtGui.QColor)
 
     def __init__(self, parent=None, **kwargs):
-        super(ColorInputsWidget, self).__init__(parent)
+        super().__init__(parent)
 
         color = QtGui.QColor()
 

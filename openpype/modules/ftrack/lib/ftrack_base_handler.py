@@ -6,11 +6,11 @@ import uuid
 import datetime
 import traceback
 import time
-from openpype.lib import Logger
-from openpype.settings import get_project_settings, PROJECT_SETTINGS_KEY
+from quadpype.lib import Logger
+from quadpype.settings import get_project_settings, PROJECT_SETTINGS_KEY
 
 import ftrack_api
-from openpype_modules.ftrack import ftrack_server
+from quadpype_modules.ftrack import ftrack_server
 
 
 class MissingPermission(Exception):
@@ -593,7 +593,7 @@ class BaseHandler(object):
         ).one()
 
     def get_project_settings_from_event(self, event, project_name):
-        """Load or fill OpenPype's project settings from event data.
+        """Load or fill QuadPype's project settings from event data.
 
         Project data are stored by ftrack id because in most cases it is
         easier to access project id than project name.
@@ -656,7 +656,7 @@ class BaseHandler(object):
 
         # Create temp file where traceback will be stored
         temp_obj = tempfile.NamedTemporaryFile(
-            mode="w", prefix="openpype_ftrack_", suffix=".txt", delete=False
+            mode="w", prefix="quadpype_ftrack_", suffix=".txt", delete=False
         )
         temp_obj.close()
         temp_filepath = temp_obj.name

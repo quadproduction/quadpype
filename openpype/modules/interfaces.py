@@ -2,35 +2,35 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 
 import six
 
-from openpype import resources
+from quadpype import resources
 
 
-class _OpenPypeInterfaceMeta(ABCMeta):
-    """OpenPypeInterface meta class to print proper string."""
+class _QuadPypeInterfaceMeta(ABCMeta):
+    """QuadPypeInterface meta class to print proper string."""
 
     def __str__(self):
-        return "<'OpenPypeInterface.{}'>".format(self.__name__)
+        return "<'QuadPypeInterface.{}'>".format(self.__name__)
 
     def __repr__(self):
         return str(self)
 
 
-@six.add_metaclass(_OpenPypeInterfaceMeta)
-class OpenPypeInterface:
+@six.add_metaclass(_QuadPypeInterfaceMeta)
+class QuadPypeInterface:
     """Base class of Interface that can be used as Mixin with abstract parts.
 
-    This is way how OpenPype module or addon can tell OpenPype that contain
+    This is way how QuadPype module or addon can tell QuadPype that contain
     implementation for specific functionality.
 
-    Child classes of OpenPypeInterface may be used as mixin in different
-    OpenPype modules which means they have to have implemented methods defined
+    Child classes of QuadPypeInterface may be used as mixin in different
+    QuadPype modules which means they have to have implemented methods defined
     in the interface. By default, interface does not have any abstract parts.
     """
 
     pass
 
 
-class IPluginPaths(OpenPypeInterface):
+class IPluginPaths(QuadPypeInterface):
     """Module has plugin paths to return.
 
     Expected result is dictionary with keys "publish", "create", "load",
@@ -140,7 +140,7 @@ class IPluginPaths(OpenPypeInterface):
         return self._get_plugin_paths_by_type("builder")
 
 
-class ILaunchHookPaths(OpenPypeInterface):
+class ILaunchHookPaths(QuadPypeInterface):
     """Module has launch hook paths to return.
 
     Modules don't have to inherit from this interface (changed 8.11.2022).
@@ -151,7 +151,7 @@ class ILaunchHookPaths(OpenPypeInterface):
     ["path/to/launch_hooks_dir"]
 
     Deprecated:
-        This interface is not needed since OpenPype 3.14.*. Addon just have to
+        This interface is not needed since QuadPype 3.14.*. Addon just have to
         implement 'get_launch_hook_paths' which can expect Application object
         or nothing as argument.
 
@@ -179,7 +179,7 @@ class ILaunchHookPaths(OpenPypeInterface):
         pass
 
 
-class ITrayModule(OpenPypeInterface):
+class ITrayModule(QuadPypeInterface):
     """Module has special procedures when used in Pype Tray.
 
     IMPORTANT:
@@ -424,7 +424,7 @@ class ITrayService(ITrayModule):
             self.menu_action.setIcon(self.get_icon_idle())
 
 
-class ISettingsChangeListener(OpenPypeInterface):
+class ISettingsChangeListener(QuadPypeInterface):
     """Module tries to listen to settings changes.
 
     Only settings changes in the current process are propagated.
@@ -451,7 +451,7 @@ class ISettingsChangeListener(OpenPypeInterface):
         pass
 
 
-class IHostAddon(OpenPypeInterface):
+class IHostAddon(QuadPypeInterface):
     """Addon which also contain a host implementation."""
 
     @abstractproperty

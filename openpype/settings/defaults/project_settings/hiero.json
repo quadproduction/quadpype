@@ -78,14 +78,14 @@
     },
     "filters": {},
     "scriptsmenu": {
-        "name": "OpenPype Tools",
+        "name": "QuadPype Tools",
         "definition": [
             {
                 "type": "action",
                 "sourcetype": "python",
-                "title": "OpenPype Docs",
-                "command": "import webbrowser;webbrowser.open(url='https://openpype.io/docs/artist_hosts_hiero')",
-                "tooltip": "Open the OpenPype Hiero user doc page"
+                "title": "QuadPype Docs",
+                "command": "import webbrowser;webbrowser.open(url='https://quadpype.io/docs/artist_hosts_hiero')",
+                "tooltip": "Open the QuadPype Hiero user doc page"
             }
         ]
     }

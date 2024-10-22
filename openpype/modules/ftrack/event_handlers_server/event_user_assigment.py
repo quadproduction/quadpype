@@ -1,11 +1,11 @@
 import re
 import subprocess
 
-from openpype.client import get_asset_by_id, get_asset_by_name
-from openpype.settings import get_project_settings
-from openpype.pipeline import Anatomy
-from openpype_modules.ftrack.lib import BaseEvent
-from openpype_modules.ftrack.lib.avalon_sync import CUST_ATTR_ID_KEY
+from quadpype.client import get_asset_by_id, get_asset_by_name
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import Anatomy
+from quadpype_modules.ftrack.lib import BaseEvent
+from quadpype_modules.ftrack.lib.avalon_sync import CUST_ATTR_ID_KEY
 
 
 class UserAssigmentEvent(BaseEvent):
@@ -132,7 +132,7 @@ class UserAssigmentEvent(BaseEvent):
         """
         Get data to fill template from task
 
-        .. seealso:: :mod:`openpype.pipeline.Anatomy`
+        .. seealso:: :mod:`quadpype.pipeline.Anatomy`
 
         :param task: Task entity
         :type task: dict

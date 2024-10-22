@@ -3,7 +3,7 @@ import os
 from maya import cmds
 
 import pyblish.api
-from openpype.hosts.maya.api.lib import get_attribute_input
+from quadpype.hosts.maya.api.lib import get_attribute_input
 
 
 class CollectXgen(pyblish.api.InstancePlugin):

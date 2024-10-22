@@ -13,7 +13,7 @@ class ActionDelegate(QtWidgets.QStyledItemDelegate):
     extender_fg = QtGui.QColor(255, 255, 255, 160)
 
     def __init__(self, group_roles, *args, **kwargs):
-        super(ActionDelegate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.group_roles = group_roles
         self._anim_start_color = QtGui.QColor(178, 255, 246)
         self._anim_end_color = QtGui.QColor(5, 44, 50)

@@ -1,13 +1,13 @@
 import pyblish.api
 
 from maya import cmds
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
-from openpype.hosts.maya.api.lib_rendersetup import (
+from quadpype.hosts.maya.api.lib_rendersetup import (
     get_attr_overrides,
     get_attr_in_layer,
 )

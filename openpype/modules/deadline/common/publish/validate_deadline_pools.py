@@ -1,10 +1,10 @@
 import pyblish.api
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     PublishXmlValidationError,
     OptionalPyblishPluginMixin
 )
-from openpype.modules.deadline.deadline_module import DeadlineModule
+from quadpype.modules.deadline.deadline_module import DeadlineModule
 
 
 class ValidateDeadlinePools(OptionalPyblishPluginMixin,

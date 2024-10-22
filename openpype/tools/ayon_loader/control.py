@@ -3,10 +3,10 @@ import uuid
 
 import ayon_api
 
-from openpype.lib.events import QueuedEventSystem
-from openpype.pipeline import Anatomy, get_current_context
-from openpype.host import ILoadHost
-from openpype.tools.ayon_utils.models import (
+from quadpype.lib.events import QueuedEventSystem
+from quadpype.pipeline import Anatomy, get_current_context
+from quadpype.host import ILoadHost
+from quadpype.tools.ayon_utils.models import (
     ProjectsModel,
     HierarchyModel,
     NestedCacheItem,
@@ -352,7 +352,7 @@ class LoaderController(BackendLoaderController, FrontendLoaderController):
                 repre_id = container.get("representation")
                 # Ignore invalid representation ids.
                 # - invalid representation ids may be available if e.g. is
-                #   opened scene from OpenPype whe 'ObjectId' was used instead
+                #   opened scene from QuadPype whe 'ObjectId' was used instead
                 #   of 'uuid'.
                 # NOTE: Server call would crash if there is any invalid id.
                 #   That would cause crash we won't get any information.

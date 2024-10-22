@@ -1,8 +1,8 @@
 import pyblish.api
 
 import hou
-from openpype.pipeline.publish import RepairAction
-from openpype.hosts.houdini.api import lib
+from quadpype.pipeline.publish import RepairAction
+from quadpype.hosts.houdini.api import lib
 
 
 class CollectRemotePublishSettings(pyblish.api.ContextPlugin):

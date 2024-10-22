@@ -1,11 +1,11 @@
-from openpype.hosts.maya.api import plugin
-from openpype.lib import BoolDef
+from quadpype.hosts.maya.api import plugin
+from quadpype.lib import BoolDef
 
 
 class CreateLayout(plugin.MayaCreator):
     """A grouped package of loaded content"""
 
-    identifier = "io.openpype.creators.maya.layout"
+    identifier = "io.quadpype.creators.maya.layout"
     label = "Layout"
     family = "layout"
     icon = "cubes"

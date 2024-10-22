@@ -64,7 +64,7 @@ class QtColorTriangle(QtWidgets.QWidget):
     hue_offset = 90
 
     def __init__(self, parent=None):
-        super(QtColorTriangle, self).__init__(parent)
+        super().__init__(parent)
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Minimum,
             QtWidgets.QSizePolicy.Minimum

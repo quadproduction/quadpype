@@ -16,7 +16,7 @@ from .tools import (
 )
 
 from .nice_progress_bar import NiceProgressBar
-from .user_settings import OpenPypeSecureRegistry
+from .user_settings import QuadPypeSecureRegistry
 from .tools import load_stylesheet
 from .version import __version__
 
@@ -25,7 +25,7 @@ class ButtonWithOptions(QtWidgets.QFrame):
     option_clicked = QtCore.Signal(str)
 
     def __init__(self, commands, parent=None):
-        super(ButtonWithOptions, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("ButtonWithOptions")
 
@@ -85,7 +85,7 @@ class ButtonWithOptions(QtWidgets.QFrame):
 
 class ConsoleWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(ConsoleWidget, self).__init__(parent)
+        super().__init__(parent)
 
         # style for normal and error console text
         default_console_style = QtGui.QTextCharFormat()
@@ -174,7 +174,7 @@ class InstallDialog(QtWidgets.QDialog):
     ])
 
     def __init__(self, parent=None):
-        super(InstallDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle(
             f"QuadPype Igniter {__version__}"
@@ -200,12 +200,12 @@ class InstallDialog(QtWidgets.QDialog):
         # Set logo as icon of the window
         self.setWindowIcon(QtGui.QIcon(pixmap_app_logo))
 
-        secure_registry = OpenPypeSecureRegistry("mongodb")
+        secure_registry = QuadPypeSecureRegistry("mongodb")
         mongo_url = ""
         try:
             mongo_url = (
-                os.getenv("OPENPYPE_MONGO", "")
-                or secure_registry.get_item("openPypeMongo")
+                os.getenv("QUADPYPE_MONGO", "")
+                or secure_registry.get_item("quadpypeMongo")
             )
         except ValueError:
             pass
@@ -295,7 +295,7 @@ class InstallDialog(QtWidgets.QDialog):
         bottom_layout = QtWidgets.QHBoxLayout(bottom_widget)
         bottom_layout.setContentsMargins(0, 0, 0, 0)
         bottom_layout.setAlignment(QtCore.Qt.AlignHCenter)
-        bottom_layout.addWidget(openpype_logo_label, 0)
+        bottom_layout.addWidget(quadpype_logo_label, 0)
         bottom_layout.addStretch(1)
         bottom_layout.addWidget(btns_widget, 0)
 
@@ -350,22 +350,22 @@ class InstallDialog(QtWidgets.QDialog):
             return
 
         if option == "run":
-            self._run_openpype()
+            self._run_quadpype()
         elif option == "run_from_code":
-            self._run_openpype_from_code()
+            self._run_quadpype_from_code()
         else:
             raise AssertionError("BUG: Unknown variant \"{}\"".format(option))
 
-    def _run_openpype_from_code(self):
-        os.environ["OPENPYPE_MONGO"] = self.mongo_url
+    def _run_quadpype_from_code(self):
+        os.environ["QUADPYPE_MONGO"] = self.mongo_url
         try:
-            self._secure_registry.set_item("openPypeMongo", self.mongo_url)
+            self._secure_registry.set_item("quadpypeMongo", self.mongo_url)
         except ValueError:
             print("Couldn't save Mongo URL to keyring")
 
         self.done(2)
 
-    def _run_openpype(self):
+    def _run_quadpype(self):
         """Start install process.
 
         This will once again validate entered path and mongo if ok, start

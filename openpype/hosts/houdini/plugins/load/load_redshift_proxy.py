@@ -1,11 +1,11 @@
 import os
 import re
-from openpype.pipeline import (
+from quadpype.pipeline import (
     load,
     get_representation_path,
 )
-from openpype.hosts.houdini.api import pipeline
-from openpype.pipeline.load import LoadError
+from quadpype.hosts.houdini.api import pipeline
+from quadpype.pipeline.load import LoadError
 
 import hou
 

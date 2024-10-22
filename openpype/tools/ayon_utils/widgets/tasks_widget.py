@@ -1,7 +1,7 @@
 from qtpy import QtWidgets, QtGui, QtCore
 
-from openpype.style import get_disabled_entity_icon_color
-from openpype.tools.utils import DeselectableTreeView
+from quadpype.style import get_disabled_entity_icon_color
+from quadpype.tools.utils import DeselectableTreeView
 
 from .utils import RefreshThread, get_qt_icon
 
@@ -22,7 +22,7 @@ class TasksQtModel(QtGui.QStandardItemModel):
     refreshed = QtCore.Signal()
 
     def __init__(self, controller):
-        super(TasksQtModel, self).__init__()
+        super().__init__()
 
         self._controller = controller
 
@@ -305,7 +305,7 @@ class TasksWidget(QtWidgets.QWidget):
     selection_changed = QtCore.Signal()
 
     def __init__(self, controller, parent, handle_expected_selection=False):
-        super(TasksWidget, self).__init__(parent)
+        super().__init__(parent)
 
         tasks_view = DeselectableTreeView(self)
         tasks_view.setIndentation(0)

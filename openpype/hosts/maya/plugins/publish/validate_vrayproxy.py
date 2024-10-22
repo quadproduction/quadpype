@@ -1,7 +1,7 @@
 import pyblish.api
 
-from openpype.pipeline import KnownPublishError
-from openpype.pipeline.publish import OptionalPyblishPluginMixin
+from quadpype.pipeline import KnownPublishError
+from quadpype.pipeline.publish import OptionalPyblishPluginMixin
 
 
 class ValidateVrayProxy(pyblish.api.InstancePlugin,

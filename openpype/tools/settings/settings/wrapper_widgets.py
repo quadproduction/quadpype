@@ -5,12 +5,12 @@ from .widgets import (
     ExpandingWidget,
     GridLabelWidget
 )
-from openpype.tools.settings import CHILD_OFFSET
+from quadpype.tools.settings import CHILD_OFFSET
 
 
 class WrapperWidget(QtWidgets.QWidget):
     def __init__(self, schema_data, parent=None):
-        super(WrapperWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.entity = None
         self.id = uuid4()

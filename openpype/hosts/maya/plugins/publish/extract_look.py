@@ -15,16 +15,16 @@ import pyblish.api
 
 from maya import cmds  # noqa
 
-from openpype.lib import (
+from quadpype.lib import (
     find_executable,
     source_hash,
     run_subprocess,
     get_oiio_tool_args,
     ToolNotFoundError,
 )
-from openpype.settings import PROJECT_SETTINGS_KEY, SYSTEM_SETTINGS_KEY
-from openpype.pipeline import legacy_io, publish, KnownPublishError
-from openpype.hosts.maya.api import lib
+from quadpype.settings import PROJECT_SETTINGS_KEY, SYSTEM_SETTINGS_KEY
+from quadpype.pipeline import legacy_io, publish, KnownPublishError
+from quadpype.hosts.maya.api import lib
 
 # Modes for transfer
 COPY = 1
@@ -39,7 +39,7 @@ class TextureResult(object):
     # Colorspace of the resulting texture. This might not be the input
     # colorspace of the texture if a TextureProcessor has processed the file.
     colorspace = attr.ib()
-    # Hash generated for the texture using openpype.lib.source_hash
+    # Hash generated for the texture using quadpype.lib.source_hash
     file_hash = attr.ib()
     # The transfer mode, e.g. COPY or HARDLINK
     transfer_mode = attr.ib()
@@ -104,11 +104,11 @@ class TextureProcessor:
         self.log = log
 
     def apply_settings(self, system_settings, project_settings):
-        """Apply OpenPype system/project settings to the TextureProcessor
+        """Apply QuadPype system/project settings to the TextureProcessor
 
         Args:
-            system_settings (dict): OpenPype system settings
-            project_settings (dict): OpenPype project settings
+            system_settings (dict): QuadPype system settings
+            project_settings (dict): QuadPype project settings
 
         Returns:
             None
@@ -246,7 +246,7 @@ class MakeTX(TextureProcessor):
     extension = ".tx"
 
     def __init__(self, log=None):
-        super(MakeTX, self).__init__(log=log)
+        super().__init__(log=log)
         self.extra_args = []
 
     def apply_settings(self, system_settings, project_settings):
@@ -277,7 +277,7 @@ class MakeTX(TextureProcessor):
         """Process the texture.
 
         This function requires the `maketx` executable to be available in an
-        OpenImageIO toolset detectable by OpenPype.
+        OpenImageIO toolset detectable by QuadPype.
 
         Args:
             source (str): Path to source file.

@@ -208,7 +208,7 @@
                                     "DraftTileAssembler": "Draft Tile Assembler"
                                 },
                                 {
-                                    "OpenPypeTileAssembler": "OpenPype Tile Assembler"
+                                    "QuadPypeTileAssembler": "QuadPype Tile Assembler"
                                 }
                             ]
                         },

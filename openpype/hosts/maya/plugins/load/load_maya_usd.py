@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 import maya.cmds as cmds
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     load,
     get_representation_path,
 )
-from openpype.pipeline.load import get_representation_path_from_context
-from openpype.hosts.maya.api.lib import (
+from quadpype.pipeline.load import get_representation_path_from_context
+from quadpype.hosts.maya.api.lib import (
     namespaced,
     unique_namespace
 )
-from openpype.hosts.maya.api.pipeline import containerise
+from quadpype.hosts.maya.api.pipeline import containerise
 
 
 class MayaUsdLoader(load.LoaderPlugin):

@@ -1,8 +1,8 @@
-from openpype.hosts.maya.api import (
+from quadpype.hosts.maya.api import (
     plugin,
     lib
 )
-from openpype.lib import (
+from quadpype.lib import (
     BoolDef,
     TextDef
 )
@@ -11,7 +11,7 @@ from openpype.lib import (
 class CreateLook(plugin.MayaCreator):
     """Shader connections defining shape look"""
 
-    identifier = "io.openpype.creators.maya.look"
+    identifier = "io.quadpype.creators.maya.look"
     label = "Look"
     family = "look"
     icon = "paint-brush"

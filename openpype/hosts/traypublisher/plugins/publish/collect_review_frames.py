@@ -10,7 +10,7 @@ class CollectReviewInfo(pyblish.api.InstancePlugin):
 
     Warning:
         This is temporary solution to "make it work". Contains removed changes
-            from https://github.com/ynput/OpenPype/pull/4383 reduced only for
+            from https://github.com/ynput/QuadPype/pull/4383 reduced only for
             review instances.
     """
 

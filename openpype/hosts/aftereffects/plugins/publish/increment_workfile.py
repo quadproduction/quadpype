@@ -1,8 +1,8 @@
 import pyblish.api
-from openpype.lib import version_up
-from openpype.pipeline.publish import get_errored_plugins_from_context
+from quadpype.lib import version_up
+from quadpype.pipeline.publish import get_errored_plugins_from_context
 
-from openpype.hosts.aftereffects.api import get_stub
+from quadpype.hosts.aftereffects.api import get_stub
 
 
 class IncrementWorkfile(pyblish.api.InstancePlugin):

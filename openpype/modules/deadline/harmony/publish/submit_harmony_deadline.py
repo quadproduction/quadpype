@@ -10,12 +10,12 @@ from datetime import datetime
 import attr
 import pyblish.api
 
-from openpype.pipeline import legacy_io
-from openpype_modules.deadline import abstract_submit_deadline
-from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
-from openpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs
-from openpype.tests.lib import is_in_tests
-from openpype.lib import is_running_from_build
+from quadpype.pipeline import legacy_io
+from quadpype_modules.deadline import abstract_submit_deadline
+from quadpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from quadpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs
+from quadpype.tests.lib import is_in_tests
+from quadpype.lib import is_running_from_build
 
 
 class _ZipFile(ZipFile):
@@ -292,18 +292,18 @@ class HarmonySubmitDeadline(
             "AVALON_ASSET",
             "AVALON_TASK",
             "AVALON_APP_NAME",
-            "OPENPYPE_DEV",
+            "QUADPYPE_DEV",
             "QUADPYPE_LOG_NO_COLORS"
             "IS_TEST"
         ]
 
-        # Add OpenPype version if we are running from build.
+        # Add QuadPype version if we are running from build.
         if is_running_from_build():
-            keys.append("OPENPYPE_VERSION")
+            keys.append("QUADPYPE_VERSION")
 
         # Add mongo url if it's enabled
         if self._instance.context.data.get("deadlinePassMongoUrl"):
-            keys.append("OPENPYPE_MONGO")
+            keys.append("QUADPYPE_MONGO")
 
         environment = dict({key: os.environ[key] for key in keys
                             if key in os.environ}, **legacy_io.Session)

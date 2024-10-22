@@ -1,7 +1,7 @@
 from math import floor, sqrt, ceil
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.style import get_objected_colors
+from quadpype.style import get_objected_colors
 
 
 class NiceCheckbox(QtWidgets.QFrame):
@@ -14,7 +14,7 @@ class NiceCheckbox(QtWidgets.QFrame):
     _checker_hover_color = None
 
     def __init__(self, checked=False, draw_icons=False, parent=None):
-        super(NiceCheckbox, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("NiceCheckbox")
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)

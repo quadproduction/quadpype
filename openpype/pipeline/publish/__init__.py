@@ -12,7 +12,7 @@ from .publish_plugins import (
     PublishValidationError,
     PublishXmlValidationError,
     KnownPublishError,
-    OpenPypePyblishPluginMixin,
+    QuadPypePyblishPluginMixin,
     OptionalPyblishPluginMixin,
 
     RepairAction,
@@ -62,7 +62,7 @@ __all__ = (
     "PublishValidationError",
     "PublishXmlValidationError",
     "KnownPublishError",
-    "OpenPypePyblishPluginMixin",
+    "QuadPypePyblishPluginMixin",
     "OptionalPyblishPluginMixin",
 
     "RepairAction",

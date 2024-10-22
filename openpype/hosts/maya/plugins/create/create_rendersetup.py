@@ -1,11 +1,11 @@
-from openpype.hosts.maya.api import plugin
-from openpype.pipeline import CreatorError
+from quadpype.hosts.maya.api import plugin
+from quadpype.pipeline import CreatorError
 
 
 class CreateRenderSetup(plugin.MayaCreator):
     """Create rendersetup template json data"""
 
-    identifier = "io.openpype.creators.maya.rendersetup"
+    identifier = "io.quadpype.creators.maya.rendersetup"
     label = "Render Setup Preset"
     family = "rendersetup"
     icon = "tablet"

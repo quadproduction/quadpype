@@ -1,9 +1,9 @@
-""" OpenPype custom script for setting up write nodes for non-publish """
+""" QuadPype custom script for setting up write nodes for non-publish """
 import os
 import nuke
 import nukescripts
-from openpype.pipeline import Anatomy
-from openpype.hosts.nuke.api.lib import (
+from quadpype.pipeline import Anatomy
+from quadpype.hosts.nuke.api.lib import (
     set_node_knobs_from_settings,
     get_nuke_imageio_settings
 )

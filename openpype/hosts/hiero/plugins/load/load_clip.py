@@ -1,16 +1,16 @@
-from openpype.client import (
+from quadpype.client import (
     get_version_by_id,
     get_last_version_by_subset_id
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     get_representation_path,
     get_current_project_name,
 )
-from openpype.lib.transcoding import (
+from quadpype.lib.transcoding import (
     VIDEO_EXTENSIONS,
     IMAGE_EXTENSIONS
 )
-import openpype.hosts.hiero.api as phiero
+import quadpype.hosts.hiero.api as phiero
 
 
 class LoadClip(phiero.SequenceLoader):

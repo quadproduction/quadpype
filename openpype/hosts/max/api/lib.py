@@ -6,16 +6,16 @@ import json
 from typing import Any, Dict, Union
 
 import six
-from openpype.pipeline import get_current_project_name, colorspace
-from openpype.settings import get_project_settings
-from openpype.pipeline.context_tools import (
+from quadpype.pipeline import get_current_project_name, colorspace
+from quadpype.settings import get_project_settings
+from quadpype.pipeline.context_tools import (
     get_current_project, get_current_project_asset)
-from openpype.style import load_stylesheet
+from quadpype.style import load_stylesheet
 from pymxs import runtime as rt
 
 
 JSON_PREFIX = "JSON::"
-log = logging.getLogger("openpype.hosts.max")
+log = logging.getLogger("quadpype.hosts.max")
 
 
 def get_main_window():
@@ -405,7 +405,7 @@ def check_colorspace():
             project_name, "max", project_settings)
         if max_config_data and color_mgr.Mode != rt.Name("OCIO_Custom"):
             if not is_headless():
-                from openpype.widgets import popup
+                from quadpype.widgets import popup
                 dialog = popup.Popup(parent=parent)
                 dialog.setWindowTitle("Warning: Wrong OCIO Mode")
                 dialog.setMessage("This scene has wrong OCIO "

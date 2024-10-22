@@ -13,7 +13,7 @@
             "children": [
                 {
                     "type": "label",
-                    "label": "The list of existing placeholders is available here:<br> https://openpype.io/docs/admin_settings_project_anatomy/#available-template-keys "
+                    "label": "The list of existing placeholders is available here:<br> https://quadpype.io/docs/admin_settings_project_anatomy/#available-template-keys "
                 },
                 {
                     "type": "number",

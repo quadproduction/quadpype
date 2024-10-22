@@ -1,13 +1,13 @@
 import os
 import pyblish.api
 from pymxs import runtime as rt
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
-from openpype.hosts.max.api.lib_rendersettings import RenderSettings
+from quadpype.hosts.max.api.lib_rendersettings import RenderSettings
 
 
 class ValidateRenderPasses(OptionalPyblishPluginMixin,

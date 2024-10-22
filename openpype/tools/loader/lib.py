@@ -2,9 +2,9 @@ import inspect
 from qtpy import QtGui
 import qtawesome
 
-from openpype.lib.attribute_definitions import AbstractAttrDef
-from openpype.tools.attribute_defs import AttributeDefinitionsDialog
-from openpype.tools.utils.widgets import (
+from quadpype.lib.attribute_definitions import AbstractAttrDef
+from quadpype.tools.attribute_defs import AttributeDefinitionsDialog
+from quadpype.tools.utils.widgets import (
     OptionalAction,
     OptionDialog
 )

@@ -1,6 +1,6 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.tools.ayon_utils.models import PROJECTS_MODEL_SENDER
+from quadpype.tools.ayon_utils.models import PROJECTS_MODEL_SENDER
 from .utils import RefreshThread, get_qt_icon
 
 PROJECT_NAME_ROLE = QtCore.Qt.UserRole + 1
@@ -14,7 +14,7 @@ class ProjectsQtModel(QtGui.QStandardItemModel):
     refreshed = QtCore.Signal()
 
     def __init__(self, controller):
-        super(ProjectsQtModel, self).__init__()
+        super().__init__()
         self._controller = controller
 
         self._project_items = {}
@@ -262,7 +262,7 @@ class ProjectsQtModel(QtGui.QStandardItemModel):
 
 class ProjectSortFilterProxy(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
-        super(ProjectSortFilterProxy, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._filter_inactive = True
         self._filter_standard = False
         self._filter_library = False
@@ -402,7 +402,7 @@ class ProjectsCombobox(QtWidgets.QWidget):
     selection_changed = QtCore.Signal()
 
     def __init__(self, controller, parent, handle_expected_selection=False):
-        super(ProjectsCombobox, self).__init__(parent)
+        super().__init__(parent)
 
         projects_combobox = QtWidgets.QComboBox(self)
         combobox_delegate = QtWidgets.QStyledItemDelegate(projects_combobox)

@@ -3,7 +3,7 @@ from urllib import parse
 import webbrowser
 import functools
 import threading
-from openpype import resources
+from quadpype import resources
 
 
 class LoginServerHandler(BaseHTTPRequestHandler):
@@ -74,7 +74,7 @@ class LoginServerThread(threading.Thread):
         self.url = url
         self.callback = callback
         self._server = None
-        super(LoginServerThread, self).__init__()
+        super().__init__()
 
     def _handle_login(self, api_user, api_key):
         '''Login to server with *api_user* and *api_key*.'''

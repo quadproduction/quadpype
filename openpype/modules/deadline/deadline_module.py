@@ -4,8 +4,8 @@ import six
 import sys
 from pathlib import Path
 
-from openpype.lib import requests_get, Logger
-from openpype.modules import OpenPypeModule, IPluginPaths
+from quadpype.lib import requests_get, Logger
+from quadpype.modules import QuadPypeModule, IPluginPaths
 
 
 class DeadlineWebserviceError(Exception):
@@ -14,14 +14,14 @@ class DeadlineWebserviceError(Exception):
     """
 
 
-class DeadlineModule(OpenPypeModule, IPluginPaths):
+class DeadlineModule(QuadPypeModule, IPluginPaths):
     name = "deadline"
     _valid_plugin_types = ["publish"]
 
     def __init__(self, manager, settings):
         self.deadline_urls = {}
         self._plugin_folders = {}
-        super(DeadlineModule, self).__init__(manager, settings)
+        super().__init__(manager, settings)
 
     def initialize(self, modules_settings):
         # This module is always enabled

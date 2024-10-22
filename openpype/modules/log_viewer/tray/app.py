@@ -1,11 +1,11 @@
 from qtpy import QtWidgets, QtCore
 from .widgets import LogsWidget, OutputWidget
-from openpype import style
+from quadpype import style
 
 
 class LogsWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(LogsWindow, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Logs viewer")
 

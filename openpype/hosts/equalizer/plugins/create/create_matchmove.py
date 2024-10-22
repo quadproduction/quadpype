@@ -1,11 +1,11 @@
 import tde4
 
-from openpype.hosts.equalizer.api import EqualizerCreator
-from openpype.lib import EnumDef
+from quadpype.hosts.equalizer.api import EqualizerCreator
+from quadpype.lib import EnumDef
 
 
 class CreateMatchMove(EqualizerCreator):
-    identifier = "io.openpype.creators.equalizer.matchmove"
+    identifier = "io.quadpype.creators.equalizer.matchmove"
     label = "Match Move"
     family = "matchmove"
     icon = "camera"

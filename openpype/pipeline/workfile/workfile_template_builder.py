@@ -19,41 +19,41 @@ from abc import ABCMeta, abstractmethod
 
 import six
 
-from openpype.client import (
+from quadpype.client import (
     get_asset_by_name,
     get_linked_assets,
     get_representations,
 )
-from openpype.client.entities import get_projects
-from openpype.settings import (
+from quadpype.client.entities import get_projects
+from quadpype.settings import (
     get_project_settings,
     get_system_settings,
 )
-from openpype.host import IWorkfileHost, HostBase
-from openpype.lib import (
+from quadpype.host import IWorkfileHost, HostBase
+from quadpype.lib import (
     Logger,
     StringTemplate,
     filter_profiles,
     attribute_definitions,
 )
-from openpype.lib.attribute_definitions import get_attributes_keys
-from openpype.pipeline import Anatomy
-from openpype.pipeline.load import (
+from quadpype.lib.attribute_definitions import get_attributes_keys
+from quadpype.pipeline import Anatomy
+from quadpype.pipeline.load import (
     get_loaders_by_name,
     get_contexts_for_repre_docs,
     load_with_repre_context,
 )
-from openpype.pipeline.action import (
+from quadpype.pipeline.action import (
     get_actions_by_name,
     action_with_repre_context
 )
 
-from openpype.pipeline.create import (
+from quadpype.pipeline.create import (
     discover_legacy_creator_plugins,
     CreateContext,
 )
 
-from openpype.pipeline.context_tools import (
+from quadpype.pipeline.context_tools import (
     get_current_asset_name,
     get_current_project_name,
     get_current_task_name,
@@ -863,7 +863,7 @@ class AbstractTemplateBuilder(object):
         solved_path = os.path.normpath(solved_path)
         if not os.path.exists(solved_path):
             raise TemplateNotFound(
-                "Template found in openPype settings for task '{}' with host "
+                "Template found in quadpype settings for task '{}' with host "
                 "'{}' does not exists. (Not found : {})".format(
                     task_name, host_name, solved_path))
 
@@ -1366,7 +1366,7 @@ class PlaceholderLoadMixin(object):
                 items=loader_items,
                 tooltip=(
                     "Loader"
-                    "\nDefines what OpenPype loader will be used to"
+                    "\nDefines what QuadPype loader will be used to"
                     " load assets."
                     "\nUseable loader depends on current host's loader list."
                     "\nField is case sensitive."
@@ -1490,7 +1490,7 @@ class PlaceholderLoadMixin(object):
         """
 
         from ayon_api.graphql_queries import folders_graphql_query
-        from openpype.client import get_ayon_server_api_connection
+        from quadpype.client import get_ayon_server_api_connection
 
         query = folders_graphql_query({"id"})
 
@@ -1539,7 +1539,7 @@ class PlaceholderLoadMixin(object):
             List[Dict[str, Any]]: Representation documents matching filters
                 from placeholder data.
         """
-        # An AYON placeholder loaded in OpenPype
+        # An AYON placeholder loaded in QuadPype
         if "folder_path" in placeholder.data:
             return []
 
@@ -1825,7 +1825,7 @@ class PlaceholderCreateMixin(object):
                 items=creator_items,
                 tooltip=(
                     "Creator"
-                    "\nDefines what OpenPype creator will be used to"
+                    "\nDefines what QuadPype creator will be used to"
                     " create publishable instance."
                     "\nUseable creator depends on current host's creator list."
                     "\nField is case sensitive."
@@ -1983,7 +1983,7 @@ class LoadPlaceholderItem(PlaceholderItem):
     """
 
     def __init__(self, *args, **kwargs):
-        super(LoadPlaceholderItem, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._failed_representations = []
 
     def get_errors(self):
@@ -2008,7 +2008,7 @@ class CreatePlaceholderItem(PlaceholderItem):
     """
 
     def __init__(self, *args, **kwargs):
-        super(CreatePlaceholderItem, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._failed_created_publish_instances = []
 
     def get_errors(self):

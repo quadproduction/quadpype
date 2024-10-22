@@ -6,13 +6,13 @@ Install and launch a [shotgrid leecher](https://github.com/Ellipsanime/shotgrid-
 
 ### Quickstart
 
-The goal of this tutorial is to synchronize an already existing shotgrid project with OpenPype.
+The goal of this tutorial is to synchronize an already existing shotgrid project with QuadPype.
 
 - Activate the shotgrid module in the **system settings** and inform the shotgrid leecher server API url
 
-- Create a new OpenPype project with the **project manager**
+- Create a new QuadPype project with the **project manager**
 
-- Inform the shotgrid authentication infos (url, script name, api key) and the shotgrid project ID related to this OpenPype project in the **project settings**
+- Inform the shotgrid authentication infos (url, script name, api key) and the shotgrid project ID related to this QuadPype project in the **project settings**
 
 - Use the batch interface (Tray > shotgrid > Launch batch), select your project and click "batch"
 

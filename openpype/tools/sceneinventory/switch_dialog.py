@@ -3,7 +3,7 @@ import logging
 from qtpy import QtWidgets, QtCore
 import qtawesome
 
-from openpype.client import (
+from quadpype.client import (
     get_asset_by_name,
     get_assets,
     get_subset_by_name,
@@ -13,8 +13,8 @@ from openpype.client import (
     get_last_versions,
     get_representations,
 )
-from openpype.pipeline import legacy_io
-from openpype.pipeline.load import (
+from quadpype.pipeline import legacy_io
+from quadpype.pipeline.load import (
     discover_loader_plugins,
     switch_container,
     get_repres_contexts,
@@ -55,7 +55,7 @@ class SwitchAssetDialog(QtWidgets.QDialog):
     switched = QtCore.Signal()
 
     def __init__(self, parent=None, items=None):
-        super(SwitchAssetDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Switch selected items ...")
 

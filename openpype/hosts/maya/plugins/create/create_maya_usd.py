@@ -1,5 +1,5 @@
-from openpype.hosts.maya.api import plugin, lib
-from openpype.lib import (
+from quadpype.hosts.maya.api import plugin, lib
+from quadpype.lib import (
     BoolDef,
     EnumDef,
     TextDef
@@ -11,7 +11,7 @@ from maya import cmds
 class CreateMayaUsd(plugin.MayaCreator):
     """Create Maya USD Export"""
 
-    identifier = "io.openpype.creators.maya.mayausd"
+    identifier = "io.quadpype.creators.maya.mayausd"
     label = "Maya USD"
     family = "usd"
     icon = "cubes"

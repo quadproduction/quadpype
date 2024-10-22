@@ -1,7 +1,7 @@
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api import lib
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api import lib
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishValidationError
 )
@@ -44,7 +44,7 @@ class ValidateLookSets(pyblish.api.InstancePlugin):
     families = ['look']
     hosts = ['maya']
     label = 'Look Sets'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
 
     exclude_sets_with_suffix = []
 

@@ -136,7 +136,7 @@ DEFAULT_VALUES = {
         }
     },
     "copy_fusion_settings": {
-        "copy_path": "~/.openpype/hosts/fusion/profiles",
+        "copy_path": "~/.quadpype/hosts/fusion/profiles",
         "copy_status": False,
         "force_sync": False
     },

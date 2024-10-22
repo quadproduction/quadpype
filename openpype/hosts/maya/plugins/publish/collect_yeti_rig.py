@@ -5,8 +5,8 @@ from maya import cmds
 
 import pyblish.api
 
-from openpype.hosts.maya.api import lib
-from openpype.pipeline.publish import KnownPublishError
+from quadpype.hosts.maya.api import lib
+from quadpype.pipeline.publish import KnownPublishError
 
 
 SETTINGS = {"renderDensity",

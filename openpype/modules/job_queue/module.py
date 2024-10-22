@@ -1,4 +1,4 @@
-"""Job queue OpenPype module was created for remote execution of commands.
+"""Job queue QuadPype module was created for remote execution of commands.
 
 ## Why is needed
 Primarily created for hosts which are not easilly controlled from command line
@@ -30,7 +30,7 @@ workstations know where to send or receive jobs.
 
 ### start_worker
 - start worker which will process jobs
-- has required possitional argument which is application name from OpenPype
+- has required possitional argument which is application name from QuadPype
     settings e.g. 'tvpaint/11-5' ('tvpaint' is group '11-5' is variant)
 - it is possible to specify server url but url from settings is used when not
     passed (this is added mainly for developing purposes)
@@ -41,11 +41,11 @@ import json
 import copy
 import platform
 
-from openpype.modules import OpenPypeModule, click_wrap
-from openpype.settings import get_system_settings, MODULES_SETTINGS_KEY
+from quadpype.modules import QuadPypeModule, click_wrap
+from quadpype.settings import get_system_settings, MODULES_SETTINGS_KEY
 
 
-class JobQueueModule(OpenPypeModule):
+class JobQueueModule(QuadPypeModule):
     name = "job_queue"
 
     def initialize(self, modules_settings):
@@ -172,7 +172,7 @@ class JobQueueModule(OpenPypeModule):
     @classmethod
     def start_worker(cls, app_name, server_url=None):
         import requests
-        from openpype.lib import ApplicationManager
+        from quadpype.lib import ApplicationManager
 
         if not server_url:
             server_url = cls.get_server_url_from_settings()
@@ -200,7 +200,7 @@ class JobQueueModule(OpenPypeModule):
 
     @classmethod
     def _start_tvpaint_worker(cls, app, server_url):
-        from openpype.hosts.tvpaint.worker import main
+        from quadpype.hosts.tvpaint.worker import main
 
         executable = app.find_executable()
         if not executable:

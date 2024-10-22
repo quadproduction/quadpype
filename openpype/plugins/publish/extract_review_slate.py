@@ -5,7 +5,7 @@ from pprint import pformat
 
 import pyblish.api
 
-from openpype.lib import (
+from quadpype.lib import (
     path_to_subprocess_arg,
     run_subprocess,
     get_ffmpeg_tool_args,
@@ -15,8 +15,8 @@ from openpype.lib import (
     get_ffmpeg_codec_args,
     get_ffmpeg_format_args,
 )
-from openpype.pipeline import publish
-from openpype.pipeline.publish import KnownPublishError
+from quadpype.pipeline import publish
+from quadpype.pipeline.publish import KnownPublishError
 
 
 class ExtractReviewSlate(publish.Extractor):
@@ -330,7 +330,7 @@ class ExtractReviewSlate(publish.Extractor):
             concat_args.extend(fmap)
             if offset_timecode:
                 concat_args.extend(["-timecode", offset_timecode])
-            # NOTE: Added because of OP Atom demuxers
+            # NOTE: Added because of QuadPype Atom demuxers
             # Add format arguments if there are any
             # - keep format of output
             if format_args:

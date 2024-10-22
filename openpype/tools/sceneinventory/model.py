@@ -6,23 +6,23 @@ from collections import defaultdict
 from qtpy import QtCore, QtGui
 import qtawesome
 
-from openpype.host import ILoadHost
-from openpype.client import (
+from quadpype.host import ILoadHost
+from quadpype.client import (
     get_asset_by_id,
     get_subset_by_id,
     get_version_by_id,
     get_last_version_by_subset_id,
     get_representation_by_id,
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     get_current_project_name,
     schema,
     HeroVersionType,
     registered_host,
 )
-from openpype.style import get_default_entity_icon_color
-from openpype.tools.utils.models import TreeModel, Item
-from openpype.modules import ModulesManager
+from quadpype.style import get_default_entity_icon_color
+from quadpype.tools.utils.models import TreeModel, Item
+from quadpype.modules import ModulesManager
 
 from .lib import walk_hierarchy
 
@@ -40,7 +40,7 @@ class InventoryModel(TreeModel):
     UniqueRole = QtCore.Qt.UserRole + 2     # unique label role
 
     def __init__(self, family_config_cache, parent=None):
-        super(InventoryModel, self).__init__(parent)
+        super().__init__(parent)
         self.log = logging.getLogger(self.__class__.__name__)
 
         self.family_config_cache = family_config_cache
@@ -481,7 +481,7 @@ class FilterProxyModel(QtCore.QSortFilterProxyModel):
     """Filter model to where key column's value is in the filtered tags"""
 
     def __init__(self, *args, **kwargs):
-        super(FilterProxyModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._filter_outdated = False
         self._hierarchy_view = False
 

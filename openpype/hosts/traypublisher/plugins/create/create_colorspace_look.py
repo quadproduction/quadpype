@@ -6,22 +6,22 @@ production type `ociolook`. All files are published as representation.
 """
 from pathlib import Path
 
-from openpype.client import get_asset_by_name
-from openpype.lib.attribute_definitions import (
+from quadpype.client import get_asset_by_name
+from quadpype.lib.attribute_definitions import (
     FileDef, EnumDef, TextDef, UISeparatorDef
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     CreatedInstance,
     CreatorError
 )
-from openpype.pipeline import colorspace
-from openpype.hosts.traypublisher.api.plugin import TrayPublishCreator
+from quadpype.pipeline import colorspace
+from quadpype.hosts.traypublisher.api.plugin import TrayPublishCreator
 
 
 class CreateColorspaceLook(TrayPublishCreator):
     """Creates colorspace look files."""
 
-    identifier = "io.openpype.creators.traypublisher.colorspace_look"
+    identifier = "io.quadpype.creators.traypublisher.colorspace_look"
     label = "Colorspace Look"
     family = "ociolook"
     description = "Publishes color space look file."

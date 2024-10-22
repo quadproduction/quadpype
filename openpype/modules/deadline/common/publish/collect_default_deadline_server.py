@@ -2,7 +2,7 @@
 """Collect default Deadline server."""
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.settings import PROJECT_SETTINGS_KEY
 
 
 class CollectDefaultDeadlineServer(pyblish.api.ContextPlugin):
@@ -27,10 +27,10 @@ class CollectDefaultDeadlineServer(pyblish.api.ContextPlugin):
 
     def process(self, context):
         try:
-            deadline_module = context.data.get("openPypeModules")["deadline"]
+            deadline_module = context.data.get("quadpypeModules")["deadline"]
         except AttributeError:
-            self.log.error("Cannot get OpenPype Deadline module.")
-            raise AssertionError("OpenPype Deadline module not found.")
+            self.log.error("Cannot get QuadPype Deadline module.")
+            raise AssertionError("QuadPype Deadline module not found.")
 
         deadline_settings = context.data[PROJECT_SETTINGS_KEY]["deadline"]
         deadline_server_name = None

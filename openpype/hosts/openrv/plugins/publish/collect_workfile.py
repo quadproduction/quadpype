@@ -1,6 +1,6 @@
 import os
 import pyblish.api
-from openpype.pipeline import registered_host
+from quadpype.pipeline import registered_host
 
 
 class CollectWorkfile(pyblish.api.InstancePlugin):

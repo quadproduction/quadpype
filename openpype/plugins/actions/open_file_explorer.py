@@ -1,16 +1,16 @@
 import os
 from string import Formatter
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_asset_by_name,
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     Anatomy,
     LauncherAction,
 )
-from openpype.pipeline.template_data import get_template_data
-from openpype.lib import open_in_explorer
+from quadpype.pipeline.template_data import get_template_data
+from quadpype.lib import open_in_explorer
 
 
 class OpenTaskPath(LauncherAction):

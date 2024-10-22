@@ -1,4 +1,4 @@
-""" Integrate Thumbnails for Openpype use in Loaders.
+""" Integrate Thumbnails for QuadPype use in Loaders.
 
     This thumbnail is different from 'thumbnail' representation which could
     be uploaded to Ftrack, or used as any other representation in Loaders to
@@ -18,9 +18,9 @@ import collections
 import six
 import pyblish.api
 
-from openpype.client import get_versions
-from openpype.client.operations import OperationsSession, new_thumbnail_doc
-from openpype.pipeline.publish import get_publish_instance_label
+from quadpype.client import get_versions
+from quadpype.client.operations import OperationsSession, new_thumbnail_doc
+from quadpype.pipeline.publish import get_publish_instance_label
 
 InstanceFilterResult = collections.namedtuple(
     "InstanceFilterResult",
@@ -29,7 +29,7 @@ InstanceFilterResult = collections.namedtuple(
 
 
 class IntegrateThumbnails(pyblish.api.ContextPlugin):
-    """Integrate Thumbnails for Openpype use in Loaders."""
+    """Integrate Thumbnails for QuadPype use in Loaders."""
 
     label = "Integrate Thumbnails"
     order = pyblish.api.IntegratorOrder + 0.01

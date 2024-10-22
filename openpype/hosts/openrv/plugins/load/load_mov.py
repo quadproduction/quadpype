@@ -1,14 +1,14 @@
-from openpype.pipeline import (
+from quadpype.pipeline import (
     load,
     get_representation_context
 )
-from openpype.hosts.openrv.api.pipeline import imprint_container
-from openpype.hosts.openrv.api.ocio import (
+from quadpype.hosts.openrv.api.pipeline import imprint_container
+from quadpype.hosts.openrv.api.ocio import (
     set_group_ocio_active_state,
     set_group_ocio_colorspace
 )
 
-from openpype.hosts.openrv.api.lib import clean_rv_sources
+from quadpype.hosts.openrv.api.lib import clean_rv_sources
 
 import os
 import rv
@@ -56,7 +56,7 @@ class MovLoader(load.LoaderPlugin):
                                       ["newname"], True)
         rv.commands.setStringProperty(node + ".media.repName",
                                       ["repname"], True)
-        rv.commands.setStringProperty(node + ".openpype.representation",
+        rv.commands.setStringProperty(node + ".quadpype.representation",
                                       [str(representation["_id"])], True)
 
     def remove(self, container):

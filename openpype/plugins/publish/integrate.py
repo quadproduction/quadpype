@@ -9,8 +9,8 @@ import six
 from bson.objectid import ObjectId
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.client.operations import (
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.client.operations import (
     OperationsSession,
     new_subset_document,
     new_version_doc,
@@ -20,17 +20,17 @@ from openpype.client.operations import (
     prepare_representation_update_data,
 )
 
-from openpype.client import (
+from quadpype.client import (
     get_representations,
     get_subset_by_name,
     get_version_by_name,
 )
-from openpype.lib import source_hash
-from openpype.lib.file_transaction import (
+from quadpype.lib import source_hash
+from quadpype.lib.file_transaction import (
     FileTransaction,
     DuplicateDestinationError
 )
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     KnownPublishError,
     get_publish_template_name,
 )
@@ -327,7 +327,7 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
         self.log.debug("Retrieving Representation Site Sync information ...")
 
         # Get the accessible sites for Site Sync
-        modules_by_name = instance.context.data["openPypeModules"]
+        modules_by_name = instance.context.data["quadpypeModules"]
         sync_server_module = modules_by_name.get("sync_server")
         if sync_server_module is None:
             sites = [{

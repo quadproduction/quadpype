@@ -2,7 +2,7 @@ import sys
 import json
 import collections
 import ftrack_api
-from openpype_modules.ftrack.lib import (
+from quadpype_modules.ftrack.lib import (
     ServerAction,
     query_custom_attributes
 )
@@ -42,7 +42,7 @@ class PushHierValuesToNonHier(ServerAction):
     """
 
     identifier = "admin.push_hier_values_to_non_hier"
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     variant = "- Push Hierarchical values To Non-Hierarchical"
 
     entities_query_by_project = (

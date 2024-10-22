@@ -4,7 +4,7 @@ import subprocess
 
 import pyblish.api
 
-from openpype.lib import open_in_explorer
+from quadpype.lib import open_in_explorer
 
 
 class MyAction(pyblish.api.Action):

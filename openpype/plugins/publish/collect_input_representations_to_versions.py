@@ -2,14 +2,14 @@ import pyblish.api
 
 from bson.objectid import ObjectId
 
-from openpype.client import get_representations
+from quadpype.client import get_representations
 
 
 class CollectInputRepresentationsToVersions(pyblish.api.ContextPlugin):
     """Converts collected input representations to input versions.
 
     Any data in `instance.data["inputRepresentations"]` gets converted into
-    `instance.data["inputVersions"]` as supported in OpenPype v3.
+    `instance.data["inputVersions"]` as supported in QuadPype v3.
 
     """
     # This is a ContextPlugin because then we can query the database only once

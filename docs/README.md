@@ -44,7 +44,7 @@ During the build you may see tons of red errors that are pointing to our issues:
 Invalid import are usually wrong relative imports (too deep) or circular imports.
 2) **Invalid docstrings** -
 Docstrings to be processed into documentation needs to follow some syntax - this can be checked by running
-`pydocstyle` that is already included with OpenPype
+`pydocstyle` that is already included with QuadPype
 3) **Invalid markdown/rst files** -
 Markdown/RST files can be included inside RST files using `.. include::` directive. But they have to be properly
 formatted.

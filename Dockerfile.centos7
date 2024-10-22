@@ -1,12 +1,13 @@
 # Build Pype docker image
 FROM centos:7 AS builder
-ARG OPENPYPE_PYTHON_VERSION=3.9.12
+ARG QUADPYPE_PYTHON_VERSION=3.9.12
 
-LABEL org.opencontainers.image.name="pypeclub/openpype"
-LABEL org.opencontainers.image.title="OpenPype Docker Image"
-LABEL org.opencontainers.image.url="https://openpype.io/"
-LABEL org.opencontainers.image.source="https://github.com/pypeclub/pype"
-LABEL org.opencontainers.image.documentation="https://openpype.io/docs/system_introduction"
+LABEL maintainer="dev@quad.fr"
+LABEL org.opencontainers.image.name="quad/quadpype"
+LABEL org.opencontainers.image.title="QuadPype Docker Image"
+LABEL org.opencontainers.image.url="https://github.com/quadproduction/quadpype"
+LABEL org.opencontainers.image.source="https://github.com/quadproduction/quadpype"
+LABEL org.opencontainers.image.documentation="https://github.com/quadproduction/quadpype/wiki"
 LABEL org.opencontainers.image.created=$BUILD_DATE
 LABEL org.opencontainers.image.version=$VERSION
 
@@ -63,9 +64,9 @@ RUN git clone -b 0.17.0 --single-branch https://github.com/NixOS/patchelf.git . 
     && make \
     && make install
 
-RUN mkdir /opt/openpype
+RUN mkdir /opt/quadpype
 # RUN useradd -m pype
-# RUN chown pype /opt/openpype
+# RUN chown pype /opt/quadpype
 # USER pype
 
 RUN curl https://pyenv.run | bash
@@ -80,21 +81,21 @@ RUN source $HOME/.bashrc \
     && export LDFLAGS="-L/usr/lib64/openssl11 -lssl -lcrypto" \
     && export PATH=/usr/local/openssl/bin:$PATH \
     && export LD_LIBRARY_PATH=/usr/local/openssl/lib:$LD_LIBRARY_PATH \
-    && pyenv install ${OPENPYPE_PYTHON_VERSION}
+    && pyenv install ${QUADPYPE_PYTHON_VERSION}
 
-COPY . /opt/openpype/
-RUN rm -rf /openpype/.poetry || echo "No Poetry installed yet."
+COPY . /opt/quadpype/
+RUN rm -rf /quadpype/.poetry || echo "No Poetry installed yet."
 # USER root
-# RUN chown -R pype /opt/openpype
-RUN chmod +x /opt/openpype/tools/create_env.sh && chmod +x /opt/openpype/tools/build.sh
+# RUN chown -R pype /opt/quadpype
+RUN chmod +x /opt/quadpype/tools/create_env.sh && chmod +x /opt/quadpype/tools/build.sh
 
 # USER pype
 
-WORKDIR /opt/openpype
+WORKDIR /opt/quadpype
 
-RUN cd /opt/openpype \
+RUN cd /opt/quadpype \
     && source $HOME/.bashrc \
-    && pyenv local ${OPENPYPE_PYTHON_VERSION}
+    && pyenv local ${QUADPYPE_PYTHON_VERSION}
 
 RUN source $HOME/.bashrc \
     && ./tools/create_env.sh
@@ -102,7 +103,7 @@ RUN source $HOME/.bashrc \
 RUN source $HOME/.bashrc \
     && ./tools/fetch_thirdparty_libs.sh
 
-RUN echo 'export PYTHONPATH="/opt/openpype/vendor/python:$PYTHONPATH"'>> $HOME/.bashrc
+RUN echo 'export PYTHONPATH="/opt/quadpype/vendor/python:$PYTHONPATH"'>> $HOME/.bashrc
 RUN source $HOME/.bashrc \
     && bash ./tools/build.sh
 
@@ -111,8 +112,8 @@ RUN cp /usr/lib64/libffi* ./build/exe.linux-x86_64-3.9/lib \
     && cp /usr/lib64/openssl11/libcrypto* ./build/exe.linux-x86_64-3.9/lib \
     && ln -sr ./build/exe.linux-x86_64-3.9/lib/libssl.so ./build/exe.linux-x86_64-3.9/lib/libssl.1.1.so \
     && ln -sr ./build/exe.linux-x86_64-3.9/lib/libcrypto.so ./build/exe.linux-x86_64-3.9/lib/libcrypto.1.1.so \
-    && cp /root/.pyenv/versions/${OPENPYPE_PYTHON_VERSION}/lib/libpython* ./build/exe.linux-x86_64-3.9/lib \
+    && cp /root/.pyenv/versions/${QUADPYPE_PYTHON_VERSION}/lib/libpython* ./build/exe.linux-x86_64-3.9/lib \
     && cp /usr/lib64/libxcb* ./build/exe.linux-x86_64-3.9/vendor/python/PySide2/Qt/lib
 
-RUN cd /opt/openpype \
+RUN cd /opt/quadpype \
     rm -rf ./vendor/bin

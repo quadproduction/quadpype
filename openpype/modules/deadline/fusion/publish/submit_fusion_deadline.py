@@ -6,21 +6,21 @@ import requests
 
 import pyblish.api
 
-from openpype.pipeline import legacy_io
-from openpype.pipeline.publish import (
-    OpenPypePyblishPluginMixin
+from quadpype.pipeline import legacy_io
+from quadpype.pipeline.publish import (
+    QuadPypePyblishPluginMixin
 )
-from openpype.lib import (
+from quadpype.lib import (
     BoolDef,
     NumberDef,
     is_running_from_build
 )
-from openpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs
+from quadpype.modules.deadline.utils import set_custom_deadline_name, DeadlineDefaultJobAttrs
 
 
 class FusionSubmitDeadline(
     pyblish.api.InstancePlugin,
-    OpenPypePyblishPluginMixin,
+    QuadPypePyblishPluginMixin,
     DeadlineDefaultJobAttrs
 ):
     """Submit current Comp to Deadline
@@ -94,7 +94,7 @@ class FusionSubmitDeadline(
         else:
             context.data[key] = True
 
-        from openpype.hosts.fusion.api.lib import get_frame_path
+        from quadpype.hosts.fusion.api.lib import get_frame_path
 
         # get default deadline webservice url from deadline module
         deadline_url = instance.context.data["defaultDeadline"]
@@ -237,20 +237,20 @@ class FusionSubmitDeadline(
             "AVALON_ASSET",
             "AVALON_TASK",
             "AVALON_APP_NAME",
-            "OPENPYPE_DEV",
+            "QUADPYPE_DEV",
             "QUADPYPE_LOG_NO_COLORS",
             "IS_TEST"
         ]
 
-        # Add OpenPype version if we are running from build.
+        # Add QuadPype version if we are running from build.
         if is_running_from_build():
-            keys.append("OPENPYPE_VERSION")
+            keys.append("QUADPYPE_VERSION")
 
         environment = dict({key: os.environ[key] for key in keys
                             if key in os.environ}, **legacy_io.Session)
 
         # to recognize render jobs
-        render_job_label = "OPENPYPE_RENDER_JOB"
+        render_job_label = "QUADPYPE_RENDER_JOB"
 
         environment[render_job_label] = "1"
 

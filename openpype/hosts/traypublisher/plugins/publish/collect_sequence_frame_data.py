@@ -1,7 +1,7 @@
 import pyblish.api
 import clique
 
-from openpype.pipeline import OptionalPyblishPluginMixin
+from quadpype.pipeline import OptionalPyblishPluginMixin
 
 
 class CollectSequenceFrameData(

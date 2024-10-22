@@ -1,11 +1,11 @@
 import os
 import json
 import pyblish.api
-from openpype.pipeline import publish
+from quadpype.pipeline import publish
 
 
 class ExtractColorspaceLook(publish.Extractor,
-                            publish.OpenPypePyblishPluginMixin):
+                            publish.QuadPypePyblishPluginMixin):
     """Extract OCIO colorspace look from LUT file
     """
 

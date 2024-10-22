@@ -5,8 +5,8 @@ import json
 from maya import cmds
 import arnold
 
-from openpype.pipeline import publish
-from openpype.hosts.maya.api import lib
+from quadpype.pipeline import publish
+from quadpype.hosts.maya.api import lib
 
 
 class ExtractArnoldSceneSource(publish.Extractor):

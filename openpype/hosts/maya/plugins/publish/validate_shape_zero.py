@@ -2,9 +2,9 @@ from maya import cmds
 
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api import lib
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api import lib
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     RepairAction,
     PublishValidationError,
@@ -25,7 +25,7 @@ class ValidateShapeZero(pyblish.api.Validator,
     families = ["model"]
     label = "Shape Zero (Freeze)"
     actions = [
-        openpype.hosts.maya.api.action.SelectInvalidAction,
+        quadpype.hosts.maya.api.action.SelectInvalidAction,
         RepairAction
     ]
     optional = True

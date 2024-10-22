@@ -9,21 +9,21 @@ import pyblish.util
 import pyblish.plugin
 import pyblish.api
 
-from openpype.lib import (
+from quadpype.lib import (
     Logger,
     import_filepath,
     filter_profiles,
     is_func_signature_supported,
 )
-from openpype.settings import (
+from quadpype.settings import (
     get_project_settings,
     get_system_settings,
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     tempdir,
     Anatomy
 )
-from openpype.pipeline.plugin_discover import DiscoverResult
+from quadpype.pipeline.plugin_discover import DiscoverResult
 
 from .constants import (
     DEFAULT_PUBLISH_TEMPLATE,
@@ -386,7 +386,7 @@ def get_publish_plugin_settings(plugin, project_settings, category=None, logger=
     plugin_kind = split_path[-2]
 
     # TODO: change after all plugins are moved one level up
-    if category_from_file == "openpype":
+    if category_from_file == "quadpype":
         category_from_file = "global"
 
     try:
@@ -423,9 +423,9 @@ def apply_plugin_settings(plugin, settings, logger=None):
 
 
 def filter_pyblish_plugins(plugins):
-    """Pyblish plugin filter which applies OpenPype settings.
+    """Pyblish plugin filter which applies QuadPype settings.
 
-    Apply OpenPype settings on discovered plugins. On plugin with implemented
+    Apply QuadPype settings on discovered plugins. On plugin with implemented
     class method 'def apply_settings(cls, project_settings, system_settings)'
     is called the method. Default behavior looks for plugin name and current
     host name to look for
@@ -450,7 +450,7 @@ def filter_pyblish_plugins(plugins):
     for plugin in plugins[:]:
         # Apply settings to plugin
 
-        # First settings from OP settings
+        # First settings from QuadPype settings
         plugin_settings = get_publish_plugin_settings(
             plugin, project_settings, host_name, logger=log)
         apply_plugin_settings(plugin, plugin_settings, log)
@@ -626,7 +626,7 @@ def get_instance_staging_dir(instance):
     First check if 'stagingDir' is already set in instance data.
     In case there already is new tempdir will not be created.
 
-    It also supports `OPENPYPE_TMPDIR`, so studio can define own temp
+    It also supports `QUADPYPE_TMPDIR`, so studio can define own temp
     shared repository per project or even per more granular context.
     Template formatting is supported also with optional keys. Folder is
     created in case it doesn't exists.
@@ -652,7 +652,7 @@ def get_instance_staging_dir(instance):
 
     anatomy = instance.context.data.get("anatomy")
 
-    # get customized tempdir path from `OPENPYPE_TMPDIR` env var
+    # get customized tempdir path from `QUADPYPE_TMPDIR` env var
     custom_temp_dir = tempdir.create_custom_tempdir(
         anatomy.project_name, anatomy)
 

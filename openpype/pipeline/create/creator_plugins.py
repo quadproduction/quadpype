@@ -5,9 +5,9 @@ from abc import ABCMeta, abstractmethod
 
 import six
 
-from openpype.settings import get_system_settings, get_project_settings
-from openpype.lib import Logger, is_func_signature_supported
-from openpype.pipeline.plugin_discover import (
+from quadpype.settings import get_system_settings, get_project_settings
+from quadpype.lib import Logger, is_func_signature_supported
+from quadpype.pipeline.plugin_discover import (
     discover,
     register_plugin,
     register_plugin_path,
@@ -28,7 +28,7 @@ class CreatorError(Exception):
     """
 
     def __init__(self, message):
-        super(CreatorError, self).__init__(message)
+        super().__init__(message)
 
 
 @six.add_metaclass(ABCMeta)
@@ -184,7 +184,7 @@ class BaseCreator:
 
     # Instance attribute definitions that can be changed per instance
     # - returns list of attribute definitions from
-    #       `openpype.pipeline.attribute_definitions`
+    #       `quadpype.pipeline.attribute_definitions`
     instance_attr_defs = []
 
     # Filtering by host name - can be used to be filtered by host name
@@ -234,7 +234,7 @@ class BaseCreator:
                 "WARNING: Source - Create plugin {}."
                 " System settings argument will not be passed to"
                 " '__init__' and 'apply_settings' methods in future versions"
-                " of OpenPype. Planned version to drop the support"
+                " of QuadPype. Planned version to drop the support"
                 " is 3.16.6 or 3.17.0. Please contact Ynput core team if you"
                 " need to keep system settings."
             ).format(self.__class__.__name__))
@@ -666,7 +666,7 @@ class Creator(BaseCreator):
                 cls._get_default_variant_wrap,
                 cls._set_default_variant_wrap
             )
-        super(Creator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def show_order(self):
@@ -831,7 +831,7 @@ def discover_convertor_plugins(*args, **kwargs):
 
 
 def discover_legacy_creator_plugins():
-    from openpype.pipeline import get_current_project_name
+    from quadpype.pipeline import get_current_project_name
 
     log = Logger.get_logger("CreatorDiscover")
 

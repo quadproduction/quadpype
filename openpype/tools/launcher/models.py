@@ -9,27 +9,27 @@ import appdirs
 from qtpy import QtCore, QtGui
 import qtawesome
 
-from openpype.client import (
+from quadpype.client import (
     get_projects,
     get_project,
     get_assets,
 )
-from openpype.lib import JSONSettingRegistry
-from openpype.lib.applications import (
+from quadpype.lib import JSONSettingRegistry
+from quadpype.lib.applications import (
     CUSTOM_LAUNCH_APP_GROUPS,
     ApplicationManager
 )
-from openpype.settings import get_project_settings, APPS_SETTINGS_KEY
-from openpype.pipeline import discover_launcher_actions
-from openpype.tools.utils.lib import (
+from quadpype.settings import get_project_settings, APPS_SETTINGS_KEY
+from quadpype.pipeline import discover_launcher_actions
+from quadpype.tools.utils.lib import (
     DynamicQThread,
     get_project_icon,
 )
-from openpype.tools.utils.assets_widget import (
+from quadpype.tools.utils.assets_widget import (
     AssetModel,
     ASSET_NAME_ROLE
 )
-from openpype.tools.utils.tasks_widget import (
+from quadpype.tools.utils.tasks_widget import (
     TasksModel,
     TasksProxyModel,
     TASK_TYPE_ROLE,
@@ -55,7 +55,7 @@ ASSET_ASSIGNEE_ROLE = QtCore.Qt.UserRole + 11
 
 class ActionModel(QtGui.QStandardItemModel):
     def __init__(self, dbcon, parent=None):
-        super(ActionModel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.dbcon = dbcon
 
         self.application_manager = ApplicationManager()
@@ -64,7 +64,7 @@ class ActionModel(QtGui.QStandardItemModel):
         # Cache of available actions
         self._registered_actions = list()
         self.items_by_id = {}
-        path = appdirs.user_data_dir("openpype", "pypeclub")
+        path = appdirs.user_data_dir("quadpype", "quad")
         self.launcher_registry = JSONSettingRegistry("launcher", path)
 
         try:
@@ -407,7 +407,7 @@ class LauncherModel(QtCore.QObject):
     }
 
     def __init__(self, dbcon):
-        super(LauncherModel, self).__init__()
+        super().__init__()
         # Refresh timer
         #   - should affect only projects
         refresh_timer = QtCore.QTimer()
@@ -685,7 +685,7 @@ class LauncherTasksProxyModel(TasksProxyModel):
     """
     def __init__(self, launcher_model, *args, **kwargs):
         self._launcher_model = launcher_model
-        super(LauncherTasksProxyModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         launcher_model.filters_changed.connect(self._on_filter_change)
 
@@ -722,7 +722,7 @@ class LauncherTasksProxyModel(TasksProxyModel):
 class LauncherTaskModel(TasksModel):
     def __init__(self, launcher_model, *args, **kwargs):
         self._launcher_model = launcher_model
-        super(LauncherTaskModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _refresh_project_doc(self):
         self._project_doc = self._launcher_model.get_project_doc(
@@ -740,7 +740,7 @@ class AssetRecursiveSortFilterModel(QtCore.QSortFilterProxyModel):
     def __init__(self, launcher_model, *args, **kwargs):
         self._launcher_model = launcher_model
 
-        super(AssetRecursiveSortFilterModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         launcher_model.filters_changed.connect(self._on_filter_change)
         self._name_filter = ""
@@ -803,7 +803,7 @@ class LauncherAssetsModel(AssetModel):
         # Make sure that variable is available (even if is in AssetModel)
         self._last_project_name = None
 
-        super(LauncherAssetsModel, self).__init__(dbcon, parent)
+        super().__init__(dbcon, parent)
 
         launcher_model.project_changed.connect(self._on_project_change)
         launcher_model.assets_refresh_started.connect(
@@ -849,7 +849,7 @@ class ProjectModel(QtGui.QStandardItemModel):
     """List of projects"""
 
     def __init__(self, launcher_model, parent=None):
-        super(ProjectModel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self._launcher_model = launcher_model
         self._project_names = set()

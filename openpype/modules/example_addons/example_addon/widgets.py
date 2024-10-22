@@ -1,11 +1,11 @@
 from qtpy import QtWidgets
 
-from openpype.style import load_stylesheet
+from quadpype.style import load_stylesheet
 
 
 class MyExampleDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
-        super(MyExampleDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Connected modules")
 

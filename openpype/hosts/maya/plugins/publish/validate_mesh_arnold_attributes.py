@@ -1,15 +1,15 @@
 from maya import cmds
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api.lib import (
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api.lib import (
     maintained_selection,
     delete_after,
     undo_chunk,
     get_attribute,
     set_attribute
 )
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     OptionalPyblishPluginMixin,
     RepairAction,
     ValidateMeshOrder,
@@ -30,7 +30,7 @@ class ValidateMeshArnoldAttributes(pyblish.api.InstancePlugin,
     families = ["model"]
     label = "Mesh Arnold Attributes"
     actions = [
-        openpype.hosts.maya.api.action.SelectInvalidAction,
+        quadpype.hosts.maya.api.action.SelectInvalidAction,
         RepairAction
     ]
 

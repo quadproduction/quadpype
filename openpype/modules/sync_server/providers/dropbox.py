@@ -55,7 +55,7 @@ class DropboxHandler(AbstractProvider):
             self.log.info("Could not establish dropbox object: {}".format(e))
             return
 
-        super(AbstractProvider, self).__init__()
+        super().__init__()
 
     @classmethod
     def get_system_settings_schema(cls):

@@ -4,14 +4,14 @@ import sys
 from qtpy import QtWidgets, QtCore
 import qtawesome
 
-from openpype import style
-from openpype.pipeline import registered_host
-from openpype.tools.utils import PlaceholderLineEdit
-from openpype.tools.utils.lib import (
+from quadpype import style
+from quadpype.pipeline import registered_host
+from quadpype.tools.utils import PlaceholderLineEdit
+from quadpype.tools.utils.lib import (
     iter_model_rows,
     qt_app_context
 )
-from openpype.tools.utils.models import RecursiveSortFilterProxyModel
+from quadpype.tools.utils.models import RecursiveSortFilterProxyModel
 from .model import (
     InstanceModel,
     ITEM_ID_ROLE
@@ -25,7 +25,7 @@ module.window = None
 
 class SubsetManagerWindow(QtWidgets.QDialog):
     def __init__(self, parent=None):
-        super(SubsetManagerWindow, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setWindowTitle("Subset Manager 0.1")
         self.setObjectName("SubsetManager")
         if not parent:

@@ -1,7 +1,7 @@
 from qtpy import QtCore, QtGui, QtWidgets
 
-from openpype import resources, style
-from openpype.widgets import BaseToolWidget
+from quadpype import resources, style
+from quadpype.widgets import BaseToolWidget
 
 
 class WidgetUserIdle(BaseToolWidget):
@@ -9,9 +9,9 @@ class WidgetUserIdle(BaseToolWidget):
     SIZE_H = 160
 
     def __init__(self, module):
-        super(WidgetUserIdle, self).__init__()
+        super().__init__()
 
-        self.setWindowTitle("OpenPype - Stop timers")
+        self.setWindowTitle("QuadPype - Stop timers")
 
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
@@ -194,7 +194,7 @@ class SignalHandler(QtCore.QObject):
     signal_stop_timers = QtCore.Signal()
 
     def __init__(self, module):
-        super(SignalHandler, self).__init__()
+        super().__init__()
         self.module = module
         self.signal_show_message.connect(module.show_message)
         self.signal_stop_timers.connect(module.stop_timers)

@@ -7,17 +7,17 @@ from abc import (
 import six
 import hou
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     CreatorError,
     LegacyCreator,
     Creator as NewCreator,
     CreatedInstance
 )
-from openpype.lib import BoolDef
+from quadpype.lib import BoolDef
 from .lib import imprint, read, lsattr, add_self_publish_button
 
 
-class OpenPypeCreatorError(CreatorError):
+class QuadPypeCreatorError(CreatorError):
     pass
 
 
@@ -43,7 +43,7 @@ class Creator(LegacyCreator):
     defaults = ['Main']
 
     def __init__(self, *args, **kwargs):
-        super(Creator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.nodes = []
 
     def process(self):
@@ -90,8 +90,8 @@ class Creator(LegacyCreator):
 
         except hou.Error as er:
             six.reraise(
-                OpenPypeCreatorError,
-                OpenPypeCreatorError("Creator error: {}".format(er)),
+                QuadPypeCreatorError,
+                QuadPypeCreatorError("Creator error: {}".format(er)),
                 sys.exc_info()[2])
 
 
@@ -220,8 +220,8 @@ class HoudiniCreator(NewCreator, HoudiniCreatorBase):
 
         except hou.Error as er:
             six.reraise(
-                OpenPypeCreatorError,
-                OpenPypeCreatorError("Creator error: {}".format(er)),
+                QuadPypeCreatorError,
+                QuadPypeCreatorError("Creator error: {}".format(er)),
                 sys.exc_info()[2])
 
     def lock_parameters(self, node, parameters):

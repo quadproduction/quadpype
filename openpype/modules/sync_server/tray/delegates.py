@@ -1,9 +1,9 @@
 import os
 from qtpy import QtCore, QtWidgets, QtGui
 
-from openpype.lib import Logger
+from quadpype.lib import Logger
 
-from openpype.tools.utils.constants import (
+from quadpype.tools.utils.constants import (
     LOCAL_PROVIDER_ROLE,
     REMOTE_PROVIDER_ROLE,
     LOCAL_PROGRESS_ROLE,
@@ -65,7 +65,7 @@ class PriorityLineEdit(QtWidgets.QLineEdit):
     """Special LineEdit to consume Enter and store selected indexes"""
     def __init__(self, parent=None, selected_idxs=None):
         self.selected_idxs = selected_idxs
-        super(PriorityLineEdit, self).__init__(parent)
+        super().__init__(parent)
 
     def keyPressEvent(self, event):
         result = super(PriorityLineEdit, self).keyPressEvent(event)
@@ -83,7 +83,7 @@ class ImageDelegate(QtWidgets.QStyledItemDelegate):
     """
 
     def __init__(self, parent=None, side=None):
-        super(ImageDelegate, self).__init__(parent)
+        super().__init__(parent)
         self.icons = {}
         self.side = side
 

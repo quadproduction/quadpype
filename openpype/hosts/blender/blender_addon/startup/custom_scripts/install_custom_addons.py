@@ -5,7 +5,7 @@ import argparse
 import logging
 import subprocess
 from pathlib import Path
-from openpype.settings import get_system_settings, MODULES_SETTINGS_KEY
+from quadpype.settings import get_system_settings, MODULES_SETTINGS_KEY
 
 
 def execute():

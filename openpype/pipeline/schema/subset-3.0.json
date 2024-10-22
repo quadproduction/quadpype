@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
 
-    "title": "openpype:subset-3.0",
+    "title": "quadpype:subset-3.0",
     "description": "A container of instances",
 
     "type": "object",
@@ -20,8 +20,8 @@
         "schema": {
             "description": "The schema associated with this document",
             "type": "string",
-            "enum": ["openpype:subset-3.0"],
-            "example": "openpype:subset-3.0"
+            "enum": ["quadpype:subset-3.0"],
+            "example": "quadpype:subset-3.0"
         },
         "type": {
             "description": "The type of document",

@@ -27,14 +27,14 @@ import collections
 
 import pyblish.api
 
-from openpype.client import (
+from quadpype.client import (
     get_assets,
     get_subsets,
     get_last_versions,
     get_asset_name_identifier,
 )
-from openpype.pipeline.version_start import get_versioning_start
-from openpype.pipeline.latest_version import get_latest_version_number
+from quadpype.pipeline.version_start import get_versioning_start
+from quadpype.pipeline.latest_version import get_latest_version_number
 
 
 class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
@@ -352,7 +352,7 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
             return
 
         project_name = instance.context.data["projectName"]
-        # OpenPype approach vs AYON approach
+        # QuadPype approach vs AYON approach
         if "/" not in asset_name:
             tasks_info = self._find_tasks_info_in_hierarchy(
                 hierarchy_context, asset_name

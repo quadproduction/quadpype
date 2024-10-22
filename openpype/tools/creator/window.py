@@ -4,16 +4,16 @@ import re
 
 from qtpy import QtWidgets, QtCore
 
-from openpype.client import get_asset_by_name, get_subsets
-from openpype import style
-from openpype.settings import get_current_project_settings
-from openpype.tools.utils.lib import qt_app_context
-from openpype.pipeline import (
+from quadpype.client import get_asset_by_name, get_subsets
+from quadpype import style
+from quadpype.settings import get_current_project_settings
+from quadpype.tools.utils.lib import qt_app_context
+from quadpype.pipeline import (
     get_current_project_name,
     get_current_asset_name,
     get_current_task_name,
 )
-from openpype.pipeline.create import (
+from quadpype.pipeline.create import (
     SUBSET_NAME_ALLOWED_SYMBOLS,
     legacy_create,
     CreatorError,
@@ -37,7 +37,7 @@ module.window = None
 
 class CreatorWindow(QtWidgets.QDialog):
     def __init__(self, parent=None):
-        super(CreatorWindow, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Instance Creator")
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         if not parent:

@@ -33,7 +33,7 @@ def tile_assembler_enum():
             "label": "Draft Tile Assembler"
         },
         {
-            "value": "OpenPypeTileAssembler",
+            "value": "QuadPypeTileAssembler",
             "label": "Open Image IO"
         }
     ]

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import pyblish.api
-from openpype.pipeline import PublishValidationError
+from quadpype.pipeline import PublishValidationError
 from pymxs import runtime as rt
-from openpype.pipeline.publish import RepairAction
-from openpype.hosts.max.api.lib import get_current_renderer
+from quadpype.pipeline.publish import RepairAction
+from quadpype.hosts.max.api.lib import get_current_renderer
 
 
 class ValidateRendererRedshiftProxy(pyblish.api.InstancePlugin):

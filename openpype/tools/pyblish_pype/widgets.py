@@ -6,7 +6,7 @@ from .constants import PluginStates, InstanceStates, Roles
 
 class EllidableLabel(QtWidgets.QLabel):
     def __init__(self, *args, **kwargs):
-        super(EllidableLabel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setObjectName("EllidableLabel")
 
     def paintEvent(self, event):
@@ -21,7 +21,7 @@ class EllidableLabel(QtWidgets.QLabel):
 
 class PerspectiveLabel(QtWidgets.QTextEdit):
     def __init__(self, parent=None):
-        super(PerspectiveLabel, self).__init__(parent)
+        super().__init__(parent)
         self.setObjectName("PerspectiveLabel")
 
         size_policy = self.sizePolicy()
@@ -60,7 +60,7 @@ class PerspectiveWidget(QtWidgets.QWidget):
     l_path = "Path"
 
     def __init__(self, parent):
-        super(PerspectiveWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.parent_widget = parent
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -345,7 +345,7 @@ class ExpandableWidget(QtWidgets.QWidget):
     content = None
 
     def __init__(self, parent, title):
-        super(ExpandableWidget, self).__init__(parent)
+        super().__init__(parent)
 
         top_part = ClickableWidget(parent=self)
         top_part.setObjectName("ExpandableHeader")
@@ -420,7 +420,7 @@ class ExpandableWidget(QtWidgets.QWidget):
 
 class ButtonWithMenu(QtWidgets.QWidget):
     def __init__(self, button_title, parent=None):
-        super(ButtonWithMenu, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setSizePolicy(QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum
         ))
@@ -462,7 +462,7 @@ class ButtonWithMenu(QtWidgets.QWidget):
 class CommentBox(QtWidgets.QLineEdit):
 
     def __init__(self, placeholder_text, parent=None):
-        super(CommentBox, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.placeholder = QtWidgets.QLabel(placeholder_text, self)
         self.placeholder.move(2, 2)
 
@@ -481,7 +481,7 @@ class CommentBox(QtWidgets.QLineEdit):
 
 class TerminalDetail(QtWidgets.QTextEdit):
     def __init__(self, text, *args, **kwargs):
-        super(TerminalDetail, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setReadOnly(True)
         self.setHtml(text)
@@ -504,7 +504,7 @@ class FilterButton(QtWidgets.QPushButton):
     def __init__(self, name, *args, **kwargs):
         self.filter_name = name
 
-        super(FilterButton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.toggled.connect(self.on_toggle)
 
@@ -522,7 +522,7 @@ class FilterButton(QtWidgets.QPushButton):
 class TerminalFilterWidget(QtWidgets.QWidget):
     # timer.timeout.connect(lambda: self._update(self.parent_widget))
     def __init__(self, *args, **kwargs):
-        super(TerminalFilterWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setObjectName("TerminalFilterWidget")
         self.filter_changed = QtCore.Signal()
 

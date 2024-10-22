@@ -275,7 +275,7 @@ def create_otio_reference(clip_data, fps=None):
 
 
 def create_otio_clip(clip_data):
-    from openpype.hosts.flame.api import MediaInfoFile, TimeEffectMetadata
+    from quadpype.hosts.flame.api import MediaInfoFile, TimeEffectMetadata
 
     segment = clip_data["PySegment"]
 
@@ -398,7 +398,7 @@ def _get_colourspace_policy():
     with open(policy_fp) as file:
         dict_conf = dict(line.strip().split(' = ', 1) for line in file)
         output.update(
-            {"openpype.flame.{}".format(k): v for k, v in dict_conf.items()}
+            {"quadpype.flame.{}".format(k): v for k, v in dict_conf.items()}
         )
     return output
 
@@ -412,9 +412,9 @@ def _create_otio_timeline(sequence):
     metadata.update(colorspace_policy)
 
     metadata.update({
-        "openpype.timeline.width": int(sequence.width),
-        "openpype.timeline.height": int(sequence.height),
-        "openpype.timeline.pixelAspect": 1
+        "quadpype.timeline.width": int(sequence.width),
+        "quadpype.timeline.height": int(sequence.height),
+        "quadpype.timeline.pixelAspect": 1
     })
 
     rt_start_time = create_otio_rational_time(

@@ -1,6 +1,6 @@
 import ftrack_api
-from openpype_modules.ftrack.lib import BaseEvent
-from openpype.modules import ModulesManager
+from quadpype_modules.ftrack.lib import BaseEvent
+from quadpype.modules import ModulesManager
 
 
 class KeepUserActiveForDeadline(BaseEvent):

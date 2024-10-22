@@ -19,7 +19,7 @@ import logging
 from pyblish.api import Instance as PyblishInstance
 
 from tests.lib.testing_classes import BaseTest
-from openpype.hosts.unreal.plugins.publish.validate_sequence_frames import (
+from quadpype.hosts.unreal.plugins.publish.validate_sequence_frames import (
     ValidateSequenceFrames
 )
 

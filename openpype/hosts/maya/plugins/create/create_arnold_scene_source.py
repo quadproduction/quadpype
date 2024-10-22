@@ -1,10 +1,10 @@
 from maya import cmds
 
-from openpype.hosts.maya.api import (
+from quadpype.hosts.maya.api import (
     lib,
     plugin
 )
-from openpype.lib import (
+from quadpype.lib import (
     NumberDef,
     BoolDef
 )
@@ -13,7 +13,7 @@ from openpype.lib import (
 class CreateArnoldSceneSource(plugin.MayaCreator):
     """Arnold Scene Source"""
 
-    identifier = "io.openpype.creators.maya.ass"
+    identifier = "io.quadpype.creators.maya.ass"
     label = "Arnold Scene Source"
     family = "ass"
     icon = "cube"
@@ -96,7 +96,7 @@ class CreateArnoldSceneSourceProxy(CreateArnoldSceneSource):
     This product type facilitates working with proxy geometry in the viewport.
     """
 
-    identifier = "io.openpype.creators.maya.assproxy"
+    identifier = "io.quadpype.creators.maya.assproxy"
     label = "Arnold Scene Source Proxy"
     family = "assProxy"
     icon = "cube"

@@ -7,11 +7,11 @@ from xml.etree import ElementTree as ET
 import qargparse
 from qtpy import QtCore, QtWidgets
 
-from openpype import style
-from openpype.lib import Logger, StringTemplate
-from openpype.pipeline import LegacyCreator, LoaderPlugin
-from openpype.pipeline.colorspace import get_remapped_colorspace_to_native
-from openpype.settings import get_current_project_settings
+from quadpype import style
+from quadpype.lib import Logger, StringTemplate
+from quadpype.pipeline import LegacyCreator, LoaderPlugin
+from quadpype.pipeline.colorspace import get_remapped_colorspace_to_native
+from quadpype.settings import get_current_project_settings
 
 from . import constants
 from . import lib as flib
@@ -27,7 +27,7 @@ class CreatorWidget(QtWidgets.QDialog):
     _results_back = None
 
     def __init__(self, name, info, ui_inputs, parent=None):
-        super(CreatorWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName(name)
 
@@ -306,7 +306,7 @@ class Creator(LegacyCreator):
     rename_index = None
 
     def __init__(self, *args, **kwargs):
-        super(Creator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.presets = get_current_project_settings()[
             "flame"]["create"].get(self.__class__.__name__, {})
 
@@ -809,7 +809,7 @@ class OpenClipSolver(flib.MediaInfoFile):
         feed_path = feed_data.pop("path")
 
         # initialize parent class
-        super(OpenClipSolver, self).__init__(
+        super().__init__(
             feed_path,
             logger=logger
         )

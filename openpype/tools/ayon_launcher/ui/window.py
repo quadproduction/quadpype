@@ -1,9 +1,9 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import style
-from openpype import resources
+from quadpype import style
+from quadpype import resources
 
-from openpype.tools.ayon_launcher.control import BaseLauncherController
+from quadpype.tools.ayon_launcher.control import BaseLauncherController
 
 from .projects_widget import ProjectsWidget
 from .hierarchy_page import HierarchyPage
@@ -17,7 +17,7 @@ class LauncherWindow(QtWidgets.QWidget):
     page_side_anim_interval = 250
 
     def __init__(self, controller=None, parent=None):
-        super(LauncherWindow, self).__init__(parent)
+        super().__init__(parent)
 
         if controller is None:
             controller = BaseLauncherController()

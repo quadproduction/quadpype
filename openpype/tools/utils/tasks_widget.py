@@ -1,12 +1,12 @@
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_asset_by_id,
 )
-from openpype.style import get_disabled_entity_icon_color
-from openpype.tools.utils.lib import get_task_icon
+from quadpype.style import get_disabled_entity_icon_color
+from quadpype.tools.utils.lib import get_task_icon
 
 from .views import DeselectableTreeView
 
@@ -21,7 +21,7 @@ class TasksModel(QtGui.QStandardItemModel):
     """A model listing the tasks combined for a list of assets"""
 
     def __init__(self, dbcon, parent=None):
-        super(TasksModel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.dbcon = dbcon
         self.setHeaderData(
             0, QtCore.Qt.Horizontal, "Tasks", QtCore.Qt.DisplayRole
@@ -175,7 +175,7 @@ class TasksWidget(QtWidgets.QWidget):
     def __init__(self, dbcon, parent=None):
         self._dbcon = dbcon
 
-        super(TasksWidget, self).__init__(parent)
+        super().__init__(parent)
 
         tasks_view = DeselectableTreeView(self)
         tasks_view.setIndentation(0)

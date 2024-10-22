@@ -1,16 +1,16 @@
 import os
 
-from openpype.hosts.max.api import lib
-from openpype.hosts.max.api.lib import (
+from quadpype.hosts.max.api import lib
+from quadpype.hosts.max.api.lib import (
     unique_namespace,
     get_namespace,
     object_transform_set
 )
-from openpype.hosts.max.api.pipeline import (
+from quadpype.hosts.max.api.pipeline import (
     containerise, get_previous_loaded_object,
     update_custom_attribute_data
 )
-from openpype.pipeline import get_representation_path, load
+from quadpype.pipeline import get_representation_path, load
 
 
 class MaxSceneLoader(load.LoaderPlugin):
@@ -56,7 +56,7 @@ class MaxSceneLoader(load.LoaderPlugin):
         namespace, _ = get_namespace(node_name)
         # delete the old container with attribute
         # delete old duplicate
-        # use the modifier OP data to delete the data
+        # use the modifier QuadPype data to delete the data
         node_list = get_previous_loaded_object(node)
         rt.select(node_list)
         prev_max_objects = rt.GetCurrentSelection()

@@ -1,8 +1,8 @@
 import pyblish.api
 from maya import cmds
 
-from openpype.hosts.maya.api import lib
-from openpype.pipeline.publish import (
+from quadpype.hosts.maya.api import lib
+from quadpype.pipeline.publish import (
     PublishValidationError,
     RepairAction,
     ValidateContentsOrder,

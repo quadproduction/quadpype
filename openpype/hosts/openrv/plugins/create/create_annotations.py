@@ -1,17 +1,17 @@
 import qtawesome
 import rv
 import os
-from openpype.client import get_subsets, get_versions, get_representations
-from openpype.hosts.openrv.api.pipeline import get_containers, imprint_container
-from openpype.hosts.openrv.api import lib
-from openpype.pipeline import get_current_project_name, get_current_context
-from openpype.pipeline import (
+from quadpype.client import get_subsets, get_versions, get_representations
+from quadpype.hosts.openrv.api.pipeline import get_containers, imprint_container
+from quadpype.hosts.openrv.api import lib
+from quadpype.pipeline import get_current_project_name, get_current_context
+from quadpype.pipeline import (
     AutoCreator,
     CreatedInstance,
 )
-from openpype.hosts.openrv.plugins.load.load_frames import FramesLoader
-from openpype.client import get_asset_by_name
-from openpype.hosts.openrv.api.ocio import (
+from quadpype.hosts.openrv.plugins.load.load_frames import FramesLoader
+from quadpype.client import get_asset_by_name
+from quadpype.hosts.openrv.api.ocio import (
     set_group_ocio_active_state,
     set_group_ocio_colorspace
 )

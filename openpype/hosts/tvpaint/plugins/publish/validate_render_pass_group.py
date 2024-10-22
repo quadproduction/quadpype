@@ -1,6 +1,6 @@
 import collections
 import pyblish.api
-from openpype.pipeline import PublishXmlValidationError
+from quadpype.pipeline import PublishXmlValidationError
 
 
 class ValidateLayersGroup(pyblish.api.InstancePlugin):

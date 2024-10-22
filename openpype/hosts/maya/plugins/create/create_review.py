@@ -2,17 +2,17 @@ import json
 
 from maya import cmds
 
-from openpype.hosts.maya.api import (
+from quadpype.hosts.maya.api import (
     lib,
     plugin
 )
-from openpype.lib import (
+from quadpype.lib import (
     BoolDef,
     NumberDef,
     EnumDef
 )
-from openpype.pipeline import CreatedInstance
-from openpype.client import get_asset_by_name
+from quadpype.pipeline import CreatedInstance
+from quadpype.client import get_asset_by_name
 
 TRANSPARENCIES = [
     "preset",
@@ -27,7 +27,7 @@ TRANSPARENCIES = [
 class CreateReview(plugin.MayaCreator):
     """Playblast reviewable"""
 
-    identifier = "io.openpype.creators.maya.review"
+    identifier = "io.quadpype.creators.maya.review"
     label = "Review"
     family = "review"
     icon = "video-camera"

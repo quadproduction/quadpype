@@ -1,11 +1,11 @@
-from openpype.pipeline import CreatedInstance
+from quadpype.pipeline import CreatedInstance
 
-from openpype.lib import BoolDef
-import openpype.hosts.photoshop.api as api
-from openpype.hosts.photoshop.lib import PSAutoCreator, clean_subset_name
-from openpype.pipeline.create import get_subset_name
-from openpype.lib import prepare_template_data
-from openpype.client import get_asset_by_name
+from quadpype.lib import BoolDef
+import quadpype.hosts.photoshop.api as api
+from quadpype.hosts.photoshop.lib import PSAutoCreator, clean_subset_name
+from quadpype.pipeline.create import get_subset_name
+from quadpype.lib import prepare_template_data
+from quadpype.client import get_asset_by_name
 
 
 class AutoImageCreator(PSAutoCreator):

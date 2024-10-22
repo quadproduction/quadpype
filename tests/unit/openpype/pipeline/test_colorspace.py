@@ -17,16 +17,16 @@ import pytest
 import shutil
 import os
 
-from tests.unit.openpype.pipeline.lib import TestPipeline
-from openpype.pipeline import colorspace
+from tests.unit.quadpype.pipeline.lib import TestPipeline
+from quadpype.pipeline import colorspace
 
 
 class TestPipelineColorspace(TestPipeline):
     """ Testing Colorspace
 
     Example:
-        cd to OpenPype repo root dir
-        poetry run python ./start.py runtests <openpype_root>/tests/unit/openpype/pipeline/test_colorspace.py
+        cd to QuadPype repo root dir
+        poetry run python ./start.py runtests <quadpype_root>/tests/unit/quadpype/pipeline/test_colorspace.py
     """  # noqa: E501
 
     TEST_FILES = [

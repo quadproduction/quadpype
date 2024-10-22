@@ -6,8 +6,8 @@ import six
 
 from pathlib import Path
 
-from openpype.settings import get_project_settings
-from openpype.lib import Logger
+from quadpype.settings import get_project_settings
+from quadpype.lib import Logger
 
 from .anatomy import Anatomy
 from .template_data import get_project_template_data

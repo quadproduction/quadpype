@@ -3,9 +3,9 @@ import collections
 from qtpy import QtWidgets, QtGui, QtCore
 import qtawesome
 
-from openpype.style import get_default_entity_icon_color
-from openpype.tools.ayon_utils.widgets import get_qt_icon
-from openpype.tools.utils import DeselectableTreeView
+from quadpype.style import get_default_entity_icon_color
+from quadpype.tools.ayon_utils.widgets import get_qt_icon
+from quadpype.tools.utils import DeselectableTreeView
 
 from .actions_utils import show_actions_menu
 
@@ -36,7 +36,7 @@ class RepresentationsModel(QtGui.QStandardItemModel):
     remote_site_column = column_labels.index("Remote site")
 
     def __init__(self, controller):
-        super(RepresentationsModel, self).__init__()
+        super().__init__()
 
         self.setColumnCount(len(self.column_labels))
 
@@ -261,7 +261,7 @@ class RepresentationsModel(QtGui.QStandardItemModel):
 
 class RepresentationsWidget(QtWidgets.QWidget):
     def __init__(self, controller, parent):
-        super(RepresentationsWidget, self).__init__(parent)
+        super().__init__(parent)
 
         repre_view = DeselectableTreeView(self)
         repre_view.setSelectionMode(

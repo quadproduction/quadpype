@@ -15,12 +15,12 @@ from wsrpc_aiohttp import (
 
 from qtpy import QtCore
 
-from openpype.lib import Logger
-from openpype.tests.lib import is_in_tests
-from openpype.pipeline import install_host, legacy_io
-from openpype.modules import ModulesManager
-from openpype.tools.utils import host_tools, get_openpype_qt_app
-from openpype.tools.adobe_webserver.app import WebServerTool
+from quadpype.lib import Logger
+from quadpype.tests.lib import is_in_tests
+from quadpype.pipeline import install_host, legacy_io
+from quadpype.modules import ModulesManager
+from quadpype.tools.utils import host_tools, get_quadpype_qt_app
+from quadpype.tools.adobe_webserver.app import WebServerTool
 
 from .ws_stub import get_stub
 from .lib import set_settings
@@ -37,13 +37,13 @@ def main(*subprocess_args):
     """Main entrypoint to AE launching, called from pre hook."""
     sys.excepthook = safe_excepthook
 
-    from openpype.hosts.aftereffects.api import AfterEffectsHost
+    from quadpype.hosts.aftereffects.api import AfterEffectsHost
 
     host = AfterEffectsHost()
     install_host(host)
 
     os.environ["QUADPYPE_LOG_NO_COLORS"] = "False"
-    app = get_openpype_qt_app()
+    app = get_quadpype_qt_app()
     app.setQuitOnLastWindowClosed(False)
 
     launcher = ProcessLauncher(subprocess_args)
@@ -91,7 +91,7 @@ class ProcessLauncher(QtCore.QObject):
         self._subprocess_args = subprocess_args
         self._log = None
 
-        super(ProcessLauncher, self).__init__()
+        super().__init__()
 
         # Keep track if launcher was alreadu started
         self._started = False
@@ -374,7 +374,7 @@ class AfterEffectsRoute(WebSocketRoute):
 
 
     def create_placeholder_route(self):
-        from openpype.hosts.aftereffects.api.workfile_template_builder import \
+        from quadpype.hosts.aftereffects.api.workfile_template_builder import \
             create_placeholder
         partial_method = functools.partial(create_placeholder)
 
@@ -384,7 +384,7 @@ class AfterEffectsRoute(WebSocketRoute):
         return "nothing"
 
     def update_placeholder_route(self):
-        from openpype.hosts.aftereffects.api.workfile_template_builder import \
+        from quadpype.hosts.aftereffects.api.workfile_template_builder import \
             update_placeholder
         partial_method = functools.partial(update_placeholder)
 
@@ -394,7 +394,7 @@ class AfterEffectsRoute(WebSocketRoute):
         return "nothing"
 
     def build_workfile_template_route(self):
-        from openpype.hosts.aftereffects.api.workfile_template_builder import \
+        from quadpype.hosts.aftereffects.api.workfile_template_builder import \
             build_workfile_template
         partial_method = functools.partial(build_workfile_template)
 

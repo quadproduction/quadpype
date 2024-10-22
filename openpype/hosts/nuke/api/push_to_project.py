@@ -2,12 +2,12 @@ from collections import defaultdict
 import shutil
 import os
 
-from openpype.client import get_project, get_asset_by_id
-from openpype.settings import get_system_settings, get_project_settings
-from openpype.pipeline import Anatomy, registered_host
-from openpype.pipeline.template_data import get_template_data
-from openpype.pipeline.workfile import get_workdir_with_workdir_data
-from openpype.tools.push_to_project.app import show
+from quadpype.client import get_project, get_asset_by_id
+from quadpype.settings import get_system_settings, get_project_settings
+from quadpype.pipeline import Anatomy, registered_host
+from quadpype.pipeline.template_data import get_template_data
+from quadpype.pipeline.workfile import get_workdir_with_workdir_data
+from quadpype.tools.push_to_project.app import show
 
 from .utils import bake_gizmos_recursively
 
@@ -25,8 +25,8 @@ def bake_container(container):
     for count in range(0, node.numKnobs()):
         knob = node.knob(count)
 
-        # All knobs from "OpenPype" tab knob onwards.
-        if knob.name() == "OpenPype":
+        # All knobs from "QuadPype" tab knob onwards.
+        if knob.name() == "QuadPype":
             remove = True
 
         if remove:

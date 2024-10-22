@@ -3,7 +3,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 
 class NiceSlider(QtWidgets.QSlider):
     def __init__(self, *args, **kwargs):
-        super(NiceSlider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._mouse_clicked = False
         self._handle_size = 0
 

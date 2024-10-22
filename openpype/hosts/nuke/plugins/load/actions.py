@@ -2,8 +2,8 @@
 
 """
 
-from openpype.lib import Logger
-from openpype.pipeline import load
+from quadpype.lib import Logger
+from quadpype.pipeline import load
 
 log = Logger.get_logger(__name__)
 
@@ -26,7 +26,7 @@ class SetFrameRangeLoader(load.LoaderPlugin):
 
     def load(self, context, name, namespace, data):
 
-        from openpype.hosts.nuke.api import lib
+        from quadpype.hosts.nuke.api import lib
 
         version = context['version']
         version_data = version.get("data", {})
@@ -60,7 +60,7 @@ class SetFrameRangeWithHandlesLoader(load.LoaderPlugin):
 
     def load(self, context, name, namespace, data):
 
-        from openpype.hosts.nuke.api import lib
+        from quadpype.hosts.nuke.api import lib
 
         version = context['version']
         version_data = version.get("data", {})

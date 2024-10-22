@@ -3,13 +3,13 @@ import time
 import pyblish.api
 import pyblish.util
 
-from openpype.lib import Logger
-from openpype.lib.applications import (
+from quadpype.lib import Logger
+from quadpype.lib.applications import (
     ApplicationManager,
     LaunchTypes,
 )
-from openpype.pipeline import install_host
-from openpype.hosts.webpublisher.api import WebpublisherHost
+from quadpype.pipeline import install_host
+from quadpype.hosts.webpublisher.api import WebpublisherHost
 
 from .lib import (
     get_batch_asset_task_info,
@@ -55,7 +55,7 @@ def cli_publish(project_name, batch_path, user_email, targets):
     # Register target and host
     webpublisher_host = WebpublisherHost()
 
-    os.environ["OPENPYPE_PUBLISH_DATA"] = batch_path
+    os.environ["QUADPYPE_PUBLISH_DATA"] = batch_path
     os.environ["AVALON_PROJECT"] = project_name
     os.environ["AVALON_APP"] = webpublisher_host.name
     os.environ["USER_EMAIL"] = user_email
@@ -171,7 +171,7 @@ def cli_publish_from_app(
     # must have for proper launch of app
     env = launch_context.env
     print("env:: {}".format(env))
-    env["OPENPYPE_PUBLISH_DATA"] = batch_path
+    env["QUADPYPE_PUBLISH_DATA"] = batch_path
     # must pass identifier to update log lines for a batch
     env["BATCH_LOG_ID"] = str(_id)
     env["HEADLESS_PUBLISH"] = 'true'  # to use in app lib

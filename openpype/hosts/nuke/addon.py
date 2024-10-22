@@ -1,11 +1,11 @@
 import os
 import platform
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 NUKE_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class NukeAddon(OpenPypeModule, IHostAddon):
+class NukeAddon(QuadPypeModule, IHostAddon):
     name = "nuke"
     host_name = "nuke"
 

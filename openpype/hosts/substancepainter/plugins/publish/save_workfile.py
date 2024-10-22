@@ -1,6 +1,6 @@
 import pyblish.api
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     registered_host,
     KnownPublishError
 )

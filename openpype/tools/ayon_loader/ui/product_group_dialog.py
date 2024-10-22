@@ -1,11 +1,11 @@
 from qtpy import QtWidgets
 
-from openpype.tools.utils import PlaceholderLineEdit
+from quadpype.tools.utils import PlaceholderLineEdit
 
 
 class ProductGroupDialog(QtWidgets.QDialog):
     def __init__(self, controller, parent):
-        super(ProductGroupDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Grouping products")
         self.setMinimumWidth(250)
         self.setModal(True)

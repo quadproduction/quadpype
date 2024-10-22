@@ -1,7 +1,7 @@
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 
-class AfterEffectsAddon(OpenPypeModule, IHostAddon):
+class AfterEffectsAddon(QuadPypeModule, IHostAddon):
     name = "aftereffects"
     host_name = "aftereffects"
 

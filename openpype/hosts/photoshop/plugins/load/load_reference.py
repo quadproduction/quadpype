@@ -1,8 +1,8 @@
 import re
 
-from openpype.pipeline import get_representation_path
-from openpype.hosts.photoshop import api as photoshop
-from openpype.hosts.photoshop.api import get_unique_layer_name
+from quadpype.pipeline import get_representation_path
+from quadpype.hosts.photoshop import api as photoshop
+from quadpype.hosts.photoshop.api import get_unique_layer_name
 
 
 class ReferenceLoader(photoshop.PhotoshopLoader):

@@ -1,7 +1,7 @@
 import click
 
-from openpype.tools.utils import get_openpype_qt_app
-from openpype.tools.push_to_project.window import PushToContextSelectWindow
+from quadpype.tools.utils import get_quadpype_qt_app
+from quadpype.tools.push_to_project.window import PushToContextSelectWindow
 
 
 def show(project, version, library_filter, context_only):
@@ -12,7 +12,7 @@ def show(project, version, library_filter, context_only):
     window.controller.set_source(project, version)
 
     if __name__ == "__main__":
-        app = get_openpype_qt_app()
+        app = get_quadpype_qt_app()
         app.exec_()
     else:
         window.exec_()

@@ -7,14 +7,14 @@ from pymongo import UpdateOne, DeleteOne
 
 from qtpy import QtCore, QtGui
 
-from openpype.client import (
+from quadpype.client import (
     get_projects,
     get_project,
     get_assets,
     get_asset_ids_with_subsets,
 )
-from openpype.client.operations import CURRENT_ASSET_DOC_SCHEMA
-from openpype.lib import Logger
+from quadpype.client.operations import CURRENT_ASSET_DOC_SCHEMA
+from quadpype.lib import Logger
 
 from .constants import (
     IDENTIFIER_ROLE,
@@ -40,7 +40,7 @@ class ProjectModel(QtGui.QStandardItemModel):
 
         self._items_by_name = {}
 
-        super(ProjectModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def refresh(self):
         """Reload projects."""
@@ -81,7 +81,7 @@ class ProjectModel(QtGui.QStandardItemModel):
 class ProjectProxyFilter(QtCore.QSortFilterProxyModel):
     """Filters default project item."""
     def __init__(self, *args, **kwargs):
-        super(ProjectProxyFilter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._filter_default = False
 
     def lessThan(self, left, right):
@@ -115,7 +115,7 @@ class HierarchySelectionModel(QtCore.QItemSelectionModel):
     """
 
     def __init__(self, multiselection_columns, *args, **kwargs):
-        super(HierarchySelectionModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.multiselection_columns = multiselection_columns
 
     def setCurrentIndex(self, index, command):
@@ -188,7 +188,7 @@ class HierarchyModel(QtCore.QAbstractItemModel):
     project_changed = QtCore.Signal()
 
     def __init__(self, dbcon, parent=None):
-        super(HierarchyModel, self).__init__(parent)
+        super().__init__(parent)
 
         self.multiselection_column_indexes = {
             self.columns.index(key)
@@ -1708,7 +1708,7 @@ class RootItem(BaseItem):
     item_type = "root"
 
     def __init__(self, model):
-        super(RootItem, self).__init__()
+        super().__init__()
         self._model = model
 
     def model(self):
@@ -1762,7 +1762,7 @@ class ProjectItem(BaseItem):
         self._mongo_id = project_doc["_id"]
 
         data = self.data_from_doc(project_doc)
-        super(ProjectItem, self).__init__(data)
+        super().__init__(data)
 
     @property
     def project_id(self):
@@ -1813,7 +1813,7 @@ class ProjectItem(BaseItem):
 class AssetItem(BaseItem):
     """Item represent asset document.
 
-    Item have ability to set all required and optional data for OpenPype
+    Item have ability to set all required and optional data for QuadPype
     workflow. Some of them are not modifiable in specific cases e.g. when asset
     has published content it is not possible to change it's name or parent.
     """
@@ -1899,7 +1899,7 @@ class AssetItem(BaseItem):
 
         self._origin_data = copy.deepcopy(data)
 
-        super(AssetItem, self).__init__(data)
+        super().__init__(data)
 
     @property
     def project_id(self):
@@ -2319,7 +2319,7 @@ class TaskItem(BaseItem):
             for column_name in self.editable_columns
         }
         self._origin_data = copy.deepcopy(data)
-        super(TaskItem, self).__init__(data)
+        super().__init__(data)
 
     @property
     def is_new(self):

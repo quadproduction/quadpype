@@ -148,7 +148,7 @@ def parse_oiio_xml_output(xml_string):
     #   e.g. "&#01;"
     # WARNING: this will affect even valid character entities. If you need
     #   those values correctly, this must take care of valid character ranges.
-    #   See https://github.com/pypeclub/OpenPype/pull/2729
+    #   See https://github.com/quadproduction/quadpype/pull/2729
     matches = XML_CHAR_REF_REGEX_HEX.findall(xml_string)
     for match in matches:
         new_value = match.replace("&", "&amp;")
@@ -236,7 +236,7 @@ def info_about_input(oiiotool_path, filepath):
 
 def GetDeadlinePlugin():  # noqa: N802
     """Helper."""
-    return OpenPypeTileAssembler()
+    return QuadPypeTileAssembler()
 
 
 def CleanupDeadlinePlugin(deadlinePlugin):  # noqa: N802, N803
@@ -244,7 +244,7 @@ def CleanupDeadlinePlugin(deadlinePlugin):  # noqa: N802, N803
     deadlinePlugin.cleanup()
 
 
-class OpenPypeTileAssembler(DeadlinePlugin):
+class QuadPypeTileAssembler(DeadlinePlugin):
     """Deadline plugin for assembling tiles using OIIO."""
 
     def __init__(self):
@@ -357,7 +357,7 @@ class OpenPypeTileAssembler(DeadlinePlugin):
 
     def pre_render_tasks(self):
         """Load config file and do remapping."""
-        self.LogInfo("OpenPype Tile Assembler starting...")
+        self.LogInfo("QuadPype Tile Assembler starting...")
         config_file = self.GetPluginInfoEntry("ConfigFile")
 
         temp_scene_directory = self.CreateTempDirectory(
@@ -391,7 +391,7 @@ class OpenPypeTileAssembler(DeadlinePlugin):
                         tile["filepath"]))
                     pass
 
-        self.LogInfo("OpenPype Tile Assembler Job finished.")
+        self.LogInfo("QuadPype Tile Assembler Job finished.")
 
     def handle_stdout_error(self):
         """Handle errors in stdout."""

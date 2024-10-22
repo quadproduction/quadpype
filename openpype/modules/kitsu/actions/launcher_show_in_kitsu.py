@@ -1,8 +1,8 @@
 import webbrowser
 
-from openpype.pipeline import LauncherAction
-from openpype.modules import ModulesManager
-from openpype.client import get_project, get_asset_by_name
+from quadpype.pipeline import LauncherAction
+from quadpype.modules import ModulesManager
+from quadpype.client import get_project, get_asset_by_name
 
 
 class ShowInKitsu(LauncherAction):

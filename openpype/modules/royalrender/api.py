@@ -3,10 +3,10 @@
 import sys
 import os
 
-from openpype.lib.local_settings import OpenPypeSettingsRegistry
-from openpype.lib import Logger, run_subprocess
+from quadpype.lib.local_settings import QuadPypeSettingsRegistry
+from quadpype.lib import Logger, run_subprocess
 from .rr_job import RRJob, SubmitFile, SubmitterParameter
-from openpype.lib.vendor_bin_utils import find_tool_in_custom_paths
+from quadpype.lib.vendor_bin_utils import find_tool_in_custom_paths
 
 
 class Api:
@@ -154,7 +154,7 @@ class Api:
         # Probably best way until we setup our own user management would be
         # to encrypt password and save it to json locally. Not bulletproof
         # but at least it is not stored in plaintext.
-        reg = OpenPypeSettingsRegistry()
+        reg = QuadPypeSettingsRegistry()
         try:
             rr_user = reg.get_item("rr_username")
             rr_password = reg.get_item("rr_password")

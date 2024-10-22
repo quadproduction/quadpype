@@ -6,11 +6,11 @@ import threading
 import ftrack_api
 from qtpy import QtCore, QtWidgets, QtGui
 
-from openpype import resources
-from openpype.lib import Logger
-from openpype_modules.ftrack import resolve_ftrack_url, FTRACK_MODULE_DIR
-from openpype_modules.ftrack.ftrack_server import socket_thread
-from openpype_modules.ftrack.lib import credentials
+from quadpype import resources
+from quadpype.lib import Logger
+from quadpype_modules.ftrack import resolve_ftrack_url, FTRACK_MODULE_DIR
+from quadpype_modules.ftrack.ftrack_server import socket_thread
+from quadpype_modules.ftrack.lib import credentials
 from . import login_dialog
 
 
@@ -365,7 +365,7 @@ class FtrackEventsThread(QtCore.QThread):
     signal_timer_stopped = QtCore.Signal()
 
     def __init__(self, parent):
-        super(FtrackEventsThread, self).__init__()
+        super().__init__()
         cred = credentials.get_credentials()
         self.username = cred['username']
         self.user = None

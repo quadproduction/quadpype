@@ -1,8 +1,8 @@
 import pyblish.api
 
-from openpype.pipeline.publish import get_errored_instances_from_context
-from openpype.hosts.nuke.api.lib import link_knobs
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import get_errored_instances_from_context
+from quadpype.hosts.nuke.api.lib import link_knobs
+from quadpype.pipeline.publish import (
     OptionalPyblishPluginMixin,
     PublishValidationError
 )

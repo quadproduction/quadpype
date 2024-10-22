@@ -50,7 +50,7 @@ class ReviewMenu(MinorMode):
     def __init__(self):
         MinorMode.__init__(self)
         self.init("py-ReviewMenu-mode", None, None,
-                  [("OpenPype", [
+                  [("QuadPype", [
                       ("_", None),  # separator
                       ("Review", self.runme, None, self._is_active)
                   ])],
@@ -122,7 +122,7 @@ class ReviewMenu(MinorMode):
         self.rvWindow = rv.qtutils.sessionWindow()
         if self.dockWidget is None:
             # Create DockWidget and add the Custom Widget on first run
-            self.dockWidget = QtWidgets.QDockWidget("OpenPype Review",
+            self.dockWidget = QtWidgets.QDockWidget("QuadPype Review",
                                                     self.rvWindow)
             self.dockWidget.setWidget(self.customDockWidget)
 
@@ -179,7 +179,7 @@ class ReviewMenu(MinorMode):
         # Use namespace as loaded shot label
         namespace = ""
         if node is not None:
-            property_name = "{}.openpype.namespace".format(node)
+            property_name = "{}.quadpype.namespace".format(node)
             if rv.commands.propertyExists(property_name):
                 namespace = rv.commands.getStringProperty(property_name)[0]
 
@@ -193,7 +193,7 @@ class ReviewMenu(MinorMode):
             return
 
         comment = self.current_shot_comment.toPlainText()
-        att_prop = "{0}.openpype_review.comment".format(node)
+        att_prop = "{0}.quadpype_review.comment".format(node)
         rv.commands.newProperty(att_prop, rv.commands.StringType, 1)
         rv.commands.setStringProperty(att_prop, [str(comment)], True)
 
@@ -202,7 +202,7 @@ class ReviewMenu(MinorMode):
         node = rv.commands.nodesOfType('RVFileSource')[0]
         if node is None:
             return
-        att_prop_cmnt = node + ".openpype_review.comment"
+        att_prop_cmnt = node + ".quadpype_review.comment"
         attribs.append(att_prop_cmnt)
 
         for prop in attribs:

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Setup info for building OpenPype 3.0."""
+"""Setup info for building QuadPype 4."""
 import os
 import re
 import platform
@@ -62,7 +62,7 @@ if not os.getenv("SKIP_THIRD_PARTY_VALIDATION"):
 
 version = {}
 
-with open(app_root / "openpype" / "version.py") as fp:
+with open(app_root / "quadpype" / "version.py") as fp:
     exec(fp.read(), version)
 
 version_match = re.search(r"(\d+\.\d+.\d+).*", version["__version__"])
@@ -115,14 +115,14 @@ includes = []
 # and won't clean platform irrelevant modules
 # like dbm mentioned above.
 excludes = [
-    "openpype"
+    "quadpype"
 ]
 bin_includes = [
     "vendor"
 ]
 include_files = [
     "igniter",
-    "openpype",
+    "quadpype",
     "LICENSE",
     "README.md"
 ]
@@ -158,13 +158,13 @@ executables = [
     Executable(
         "start.py",
         base=base,
-        target_name="openpype_gui",
+        target_name="quadpype_gui",
         icon=icon_path.as_posix()
     ),
     Executable(
         "start.py",
         base=None,
-        target_name="openpype_console",
+        target_name="quadpype_console",
         icon=icon_path.as_posix()
     ),
 ]

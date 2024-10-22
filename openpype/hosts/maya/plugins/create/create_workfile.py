@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating workfiles."""
-from openpype.pipeline import CreatedInstance, AutoCreator
-from openpype.client import get_asset_by_name, get_asset_name_identifier
-from openpype.hosts.maya.api import plugin
+from quadpype.pipeline import CreatedInstance, AutoCreator
+from quadpype.client import get_asset_by_name, get_asset_name_identifier
+from quadpype.hosts.maya.api import plugin
 from maya import cmds
 
 
 class CreateWorkfile(plugin.MayaCreatorBase, AutoCreator):
     """Workfile auto-creator."""
-    identifier = "io.openpype.creators.maya.workfile"
+    identifier = "io.quadpype.creators.maya.workfile"
     label = "Workfile"
     family = "workfile"
     icon = "fa5.file"

@@ -3,14 +3,14 @@ from functools import partial
 
 from qtpy import QtCore, QtGui
 
-from openpype.tools.utils.lib import get_qta_icon_by_name_and_color
+from quadpype.tools.utils.lib import get_qta_icon_by_name_and_color
 
 
 class RefreshThread(QtCore.QThread):
     refresh_finished = QtCore.Signal(str)
 
     def __init__(self, thread_id, func, *args, **kwargs):
-        super(RefreshThread, self).__init__()
+        super().__init__()
         self._id = thread_id
         self._callback = partial(func, *args, **kwargs)
         self._exception = None

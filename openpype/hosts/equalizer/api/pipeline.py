@@ -1,5 +1,5 @@
 from attrs import field, define
-from openpype.pipeline import AVALON_CONTAINER_ID
+from quadpype.pipeline import AVALON_CONTAINER_ID
 import contextlib
 import tde4
 

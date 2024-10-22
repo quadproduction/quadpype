@@ -1,14 +1,14 @@
 from qtpy import QtCore, QtWidgets, QtGui
 
-from openpype import style, resources
-from openpype.tools.utils import (
+from quadpype import style, resources
+from quadpype.tools.utils import (
     PlaceholderLineEdit,
     MessageOverlayObject,
 )
 
-from openpype.tools.ayon_utils.widgets import FoldersWidget, TasksWidget
-from openpype.tools.ayon_workfiles.control import BaseWorkfileController
-from openpype.tools.utils import GoToCurrentButton, RefreshButton
+from quadpype.tools.ayon_utils.widgets import FoldersWidget, TasksWidget
+from quadpype.tools.ayon_workfiles.control import BaseWorkfileController
+from quadpype.tools.utils import GoToCurrentButton, RefreshButton
 
 from .side_panel import SidePanelWidget
 from .files_widget import FilesWidget
@@ -17,7 +17,7 @@ from .utils import BaseOverlayFrame
 
 class InvalidHostOverlay(BaseOverlayFrame):
     def __init__(self, parent):
-        super(InvalidHostOverlay, self).__init__(parent)
+        super().__init__(parent)
 
         label_widget = QtWidgets.QLabel(
             (
@@ -51,7 +51,7 @@ class WorkfilesToolWindow(QtWidgets.QWidget):
     title = "Work Files"
 
     def __init__(self, controller=None, parent=None):
-        super(WorkfilesToolWindow, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         if controller is None:
             controller = BaseWorkfileController()

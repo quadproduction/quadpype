@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import pyblish.api
-from openpype.pipeline import PublishValidationError
-from openpype.pipeline.publish import RepairAction
-from openpype.hosts.houdini.api.action import SelectInvalidAction
+from quadpype.pipeline import PublishValidationError
+from quadpype.pipeline.publish import RepairAction
+from quadpype.hosts.houdini.api.action import SelectInvalidAction
 
 import hou
 

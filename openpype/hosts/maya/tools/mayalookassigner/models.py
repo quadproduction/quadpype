@@ -3,8 +3,8 @@ from collections import defaultdict
 from qtpy import QtCore
 import qtawesome
 
-from openpype.tools.utils import models
-from openpype.style import get_default_entity_icon_color
+from quadpype.tools.utils import models
+from quadpype.style import get_default_entity_icon_color
 
 
 class AssetModel(models.TreeModel):
@@ -12,7 +12,7 @@ class AssetModel(models.TreeModel):
     Columns = ["label"]
 
     def __init__(self, *args, **kwargs):
-        super(AssetModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._icon_color = get_default_entity_icon_color()
 

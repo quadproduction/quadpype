@@ -22,7 +22,7 @@ from .pipeline import (
 )
 
 from .constants import (
-    OPENPYPE_TAG_NAME,
+    QUADPYPE_TAG_NAME,
     DEFAULT_SEQUENCE_NAME,
     DEFAULT_BIN_NAME
 )
@@ -35,15 +35,15 @@ from .lib import (
     get_timeline_selection,
     get_current_track,
     get_track_item_tags,
-    get_track_openpype_tag,
-    set_track_openpype_tag,
-    get_track_openpype_data,
+    get_track_quadpype_tag,
+    set_track_quadpype_tag,
+    get_track_quadpype_data,
     get_track_item_pype_tag,
     set_track_item_pype_tag,
     get_track_item_pype_data,
-    get_trackitem_openpype_tag,
-    set_trackitem_openpype_tag,
-    get_trackitem_openpype_data,
+    get_trackitem_quadpype_tag,
+    set_trackitem_quadpype_tag,
+    get_trackitem_quadpype_data,
     set_publish_attribute,
     get_publish_attribute,
     imprint,
@@ -88,7 +88,7 @@ __all__ = [
     "work_root",
 
     # Constants
-    "OPENPYPE_TAG_NAME",
+    "QUADPYPE_TAG_NAME",
     "DEFAULT_SEQUENCE_NAME",
     "DEFAULT_BIN_NAME",
 
@@ -100,12 +100,12 @@ __all__ = [
     "get_timeline_selection",
     "get_current_track",
     "get_track_item_tags",
-    "get_track_openpype_tag",
-    "set_track_openpype_tag",
-    "get_track_openpype_data",
-    "get_trackitem_openpype_tag",
-    "set_trackitem_openpype_tag",
-    "get_trackitem_openpype_data",
+    "get_track_quadpype_tag",
+    "set_track_quadpype_tag",
+    "get_track_quadpype_data",
+    "get_trackitem_quadpype_tag",
+    "set_trackitem_quadpype_tag",
+    "get_trackitem_quadpype_data",
     "set_publish_attribute",
     "get_publish_attribute",
     "imprint",

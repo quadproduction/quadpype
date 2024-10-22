@@ -6,11 +6,11 @@ from maya import cmds
 import pyblish.api
 import tempfile
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.lib import run_subprocess
-from openpype.pipeline import publish
-from openpype.pipeline.publish import OptionalPyblishPluginMixin
-from openpype.hosts.maya.api import lib
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.lib import run_subprocess
+from quadpype.pipeline import publish
+from quadpype.pipeline.publish import OptionalPyblishPluginMixin
+from quadpype.hosts.maya.api import lib
 
 
 class ExtractImportReference(publish.Extractor,

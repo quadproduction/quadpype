@@ -1,5 +1,5 @@
-from openpype.modules import ModulesManager
-from openpype.pipeline import load
+from quadpype.modules import ModulesManager
+from quadpype.pipeline import load
 
 
 class RemoveSyncSite(load.LoaderPlugin):

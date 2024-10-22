@@ -1,8 +1,8 @@
 from maya import cmds
 
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     ValidateMeshOrder,
     PublishValidationError,
     OptionalPyblishPluginMixin
@@ -33,7 +33,7 @@ class ValidateMeshNoNegativeScale(pyblish.api.Validator,
     hosts = ['maya']
     families = ['model']
     label = 'Mesh No Negative Scale'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = False
 
     @staticmethod

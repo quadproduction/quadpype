@@ -82,9 +82,9 @@ class ParseError(Error):
         loc += ':{0}'.format(column)
       message = '{0} : {1}'.format(loc, message)
     if message is not None:
-      super(ParseError, self).__init__(message)
+      super().__init__(message)
     else:
-      super(ParseError, self).__init__()
+      super().__init__()
     self._line = line
     self._column = column
 

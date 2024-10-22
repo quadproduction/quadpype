@@ -9,8 +9,8 @@ from .constants import (
     ADMIN_PERMISSION_NAMES,
 )
 
-from openpype.lib.local_settings import OpenPypeSecureRegistry
-from openpype.lib import Logger
+from quadpype.lib.local_settings import QuadPypeSecureRegistry
+from quadpype.lib import Logger
 
 
 class ClockifyAPI:
@@ -27,7 +27,7 @@ class ClockifyAPI:
     @property
     def secure_registry(self):
         if self._secure_registry is None:
-            self._secure_registry = OpenPypeSecureRegistry("clockify")
+            self._secure_registry = QuadPypeSecureRegistry("clockify")
         return self._secure_registry
 
     @property

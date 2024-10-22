@@ -1,9 +1,9 @@
 import pyblish.api
 from maya import cmds
 
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api import lib
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api import lib
+from quadpype.pipeline.publish import (
     PublishValidationError, RepairAction, ValidateContentsOrder)
 
 
@@ -22,7 +22,7 @@ class ValidateNodeIdsDeformedShape(pyblish.api.InstancePlugin):
     hosts = ['maya']
     label = 'Deformed shape ids'
     actions = [
-        openpype.hosts.maya.api.action.SelectInvalidAction,
+        quadpype.hosts.maya.api.action.SelectInvalidAction,
         RepairAction
     ]
 

@@ -4,15 +4,15 @@ from qtpy import QtWidgets
 from pprint import pformat
 import atexit
 
-import openpype.hosts.flame.api as opfapi
-from openpype.pipeline import (
+import quadpype.hosts.flame.api as opfapi
+from quadpype.pipeline import (
     install_host,
     registered_host,
 )
 
 
-def openpype_install():
-    """Registering OpenPype in context
+def quadpype_install():
+    """Registering QuadPype in context
     """
     install_host(opfapi)
     print("Registered host: {}".format(registered_host()))
@@ -28,7 +28,7 @@ def exeption_handler(exctype, value, _traceback):
         tb (str): traceback to show
     """
     import traceback
-    msg = "OpenPype: Python exception {} in {}".format(value, exctype)
+    msg = "QuadPype: Python exception {} in {}".format(value, exctype)
     mbox = QtWidgets.QMessageBox()
     mbox.setText(msg)
     mbox.setDetailedText(
@@ -56,7 +56,7 @@ def cleanup():
         opfapi.CTX.flame_apps = []
 
     if opfapi.CTX.app_framework:
-        print('openpype\t: {} cleaning up'.format(
+        print('quadpype\t: {} cleaning up'.format(
             opfapi.CTX.app_framework.bundle_name)
         )
         opfapi.CTX.app_framework.save_prefs()
@@ -177,8 +177,8 @@ def get_main_menu_custom_ui_actions():
     Returns:
         list: menu object
     """
-    # install openpype and the host
-    openpype_install()
+    # install quadpype and the host
+    quadpype_install()
 
     return _build_app_menu("FlameMenuProjectConnect")
 
@@ -189,8 +189,8 @@ def get_timeline_custom_ui_actions():
     Returns:
         list: menu object
     """
-    # install openpype and the host
-    openpype_install()
+    # install quadpype and the host
+    quadpype_install()
 
     return _build_app_menu("FlameMenuTimeline")
 
@@ -201,8 +201,8 @@ def get_batch_custom_ui_actions():
     Returns:
         list: menu object
     """
-    # install openpype and the host
-    openpype_install()
+    # install quadpype and the host
+    quadpype_install()
 
     return _build_app_menu("FlameMenuUniversal")
 
@@ -213,7 +213,7 @@ def get_media_panel_custom_ui_actions():
     Returns:
         list: menu object
     """
-    # install openpype and the host
-    openpype_install()
+    # install quadpype and the host
+    quadpype_install()
 
     return _build_app_menu("FlameMenuUniversal")

@@ -2,12 +2,12 @@
 """Collector plugin for frames data on ROP instances."""
 import hou  # noqa
 import pyblish.api
-from openpype.lib import BoolDef
-from openpype.pipeline import OpenPypePyblishPluginMixin
+from quadpype.lib import BoolDef
+from quadpype.pipeline import QuadPypePyblishPluginMixin
 
 
 class CollectAssetHandles(pyblish.api.InstancePlugin,
-                          OpenPypePyblishPluginMixin):
+                          QuadPypePyblishPluginMixin):
     """Apply asset handles.
 
     If instance does not have:

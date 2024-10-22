@@ -7,9 +7,9 @@
 - each input may have "input modifiers" (keys in dictionary) that are required or optional
     - only required modifier for all input items is key `"type"` which says what type of item it is
 - there are special keys across all inputs
-    - `"is_file"` - this key is for storing openpype defaults in `openpype` repo
+    - `"is_file"` - this key is for storing quadpype defaults in `quadpype` repo
         - reasons of existence: developing new schemas does not require to create defaults manually
-        - key is validated, must be once in hierarchy else it won't be possible to store openpype defaults
+        - key is validated, must be once in hierarchy else it won't be possible to store quadpype defaults
     - `"is_group"` - define that all values under key in hierarchy will be overridden if any value is modified, this information is also stored to overrides
         - this keys is not allowed for all inputs as they may have not reason for that
         - key is validated, can be only once in hierarchy but is not required
@@ -18,7 +18,7 @@
 
 ## Inner schema
 - GUI schemas are huge json files, to be able to split whole configuration into multiple schema there's type `schema`
-- system configuration schemas are stored in `~/openpype/settings/entities/schemas/system_schema/` and project configurations in `~/openpype/settings/entities/schemas/projects_schema/`
+- system configuration schemas are stored in `~/quadpype/settings/entities/schemas/system_schema/` and project configurations in `~/quadpype/settings/entities/schemas/projects_schema/`
 - each schema name is filename of json file except extension (without ".json")
 - if content is dictionary content will be used as `schema` else will be used as `schema_template`
 
@@ -135,7 +135,7 @@
     will extend and replace this item
 - dynamic schemas work almost the same way as templates
     - one item can be replaced by multiple items (or by 0 items)
-- goal is to dynamically loaded settings of OpenPype addons without having
+- goal is to dynamically loaded settings of QuadPype addons without having
     their schemas or default values in main repository
     - values of these schemas are saved using the `BaseModuleSettingsDef` methods
 - easiest is to use `JsonFilesSettingsDef` which has full implementation of storing default values to json files all you have to implement is method `get_settings_root_path` which should return path to root directory where settings schema can be found and will be saved

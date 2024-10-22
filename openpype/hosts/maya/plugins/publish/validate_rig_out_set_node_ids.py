@@ -2,9 +2,9 @@ import maya.cmds as cmds
 
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api import lib
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api import lib
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
     PublishValidationError,
@@ -28,7 +28,7 @@ class ValidateRigOutSetNodeIds(pyblish.api.InstancePlugin,
     hosts = ['maya']
     label = 'Rig Out Set Node Ids'
     actions = [
-        openpype.hosts.maya.api.action.SelectInvalidAction,
+        quadpype.hosts.maya.api.action.SelectInvalidAction,
         RepairAction
     ]
     allow_history_only = False

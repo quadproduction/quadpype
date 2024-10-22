@@ -3,17 +3,17 @@ from collections import OrderedDict
 import six
 import nuke
 
-from openpype.client import (
+from quadpype.client import (
     get_version_by_id,
     get_last_version_by_subset_id,
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     load,
     get_current_project_name,
     get_representation_path,
 )
-from openpype.hosts.nuke.api import lib
-from openpype.hosts.nuke.api import (
+from quadpype.hosts.nuke.api import lib
+from quadpype.hosts.nuke.api import (
     containerise,
     update_container,
     viewer_update_and_undo_stop

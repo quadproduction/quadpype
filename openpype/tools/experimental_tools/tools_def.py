@@ -1,5 +1,5 @@
 import os
-from openpype.settings import get_local_settings
+from quadpype.settings import get_local_settings
 
 # Constant key under which local settings are stored
 LOCAL_EXPERIMENTAL_KEY = "experimental_tools"
@@ -46,7 +46,7 @@ class ExperimentalHostTool(ExperimentalTool):
     def __init__(
         self, identifier, label, tooltip, callback, hosts_filter=None
     ):
-        super(ExperimentalHostTool, self).__init__(identifier, label, tooltip)
+        super().__init__(identifier, label, tooltip)
         self.callback = callback
         self.hosts_filter = hosts_filter
         self._enabled = True
@@ -162,7 +162,7 @@ class ExperimentalTools:
 
     def _show_publisher(self):
         if self._publisher_tool is None:
-            from openpype.tools.publisher.window import PublisherWindow
+            from quadpype.tools.publisher.window import PublisherWindow
 
             self._publisher_tool = PublisherWindow(
                 parent=self._parent_widget

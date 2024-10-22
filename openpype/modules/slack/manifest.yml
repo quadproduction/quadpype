@@ -2,14 +2,14 @@ _metadata:
   major_version: 1
   minor_version: 1
 display_information:
-  name: OpenPypeNotifier
+  name: QuadPypeNotifier
 features:
   app_home:
     home_tab_enabled: false
     messages_tab_enabled: true
     messages_tab_read_only_enabled: true
   bot_user:
-    display_name: OpenPypeNotifier
+    display_name: QuadPypeNotifier
     always_online: false
 oauth_config:
   scopes:

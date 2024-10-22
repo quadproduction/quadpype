@@ -6,19 +6,19 @@ import getpass
 import attr
 from datetime import datetime
 
-from openpype.lib import (
+from quadpype.lib import (
     is_running_from_build,
     BoolDef,
     NumberDef,
     TextDef,
 )
-from openpype.pipeline import legacy_io
-from openpype.pipeline.publish import OpenPypePyblishPluginMixin
-from openpype.pipeline.farm.tools import iter_expected_files
-from openpype.tests.lib import is_in_tests
+from quadpype.pipeline import legacy_io
+from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
+from quadpype.pipeline.farm.tools import iter_expected_files
+from quadpype.tests.lib import is_in_tests
 
-from openpype_modules.deadline import abstract_submit_deadline
-from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from quadpype_modules.deadline import abstract_submit_deadline
+from quadpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
 
 
 @attr.s
@@ -29,7 +29,7 @@ class BlenderPluginInfo():
 
 
 class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
-                            OpenPypePyblishPluginMixin):
+                            QuadPypePyblishPluginMixin):
     label = "Submit Render to Deadline"
     hosts = ["blender"]
     families = ["render"]
@@ -103,23 +103,23 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
             "FTRACK_API_KEY",
             "FTRACK_API_USER",
             "FTRACK_SERVER",
-            "OPENPYPE_SG_USER",
+            "QUADPYPE_SG_USER",
             "AVALON_DB",
             "AVALON_PROJECT",
             "AVALON_ASSET",
             "AVALON_TASK",
             "AVALON_APP_NAME",
-            "OPENPYPE_DEV"
+            "QUADPYPE_DEV"
             "IS_TEST"
         ]
 
-        # Add OpenPype version if we are running from build.
+        # Add QuadPype version if we are running from build.
         if is_running_from_build():
-            keys.append("OPENPYPE_VERSION")
+            keys.append("QUADPYPE_VERSION")
 
         # Add mongo url if it's enabled
         if self._instance.context.data.get("deadlinePassMongoUrl"):
-            keys.append("OPENPYPE_MONGO")
+            keys.append("QUADPYPE_MONGO")
 
         environment = dict({key: os.environ[key] for key in keys
                             if key in os.environ}, **legacy_io.Session)

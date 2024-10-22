@@ -5,9 +5,9 @@ import logging
 
 from maya import cmds
 
-from openpype.pipeline import legacy_io
-from openpype.client import get_last_version_by_subset_name
-from openpype.hosts.maya import api
+from quadpype.pipeline import legacy_io
+from quadpype.client import get_last_version_by_subset_name
+from quadpype.hosts.maya import api
 from . import lib
 from .alembic import get_alembic_ids_cache
 from .usd import is_usd_lib_supported, get_usd_ids_cache

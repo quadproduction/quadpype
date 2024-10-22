@@ -1,18 +1,18 @@
 {
     Action
     {
-        ID = "OpenPype_Menu",
-        Category = "OpenPype",
-        Name = "OpenPype Menu",
+        ID = "QuadPype_Menu",
+        Category = "QuadPype",
+        Name = "QuadPype Menu",
 
         Targets =
         {
             Composition =
             {
                 Execute = _Lua [=[
-                    local scriptPath = app:MapPath("OpenPype:../MenuScripts/launch_menu.py")
+                    local scriptPath = app:MapPath("QuadPype:../MenuScripts/launch_menu.py")
                     if bmd.fileexists(scriptPath) == false then
-                        print("[OpenPype Error] Can't run file: " .. scriptPath)
+                        print("[QuadPype Error] Can't run file: " .. scriptPath)
                     else
                         target:RunScript(scriptPath)
                     end
@@ -22,8 +22,8 @@
     },
     Action
     {
-        ID = "OpenPype_Install_PySide2",
-        Category = "OpenPype",
+        ID = "QuadPype_Install_PySide2",
+        Category = "QuadPype",
         Name = "Install PySide2",
 
         Targets =
@@ -31,9 +31,9 @@
             Composition =
             {
                 Execute = _Lua [=[
-                    local scriptPath = app:MapPath("OpenPype:../MenuScripts/install_pyside2.py")
+                    local scriptPath = app:MapPath("QuadPype:../MenuScripts/install_pyside2.py")
                     if bmd.fileexists(scriptPath) == false then
-                        print("[OpenPype Error] Can't run file: " .. scriptPath)
+                        print("[QuadPype Error] Can't run file: " .. scriptPath)
                     else
                         target:RunScript(scriptPath)
                     end
@@ -47,12 +47,12 @@
 
         Before "Help"
         {
-            Sub "OpenPype"
+            Sub "QuadPype"
             {
-                "OpenPype_Menu{}",
+                "QuadPype_Menu{}",
                 "_",
                 Sub "Admin" {
-                    "OpenPype_Install_PySide2{}"
+                    "QuadPype_Install_PySide2{}"
                 }
             }
         },

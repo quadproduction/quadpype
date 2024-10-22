@@ -1,7 +1,7 @@
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline.publish import (
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishXmlValidationError,
 )

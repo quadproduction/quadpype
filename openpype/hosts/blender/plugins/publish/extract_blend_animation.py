@@ -2,7 +2,7 @@ import os
 
 import bpy
 
-from openpype.pipeline import publish
+from quadpype.pipeline import publish
 
 
 class ExtractBlendAnimation(

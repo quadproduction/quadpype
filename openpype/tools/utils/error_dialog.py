@@ -15,7 +15,7 @@ def escape_text_for_html(text):
 
 class TracebackWidget(QtWidgets.QWidget):
     def __init__(self, tb_text, parent):
-        super(TracebackWidget, self).__init__(parent)
+        super().__init__(parent)
 
         # Modify text to match html
         # - add more replacements when needed
@@ -60,7 +60,7 @@ class ErrorMessageBox(QtWidgets.QDialog):
     _default_height = 350
 
     def __init__(self, title, parent):
-        super(ErrorMessageBox, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle(title)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 

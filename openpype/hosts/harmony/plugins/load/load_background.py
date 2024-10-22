@@ -1,12 +1,12 @@
 import os
 import json
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     load,
     get_representation_path,
 )
-from openpype.pipeline.context_tools import is_representation_from_latest
-import openpype.hosts.harmony.api as harmony
+from quadpype.pipeline.context_tools import is_representation_from_latest
+import quadpype.hosts.harmony.api as harmony
 
 
 copy_files = """function copyFile(srcFilename, dstFilename)

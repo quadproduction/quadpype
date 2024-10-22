@@ -1,7 +1,7 @@
 from maya import cmds
 
-from openpype.pipeline import InventoryAction, get_representation_context
-from openpype.hosts.maya.api.lib import get_id
+from quadpype.pipeline import InventoryAction, get_representation_context
+from quadpype.hosts.maya.api.lib import get_id
 
 
 class ConnectGeometry(InventoryAction):

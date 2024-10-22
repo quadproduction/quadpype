@@ -1,9 +1,9 @@
 import collections
 
-from openpype.client.mongo.operations import CURRENT_THUMBNAIL_SCHEMA
+from quadpype.client.mongo.operations import CURRENT_THUMBNAIL_SCHEMA
 
 from .utils import get_ayon_server_api_connection
-from .openpype_comp import get_folders_with_tasks
+from .quadpype_comp import get_folders_with_tasks
 from .conversion_utils import (
     project_fields_v3_to_v4,
     convert_v4_project_to_v3,
@@ -520,7 +520,7 @@ def get_representations(
     if context_filters is not None:
         # TODO should we add the support?
         # - there was ability to filter using regex
-        raise ValueError("OP v4 can't filter by representation context.")
+        raise ValueError("QuadPype v4 can't filter by representation context.")
 
     if not archived and not standard:
         return
@@ -655,7 +655,7 @@ def get_thumbnails(project_name, thumbnail_contexts, fields=None):
     """Get thumbnail entities.
 
     Warning:
-        This function is not OpenPype compatible. There is none usage of this
+        This function is not QuadPype compatible. There is none usage of this
             function in codebase so there is nothing to convert. The previous
             implementation cannot be AYON compatible without entity types.
     """

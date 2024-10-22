@@ -3,7 +3,7 @@ import json
 
 from maya import cmds
 
-from openpype.pipeline import publish
+from quadpype.pipeline import publish
 
 
 class ExtractYetiCache(publish.Extractor):

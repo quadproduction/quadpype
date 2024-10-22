@@ -24,7 +24,7 @@ def clear_inner_modules():
 class MainWindow(QtWidgets.QWidget):
 
     def __init__(self, klass, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.panel_class = klass
 
     def closeEvent(self, event):
@@ -79,7 +79,7 @@ class FlameBabyPublisherPanel(object):
 
         # creating ui
         self.window.setMinimumSize(1500, 600)
-        self.window.setWindowTitle('OpenPype: Baby-publisher')
+        self.window.setWindowTitle('QuadPype: Baby-publisher')
         self.window.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.window.setFocusPolicy(QtCore.Qt.StrongFocus)

@@ -1,9 +1,9 @@
 from maya import cmds
 
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api import lib
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api import lib
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishValidationError,
     OptionalPyblishPluginMixin
@@ -23,7 +23,7 @@ class ValidateModelContent(pyblish.api.InstancePlugin,
     hosts = ["maya"]
     families = ["model"]
     label = "Model Content"
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
 
     validate_top_group = True
     optional = False

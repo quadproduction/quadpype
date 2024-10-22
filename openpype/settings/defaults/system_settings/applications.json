@@ -253,9 +253,9 @@
                     "linux": []
                 },
                 "environment": {
-                    "OPENPYPE_FLAME_PYTHON_EXEC": "/opt/Autodesk/python/2021/bin/python2.7",
-                    "OPENPYPE_FLAME_PYTHONPATH": "/opt/Autodesk/flame_2021/python",
-                    "OPENPYPE_WIRETAP_TOOLS": "/opt/Autodesk/wiretap/tools/2021"
+                    "QUADPYPE_FLAME_PYTHON_EXEC": "/opt/Autodesk/python/2021/bin/python2.7",
+                    "QUADPYPE_FLAME_PYTHONPATH": "/opt/Autodesk/flame_2021/python",
+                    "QUADPYPE_WIRETAP_TOOLS": "/opt/Autodesk/wiretap/tools/2021"
                 }
             },
             "2021_1": {
@@ -275,9 +275,9 @@
                     "linux": []
                 },
                 "environment": {
-                    "OPENPYPE_FLAME_PYTHON_EXEC": "/opt/Autodesk/python/2021.1/bin/python2.7",
-                    "OPENPYPE_FLAME_PYTHONPATH": "/opt/Autodesk/flame_2021.1/python",
-                    "OPENPYPE_WIRETAP_TOOLS": "/opt/Autodesk/wiretap/tools/2021.1"
+                    "QUADPYPE_FLAME_PYTHON_EXEC": "/opt/Autodesk/python/2021.1/bin/python2.7",
+                    "QUADPYPE_FLAME_PYTHONPATH": "/opt/Autodesk/flame_2021.1/python",
+                    "QUADPYPE_WIRETAP_TOOLS": "/opt/Autodesk/wiretap/tools/2021.1"
                 }
             },
             "__dynamic_keys_labels__": {
@@ -294,7 +294,7 @@
         "environment": {
             "NUKE_PATH": [
                 "{NUKE_PATH}",
-                "{OPENPYPE_STUDIO_PLUGINS}/nuke"
+                "{QUADPYPE_STUDIO_PLUGINS}/nuke"
             ]
         },
         "variants": {
@@ -422,7 +422,7 @@
         "environment": {
             "NUKE_PATH": [
                 "{NUKE_PATH}",
-                "{OPENPYPE_STUDIO_PLUGINS}/nuke"
+                "{QUADPYPE_STUDIO_PLUGINS}/nuke"
             ]
         },
         "variants": {
@@ -586,7 +586,7 @@
         "environment": {
             "NUKE_PATH": [
                 "{NUKE_PATH}",
-                "{OPENPYPE_STUDIO_PLUGINS}/nuke"
+                "{QUADPYPE_STUDIO_PLUGINS}/nuke"
             ]
         },
         "variants": {
@@ -1535,7 +1535,7 @@
         "icon": "app_icons/celaction.png",
         "host_name": "celaction",
         "environment": {
-            "CELACTION_TEMPLATE": "{OPENPYPE_REPOS_ROOT}/openpype/hosts/celaction/celaction_template_scene.scn"
+            "CELACTION_TEMPLATE": "{QUADPYPE_REPOS_ROOT}/quadpype/hosts/celaction/celaction_template_scene.scn"
         },
         "variants": {
             "current": {

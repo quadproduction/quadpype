@@ -5,14 +5,14 @@ import copy
 import collections
 import uuid
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_assets,
     get_subsets,
     get_versions,
     get_representations,
 )
-from openpype.pipeline.load import (
+from quadpype.pipeline.load import (
     discover_loader_plugins,
     SubsetLoaderPlugin,
     filter_repre_contexts_by_loader,
@@ -23,8 +23,8 @@ from openpype.pipeline.load import (
     LoadError,
     IncompatibleLoaderError,
 )
-from openpype.tools.ayon_utils.models import NestedCacheItem
-from openpype.tools.ayon_loader.abstract import ActionItem
+from quadpype.tools.ayon_utils.models import NestedCacheItem
+from quadpype.tools.ayon_loader.abstract import ActionItem
 
 ACTIONS_MODEL_SENDER = "actions.model"
 NOT_SET = object()
@@ -34,14 +34,14 @@ class LoaderActionsModel:
     """Model for loader actions.
 
     This is probably only part of models that requires to use codebase from
-    'openpype.client' because of backwards compatibility with loaders logic
+    'quadpype.client' because of backwards compatibility with loaders logic
     which are expecting mongo documents.
 
     TODOs:
         Deprecate 'qargparse' usage in loaders and implement conversion
             of 'ActionItem' to data (and 'from_data').
         Use controller to get entities (documents) -> possible only when
-            loaders are able to handle AYON vs. OpenPype logic.
+            loaders are able to handle AYON vs. QuadPype logic.
         Add missing site sync logic, and if possible remove it from loaders.
         Implement loader actions to replace load plugins.
         Ask loader actions to return action items instead of guessing them.
@@ -249,7 +249,7 @@ class LoaderActionsModel:
     def _filter_loaders_by_tool_name(self, project_name, loaders):
         """Filter loaders by tool name.
 
-        Tool names are based on OpenPype tools loader tool and library
+        Tool names are based on QuadPype tools loader tool and library
         loader tool. The new tool merged both into one tool and the difference
         is based only on current project name.
 
@@ -263,7 +263,7 @@ class LoaderActionsModel:
 
         # Keep filtering by tool name
         # - if current context project name is same as project name we do
-        #   expect the tool is used as OpenPype loader tool, otherwise
+        #   expect the tool is used as QuadPype loader tool, otherwise
         #   as library loader tool.
         if project_name == self._get_current_context_project():
             tool_name = "loader"

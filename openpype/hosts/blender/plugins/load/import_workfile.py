@@ -1,6 +1,6 @@
 import bpy
 
-from openpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api import plugin
 
 
 def append_workfile(context, fname, do_import):

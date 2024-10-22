@@ -1,10 +1,10 @@
 import getpass
-import openpype.settings.lib as sett_lib
+import quadpype.settings.lib as sett_lib
 
-from openpype.modules import OpenPypeModule, ITrayAction
+from quadpype.modules import QuadPypeModule, ITrayAction
 
 
-class SettingsAction(OpenPypeModule, ITrayAction):
+class SettingsAction(QuadPypeModule, ITrayAction):
     """Action to show Settings tool."""
     name = "settings"
     label = "Studio Settings"
@@ -45,7 +45,7 @@ class SettingsAction(OpenPypeModule, ITrayAction):
         """Initialize Settings Qt window."""
         if self.settings_window:
             return
-        from openpype.tools.settings import MainWidget
+        from quadpype.tools.settings import MainWidget
 
         self.settings_window = MainWidget(self.user_role, reset_on_show=False)
         self.settings_window.trigger_restart.connect(self._on_trigger_restart)
@@ -82,7 +82,7 @@ class SettingsAction(OpenPypeModule, ITrayAction):
             self.settings_window.reset()
 
 
-class LocalSettingsAction(OpenPypeModule, ITrayAction):
+class LocalSettingsAction(QuadPypeModule, ITrayAction):
     """Action to show Settings tool."""
     name = "local_settings"
     label = "Local Settings"
@@ -109,7 +109,7 @@ class LocalSettingsAction(OpenPypeModule, ITrayAction):
         """Initialize Settings Qt window."""
         if self.settings_window:
             return
-        from openpype.tools.settings import LocalSettingsWindow
+        from quadpype.tools.settings import LocalSettingsWindow
         self.settings_window = LocalSettingsWindow()
 
     def show_settings_window(self):

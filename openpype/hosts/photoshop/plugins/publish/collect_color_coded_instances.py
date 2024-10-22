@@ -3,10 +3,10 @@ import re
 
 import pyblish.api
 
-from openpype.lib import prepare_template_data
-from openpype.hosts.photoshop import api as photoshop
-from openpype.settings import get_project_settings
-from openpype.tests.lib import is_in_tests
+from quadpype.lib import prepare_template_data
+from quadpype.hosts.photoshop import api as photoshop
+from quadpype.settings import get_project_settings
+from quadpype.tests.lib import is_in_tests
 
 
 class CollectColorCodedInstances(pyblish.api.ContextPlugin):
@@ -46,7 +46,7 @@ class CollectColorCodedInstances(pyblish.api.ContextPlugin):
 
     def process(self, context):
         self.log.info("CollectColorCodedInstances")
-        batch_dir = os.environ.get("OPENPYPE_PUBLISH_DATA")
+        batch_dir = os.environ.get("QUADPYPE_PUBLISH_DATA")
         if (is_in_tests() and
                 (not batch_dir or not os.path.exists(batch_dir))):
             self.log.debug("Automatic testing, no batch data, skipping")
@@ -147,8 +147,8 @@ class CollectColorCodedInstances(pyblish.api.ContextPlugin):
     def _get_existing_subset_names(self, context):
         """Collect manually created instances from workfile.
 
-        Shouldn't be any as Webpublisher bypass publishing via Openpype, but
-        might be some if workfile published through OP is reused.
+        Shouldn't be any as Webpublisher bypass publishing via QuadPype, but
+        might be some if workfile published through QuadPype is reused.
         """
         existing_subset_names = []
         for instance in context:

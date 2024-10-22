@@ -2,8 +2,8 @@ from maya import cmds
 
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishValidationError,
     OptionalPyblishPluginMixin
@@ -24,7 +24,7 @@ class ValidateTransformZero(pyblish.api.Validator,
     hosts = ["maya"]
     families = ["model"]
     label = "Transform Zero (Freeze)"
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
 
     _identity = [1.0, 0.0, 0.0, 0.0,
                  0.0, 1.0, 0.0, 0.0,

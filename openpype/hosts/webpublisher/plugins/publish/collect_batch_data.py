@@ -13,8 +13,8 @@ import os
 
 import pyblish.api
 
-from openpype.pipeline import legacy_io
-from openpype_modules.webpublisher.lib import (
+from quadpype.pipeline import legacy_io
+from quadpype_modules.webpublisher.lib import (
     parse_json,
     get_batch_asset_task_info,
     get_webpublish_conn,
@@ -23,7 +23,7 @@ from openpype_modules.webpublisher.lib import (
 
 
 class CollectBatchData(pyblish.api.ContextPlugin):
-    """Collect batch data from json stored in 'OPENPYPE_PUBLISH_DATA' env dir.
+    """Collect batch data from json stored in 'QUADPYPE_PUBLISH_DATA' env dir.
 
     The directory must contain 'manifest.json' file where batch data should be
     stored.
@@ -34,10 +34,10 @@ class CollectBatchData(pyblish.api.ContextPlugin):
     hosts = ["webpublisher"]
 
     def process(self, context):
-        batch_dir = os.environ.get("OPENPYPE_PUBLISH_DATA")
+        batch_dir = os.environ.get("QUADPYPE_PUBLISH_DATA")
 
         assert batch_dir, (
-            "Missing `OPENPYPE_PUBLISH_DATA`")
+            "Missing `QUADPYPE_PUBLISH_DATA`")
 
         assert os.path.exists(batch_dir), \
             "Folder {} doesn't exist".format(batch_dir)

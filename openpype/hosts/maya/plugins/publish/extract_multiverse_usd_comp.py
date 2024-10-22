@@ -2,8 +2,8 @@ import os
 
 from maya import cmds
 
-from openpype.pipeline import publish
-from openpype.hosts.maya.api.lib import maintained_selection
+from quadpype.pipeline import publish
+from quadpype.hosts.maya.api.lib import maintained_selection
 
 
 class ExtractMultiverseUsdComposition(publish.Extractor):
@@ -137,7 +137,7 @@ class ExtractMultiverseUsdComposition(publish.Extractor):
             comp_write_opts = multiverse.CompositionWriteOptions()
 
             """
-            OP tells MV to write to a staging directory, and then moves the
+            QuadPype tells MV to write to a staging directory, and then moves the
             file to it's final publish directory. By default, MV write relative
             paths, but these paths will break when the referencing file moves.
             This option forces writes to absolute paths, which is ok within OP

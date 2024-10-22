@@ -1,5 +1,5 @@
-from openpype.client import get_project
-from openpype_modules.ftrack.lib import BaseEvent
+from quadpype.client import get_project
+from quadpype_modules.ftrack.lib import BaseEvent
 
 
 class VersionToTaskStatus(BaseEvent):
@@ -52,7 +52,7 @@ class VersionToTaskStatus(BaseEvent):
             session, event, project_id
         )
         if get_project(project_name) is None:
-            self.log.debug("Project not found in OpenPype. Skipping")
+            self.log.debug("Project not found in QuadPype. Skipping")
             return
 
         # Load settings

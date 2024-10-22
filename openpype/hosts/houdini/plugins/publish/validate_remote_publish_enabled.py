@@ -2,8 +2,8 @@
 import pyblish.api
 
 import hou
-from openpype.pipeline.publish import RepairContextAction
-from openpype.pipeline import PublishValidationError
+from quadpype.pipeline.publish import RepairContextAction
+from quadpype.pipeline import PublishValidationError
 
 
 class ValidateRemotePublishEnabled(pyblish.api.ContextPlugin):

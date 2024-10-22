@@ -4,8 +4,8 @@ import os
 
 from maya import cmds
 
-from openpype.pipeline import publish
-from openpype.hosts.maya.api.lib import maintained_selection
+from quadpype.pipeline import publish
+from quadpype.hosts.maya.api.lib import maintained_selection
 
 
 class ExtractRedshiftProxy(publish.Extractor):

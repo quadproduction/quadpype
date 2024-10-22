@@ -2,8 +2,8 @@ import os
 import copy
 import logging
 
-from openpype.lib import Logger
-from openpype.client import get_project, get_ayon_server_api_connection
+from quadpype.lib import Logger
+from quadpype.client import get_project, get_ayon_server_api_connection
 from . import legacy_io
 from .anatomy import Anatomy
 from .plugin_discover import (
@@ -138,7 +138,7 @@ class ServerThumbnailResolver(ThumbnailResolver):
     @classmethod
     def _get_cache(cls):
         if cls._cache is None:
-            from openpype.client.server.thumbnails import AYONThumbnailCache
+            from quadpype.client.server.thumbnails import AYONThumbnailCache
 
             cls._cache = AYONThumbnailCache()
         return cls._cache

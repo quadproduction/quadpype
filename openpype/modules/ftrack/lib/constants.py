@@ -1,5 +1,5 @@
 # Group name of custom attributes
-CUST_ATTR_GROUP = "openpype"
+CUST_ATTR_GROUP = "quadpype"
 
 # name of Custom attribute that stores mongo_id from avalon db
 CUST_ATTR_ID_KEY = "avalon_mongo_id"

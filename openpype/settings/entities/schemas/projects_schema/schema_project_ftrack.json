@@ -1035,7 +1035,7 @@
                             "type": "enum",
                             "multiselection": true,
                             "enum_items": [
-                                {"openpype_version": "OpenPype version"},
+                                {"quadpype_version": "QuadPype version"},
                                 {"frame_start": "Frame start"},
                                 {"frame_end": "Frame end"},
                                 {"duration": "Duration"},

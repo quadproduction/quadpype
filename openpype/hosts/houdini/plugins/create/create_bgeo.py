@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating pointcache bgeo files."""
-from openpype.hosts.houdini.api import plugin
-from openpype.pipeline import CreatedInstance, CreatorError
+from quadpype.hosts.houdini.api import plugin
+from quadpype.pipeline import CreatedInstance, CreatorError
 import hou
-from openpype.lib import EnumDef, BoolDef
+from quadpype.lib import EnumDef, BoolDef
 
 
 class CreateBGEO(plugin.HoudiniCreator):
     """BGEO pointcache creator."""
-    identifier = "io.openpype.creators.houdini.bgeo"
+    identifier = "io.quadpype.creators.houdini.bgeo"
     label = "PointCache (Bgeo)"
     family = "pointcache"
     icon = "gears"

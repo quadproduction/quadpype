@@ -7,18 +7,18 @@ from copy import deepcopy
 import re
 import warnings
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     get_current_project_name,
     get_representation_path,
     Anatomy,
 )
-from openpype.client import (
+from quadpype.client import (
     get_last_version_by_subset_name,
     get_representations
 )
-from openpype.lib import Logger
-from openpype.pipeline.publish import KnownPublishError
-from openpype.pipeline.farm.patterning import match_aov_pattern
+from quadpype.lib import Logger
+from quadpype.pipeline.publish import KnownPublishError
+from quadpype.pipeline.farm.patterning import match_aov_pattern
 
 
 @attr.s

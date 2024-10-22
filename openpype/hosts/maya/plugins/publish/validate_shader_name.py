@@ -3,8 +3,8 @@ import re
 import pyblish.api
 from maya import cmds
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     OptionalPyblishPluginMixin, PublishValidationError, ValidateContentsOrder)
 
 
@@ -20,7 +20,7 @@ class ValidateShaderName(pyblish.api.InstancePlugin,
     families = ["look"]
     hosts = ['maya']
     label = 'Validate Shaders Name'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     regex = r'(?P<asset>.*)_(.*)_SHD'
 
     # The default connections to check

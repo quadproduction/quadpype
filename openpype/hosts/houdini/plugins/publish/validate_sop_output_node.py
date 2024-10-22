@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pyblish.api
-from openpype.pipeline import PublishValidationError
-from openpype.hosts.houdini.api.action import (
+from quadpype.pipeline import PublishValidationError
+from quadpype.hosts.houdini.api.action import (
     SelectInvalidAction,
     SelectROPAction,
 )

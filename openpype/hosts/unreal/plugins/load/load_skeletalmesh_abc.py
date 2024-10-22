@@ -2,12 +2,12 @@
 """Load Skeletal Mesh alembics."""
 import os
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     get_representation_path,
     AYON_CONTAINER_ID
 )
-from openpype.hosts.unreal.api import plugin
-from openpype.hosts.unreal.api.pipeline import (
+from quadpype.hosts.unreal.api import plugin
+from quadpype.hosts.unreal.api.pipeline import (
     AYON_ASSET_DIR,
     create_container,
     imprint,

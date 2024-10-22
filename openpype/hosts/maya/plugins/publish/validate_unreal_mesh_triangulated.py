@@ -3,11 +3,11 @@
 from maya import cmds
 import pyblish.api
 
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     ValidateMeshOrder,
     OptionalPyblishPluginMixin
 )
-import openpype.hosts.maya.api.action
+import quadpype.hosts.maya.api.action
 
 
 class ValidateUnrealMeshTriangulated(pyblish.api.InstancePlugin,
@@ -18,7 +18,7 @@ class ValidateUnrealMeshTriangulated(pyblish.api.InstancePlugin,
     hosts = ["maya"]
     families = ["staticMesh"]
     label = "Mesh is Triangulated"
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     active = False
 
     @classmethod

@@ -17,9 +17,9 @@ Provides:
 
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.client import get_last_version_by_subset_name
-from openpype.pipeline.version_start import get_versioning_start
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.client import get_last_version_by_subset_name
+from quadpype.pipeline.version_start import get_versioning_start
 
 
 class CollectPublishedVersion(pyblish.api.ContextPlugin):

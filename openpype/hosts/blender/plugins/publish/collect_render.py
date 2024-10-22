@@ -6,7 +6,7 @@ import re
 
 import bpy
 
-from openpype.hosts.blender.api import colorspace
+from quadpype.hosts.blender.api import colorspace
 import pyblish.api
 
 

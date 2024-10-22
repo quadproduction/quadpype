@@ -1,8 +1,8 @@
 import pyblish.api
 import bpy
 
-import openpype.hosts.blender.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.blender.api.action
+from quadpype.pipeline.publish import (
     PublishValidationError, ValidateContentsOrder)
 
 
@@ -16,7 +16,7 @@ class ValidateCameraContents(pyblish.api.InstancePlugin):
     families = ['camera']
     hosts = ['blender']
     label = 'Validate Camera Contents'
-    actions = [openpype.hosts.blender.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.blender.api.action.SelectInvalidAction]
 
     @staticmethod
     def get_invalid(instance):

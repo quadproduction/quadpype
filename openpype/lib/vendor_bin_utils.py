@@ -139,12 +139,12 @@ def find_executable(executable):
 
 
 def get_vendor_bin_path(bin_app):
-    """Path to OpenPype vendorized binaries.
+    """Path to QuadPype vendorized binaries.
 
     Vendorized executables are expected in specific hierarchy inside build or
     in code source.
 
-    "{OPENPYPE_ROOT}/vendor/bin/{name of vendorized app}/{platform}"
+    "{QUADPYPE_ROOT}/vendor/bin/{name of vendorized app}/{platform}"
 
     Args:
         bin_app (str): Name of vendorized application.
@@ -154,7 +154,7 @@ def get_vendor_bin_path(bin_app):
     """
 
     return os.path.join(
-        os.environ["OPENPYPE_ROOT"],
+        os.environ["QUADPYPE_ROOT"],
         "vendor",
         "bin",
         bin_app,
@@ -305,7 +305,7 @@ def get_oiio_tools_path(tool="oiiotool"):
     if CachedToolPaths.is_tool_cached(tool):
         return CachedToolPaths.get_executable_path(tool)
 
-    custom_paths_str = os.environ.get("OPENPYPE_OIIO_PATHS") or ""
+    custom_paths_str = os.environ.get("QUADPYPE_OIIO_PATHS") or ""
     tool_executable_path = find_tool_in_custom_paths(
         custom_paths_str.split(os.pathsep),
         tool,
@@ -400,7 +400,7 @@ def get_ffmpeg_tool_path(tool="ffmpeg"):
     if CachedToolPaths.is_tool_cached(tool):
         return CachedToolPaths.get_executable_path(tool)
 
-    custom_paths_str = os.environ.get("OPENPYPE_FFMPEG_PATHS") or ""
+    custom_paths_str = os.environ.get("QUADPYPE_FFMPEG_PATHS") or ""
     tool_executable_path = find_tool_in_custom_paths(
         custom_paths_str.split(os.pathsep),
         tool,

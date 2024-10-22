@@ -8,12 +8,12 @@ import string
 from collections import OrderedDict, defaultdict
 from abc import abstractmethod
 
-from openpype.settings import get_current_project_settings
-from openpype.lib import (
+from quadpype.settings import get_current_project_settings
+from quadpype.lib import (
     BoolDef,
     EnumDef
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     LegacyCreator,
     LoaderPlugin,
     CreatorError,
@@ -21,12 +21,12 @@ from openpype.pipeline import (
     CreatedInstance,
     get_current_task_name
 )
-from openpype.pipeline.colorspace import (
+from quadpype.pipeline.colorspace import (
     get_display_view_colorspace_name,
     get_colorspace_settings_from_publish_context,
     set_colorspace_data_to_representation
 )
-from openpype.lib.transcoding import (
+from quadpype.lib.transcoding import (
     VIDEO_EXTENSIONS
 )
 from .lib import (
@@ -54,7 +54,7 @@ from .pipeline import (
 
 
 def _collect_and_cache_nodes(creator):
-    key = "openpype.nuke.nodes"
+    key = "quadpype.nuke.nodes"
     if key not in creator.collection_shared_data:
         instances_by_identifier = defaultdict(list)
         for item in list_instances():
@@ -407,12 +407,12 @@ class NukeWriteCreator(NukeCreator):
         )
 
 
-class OpenPypeCreator(LegacyCreator):
+class QuadPypeCreator(LegacyCreator):
     """Pype Nuke Creator class wrapper"""
     node_color = "0xdfea5dff"
 
     def __init__(self, *args, **kwargs):
-        super(OpenPypeCreator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if check_subsetname_exists(
                 nuke.allNodes(),
                 self.data["subset"]):
@@ -702,7 +702,7 @@ class ExporterReviewLut(ExporterReview):
                  lut_style=None,
                  multiple_presets=True):
         # initialize parent class
-        super(ExporterReviewLut, self).__init__(
+        super().__init__(
             klass, instance, multiple_presets)
 
         # deal with now lut defined in viewer lut
@@ -815,7 +815,7 @@ class ExporterReviewMov(ExporterReview):
                  multiple_presets=True
                  ):
         # initialize parent class
-        super(ExporterReviewMov, self).__init__(
+        super().__init__(
             klass, instance, multiple_presets)
         # passing presets for nodes to self
         self.nodes = klass.nodes if hasattr(klass, "nodes") else {}
@@ -1048,8 +1048,8 @@ class ExporterReviewMov(ExporterReview):
         self._shift_to_previous_node_and_temp(subset, node, message)
 
 
-@deprecated("openpype.hosts.nuke.api.plugin.NukeWriteCreator")
-class AbstractWriteRender(OpenPypeCreator):
+@deprecated("quadpype.hosts.nuke.api.plugin.NukeWriteCreator")
+class AbstractWriteRender(QuadPypeCreator):
     """Abstract creator to gather similar implementation for Write creators"""
     name = ""
     label = ""
@@ -1062,7 +1062,7 @@ class AbstractWriteRender(OpenPypeCreator):
     prenodes = {}
 
     def __init__(self, *args, **kwargs):
-        super(AbstractWriteRender, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         data = OrderedDict()
 
@@ -1220,7 +1220,7 @@ def convert_to_valid_instaces():
         }
         return mapping[family]
 
-    from openpype.hosts.nuke.api import workio
+    from quadpype.hosts.nuke.api import workio
 
     task_name = get_current_task_name()
 
@@ -1331,7 +1331,7 @@ def convert_to_valid_instaces():
 def _remove_old_knobs(node):
     remove_knobs = [
         "review", "publish", "render", "suspend_publish", "warn", "divd",
-        "OpenpypeDataGroup", "OpenpypeDataGroup_End", "deadlinePriority",
+        "QuadPypeDataGroup", "QuadPypeDataGroup_End", "deadlinePriority",
         "deadlineChunkSize", "deadlineConcurrentTasks", "Deadline"
     ]
     print(node.name())

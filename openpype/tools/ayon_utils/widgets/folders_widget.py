@@ -2,7 +2,7 @@ import collections
 
 from qtpy import QtWidgets, QtGui, QtCore
 
-from openpype.tools.utils import (
+from quadpype.tools.utils import (
     RecursiveSortFilterProxyModel,
     TreeView,
 )
@@ -26,7 +26,7 @@ class FoldersQtModel(QtGui.QStandardItemModel):
     refreshed = QtCore.Signal()
 
     def __init__(self, controller):
-        super(FoldersQtModel, self).__init__()
+        super().__init__()
 
         self._controller = controller
         self._items_by_id = {}
@@ -277,7 +277,7 @@ class FoldersWidget(QtWidgets.QWidget):
     refreshed = QtCore.Signal()
 
     def __init__(self, controller, parent, handle_expected_selection=False):
-        super(FoldersWidget, self).__init__(parent)
+        super().__init__(parent)
 
         folders_view = TreeView(self)
         folders_view.setHeaderHidden(True)

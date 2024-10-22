@@ -2,12 +2,12 @@ import collections
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.tools.utils import (
+from quadpype.tools.utils import (
     PlaceholderLineEdit,
     RecursiveSortFilterProxyModel,
     get_asset_icon,
 )
-from openpype.tools.utils.assets_widget import (
+from quadpype.tools.utils.assets_widget import (
     SingleSelectAssetsWidget,
     ASSET_ID_ROLE,
     ASSET_NAME_ROLE,
@@ -21,7 +21,7 @@ class CreateWidgetAssetsWidget(SingleSelectAssetsWidget):
 
     def __init__(self, controller, parent):
         self._controller = controller
-        super(CreateWidgetAssetsWidget, self).__init__(None, parent)
+        super().__init__(None, parent)
 
         self.set_refresh_btn_visibility(False)
         self.set_current_asset_btn_visibility(False)
@@ -99,7 +99,7 @@ class AssetsHierarchyModel(QtGui.QStandardItemModel):
     """
 
     def __init__(self, controller):
-        super(AssetsHierarchyModel, self).__init__()
+        super().__init__()
         self._controller = controller
 
         self._items_by_name = {}
@@ -196,7 +196,7 @@ class AssetsDialog(QtWidgets.QDialog):
     """Dialog to select asset for a context of instance."""
 
     def __init__(self, controller, parent):
-        super(AssetsDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Select asset")
 
         model = AssetsHierarchyModel(controller)

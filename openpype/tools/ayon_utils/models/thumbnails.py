@@ -2,7 +2,7 @@ import collections
 
 import ayon_api
 
-from openpype.client.server.thumbnails import AYONThumbnailCache
+from quadpype.client.server.thumbnails import AYONThumbnailCache
 
 from .cache import NestedCacheItem
 

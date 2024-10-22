@@ -2,14 +2,14 @@ import contextlib
 from qtpy import QtWidgets, QtCore
 import qtawesome
 
-from openpype.client import (
+from quadpype.client import (
     get_projects,
     get_project,
     get_asset_by_id,
 )
-from openpype.tools.utils import PlaceholderLineEdit
+from quadpype.tools.utils import PlaceholderLineEdit
 
-from openpype.style import get_default_tools_icon_color
+from quadpype.style import get_default_tools_icon_color
 
 from . import RecursiveSortFilterProxyModel, AssetModel
 from . import TasksTemplateModel, DeselectableTreeView
@@ -140,7 +140,7 @@ class AssetWidget(QtWidgets.QWidget):
     task_changed = QtCore.Signal()
 
     def __init__(self, dbcon, settings, parent=None):
-        super(AssetWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setContentsMargins(0, 0, 0, 0)
 
         self.dbcon = dbcon

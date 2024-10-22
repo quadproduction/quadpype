@@ -1,7 +1,7 @@
-from openpype.modules import OpenPypeModule, ITrayAction
+from quadpype.modules import QuadPypeModule, ITrayAction
 
 
-class PythonInterpreterAction(OpenPypeModule, ITrayAction):
+class PythonInterpreterAction(QuadPypeModule, ITrayAction):
     label = "Console"
     name = "python_interpreter"
     submenu = "More Tools"
@@ -22,7 +22,7 @@ class PythonInterpreterAction(OpenPypeModule, ITrayAction):
         if self._interpreter_window:
             return
 
-        from openpype_modules.python_console_interpreter.window import (
+        from quadpype_modules.python_console_interpreter.window import (
             PythonInterpreterWidget
         )
 

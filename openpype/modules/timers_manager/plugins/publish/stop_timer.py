@@ -1,13 +1,13 @@
 """
 Requires:
     context -> system_settings
-    context -> openPypeModules
+    context -> quadpypeModules
 """
 
 
 import pyblish.api
 
-from openpype.settings import MODULES_SETTINGS_KEY, SYSTEM_SETTINGS_KEY
+from quadpype.settings import MODULES_SETTINGS_KEY, SYSTEM_SETTINGS_KEY
 
 
 class StopTimer(pyblish.api.ContextPlugin):
@@ -16,7 +16,7 @@ class StopTimer(pyblish.api.ContextPlugin):
     hosts = ["*"]
 
     def process(self, context):
-        timers_manager = context.data["openPypeModules"]["timers_manager"]
+        timers_manager = context.data["quadpypeModules"]["timers_manager"]
         if not timers_manager.enabled:
             self.log.debug("TimersManager is disabled")
             return

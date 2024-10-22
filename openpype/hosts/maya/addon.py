@@ -1,10 +1,10 @@
 import os
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 MAYA_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class MayaAddon(OpenPypeModule, IHostAddon):
+class MayaAddon(QuadPypeModule, IHostAddon):
     name = "maya"
     host_name = "maya"
 

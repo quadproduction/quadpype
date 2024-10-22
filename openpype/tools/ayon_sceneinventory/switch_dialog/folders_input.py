@@ -1,12 +1,12 @@
 from qtpy import QtWidgets, QtCore
 import qtawesome
 
-from openpype.tools.utils import (
+from quadpype.tools.utils import (
     PlaceholderLineEdit,
     BaseClickableFrame,
     set_style_property,
 )
-from openpype.tools.ayon_utils.widgets import FoldersWidget
+from quadpype.tools.ayon_utils.widgets import FoldersWidget
 
 NOT_SET = object()
 
@@ -19,7 +19,7 @@ class ClickableLineEdit(QtWidgets.QLineEdit):
     clicked = QtCore.Signal()
 
     def __init__(self, *args, **kwargs):
-        super(ClickableLineEdit, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setReadOnly(True)
         self._mouse_pressed = False
 
@@ -70,7 +70,7 @@ class FoldersDialog(QtWidgets.QDialog):
     """Dialog to select asset for a context of instance."""
 
     def __init__(self, controller, parent):
-        super(FoldersDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Select folder")
 
         filter_input = PlaceholderLineEdit(self)
@@ -195,7 +195,7 @@ class FoldersField(BaseClickableFrame):
     value_changed = QtCore.Signal()
 
     def __init__(self, controller, parent):
-        super(FoldersField, self).__init__(parent)
+        super().__init__(parent)
         self.setObjectName("AssetNameInputWidget")
 
         # Don't use 'self' for parent!

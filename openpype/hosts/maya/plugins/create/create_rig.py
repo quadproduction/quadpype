@@ -1,12 +1,12 @@
 from maya import cmds
 
-from openpype.hosts.maya.api import plugin
+from quadpype.hosts.maya.api import plugin
 
 
 class CreateRig(plugin.MayaCreator):
     """Artist-friendly rig with controls to direct motion"""
 
-    identifier = "io.openpype.creators.maya.rig"
+    identifier = "io.quadpype.creators.maya.rig"
     label = "Rig"
     family = "rig"
     icon = "wheelchair"

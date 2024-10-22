@@ -1,12 +1,12 @@
 from qtpy import QtWidgets
 
-from openpype.settings import GENERAL_SETTINGS_KEY
-from openpype.tools.utils import PlaceholderLineEdit
+from quadpype.settings import GENERAL_SETTINGS_KEY
+from quadpype.tools.utils import PlaceholderLineEdit
 
 
 class LocalEnvironmentsWidgets(QtWidgets.QWidget):
     def __init__(self, system_settings_entity, parent):
-        super(LocalEnvironmentsWidgets, self).__init__(parent)
+        super().__init__(parent)
 
         self._widgets_by_env_key = {}
         self.system_settings_entity = system_settings_entity

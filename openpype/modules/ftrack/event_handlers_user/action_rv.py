@@ -8,19 +8,19 @@ from collections import defaultdict
 
 import ftrack_api
 
-from openpype.client import (
+from quadpype.client import (
     get_asset_by_name,
     get_subset_by_name,
     get_version_by_name,
     get_representation_by_name
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     get_representation_path,
     AvalonMongoDB,
     Anatomy,
 )
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
-from openpype.lib.applications import ApplicationManager
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype.lib.applications import ApplicationManager
 
 
 class RVAction(BaseAction):

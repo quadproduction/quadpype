@@ -7,8 +7,8 @@ import datetime
 
 from qtpy import QtWidgets, QtGui, QtCore
 
-from openpype.settings.entities import ProjectSettings
-from openpype.tools.settings import CHILD_OFFSET
+from quadpype.settings.entities import ProjectSettings
+from quadpype.tools.settings import CHILD_OFFSET
 
 from .widgets import ExpandingWidget
 from .lib import create_deffered_value_change_timer
@@ -88,7 +88,7 @@ class BaseWidget(QtWidgets.QWidget):
         self._is_invalid = False
         self._style_state = None
 
-        super(BaseWidget, self).__init__(entity_widget.content_widget)
+        super().__init__(entity_widget.content_widget)
         if not self.entity.gui_type:
             self.entity.on_change_callbacks.append(self._on_entity_change)
 
@@ -583,7 +583,7 @@ class BaseWidget(QtWidgets.QWidget):
 
 class InputWidget(BaseWidget):
     def __init__(self, *args, **kwargs):
-        super(InputWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Input widgets have always timer available (but may not be used).
         self._value_change_timer = create_deffered_value_change_timer(

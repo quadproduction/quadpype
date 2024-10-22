@@ -6,14 +6,14 @@ from pprint import pformat
 from typing import Dict, List, Optional
 
 import bpy
-from openpype.pipeline import get_representation_path
-from openpype.hosts.blender.api import plugin
-from openpype.hosts.blender.api.pipeline import (
+from quadpype.pipeline import get_representation_path
+from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api.pipeline import (
     containerise_existing,
     AVALON_PROPERTY,
 )
 
-logger = logging.getLogger("openpype").getChild("blender").getChild("load_action")
+logger = logging.getLogger("quadpype").getChild("blender").getChild("load_action")
 
 
 class BlendActionLoader(plugin.AssetLoader):
@@ -249,7 +249,7 @@ class BlendActionLoader(plugin.AssetLoader):
         """Remove an existing container from a Blender scene.
 
         Arguments:
-            container (openpype:container-1.0): Container to remove,
+            container (quadpype:container-1.0): Container to remove,
                 from `host.ls()`.
 
         Returns:

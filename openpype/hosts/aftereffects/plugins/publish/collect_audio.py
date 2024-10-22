@@ -2,7 +2,7 @@ import os
 
 import pyblish.api
 
-from openpype.hosts.aftereffects.api import get_stub
+from quadpype.hosts.aftereffects.api import get_stub
 
 
 class CollectAudio(pyblish.api.ContextPlugin):

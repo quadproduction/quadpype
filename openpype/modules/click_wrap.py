@@ -1,10 +1,10 @@
 """Simplified wrapper for 'click' python module.
 
-Module 'click' is used as main cli handler in AYON/OpenPype. Addons can
+Module 'click' is used as main cli handler in AYON/QuadPype. Addons can
 register their own subcommands with options. This wrapper allows to define
 commands and options as with 'click', but without any dependency.
 
-Why not to use 'click' directly? Version of 'click' used in AYON/OpenPype
+Why not to use 'click' directly? Version of 'click' used in AYON/QuadPype
 is not compatible with 'click' version used in some DCCs (e.g. Houdini 20+).
 And updating 'click' would break other DCCs.
 
@@ -15,10 +15,10 @@ method to convert 'click_wrap' object to 'click' object.
 Before
 ```python
 import click
-from openpype.modules import OpenPypeModule
+from quadpype.modules import QuadPypeModule
 
 
-class ExampleAddon(OpenPypeModule):
+class ExampleAddon(QuadPypeModule):
     name = "example"
 
     def cli(self, click_group):
@@ -39,11 +39,11 @@ def mycommand(arg1, arg2):
 
 Now
 ```
-from openpype import click_wrap
-from openpype.modules import OpenPypeModule
+from quadpype import click_wrap
+from quadpype.modules import QuadPypeModule
 
 
-class ExampleAddon(OpenPypeModule):
+class ExampleAddon(QuadPypeModule):
     name = "example"
 
     def cli(self, click_group):
@@ -71,11 +71,11 @@ Added small enhancements:
 
 Example:
     ```python
-    from openpype import click_wrap
-    from openpype.modules import OpenPypeModule
+    from quadpype import click_wrap
+    from quadpype.modules import QuadPypeModule
 
 
-    class ExampleAddon(OpenPypeModule):
+    class ExampleAddon(QuadPypeModule):
         name = "example"
 
         def cli(self, click_group):
@@ -106,7 +106,7 @@ Example:
     ```
 
     ```shell
-    openpype_console addon example mycommand --arg1 value1 --arg2
+    quadpype_console addon example mycommand --arg1 value1 --arg2
     ```
 """
 
@@ -182,7 +182,7 @@ class Command(object):
 
 class Group(Command):
     def __init__(self, func, *args, **kwargs):
-        super(Group, self).__init__(func, *args, **kwargs)
+        super().__init__(func, *args, **kwargs)
         # Store sub-groupd and sub-commands to the same variable
         self._commands = []
 

@@ -3,7 +3,7 @@ import logging
 
 import qtpy
 from qtpy import QtCore, QtGui
-from openpype.client import get_projects
+from quadpype.client import get_projects
 from .constants import (
     PROJECT_IS_ACTIVE_ROLE,
     PROJECT_NAME_ROLE,
@@ -20,7 +20,7 @@ class TreeModel(QtCore.QAbstractItemModel):
     item_class = None
 
     def __init__(self, parent=None):
-        super(TreeModel, self).__init__(parent)
+        super().__init__(parent)
         self._root_item = self.ItemClass()
 
     @property
@@ -155,7 +155,7 @@ class Item(dict):
     """
 
     def __init__(self, data=None):
-        super(Item, self).__init__()
+        super().__init__()
 
         self._children = list()
         self._parent = None
@@ -204,7 +204,7 @@ class RecursiveSortFilterProxyModel(QtCore.QSortFilterProxyModel):
     """
 
     def __init__(self, *args, **kwargs):
-        super(RecursiveSortFilterProxyModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         recursive_enabled = False
         if hasattr(self, "setRecursiveFilteringEnabled"):
             self.setRecursiveFilteringEnabled(True)
@@ -250,7 +250,7 @@ class ProjectModel(QtGui.QStandardItemModel):
         self, dbcon=None, only_active=True, add_default_project=False,
         *args, **kwargs
     ):
-        super(ProjectModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.dbcon = dbcon
 
@@ -361,7 +361,7 @@ class ProjectModel(QtGui.QStandardItemModel):
 
 class ProjectSortFilterProxy(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
-        super(ProjectSortFilterProxy, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._filter_enabled = True
         # Disable case sensitivity
         self.setSortCaseSensitivity(QtCore.Qt.CaseInsensitive)

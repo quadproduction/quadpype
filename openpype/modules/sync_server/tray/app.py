@@ -1,8 +1,8 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.tools.settings import style
+from quadpype.tools.settings import style
 
-from openpype import resources
+from quadpype import resources
 
 from .widgets import (
     SyncProjectListWidget,
@@ -17,7 +17,7 @@ class SyncServerWindow(QtWidgets.QDialog):
     """
 
     def __init__(self, sync_server, parent=None):
-        super(SyncServerWindow, self).__init__(parent)
+        super().__init__(parent)
         self.sync_server = sync_server
         self.setWindowFlags(QtCore.Qt.Window)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)

@@ -1,4 +1,4 @@
-from openpype.hosts.photoshop.lib import PSAutoCreator
+from quadpype.hosts.photoshop.lib import PSAutoCreator
 
 
 class ReviewCreator(PSAutoCreator):

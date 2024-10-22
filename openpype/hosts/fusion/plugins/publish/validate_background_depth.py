@@ -1,12 +1,12 @@
 import pyblish.api
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     publish,
     OptionalPyblishPluginMixin,
     PublishValidationError,
 )
 
-from openpype.hosts.fusion.api.action import SelectInvalidAction
+from quadpype.hosts.fusion.api.action import SelectInvalidAction
 
 
 class ValidateBackgroundDepth(

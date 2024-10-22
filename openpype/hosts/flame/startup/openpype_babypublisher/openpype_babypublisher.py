@@ -31,7 +31,7 @@ def scope_sequence(selection):
 def get_media_panel_custom_ui_actions():
     return [
         {
-            "name": "OpenPype: Baby-publisher",
+            "name": "QuadPype: Baby-publisher",
             "actions": [
                 {
                     "name": "Create Shots",

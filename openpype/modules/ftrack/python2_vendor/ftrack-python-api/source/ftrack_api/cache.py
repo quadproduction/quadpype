@@ -114,7 +114,7 @@ class ProxyCache(Cache):
     def __init__(self, proxied):
         '''Initialise cache with *proxied* cache instance.'''
         self.proxied = proxied
-        super(ProxyCache, self).__init__()
+        super().__init__()
 
     def get(self, key):
         '''Return value for *key*.
@@ -152,7 +152,7 @@ class LayeredCache(Cache):
 
     def __init__(self, caches):
         '''Initialise cache with *caches*.'''
-        super(LayeredCache, self).__init__()
+        super().__init__()
         self.caches = caches
 
     def get(self, key):
@@ -230,7 +230,7 @@ class MemoryCache(Cache):
     def __init__(self):
         '''Initialise cache.'''
         self._cache = {}
-        super(MemoryCache, self).__init__()
+        super().__init__()
 
     def get(self, key):
         '''Return value for *key*.
@@ -280,7 +280,7 @@ class FileCache(Cache):
         cache = anydbm.open(self.path, 'c')
         cache.close()
 
-        super(FileCache, self).__init__()
+        super().__init__()
 
     @contextlib.contextmanager
     def _database(self):
@@ -337,7 +337,7 @@ class SerialisedCache(ProxyCache):
         '''
         self.encode = encode
         self.decode = decode
-        super(SerialisedCache, self).__init__(proxied)
+        super().__init__(proxied)
 
     def get(self, key):
         '''Return value for *key*.
@@ -366,7 +366,7 @@ class KeyMaker(object):
 
     def __init__(self):
         '''Initialise key maker.'''
-        super(KeyMaker, self).__init__()
+        super().__init__()
         self.item_separator = ''
 
     def key(self, *items):
@@ -395,7 +395,7 @@ class ObjectKeyMaker(KeyMaker):
 
     def __init__(self):
         '''Initialise key maker.'''
-        super(ObjectKeyMaker, self).__init__()
+        super().__init__()
         self.item_separator = '\0'
         self.mapping_identifier = '\1'
         self.mapping_pair_separator = '\2'
@@ -523,7 +523,7 @@ class Memoiser(object):
             self.key_maker = ObjectKeyMaker()
 
         self.return_copies = return_copies
-        super(Memoiser, self).__init__()
+        super().__init__()
 
     def call(self, function, args=None, kw=None):
         '''Call *function* with *args* and *kw* and return result.

@@ -9,16 +9,16 @@ import clique
 
 import pyblish.api
 
-from openpype.client import (
+from quadpype.client import (
     get_last_version_by_subset_name,
 )
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.pipeline import publish, legacy_io
-from openpype.lib import EnumDef, is_running_from_build
-from openpype.tests.lib import is_in_tests
-from openpype.pipeline.version_start import get_versioning_start
-from openpype.modules.deadline.utils import DeadlineDefaultJobAttrs
-from openpype.pipeline.farm.pyblish_functions import (
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline import publish, legacy_io
+from quadpype.lib import EnumDef, is_running_from_build
+from quadpype.tests.lib import is_in_tests
+from quadpype.pipeline.version_start import get_versioning_start
+from quadpype.modules.deadline.utils import DeadlineDefaultJobAttrs
+from quadpype.pipeline.farm.pyblish_functions import (
     create_skeleton_instance,
     create_instances_for_aov,
     attach_instances_to_subset,
@@ -55,7 +55,7 @@ def get_resource_files(resources, frame_range=None):
 
 
 class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
-                                publish.OpenPypePyblishPluginMixin,
+                                publish.QuadPypePyblishPluginMixin,
                                 publish.ColormanagedPyblishPluginMixin,
                                 DeadlineDefaultJobAttrs):
     """Process Job submitted on farm.
@@ -109,7 +109,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                   "max": [r".*"]}
 
     environ_job_filter = [
-        "OPENPYPE_METADATA_FILE"
+        "QUADPYPE_METADATA_FILE"
     ]
 
     environ_keys = [
@@ -118,7 +118,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
         "FTRACK_SERVER",
         "AVALON_APP_NAME",
         "QUADPYPE_USERNAME",
-        "OPENPYPE_SG_USER",
+        "QUADPYPE_SG_USER",
         "KITSU_LOGIN",
         "KITSU_PWD"
     ]
@@ -195,12 +195,12 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
         }
 
         environment["AVALON_DB"] = os.environ["AVALON_DB"]
-        environment["OPENPYPE_PUBLISH_JOB"] = "1"
-        environment["OPENPYPE_RENDER_JOB"] = "0"
-        environment["OPENPYPE_REMOTE_PUBLISH"] = "0"
-        plugin_name = "OpenPype"
-        # Add OpenPype version
-        self.environ_keys.append("OPENPYPE_VERSION")
+        environment["QUADPYPE_PUBLISH_JOB"] = "1"
+        environment["QUADPYPE_RENDER_JOB"] = "0"
+        environment["QUADPYPE_REMOTE_PUBLISH"] = "0"
+        plugin_name = "QuadPype"
+        # Add QuadPype version
+        self.environ_keys.append("QUADPYPE_VERSION")
 
         # add environments from self.environ_keys
         for env_key in self.environ_keys:
@@ -215,9 +215,9 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
 
         # Add mongo url if it's enabled
         if instance.context.data.get("deadlinePassMongoUrl"):
-            mongo_url = os.environ.get("OPENPYPE_MONGO")
+            mongo_url = os.environ.get("QUADPYPE_MONGO")
             if mongo_url:
-                environment["OPENPYPE_MONGO"] = mongo_url
+                environment["QUADPYPE_MONGO"] = mongo_url
 
         instance_settings = self.get_attr_values_from_data(instance.data)
         initial_status = instance_settings.get("publishJobState", "Active")
@@ -500,7 +500,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                     get publish_path
 
         Args:
-            anatomy (openpype.pipeline.anatomy.Anatomy):
+            anatomy (quadpype.pipeline.anatomy.Anatomy):
             template_data (dict): pre-calculated collected data for process
             asset (string): asset name
             subset (string): subset name (actually group name of subset)

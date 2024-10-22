@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/openpype">
+    <qresource prefix="/quadpype">
         <file>images/combobox_arrow.png</file>
         <file>images/combobox_arrow_disabled.png</file>
         <file>images/branch_closed.png</file>

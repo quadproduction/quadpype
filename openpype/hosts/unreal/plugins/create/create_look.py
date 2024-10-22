@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import unreal
 
-from openpype.pipeline import CreatorError
-from openpype.hosts.unreal.api.pipeline import (
+from quadpype.pipeline import CreatorError
+from quadpype.hosts.unreal.api.pipeline import (
     create_folder
 )
-from openpype.hosts.unreal.api.plugin import (
+from quadpype.hosts.unreal.api.plugin import (
     UnrealAssetCreator
 )
-from openpype.lib import UILabelDef
+from quadpype.lib import UILabelDef
 
 
 class CreateLook(UnrealAssetCreator):

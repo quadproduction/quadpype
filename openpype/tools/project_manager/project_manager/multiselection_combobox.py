@@ -1,10 +1,10 @@
 from qtpy import QtCore, QtWidgets
 
-from openpype.tools.utils.lib import (
+from quadpype.tools.utils.lib import (
     checkstate_int_to_enum,
     checkstate_enum_to_int,
 )
-from openpype.tools.utils.constants import (
+from quadpype.tools.utils.constants import (
     CHECKED_INT,
     UNCHECKED_INT,
     ITEM_IS_USER_TRISTATE,
@@ -41,7 +41,7 @@ class MultiSelectionComboBox(QtWidgets.QComboBox):
     }
 
     def __init__(self, parent=None, **kwargs):
-        super(MultiSelectionComboBox, self).__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, **kwargs)
         self.setObjectName("MultiSelectionComboBox")
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 

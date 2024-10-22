@@ -3,7 +3,7 @@ import tempfile
 
 import pyblish
 
-from openpype.lib import (
+from quadpype.lib import (
     get_ffmpeg_tool_args,
     run_subprocess
 )

@@ -11,22 +11,22 @@ import uuid
 
 import ftrack_api
 import pymongo
-from openpype.client.mongo import (
-    OpenPypeMongoConnection,
+from quadpype.client.mongo import (
+    QuadPypeMongoConnection,
     validate_mongo_connection,
 )
-from openpype.lib import (
-    get_openpype_execute_args,
-    get_openpype_version,
+from quadpype.lib import (
+    get_quadpype_execute_args,
+    get_quadpype_version,
     get_build_version,
 )
-from openpype_modules.ftrack import (
+from quadpype_modules.ftrack import (
     FTRACK_MODULE_DIR,
     resolve_ftrack_url,
 )
-from openpype_modules.ftrack.lib import credentials
-from openpype_modules.ftrack.ftrack_server import socket_thread
-from openpype_modules.ftrack.ftrack_server.lib import get_host_ip
+from quadpype_modules.ftrack.lib import credentials
+from quadpype_modules.ftrack.ftrack_server import socket_thread
+from quadpype_modules.ftrack.ftrack_server.lib import get_host_ip
 
 
 class MongoPermissionsError(Exception):
@@ -139,7 +139,7 @@ def legacy_server(ftrack_url):
 
         if subproc is None:
             if subproc_failed_count < max_fail_count:
-                args = get_openpype_execute_args("run", subproc_path)
+                args = get_quadpype_execute_args("run", subproc_path)
                 subproc = subprocess.Popen(
                     args,
                     stdout=subprocess.PIPE
@@ -183,7 +183,7 @@ def main_loop(ftrack_url):
 
     os.environ["FTRACK_EVENT_SUB_ID"] = str(uuid.uuid1())
 
-    mongo_uri = OpenPypeMongoConnection.get_default_mongo_url()
+    mongo_uri = QuadPypeMongoConnection.get_default_mongo_url()
 
     # Current file
     scripts_dir = os.path.join(FTRACK_MODULE_DIR, "scripts")
@@ -253,9 +253,9 @@ def main_loop(ftrack_url):
         ["Username", getpass.getuser()],
         ["Host Name", host_name],
         ["Host IP", host_ip or "N/A"],
-        ["OpenPype executable", get_openpype_execute_args()[-1]],
-        ["OpenPype version", get_openpype_version() or "N/A"],
-        ["OpenPype build version", get_build_version() or "N/A"]
+        ["QuadPype executable", get_quadpype_execute_args()[-1]],
+        ["QuadPype version", get_quadpype_version() or "N/A"],
+        ["QuadPype build version", get_build_version() or "N/A"]
     ]
     main_info_str = json.dumps(main_info)
     # Main loop

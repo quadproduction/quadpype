@@ -1,7 +1,7 @@
 from qtpy import QtCore, QtGui
 
-from openpype.tools.utils.tasks_widget import TasksWidget, TASK_NAME_ROLE
-from openpype.tools.utils.lib import get_default_task_icon
+from quadpype.tools.utils.tasks_widget import TasksWidget, TASK_NAME_ROLE
+from quadpype.tools.utils.lib import get_default_task_icon
 
 
 class TasksModel(QtGui.QStandardItemModel):
@@ -19,7 +19,7 @@ class TasksModel(QtGui.QStandardItemModel):
             publishing.
     """
     def __init__(self, controller, allow_empty_task=False):
-        super(TasksModel, self).__init__()
+        super().__init__()
 
         self._allow_empty_task = allow_empty_task
         self._controller = controller
@@ -144,7 +144,7 @@ class TasksModel(QtGui.QStandardItemModel):
 class CreateWidgetTasksWidget(TasksWidget):
     def __init__(self, controller, parent):
         self._controller = controller
-        super(CreateWidgetTasksWidget, self).__init__(None, parent)
+        super().__init__(None, parent)
 
         self._enabled = None
 

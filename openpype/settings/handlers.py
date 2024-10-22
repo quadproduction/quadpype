@@ -6,13 +6,13 @@ import datetime
 from abc import ABCMeta, abstractmethod
 import six
 
-import openpype.version
-from openpype.client.mongo import (
-    OpenPypeMongoConnection,
+import quadpype.version
+from quadpype.client.mongo import (
+    QuadPypeMongoConnection,
     get_project_connection,
 )
-from openpype.client.entities import get_project
-from openpype.lib.pype_info import get_workstation_info
+from quadpype.client.entities import get_project
+from quadpype.lib.pype_info import get_workstation_info
 
 
 from .constants import (
@@ -35,7 +35,7 @@ class SettingsStateInfo:
 
     Is used to hold information about last saved and last opened UI. Keep
     information about the time when that happened and on which machine under
-    which user and on which openpype version.
+    which user and on which quadpype version.
 
     To create currrent machine and time information use 'create_new' method.
     """
@@ -44,7 +44,7 @@ class SettingsStateInfo:
 
     def __init__(
         self,
-        openpype_version,
+        quadpype_version,
         settings_type,
         project_name,
         timestamp,
@@ -54,7 +54,7 @@ class SettingsStateInfo:
         system_name,
         local_id
     ):
-        self.openpype_version = openpype_version
+        self.quadpype_version = quadpype_version
         self.settings_type = settings_type
         self.project_name = project_name
 
@@ -76,17 +76,17 @@ class SettingsStateInfo:
 
     @classmethod
     def create_new(
-        cls, openpype_version, settings_type=None, project_name=None
+        cls, quadpype_version, settings_type=None, project_name=None
     ):
         """Create information about this machine for current time."""
 
-        from openpype.lib.pype_info import get_workstation_info
+        from quadpype.lib.pype_info import get_workstation_info
 
         now = datetime.datetime.now()
         workstation_info = get_workstation_info()
 
         return cls(
-            openpype_version,
+            quadpype_version,
             settings_type,
             project_name,
             now.strftime(cls.timestamp_format),
@@ -102,7 +102,7 @@ class SettingsStateInfo:
         """Create object from data."""
 
         return cls(
-            data["openpype_version"],
+            data["quadpype_version"],
             data["settings_type"],
             data["project_name"],
             data["timestamp"],
@@ -116,16 +116,16 @@ class SettingsStateInfo:
     def to_data(self):
         data = self.to_document_data()
         data.update({
-            "openpype_version": self.openpype_version,
+            "quadpype_version": self.quadpype_version,
             "settings_type": self.settings_type,
             "project_name": self.project_name
         })
         return data
 
     @classmethod
-    def create_new_empty(cls, openpype_version, settings_type=None):
+    def create_new_empty(cls, quadpype_version, settings_type=None):
         return cls(
-            openpype_version,
+            quadpype_version,
             settings_type,
             None,
             None,
@@ -137,20 +137,20 @@ class SettingsStateInfo:
         )
 
     @classmethod
-    def from_document(cls, openpype_version, settings_type, document):
+    def from_document(cls, quadpype_version, settings_type, document):
         document = document or {}
         project_name = document.get("project_name")
         last_saved_info = document.get("last_saved_info")
         if last_saved_info:
             copy_last_saved_info = copy.deepcopy(last_saved_info)
             copy_last_saved_info.update({
-                "openpype_version": openpype_version,
+                "quadpype_version": quadpype_version,
                 "settings_type": settings_type,
                 "project_name": project_name,
             })
             return cls.from_data(copy_last_saved_info)
         return cls(
-            openpype_version,
+            quadpype_version,
             settings_type,
             project_name,
             None,
@@ -179,7 +179,7 @@ class SettingsStateInfo:
             return False
 
         return (
-            self.openpype_version == other.openpype_version
+            self.quadpype_version == other.quadpype_version
             and self.hostname == other.hostname
             and self.hostip == other.hostip
             and self.username == other.username
@@ -191,8 +191,8 @@ class SettingsStateInfo:
 @six.add_metaclass(ABCMeta)
 class SettingsHandler(object):
     global_keys = {
-        "openpype_path",
-        "local_openpype_path",
+        "quadpype_path",
+        "local_quadpype_path",
         "admin_password",
         "log_to_server",
         "disk_mapping",
@@ -303,7 +303,7 @@ class SettingsHandler(object):
         """Studio system settings overrides for specific version.
 
         Args:
-            version(str): OpenPype version for which settings should be
+            version(str): QuadPype version for which settings should be
                 returned.
 
         Returns:
@@ -317,7 +317,7 @@ class SettingsHandler(object):
         """Studio project anatomy overrides for specific version.
 
         Args:
-            version(str): OpenPype version for which settings should be
+            version(str): QuadPype version for which settings should be
                 returned.
 
         Returns:
@@ -331,7 +331,7 @@ class SettingsHandler(object):
         """Studio project settings overrides for specific version.
 
         Args:
-            version(str): OpenPype version for which settings should be
+            version(str): QuadPype version for which settings should be
                 returned.
 
         Returns:
@@ -349,7 +349,7 @@ class SettingsHandler(object):
         Args:
             project_name(str): Name of project for which the overrides should
                 be loaded.
-            version(str): OpenPype version for which settings should be
+            version(str): QuadPype version for which settings should be
                 returned.
 
         Returns:
@@ -413,10 +413,10 @@ class SettingsHandler(object):
     def get_available_studio_system_settings_overrides_versions(
         self, sorted=None
     ):
-        """OpenPype versions that have any studio system settings overrides.
+        """QuadPype versions that have any studio system settings overrides.
 
         Returns:
-            list<str>: OpenPype versions strings.
+            list<str>: QuadPype versions strings.
         """
         pass
 
@@ -424,10 +424,10 @@ class SettingsHandler(object):
     def get_available_studio_project_anatomy_overrides_versions(
         self, sorted=None
     ):
-        """OpenPype versions that have any studio project anatomy overrides.
+        """QuadPype versions that have any studio project anatomy overrides.
 
         Returns:
-            List[str]: OpenPype versions strings.
+            List[str]: QuadPype versions strings.
         """
         pass
 
@@ -435,10 +435,10 @@ class SettingsHandler(object):
     def get_available_studio_project_settings_overrides_versions(
         self, sorted=None
     ):
-        """OpenPype versions that have any studio project settings overrides.
+        """QuadPype versions that have any studio project settings overrides.
 
         Returns:
-            List[str]: OpenPype versions strings.
+            List[str]: QuadPype versions strings.
         """
         pass
 
@@ -446,13 +446,13 @@ class SettingsHandler(object):
     def get_available_project_settings_overrides_versions(
         self, project_name, sorted=None
     ):
-        """OpenPype versions that have any project settings overrides.
+        """QuadPype versions that have any project settings overrides.
 
         Args:
             project_name(str): Name of project.
 
         Returns:
-            List[str]: OpenPype versions strings.
+            List[str]: QuadPype versions strings.
         """
 
         pass
@@ -615,7 +615,7 @@ class MongoSettingsHandler(SettingsHandler):
 
     def __init__(self):
         # Get mongo connection
-        settings_collection = OpenPypeMongoConnection.get_mongo_client()
+        settings_collection = QuadPypeMongoConnection.get_mongo_client()
 
         self._anatomy_keys = None
         self._attribute_keys = None
@@ -625,9 +625,9 @@ class MongoSettingsHandler(SettingsHandler):
         self._system_settings_key = SYSTEM_SETTINGS_KEY + self.key_suffix
         self._project_settings_key = PROJECT_SETTINGS_KEY + self.key_suffix
         self._project_anatomy_key = PROJECT_ANATOMY_KEY + self.key_suffix
-        self._current_version = openpype.version.__version__
+        self._current_version = quadpype.version.__version__
 
-        database_name = os.environ["OPENPYPE_DATABASE_NAME"]
+        database_name = os.environ["QUADPYPE_DATABASE_NAME"]
         # TODO modify to not use hardcoded keys
         collection_name = "settings"
 
@@ -1065,24 +1065,24 @@ class MongoSettingsHandler(SettingsHandler):
         ) or {}
 
     def _check_version_order(self):
-        """This method will work only in OpenPype process.
+        """This method will work only in QuadPype process.
 
-        Will create/update mongo document where OpenPype versions are stored
+        Will create/update mongo document where QuadPype versions are stored
         in semantic version order.
 
         This document can be then used to find closes version of settings in
-        processes where 'OpenPypeVersion' is not available.
+        processes where 'QuadPypeVersion' is not available.
         """
         # Do this step only once
         if self._version_order_checked:
             return
         self._version_order_checked = True
 
-        from openpype.lib.openpype_version import get_OpenPypeVersion
+        from quadpype.lib.quadpype_version import get_QuadPypeVersion
 
-        OpenPypeVersion = get_OpenPypeVersion()
-        # Skip if 'OpenPypeVersion' is not available
-        if OpenPypeVersion is None:
+        QuadPypeVersion = get_QuadPypeVersion()
+        # Skip if 'QuadPypeVersion' is not available
+        if QuadPypeVersion is None:
             return
 
         # Query document holding sorted list of version strings
@@ -1100,11 +1100,11 @@ class MongoSettingsHandler(SettingsHandler):
         if self._current_version not in doc[self._all_versions_keys]:
             # Add all versions into list
             all_objected_versions = [
-                OpenPypeVersion(version=self._current_version)
+                QuadPypeVersion(version=self._current_version)
             ]
             for version_str in doc[self._all_versions_keys]:
                 all_objected_versions.append(
-                    OpenPypeVersion(version=version_str)
+                    QuadPypeVersion(version=version_str)
                 )
 
             doc[self._all_versions_keys] = [
@@ -1122,9 +1122,9 @@ class MongoSettingsHandler(SettingsHandler):
             project_name: None
             for project_name in project_names
         }
-        from openpype.lib.openpype_version import get_OpenPypeVersion
-        OpenPypeVersion = get_OpenPypeVersion()
-        if OpenPypeVersion is None:
+        from quadpype.lib.quadpype_version import get_QuadPypeVersion
+        QuadPypeVersion = get_QuadPypeVersion()
+        if QuadPypeVersion is None:
             return output
 
         versioned_doc = self._get_versions_order_doc()
@@ -1160,7 +1160,7 @@ class MongoSettingsHandler(SettingsHandler):
     ):
         """Try to find closes available versioned settings for settings key.
 
-        This method should be used only if settings for current OpenPype
+        This method should be used only if settings for current QuadPype
         version are not available.
 
         Args:
@@ -1209,9 +1209,9 @@ class MongoSettingsHandler(SettingsHandler):
             # There are not versioned documents yet
             not versioned_settings_by_version
             # Versioned document is not available at all
-            # - this can happen only if old build of OpenPype was used
+            # - this can happen only if old build of QuadPype was used
             or not versioned_doc
-            # Current OpenPype version is not available
+            # Current QuadPype version is not available
             # - something went really wrong when this happens
             or self._current_version not in versions_in_doc
         ):
@@ -1622,14 +1622,14 @@ class MongoSettingsHandler(SettingsHandler):
         if contain_legacy:
             set_versions.remove(LEGACY_SETTINGS_VERSION)
 
-        from openpype.lib.openpype_version import get_OpenPypeVersion
+        from quadpype.lib.quadpype_version import get_QuadPypeVersion
 
-        OpenPypeVersion = get_OpenPypeVersion()
+        QuadPypeVersion = get_QuadPypeVersion()
 
-        # Skip if 'OpenPypeVersion' is not available
-        if OpenPypeVersion is not None:
+        # Skip if 'QuadPypeVersion' is not available
+        if QuadPypeVersion is not None:
             obj_versions = sorted(
-                [OpenPypeVersion(version=version) for version in set_versions]
+                [QuadPypeVersion(version=version) for version in set_versions]
             )
             sorted_versions = [str(version) for version in obj_versions]
             if contain_legacy:
@@ -1747,7 +1747,7 @@ class MongoSettingsHandler(SettingsHandler):
             return None
 
         # Fill not available information
-        info_data["openpype_version"] = self._current_version
+        info_data["quadpype_version"] = self._current_version
         info_data["settings_type"] = None
         info_data["project_name"] = None
         return SettingsStateInfo.from_data(info_data)
@@ -1785,7 +1785,7 @@ class MongoSettingsHandler(SettingsHandler):
         if not info_data:
             return
 
-        info_data["openpype_version"] = self._current_version
+        info_data["quadpype_version"] = self._current_version
         info_data["settings_type"] = None
         info_data["project_name"] = None
         current_info = SettingsStateInfo.from_data(info_data)
@@ -1806,16 +1806,16 @@ class MongoLocalSettingsHandler(LocalSettingsHandler):
 
     def __init__(self, local_site_id=None):
         # Get mongo connection
-        from openpype.lib import get_local_site_id
+        from quadpype.lib import get_local_site_id
 
         if local_site_id is None:
             local_site_id = get_local_site_id()
-        settings_collection = OpenPypeMongoConnection.get_mongo_client()
+        settings_collection = QuadPypeMongoConnection.get_mongo_client()
 
         # TODO prepare version of pype
         # - pype version should define how are settings saved and loaded
 
-        database_name = os.environ["OPENPYPE_DATABASE_NAME"]
+        database_name = os.environ["QUADPYPE_DATABASE_NAME"]
         # TODO modify to not use hardcoded keys
         collection_name = "settings"
 

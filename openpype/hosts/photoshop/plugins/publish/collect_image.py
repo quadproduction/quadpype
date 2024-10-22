@@ -1,6 +1,6 @@
 import pyblish.api
 
-from openpype.hosts.photoshop import api
+from quadpype.hosts.photoshop import api
 
 
 class CollectImage(pyblish.api.InstancePlugin):

@@ -23,7 +23,7 @@ class OverviewWidget(QtWidgets.QFrame):
     anim_duration = 200
 
     def __init__(self, controller, parent):
-        super(OverviewWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self._refreshing_instances = False
         self._controller = controller
@@ -377,7 +377,7 @@ class OverviewWidget(QtWidgets.QFrame):
 
         Returns:
             list[str]: Selected legacy convertor identifiers.
-                Example: ['io.openpype.creators.houdini.legacy']
+                Example: ['io.quadpype.creators.houdini.legacy']
         """
 
         _, _, convertor_identifiers = self.get_selected_items()

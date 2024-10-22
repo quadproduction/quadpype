@@ -5,8 +5,8 @@ import csv
 
 from PIL import Image, ImageDraw, ImageFont
 
-import openpype.hosts.harmony.api as harmony
-from openpype.pipeline import publish
+import quadpype.hosts.harmony.api as harmony
+from quadpype.pipeline import publish
 
 
 class ExtractPalette(publish.Extractor):

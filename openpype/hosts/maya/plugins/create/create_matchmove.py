@@ -1,8 +1,8 @@
-from openpype.hosts.maya.api import (
+from quadpype.hosts.maya.api import (
     lib,
     plugin
 )
-from openpype.lib import BoolDef
+from quadpype.lib import BoolDef
 
 
 class CreateMatchmove(plugin.MayaCreator):
@@ -13,7 +13,7 @@ class CreateMatchmove(plugin.MayaCreator):
     It is expected to be extracted into .abc or .ma
     """
 
-    identifier = "io.openpype.creators.maya.matchmove"
+    identifier = "io.quadpype.creators.maya.matchmove"
     label = "Matchmove"
     family = "matchmove"
     icon = "video-camera"

@@ -735,7 +735,7 @@ def _applied_viewport_options(options, panel):
     plugin_options = options.pop("pluginObjects", {})
 
     # BUGFIX Maya 2020 some keys in viewport options dict may not be unicode
-    #        This is a local OpenPype edit to capture.py for issue #4730
+    #        This is a local QuadPype edit to capture.py for issue #4730
     # TODO: Remove when dropping Maya 2020 compatibility
     if int(cmds.about(version=True)) <= 2020:
         options = {

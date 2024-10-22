@@ -5,8 +5,8 @@ import collections
 from bson.objectid import ObjectId
 from pymongo import DeleteOne, InsertOne, UpdateOne
 
-from openpype.settings import PROJECT_ANATOMY_KEY
-from openpype.client.operations_base import (
+from quadpype.settings import PROJECT_ANATOMY_KEY
+from quadpype.client.operations_base import (
     REMOVED_VALUE,
     CreateOperation,
     UpdateOperation,
@@ -22,15 +22,15 @@ PROJECT_NAME_REGEX = re.compile(
     "^[{}]+$".format(PROJECT_NAME_ALLOWED_SYMBOLS)
 )
 
-CURRENT_PROJECT_SCHEMA = "openpype:project-3.0"
-CURRENT_PROJECT_CONFIG_SCHEMA = "openpype:config-2.0"
-CURRENT_ASSET_DOC_SCHEMA = "openpype:asset-3.0"
-CURRENT_SUBSET_SCHEMA = "openpype:subset-3.0"
-CURRENT_VERSION_SCHEMA = "openpype:version-3.0"
-CURRENT_HERO_VERSION_SCHEMA = "openpype:hero_version-1.0"
-CURRENT_REPRESENTATION_SCHEMA = "openpype:representation-2.0"
-CURRENT_WORKFILE_INFO_SCHEMA = "openpype:workfile-1.0"
-CURRENT_THUMBNAIL_SCHEMA = "openpype:thumbnail-1.0"
+CURRENT_PROJECT_SCHEMA = "quadpype:project-3.0"
+CURRENT_PROJECT_CONFIG_SCHEMA = "quadpype:config-2.0"
+CURRENT_ASSET_DOC_SCHEMA = "quadpype:asset-3.0"
+CURRENT_SUBSET_SCHEMA = "quadpype:subset-3.0"
+CURRENT_VERSION_SCHEMA = "quadpype:version-3.0"
+CURRENT_HERO_VERSION_SCHEMA = "quadpype:hero_version-1.0"
+CURRENT_REPRESENTATION_SCHEMA = "quadpype:representation-2.0"
+CURRENT_WORKFILE_INFO_SCHEMA = "quadpype:workfile-1.0"
+CURRENT_THUMBNAIL_SCHEMA = "quadpype:thumbnail-1.0"
 
 
 def _create_or_convert_to_mongo_id(mongo_id):
@@ -385,7 +385,7 @@ class MongoCreateOperation(CreateOperation):
     operation_name = "create"
 
     def __init__(self, project_name, entity_type, data):
-        super(MongoCreateOperation, self).__init__(
+        super().__init__(
             project_name, entity_type, data
         )
 
@@ -418,7 +418,7 @@ class MongoUpdateOperation(UpdateOperation):
     operation_name = "update"
 
     def __init__(self, project_name, entity_type, entity_id, update_data):
-        super(MongoUpdateOperation, self).__init__(
+        super().__init__(
             project_name, entity_type, entity_id, update_data
         )
 
@@ -461,7 +461,7 @@ class MongoDeleteOperation(DeleteOperation):
     operation_name = "delete"
 
     def __init__(self, project_name, entity_type, entity_id):
-        super(MongoDeleteOperation, self).__init__(
+        super().__init__(
             project_name, entity_type, entity_id
         )
 
@@ -548,7 +548,7 @@ def create_project(
     project_code,
     library_project=False,
 ):
-    """Create project using OpenPype settings.
+    """Create project using QuadPype settings.
 
     This project creation function is not validating project document on
     creation. It is because project document is created blindly with only
@@ -558,7 +558,7 @@ def create_project(
     Entered project name must be unique and project must not exist yet.
 
     Note:
-        This function is here to be OP v4 ready but in v3 has more logic
+        This function is here to be QuadPype v4 ready but in v3 has more logic
             to do. That's why inner imports are in the body.
 
     Args:
@@ -573,8 +573,8 @@ def create_project(
         dict: Created project document.
     """
 
-    from openpype.settings import ProjectSettings, SaveWarningExc
-    from openpype.pipeline.schema import validate
+    from quadpype.settings import ProjectSettings, SaveWarningExc
+    from quadpype.pipeline.schema import validate
 
     if get_project(project_name, fields=["name"]):
         raise ValueError("Project with name \"{}\" already exists".format(

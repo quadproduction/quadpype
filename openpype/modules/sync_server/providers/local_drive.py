@@ -4,9 +4,9 @@ import shutil
 import threading
 import time
 
-from openpype.lib import Logger
-from openpype.lib.local_settings import get_local_site_id
-from openpype.pipeline import Anatomy
+from quadpype.lib import Logger
+from quadpype.lib.local_settings import get_local_site_id
+from quadpype.pipeline import Anatomy
 from .abstract_provider import AbstractProvider
 
 log = Logger.get_logger("SyncServer")

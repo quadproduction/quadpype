@@ -1,7 +1,7 @@
 import pyblish.api
 
-from openpype.client import get_representations
-from openpype.pipeline import registered_host
+from quadpype.client import get_representations
+from quadpype.pipeline import registered_host
 
 
 class CollectSceneLoadedVersions(pyblish.api.ContextPlugin):

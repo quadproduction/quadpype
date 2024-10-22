@@ -7,18 +7,18 @@ import pymongo
 
 import ftrack_api
 
-from openpype.client import OpenPypeMongoConnection
-from openpype_modules.ftrack.ftrack_server.ftrack_server import FtrackServer
-from openpype_modules.ftrack.ftrack_server.lib import (
+from quadpype.client import QuadPypeMongoConnection
+from quadpype_modules.ftrack.ftrack_server.ftrack_server import FtrackServer
+from quadpype_modules.ftrack.ftrack_server.lib import (
     SocketSession,
     StorerEventHub,
     TOPIC_STATUS_SERVER,
     TOPIC_STATUS_SERVER_RESULT
 )
-from openpype_modules.ftrack.lib import get_ftrack_event_mongo_info
-from openpype.lib import (
+from quadpype_modules.ftrack.lib import get_ftrack_event_mongo_info
+from quadpype.lib import (
     Logger,
-    get_openpype_version,
+    get_quadpype_version,
     get_build_version
 )
 
@@ -40,11 +40,11 @@ ignore_topics = []
 def install_db():
     global dbcon
     try:
-        mongo_client = OpenPypeMongoConnection.get_mongo_client()
+        mongo_client = QuadPypeMongoConnection.get_mongo_client()
         dbcon = mongo_client[database_name][collection_name]
     except pymongo.errors.AutoReconnect:
         log.error("Mongo server \"{}\" is not responding, exiting.".format(
-            OpenPypeMongoConnection.get_default_mongo_url()
+            QuadPypeMongoConnection.get_default_mongo_url()
         ))
         sys.exit(0)
 
@@ -68,7 +68,7 @@ def launch(event):
 
     except pymongo.errors.AutoReconnect:
         log.error("Mongo server \"{}\" is not responding, exiting.".format(
-            os.environ["OPENPYPE_MONGO"]
+            os.environ["QUADPYPE_MONGO"]
         ))
         sys.exit(0)
 
@@ -160,8 +160,8 @@ def send_status(event):
         "source": "storer",
         "status_info": [
             ["created_at", subprocess_started.strftime("%Y.%m.%d %H:%M:%S")],
-            ["OpenPype version", get_openpype_version() or "N/A"],
-            ["OpenPype build version", get_build_version() or "N/A"]
+            ["QuadPype version", get_quadpype_version() or "N/A"],
+            ["QuadPype build version", get_build_version() or "N/A"]
         ]
     }
 
@@ -177,7 +177,7 @@ def register(session):
     '''Registers the event, subscribing the discover and launch topics.'''
     install_db()
     session.event_hub.subscribe("topic=*", launch)
-    session.event_hub.subscribe("topic=openpype.storer.started", trigger_sync)
+    session.event_hub.subscribe("topic=quadpype.storer.started", trigger_sync)
     session.event_hub.subscribe(
         "topic={}".format(TOPIC_STATUS_SERVER), send_status
     )

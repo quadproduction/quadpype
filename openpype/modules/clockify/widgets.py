@@ -1,5 +1,5 @@
 from qtpy import QtCore, QtGui, QtWidgets
-from openpype import resources, style
+from quadpype import resources, style
 
 
 class MessageWidget(QtWidgets.QWidget):
@@ -10,7 +10,7 @@ class MessageWidget(QtWidgets.QWidget):
     closed = QtCore.Signal()
 
     def __init__(self, messages, title):
-        super(MessageWidget, self).__init__()
+        super().__init__()
 
         # Icon
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
@@ -83,7 +83,7 @@ class ClockifySettings(QtWidgets.QWidget):
     loginSignal = QtCore.Signal(object, object, object)
 
     def __init__(self, clockify_api, optional=True):
-        super(ClockifySettings, self).__init__()
+        super().__init__()
 
         self.clockify_api = clockify_api
         self.optional = optional

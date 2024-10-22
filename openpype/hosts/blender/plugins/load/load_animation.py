@@ -4,8 +4,8 @@ from typing import Dict, List, Optional
 
 import bpy
 
-from openpype.hosts.blender.api import plugin
-from openpype.hosts.blender.api.pipeline import AVALON_PROPERTY
+from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api.pipeline import AVALON_PROPERTY
 
 
 class BlendAnimationLoader(plugin.AssetLoader):

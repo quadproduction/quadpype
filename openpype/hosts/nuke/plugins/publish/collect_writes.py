@@ -1,8 +1,8 @@
 import os
 import nuke
 import pyblish.api
-from openpype.hosts.nuke import api as napi
-from openpype.pipeline import publish
+from quadpype.hosts.nuke import api as napi
+from quadpype.pipeline import publish
 
 
 class CollectNukeWrites(pyblish.api.InstancePlugin,

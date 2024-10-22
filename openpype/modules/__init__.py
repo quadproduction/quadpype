@@ -12,8 +12,8 @@ from .interfaces import (
 
 from .base import (
     AYONAddon,
-    OpenPypeModule,
-    OpenPypeAddOn,
+    QuadPypeModule,
+    QuadPypeAddOn,
 
     load_modules,
 
@@ -40,8 +40,8 @@ __all__ = (
     "IHostAddon",
 
     "AYONAddon",
-    "OpenPypeModule",
-    "OpenPypeAddOn",
+    "QuadPypeModule",
+    "QuadPypeAddOn",
 
     "load_modules",
 

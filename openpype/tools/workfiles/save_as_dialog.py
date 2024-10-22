@@ -5,18 +5,18 @@ import logging
 
 from qtpy import QtWidgets, QtCore
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     registered_host,
     legacy_io,
 )
-from openpype.pipeline.context_tools import (
+from quadpype.pipeline.context_tools import (
     get_current_task_name,
     get_current_asset_name
 )
-from openpype.pipeline.workfile import get_last_workfile_with_version
-from openpype.pipeline.template_data import get_template_data_with_names
-from openpype.tools.utils import PlaceholderLineEdit
-from openpype.pipeline import version_start, get_current_host_name
+from quadpype.pipeline.workfile import get_last_workfile_with_version
+from quadpype.pipeline.template_data import get_template_data_with_names
+from quadpype.tools.utils import PlaceholderLineEdit
+from quadpype.pipeline import version_start, get_current_host_name
 
 log = logging.getLogger(__name__)
 
@@ -100,7 +100,7 @@ class SubversionLineEdit(QtWidgets.QWidget):
     text_changed = QtCore.Signal(str)
 
     def __init__(self, *args, **kwargs):
-        super(SubversionLineEdit, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         input_field = PlaceholderLineEdit(self)
         menu_btn = QtWidgets.QPushButton(self)
@@ -185,7 +185,7 @@ class SaveAsDialog(QtWidgets.QDialog):
     def __init__(
         self, parent, root, anatomy, template_key, extensions, session=None
     ):
-        super(SaveAsDialog, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
 
         self.result = None

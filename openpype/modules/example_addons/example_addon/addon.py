@@ -9,10 +9,10 @@ in global space here until are required or used.
 
 import os
 
-from openpype.modules import (
+from quadpype.modules import (
     click_wrap,
     JsonFilesSettingsDef,
-    OpenPypeAddOn,
+    QuadPypeAddOn,
     ModulesManager,
     IPluginPaths,
     ITrayAction
@@ -43,7 +43,7 @@ class AddonSettingsDef(JsonFilesSettingsDef):
         )
 
 
-class ExampleAddon(OpenPypeAddOn, IPluginPaths, ITrayAction):
+class ExampleAddon(QuadPypeAddOn, IPluginPaths, ITrayAction):
     """This Addon has defined its settings and interface.
 
     This example has system settings with an enabled option. And use
@@ -138,7 +138,7 @@ def show_dialog():
     We don't have access to addon directly through cli so we have to create
     it again.
     """
-    from openpype.tools.utils.lib import qt_app_context
+    from quadpype.tools.utils.lib import qt_app_context
 
     manager = ModulesManager()
     example_addon = manager.modules_by_name[ExampleAddon.name]

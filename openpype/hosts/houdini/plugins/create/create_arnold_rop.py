@@ -1,11 +1,11 @@
-from openpype.hosts.houdini.api import plugin
-from openpype.lib import EnumDef, BoolDef
+from quadpype.hosts.houdini.api import plugin
+from quadpype.lib import EnumDef, BoolDef
 
 
 class CreateArnoldRop(plugin.HoudiniCreator):
     """Arnold ROP"""
 
-    identifier = "io.openpype.creators.houdini.arnold_rop"
+    identifier = "io.quadpype.creators.houdini.arnold_rop"
     label = "Arnold ROP"
     family = "arnold_rop"
     icon = "magic"

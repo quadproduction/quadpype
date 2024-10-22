@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 """Create ``Render`` instance in Maya."""
 
-from openpype.hosts.maya.api import (
+from quadpype.hosts.maya.api import (
     lib_rendersettings,
     plugin
 )
-from openpype.pipeline import CreatorError
-from openpype.lib import (
+from quadpype.pipeline import CreatorError
+from quadpype.lib import (
     BoolDef,
     NumberDef
 )
 
-from openpype.modules.deadline.utils import DeadlineDefaultJobAttrs
+from quadpype.modules.deadline.utils import DeadlineDefaultJobAttrs
 
 
 class CreateRenderlayer(plugin.RenderlayerCreator, DeadlineDefaultJobAttrs):
@@ -25,7 +25,7 @@ class CreateRenderlayer(plugin.RenderlayerCreator, DeadlineDefaultJobAttrs):
 
     """
 
-    identifier = "io.openpype.creators.maya.renderlayer"
+    identifier = "io.quadpype.creators.maya.renderlayer"
     family = "renderlayer"
     label = "Render"
     icon = "eye"

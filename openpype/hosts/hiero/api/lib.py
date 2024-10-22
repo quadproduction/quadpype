@@ -20,18 +20,18 @@ try:
 except ImportError:
     from PySide2 import QtXml
 
-from openpype.client import get_project
-from openpype.settings import get_project_settings
-from openpype.pipeline import Anatomy, get_current_project_name
-from openpype.pipeline.load import filter_containers
-from openpype.lib import Logger
+from quadpype.client import get_project
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import Anatomy, get_current_project_name
+from quadpype.pipeline.load import filter_containers
+from quadpype.lib import Logger
 from . import tags
 from .constants import (
-    OPENPYPE_TAG_NAME,
+    QUADPYPE_TAG_NAME,
     DEFAULT_SEQUENCE_NAME,
     DEFAULT_BIN_NAME
 )
-from openpype.pipeline.colorspace import (
+from quadpype.pipeline.colorspace import (
     get_imageio_config
 )
 
@@ -331,7 +331,7 @@ def _validate_all_atrributes(
 
 def get_track_item_tags(track_item):
     """
-    Get track item tags excluded openpype tag
+    Get track item tags excluded quadpype tag
 
     Attributes:
         trackItem (hiero.core.TrackItem): hiero object
@@ -345,10 +345,10 @@ def get_track_item_tags(track_item):
     if not _tags:
         return []
 
-    # collect all tags which are not openpype tag
+    # collect all tags which are not quadpype tag
     returning_tag_data.extend(
         tag for tag in _tags
-        if tag.name() != OPENPYPE_TAG_NAME
+        if tag.name() != QUADPYPE_TAG_NAME
     )
 
     return returning_tag_data
@@ -359,9 +359,9 @@ def _get_tag_unique_hash():
     return secrets.token_hex(nbytes=4)
 
 
-def set_track_openpype_tag(track, data=None):
+def set_track_quadpype_tag(track, data=None):
     """
-    Set openpype track tag to input track object.
+    Set quadpype track tag to input track object.
 
     Attributes:
         track (hiero.core.VideoTrack): hiero object
@@ -379,7 +379,7 @@ def set_track_openpype_tag(track, data=None):
         "metadata": dict(data.items())
     }
     # get available pype tag if any
-    _tag = get_track_openpype_tag(track)
+    _tag = get_track_quadpype_tag(track)
 
     if _tag:
         # it not tag then create one
@@ -388,7 +388,7 @@ def set_track_openpype_tag(track, data=None):
         # if pype tag available then update with input data
         tag = tags.create_tag(
             "{}_{}".format(
-                OPENPYPE_TAG_NAME,
+                QUADPYPE_TAG_NAME,
                 _get_tag_unique_hash()
             ),
             tag_data
@@ -399,7 +399,7 @@ def set_track_openpype_tag(track, data=None):
     return tag
 
 
-def get_track_openpype_tag(track):
+def get_track_quadpype_tag(track):
     """
     Get pype track item tag created by creator or loader plugin.
 
@@ -415,13 +415,13 @@ def get_track_openpype_tag(track):
         return None
     for tag in _tags:
         # return only correct tag defined by global name
-        if OPENPYPE_TAG_NAME in tag.name():
+        if QUADPYPE_TAG_NAME in tag.name():
             return tag
 
 
-def get_track_openpype_data(track, container_name=None):
+def get_track_quadpype_data(track, container_name=None):
     """
-    Get track's openpype tag data.
+    Get track's quadpype tag data.
 
     Attributes:
         trackItem (hiero.core.VideoTrack): hiero object
@@ -431,7 +431,7 @@ def get_track_openpype_data(track, container_name=None):
     """
     return_data = {}
     # get pype data tag from track item
-    tag = get_track_openpype_tag(track)
+    tag = get_track_quadpype_tag(track)
 
     if not tag:
         return None
@@ -453,25 +453,25 @@ def get_track_openpype_data(track, container_name=None):
     )
 
 
-@deprecated("openpype.hosts.hiero.api.lib.get_trackitem_openpype_tag")
+@deprecated("quadpype.hosts.hiero.api.lib.get_trackitem_quadpype_tag")
 def get_track_item_pype_tag(track_item):
     # backward compatibility alias
-    return get_trackitem_openpype_tag(track_item)
+    return get_trackitem_quadpype_tag(track_item)
 
 
-@deprecated("openpype.hosts.hiero.api.lib.set_trackitem_openpype_tag")
+@deprecated("quadpype.hosts.hiero.api.lib.set_trackitem_quadpype_tag")
 def set_track_item_pype_tag(track_item, data=None):
     # backward compatibility alias
-    return set_trackitem_openpype_tag(track_item, data)
+    return set_trackitem_quadpype_tag(track_item, data)
 
 
-@deprecated("openpype.hosts.hiero.api.lib.get_trackitem_openpype_data")
+@deprecated("quadpype.hosts.hiero.api.lib.get_trackitem_quadpype_data")
 def get_track_item_pype_data(track_item):
     # backward compatibility alias
-    return get_trackitem_openpype_data(track_item)
+    return get_trackitem_quadpype_data(track_item)
 
 
-def get_trackitem_openpype_tag(track_item):
+def get_trackitem_quadpype_tag(track_item):
     """
     Get pype track item tag created by creator or loader plugin.
 
@@ -487,13 +487,13 @@ def get_trackitem_openpype_tag(track_item):
         return None
     for tag in _tags:
         # return only correct tag defined by global name
-        if OPENPYPE_TAG_NAME in tag.name():
+        if QUADPYPE_TAG_NAME in tag.name():
             return tag
 
 
-def set_trackitem_openpype_tag(track_item, data=None):
+def set_trackitem_quadpype_tag(track_item, data=None):
     """
-    Set openpype track tag to input track object.
+    Set quadpype track tag to input track object.
 
     Attributes:
         track (hiero.core.VideoTrack): hiero object
@@ -511,7 +511,7 @@ def set_trackitem_openpype_tag(track_item, data=None):
         "metadata": dict(data.items())
     }
     # get available pype tag if any
-    _tag = get_trackitem_openpype_tag(track_item)
+    _tag = get_trackitem_quadpype_tag(track_item)
     if _tag:
         # it not tag then create one
         tag = tags.update_tag(_tag, tag_data)
@@ -519,7 +519,7 @@ def set_trackitem_openpype_tag(track_item, data=None):
         # if pype tag available then update with input data
         tag = tags.create_tag(
             "{}_{}".format(
-                OPENPYPE_TAG_NAME,
+                QUADPYPE_TAG_NAME,
                 _get_tag_unique_hash()
             ),
             tag_data
@@ -530,7 +530,7 @@ def set_trackitem_openpype_tag(track_item, data=None):
     return tag
 
 
-def get_trackitem_openpype_data(track_item):
+def get_trackitem_quadpype_data(track_item):
     """
     Get track item's pype tag data.
 
@@ -542,7 +542,7 @@ def get_trackitem_openpype_data(track_item):
     """
     data = {}
     # get pype data tag from track item
-    tag = get_trackitem_openpype_tag(track_item)
+    tag = get_trackitem_quadpype_tag(track_item)
 
     if not tag:
         return None
@@ -595,7 +595,7 @@ def imprint(track_item, data=None):
     """
     data = data or {}
 
-    tag = set_trackitem_openpype_tag(track_item, data)
+    tag = set_trackitem_quadpype_tag(track_item, data)
 
     # add publish attribute
     set_publish_attribute(tag, True)
@@ -800,7 +800,7 @@ class PublishAction(QtWidgets.QAction):
 #
 #     '''
 #     import hiero.core
-#     from openpype.hosts.nuke.api.lib import (
+#     from quadpype.hosts.nuke.api.lib import (
 #         BuildWorkfile,
 #         imprint
 #     )
@@ -1273,7 +1273,7 @@ def sync_clip_name_to_data_asset(track_items_list):
 
         # get name and data
         ti_name = track_item.name()
-        data = get_trackitem_openpype_data(track_item)
+        data = get_trackitem_quadpype_data(track_item)
 
         # ignore if no data on the clip or not publish instance
         if not data:
@@ -1285,10 +1285,10 @@ def sync_clip_name_to_data_asset(track_items_list):
         if data["asset"] != ti_name:
             data["asset"] = ti_name
             # remove the original tag
-            tag = get_trackitem_openpype_tag(track_item)
+            tag = get_trackitem_quadpype_tag(track_item)
             track_item.removeTag(tag)
             # create new tag with updated data
-            set_trackitem_openpype_tag(track_item, data)
+            set_trackitem_quadpype_tag(track_item, data)
             print("asset was changed in clip: {}".format(ti_name))
 
 

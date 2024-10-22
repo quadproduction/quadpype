@@ -1,5 +1,5 @@
 import pyblish.api
-from openpype.pipeline import PublishXmlValidationError
+from quadpype.pipeline import PublishXmlValidationError
 
 
 # TODO @iLLiCiTiT add repair action to disable instances?

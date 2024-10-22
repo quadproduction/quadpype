@@ -6,8 +6,8 @@ Shader names are stored as simple text file over GridFS in mongodb.
 """
 import os
 from qtpy import QtWidgets, QtCore, QtGui
-from openpype.client.mongo import OpenPypeMongoConnection
-from openpype import resources
+from quadpype.client.mongo import QuadPypeMongoConnection
+from quadpype import resources
 import gridfs
 
 
@@ -21,16 +21,16 @@ class ShaderDefinitionsEditor(QtWidgets.QWidget):
     # name of the file used to store definitions
 
     def __init__(self, parent=None):
-        super(ShaderDefinitionsEditor, self).__init__(parent)
-        self._mongo = OpenPypeMongoConnection.get_mongo_client()
+        super().__init__(parent)
+        self._mongo = QuadPypeMongoConnection.get_mongo_client()
         self._gridfs = gridfs.GridFS(
-            self._mongo[os.getenv("OPENPYPE_DATABASE_NAME")])
+            self._mongo[os.getenv("QUADPYPE_DATABASE_NAME")])
         self._editor = None
 
         self._original_content = self._read_definition_file()
 
         self.setObjectName("shaderDefinitionEditor")
-        self.setWindowTitle("OpenPype shader name definition editor")
+        self.setWindowTitle("QuadPype shader name definition editor")
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
         self.setWindowFlags(QtCore.Qt.Window)

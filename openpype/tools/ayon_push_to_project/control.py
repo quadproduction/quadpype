@@ -1,16 +1,16 @@
 import threading
 
-from openpype.client import (
+from quadpype.client import (
     get_asset_by_id,
     get_subset_by_id,
     get_version_by_id,
     get_representations,
 )
-from openpype.settings import get_project_settings
-from openpype.lib import prepare_template_data
-from openpype.lib.events import QueuedEventSystem
-from openpype.pipeline.create import get_subset_name_template
-from openpype.tools.ayon_utils.models import ProjectsModel, HierarchyModel
+from quadpype.settings import get_project_settings
+from quadpype.lib import prepare_template_data
+from quadpype.lib.events import QueuedEventSystem
+from quadpype.pipeline.create import get_subset_name_template
+from quadpype.tools.ayon_utils.models import ProjectsModel, HierarchyModel
 
 from .models import (
     PushToProjectSelectionModel,

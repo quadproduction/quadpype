@@ -16,11 +16,11 @@ from .pipeline import (
     ls_inst,
     UNREAL_VERSION
 )
-from openpype.lib import (
+from quadpype.lib import (
     BoolDef,
     UILabelDef
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     Creator,
     LoaderPlugin,
     CreatorError,

@@ -1,6 +1,6 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.style import (
+from quadpype.style import (
     load_stylesheet,
     app_icon_path
 )
@@ -12,7 +12,7 @@ class ToolButton(QtWidgets.QPushButton):
     triggered = QtCore.Signal(str)
 
     def __init__(self, identifier, *args, **kwargs):
-        super(ToolButton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._identifier = identifier
 
         self.clicked.connect(self._on_click)
@@ -25,7 +25,7 @@ class ExperimentalToolsDialog(QtWidgets.QDialog):
     refresh_interval = 3000
 
     def __init__(self, parent=None):
-        super(ExperimentalToolsDialog, self).__init__(parent)
+        super().__init__(parent)
         app_label = "QuadPype"
         self.setWindowTitle("{} Experimental tools".format(app_label))
         icon = QtGui.QIcon(app_icon_path())

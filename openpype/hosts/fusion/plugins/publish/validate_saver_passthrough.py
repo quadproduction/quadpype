@@ -1,7 +1,7 @@
 import pyblish.api
-from openpype.pipeline import PublishValidationError
+from quadpype.pipeline import PublishValidationError
 
-from openpype.hosts.fusion.api.action import SelectInvalidAction
+from quadpype.hosts.fusion.api.action import SelectInvalidAction
 
 
 class ValidateSaverPassthrough(pyblish.api.ContextPlugin):

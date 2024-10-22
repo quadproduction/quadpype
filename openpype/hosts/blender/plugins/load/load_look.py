@@ -8,9 +8,9 @@ import os
 import json
 import bpy
 
-from openpype.pipeline import get_representation_path
-from openpype.hosts.blender.api import plugin
-from openpype.hosts.blender.api.pipeline import (
+from quadpype.pipeline import get_representation_path
+from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api.pipeline import (
     containerise_existing,
     AVALON_PROPERTY
 )

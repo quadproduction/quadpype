@@ -3,8 +3,8 @@ from pathlib import Path
 import pyblish.api
 import tde4  # noqa: F401
 
-from openpype.lib import import_filepath
-from openpype.pipeline import OptionalPyblishPluginMixin, publish
+from quadpype.lib import import_filepath
+from quadpype.pipeline import OptionalPyblishPluginMixin, publish
 
 
 class ExtractLensDistortionNuke(publish.Extractor,

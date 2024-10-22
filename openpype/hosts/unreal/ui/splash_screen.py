@@ -1,5 +1,5 @@
 from qtpy import QtWidgets, QtCore, QtGui
-from openpype import style, resources
+from quadpype import style, resources
 
 
 class SplashScreen(QtWidgets.QDialog):
@@ -34,7 +34,7 @@ class SplashScreen(QtWidgets.QDialog):
             window_icon (str | bytes | None: A resource (pic) which is used for
                 the window's icon
         """
-        super(SplashScreen, self).__init__()
+        super().__init__()
 
         if splash_icon is None:
             splash_icon = resources.get_app_splash_filepath()

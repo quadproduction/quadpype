@@ -4,8 +4,8 @@ import bpy
 
 import pyblish.api
 
-import openpype.hosts.blender.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.blender.api.action
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     OptionalPyblishPluginMixin,
     PublishValidationError
@@ -25,7 +25,7 @@ class ValidateNoColonsInName(pyblish.api.InstancePlugin,
     hosts = ["blender"]
     families = ["model", "rig"]
     label = "No Colons in names"
-    actions = [openpype.hosts.blender.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.blender.api.action.SelectInvalidAction]
 
     @staticmethod
     def get_invalid(instance) -> List:

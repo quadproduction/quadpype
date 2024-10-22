@@ -3,9 +3,9 @@ from pathlib import Path
 
 import unreal
 
-from openpype.pipeline import get_current_project_name
-from openpype.pipeline import Anatomy
-from openpype.hosts.unreal.api import pipeline
+from quadpype.pipeline import get_current_project_name
+from quadpype.pipeline import Anatomy
+from quadpype.hosts.unreal.api import pipeline
 import pyblish.api
 
 

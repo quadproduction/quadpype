@@ -7,17 +7,17 @@ Resolve's tools for setting environment
 import os
 import sys
 
-from openpype.lib import Logger
+from quadpype.lib import Logger
 
 log = Logger.get_logger(__name__)
 
 
 def get_resolve_module():
-    from openpype.hosts.resolve import api
+    from quadpype.hosts.resolve import api
     # dont run if already loaded
     if api.bmdvr:
         log.info(("resolve module is assigned to "
-                  f"`openpype.hosts.resolve.api.bmdvr`: {api.bmdvr}"))
+                  f"`quadpype.hosts.resolve.api.bmdvr`: {api.bmdvr}"))
         return api.bmdvr
     try:
         """
@@ -78,6 +78,6 @@ def get_resolve_module():
     api.bmdvr = bmdvr
     api.bmdvf = bmdvf
     log.info(("Assigning resolve module to "
-              f"`openpype.hosts.resolve.api.bmdvr`: {api.bmdvr}"))
+              f"`quadpype.hosts.resolve.api.bmdvr`: {api.bmdvr}"))
     log.info(("Assigning resolve module to "
-              f"`openpype.hosts.resolve.api.bmdvf`: {api.bmdvf}"))
+              f"`quadpype.hosts.resolve.api.bmdvf`: {api.bmdvf}"))

@@ -1,17 +1,17 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.resources import get_app_icon_filepath
-from openpype.style import load_stylesheet
-from openpype.tools.utils import (
+from quadpype.resources import get_app_icon_filepath
+from quadpype.style import load_stylesheet
+from quadpype.tools.utils import (
     PlaceholderLineEdit,
     ErrorMessageBox,
     ThumbnailPainterWidget,
     RefreshButton,
     GoToCurrentButton,
 )
-from openpype.tools.utils.lib import center_window
-from openpype.tools.ayon_utils.widgets import ProjectsCombobox
-from openpype.tools.ayon_loader.control import LoaderController
+from quadpype.tools.utils.lib import center_window
+from quadpype.tools.ayon_utils.widgets import ProjectsCombobox
+from quadpype.tools.ayon_loader.control import LoaderController
 
 from .folders_widget import LoaderFoldersWidget
 from .products_widget import ProductsWidget
@@ -24,7 +24,7 @@ from .repres_widget import RepresentationsWidget
 class LoadErrorMessageBox(ErrorMessageBox):
     def __init__(self, messages, parent=None):
         self._messages = messages
-        super(LoadErrorMessageBox, self).__init__("Loading failed", parent)
+        super().__init__("Loading failed", parent)
 
     def _create_top_widget(self, parent_widget):
         label_widget = QtWidgets.QLabel(parent_widget)
@@ -117,7 +117,7 @@ class RefreshHandler:
 
 class LoaderWindow(QtWidgets.QWidget):
     def __init__(self, controller=None, parent=None):
-        super(LoaderWindow, self).__init__(parent)
+        super().__init__(parent)
 
         icon = QtGui.QIcon(get_app_icon_filepath())
         self.setWindowIcon(icon)

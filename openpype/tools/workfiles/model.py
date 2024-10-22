@@ -4,16 +4,16 @@ import logging
 from qtpy import QtCore, QtGui
 import qtawesome
 
-from openpype.client import (
+from quadpype.client import (
     get_subsets,
     get_versions,
     get_representations,
 )
-from openpype.style import (
+from quadpype.style import (
     get_default_entity_icon_color,
     get_disabled_entity_icon_color,
 )
-from openpype.pipeline import get_representation_path
+from quadpype.pipeline import get_representation_path
 
 log = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class WorkAreaFilesModel(QtGui.QStandardItemModel):
     """Model is looking into one folder for files with extension."""
 
     def __init__(self, extensions, *args, **kwargs):
-        super(WorkAreaFilesModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setColumnCount(2)
 
@@ -214,7 +214,7 @@ class PublishFilesModel(QtGui.QStandardItemModel):
     """
 
     def __init__(self, extensions, dbcon, anatomy, *args, **kwargs):
-        super(PublishFilesModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setColumnCount(2)
 

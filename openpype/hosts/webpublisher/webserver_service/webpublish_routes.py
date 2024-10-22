@@ -7,15 +7,15 @@ import subprocess
 from bson.objectid import ObjectId
 from aiohttp.web_response import Response
 
-from openpype.client import (
+from quadpype.client import (
     get_projects,
     get_assets,
 )
-from openpype.lib import Logger
-from openpype.settings import get_project_settings
-from openpype_modules.webserver.base_routes import RestApiEndpoint
-from openpype_modules.webpublisher import WebpublisherAddon
-from openpype_modules.webpublisher.lib import (
+from quadpype.lib import Logger
+from quadpype.settings import get_project_settings
+from quadpype_modules.webserver.base_routes import RestApiEndpoint
+from quadpype_modules.webpublisher import WebpublisherAddon
+from quadpype_modules.webpublisher.lib import (
     get_webpublish_conn,
     get_task_data,
     ERROR_STATUS,
@@ -28,7 +28,7 @@ log = Logger.get_logger("WebpublishRoutes")
 class ResourceRestApiEndpoint(RestApiEndpoint):
     def __init__(self, resource):
         self.resource = resource
-        super(ResourceRestApiEndpoint, self).__init__()
+        super().__init__()
 
 
 class WebpublishApiEndpoint(ResourceRestApiEndpoint):
@@ -75,7 +75,7 @@ class RestApiResource(JsonApiResource):
 
 
 class WebpublishRestApiResource(JsonApiResource):
-    """Resource carrying OP DB connection for storing batch info into DB."""
+    """Resource carrying QuadPype DB connection for storing batch info into DB."""
 
     def __init__(self):
         self.dbcon = get_webpublish_conn()
@@ -197,10 +197,10 @@ class TaskNode(Node):
 class BatchPublishEndpoint(WebpublishApiEndpoint):
     """Triggers headless publishing of batch."""
     async def post(self, request) -> Response:
-        # Validate existence of openpype executable
-        openpype_app = self.resource.executable
-        if not openpype_app or not os.path.exists(openpype_app):
-            msg = "Non existent OpenPype executable {}".format(openpype_app)
+        # Validate existence of quadpype executable
+        quadpype_app = self.resource.executable
+        if not quadpype_app or not os.path.exists(quadpype_app):
+            msg = "Non existent QuadPype executable {}".format(quadpype_app)
             raise RuntimeError(msg)
 
         log.info("BatchPublishEndpoint called")
@@ -271,7 +271,7 @@ class BatchPublishEndpoint(WebpublishApiEndpoint):
                         break
 
         args = [
-            openpype_app,
+            quadpype_app,
             "module",
             WebpublisherAddon.name,
             command,

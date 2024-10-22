@@ -1,9 +1,9 @@
 import os
 
-from openpype import PACKAGE_DIR
-from openpype.lib import get_openpype_execute_args, run_detached_process
-from openpype.pipeline import load
-from openpype.pipeline.load import LoadError
+from quadpype import PACKAGE_DIR
+from quadpype.lib import get_quadpype_execute_args, run_detached_process
+from quadpype.pipeline import load
+from quadpype.pipeline.load import LoadError
 
 
 class PushToLibraryProject(load.SubsetLoaderPlugin):
@@ -44,7 +44,7 @@ class PushToLibraryProject(load.SubsetLoaderPlugin):
         project_name = project_doc["name"]
         version_id = str(version_doc["_id"])
 
-        args = get_openpype_execute_args(
+        args = get_quadpype_execute_args(
             "run",
             push_tool_script_path,
             "--project", project_name,

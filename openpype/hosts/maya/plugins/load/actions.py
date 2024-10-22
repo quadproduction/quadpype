@@ -2,12 +2,12 @@
 
 """
 import qargparse
-from openpype.pipeline import load
-from openpype.hosts.maya.api.lib import (
+from quadpype.pipeline import load
+from quadpype.hosts.maya.api.lib import (
     maintained_selection,
     get_custom_namespace
 )
-import openpype.hosts.maya.api.plugin
+import quadpype.hosts.maya.api.plugin
 
 
 class SetFrameRangeLoader(load.LoaderPlugin):
@@ -84,7 +84,7 @@ class SetFrameRangeWithHandlesLoader(load.LoaderPlugin):
                              animationEndTime=end)
 
 
-class ImportMayaLoader(openpype.hosts.maya.api.plugin.Loader):
+class ImportMayaLoader(quadpype.hosts.maya.api.plugin.Loader):
     """Import action for Maya (unmanaged)
 
     Warning:

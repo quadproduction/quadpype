@@ -1,6 +1,6 @@
-from openpype.client import get_projects, get_project
-from openpype_modules.clockify.clockify_api import ClockifyAPI
-from openpype.pipeline import LauncherAction
+from quadpype.client import get_projects, get_project
+from quadpype_modules.clockify.clockify_api import ClockifyAPI
+from quadpype.pipeline import LauncherAction
 
 
 class ClockifyPermissionsCheckFailed(Exception):

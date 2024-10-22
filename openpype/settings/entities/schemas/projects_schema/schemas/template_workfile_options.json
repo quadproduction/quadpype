@@ -29,7 +29,7 @@
                     },
                     {
                         "type": "label",
-                        "label": "Absolute path to workfile template or OpenPype Anatomy text is accepted."
+                        "label": "Absolute path to workfile template or QuadPype Anatomy text is accepted."
                     },
                     {
                         "type": "path",

@@ -18,7 +18,7 @@ class RecursiveSortFilterProxyModel(QtCore.QSortFilterProxyModel):
     """Filters recursively to regex in all columns"""
 
     def __init__(self):
-        super(RecursiveSortFilterProxyModel, self).__init__()
+        super().__init__()
 
         # Note: Recursive filtering was introduced in Qt 5.10.
         self.setRecursiveFilteringEnabled(True)
@@ -56,7 +56,7 @@ class SearchEntitiesDialog(QtWidgets.QDialog):
     path_clicked = QtCore.Signal(str)
 
     def __init__(self, parent):
-        super(SearchEntitiesDialog, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.setWindowTitle("Search Settings")
 
@@ -128,7 +128,7 @@ class SearchEntitiesDialog(QtWidgets.QDialog):
 
 class EntityTreeModel(QtGui.QStandardItemModel):
     def __init__(self, *args, **kwargs):
-        super(EntityTreeModel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setColumnCount(3)
 
     def data(self, index, role=None):

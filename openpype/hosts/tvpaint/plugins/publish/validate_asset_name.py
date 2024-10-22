@@ -1,9 +1,9 @@
 import pyblish.api
-from openpype.pipeline import (
+from quadpype.pipeline import (
     PublishXmlValidationError,
     OptionalPyblishPluginMixin,
 )
-from openpype.hosts.tvpaint.api.pipeline import (
+from quadpype.hosts.tvpaint.api.pipeline import (
     list_instances,
     write_instances,
 )

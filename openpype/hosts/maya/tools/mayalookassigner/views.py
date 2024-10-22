@@ -5,7 +5,7 @@ class View(QtWidgets.QTreeView):
     data_changed = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super(View, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         # view settings
         self.setAlternatingRowColors(False)

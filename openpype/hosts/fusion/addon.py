@@ -1,7 +1,7 @@
 import os
 import re
-from openpype.modules import OpenPypeModule, IHostAddon
-from openpype.lib import Logger
+from quadpype.modules import QuadPypeModule, IHostAddon
+from quadpype.lib import Logger
 
 FUSION_HOST_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -48,7 +48,7 @@ def get_fusion_version(app_name):
             )
 
 
-class FusionAddon(OpenPypeModule, IHostAddon):
+class FusionAddon(QuadPypeModule, IHostAddon):
     name = "fusion"
     host_name = "fusion"
 

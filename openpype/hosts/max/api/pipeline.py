@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
-"""Pipeline tools for OpenPype Houdini integration."""
+"""Pipeline tools for QuadPype Houdini integration."""
 import os
 import logging
 from operator import attrgetter
 
 import json
 
-from openpype.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
+from quadpype.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
 import pyblish.api
-from openpype.pipeline import (
+from quadpype.pipeline import (
     register_creator_plugin_path,
     register_loader_plugin_path,
     AVALON_CONTAINER_ID,
 )
-from openpype.hosts.max.api.menu import OpenPypeMenu
-from openpype.hosts.max.api import lib
-from openpype.hosts.max.api.plugin import MS_CUSTOM_ATTRIB
-from openpype.hosts.max import MAX_HOST_DIR
+from quadpype.hosts.max.api.menu import QuadPypeMenu
+from quadpype.hosts.max.api import lib
+from quadpype.hosts.max.api.plugin import MS_CUSTOM_ATTRIB
+from quadpype.hosts.max import MAX_HOST_DIR
 
 from pymxs import runtime as rt  # noqa
 
-log = logging.getLogger("openpype.hosts.max")
+log = logging.getLogger("quadpype.hosts.max")
 
 PLUGINS_DIR = os.path.join(MAX_HOST_DIR, "plugins")
 PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
@@ -35,7 +35,7 @@ class MaxHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     menu = None
 
     def __init__(self):
-        super(MaxHost, self).__init__()
+        super().__init__()
         self._op_events = {}
         self._has_been_setup = False
 
@@ -47,7 +47,7 @@ class MaxHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         register_creator_plugin_path(CREATE_PATH)
 
         # self._register_callbacks()
-        self.menu = OpenPypeMenu()
+        self.menu = QuadPypeMenu()
 
         self._has_been_setup = True
 
@@ -84,15 +84,15 @@ class MaxHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         return ls()
 
     def _register_callbacks(self):
-        rt.callbacks.removeScripts(id=rt.name("OpenPypeCallbacks"))
+        rt.callbacks.removeScripts(id=rt.name("QuadPypeCallbacks"))
 
         rt.callbacks.addScript(
             rt.Name("postLoadingMenus"),
-            self._deferred_menu_creation, id=rt.Name('OpenPypeCallbacks'))
+            self._deferred_menu_creation, id=rt.Name('QuadPypeCallbacks'))
 
     def _deferred_menu_creation(self):
         self.log.info("Building menu ...")
-        self.menu = OpenPypeMenu()
+        self.menu = QuadPypeMenu()
 
     @staticmethod
     def create_context_node():
@@ -101,14 +101,14 @@ class MaxHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         root_scene = rt.rootScene
 
         create_attr_script = ("""
-attributes "OpenPypeContext"
+attributes "QuadPypeContext"
 (
     parameters main rollout:params
     (
         context type: #string
     )
 
-    rollout params "OpenPype Parameters"
+    rollout params "QuadPype Parameters"
     (
         editText editTextContext "Context" type: #string
     )
@@ -118,20 +118,20 @@ attributes "OpenPypeContext"
         attr = rt.execute(create_attr_script)
         rt.custAttributes.add(root_scene, attr)
 
-        return root_scene.OpenPypeContext.context
+        return root_scene.QuadPypeContext.context
 
     def update_context_data(self, data, changes):
         try:
-            _ = rt.rootScene.OpenPypeContext.context
+            _ = rt.rootScene.QuadPypeContext.context
         except AttributeError:
             # context node doesn't exists
             self.create_context_node()
 
-        rt.rootScene.OpenPypeContext.context = json.dumps(data)
+        rt.rootScene.QuadPypeContext.context = json.dumps(data)
 
     def get_context_data(self):
         try:
-            context = rt.rootScene.OpenPypeContext.context
+            context = rt.rootScene.QuadPypeContext.context
         except AttributeError:
             # context node doesn't exists
             context = self.create_context_node()
@@ -146,7 +146,7 @@ attributes "OpenPypeContext"
 
 
 def ls() -> list:
-    """Get all OpenPype instances."""
+    """Get all QuadPype instances."""
     objs = rt.objects
     containers = [
         obj for obj in objs
@@ -160,7 +160,7 @@ def ls() -> list:
 def containerise(name: str, nodes: list, context,
                  namespace=None, loader=None, suffix="_CON"):
     data = {
-        "schema": "openpype:container-2.0",
+        "schema": "quadpype:container-2.0",
         "id": AVALON_CONTAINER_ID,
         "name": name,
         "namespace": namespace or "",
@@ -179,13 +179,13 @@ def load_custom_attribute_data():
     """Re-loading the AYON custom parameter built by the creator
 
     Returns:
-        attribute: re-loading the custom OP attributes set in Maxscript
+        attribute: re-loading the custom QuadPype attributes set in Maxscript
     """
     return rt.Execute(MS_CUSTOM_ATTRIB)
 
 
 def import_custom_attribute_data(container: str, selections: list):
-    """Importing the Openpype/AYON custom parameter built by the creator
+    """Importing the QuadPype custom parameter built by the creator
 
     Args:
         container (str): target container which adds custom attributes
@@ -195,7 +195,7 @@ def import_custom_attribute_data(container: str, selections: list):
     attrs = load_custom_attribute_data()
     modifier = rt.EmptyModifier()
     rt.addModifier(container, modifier)
-    container.modifiers[0].name = "OP Data"
+    container.modifiers[0].name = "QuadPype Data"
     rt.custAttributes.add(container.modifiers[0], attrs)
     node_list = []
     sel_list = []
@@ -206,10 +206,10 @@ def import_custom_attribute_data(container: str, selections: list):
 
     # Setting the property
     rt.setProperty(
-        container.modifiers[0].openPypeData,
+        container.modifiers[0].quadpypeData,
         "all_handles", node_list)
     rt.setProperty(
-        container.modifiers[0].openPypeData,
+        container.modifiers[0].quadpypeData,
         "sel_list", sel_list)
 
 
@@ -221,22 +221,22 @@ def update_custom_attribute_data(container: str, selections: list):
         selections (list): nodes to be added into
         group in custom attributes
     """
-    if container.modifiers[0].name == "OP Data":
+    if container.modifiers[0].name == "QuadPype Data":
         rt.deleteModifier(container, container.modifiers[0])
     import_custom_attribute_data(container, selections)
 
 
 def get_previous_loaded_object(container: str):
-    """Get previous loaded_object through the OP data
+    """Get previous loaded_object through the QuadPype data
 
     Args:
-        container (str): the container which stores the OP data
+        container (str): the container which stores the QuadPype data
 
     Returns:
         node_list(list): list of nodes which are previously loaded
     """
     node_list = []
-    sel_list = rt.getProperty(container.modifiers[0].openPypeData, "sel_list")
+    sel_list = rt.getProperty(container.modifiers[0].quadpypeData, "sel_list")
     for obj in rt.Objects:
         if str(obj) in sel_list:
             node_list.append(obj)

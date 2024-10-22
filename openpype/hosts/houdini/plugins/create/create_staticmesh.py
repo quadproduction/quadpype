@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Creator for Unreal Static Meshes."""
-from openpype.hosts.houdini.api import plugin
-from openpype.lib import BoolDef, EnumDef
+from quadpype.hosts.houdini.api import plugin
+from quadpype.lib import BoolDef, EnumDef
 
 import hou
 
@@ -9,7 +9,7 @@ import hou
 class CreateStaticMesh(plugin.HoudiniCreator):
     """Static Meshes as FBX. """
 
-    identifier = "io.openpype.creators.houdini.staticmesh.fbx"
+    identifier = "io.quadpype.creators.houdini.staticmesh.fbx"
     label = "Static Mesh (FBX)"
     family = "staticMesh"
     icon = "fa5s.cubes"

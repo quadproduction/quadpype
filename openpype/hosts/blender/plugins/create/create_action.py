@@ -2,13 +2,13 @@
 
 import bpy
 
-from openpype.hosts.blender.api import lib, plugin
+from quadpype.hosts.blender.api import lib, plugin
 
 
 class CreateAction(plugin.BaseCreator):
     """Action output for character rigs."""
 
-    identifier = "io.openpype.creators.blender.action"
+    identifier = "io.quadpype.creators.blender.action"
     label = "Action"
     family = "action"
     icon = "male"

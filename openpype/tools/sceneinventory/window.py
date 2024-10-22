@@ -4,11 +4,11 @@ import sys
 from qtpy import QtWidgets, QtCore
 import qtawesome
 
-from openpype import style
-from openpype.client import get_projects
-from openpype.pipeline import legacy_io
-from openpype.tools.utils.delegates import VersionDelegate
-from openpype.tools.utils.lib import (
+from quadpype import style
+from quadpype.client import get_projects
+from quadpype.pipeline import legacy_io
+from quadpype.tools.utils.delegates import VersionDelegate
+from quadpype.tools.utils.lib import (
     qt_app_context,
     preserve_expanded_rows,
     preserve_selection,
@@ -30,7 +30,7 @@ class SceneInventoryWindow(QtWidgets.QDialog):
     """Scene Inventory window"""
 
     def __init__(self, parent=None):
-        super(SceneInventoryWindow, self).__init__(parent)
+        super().__init__(parent)
 
         if not parent:
             self.setWindowFlags(

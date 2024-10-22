@@ -5,11 +5,11 @@ import numbers
 
 from qtpy import QtWidgets, QtGui, QtCore
 
-from openpype.client import (
+from quadpype.client import (
     get_versions,
     get_hero_versions,
 )
-from openpype.pipeline import HeroVersionType
+from quadpype.pipeline import HeroVersionType
 from .models import TreeModel
 from . import lib
 
@@ -25,7 +25,7 @@ class VersionDelegate(QtWidgets.QStyledItemDelegate):
 
     def __init__(self, dbcon, *args, **kwargs):
         self._dbcon = dbcon
-        super(VersionDelegate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_project_name(self):
         return self._dbcon.active_project()

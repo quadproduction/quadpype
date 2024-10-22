@@ -1,7 +1,7 @@
 import json
 
 import pyblish.api
-from openpype.pipeline import (
+from quadpype.pipeline import (
     PublishXmlValidationError,
     OptionalPyblishPluginMixin,
 )

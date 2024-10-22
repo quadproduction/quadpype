@@ -1,11 +1,11 @@
 import os
-from openpype.modules import OpenPypeModule
-from openpype.modules.interfaces import IHostAddon
+from quadpype.modules import QuadPypeModule
+from quadpype.modules.interfaces import IHostAddon
 
 OPENRV_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class OpenRVAddon(OpenPypeModule, IHostAddon):
+class OpenRVAddon(QuadPypeModule, IHostAddon):
     name = "openrv"
     host_name = "openrv"
 

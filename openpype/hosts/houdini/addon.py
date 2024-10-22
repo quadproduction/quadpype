@@ -1,10 +1,10 @@
 import os
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 HOUDINI_HOST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class HoudiniAddon(OpenPypeModule, IHostAddon):
+class HoudiniAddon(QuadPypeModule, IHostAddon):
     name = "houdini"
     host_name = "houdini"
 

@@ -9,31 +9,31 @@ from collections import deque, defaultdict
 
 from bson.objectid import ObjectId
 
-from openpype.client import (
+from quadpype.client import (
     get_projects,
     get_representations,
     get_representation_by_id,
 )
-from openpype.modules import (
-    OpenPypeModule,
+from quadpype.modules import (
+    QuadPypeModule,
     ITrayAction,
     IPluginPaths,
     click_wrap,
 )
-from openpype.settings import (
+from quadpype.settings import (
     get_project_settings,
     get_system_settings,
     MODULES_SETTINGS_KEY,
     PROJECTS_SETTINGS_KEY
 )
-from openpype.lib import Logger, get_local_site_id
-from openpype.pipeline import AvalonMongoDB, Anatomy
-from openpype.settings.lib import (
+from quadpype.lib import Logger, get_local_site_id
+from quadpype.pipeline import AvalonMongoDB, Anatomy
+from quadpype.settings.lib import (
     get_default_anatomy_settings,
     get_anatomy_settings,
     get_local_settings,
 )
-from openpype.settings.constants import (
+from quadpype.settings.constants import (
     DEFAULT_PROJECT_KEY
 )
 
@@ -50,7 +50,7 @@ from .utils import (
 log = Logger.get_logger("SyncServer")
 
 
-class SyncServerModule(OpenPypeModule, ITrayAction, IPluginPaths):
+class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
     """
        Synchronization server that is syncing published files from local to
        any of implemented providers (like GDrive, S3 etc.)
@@ -1182,7 +1182,7 @@ class SyncServerModule(OpenPypeModule, ITrayAction, IPluginPaths):
 
     def _reset_timer_with_rest_api(self):
         # POST to webserver sites to add to representations
-        webserver_url = os.environ.get("OPENPYPE_WEBSERVER_URL")
+        webserver_url = os.environ.get("QUADPYPE_WEBSERVER_URL")
         if not webserver_url:
             self.log.warning("Couldn't find webserver url")
             return
@@ -2434,9 +2434,9 @@ def syncservice(active_site):
     on linux and window service).
     """
 
-    from openpype.modules import ModulesManager
+    from quadpype.modules import ModulesManager
 
-    os.environ["OPENPYPE_LOCAL_ID"] = active_site
+    os.environ["QUADPYPE_LOCAL_ID"] = active_site
 
     def signal_handler(sig, frame):
         print("You pressed Ctrl+C. Process ended.")

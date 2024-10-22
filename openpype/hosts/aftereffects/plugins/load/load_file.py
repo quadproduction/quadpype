@@ -2,10 +2,10 @@ import re
 
 from pathlib import Path
 
-from openpype.pipeline import get_representation_path
-from openpype.pipeline.anatomy import Anatomy
-from openpype.hosts.aftereffects import api
-from openpype.hosts.aftereffects.api.lib import get_unique_layer_name
+from quadpype.pipeline import get_representation_path
+from quadpype.pipeline.anatomy import Anatomy
+from quadpype.hosts.aftereffects import api
+from quadpype.hosts.aftereffects.api.lib import get_unique_layer_name
 
 
 class FileLoader(api.AfterEffectsLoader):

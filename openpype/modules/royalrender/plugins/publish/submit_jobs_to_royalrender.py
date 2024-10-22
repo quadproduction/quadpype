@@ -4,17 +4,17 @@ import tempfile
 import platform
 
 import pyblish.api
-from openpype.settings import (
+from quadpype.settings import (
     MODULES_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     SYSTEM_SETTINGS_KEY
 )
-from openpype.modules.royalrender.api import (
+from quadpype.modules.royalrender.api import (
     RRJob,
     Api as rrApi,
     SubmitterParameter
 )
-from openpype.pipeline.publish import KnownPublishError
+from quadpype.pipeline.publish import KnownPublishError
 
 
 class SubmitJobsToRoyalRender(pyblish.api.ContextPlugin):
@@ -24,7 +24,7 @@ class SubmitJobsToRoyalRender(pyblish.api.ContextPlugin):
     targets = ["local"]
 
     def __init__(self):
-        super(SubmitJobsToRoyalRender, self).__init__()
+        super().__init__()
         self._rr_root = None
         self._rr_api = None
         self._submission_parameters = []

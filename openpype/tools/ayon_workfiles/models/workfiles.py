@@ -6,20 +6,20 @@ import arrow
 import ayon_api
 from ayon_api.operations import OperationsSession
 
-from openpype.client import get_project
-from openpype.client.operations import (
+from quadpype.client import get_project
+from quadpype.client.operations import (
     prepare_workfile_info_update_data,
 )
-from openpype.pipeline.template_data import (
+from quadpype.pipeline.template_data import (
     get_template_data,
 )
-from openpype.pipeline.workfile import (
+from quadpype.pipeline.workfile import (
     get_workdir_with_workdir_data,
     get_workfile_template_key,
     get_last_workfile_with_version,
 )
-from openpype.pipeline.version_start import get_versioning_start
-from openpype.tools.ayon_workfiles.abstract import (
+from quadpype.pipeline.version_start import get_versioning_start
+from quadpype.tools.ayon_workfiles.abstract import (
     WorkareaFilepathResult,
     FileItem,
     WorkfileInfo,

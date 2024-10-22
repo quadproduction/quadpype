@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import six
 
-from openpype.lib.attribute_definitions import (
+from quadpype.lib.attribute_definitions import (
     AbstractAttrDef,
     serialize_attr_defs,
     deserialize_attr_defs,
@@ -295,7 +295,7 @@ class ActionItem:
         #   prepared for it.
         raise NotImplementedError(
             "{}.to_data is not implemented. Use Attribute definitions"
-            " from 'openpype.lib' instead of 'qargparse'.".format(
+            " from 'quadpype.lib' instead of 'qargparse'.".format(
                 self.__class__.__name__
             )
         )

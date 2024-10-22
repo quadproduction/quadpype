@@ -7,19 +7,19 @@ import traceback
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_asset_by_name,
 )
-from openpype.style import (
+from quadpype.style import (
     get_default_entity_icon_color,
     get_objected_colors,
     get_app_icon_path,
 )
-from openpype.resources import get_image_path
-from openpype.lib import filter_profiles, Logger
-from openpype.settings import get_project_settings
-from openpype.pipeline import (
+from quadpype.resources import get_image_path
+from quadpype.lib import filter_profiles, Logger
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import (
     registered_host,
     get_current_context,
     get_current_host_name,
@@ -190,10 +190,10 @@ def get_qt_app():
     return app
 
 
-def get_openpype_qt_app():
-    """Main Qt application initialized for OpenPype processed.
+def get_quadpype_qt_app():
+    """Main Qt application initialized for QuadPype processed.
 
-    This function should be used only inside OpenPype process and never inside
+    This function should be used only inside QuadPype process and never inside
         other processes.
     """
 
@@ -752,7 +752,7 @@ class DynamicQThread(QtCore.QThread):
         parent (QObject): Parent of thread.
     """
     def __init__(self, func, args=None, kwargs=None, parent=None):
-        super(DynamicQThread, self).__init__(parent)
+        super().__init__(parent)
         if args is None:
             args = tuple()
         if kwargs is None:
@@ -781,11 +781,11 @@ def get_repre_icons():
     """Returns a dict {'provider_name': QIcon}"""
     icons = {}
     try:
-        from openpype_modules import sync_server
+        from quadpype_modules import sync_server
     except Exception:
         # Backwards compatibility
         try:
-            from openpype.modules import sync_server
+            from quadpype.modules import sync_server
         except Exception:
             return icons
 

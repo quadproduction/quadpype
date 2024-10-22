@@ -2,7 +2,7 @@
 """Collector plugin for frames data on ROP instances."""
 import hou  # noqa
 import pyblish.api
-from openpype.hosts.houdini.api import lib
+from quadpype.hosts.houdini.api import lib
 
 
 class CollectRopFrameRange(pyblish.api.InstancePlugin):

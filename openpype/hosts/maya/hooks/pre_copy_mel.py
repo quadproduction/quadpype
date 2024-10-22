@@ -1,6 +1,6 @@
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.lib.applications import PreLaunchHook, LaunchTypes
-from openpype.hosts.maya.lib import create_workspace_mel
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.lib.applications import PreLaunchHook, LaunchTypes
+from quadpype.hosts.maya.lib import create_workspace_mel
 
 
 class PreCopyMel(PreLaunchHook):

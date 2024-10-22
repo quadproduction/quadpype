@@ -10,7 +10,7 @@ import uuid
 
 from bson.objectid import ObjectId
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_assets,
     get_asset_by_id,
@@ -21,7 +21,7 @@ from openpype.client import (
     get_version_by_name,
     get_representations,
 )
-from openpype.client.operations import (
+from quadpype.client.operations import (
     OperationsSession,
     new_asset_document,
     new_subset_document,
@@ -30,21 +30,21 @@ from openpype.client.operations import (
     prepare_version_update_data,
     prepare_representation_update_data,
 )
-from openpype.modules import ModulesManager
-from openpype.lib import (
+from quadpype.modules import ModulesManager
+from quadpype.lib import (
     StringTemplate,
-    get_openpype_username,
+    get_quadpype_username,
     get_formatted_current_time,
     source_hash,
 )
 
-from openpype.lib.file_transaction import FileTransaction
-from openpype.settings import get_project_settings
-from openpype.pipeline import Anatomy
-from openpype.pipeline.version_start import get_versioning_start
-from openpype.pipeline.template_data import get_template_data
-from openpype.pipeline.publish import get_publish_template_name
-from openpype.pipeline.create import get_subset_name
+from quadpype.lib.file_transaction import FileTransaction
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import Anatomy
+from quadpype.pipeline.version_start import get_versioning_start
+from quadpype.pipeline.template_data import get_template_data
+from quadpype.pipeline.publish import get_publish_template_name
+from quadpype.pipeline.create import get_subset_name
 
 UNKNOWN = object()
 
@@ -64,7 +64,7 @@ class FileItem(object):
 
 class SourceFile(FileItem):
     def __init__(self, path, frame=None, udim=None):
-        super(SourceFile, self).__init__(path)
+        super().__init__(path)
         self.frame = frame
         self.udim = udim
 
@@ -80,7 +80,7 @@ class SourceFile(FileItem):
 
 class ResourceFile(FileItem):
     def __init__(self, path, relative_path):
-        super(ResourceFile, self).__init__(path)
+        super().__init__(path)
         self.relative_path = relative_path
 
     def __repr__(self):
@@ -881,7 +881,7 @@ class ProjectPushItemProcess:
             "source": src_data.get("source"),
             "machine": socket.gethostname(),
             "comment": self._item.comment or "",
-            "author": get_openpype_username(),
+            "author": get_quadpype_username(),
             "time": get_formatted_current_time(),
         }
         if version is None:

@@ -1,7 +1,7 @@
-from openpype.lib import Logger
-from openpype.lib.events import QueuedEventSystem
-from openpype.settings import get_project_settings
-from openpype.tools.ayon_utils.models import ProjectsModel, HierarchyModel
+from quadpype.lib import Logger
+from quadpype.lib.events import QueuedEventSystem
+from quadpype.settings import get_project_settings
+from quadpype.tools.ayon_utils.models import ProjectsModel, HierarchyModel
 
 from .abstract import AbstractLauncherFrontEnd, AbstractLauncherBackend
 from .models import LauncherSelectionModel, ActionsModel

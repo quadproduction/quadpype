@@ -4,17 +4,17 @@ from collections import defaultdict
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.client import get_representations
-from openpype.pipeline import load, Anatomy
-from openpype import resources, style
+from quadpype.client import get_representations
+from quadpype.pipeline import load, Anatomy
+from quadpype import resources, style
 
-from openpype.lib import (
+from quadpype.lib import (
     format_file_size,
     collect_frames,
     get_datetime_data,
 )
-from openpype.pipeline.load import get_representation_path_with_anatomy
-from openpype.pipeline.delivery import (
+from quadpype.pipeline.load import get_representation_path_with_anatomy
+from quadpype.pipeline.delivery import (
     get_format_dict,
     check_destination_path,
     deliver_single_file,
@@ -58,9 +58,9 @@ class DeliveryOptionsDialog(QtWidgets.QDialog):
     """Dialog to select template where to deliver selected representations."""
 
     def __init__(self, contexts, log=None, parent=None):
-        super(DeliveryOptionsDialog, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
-        self.setWindowTitle("OpenPype - Deliver versions")
+        self.setWindowTitle("QuadPype - Deliver versions")
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
 

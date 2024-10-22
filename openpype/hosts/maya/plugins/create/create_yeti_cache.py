@@ -1,14 +1,14 @@
-from openpype.hosts.maya.api import (
+from quadpype.hosts.maya.api import (
     lib,
     plugin
 )
-from openpype.lib import NumberDef
+from quadpype.lib import NumberDef
 
 
 class CreateYetiCache(plugin.MayaCreator):
     """Output for procedural plugin nodes of Yeti """
 
-    identifier = "io.openpype.creators.maya.yeticache"
+    identifier = "io.quadpype.creators.maya.yeticache"
     label = "Yeti Cache"
     family = "yeticache"
     icon = "pagelines"

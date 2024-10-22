@@ -1,13 +1,13 @@
 import sys
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import (
+from quadpype import (
     resources,
     style
 )
-from openpype.tools.utils import host_tools
-from openpype.tools.utils.lib import qt_app_context
-from openpype.hosts.unreal.api import rendering
+from quadpype.tools.utils import host_tools
+from quadpype.tools.utils.lib import qt_app_context
+from quadpype.hosts.unreal.api import rendering
 
 
 class ToolsBtnsWidget(QtWidgets.QWidget):
@@ -15,7 +15,7 @@ class ToolsBtnsWidget(QtWidgets.QWidget):
     tool_required = QtCore.Signal(str)
 
     def __init__(self, parent=None):
-        super(ToolsBtnsWidget, self).__init__(parent)
+        super().__init__(parent)
 
         load_btn = QtWidgets.QPushButton("Load...", self)
         publish_btn = QtWidgets.QPushButton("Publisher...", self)
@@ -62,7 +62,7 @@ class ToolsBtnsWidget(QtWidgets.QWidget):
 class ToolsDialog(QtWidgets.QDialog):
     """Dialog with tool buttons that will stay opened until user close it."""
     def __init__(self, *args, **kwargs):
-        super(ToolsDialog, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setWindowTitle("Ayon tools")
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
@@ -102,7 +102,7 @@ class ToolsDialog(QtWidgets.QDialog):
 class ToolsPopup(ToolsDialog):
     """Popup with tool buttons that will close when loose focus."""
     def __init__(self, *args, **kwargs):
-        super(ToolsPopup, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setWindowFlags(
             QtCore.Qt.FramelessWindowHint

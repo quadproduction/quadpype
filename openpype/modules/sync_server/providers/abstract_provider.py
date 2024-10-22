@@ -1,6 +1,6 @@
 import abc
 import six
-from openpype.lib import Logger
+from quadpype.lib import Logger
 
 log = Logger.get_logger("SyncServer")
 
@@ -19,7 +19,7 @@ class AbstractProvider:
 
         self.presets = presets
 
-        super(AbstractProvider, self).__init__()
+        super().__init__()
 
     @property
     def log(self):

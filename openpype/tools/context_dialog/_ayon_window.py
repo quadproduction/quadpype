@@ -4,20 +4,20 @@ import json
 import ayon_api
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import style
-from openpype.lib.events import QueuedEventSystem
-from openpype.tools.ayon_utils.models import (
+from quadpype import style
+from quadpype.lib.events import QueuedEventSystem
+from quadpype.tools.ayon_utils.models import (
     ProjectsModel,
     HierarchyModel,
 )
-from openpype.tools.ayon_utils.widgets import (
+from quadpype.tools.ayon_utils.widgets import (
     ProjectsCombobox,
     FoldersWidget,
     TasksWidget,
 )
-from openpype.tools.utils.lib import (
+from quadpype.tools.utils.lib import (
     center_window,
-    get_openpype_qt_app,
+    get_quadpype_qt_app,
 )
 
 
@@ -422,7 +422,7 @@ class InvalidContextOverlay(QtWidgets.QFrame):
     confirmed = QtCore.Signal()
 
     def __init__(self, parent):
-        super(InvalidContextOverlay, self).__init__(parent)
+        super().__init__(parent)
         self.setObjectName("OverlayFrame")
 
         mid_widget = QtWidgets.QWidget(self)
@@ -503,7 +503,7 @@ class ContextDialog(QtWidgets.QDialog):
     will have passed preselected values and will be disabled.
     """
     def __init__(self, controller=None, parent=None):
-        super(ContextDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Select Context")
         self.setWindowIcon(QtGui.QIcon(style.app_icon_path()))
@@ -788,7 +788,7 @@ def main(
     strict=True
 ):
     # Run Qt application
-    app = get_openpype_qt_app()
+    app = get_quadpype_qt_app()
     controller = ContextDialogController()
     controller.set_strict(strict)
     controller.set_initial_context(project_name, asset_name)

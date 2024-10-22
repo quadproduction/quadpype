@@ -8,8 +8,8 @@ for path in os.environ["PYTHONPATH"].split(os.pathsep):
     if path and path not in sys.path:
         sys.path.append(path)
 
-from openpype.hosts.max.api import MaxHost
-from openpype.pipeline import install_host
+from quadpype.hosts.max.api import MaxHost
+from quadpype.pipeline import install_host
 
 host = MaxHost()
 install_host(host)

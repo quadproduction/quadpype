@@ -19,15 +19,15 @@ from six import string_types
 from maya import cmds, mel
 from maya.api import OpenMaya
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_asset_by_name,
     get_subsets,
     get_last_versions,
     get_representation_by_name
 )
-from openpype.settings import get_project_settings
-from openpype.pipeline import (
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import (
     get_current_project_name,
     get_current_asset_name,
     get_current_task_name,
@@ -37,10 +37,10 @@ from openpype.pipeline import (
     load_container,
     registered_host
 )
-from openpype.lib import NumberDef
-from openpype.pipeline.context_tools import get_current_project_asset
-from openpype.pipeline.create import CreateContext
-from openpype.lib.profiles_filtering import filter_profiles
+from quadpype.lib import NumberDef
+from quadpype.pipeline.context_tools import get_current_project_asset
+from quadpype.pipeline.create import CreateContext
+from quadpype.lib.profiles_filtering import filter_profiles
 
 
 self = sys.modules[__name__]
@@ -2470,7 +2470,7 @@ def validate_fps():
 
     fps_match = current_fps == expected_fps
     if not fps_match and not IS_HEADLESS:
-        from openpype.widgets import popup
+        from quadpype.widgets import popup
 
         parent = get_main_window()
 
@@ -2715,13 +2715,13 @@ def bake_to_world_space(nodes,
 
 
 def load_capture_preset(data):
-    """Convert OpenPype Extract Playblast settings to `capture` arguments
+    """Convert QuadPype Extract Playblast settings to `capture` arguments
 
     Input data is the settings from:
         `project_settings/maya/publish/ExtractPlayblast/capture_preset`
 
     Args:
-        data (dict): Capture preset settings from OpenPype settings
+        data (dict): Capture preset settings from QuadPype settings
 
     Returns:
         dict: `capture.capture` compatible keyword arguments
@@ -3028,7 +3028,7 @@ def update_instances_frame_range():
 
 def show_message(title, msg):
     from qtpy import QtWidgets
-    from openpype.widgets import message_window
+    from quadpype.widgets import message_window
 
     # Find maya main window
     top_level_widgets = {w.objectName(): w for w in
@@ -3125,7 +3125,7 @@ def set_colorspace():
     else:
         # TODO: deprecated code from 3.15.5 - remove
         # Maya 2022+ introduces new OCIO v2 color management settings that
-        # can override the old color management preferences. OpenPype has
+        # can override the old color management preferences. QuadPype has
         # separate settings for both so we fall back when necessary.
         use_ocio_v2 = imageio["colorManagementPreference_v2"]["enabled"]
         if use_ocio_v2 and not ocio_v2_support:
@@ -3971,7 +3971,7 @@ def create_rig_animation_instance(
         log.info("Creating subset: {}".format(namespace))
 
     # Fill creator identifier
-    creator_identifier = "io.openpype.creators.maya.animation"
+    creator_identifier = "io.quadpype.creators.maya.animation"
 
     host = registered_host()
     create_context = CreateContext(host)

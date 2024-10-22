@@ -1,7 +1,7 @@
 import os
 import pyblish.api
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     OptionalPyblishPluginMixin,
     PublishValidationError
@@ -18,7 +18,7 @@ class ValidateMvLookContents(pyblish.api.InstancePlugin,
     families = ['mvLook']
     hosts = ['maya']
     label = 'Validate mvLook Data'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
 
     # Allow this validation step to be skipped when you just need to
     # get things pushed through.

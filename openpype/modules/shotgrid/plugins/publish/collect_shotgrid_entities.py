@@ -1,6 +1,6 @@
 import pyblish.api
-from openpype.client.mongo import OpenPypeMongoConnection
-from openpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.client.mongo import QuadPypeMongoConnection
+from quadpype.settings import PROJECT_SETTINGS_KEY
 
 class CollectShotgridEntities(pyblish.api.ContextPlugin):
     """Collect shotgrid entities according to the current context"""
@@ -59,8 +59,8 @@ class CollectShotgridEntities(pyblish.api.ContextPlugin):
 
 
 def _get_shotgrid_collection(project):
-    client = OpenPypeMongoConnection.get_mongo_client()
-    return client.get_database("shotgrid_openpype").get_collection(project)
+    client = QuadPypeMongoConnection.get_mongo_client()
+    return client.get_database("shotgrid_quadpype").get_collection(project)
 
 
 def _get_shotgrid_project(context):

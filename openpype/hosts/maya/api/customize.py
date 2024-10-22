@@ -8,8 +8,8 @@ from functools import partial
 import maya.cmds as cmds
 import maya.mel as mel
 
-from openpype import resources
-from openpype.tools.utils import host_tools
+from quadpype import resources
+from quadpype.tools.utils import host_tools
 from .lib import get_main_window
 from ..tools import show_look_assigner
 

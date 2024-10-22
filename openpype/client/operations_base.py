@@ -76,7 +76,7 @@ class CreateOperation(AbstractOperation):
     operation_name = "create"
 
     def __init__(self, project_name, entity_type, data):
-        super(CreateOperation, self).__init__(project_name, entity_type)
+        super().__init__(project_name, entity_type)
 
         if not data:
             data = {}
@@ -126,7 +126,7 @@ class UpdateOperation(AbstractOperation):
     operation_name = "update"
 
     def __init__(self, project_name, entity_type, entity_id, update_data):
-        super(UpdateOperation, self).__init__(project_name, entity_type)
+        super().__init__(project_name, entity_type)
 
         self._entity_id = entity_id
         self._update_data = update_data
@@ -167,7 +167,7 @@ class DeleteOperation(AbstractOperation):
     operation_name = "delete"
 
     def __init__(self, project_name, entity_type, entity_id):
-        super(DeleteOperation, self).__init__(project_name, entity_type)
+        super().__init__(project_name, entity_type)
 
         self._entity_id = entity_id
 

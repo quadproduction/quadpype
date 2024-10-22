@@ -13,36 +13,36 @@ import six
 import arrow
 import pyblish.api
 
-from openpype.client import (
+from quadpype.client import (
     get_assets,
     get_asset_by_id,
     get_subsets,
     get_asset_name_identifier,
 )
-from openpype.lib.events import EventSystem
-from openpype.lib.attribute_definitions import (
+from quadpype.lib.events import EventSystem
+from quadpype.lib.attribute_definitions import (
     UIDef,
     serialize_attr_defs,
     deserialize_attr_defs,
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     PublishValidationError,
     KnownPublishError,
     registered_host,
     get_process_id,
     OptionalPyblishPluginMixin,
 )
-from openpype.pipeline.create import (
+from quadpype.pipeline.create import (
     CreateContext,
     AutoCreator,
     HiddenCreator,
     Creator,
 )
-from openpype.pipeline.create.context import (
+from quadpype.pipeline.create.context import (
     CreatorsOperationFailed,
     ConvertorsOperationFailed,
 )
-from openpype.pipeline.publish import get_publish_instance_label
+from quadpype.pipeline.publish import get_publish_instance_label
 
 # Define constant for plugin orders offset
 PLUGIN_ORDER_OFFSET = 0.5
@@ -1698,7 +1698,7 @@ class PublisherController(BasePublisherController):
     _log = None
 
     def __init__(self, headless=False):
-        super(PublisherController, self).__init__()
+        super().__init__()
 
         self._host = registered_host()
         self._headless = headless

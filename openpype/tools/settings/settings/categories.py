@@ -5,9 +5,9 @@ from enum import Enum
 from qtpy import QtWidgets, QtCore
 import qtawesome
 
-from openpype.lib import get_openpype_version
-from openpype.tools.utils import set_style_property
-from openpype.settings.entities import (
+from quadpype.lib import get_quadpype_version
+from quadpype.tools.utils import set_style_property
+from quadpype.settings.entities import (
     SystemSettings,
     ProjectSettings,
 
@@ -28,22 +28,22 @@ from openpype.settings.entities import (
     RawJsonEntity,
     ColorEntity
 )
-from openpype.settings.entities.exceptions import (
+from quadpype.settings.entities.exceptions import (
     DefaultsNotDefined,
     StudioDefaultsNotDefined,
     SchemaError
 )
-from openpype.settings.entities.op_version_entity import (
-    OpenPypeVersionInput
+from quadpype.settings.entities.op_version_entity import (
+    QuadPypeVersionInput
 )
 
-from openpype.settings import (
+from quadpype.settings import (
     SaveWarningExc,
     PROJECT_ANATOMY_KEY,
     PROJECT_SETTINGS_KEY,
     SYSTEM_SETTINGS_KEY
 )
-from openpype.settings.lib import (
+from quadpype.settings.lib import (
     get_system_last_saved_info,
     get_project_last_saved_info,
 )
@@ -75,7 +75,7 @@ from .item_widgets import (
     DictImmutableKeysWidget,
     TextWidget,
     PasswordWidget,
-    OpenPypeVersionText,
+    QuadPypeVersionText,
     NumberWidget,
     RawJsonWidget,
     EnumeratorWidget,
@@ -115,7 +115,7 @@ class IgnoreInputChangesObj:
 class StandaloneCategoryWidget(QtWidgets.QWidget):
 
     def __init__(self, content_widget, content_layout, parent=None):
-        super(StandaloneCategoryWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.content_widget = content_widget
         self.content_layout = content_layout
@@ -187,7 +187,7 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
 
     require_restart_label_text = (
         "Your changes require restart of"
-        " all running OpenPype processes to take affect."
+        " all running QuadPype processes to take affect."
     )
     outdated_version_label_text = (
         "Your settings are loaded from an older version."
@@ -196,15 +196,15 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
         "Current version is different from the production version."
         " You cannot save the System settings."
     )
-    source_version_tooltip = "Using settings of current OpenPype version"
+    source_version_tooltip = "Using settings of current QuadPype version"
     source_version_tooltip_outdated = (
         "Please check that all settings are still correct (blue colour\n"
         "indicates potential changes in the new version) and save your\n"
-        "settings to update them to you current running OpenPype version."
+        "settings to update them to you current running QuadPype version."
     )
 
     def __init__(self, controller, parent=None):
-        super(SettingsCategoryWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self._controller = controller
         controller.event_system.add_callback(
@@ -223,7 +223,7 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
         self._hide_studio_overrides = False
         self._updating_root = False
         self._use_version = None
-        self._current_version = get_openpype_version()
+        self._current_version = get_quadpype_version()
 
         self.ignore_input_changes = IgnoreInputChangesObj(self)
 
@@ -249,8 +249,8 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
         elif isinstance(entity, BoolEntity):
             return BoolWidget(*args)
 
-        elif isinstance(entity, OpenPypeVersionInput):
-            return OpenPypeVersionText(*args)
+        elif isinstance(entity, QuadPypeVersionInput):
+            return QuadPypeVersionText(*args)
 
         elif isinstance(entity, PasswordEntity):
             # Order of this elif (before the TextEntity one) because
@@ -318,7 +318,7 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
             )
         elif mode == EditMode.PROTECT:
             tooltip = (
-                "System settings can only be saved with the OpenPype production version."
+                "System settings can only be saved with the QuadPype production version."
             )
         else:
             tooltip = "Save settings"
@@ -695,7 +695,7 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
             dialog.setText((
                 "Default values are not set and you"
                 " don't have permissions to modify them."
-                " Please contact OpenPype team."
+                " Please contact QuadPype team."
             ))
             dialog.setIcon(QtWidgets.QMessageBox.Critical)
 
@@ -949,7 +949,7 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
 class SystemWidget(SettingsCategoryWidget):
     def __init__(self, *args, **kwargs):
         self._actions = []
-        super(SystemWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _check_last_saved_info(self):
         if self.is_modifying_defaults:
@@ -1015,7 +1015,7 @@ class SystemWidget(SettingsCategoryWidget):
 
 class ProjectWidget(SettingsCategoryWidget):
     def __init__(self, *args, **kwargs):
-        super(ProjectWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.protect_attrs = False
 
     def set_edit_mode(self, enabled):

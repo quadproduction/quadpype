@@ -6,17 +6,17 @@ import datetime
 
 import ftrack_api
 
-from openpype_modules.ftrack.ftrack_server.ftrack_server import FtrackServer
-from openpype_modules.ftrack.ftrack_server.lib import (
+from quadpype_modules.ftrack.ftrack_server.ftrack_server import FtrackServer
+from quadpype_modules.ftrack.ftrack_server.lib import (
     SocketSession,
     ProcessEventHub,
     TOPIC_STATUS_SERVER
 )
-from openpype.modules import ModulesManager
+from quadpype.modules import ModulesManager
 
-from openpype.lib import (
+from quadpype.lib import (
     Logger,
-    get_openpype_version,
+    get_quadpype_version,
     get_build_version
 )
 
@@ -44,13 +44,13 @@ def send_status(event):
         "source": "processor",
         "status_info": [
             ["created_at", subprocess_started.strftime("%Y.%m.%d %H:%M:%S")],
-            ["OpenPype version", get_openpype_version() or "N/A"],
-            ["OpenPype build version", get_build_version() or "N/A"]
+            ["QuadPype version", get_quadpype_version() or "N/A"],
+            ["QuadPype build version", get_build_version() or "N/A"]
         ]
     }
 
     new_event = ftrack_api.event.base.Event(
-        topic="openpype.event.server.status.result",
+        topic="quadpype.event.server.status.result",
         data=new_event_data
     )
 

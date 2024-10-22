@@ -1,5 +1,5 @@
 import os
-from openpype.lib.applications import PreLaunchHook, LaunchTypes
+from quadpype.lib.applications import PreLaunchHook, LaunchTypes
 
 
 class PreLaunchResolveLastWorkfile(PreLaunchHook):
@@ -28,8 +28,8 @@ class PreLaunchResolveLastWorkfile(PreLaunchHook):
 
         # Add path to launch environment for the startup script to pick up
         self.log.info(
-            "Setting OPENPYPE_RESOLVE_OPEN_ON_LAUNCH to launch "
+            "Setting QUADPYPE_RESOLVE_OPEN_ON_LAUNCH to launch "
             f"last workfile: {last_workfile}"
         )
-        key = "OPENPYPE_RESOLVE_OPEN_ON_LAUNCH"
+        key = "QUADPYPE_RESOLVE_OPEN_ON_LAUNCH"
         self.launch_context.env[key] = last_workfile

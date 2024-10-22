@@ -12,18 +12,18 @@ from pymongo import UpdateOne
 import arrow
 import ftrack_api
 
-from openpype.client import (
+from quadpype.client import (
     get_project,
     get_assets,
     get_archived_assets,
     get_asset_ids_with_subsets
 )
-from openpype.settings import APPS_SETTINGS_KEY
-from openpype.client.operations import CURRENT_ASSET_DOC_SCHEMA
-from openpype.pipeline import AvalonMongoDB, schema
+from quadpype.settings import APPS_SETTINGS_KEY
+from quadpype.client.operations import CURRENT_ASSET_DOC_SCHEMA
+from quadpype.pipeline import AvalonMongoDB, schema
 
-from openpype_modules.ftrack.lib import (
-    get_openpype_attr,
+from quadpype_modules.ftrack.lib import (
+    get_quadpype_attr,
     query_custom_attributes,
     CUST_ATTR_ID_KEY,
     CUST_ATTR_AUTO_SYNC,
@@ -33,7 +33,7 @@ from openpype_modules.ftrack.lib import (
 
     BaseEvent
 )
-from openpype_modules.ftrack.lib.avalon_sync import (
+from quadpype_modules.ftrack.lib.avalon_sync import (
     convert_to_fps,
     InvalidFpsValue
 )
@@ -136,7 +136,7 @@ class SyncToAvalonEvent(BaseEvent):
     @property
     def avalon_cust_attrs(self):
         if self._avalon_cust_attrs is None:
-            self._avalon_cust_attrs = get_openpype_attr(
+            self._avalon_cust_attrs = get_quadpype_attr(
                 self.process_session, query_keys=self.cust_attr_query_keys
             )
         return self._avalon_cust_attrs

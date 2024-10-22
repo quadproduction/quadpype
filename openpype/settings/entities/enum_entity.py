@@ -7,7 +7,7 @@ from .input_entities import InputEntity
 from .exceptions import EntitySchemaError
 from .lib import NOT_SET, STRING_TYPE
 
-from openpype.settings import (
+from quadpype.settings import (
     get_system_settings,
     APPS_SETTINGS_KEY,
     MODULES_SETTINGS_KEY,
@@ -211,7 +211,7 @@ class HostsEnumEntity(BaseEnumEntity):
             if "" not in custom_labels:
                 custom_labels[""] = "< without host >"
 
-        # These are hardcoded there is not list of available host in OpenPype
+        # These are hardcoded there is not list of available host in QuadPype
         enum_items = []
         valid_keys = set()
         for key in host_names:
@@ -567,7 +567,7 @@ class DeadlineLimitsPluginEnumEntity(BaseEnumEntity):
 
     def _get_enum_values(self):
         # Import here to avoid circular import
-        from openpype.modules.deadline import get_deadline_limits_plugin
+        from quadpype.modules.deadline import get_deadline_limits_plugin
 
         modules_system_settings = get_system_settings()[MODULES_SETTINGS_KEY]
         deadline_enabled = modules_system_settings["deadline"]["enabled"]
@@ -657,7 +657,7 @@ class DeadlinePoolsEnumEntity(DynamicEnumEntity):
 
     def _get_enum_values(self):
         # Import here to avoid circular import
-        from openpype.pipeline.context_tools import _get_modules_manager
+        from quadpype.pipeline.context_tools import _get_modules_manager
 
         modules_system_settings = get_system_settings()[MODULES_SETTINGS_KEY]
         deadline_enabled = modules_system_settings["deadline"]["enabled"]
@@ -751,7 +751,7 @@ class FtrackTaskStatusesEnumEntity(DynamicEnumEntity):
 
     def _get_enum_values(self):
         # Import here to avoid circular import
-        from openpype.pipeline.context_tools import _get_modules_manager
+        from quadpype.pipeline.context_tools import _get_modules_manager
 
         manager = _get_modules_manager()
         ftrack_module = manager.modules_by_name["ftrack"]

@@ -1,13 +1,13 @@
 import maya.cmds as cmds
 
-from openpype.pipeline import (
+from quadpype.pipeline import (
     load,
     remove_container
 )
 
-from openpype.hosts.maya.api.pipeline import containerise
-from openpype.hosts.maya.api.lib import unique_namespace
-from openpype.hosts.maya.api import setdress
+from quadpype.hosts.maya.api.pipeline import containerise
+from quadpype.hosts.maya.api.lib import unique_namespace
+from quadpype.hosts.maya.api import setdress
 
 
 class AssemblyLoader(load.LoaderPlugin):

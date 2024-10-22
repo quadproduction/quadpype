@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """Validator for correct naming of Static Meshes."""
 import pyblish.api
-from openpype.pipeline import (
+from quadpype.pipeline import (
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
-from openpype.pipeline.publish import ValidateContentsOrder
+from quadpype.pipeline.publish import ValidateContentsOrder
 
-from openpype.hosts.houdini.api.action import SelectInvalidAction
-from openpype.hosts.houdini.api.lib import get_output_children
+from quadpype.hosts.houdini.api.action import SelectInvalidAction
+from quadpype.hosts.houdini.api.lib import get_output_children
 
 import hou
 

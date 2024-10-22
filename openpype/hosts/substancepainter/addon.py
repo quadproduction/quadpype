@@ -1,10 +1,10 @@
 import os
-from openpype.modules import OpenPypeModule, IHostAddon
+from quadpype.modules import QuadPypeModule, IHostAddon
 
 SUBSTANCE_HOST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class SubstanceAddon(OpenPypeModule, IHostAddon):
+class SubstanceAddon(QuadPypeModule, IHostAddon):
     name = "substancepainter"
     host_name = "substancepainter"
 

@@ -5,8 +5,8 @@ import os
 import contextlib
 from opentimelineio import opentime
 
-from openpype.lib import Logger
-from openpype.pipeline.editorial import (
+from quadpype.lib import Logger
+from quadpype.pipeline.editorial import (
     is_overlapping_otio_ranges,
     frames_to_timecode
 )
@@ -19,24 +19,24 @@ self = sys.modules[__name__]
 self.project_manager = None
 self.media_storage = None
 
-# OpenPype sequential rename variables
+# QuadPype sequential rename variables
 self.rename_index = 0
 self.rename_add = 0
 
 self.publish_clip_color = "Pink"
 self.pype_marker_workflow = True
 
-# OpenPype compound clip workflow variable
+# QuadPype compound clip workflow variable
 self.pype_tag_name = "VFX Notes"
 
-# OpenPype marker workflow variables
-self.pype_marker_name = "OpenPypeData"
+# QuadPype marker workflow variables
+self.pype_marker_name = "QuadPypeData"
 self.pype_marker_duration = 1
 self.pype_marker_color = "Mint"
 self.temp_marker_frame = None
 
-# OpenPype default timeline
-self.pype_timeline_name = "OpenPypeTimeline"
+# QuadPype default timeline
+self.pype_timeline_name = "QuadPypeTimeline"
 
 
 @contextlib.contextmanager
@@ -442,13 +442,13 @@ def get_pype_timeline_item_by_name(name: str) -> object:
 
 def get_timeline_item_pype_tag(timeline_item):
     """
-    Get openpype track item tag created by creator or loader plugin.
+    Get quadpype track item tag created by creator or loader plugin.
 
     Attributes:
         trackItem (resolve.TimelineItem): resolve object
 
     Returns:
-        dict: openpype tag data
+        dict: quadpype tag data
     """
     return_tag = None
 
@@ -471,7 +471,7 @@ def get_timeline_item_pype_tag(timeline_item):
 
 def set_timeline_item_pype_tag(timeline_item, data=None):
     """
-    Set openpype track item tag to input timeline_item.
+    Set quadpype track item tag to input timeline_item.
 
     Attributes:
         trackItem (resolve.TimelineItem): resolve api object
@@ -481,7 +481,7 @@ def set_timeline_item_pype_tag(timeline_item, data=None):
     """
     data = data or dict()
 
-    # get available openpype tag if any
+    # get available quadpype tag if any
     tag_data = get_timeline_item_pype_tag(timeline_item)
 
     if self.pype_marker_workflow:
@@ -500,7 +500,7 @@ def set_timeline_item_pype_tag(timeline_item, data=None):
                 self.pype_tag_name, json.dumps(tag_data))
         else:
             tag_data = data
-            # if openpype tag available then update with input data
+            # if quadpype tag available then update with input data
             # add it to the input track item
             timeline_item.SetMetadata(self.pype_tag_name, json.dumps(tag_data))
 
@@ -758,7 +758,7 @@ def _validate_tc(x):
 
 def get_pype_clip_metadata(clip):
     """
-    Get openpype metadata created by creator plugin
+    Get quadpype metadata created by creator plugin
 
     Attributes:
         clip (resolve.TimelineItem): resolve's object

@@ -1,16 +1,16 @@
 from copy import deepcopy
 import os
 
-from openpype.hosts.fusion.api import (
+from quadpype.hosts.fusion.api import (
     get_current_comp,
     comp_lock_and_undo_chunk,
 )
 
-from openpype.lib import (
+from quadpype.lib import (
     BoolDef,
     EnumDef,
 )
-from openpype.pipeline import (
+from quadpype.pipeline import (
     legacy_io,
     Creator,
     CreatedInstance
@@ -96,7 +96,7 @@ class GenericCreateSaver(Creator):
             self._remove_instance_from_context(instance)
 
     def _imprint(self, tool, data):
-        # Save all data in a "openpype.{key}" = value data
+        # Save all data in a "quadpype.{key}" = value data
 
         # Instance id is the tool's name so we don't need to imprint as data
         data.pop("instance_id", None)
@@ -107,16 +107,16 @@ class GenericCreateSaver(Creator):
             tool.SetAttrs({"TOOLB_PassThrough": not active})
 
         for key, value in data.items():
-            tool.SetData(f"openpype.{key}", value)
+            tool.SetData(f"quadpype.{key}", value)
 
     def _update_tool_with_data(self, tool, data):
         """Update tool node name and output path based on subset data"""
         if "subset" not in data:
             return
 
-        original_subset = tool.GetData("openpype.subset")
+        original_subset = tool.GetData("quadpype.subset")
         original_format = tool.GetData(
-            "openpype.creator_attributes.image_format"
+            "quadpype.creator_attributes.image_format"
         )
 
         subset = data["subset"]
@@ -160,7 +160,7 @@ class GenericCreateSaver(Creator):
 
     def get_managed_tool_data(self, tool):
         """Return data of the tool if it matches creator identifier"""
-        data = tool.GetData("openpype")
+        data = tool.GetData("quadpype")
         if not isinstance(data, dict):
             return
 

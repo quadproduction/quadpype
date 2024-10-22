@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating alembic camera subsets."""
-from openpype.hosts.houdini.api import plugin
-from openpype.pipeline import CreatedInstance, CreatorError
+from quadpype.hosts.houdini.api import plugin
+from quadpype.pipeline import CreatedInstance, CreatorError
 
 import hou
 
@@ -9,7 +9,7 @@ import hou
 class CreateAlembicCamera(plugin.HoudiniCreator):
     """Single baked camera from Alembic ROP."""
 
-    identifier = "io.openpype.creators.houdini.camera"
+    identifier = "io.quadpype.creators.houdini.camera"
     label = "Camera (Abc)"
     family = "camera"
     icon = "camera"

@@ -3,9 +3,9 @@ import re
 
 import pyblish.api
 
-from openpype.client import get_subset_by_name
-from openpype.pipeline.publish import ValidateContentsOrder
-from openpype.pipeline import PublishValidationError
+from quadpype.client import get_subset_by_name
+from quadpype.pipeline.publish import ValidateContentsOrder
+from quadpype.pipeline import PublishValidationError
 
 
 class ValidateUSDShadeModelExists(pyblish.api.InstancePlugin):

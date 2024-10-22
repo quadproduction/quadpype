@@ -1,6 +1,6 @@
 import os
 import pyblish.api
-from openpype.pipeline import PublishValidationError
+from quadpype.pipeline import PublishValidationError
 
 
 class ValidateFilePath(pyblish.api.InstancePlugin):

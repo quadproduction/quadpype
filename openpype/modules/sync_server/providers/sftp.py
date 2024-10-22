@@ -4,8 +4,8 @@ import time
 import threading
 import platform
 
-from openpype.lib import Logger
-from openpype.settings import get_system_settings, MODULES_SETTINGS_KEY
+from quadpype.lib import Logger
+from quadpype.settings import get_system_settings, MODULES_SETTINGS_KEY
 from .abstract_provider import AbstractProvider
 log = Logger.get_logger("SyncServer-SFTPHandler")
 

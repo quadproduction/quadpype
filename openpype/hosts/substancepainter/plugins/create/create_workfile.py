@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating workfiles."""
 
-from openpype.pipeline import CreatedInstance, AutoCreator
-from openpype.client import get_asset_by_name
+from quadpype.pipeline import CreatedInstance, AutoCreator
+from quadpype.client import get_asset_by_name
 
-from openpype.hosts.substancepainter.api.pipeline import (
+from quadpype.hosts.substancepainter.api.pipeline import (
     set_instances,
     set_instance,
     get_instances
@@ -15,7 +15,7 @@ import substance_painter.project
 
 class CreateWorkfile(AutoCreator):
     """Workfile auto-creator."""
-    identifier = "io.openpype.creators.substancepainter.workfile"
+    identifier = "io.quadpype.creators.substancepainter.workfile"
     label = "Workfile"
     family = "workfile"
     icon = "document"

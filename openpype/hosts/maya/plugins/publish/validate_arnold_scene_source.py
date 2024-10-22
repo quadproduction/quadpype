@@ -2,10 +2,10 @@ from maya import cmds
 
 import pyblish.api
 
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     ValidateContentsOrder, PublishValidationError
 )
-from openpype.hosts.maya.api.lib import is_visible
+from quadpype.hosts.maya.api.lib import is_visible
 
 
 class ValidateArnoldSceneSource(pyblish.api.InstancePlugin):

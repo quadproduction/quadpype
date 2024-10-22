@@ -2,7 +2,7 @@
 
 """
 
-from openpype.pipeline import load
+from quadpype.pipeline import load
 
 
 class FusionSetFrameRangeLoader(load.LoaderPlugin):
@@ -25,7 +25,7 @@ class FusionSetFrameRangeLoader(load.LoaderPlugin):
 
     def load(self, context, name, namespace, data):
 
-        from openpype.hosts.fusion.api import lib
+        from quadpype.hosts.fusion.api import lib
 
         version = context['version']
         version_data = version.get("data", {})
@@ -60,7 +60,7 @@ class FusionSetFrameRangeWithHandlesLoader(load.LoaderPlugin):
 
     def load(self, context, name, namespace, data):
 
-        from openpype.hosts.fusion.api import lib
+        from quadpype.hosts.fusion.api import lib
 
         version = context['version']
         version_data = version.get("data", {})

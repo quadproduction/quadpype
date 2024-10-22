@@ -1,9 +1,9 @@
 import pyblish.api
-from openpype.pipeline import (
+from quadpype.pipeline import (
     PublishXmlValidationError,
     OptionalPyblishPluginMixin,
 )
-from openpype.hosts.tvpaint.api.lib import execute_george
+from quadpype.hosts.tvpaint.api.lib import execute_george
 
 
 class RepairStartFrame(pyblish.api.Action):

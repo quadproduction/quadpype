@@ -4,8 +4,8 @@ import nuke
 
 import pyblish.api
 
-from openpype.pipeline import publish
-from openpype.hosts.nuke.api.lib import (
+from quadpype.pipeline import publish
+from quadpype.hosts.nuke.api.lib import (
     maintained_selection,
     reset_selection,
     select_nodes

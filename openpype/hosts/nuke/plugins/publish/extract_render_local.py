@@ -4,9 +4,9 @@ import shutil
 import pyblish.api
 import clique
 import nuke
-from openpype.hosts.nuke import api as napi
-from openpype.pipeline import publish
-from openpype.lib import collect_frames
+from quadpype.hosts.nuke import api as napi
+from quadpype.pipeline import publish
+from quadpype.lib import collect_frames
 
 
 class NukeRenderLocal(publish.Extractor,

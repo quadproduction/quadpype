@@ -2,15 +2,15 @@ from maya import cmds
 
 import pyblish.api
 
-from openpype.pipeline.publish import (
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     RepairAction,
     PublishValidationError,
     OptionalPyblishPluginMixin
 )
 
-from openpype.hosts.maya.api import lib
-import openpype.hosts.maya.api.action
+from quadpype.hosts.maya.api import lib
+import quadpype.hosts.maya.api.action
 
 
 class ValidateRigControllersArnoldAttributes(pyblish.api.InstancePlugin,
@@ -39,7 +39,7 @@ class ValidateRigControllersArnoldAttributes(pyblish.api.InstancePlugin,
     families = ["rig"]
     optional = False
     actions = [RepairAction,
-               openpype.hosts.maya.api.action.SelectInvalidAction]
+               quadpype.hosts.maya.api.action.SelectInvalidAction]
 
     attributes = [
         "rcurve",

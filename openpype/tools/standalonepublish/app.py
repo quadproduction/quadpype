@@ -6,16 +6,16 @@ import signal
 from bson.objectid import ObjectId
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.client import get_asset_by_id
+from quadpype.client import get_asset_by_id
 
 from .widgets import (
     AssetWidget, FamilyWidget, ComponentsWidget, ShadowWidget
 )
 from .widgets.constants import HOST_NAME
-from openpype import style
-from openpype import resources
-from openpype.pipeline import AvalonMongoDB
-from openpype.modules import ModulesManager
+from quadpype import style
+from quadpype import resources
+from quadpype.pipeline import AvalonMongoDB
+from quadpype.modules import ModulesManager
 
 
 class Window(QtWidgets.QDialog):
@@ -32,12 +32,12 @@ class Window(QtWidgets.QDialog):
     HEIGHT = 500
 
     def __init__(self, pyblish_paths, parent=None):
-        super(Window, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self._db = AvalonMongoDB()
         self._db.install()
 
         try:
-            settings = QtCore.QSettings("pypeclub", "StandalonePublisher")
+            settings = QtCore.QSettings("quad", "StandalonePublisher")
         except Exception:
             settings = None
 

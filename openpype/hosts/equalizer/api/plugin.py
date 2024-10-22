@@ -7,9 +7,9 @@ note:
 from abc import ABC
 from typing import Dict, List
 
-from openpype.hosts.equalizer.api import EqualizerHost
-from openpype.lib import BoolDef, EnumDef, NumberDef
-from openpype.pipeline import (
+from quadpype.hosts.equalizer.api import EqualizerHost
+from quadpype.lib import BoolDef, EnumDef, NumberDef
+from quadpype.pipeline import (
     CreatedInstance,
     Creator,
     OptionalPyblishPluginMixin,
@@ -34,7 +34,7 @@ class EqualizerCreator(ABC, Creator):
             pre_create_data (dict): Data from the pre-create step.
 
         Returns:
-            openpype.pipeline.CreatedInstance: Created instance.
+            quadpype.pipeline.CreatedInstance: Created instance.
         """
         self.log.debug("EqualizerCreator.create")
         instance = CreatedInstance(
@@ -49,7 +49,7 @@ class EqualizerCreator(ABC, Creator):
         """Collect instances from the host application.
 
         Returns:
-            list[openpype.pipeline.CreatedInstance]: List of instances.
+            list[quadpype.pipeline.CreatedInstance]: List of instances.
         """
         for instance_data in self.host.get_context_data().get(
                 "publish_instances", []):

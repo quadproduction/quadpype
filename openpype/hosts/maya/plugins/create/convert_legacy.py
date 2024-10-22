@@ -1,8 +1,8 @@
-from openpype.pipeline.create.creator_plugins import SubsetConvertorPlugin
-from openpype.hosts.maya.api import plugin
-from openpype.hosts.maya.api.lib import read
+from quadpype.pipeline.create.creator_plugins import SubsetConvertorPlugin
+from quadpype.hosts.maya.api import plugin
+from quadpype.hosts.maya.api.lib import read
 
-from openpype.client import get_asset_by_name
+from quadpype.client import get_asset_by_name
 
 from maya import cmds
 from maya.app.renderSetup.model import renderSetup
@@ -19,15 +19,15 @@ class MayaLegacyConvertor(SubsetConvertorPlugin,
 
     Its limitation is that you can have multiple creators creating subset
     of the same family and there is no way to handle it. This code should
-    nevertheless cover all creators that came with OpenPype.
+    nevertheless cover all creators that came with QuadPype.
 
     """
-    identifier = "io.openpype.creators.maya.legacy"
+    identifier = "io.quadpype.creators.maya.legacy"
 
     # Cases where the identifier or new family doesn't correspond to the
     # original family on the legacy instances
     special_family_conversions = {
-        "rendering": "io.openpype.creators.maya.renderlayer",
+        "rendering": "io.quadpype.creators.maya.renderlayer",
     }
 
     def find_instances(self):

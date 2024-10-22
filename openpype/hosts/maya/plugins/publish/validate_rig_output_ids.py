@@ -4,9 +4,9 @@ from maya import cmds
 
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.hosts.maya.api.lib import get_id, set_id
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.hosts.maya.api.lib import get_id, set_id
+from quadpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
     PublishValidationError
@@ -30,7 +30,7 @@ class ValidateRigOutputIds(pyblish.api.InstancePlugin):
     hosts = ["maya"]
     families = ["rig"]
     actions = [RepairAction,
-               openpype.hosts.maya.api.action.SelectInvalidAction]
+               quadpype.hosts.maya.api.action.SelectInvalidAction]
 
     def process(self, instance):
         invalid = self.get_invalid(instance, compute=True)

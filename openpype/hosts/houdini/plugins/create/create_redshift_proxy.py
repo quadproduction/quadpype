@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating Redshift proxies."""
-from openpype.hosts.houdini.api import plugin
+from quadpype.hosts.houdini.api import plugin
 import hou
-from openpype.lib import BoolDef
+from quadpype.lib import BoolDef
 
 
 class CreateRedshiftProxy(plugin.HoudiniCreator):
     """Redshift Proxy"""
-    identifier = "io.openpype.creators.houdini.redshiftproxy"
+    identifier = "io.quadpype.creators.houdini.redshiftproxy"
     label = "Redshift Proxy"
     family = "redshiftproxy"
     icon = "magic"
@@ -20,7 +20,7 @@ class CreateRedshiftProxy(plugin.HoudiniCreator):
         # Redshift provides a `Redshift_Proxy_Output` node type which shows
         # a limited set of parameters by default and is set to extract a
         # Redshift Proxy. However when "imprinting" extra parameters needed
-        # for OpenPype it starts showing all its parameters again. It's unclear
+        # for QuadPype it starts showing all its parameters again. It's unclear
         # why this happens.
         # TODO: Somehow enforce so that it only shows the original limited
         #       attributes of the Redshift_Proxy_Output node type

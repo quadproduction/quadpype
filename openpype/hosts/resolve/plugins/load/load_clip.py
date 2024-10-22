@@ -1,14 +1,14 @@
-from openpype.client import get_last_version_by_subset_id
-from openpype.pipeline import (
+from quadpype.client import get_last_version_by_subset_id
+from quadpype.pipeline import (
     get_representation_context,
     get_current_project_name
 )
-from openpype.hosts.resolve.api import lib, plugin
-from openpype.hosts.resolve.api.pipeline import (
+from quadpype.hosts.resolve.api import lib, plugin
+from quadpype.hosts.resolve.api.pipeline import (
     containerise,
     update_container,
 )
-from openpype.lib.transcoding import (
+from quadpype.lib.transcoding import (
     VIDEO_EXTENSIONS,
     IMAGE_EXTENSIONS
 )

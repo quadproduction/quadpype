@@ -5,9 +5,9 @@ from .widgets import (
     Separator,
     ExpandingWidget
 )
-from openpype.settings import APPS_SETTINGS_KEY
-from openpype.tools.settings import CHILD_OFFSET
-from openpype.tools.utils import PlaceholderLineEdit
+from quadpype.settings import APPS_SETTINGS_KEY
+from quadpype.tools.settings import CHILD_OFFSET
+from quadpype.tools.utils import PlaceholderLineEdit
 
 
 class AppVariantWidget(QtWidgets.QWidget):
@@ -16,7 +16,7 @@ class AppVariantWidget(QtWidgets.QWidget):
     def __init__(
         self, group_label, variant_name, variant_label, variant_entity, parent
     ):
-        super(AppVariantWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.executable_input_widget = None
 
@@ -107,7 +107,7 @@ class AppVariantWidget(QtWidgets.QWidget):
 
 class AppGroupWidget(QtWidgets.QWidget):
     def __init__(self, group_entity, group_label, parent, dynamic=False):
-        super(AppGroupWidget, self).__init__(parent)
+        super().__init__(parent)
 
         variants_entity = group_entity["variants"]
         valid_variants = {}
@@ -168,7 +168,7 @@ class AppGroupWidget(QtWidgets.QWidget):
 
 class LocalApplicationsWidgets(QtWidgets.QWidget):
     def __init__(self, system_settings_entity, parent):
-        super(LocalApplicationsWidgets, self).__init__(parent)
+        super().__init__(parent)
 
         self.widgets_by_group_name = {}
         self.system_settings_entity = system_settings_entity

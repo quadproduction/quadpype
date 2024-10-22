@@ -1,9 +1,9 @@
-"""OpenPype Settings
+"""QuadPype Settings
 
-Settings define how openpype and it's modules behave. They became main
+Settings define how quadpype and it's modules behave. They became main
 component of dynamism.
 
-OpenPype settings (ATM) have 3 layers:
+QuadPype settings (ATM) have 3 layers:
 1.) Defaults - defined in code
 2.) Studio overrides - values that are applied on default that may modify only
     some values or None, result can be called "studio settings"
@@ -24,7 +24,7 @@ visuallise how values are applied.
 
 With help of setting entities it is possible to modify settings from code.
 
-OpenPype has (ATM) 2 types of settings:
+QuadPype has (ATM) 2 types of settings:
 1.) System settings - global system settings, don't have project overrides
 2.) Project settings - project specific settings
 

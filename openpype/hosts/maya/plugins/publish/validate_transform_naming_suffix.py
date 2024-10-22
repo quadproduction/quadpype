@@ -4,8 +4,8 @@ from maya import cmds
 
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     OptionalPyblishPluginMixin,
     PublishValidationError
@@ -39,7 +39,7 @@ class ValidateTransformNamingSuffix(pyblish.api.InstancePlugin,
     families = ['model']
     optional = True
     label = 'Suffix Naming Conventions'
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     SUFFIX_NAMING_TABLE = {"mesh": ["_GEO", "_GES", "_GEP", "_OSD"],
                            "nurbsCurve": ["_CRV"],
                            "nurbsSurface": ["_NRB"],

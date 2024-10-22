@@ -1,10 +1,10 @@
 import os.path
 
-from openpype.modules import OpenPypeModule, ITrayAction
-from openpype.lib import run_detached_process, get_openpype_execute_args
+from quadpype.modules import QuadPypeModule, ITrayAction
+from quadpype.lib import run_detached_process, get_quadpype_execute_args
 
 
-class AssetReporterAction(OpenPypeModule, ITrayAction):
+class AssetReporterAction(QuadPypeModule, ITrayAction):
 
     label = "Asset Usage Report"
     name = "asset_reporter"
@@ -16,7 +16,7 @@ class AssetReporterAction(OpenPypeModule, ITrayAction):
         self.enabled = True
 
     def on_action_trigger(self):
-        args = get_openpype_execute_args()
+        args = get_quadpype_execute_args()
         args += ["run",
                  os.path.join(
                      os.path.dirname(__file__),

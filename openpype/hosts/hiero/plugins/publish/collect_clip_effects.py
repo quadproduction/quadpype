@@ -73,7 +73,7 @@ class CollectClipEffects(pyblish.api.InstancePlugin):
         subset_split.insert(0, "effect")
 
         # Need to convert to dict for AYON settings. This isinstance check can
-        # be removed in the future when OpenPype is no longer.
+        # be removed in the future when QuadPype is no longer.
         effect_categories = self.effect_categories
         if isinstance(self.effect_categories, list):
             effect_categories = {

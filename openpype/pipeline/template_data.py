@@ -1,6 +1,6 @@
-from openpype.client import get_project, get_asset_by_name
-from openpype.settings import get_system_settings, GENERAL_SETTINGS_KEY
-from openpype.lib.local_settings import get_openpype_username
+from quadpype.client import get_project, get_asset_by_name
+from quadpype.settings import get_system_settings, GENERAL_SETTINGS_KEY
+from quadpype.lib.local_settings import get_quadpype_username
 
 
 def get_general_template_data(system_settings=None):
@@ -9,7 +9,7 @@ def get_general_template_data(system_settings=None):
     Output contains formatting keys:
     - 'studio[name]'    - Studio name filled from system settings
     - 'studio[code]'    - Studio code filled from system settings
-    - 'user'            - User's name using 'get_openpype_username'
+    - 'user'            - User's name using 'get_quadpype_username'
 
     Args:
         system_settings (Dict[str, Any]): System settings.
@@ -24,7 +24,7 @@ def get_general_template_data(system_settings=None):
             "name": studio_name,
             "code": studio_code
         },
-        "user": get_openpype_username()
+        "user": get_quadpype_username()
     }
 
 

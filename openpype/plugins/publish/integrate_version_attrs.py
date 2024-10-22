@@ -1,7 +1,7 @@
 import pyblish.api
 import ayon_api
 
-from openpype.client.operations import OperationsSession
+from quadpype.client.operations import OperationsSession
 
 
 class IntegrateVersionAttributes(pyblish.api.ContextPlugin):

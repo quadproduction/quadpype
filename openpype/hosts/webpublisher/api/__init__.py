@@ -3,10 +3,10 @@ import logging
 
 import pyblish.api
 
-from openpype.host import HostBase
-from openpype.hosts.webpublisher import WEBPUBLISHER_ROOT_DIR
+from quadpype.host import HostBase
+from quadpype.hosts.webpublisher import WEBPUBLISHER_ROOT_DIR
 
-log = logging.getLogger("openpype.hosts.webpublisher")
+log = logging.getLogger("quadpype.hosts.webpublisher")
 
 
 class WebpublisherHost(HostBase):

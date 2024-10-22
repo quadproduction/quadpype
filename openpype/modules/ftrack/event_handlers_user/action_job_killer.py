@@ -1,15 +1,15 @@
 import json
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 
 
 class JobKiller(BaseAction):
     """Kill jobs that are marked as running."""
 
     identifier = "job.killer"
-    label = "OpenPype Admin"
+    label = "QuadPype Admin"
     variant = "- Job Killer"
     description = "Killing selected running jobs"
-    icon = statics_icon("ftrack", "action_icons", "OpenPypeAdmin.svg")
+    icon = statics_icon("ftrack", "action_icons", "QuadPypeAdmin.svg")
     settings_key = "job_killer"
 
     def discover(self, session, entities, event):

@@ -17,8 +17,8 @@ import pyblish.api
 import tde4  # noqa: F401
 
 
-from openpype.pipeline import OptionalPyblishPluginMixin
-from openpype.pipeline import publish
+from quadpype.pipeline import OptionalPyblishPluginMixin
+from quadpype.pipeline import publish
 
 
 class ExtractMatchmoveScriptNuke(publish.Extractor,

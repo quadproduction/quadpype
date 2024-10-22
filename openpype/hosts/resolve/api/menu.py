@@ -3,8 +3,8 @@ import sys
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype.tools.utils import host_tools
-from openpype.pipeline import registered_host
+from quadpype.tools.utils import host_tools
+from quadpype.pipeline import registered_host
 
 
 MENU_LABEL = os.environ["AVALON_LABEL"]
@@ -23,7 +23,7 @@ def load_stylesheet():
 
 class Spacer(QtWidgets.QWidget):
     def __init__(self, height, *args, **kwargs):
-        super(Spacer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setFixedHeight(height)
 
@@ -38,9 +38,9 @@ class Spacer(QtWidgets.QWidget):
         self.setLayout(layout)
 
 
-class OpenPypeMenu(QtWidgets.QWidget):
+class QuadPypeMenu(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
-        super(OpenPypeMenu, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setObjectName(f"{MENU_LABEL}Menu")
 
@@ -173,7 +173,7 @@ class OpenPypeMenu(QtWidgets.QWidget):
 def launch_pype_menu():
     app = QtWidgets.QApplication(sys.argv)
 
-    pype_menu = OpenPypeMenu()
+    pype_menu = QuadPypeMenu()
 
     stylesheet = load_stylesheet()
     pype_menu.setStyleSheet(stylesheet)

@@ -1,10 +1,10 @@
 import os
-from openpype.modules import OpenPypeModule, IPluginPaths
+from quadpype.modules import QuadPypeModule, IPluginPaths
 
 SLACK_MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class SlackIntegrationModule(OpenPypeModule, IPluginPaths):
+class SlackIntegrationModule(QuadPypeModule, IPluginPaths):
     """Allows sending notification to Slack channels during publishing."""
 
     name = "slack"

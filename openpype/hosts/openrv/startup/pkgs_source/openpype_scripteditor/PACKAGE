@@ -1,4 +1,4 @@
-package: openpype_scripteditor
+package: quadpype_scripteditor
 author: Roy Nieterau
 organization: Colorbleed
 version: 1.0
@@ -8,9 +8,9 @@ requires: ''
 optional: true
 
 modes:
-  - file: openpype_scripteditor
+  - file: quadpype_scripteditor
     load: immediate
 
 description: |
 
-  <p> Adds OpenPype Script Editor to OpenRV </p>
+  <p> Adds QuadPype Script Editor to OpenRV </p>

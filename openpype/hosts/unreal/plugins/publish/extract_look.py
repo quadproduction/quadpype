@@ -5,7 +5,7 @@ import os
 import unreal
 from unreal import MaterialEditingLibrary as mat_lib
 
-from openpype.pipeline import publish
+from quadpype.pipeline import publish
 
 
 class ExtractLook(publish.Extractor):

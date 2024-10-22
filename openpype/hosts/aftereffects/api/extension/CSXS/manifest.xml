@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="8.0" ExtensionBundleId="io.ynput.AE.panel" ExtensionBundleVersion="1.1.0"
-		ExtensionBundleName="io.ynput.AE.panel" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ExtensionManifest Version="8.0" ExtensionBundleId="io.quad.AE.panel" ExtensionBundleVersion="1.1.0"
+		ExtensionBundleName="io.quad.AE.panel" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<ExtensionList>
-		<Extension Id="io.ynput.AE.panel" Version="1.0" />
+		<Extension Id="io.quad.AE.panel" Version="1.0" />
 	</ExtensionList>
 	<ExecutionEnvironment>
 		<HostList>
@@ -38,7 +38,7 @@
 		</RequiredRuntimeList>
 	</ExecutionEnvironment>
 	<DispatchInfoList>
-		<Extension Id="io.ynput.AE.panel">
+		<Extension Id="io.quad.AE.panel">
 			<DispatchInfo >
 				<Resources>
 				<MainPath>./index.html</MainPath>

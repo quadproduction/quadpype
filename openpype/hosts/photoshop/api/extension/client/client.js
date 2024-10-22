@@ -1,6 +1,6 @@
     // client facing part of extension, creates WSRPC client (jsx cannot 
     // do that)
-    // consumes RPC calls from server (OpenPype) calls ./host/index.jsx and
+    // consumes RPC calls from server (QuadPype) calls ./host/index.jsx and
     // returns values back (in json format)
     
     var logReturn = function(result){ log.warn('Result: ' + result);};

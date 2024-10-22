@@ -1,5 +1,5 @@
 ===============
-OpenPype Readme
+QuadPype Readme
 ===============
 
 .. include:: ../../README.md

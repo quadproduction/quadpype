@@ -1,11 +1,11 @@
 import click
 
-from openpype.tools.utils import get_openpype_qt_app
-from openpype.tools.ayon_push_to_project.ui import PushToContextSelectWindow
+from quadpype.tools.utils import get_quadpype_qt_app
+from quadpype.tools.ayon_push_to_project.ui import PushToContextSelectWindow
 
 
 def main_show(project_name, version_id):
-    app = get_openpype_qt_app()
+    app = get_quadpype_qt_app()
 
     window = PushToContextSelectWindow()
     window.show()

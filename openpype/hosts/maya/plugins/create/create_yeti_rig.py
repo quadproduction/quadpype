@@ -1,6 +1,6 @@
 from maya import cmds
 
-from openpype.hosts.maya.api import (
+from quadpype.hosts.maya.api import (
     lib,
     plugin
 )
@@ -9,7 +9,7 @@ from openpype.hosts.maya.api import (
 class CreateYetiRig(plugin.MayaCreator):
     """Output for procedural plugin nodes ( Yeti / XGen / etc)"""
 
-    identifier = "io.openpype.creators.maya.yetirig"
+    identifier = "io.quadpype.creators.maya.yetirig"
     label = "Yeti Rig"
     family = "yetiRig"
     icon = "usb"

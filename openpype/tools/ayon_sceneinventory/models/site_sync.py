@@ -1,5 +1,5 @@
-from openpype.client import get_representations
-from openpype.modules import ModulesManager
+from quadpype.client import get_representations
+from quadpype.modules import ModulesManager
 
 NOT_SET = object()
 

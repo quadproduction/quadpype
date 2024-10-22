@@ -3,9 +3,9 @@ from collections import defaultdict
 
 from qtpy import QtWidgets, QtCore
 
-from openpype.client import get_asset_name_identifier
-from openpype.tools.utils.models import TreeModel
-from openpype.tools.utils.lib import (
+from quadpype.client import get_asset_name_identifier
+from quadpype.tools.utils.models import TreeModel
+from quadpype.tools.utils.lib import (
     preserve_expanded_rows,
     preserve_selection,
 )
@@ -25,7 +25,7 @@ class AssetOutliner(QtWidgets.QWidget):
     selection_changed = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super(AssetOutliner, self).__init__(parent)
+        super().__init__(parent)
 
         title = QtWidgets.QLabel("Assets", self)
         title.setAlignment(QtCore.Qt.AlignCenter)
@@ -188,7 +188,7 @@ class LookOutliner(QtWidgets.QWidget):
     menu_apply_action = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super(LookOutliner, self).__init__(parent)
+        super().__init__(parent)
 
         # Looks from database
         title = QtWidgets.QLabel("Looks", self)

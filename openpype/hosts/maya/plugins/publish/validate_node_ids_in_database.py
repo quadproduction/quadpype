@@ -1,12 +1,12 @@
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.client import get_assets
-from openpype.hosts.maya.api import lib
-from openpype.pipeline import legacy_io
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.client import get_assets
+from quadpype.hosts.maya.api import lib
+from quadpype.pipeline import legacy_io
+from quadpype.pipeline.publish import (
     PublishValidationError, ValidatePipelineOrder)
-from openpype.client.entities import get_projects
+from quadpype.client.entities import get_projects
 
 
 class ValidateNodeIdsInDatabase(pyblish.api.InstancePlugin):
@@ -25,8 +25,8 @@ class ValidateNodeIdsInDatabase(pyblish.api.InstancePlugin):
     hosts = ['maya']
     families = ["*"]
 
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction,
-               openpype.hosts.maya.api.action.GenerateUUIDsOnInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction,
+               quadpype.hosts.maya.api.action.GenerateUUIDsOnInvalidAction]
 
     def process(self, instance):
         invalid = self.get_invalid(instance)

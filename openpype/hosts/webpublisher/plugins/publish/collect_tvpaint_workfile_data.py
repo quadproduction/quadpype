@@ -16,11 +16,11 @@ import uuid
 import json
 import shutil
 import pyblish.api
-from openpype.hosts.tvpaint.worker import (
+from quadpype.hosts.tvpaint.worker import (
     SenderTVPaintCommands,
     CollectSceneData
 )
-from openpype_modules.webpublisher.lib import parse_json
+from quadpype_modules.webpublisher.lib import parse_json
 
 
 class CollectTVPaintWorkfileData(pyblish.api.ContextPlugin):
@@ -31,7 +31,7 @@ class CollectTVPaintWorkfileData(pyblish.api.ContextPlugin):
 
     def process(self, context):
         # Get JobQueue module
-        modules = context.data["openPypeModules"]
+        modules = context.data["quadpypeModules"]
         job_queue_module = modules["job_queue"]
         jobs_root = job_queue_module.get_jobs_root()
         if not jobs_root:

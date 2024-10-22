@@ -2,10 +2,10 @@ from maya import cmds, mel
 
 import pyblish.api
 
-from openpype.settings import PROJECT_SETTINGS_KEY
-from openpype.client import get_subset_by_name
-from openpype.pipeline import KnownPublishError
-from openpype.hosts.maya.api import lib
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.client import get_subset_by_name
+from quadpype.pipeline import KnownPublishError
+from quadpype.hosts.maya.api import lib
 
 
 class CollectReview(pyblish.api.InstancePlugin):

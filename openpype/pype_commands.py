@@ -14,8 +14,8 @@ class PypeCommands:
     """
     @staticmethod
     def launch_tray():
-        from openpype.lib import Logger
-        from openpype.tools import tray
+        from quadpype.lib import Logger
+        from quadpype.tools import tray
 
         Logger.set_process_name("Tray")
 
@@ -23,7 +23,7 @@ class PypeCommands:
 
     @staticmethod
     def launch_settings_gui(dev):
-        from openpype.tools import settings
+        from quadpype.tools import settings
 
         if dev:
             user_role = "developer"
@@ -35,8 +35,8 @@ class PypeCommands:
     def add_modules(click_func):
         """Modules/Addons can add their cli commands dynamically."""
 
-        from openpype.lib import Logger
-        from openpype.modules import ModulesManager
+        from quadpype.lib import Logger
+        from quadpype.modules import ModulesManager
 
         manager = ModulesManager()
         log = Logger.get_logger("CLI-AddModules")
@@ -54,20 +54,20 @@ class PypeCommands:
 
     @staticmethod
     def launch_eventservercli(*args):
-        from openpype_modules.ftrack.ftrack_server.event_server_cli import (
+        from quadpype_modules.ftrack.ftrack_server.event_server_cli import (
             run_event_server
         )
         return run_event_server(*args)
 
     @staticmethod
     def launch_webpublisher_webservercli(*args, **kwargs):
-        from openpype.hosts.webpublisher.webserver_service import run_webserver
+        from quadpype.hosts.webpublisher.webserver_service import run_webserver
 
         return run_webserver(*args, **kwargs)
 
     @staticmethod
     def launch_traypublisher():
-        from openpype.tools import traypublisher
+        from quadpype.tools import traypublisher
         traypublisher.main()
 
     @staticmethod
@@ -86,14 +86,14 @@ class PypeCommands:
             RuntimeError: When there is no path to process.
         """
 
-        from openpype.lib import Logger
-        from openpype.lib.applications import (
+        from quadpype.lib import Logger
+        from quadpype.lib.applications import (
             get_app_environments_for_context,
             LaunchTypes,
         )
-        from openpype.modules import ModulesManager
-        from openpype.pipeline import (
-            install_openpype_plugins,
+        from quadpype.modules import ModulesManager
+        from quadpype.pipeline import (
+            install_quadpype_plugins,
             get_global_context,
         )
 
@@ -103,7 +103,7 @@ class PypeCommands:
 
         log = Logger.get_logger("CLI-publish")
 
-        install_openpype_plugins()
+        install_quadpype_plugins()
 
         manager = ModulesManager()
 
@@ -136,7 +136,7 @@ class PypeCommands:
         else:
             pyblish.api.register_target("farm")
 
-        os.environ["OPENPYPE_PUBLISH_DATA"] = os.pathsep.join(paths)
+        os.environ["QUADPYPE_PUBLISH_DATA"] = os.pathsep.join(paths)
         os.environ["HEADLESS_PUBLISH"] = 'true'  # to use in app lib
 
         log.info("Running publish ...")
@@ -147,8 +147,8 @@ class PypeCommands:
             print(plugin)
 
         if gui:
-            from openpype.tools.utils.host_tools import show_publish
-            from openpype.tools.utils.lib import qt_app_context
+            from quadpype.tools.utils.host_tools import show_publish
+            from quadpype.tools.utils.lib import qt_app_context
             with qt_app_context():
                 show_publish()
         else:
@@ -172,7 +172,7 @@ class PypeCommands:
         Called by Deadline plugin to propagate environment into render jobs.
         """
 
-        from openpype.lib.applications import (
+        from quadpype.lib.applications import (
             get_app_environments_for_context,
             LaunchTypes,
         )
@@ -198,13 +198,13 @@ class PypeCommands:
 
     @staticmethod
     def launch_project_manager():
-        from openpype.tools import project_manager
+        from quadpype.tools import project_manager
 
         project_manager.main()
 
     @staticmethod
     def contextselection(output_path, project_name, asset_name, strict):
-        from openpype.tools.context_dialog import main
+        from quadpype.tools.context_dialog import main
 
         main(output_path, project_name, asset_name, strict)
 
@@ -229,7 +229,7 @@ class PypeCommands:
                 timeout (int): explicit timeout for single test
                 setup_only (bool): if only preparation steps should be
                     triggered, no tests (useful for debugging/development)
-                mongo_url (str): url to Openpype Mongo database
+                mongo_url (str): url to the QuadPype Mongo database
         """
         print("run_tests")
         if folder:
@@ -286,14 +286,14 @@ class PypeCommands:
         pytest.main(args)
 
     def repack_version(self, directory):
-        """Repacking OpenPype version."""
-        from openpype.tools.repack_version import VersionRepacker
+        """Repacking QuadPype version."""
+        from quadpype.tools.repack_version import VersionRepacker
 
         version_packer = VersionRepacker(directory)
         version_packer.process()
 
     def pack_project(self, project_name, dirpath, database_only):
-        from openpype.lib.project_backpack import pack_project
+        from quadpype.lib.project_backpack import pack_project
 
         if database_only and not dirpath:
             raise ValueError((
@@ -305,6 +305,6 @@ class PypeCommands:
         pack_project(project_name, dirpath, database_only)
 
     def unpack_project(self, zip_filepath, new_root, database_only):
-        from openpype.lib.project_backpack import unpack_project
+        from quadpype.lib.project_backpack import unpack_project
 
         unpack_project(zip_filepath, new_root, database_only)

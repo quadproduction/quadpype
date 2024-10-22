@@ -3,7 +3,7 @@ from qtpy import QtWidgets
 
 class NiceProgressBar(QtWidgets.QProgressBar):
     def __init__(self, parent=None):
-        super(NiceProgressBar, self).__init__(parent)
+        super().__init__(parent)
         self._real_value = 0
 
     def setValue(self, value):

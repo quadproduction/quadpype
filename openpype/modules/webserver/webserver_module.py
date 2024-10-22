@@ -1,6 +1,6 @@
 """WebServerModule spawns aiohttp server in asyncio loop.
 
-Main usage of the module is in OpenPype tray where make sense to add ability
+Main usage of the module is in QuadPype tray where make sense to add ability
 of other modules to add theirs routes. Module which would want use that
 option must have implemented method `webserver_initialization` which must
 expect `WebServerManager` object where is possible to add routes or paths
@@ -16,22 +16,22 @@ Running multiple servers in one process is not recommended and probably won't
 work as expected. It is because of few limitations connected to asyncio module.
 
 When module's `create_server_manager` is called it is also set environment
-variable "OPENPYPE_WEBSERVER_URL". Which should lead to root access point
+variable "QUADPYPE_WEBSERVER_URL". Which should lead to root access point
 of server.
 """
 
 import os
 import socket
 
-from openpype import resources
-from openpype.modules import OpenPypeModule, ITrayService
+from quadpype import resources
+from quadpype.modules import QuadPypeModule, ITrayService
 
 
-class WebServerModule(OpenPypeModule, ITrayService):
+class WebServerModule(QuadPypeModule, ITrayService):
     name = "webserver"
     label = "WebServer"
 
-    webserver_url_env = "OPENPYPE_WEBSERVER_URL"
+    webserver_url_env = "QUADPYPE_WEBSERVER_URL"
 
     def initialize(self, _module_settings):
         self.enabled = True
@@ -74,12 +74,12 @@ class WebServerModule(OpenPypeModule, ITrayService):
         static_prefix = "/res"
         self.server_manager.add_static(static_prefix, resources.RESOURCES_DIR)
 
-        os.environ["OPENPYPE_STATICS_SERVER"] = "{}{}".format(
+        os.environ["QUADPYPE_STATICS_SERVER"] = "{}{}".format(
             self.webserver_url, static_prefix
         )
 
     def _add_listeners(self):
-        from openpype_modules.webserver import host_console_listener
+        from quadpype_modules.webserver import host_console_listener
 
         self._host_listener = host_console_listener.HostListener(
             self.server_manager, self

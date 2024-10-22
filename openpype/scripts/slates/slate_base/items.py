@@ -37,7 +37,7 @@ class ItemImage(BaseItem):
 
     def __init__(self, image_path, *args, **kwargs):
         self.image_path = image_path
-        super(ItemImage, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def fill_data_format(self):
         if re.match(self.fill_data_regex, self.image_path):
@@ -97,7 +97,7 @@ class ItemPlaceHolder(BaseItem):
 
     def __init__(self, image_path, *args, **kwargs):
         self.image_path = image_path
-        super(ItemPlaceHolder, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def fill_data_format(self):
         if re.match(self.fill_data_regex, self.image_path):
@@ -144,7 +144,7 @@ class ItemText(BaseItem):
 
     def __init__(self, value, *args, **kwargs):
         self.value = value
-        super(ItemText, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def draw(self, image, drawer):
         bg_color = self.style["bg-color"]
@@ -206,7 +206,7 @@ class ItemTable(BaseItem):
         self.values_by_cords = None
         self.prepare_values(values)
 
-        super(ItemTable, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.size_values = None
         self.calculate_sizes()
 
@@ -329,7 +329,7 @@ class TableField(BaseItem):
     ellide_text = "..."
 
     def __init__(self, row_idx, col_idx, value, *args, **kwargs):
-        super(TableField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.row_idx = row_idx
         self.col_idx = col_idx
         self.value = value

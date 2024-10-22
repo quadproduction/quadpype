@@ -1,11 +1,11 @@
 import pyblish.api
-from openpype.lib.attribute_definitions import (
+from quadpype.lib.attribute_definitions import (
     TextDef,
     BoolDef
 )
 
-from openpype.pipeline.publish import OpenPypePyblishPluginMixin
-from openpype.client.entities import (
+from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
+from quadpype.client.entities import (
     get_last_version_by_subset_name,
     get_representations
 )
@@ -13,7 +13,7 @@ from openpype.client.entities import (
 
 class CollectFramesFixDef(
     pyblish.api.InstancePlugin,
-    OpenPypePyblishPluginMixin
+    QuadPypePyblishPluginMixin
 ):
     """Provides text field to insert frame(s) to be rerendered.
 

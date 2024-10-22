@@ -1,4 +1,4 @@
-import openpype.hosts.maya.api.plugin
+import quadpype.hosts.maya.api.plugin
 import maya.cmds as cmds
 
 
@@ -14,7 +14,7 @@ def _process_reference(file_url, name, namespace, options):
     Returns:
         list: list of object nodes
     """
-    from openpype.hosts.maya.api.lib import unique_namespace
+    from quadpype.hosts.maya.api.lib import unique_namespace
     # Get name from asset being loaded
     # Assuming name is subset name from the animation, we split the number
     # suffix from the name to ensure the namespace is unique
@@ -43,7 +43,7 @@ def _process_reference(file_url, name, namespace, options):
     return nodes
 
 
-class AbcLoader(openpype.hosts.maya.api.plugin.ReferenceLoader):
+class AbcLoader(quadpype.hosts.maya.api.plugin.ReferenceLoader):
     """Loader to reference an Alembic file"""
 
     families = ["animation",
@@ -72,7 +72,7 @@ class AbcLoader(openpype.hosts.maya.api.plugin.ReferenceLoader):
         return nodes
 
 
-class FbxLoader(openpype.hosts.maya.api.plugin.ReferenceLoader):
+class FbxLoader(quadpype.hosts.maya.api.plugin.ReferenceLoader):
     """Loader to reference an Fbx files"""
 
     families = ["animation",

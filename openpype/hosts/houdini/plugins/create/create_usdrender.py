@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating USD renders."""
-from openpype.hosts.houdini.api import plugin
-from openpype.pipeline import CreatedInstance
+from quadpype.hosts.houdini.api import plugin
+from quadpype.pipeline import CreatedInstance
 
 
 class CreateUSDRender(plugin.HoudiniCreator):
     """USD Render ROP in /stage"""
-    identifier = "io.openpype.creators.houdini.usdrender"
+    identifier = "io.quadpype.creators.houdini.usdrender"
     label = "USD Render (experimental)"
     family = "usdrender"
     icon = "magic"

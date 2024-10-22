@@ -3,7 +3,7 @@ from collections import OrderedDict
 from bson.objectid import ObjectId
 import pyblish.api
 
-from openpype.pipeline import legacy_io
+from quadpype.pipeline import legacy_io
 
 
 class IntegrateInputLinks(pyblish.api.ContextPlugin):

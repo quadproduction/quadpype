@@ -21,8 +21,8 @@ from aiohttp_json_rpc.protocol import (
 )
 from aiohttp_json_rpc.exceptions import RpcError
 
-from openpype.lib import emit_event
-from openpype.hosts.tvpaint.tvpaint_plugin import get_plugin_files_path
+from quadpype.lib import emit_event
+from quadpype.hosts.tvpaint.tvpaint_plugin import get_plugin_files_path
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -114,7 +114,7 @@ class WebsocketServerThread(threading.Thread):
         it creates separate thread and separate asyncio event loop
     """
     def __init__(self, module, port, loop):
-        super(WebsocketServerThread, self).__init__()
+        super().__init__()
         self.is_running = False
         self.server_is_running = False
         self.port = port
@@ -300,7 +300,7 @@ class QtTVPaintRpc(BaseTVPaintRpc):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        from openpype.tools.utils import host_tools
+        from quadpype.tools.utils import host_tools
         self.tools_helper = host_tools.HostToolsHelper()
 
         route_name = self.route_name

@@ -289,7 +289,7 @@ class InstanceDelegate(QtWidgets.QStyledItemDelegate):
     radius = 8.0
 
     def __init__(self, parent):
-        super(InstanceDelegate, self).__init__(parent)
+        super().__init__(parent)
         self.item_delegate = InstanceItemDelegate(parent)
 
     def paint(self, painter, option, index):
@@ -444,7 +444,7 @@ class PluginDelegate(QtWidgets.QStyledItemDelegate):
     """Generic delegate for plugin header"""
 
     def __init__(self, parent):
-        super(PluginDelegate, self).__init__(parent)
+        super().__init__(parent)
         self.item_delegate = PluginItemDelegate(parent)
 
     def paint(self, painter, option, index):

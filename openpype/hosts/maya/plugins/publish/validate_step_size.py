@@ -1,7 +1,7 @@
 import pyblish.api
 
-import openpype.hosts.maya.api.action
-from openpype.pipeline.publish import (
+import quadpype.hosts.maya.api.action
+from quadpype.pipeline.publish import (
     PublishValidationError,
     ValidateContentsOrder,
     OptionalPyblishPluginMixin
@@ -21,7 +21,7 @@ class ValidateStepSize(pyblish.api.InstancePlugin,
     families = ['camera',
                 'pointcache',
                 'animation']
-    actions = [openpype.hosts.maya.api.action.SelectInvalidAction]
+    actions = [quadpype.hosts.maya.api.action.SelectInvalidAction]
     optional = False
     MIN = 0.01
     MAX = 1.0

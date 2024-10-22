@@ -18,7 +18,7 @@ class ColorPickerWidget(QtWidgets.QWidget):
     color_changed = QtCore.Signal(QtGui.QColor)
 
     def __init__(self, color=None, use_alpha=True, parent=None):
-        super(ColorPickerWidget, self).__init__(parent)
+        super().__init__(parent)
 
         # Color triangle
         color_triangle = QtColorTriangle(self)

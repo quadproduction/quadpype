@@ -15,8 +15,8 @@ Provides:
 import json
 import pyblish.api
 
-from openpype.settings import SYSTEM_SETTINGS_KEY
-from openpype.pipeline.template_data import get_template_data
+from quadpype.settings import SYSTEM_SETTINGS_KEY
+from quadpype.pipeline.template_data import get_template_data
 
 
 class CollectAnatomyContextData(pyblish.api.ContextPlugin):

@@ -57,7 +57,7 @@ else:
 
 class Window(QtWidgets.QDialog):
     def __init__(self, controller, parent=None):
-        super(Window, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self._suspend_logs = False
 

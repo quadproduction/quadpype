@@ -2,7 +2,7 @@ import re
 import collections
 import threading
 
-from openpype.client import (
+from quadpype.client import (
     get_projects,
     get_assets,
     get_asset_by_id,
@@ -10,10 +10,10 @@ from openpype.client import (
     get_version_by_id,
     get_representations,
 )
-from openpype.settings import get_project_settings
-from openpype.lib import prepare_template_data
-from openpype.lib.events import EventSystem
-from openpype.pipeline.create import (
+from quadpype.settings import get_project_settings
+from quadpype.lib import prepare_template_data
+from quadpype.lib.events import EventSystem
+from quadpype.pipeline.create import (
     SUBSET_NAME_ALLOWED_SYMBOLS,
     get_subset_name_template,
 )

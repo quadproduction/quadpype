@@ -5,10 +5,10 @@ Because of limited api, alembics can be only loaded, but not easily updated.
 
 """
 import os
-from openpype.pipeline import load, get_representation_path
-from openpype.hosts.max.api import lib, maintained_selection
-from openpype.hosts.max.api.lib import unique_namespace
-from openpype.hosts.max.api.pipeline import (
+from quadpype.pipeline import load, get_representation_path
+from quadpype.hosts.max.api import lib, maintained_selection
+from quadpype.hosts.max.api.lib import unique_namespace
+from quadpype.hosts.max.api.pipeline import (
     containerise,
     get_previous_loaded_object
 )

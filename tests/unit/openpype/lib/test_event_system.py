@@ -1,5 +1,5 @@
 from functools import partial
-from openpype.lib.events import (
+from quadpype.lib.events import (
     EventSystem,
     QueuedEventSystem,
     weakref_partial,

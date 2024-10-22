@@ -1,9 +1,9 @@
 import os
 import pyblish.api
-from openpype.pipeline import publish, OptionalPyblishPluginMixin
+from quadpype.pipeline import publish, OptionalPyblishPluginMixin
 from pymxs import runtime as rt
-from openpype.hosts.max.api import maintained_selection
-from openpype.hosts.max.api.lib import convert_unit_scale
+from quadpype.hosts.max.api import maintained_selection
+from quadpype.hosts.max.api.lib import convert_unit_scale
 
 
 class ExtractModelFbx(publish.Extractor, OptionalPyblishPluginMixin):

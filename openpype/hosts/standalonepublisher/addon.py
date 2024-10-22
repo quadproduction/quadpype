@@ -1,10 +1,10 @@
 import os
 
-from openpype.lib import get_openpype_execute_args
-from openpype.lib.execute import run_detached_process
-from openpype.modules import (
+from quadpype.lib import get_quadpype_execute_args
+from quadpype.lib.execute import run_detached_process
+from quadpype.modules import (
     click_wrap,
-    OpenPypeModule,
+    QuadPypeModule,
     ITrayAction,
     IHostAddon,
 )
@@ -12,7 +12,7 @@ from openpype.modules import (
 STANDALONEPUBLISH_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class StandAlonePublishAddon(OpenPypeModule, ITrayAction, IHostAddon):
+class StandAlonePublishAddon(QuadPypeModule, ITrayAction, IHostAddon):
     label = "Publisher (legacy)"
     name = "standalonepublisher"
     host_name = "standalonepublisher"
@@ -36,7 +36,7 @@ class StandAlonePublishAddon(OpenPypeModule, ITrayAction, IHostAddon):
         self.publish_paths.extend(publish_paths)
 
     def run_standalone_publisher(self):
-        args = get_openpype_execute_args("module", self.name, "launch")
+        args = get_quadpype_execute_args("module", self.name, "launch")
         run_detached_process(args)
 
     def cli(self, click_group):
@@ -54,6 +54,6 @@ def cli_main():
 def launch():
     """Launch StandalonePublisher tool UI."""
 
-    from openpype.tools import standalonepublish
+    from quadpype.tools import standalonepublish
 
     standalonepublish.main()

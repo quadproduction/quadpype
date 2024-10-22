@@ -1,12 +1,12 @@
 from qtpy import QtWidgets, QtCore
 
-from openpype.tools.flickcharm import FlickCharm
-from openpype.tools.utils import PlaceholderLineEdit, RefreshButton
-from openpype.tools.ayon_utils.widgets import (
+from quadpype.tools.flickcharm import FlickCharm
+from quadpype.tools.utils import PlaceholderLineEdit, RefreshButton
+from quadpype.tools.ayon_utils.widgets import (
     ProjectsQtModel,
     ProjectSortFilterProxy,
 )
-from openpype.tools.ayon_utils.models import PROJECTS_MODEL_SENDER
+from quadpype.tools.ayon_utils.models import PROJECTS_MODEL_SENDER
 
 
 class ProjectIconView(QtWidgets.QListView):
@@ -19,7 +19,7 @@ class ProjectIconView(QtWidgets.QListView):
     ListMode = 1
 
     def __init__(self, parent=None, mode=ListMode):
-        super(ProjectIconView, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         # Workaround for scrolling being super slow or fast when
         # toggling between the two visual modes
@@ -77,7 +77,7 @@ class ProjectsWidget(QtWidgets.QWidget):
     refreshed = QtCore.Signal()
 
     def __init__(self, controller, parent=None):
-        super(ProjectsWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         header_widget = QtWidgets.QWidget(self)
 

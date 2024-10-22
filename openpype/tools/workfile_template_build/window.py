@@ -1,15 +1,15 @@
 from qtpy import QtWidgets
 
-from openpype import style
-from openpype.lib import Logger
-from openpype.pipeline import legacy_io
-from openpype.pipeline.action.utils import get_actions_by_family
-from openpype.tools.attribute_defs import AttributeDefinitionsWidget
+from quadpype import style
+from quadpype.lib import Logger
+from quadpype.pipeline import legacy_io
+from quadpype.pipeline.action.utils import get_actions_by_family
+from quadpype.tools.attribute_defs import AttributeDefinitionsWidget
 
 
 class WorkfileBuildPlaceholderDialog(QtWidgets.QDialog):
     def __init__(self, host, builder, parent=None):
-        super(WorkfileBuildPlaceholderDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Workfile Placeholder Manager")
 
         self._log = None

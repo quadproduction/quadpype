@@ -6,11 +6,11 @@ import string
 
 from qtpy import QtWidgets, QtCore
 
-from openpype.pipeline import legacy_io
-from openpype.lib import (
+from quadpype.pipeline import legacy_io
+from quadpype.lib import (
     execute,
     Logger,
-    get_openpype_execute_args,
+    get_quadpype_execute_args,
     apply_project_environments_value
 )
 
@@ -196,7 +196,7 @@ def cli_publish(data, publish_paths, gui=True):
     project_name = os.environ["AVALON_PROJECT"]
     env_copy = apply_project_environments_value(project_name, envcopy)
 
-    args = get_openpype_execute_args("run", PUBLISH_SCRIPT_PATH)
+    args = get_quadpype_execute_args("run", PUBLISH_SCRIPT_PATH)
     result = execute(args, env=envcopy)
 
     result = {}

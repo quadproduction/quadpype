@@ -15,7 +15,7 @@ class CollectLocalFtrackCreds(pyblish.api.ContextPlugin):
         if os.getenv("FTRACK_API_USER") and os.getenv("FTRACK_API_KEY") and \
                 os.getenv("FTRACK_SERVER"):
             return
-        ftrack_module = context.data["openPypeModules"]["ftrack"]
+        ftrack_module = context.data["quadpypeModules"]["ftrack"]
         if ftrack_module.enabled:
             creds = ftrack_module.get_credentials()
             os.environ["FTRACK_API_USER"] = creds[0]

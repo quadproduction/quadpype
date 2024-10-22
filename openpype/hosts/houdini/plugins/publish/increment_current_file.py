@@ -1,10 +1,10 @@
 import pyblish.api
 
-from openpype.lib import version_up
-from openpype.pipeline import registered_host
-from openpype.pipeline.publish import get_errored_plugins_from_context
-from openpype.hosts.houdini.api import HoudiniHost
-from openpype.pipeline.publish import KnownPublishError
+from quadpype.lib import version_up
+from quadpype.pipeline import registered_host
+from quadpype.pipeline.publish import get_errored_plugins_from_context
+from quadpype.hosts.houdini.api import HoudiniHost
+from quadpype.pipeline.publish import KnownPublishError
 
 
 class IncrementCurrentFile(pyblish.api.ContextPlugin):

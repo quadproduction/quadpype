@@ -10,20 +10,20 @@ import datetime
 import appdirs
 
 import ftrack_api
-from openpype_modules.ftrack.ftrack_server.ftrack_server import FtrackServer
-from openpype_modules.ftrack.ftrack_server.lib import (
+from quadpype_modules.ftrack.ftrack_server.ftrack_server import FtrackServer
+from quadpype_modules.ftrack.ftrack_server.lib import (
     SocketSession,
     StatusEventHub,
     TOPIC_STATUS_SERVER,
     TOPIC_STATUS_SERVER_RESULT,
     get_host_ip
 )
-from openpype.lib import (
+from quadpype.lib import (
     Logger,
     is_current_version_studio_latest,
     is_running_from_build,
     get_expected_version,
-    get_openpype_version
+    get_quadpype_version
 )
 
 log = Logger.get_logger("Event storer")
@@ -32,7 +32,7 @@ action_identifier = (
 )
 host_ip = get_host_ip()
 action_data = {
-    "label": "OpenPype Admin",
+    "label": "QuadPype Admin",
     "variant": "- Event server Status ({})".format(host_ip or "IP N/A"),
     "description": "Get Infromation about event server",
     "actionIdentifier": action_identifier
@@ -212,46 +212,46 @@ class StatusFactory:
             })
         return items
 
-    def openpype_version_items(self):
+    def quadpype_version_items(self):
         items = []
         is_latest = is_current_version_studio_latest()
         items.append({
             "type": "label",
-            "value": "# OpenPype version"
+            "value": "# QuadPype version"
         })
         if not is_running_from_build():
             items.append({
                 "type": "label",
                 "value": (
-                    "OpenPype event server is running from code <b>{}</b>."
-                ).format(str(get_openpype_version()))
+                    "QuadPype event server is running from code <b>{}</b>."
+                ).format(str(get_quadpype_version()))
             })
 
         elif is_latest is None:
             items.append({
                 "type": "label",
                 "value": (
-                    "Can't determine if OpenPype version is outdated"
-                    " <b>{}</b>. OpenPype build version should be updated."
-                ).format(str(get_openpype_version()))
+                    "Can't determine if QuadPype version is outdated"
+                    " <b>{}</b>. QuadPype build version should be updated."
+                ).format(str(get_quadpype_version()))
             })
         elif is_latest:
             items.append({
                 "type": "label",
-                "value": "OpenPype version is up to date <b>{}</b>.".format(
-                    str(get_openpype_version())
+                "value": "QuadPype version is up to date <b>{}</b>.".format(
+                    str(get_quadpype_version())
                 )
             })
         else:
             items.append({
                 "type": "label",
                 "value": (
-                    "Using <b>outdated</b> OpenPype version <b>{}</b>."
+                    "Using <b>outdated</b> QuadPype version <b>{}</b>."
                     " Expected version is <b>{}</b>."
                     "<br/>- Please restart event server for automatic"
                     " updates or update manually."
                 ).format(
-                    str(get_openpype_version()),
+                    str(get_quadpype_version()),
                     str(get_expected_version())
                 )
             })
@@ -261,8 +261,8 @@ class StatusFactory:
             "value": (
                 "Local versions dir: {}<br/>Version repository path: {}"
             ).format(
-                appdirs.user_data_dir("openpype", "pypeclub"),
-                os.environ.get("OPENPYPE_PATH")
+                appdirs.user_data_dir("quadpype", "quad"),
+                os.environ.get("QUADPYPE_PATH")
             )
         })
         items.append({"type": "label", "value": "---"})
@@ -271,7 +271,7 @@ class StatusFactory:
 
     def items(self):
         items = []
-        items.extend(self.openpype_version_items())
+        items.extend(self.quadpype_version_items())
         items.append(self.note_item)
         items.extend(self.bool_items())
 
@@ -296,7 +296,7 @@ def server_activity_validate_user(event):
     if not user_ent:
         return False
 
-    role_list = {"pypeclub", "administrator"}
+    role_list = {"quad", "administrator"}
     for role in user_ent["user_security_roles"]:
         if role["security_role"]["name"].lower() in role_list:
             return True
@@ -390,7 +390,7 @@ def register(session):
         "topic=ftrack.action.discover",
         server_activity_discover
     )
-    session.event_hub.subscribe("topic=openpype.status.started", on_start)
+    session.event_hub.subscribe("topic=quadpype.status.started", on_start)
 
     status_launch_subscription = (
         "topic=ftrack.action.launch and data.actionIdentifier={}"

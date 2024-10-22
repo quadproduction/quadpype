@@ -47,18 +47,18 @@ from maya import cmds
 
 import pyblish.api
 
-from openpype.settings import (
+from quadpype.settings import (
     MODULES_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     SYSTEM_SETTINGS_KEY
 )
-from openpype.pipeline import KnownPublishError
-from openpype.lib import get_formatted_current_time
-from openpype.hosts.maya.api.lib_renderproducts import (
+from quadpype.pipeline import KnownPublishError
+from quadpype.lib import get_formatted_current_time
+from quadpype.hosts.maya.api.lib_renderproducts import (
     get as get_layer_render_products,
     UnsupportedRendererException
 )
-from openpype.hosts.maya.api import lib
+from quadpype.hosts.maya.api import lib
 
 
 class CollectMayaRender(pyblish.api.InstancePlugin):

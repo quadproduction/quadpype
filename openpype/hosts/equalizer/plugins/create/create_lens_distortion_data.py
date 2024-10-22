@@ -1,8 +1,8 @@
-from openpype.hosts.equalizer.api import EqualizerCreator
+from quadpype.hosts.equalizer.api import EqualizerCreator
 
 
 class CreateLensDistortionData(EqualizerCreator):
-    identifier = "io.openpype.creators.equalizer.lens_distortion"
+    identifier = "io.quadpype.creators.equalizer.lens_distortion"
     label = "Lens Distortion"
     family = "lensDistortion"
     icon = "glasses"

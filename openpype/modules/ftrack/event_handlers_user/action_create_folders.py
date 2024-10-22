@@ -1,8 +1,8 @@
 import os
 import collections
 import copy
-from openpype.pipeline import Anatomy
-from openpype_modules.ftrack.lib import BaseAction, statics_icon
+from quadpype.pipeline import Anatomy
+from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 
 
 class CreateFolders(BaseAction):

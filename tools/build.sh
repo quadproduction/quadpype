@@ -2,27 +2,6 @@
 
 # Build Pype using existing virtual environment.
 
-
-art () {
-  cat <<-EOF
-
-             . .   ..     .    ..
-        _oOOP3OPP3Op_. .
-     .PPpo~·   ··   ~2p.  ··  ····  ·  ·
-    ·Ppo · .pPO3Op.· · O:· · · ·
-   .3Pp · oP3'· 'P33· · 4 ··   ·  ·   · ·· ·  ·  ·
-  ·~OP    3PO·  .Op3    : · ··  _____  _____  _____
-  ·P3O  · oP3oP3O3P' · · ·   · /    /·/    /·/    /
-   O3:·   O3p~ ·       ·:· · ·/____/·/____/ /____/
-   'P ·   3p3·  oP3~· ·.P:· ·  · ··  ·   · ·· ·  ·  ·
-  · ':  · Po'  ·Opo'· .3O· .  o[ by Pype Club ]]]==- - - ·  ·
-    · '_ ..  ·    . _OP3··  ·  ·https://openpype.io·· ·
-         ~P3·OPPPO3OP~ · ··  ·
-           ·  ' '· ·  ·· · · · ··  ·
-
-EOF
-}
-
 # Colors for terminal
 
 RST='\033[0m'             # Text Reset
@@ -121,7 +100,7 @@ detect_python () {
 ###############################################################################
 clean_pyc () {
   local path
-  path=$openpype_root
+  path=$quadpype_root
   echo -e "${BIGreen}>>>${RST} Cleaning pyc at [ ${BIWhite}$path${RST} ] ... \c"
   find "$path" -path ./build -o -regex '^.*\(__pycache__\|\.py[co]\)$' -delete
 
@@ -143,28 +122,25 @@ realpath () {
 
 # Main
 main () {
-  echo -e "${BGreen}"
-  art
-  echo -e "${RST}"
   detect_python || return 1
 
   # Directories
-  openpype_root=$(dirname $(dirname "$(realpath ${BASH_SOURCE[0]})"))
-  pushd "$openpype_root" > /dev/null || return > /dev/null
+  quadpype_root=$(dirname $(dirname "$(realpath ${BASH_SOURCE[0]})"))
+  pushd "$quadpype_root" > /dev/null || return > /dev/null
 
-  version_command="import os;import re;version={};exec(open(os.path.join('$openpype_root', 'openpype', 'version.py')).read(), version);print(re.search(r'(\d+\.\d+.\d+).*', version['__version__'])[1]);"
-  openpype_version="$(python <<< ${version_command})"
+  version_command="import os;import re;version={};exec(open(os.path.join('$quadpype_root', 'quadpype', 'version.py')).read(), version);print(re.search(r'(\d+\.\d+.\d+).*', version['__version__'])[1]);"
+  quadpype_version="$(python <<< ${version_command})"
 
-  _inside_openpype_tool="1"
+  _inside_quadpype_tool="1"
 
   if [[ -z $POETRY_HOME ]]; then
-    export POETRY_HOME="$openpype_root/.poetry"
+    export POETRY_HOME="$quadpype_root/.poetry"
   fi
 
   echo -e "${BIYellow}---${RST} Cleaning build directory ..."
-  rm -rf "$openpype_root/build" && mkdir "$openpype_root/build" > /dev/null
+  rm -rf "$quadpype_root/build" && mkdir "$quadpype_root/build" > /dev/null
 
-  echo -e "${BIGreen}>>>${RST} Building OpenPype ${BIWhite}[${RST} ${BIGreen}$openpype_version${RST} ${BIWhite}]${RST}"
+  echo -e "${BIGreen}>>>${RST} Building QuadPype ${BIWhite}[${RST} ${BIGreen}$quadpype_version${RST} ${BIWhite}]${RST}"
   echo -e "${BIGreen}>>>${RST} Cleaning cache files ..."
   clean_pyc
 
@@ -174,7 +150,7 @@ main () {
   else
     echo -e "${BIYellow}NOT FOUND${RST}"
     echo -e "${BIYellow}***${RST} We need to install Poetry and virtual env ..."
-    . "$openpype_root/tools/create_env.sh" || { echo -e "${BIRed}!!!${RST} Poetry installation failed"; return 1; }
+    . "$quadpype_root/tools/create_env.sh" || { echo -e "${BIRed}!!!${RST} Poetry installation failed"; return 1; }
   fi
 
 if [ "$disable_submodule_update" == 1 ]; then
@@ -185,34 +161,34 @@ if [ "$disable_submodule_update" == 1 ]; then
   fi
   echo -e "${BIGreen}>>>${RST} Building ..."
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    "$POETRY_HOME/bin/poetry" run python "$openpype_root/setup.py" build &> "$openpype_root/build/build.log" || { echo -e "${BIRed}------------------------------------------${RST}"; cat "$openpype_root/build/build.log"; echo -e "${BIRed}------------------------------------------${RST}"; echo -e "${BIRed}!!!${RST} Build failed, see the build log."; return 1; }
+    "$POETRY_HOME/bin/poetry" run python "$quadpype_root/setup.py" build &> "$quadpype_root/build/build.log" || { echo -e "${BIRed}------------------------------------------${RST}"; cat "$quadpype_root/build/build.log"; echo -e "${BIRed}------------------------------------------${RST}"; echo -e "${BIRed}!!!${RST} Build failed, see the build log."; return 1; }
   elif [[ "$OSTYPE" == "darwin"* ]]; then
-    "$POETRY_HOME/bin/poetry" run python "$openpype_root/setup.py" bdist_mac &> "$openpype_root/build/build.log" || { echo -e "${BIRed}------------------------------------------${RST}"; cat "$openpype_root/build/build.log"; echo -e "${BIRed}------------------------------------------${RST}"; echo -e "${BIRed}!!!${RST} Build failed, see the build log."; return 1; }
+    "$POETRY_HOME/bin/poetry" run python "$quadpype_root/setup.py" bdist_mac &> "$quadpype_root/build/build.log" || { echo -e "${BIRed}------------------------------------------${RST}"; cat "$quadpype_root/build/build.log"; echo -e "${BIRed}------------------------------------------${RST}"; echo -e "${BIRed}!!!${RST} Build failed, see the build log."; return 1; }
   fi
-  "$POETRY_HOME/bin/poetry" run python "$openpype_root/tools/build_dependencies.py" || { echo -e "${BIRed}!!!>${RST} ${BIYellow}Failed to process dependencies${RST}"; return 1; }
+  "$POETRY_HOME/bin/poetry" run python "$quadpype_root/tools/build_dependencies.py" || { echo -e "${BIRed}!!!>${RST} ${BIYellow}Failed to process dependencies${RST}"; return 1; }
 
   if [[ "$OSTYPE" == "darwin"* ]]; then
     # fix cx_Freeze libs issue
     echo -e "${BIGreen}>>>${RST} Fixing libs ..."
-    mv "$openpype_root/build/OpenPype $openpype_version.app/Contents/MacOS/dependencies/cx_Freeze" "$openpype_root/build/OpenPype $openpype_version.app/Contents/MacOS/lib/"  || { echo -e "${BIRed}!!!>${RST} ${BIYellow}Can't move cx_Freeze libs${RST}"; return 1; }
+    mv "$quadpype_root/build/QuadPype $quadpype_version.app/Contents/MacOS/dependencies/cx_Freeze" "$quadpype_root/build/QuadPype $quadpype_version.app/Contents/MacOS/lib/"  || { echo -e "${BIRed}!!!>${RST} ${BIYellow}Can't move cx_Freeze libs${RST}"; return 1; }
 
     # force hide icon from Dock
-    defaults write "$openpype_root/build/OpenPype $openpype_version.app/Contents/Info" LSUIElement 1
+    defaults write "$quadpype_root/build/QuadPype $quadpype_version.app/Contents/Info" LSUIElement 1
 
     # fix code signing issue
     echo -e "${BIGreen}>>>${RST} Fixing code signatures ...\c"
-    codesign --remove-signature "$openpype_root/build/OpenPype $openpype_version.app/Contents/MacOS/openpype_console" || { echo -e "${BIRed}FAILED${RST}"; return 1; }
-    codesign --remove-signature "$openpype_root/build/OpenPype $openpype_version.app/Contents/MacOS/openpype_gui" || { echo -e "${BIRed}FAILED${RST}"; return 1; }
+    codesign --remove-signature "$quadpype_root/build/QuadPype $quadpype_version.app/Contents/MacOS/quadpype_console" || { echo -e "${BIRed}FAILED${RST}"; return 1; }
+    codesign --remove-signature "$quadpype_root/build/QuadPype $quadpype_version.app/Contents/MacOS/quadpype_gui" || { echo -e "${BIRed}FAILED${RST}"; return 1; }
     echo -e "${BIGreen}DONE${RST}"
     if command -v create-dmg > /dev/null 2>&1; then
       echo -e "${BIGreen}>>>${RST} Creating dmg image ...\c"
       create-dmg \
-        --volname "OpenPype $openpype_version Installer" \
+        --volname "QuadPype $quadpype_version Installer" \
         --window-pos 200 120 \
         --window-size 600 300 \
         --app-drop-link 100 50 \
-        "$openpype_root/build/OpenPype-Installer-$openpype_version.dmg" \
-        "$openpype_root/build/OpenPype $openpype_version.app"
+        "$quadpype_root/build/QuadPype-Installer-$quadpype_version.dmg" \
+        "$quadpype_root/build/QuadPype $quadpype_version.app"
 
       test $? -eq 0 || { echo -e "${BIRed}FAILED${RST}"; return 1; }
       echo -e "${BIGreen}DONE${RST}"
@@ -221,8 +197,8 @@ if [ "$disable_submodule_update" == 1 ]; then
     fi
   fi
 
-  echo -e "${BICyan}>>>${RST} All done. You will find OpenPype and build log in \c"
-  echo -e "${BIWhite}$openpype_root/build${RST} directory."
+  echo -e "${BICyan}>>>${RST} All done. You will find QuadPype and build log in \c"
+  echo -e "${BIWhite}$quadpype_root/build${RST} directory."
 }
 
 return_code=0

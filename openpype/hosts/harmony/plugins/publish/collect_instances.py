@@ -3,7 +3,7 @@
 import json
 
 import pyblish.api
-import openpype.hosts.harmony.api as harmony
+import quadpype.hosts.harmony.api as harmony
 
 
 class CollectInstances(pyblish.api.ContextPlugin):
