@@ -8,7 +8,6 @@ from datetime import datetime
 import requests
 import pyblish.api
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.pipeline import legacy_io
 from openpype.pipeline.publish import (
     OpenPypePyblishPluginMixin
@@ -476,11 +475,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
                 environment[_path] = os.environ[_path]
 
         # to recognize render jobs
-        if AYON_SERVER_ENABLED:
-            environment["AYON_BUNDLE_NAME"] = os.environ["AYON_BUNDLE_NAME"]
-            render_job_label = "AYON_RENDER_JOB"
-        else:
-            render_job_label = "OPENPYPE_RENDER_JOB"
+        render_job_label = "OPENPYPE_RENDER_JOB"
 
         environment[render_job_label] = "1"
 

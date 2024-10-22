@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 
 import pyblish.api
-from openpype import AYON_SERVER_ENABLED
 import openpype.hosts.maya.api.action
 from openpype.pipeline.publish import (
     RepairAction,
@@ -67,10 +66,7 @@ class ValidateInstanceInContext(pyblish.api.InstancePlugin,
     def repair(cls, instance):
         context_asset = cls.get_context_asset(instance)
         instance_node = instance.data["instance_node"]
-        if AYON_SERVER_ENABLED:
-            asset_name_attr = "folderPath"
-        else:
-            asset_name_attr = "asset"
+        asset_name_attr = "asset"
         cmds.setAttr(
             "{}.{}".format(instance_node, asset_name_attr),
             context_asset,

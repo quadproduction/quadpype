@@ -6,7 +6,6 @@ from typing import Dict, List, Optional
 
 import bpy
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.pipeline import (
     Creator,
     CreatedInstance,
@@ -231,10 +230,7 @@ class BaseCreator(Creator):
             bpy.context.scene.collection.children.link(instances)
 
         # Create asset group
-        if AYON_SERVER_ENABLED:
-            asset_name = instance_data["folderPath"].split("/")[-1]
-        else:
-            asset_name = instance_data["asset"]
+        asset_name = instance_data["asset"]
 
         name = prepare_scene_name(asset_name, subset_name)
         if self.create_as_asset_group:
@@ -295,10 +291,7 @@ class BaseCreator(Creator):
                 and their changes, as a list of tuples.
         """
 
-        if AYON_SERVER_ENABLED:
-            asset_name_key = "folderPath"
-        else:
-            asset_name_key = "asset"
+        asset_name_key = "asset"
 
         for created_instance, changes in update_list:
             data = created_instance.data_to_store()
@@ -319,8 +312,6 @@ class BaseCreator(Creator):
                 or asset_name_key in changes.changed_keys
             ) and created_instance.family != "workfile":
                 asset_name = data[asset_name_key]
-                if AYON_SERVER_ENABLED:
-                    asset_name = asset_name.split("/")[-1]
                 name = prepare_scene_name(
                     asset=asset_name, subset=data["subset"]
                 )

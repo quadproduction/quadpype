@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating workfiles."""
-from openpype import AYON_SERVER_ENABLED
 from openpype.pipeline import CreatedInstance, AutoCreator
 from openpype.client import get_asset_by_name, get_asset_name_identifier
 from openpype.hosts.maya.api import plugin
@@ -32,8 +31,6 @@ class CreateWorkfile(plugin.MayaCreatorBase, AutoCreator):
 
         if current_instance is None:
             current_instance_asset = None
-        elif AYON_SERVER_ENABLED:
-            current_instance_asset = current_instance["folderPath"]
         else:
             current_instance_asset = current_instance["asset"]
 
@@ -46,10 +43,7 @@ class CreateWorkfile(plugin.MayaCreatorBase, AutoCreator):
                 "task": task_name,
                 "variant": variant
             }
-            if AYON_SERVER_ENABLED:
-                data["folderPath"] = asset_name
-            else:
-                data["asset"] = asset_name
+            data["asset"] = asset_name
 
             data.update(
                 self.get_dynamic_data(
@@ -72,10 +66,7 @@ class CreateWorkfile(plugin.MayaCreatorBase, AutoCreator):
             )
             asset_name = get_asset_name_identifier(asset_doc)
 
-            if AYON_SERVER_ENABLED:
-                current_instance["folderPath"] = asset_name
-            else:
-                current_instance["asset"] = asset_name
+            current_instance["asset"] = asset_name
             current_instance["task"] = task_name
             current_instance["subset"] = subset_name
 

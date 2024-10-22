@@ -31,7 +31,6 @@ except ImportError:
 import six
 import appdirs
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.settings import (
     get_local_settings,
     get_system_settings
@@ -497,14 +496,9 @@ class OpenPypeSettingsRegistry(JSONSettingRegistry):
     """
 
     def __init__(self, name=None):
-        if AYON_SERVER_ENABLED:
-            vendor = "Ynput"
-            product = "AYON"
-            default_name = "AYON_settings"
-        else:
-            vendor = "pypeclub"
-            product = "openpype"
-            default_name = "openpype_settings"
+        vendor = "pypeclub"
+        product = "openpype"
+        default_name = "openpype_settings"
         self.vendor = vendor
         self.product = product
         if not name:
@@ -574,9 +568,6 @@ def get_local_site_id():
     Identifier is created if does not exists yet.
     """
 
-    if AYON_SERVER_ENABLED:
-        return _get_ayon_local_site_id()
-
     # override local id from environment
     # used for background syncing
     if os.environ.get("OPENPYPE_LOCAL_ID"):
@@ -610,16 +601,12 @@ def get_openpype_username():
 
     May be different than machine's username.
 
-    Always returns "OPENPYPE_USERNAME" environment if is set then tries local
+    Always returns "QUADPYPE_USERNAME" environment if is set then tries local
     settings and last option is to use `getpass.getuser()` which returns
     machine username.
     """
 
-    if AYON_SERVER_ENABLED:
-        con = get_ayon_server_api_connection()
-        return con.get_user()["name"]
-
-    username = os.environ.get("OPENPYPE_USERNAME")
+    username = os.environ.get("QUADPYPE_USERNAME")
     if not username:
         local_settings = get_local_settings()
         username = (

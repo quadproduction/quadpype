@@ -5,7 +5,6 @@ from ayon_api import (
 )
 from maya import cmds  # noqa: F401
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.client import get_assets
 from openpype.hosts.maya.api import plugin
 from openpype.lib import BoolDef, EnumDef, TextDef
@@ -210,6 +209,4 @@ class CreateMultishotLayout(plugin.MayaCreator):
         )
 
 
-# blast this creator if Ayon server is not enabled
-if not AYON_SERVER_ENABLED:
-    del CreateMultishotLayout
+del CreateMultishotLayout

@@ -5,7 +5,6 @@ import sys
 import code
 import click
 
-from openpype import AYON_SERVER_ENABLED
 from .pype_commands import PypeCommands
 
 
@@ -47,10 +46,7 @@ def main(ctx):
 
     if ctx.invoked_subcommand is None:
         # Print help if headless mode is used
-        if AYON_SERVER_ENABLED:
-            is_headless = os.getenv("AYON_HEADLESS_MODE") == "1"
-        else:
-            is_headless = os.getenv("OPENPYPE_HEADLESS_MODE") == "1"
+        is_headless = os.getenv("OPENPYPE_HEADLESS_MODE") == "1"
         if is_headless:
             print(ctx.get_help())
             sys.exit(0)
@@ -62,9 +58,6 @@ def main(ctx):
 @click.option("-d", "--dev", is_flag=True, help="Settings in Dev mode")
 def settings(dev):
     """Show Pype Settings UI."""
-
-    if AYON_SERVER_ENABLED:
-        raise RuntimeError("AYON does not support 'settings' command.")
     PypeCommands().launch_settings_gui(dev)
 
 
@@ -117,9 +110,6 @@ def eventserver(ftrack_url,
     This should be ideally used by system service (such us systemd or upstart
     on linux and window service).
     """
-
-    if AYON_SERVER_ENABLED:
-        raise RuntimeError("AYON does not support 'eventserver' command.")
     PypeCommands().launch_eventservercli(
         ftrack_url,
         ftrack_user,
@@ -143,11 +133,6 @@ def webpublisherwebserver(executable, upload_dir, host=None, port=None):
 
         Expect "pype.club" user created on Ftrack.
     """
-
-    if AYON_SERVER_ENABLED:
-        raise RuntimeError(
-            "AYON does not support 'webpublisherwebserver' command."
-        )
     PypeCommands().launch_webpublisher_webservercli(
         upload_dir=upload_dir,
         executable=executable,
@@ -198,8 +183,6 @@ def publish(paths, targets, gui):
 
 @main.command(context_settings={"ignore_unknown_options": True})
 def projectmanager():
-    if AYON_SERVER_ENABLED:
-        raise RuntimeError("AYON does not support 'projectmanager' command.")
     PypeCommands().launch_project_manager()
 
 
@@ -332,9 +315,6 @@ def syncserver(ctx, active_site):
         var OPENPYPE_LOCAL_ID set to 'active_site'.
     """
 
-    if AYON_SERVER_ENABLED:
-        raise RuntimeError("AYON does not support 'syncserver' command.")
-
     from openpype.modules.sync_server.sync_server_module import (
         syncservice)
     ctx.invoke(syncservice, active_site=active_site)
@@ -349,8 +329,6 @@ def repack_version(directory):
     recalculating file checksums. It will try to use version detected in
     directory name.
     """
-    if AYON_SERVER_ENABLED:
-        raise RuntimeError("AYON does not support 'repack-version' command.")
     PypeCommands().repack_version(directory)
 
 
@@ -362,9 +340,6 @@ def repack_version(directory):
     "--dbonly", help="Store only Database data", default=False, is_flag=True)
 def pack_project(project, dirpath, dbonly):
     """Create a package of project with all files and database dump."""
-
-    if AYON_SERVER_ENABLED:
-        raise RuntimeError("AYON does not support 'pack-project' command.")
     PypeCommands().pack_project(project, dirpath, dbonly)
 
 
@@ -377,8 +352,6 @@ def pack_project(project, dirpath, dbonly):
     "--dbonly", help="Store only Database data", default=False, is_flag=True)
 def unpack_project(zipfile, root, dbonly):
     """Create a package of project with all files and database dump."""
-    if AYON_SERVER_ENABLED:
-        raise RuntimeError("AYON does not support 'unpack-project' command.")
     PypeCommands().unpack_project(zipfile, root, dbonly)
 
 
@@ -392,18 +365,11 @@ def interactive():
     Warning:
         Executable 'openpype_gui' on Windows won't work.
     """
+    from openpype.version import __version__
 
-    if AYON_SERVER_ENABLED:
-        version = os.environ["AYON_VERSION"]
-        banner = (
-            f"AYON launcher {version}\nPython {sys.version} on {sys.platform}"
-        )
-    else:
-        from openpype.version import __version__
-
-        banner = (
-            f"OpenPype {__version__}\nPython {sys.version} on {sys.platform}"
-        )
+    banner = (
+        f"QuadPype {__version__}\nPython {sys.version} on {sys.platform}"
+    )
     code.interact(banner)
 
 
@@ -411,11 +377,7 @@ def interactive():
 @click.option("--build", help="Print only build version",
               is_flag=True, default=False)
 def version(build):
-    """Print OpenPype version."""
-    if AYON_SERVER_ENABLED:
-        print(os.environ["AYON_VERSION"])
-        return
-
+    """Print QuadPype version."""
     from openpype.version import __version__
     from igniter.bootstrap_repos import BootstrapRepos, OpenPypeVersion
     from pathlib import Path

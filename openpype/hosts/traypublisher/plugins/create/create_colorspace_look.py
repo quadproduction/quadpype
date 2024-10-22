@@ -6,7 +6,6 @@ production type `ociolook`. All files are published as representation.
 """
 from pathlib import Path
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.client import get_asset_by_name
 from openpype.lib.attribute_definitions import (
     FileDef, EnumDef, TextDef, UISeparatorDef
@@ -55,10 +54,7 @@ This creator publishes color space look file (LUT).
             # this should never happen
             raise CreatorError("Missing files from representation")
 
-        if AYON_SERVER_ENABLED:
-            asset_name = instance_data["folderPath"]
-        else:
-            asset_name = instance_data["asset"]
+        asset_name = instance_data["asset"]
         asset_doc = get_asset_by_name(
             self.project_name, asset_name)
 

@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 
 import pyblish.api
-from openpype import AYON_SERVER_ENABLED
 from openpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
@@ -39,7 +38,7 @@ class ValidateInstanceInContext(pyblish.api.InstancePlugin,
             "instance_node", ""))
         if not instance_node:
             return
-        asset_name_attr = "folderPath" if AYON_SERVER_ENABLED else "asset"
+        asset_name_attr = "asset"
         asset = rt.getUserProp(instance_node, asset_name_attr)
         context_asset = self.get_context_asset(instance)
         task = rt.getUserProp(instance_node, "task")
@@ -83,7 +82,7 @@ class ValidateInstanceInContext(pyblish.api.InstancePlugin,
 
     @classmethod
     def get_invalid(cls, instance):
-        asset_name_attr = "folderPath" if AYON_SERVER_ENABLED else "asset"
+        asset_name_attr = "asset"
         node = rt.getNodeByName(instance.data["instance_node"])
         asset = rt.getUserProp(node, asset_name_attr)
         context_asset = cls.get_context_asset(instance)
@@ -98,7 +97,7 @@ class ValidateInstanceInContext(pyblish.api.InstancePlugin,
             "instance_node", ""))
         if not instance_node:
             return
-        asset_name_attr = "folderPath" if AYON_SERVER_ENABLED else "asset"
+        asset_name_attr = "asset"
         rt.SetUserProp(instance_node, asset_name_attr, context_asset)
         rt.SetUserProp(instance_node, "task", context_task)
 

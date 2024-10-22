@@ -13,7 +13,6 @@ import six
 import arrow
 import pyblish.api
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.client import (
     get_assets,
     get_asset_by_id,
@@ -76,8 +75,6 @@ class AssetDocsCache:
         "data.visualParent": True,
         "data.tasks": True
     }
-    if AYON_SERVER_ENABLED:
-        projection["data.parents"] = True
 
     def __init__(self, controller):
         self._controller = controller

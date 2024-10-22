@@ -1,6 +1,5 @@
 import os
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.modules import OpenPypeModule, ITrayAction
 from openpype.settings import get_system_settings
 
@@ -18,8 +17,6 @@ class UpdateZXPExtensionsAction(OpenPypeModule, ITrayAction):
 
     def initialize(self, _modules_settings):
         self.enabled = True
-        if AYON_SERVER_ENABLED:
-            self.enabled = False
         if os.getenv("OPENPYPE_IGNORE_ZXP_UPDATE"):
             self.enabled = False
 

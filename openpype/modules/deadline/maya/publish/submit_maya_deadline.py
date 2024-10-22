@@ -229,7 +229,7 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
 
         # to recognize render jobs
         job_info.add_render_job_env_var()
-        job_info.EnvironmentKeyValue["OPENPYPE_LOG_NO_COLORS"] = "1"
+        job_info.EnvironmentKeyValue["QUADPYPE_LOG_NO_COLORS"] = "1"
 
         # Adding file dependencies.
         if self.asset_dependencies:

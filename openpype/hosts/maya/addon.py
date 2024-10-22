@@ -29,7 +29,7 @@ class MayaAddon(OpenPypeModule, IHostAddon):
 
         # Set default environments
         envs = {
-            "OPENPYPE_LOG_NO_COLORS": "Yes",
+            "QUADPYPE_LOG_NO_COLORS": "Yes",
             # For python module 'qtpy'
             "QT_API": "PySide2",
             # For python module 'Qt'

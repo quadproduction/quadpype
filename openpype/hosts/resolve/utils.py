@@ -2,7 +2,6 @@ import os
 import shutil
 from openpype.lib import Logger, is_running_from_build
 
-from openpype import AYON_SERVER_ENABLED
 RESOLVE_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -56,12 +55,8 @@ def setup(env):
             dst = os.path.join(util_scripts_dir, script)
 
             # TODO: remove this once we have a proper solution
-            if AYON_SERVER_ENABLED:
-                if "OpenPype__Menu.py" == script:
-                    continue
-            else:
-                if "AYON__Menu.py" == script:
-                    continue
+            if "QUADPYPE__Menu.py" == script:
+                continue
 
             # TODO: Make this a less hacky workaround
             if script == "openpype_startup.scriptlib":

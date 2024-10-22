@@ -18,7 +18,6 @@ from abc import ABCMeta, abstractmethod
 import six
 import appdirs
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.client import get_ayon_server_api_connection
 from openpype.settings import (
     get_system_settings,
@@ -212,8 +211,6 @@ def get_dynamic_modules_dirs():
     """
 
     output = []
-    if AYON_SERVER_ENABLED:
-        return output
 
     value = get_studio_system_settings_overrides()
     for key in (MODULES_SETTINGS_KEY, "addon_paths", platform.system().lower()):
@@ -526,10 +523,6 @@ def _load_modules():
     log = Logger.get_logger("ModulesLoader")
 
     ignore_addon_names = []
-    if AYON_SERVER_ENABLED:
-        ignore_addon_names = _load_ayon_addons(
-            openpype_modules, modules_key, log
-        )
 
     # Look for OpenPype modules in paths defined with `get_module_dirs`
     #   - dynamically imported OpenPype modules and addons
@@ -548,8 +541,6 @@ def _load_modules():
 
     ignored_host_names = set(IGNORED_HOSTS_IN_AYON)
     ignored_current_dir_filenames = set(IGNORED_DEFAULT_FILENAMES)
-    if AYON_SERVER_ENABLED:
-        ignored_current_dir_filenames |= IGNORED_FILENAMES_IN_AYON
 
     processed_paths = set()
     for dirpath in frozenset(module_dirs):
@@ -884,20 +875,13 @@ class ModulesManager:
 
         import openpype_modules
 
-        self.log.debug("*** {} initialization.".format(
-            "AYON addons"
-            if AYON_SERVER_ENABLED
-            else "OpenPype modules"
-        ))
+        self.log.debug("*** {} initialization.".format("OpenPype modules"))
         # Prepare settings for modules
         system_settings = self._system_settings
         if system_settings is None:
             system_settings = get_system_settings()
 
         ayon_settings = self._ayon_settings
-        if AYON_SERVER_ENABLED and ayon_settings is None:
-            ayon_settings = get_ayon_settings()
-
         modules_settings = system_settings[MODULES_SETTINGS_KEY]
 
         report = {}

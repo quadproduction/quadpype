@@ -1,7 +1,6 @@
 import pyblish.api
 from pprint import pformat
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.pipeline import get_current_asset_name
 
 from openpype.hosts.resolve import api as rapi
@@ -16,9 +15,6 @@ class PrecollectWorkfile(pyblish.api.ContextPlugin):
 
     def process(self, context):
         current_asset_name = asset_name = get_current_asset_name()
-
-        if AYON_SERVER_ENABLED:
-            asset_name = current_asset_name.split("/")[-1]
 
         subset = "workfileMain"
         project = rapi.get_current_project()

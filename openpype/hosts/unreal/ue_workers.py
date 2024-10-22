@@ -324,7 +324,7 @@ class UEPluginInstallWorker(UEWorker):
 
     def _build_and_move_plugin(self, plugin_build_path: Path):
         uat_path: Path = ue_lib.get_path_to_uat(self.engine_path)
-        src_plugin_dir = Path(self.env.get("AYON_UNREAL_PLUGIN", ""))
+        src_plugin_dir = Path(self.env.get("QUADPYPE_UNREAL_PLUGIN", ""))
 
         if not os.path.isdir(src_plugin_dir):
             msg = "Path to the integration plugin is null!"
@@ -385,7 +385,7 @@ class UEPluginInstallWorker(UEWorker):
         dir_util.remove_tree(temp_dir.as_posix())
 
     def execute(self):
-        src_plugin_dir = Path(self.env.get("AYON_UNREAL_PLUGIN", ""))
+        src_plugin_dir = Path(self.env.get("QUADPYPE_UNREAL_PLUGIN", ""))
 
         if not os.path.isdir(src_plugin_dir):
             msg = "Path to the integration plugin is null!"

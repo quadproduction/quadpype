@@ -1,6 +1,5 @@
 import re
 
-from openpype import AYON_SERVER_ENABLED
 import openpype.hosts.photoshop.api as api
 from openpype.client import get_asset_by_name
 from openpype.lib import prepare_template_data
@@ -47,8 +46,6 @@ class PSAutoCreator(AutoCreator):
 
         if existing_instance is None:
             existing_instance_asset = None
-        elif AYON_SERVER_ENABLED:
-            existing_instance_asset = existing_instance["folderPath"]
         else:
             existing_instance_asset = existing_instance["asset"]
 
@@ -62,10 +59,7 @@ class PSAutoCreator(AutoCreator):
                 "task": task_name,
                 "variant": self.default_variant
             }
-            if AYON_SERVER_ENABLED:
-                data["folderPath"] = asset_name
-            else:
-                data["asset"] = asset_name
+            data["asset"] = asset_name
             data.update(self.get_dynamic_data(
                 self.default_variant, task_name, asset_doc,
                 project_name, host_name, None
@@ -90,10 +84,7 @@ class PSAutoCreator(AutoCreator):
                 self.default_variant, task_name, asset_doc,
                 project_name, host_name
             )
-            if AYON_SERVER_ENABLED:
-                existing_instance["folderPath"] = asset_name
-            else:
-                existing_instance["asset"] = asset_name
+            existing_instance["asset"] = asset_name
             existing_instance["task"] = task_name
             existing_instance["subset"] = subset_name
 

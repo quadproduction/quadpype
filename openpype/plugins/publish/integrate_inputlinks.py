@@ -3,7 +3,6 @@ from collections import OrderedDict
 from bson.objectid import ObjectId
 import pyblish.api
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.pipeline import legacy_io
 
 
@@ -137,5 +136,4 @@ class IntegrateInputLinks(pyblish.api.ContextPlugin):
             )
 
 
-if AYON_SERVER_ENABLED:
-    del IntegrateInputLinks
+del IntegrateInputLinks

@@ -1,7 +1,6 @@
 import pyblish.api
 import ayon_api
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.client.operations import OperationsSession
 
 
@@ -89,5 +88,4 @@ class IntegrateVersionAttributes(pyblish.api.ContextPlugin):
 
 
 # Discover the plugin only in AYON mode
-if not AYON_SERVER_ENABLED:
-    del IntegrateVersionAttributes
+del IntegrateVersionAttributes

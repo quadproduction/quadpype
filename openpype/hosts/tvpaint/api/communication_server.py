@@ -836,7 +836,7 @@ class BaseCommunicator:
 class QtCommunicator(BaseCommunicator):
     label = os.getenv("AVALON_LABEL")
     if not label:
-        label = "AYON" if AYON_SERVER_ENABLED else "OpenPype"
+        label = "QuadPype"
     title = "{} Tools".format(label)
     menu_definitions = {
         "title": title,

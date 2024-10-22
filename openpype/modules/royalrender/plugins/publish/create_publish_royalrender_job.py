@@ -71,7 +71,7 @@ class CreatePublishRoyalRenderJob(pyblish.api.InstancePlugin,
         "FTRACK_API_KEY",
         "FTRACK_SERVER",
         "AVALON_APP_NAME",
-        "OPENPYPE_USERNAME",
+        "QUADPYPE_USERNAME",
         "OPENPYPE_SG_USER",
         "AYON_BUNDLE_NAME"
     ]
@@ -191,7 +191,7 @@ class CreatePublishRoyalRenderJob(pyblish.api.InstancePlugin,
             "AVALON_PROJECT": anatomy_data["project"]["name"],
             "AVALON_ASSET": instance.context.data["asset"],
             "AVALON_TASK": anatomy_data["task"]["name"],
-            "OPENPYPE_USERNAME": anatomy_data["user"]
+            "QUADPYPE_USERNAME": anatomy_data["user"]
         })
 
         # add environments from self.environ_keys

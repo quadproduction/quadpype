@@ -5,8 +5,6 @@ import logging
 import platform
 import copy
 
-from openpype import AYON_SERVER_ENABLED
-
 from .exceptions import (
     SaveWarningExc
 )
@@ -87,8 +85,6 @@ def calculate_changes(old_value, new_value):
 
 
 def create_settings_handler():
-    if AYON_SERVER_ENABLED:
-        raise RuntimeError("Mongo settings handler was triggered in AYON mode")
     from .handlers import MongoSettingsHandler
     # Handler can't be created in global space on initialization but only when
     # needed. Plus here may be logic: Which handler is used (in future).
@@ -96,8 +92,6 @@ def create_settings_handler():
 
 
 def create_local_settings_handler():
-    if AYON_SERVER_ENABLED:
-        raise RuntimeError("Mongo settings handler was triggered in AYON mode")
     from .handlers import MongoLocalSettingsHandler
     return MongoLocalSettingsHandler()
 
@@ -533,10 +527,7 @@ def _get_local_settings():
 
 
 def get_local_settings():
-    if not AYON_SERVER_ENABLED:
-        return _get_local_settings()
-    # TODO implement ayon implementation
-    return {}
+    return _get_local_settings()
 
 
 def load_openpype_default_settings():
@@ -1110,10 +1101,7 @@ def _get_global_settings():
 
 
 def get_global_settings():
-    if not AYON_SERVER_ENABLED:
-        return _get_global_settings()
-    default_settings = load_openpype_default_settings()
-    return default_settings[SYSTEM_SETTINGS_KEY][GENERAL_SETTINGS_KEY]
+    return _get_global_settings()
 
 
 def _get_general_environments():
@@ -1146,23 +1134,13 @@ def _get_general_environments():
 
 
 def get_general_environments():
-    if not AYON_SERVER_ENABLED:
-        return _get_general_environments()
-    value = get_system_settings()
-    return value[GENERAL_SETTINGS_KEY]["environment"]
+    return _get_general_environments()
 
 
 def get_system_settings(*args, **kwargs):
-    if not AYON_SERVER_ENABLED:
-        return _get_system_settings(*args, **kwargs)
-
-    default_settings = get_default_settings()[SYSTEM_SETTINGS_KEY]
-    return get_ayon_system_settings(default_settings)
+    return _get_system_settings(*args, **kwargs)
 
 
 def get_project_settings(project_name, *args, **kwargs):
-    if not AYON_SERVER_ENABLED:
-        return _get_project_settings(project_name, *args, **kwargs)
+    return _get_project_settings(project_name, *args, **kwargs)
 
-    default_settings = get_default_settings()[PROJECT_SETTINGS_KEY]
-    return get_ayon_project_settings(default_settings, project_name)

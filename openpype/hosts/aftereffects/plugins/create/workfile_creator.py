@@ -1,4 +1,3 @@
-from openpype import AYON_SERVER_ENABLED
 import openpype.hosts.aftereffects.api as api
 from openpype.client import get_asset_by_name
 from openpype.pipeline import (
@@ -46,8 +45,6 @@ class AEWorkfileCreator(AutoCreator):
 
         existing_asset_name = None
         if existing_instance is not None:
-            if AYON_SERVER_ENABLED:
-                existing_asset_name = existing_instance.get("folderPath")
 
             if existing_asset_name is None:
                 existing_asset_name = existing_instance["asset"]
@@ -63,10 +60,7 @@ class AEWorkfileCreator(AutoCreator):
                 "task": task_name,
                 "variant": self.default_variant
             }
-            if AYON_SERVER_ENABLED:
-                data["folderPath"] = asset_name
-            else:
-                data["asset"] = asset_name
+            data["asset"] = asset_name
             data.update(self.get_dynamic_data(
                 self.default_variant, task_name, asset_doc,
                 project_name, host_name, None

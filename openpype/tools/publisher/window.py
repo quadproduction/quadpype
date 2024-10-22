@@ -9,7 +9,6 @@ from openpype import (
     resources,
     style
 )
-from openpype import AYON_SERVER_ENABLED
 from openpype.widgets import BaseToolDialog
 from openpype.tools.utils import (
     ErrorMessageBox,
@@ -55,9 +54,7 @@ class PublisherWindow(BaseToolDialog):
 
         self.setObjectName("PublishWindow")
 
-        self.setWindowTitle("{} publisher".format(
-            "AYON" if AYON_SERVER_ENABLED else "OpenPype"
-        ))
+        self.setWindowTitle("{} publisher".format("QuadPype"))
 
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)

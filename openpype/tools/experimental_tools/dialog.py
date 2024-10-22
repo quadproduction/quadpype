@@ -1,6 +1,5 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.style import (
     load_stylesheet,
     app_icon_path
@@ -27,7 +26,7 @@ class ExperimentalToolsDialog(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         super(ExperimentalToolsDialog, self).__init__(parent)
-        app_label = "AYON" if AYON_SERVER_ENABLED else "OpenPype"
+        app_label = "QuadPype"
         self.setWindowTitle("{} Experimental tools".format(app_label))
         icon = QtGui.QIcon(app_icon_path())
         self.setWindowIcon(icon)
@@ -115,7 +114,7 @@ class ExperimentalToolsDialog(QtWidgets.QDialog):
         self._window_is_active = False
 
     def refresh(self):
-        app_label = "AYON" if AYON_SERVER_ENABLED else "OpenPype"
+        app_label = "QuadPype"
         self._experimental_tools.refresh_availability()
 
         buttons_to_remove = set(self._buttons_by_tool_identifier.keys())

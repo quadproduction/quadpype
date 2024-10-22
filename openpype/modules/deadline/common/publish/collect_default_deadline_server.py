@@ -2,7 +2,6 @@
 """Collect default Deadline server."""
 import pyblish.api
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.settings import PROJECT_SETTINGS_KEY
 
 
@@ -35,14 +34,11 @@ class CollectDefaultDeadlineServer(pyblish.api.ContextPlugin):
 
         deadline_settings = context.data[PROJECT_SETTINGS_KEY]["deadline"]
         deadline_server_name = None
-        if AYON_SERVER_ENABLED:
-            deadline_server_name = deadline_settings["deadline_server"]
-        else:
-            deadline_servers = deadline_settings["deadline_servers"]
-            if deadline_servers:
-                deadline_server_name = deadline_servers[0]
+        deadline_servers = deadline_settings["deadline_servers"]
+        if deadline_servers:
+            deadline_server_name = deadline_servers[0]
 
-            context.data["deadlinePassMongoUrl"] = self.pass_mongo_url
+        context.data["deadlinePassMongoUrl"] = self.pass_mongo_url
 
         deadline_webservice = None
         if deadline_server_name:

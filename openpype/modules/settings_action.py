@@ -1,7 +1,6 @@
 import getpass
 import openpype.settings.lib as sett_lib
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.modules import OpenPypeModule, ITrayAction
 
 
@@ -26,7 +25,7 @@ class SettingsAction(OpenPypeModule, ITrayAction):
         if admins_doc and username in admins_doc["data"]["usernames"]:
             self.user_role = "administrator"
 
-        if not AYON_SERVER_ENABLED and self.user_role in ["developer", "administrator"]:
+        if self.user_role in ["developer", "administrator"]:
             self.enabled = True
 
     def tray_init(self):
@@ -97,8 +96,6 @@ class LocalSettingsAction(OpenPypeModule, ITrayAction):
     def initialize(self, _modules_settings):
         # This action is always enabled
         self.enabled = True
-        if AYON_SERVER_ENABLED:
-            self.enabled = False
 
     def tray_init(self):
         """Initialization in tray implementation of ITrayAction."""

@@ -2,8 +2,6 @@ from pprint import pformat
 import pyblish.api
 import opentimelineio as otio
 
-from openpype import AYON_SERVER_ENABLED
-
 
 class CollectShotInstance(pyblish.api.InstancePlugin):
     """ Collect shot instances
@@ -135,10 +133,7 @@ class CollectShotInstance(pyblish.api.InstancePlugin):
             "sourceOut": _cr_attrs["sourceOut"],
             "workfileFrameStart": workfile_start_frame
         }
-        if AYON_SERVER_ENABLED:
-            data["asset"] = _cr_attrs["folderPath"]
-        else:
-            data["asset"] = _cr_attrs["shotName"]
+        data["asset"] = _cr_attrs["shotName"]
 
         return data
 
