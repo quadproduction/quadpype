@@ -19,7 +19,7 @@ class UnrealAddon(OpenPypeModule, IHostAddon):
 
     def add_implementation_envs(self, env, app):
         """Modify environments to contain all required for implementation."""
-        # Set AYON_UNREAL_PLUGIN required for Unreal implementation
+        # Set QUADPYPE_UNREAL_PLUGIN required for Unreal implementation
         # Imports are in this method for Python 2 compatiblity of an addon
         from pathlib import Path
 
@@ -53,13 +53,13 @@ class UnrealAddon(OpenPypeModule, IHostAddon):
                 unreal_plugin_path = compatible_versions[-1] / "Ayon"
                 unreal_plugin_path = unreal_plugin_path.as_posix()
 
-        if not env.get("AYON_UNREAL_PLUGIN") or \
-                env.get("AYON_UNREAL_PLUGIN") != unreal_plugin_path:
-            env["AYON_UNREAL_PLUGIN"] = unreal_plugin_path
+        if not env.get("QUADPYPE_UNREAL_PLUGIN") or \
+                env.get("QUADPYPE_UNREAL_PLUGIN") != unreal_plugin_path:
+            env["QUADPYPE_UNREAL_PLUGIN"] = unreal_plugin_path
 
         # Set default environments if are not set via settings
         defaults = {
-            "OPENPYPE_LOG_NO_COLORS": "True",
+            "QUADPYPE_LOG_NO_COLORS": "True",
             "UE_PYTHONPATH": os.environ.get("PYTHONPATH", ""),
         }
         for key, value in defaults.items():

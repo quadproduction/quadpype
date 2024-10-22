@@ -293,7 +293,7 @@ class HarmonySubmitDeadline(
             "AVALON_TASK",
             "AVALON_APP_NAME",
             "OPENPYPE_DEV",
-            "OPENPYPE_LOG_NO_COLORS"
+            "QUADPYPE_LOG_NO_COLORS"
             "IS_TEST"
         ]
 

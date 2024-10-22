@@ -25,7 +25,6 @@ from openpype.lib import (
 from openpype.settings import PROJECT_SETTINGS_KEY, SYSTEM_SETTINGS_KEY
 from openpype.pipeline import legacy_io, publish, KnownPublishError
 from openpype.hosts.maya.api import lib
-from openpype import AYON_SERVER_ENABLED
 
 # Modes for transfer
 COPY = 1
@@ -58,12 +57,6 @@ def find_paths_by_hash(texture_hash):
         str: path to texture if found.
 
     """
-    if AYON_SERVER_ENABLED:
-        raise KnownPublishError(
-            "This is a bug. \"find_paths_by_hash\" is not compatible with "
-            "AYON."
-        )
-
     key = "data.sourceHashes.{0}".format(texture_hash)
     return legacy_io.distinct(key, {"type": "version"})
 

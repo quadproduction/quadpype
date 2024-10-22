@@ -2,7 +2,6 @@ import collections
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.tools.utils import (
     PlaceholderLineEdit,
     RecursiveSortFilterProxyModel,
@@ -33,12 +32,6 @@ class CreateWidgetAssetsWidget(SingleSelectAssetsWidget):
         self._last_filter_height = None
 
     def get_selected_asset_name(self):
-        if AYON_SERVER_ENABLED:
-            selection_model = self._view.selectionModel()
-            indexes = selection_model.selectedRows()
-            for index in indexes:
-                return index.data(ASSET_PATH_ROLE)
-            return None
         return super(CreateWidgetAssetsWidget, self).get_selected_asset_name()
 
     def _check_header_height(self):
@@ -178,9 +171,6 @@ class AssetsHierarchyModel(QtGui.QStandardItemModel):
 
     def get_index_by_asset_name(self, asset_name):
         item = None
-        if AYON_SERVER_ENABLED:
-            item = self._items_by_path.get(asset_name)
-
         if item is None:
             item = self._items_by_name.get(asset_name)
 
@@ -189,8 +179,6 @@ class AssetsHierarchyModel(QtGui.QStandardItemModel):
         return item.index()
 
     def name_is_valid(self, item_name):
-        if AYON_SERVER_ENABLED and item_name in self._items_by_path:
-            return True
         return item_name in self._items_by_name
 
 
@@ -217,8 +205,7 @@ class AssetsDialog(QtWidgets.QDialog):
         proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
 
         filter_input = PlaceholderLineEdit(self)
-        filter_input.setPlaceholderText("Filter {}..".format(
-            "folders" if AYON_SERVER_ENABLED else "assets"))
+        filter_input.setPlaceholderText("Filter {}..".format("assets"))
 
         asset_view = AssetDialogView(self)
         asset_view.setModel(proxy_model)
@@ -325,10 +312,7 @@ class AssetsDialog(QtWidgets.QDialog):
         index = self._asset_view.currentIndex()
         asset_name = None
         if index.isValid():
-            if AYON_SERVER_ENABLED:
-                asset_name = index.data(ASSET_PATH_ROLE)
-            else:
-                asset_name = index.data(ASSET_NAME_ROLE)
+            asset_name = index.data(ASSET_NAME_ROLE)
         self._selected_asset = asset_name
         self.done(1)
 

@@ -117,7 +117,7 @@ class HoudiniCacheSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline
             "AVALON_TASK",
             "AVALON_APP_NAME",
             "OPENPYPE_DEV",
-            "OPENPYPE_LOG_NO_COLORS",
+            "QUADPYPE_LOG_NO_COLORS",
         ]
 
         # Add OpenPype version if we are running from build.

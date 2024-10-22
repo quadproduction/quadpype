@@ -9,7 +9,6 @@ import clique
 
 import pyblish.api
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.client import (
     get_last_version_by_subset_name,
 )
@@ -118,7 +117,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
         "FTRACK_API_KEY",
         "FTRACK_SERVER",
         "AVALON_APP_NAME",
-        "OPENPYPE_USERNAME",
+        "QUADPYPE_USERNAME",
         "OPENPYPE_SG_USER",
         "KITSU_LOGIN",
         "KITSU_PWD"
@@ -190,25 +189,18 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             "AVALON_PROJECT": instance.context.data["projectName"],
             "AVALON_ASSET": instance.context.data["asset"],
             "AVALON_TASK": instance.context.data["task"],
-            "OPENPYPE_USERNAME": instance.context.data["user"],
-            "OPENPYPE_LOG_NO_COLORS": "1",
+            "QUADPYPE_USERNAME": instance.context.data["user"],
+            "QUADPYPE_LOG_NO_COLORS": "1",
             "IS_TEST": str(int(is_in_tests()))
         }
 
-        if AYON_SERVER_ENABLED:
-            environment["AYON_PUBLISH_JOB"] = "1"
-            environment["AYON_RENDER_JOB"] = "0"
-            environment["AYON_REMOTE_PUBLISH"] = "0"
-            environment["AYON_BUNDLE_NAME"] = os.environ["AYON_BUNDLE_NAME"]
-            plugin_name = "Ayon"
-        else:
-            environment["AVALON_DB"] = os.environ["AVALON_DB"]
-            environment["OPENPYPE_PUBLISH_JOB"] = "1"
-            environment["OPENPYPE_RENDER_JOB"] = "0"
-            environment["OPENPYPE_REMOTE_PUBLISH"] = "0"
-            plugin_name = "OpenPype"
-            # Add OpenPype version
-            self.environ_keys.append("OPENPYPE_VERSION")
+        environment["AVALON_DB"] = os.environ["AVALON_DB"]
+        environment["OPENPYPE_PUBLISH_JOB"] = "1"
+        environment["OPENPYPE_RENDER_JOB"] = "0"
+        environment["OPENPYPE_REMOTE_PUBLISH"] = "0"
+        plugin_name = "OpenPype"
+        # Add OpenPype version
+        self.environ_keys.append("OPENPYPE_VERSION")
 
         # add environments from self.environ_keys
         for env_key in self.environ_keys:

@@ -5,8 +5,6 @@ import platform
 import json
 import tempfile
 
-from openpype import AYON_SERVER_ENABLED
-
 from .log import Logger
 from .vendor_bin_utils import find_executable
 
@@ -195,9 +193,6 @@ def clean_envs_for_openpype_process(env=None):
     affected by in-host environments.
     """
 
-    if AYON_SERVER_ENABLED:
-        return clean_envs_for_ayon_process(env=env)
-
     if env is None:
         env = os.environ
 
@@ -263,8 +258,6 @@ def run_openpype_process(*args, **kwargs):
         **kwargs (dict): Keyword arguments for subprocess.Popen.
     """
 
-    if AYON_SERVER_ENABLED:
-        return run_ayon_launcher_process(*args, **kwargs)
 
     args = get_openpype_execute_args(*args)
     env = kwargs.pop("env", None)
@@ -412,9 +405,6 @@ def get_openpype_execute_args(*args):
     executables.
     """
 
-    if AYON_SERVER_ENABLED:
-        return get_ayon_launcher_args(*args)
-
     executable = os.environ["OPENPYPE_EXECUTABLE"]
     launch_args = [executable]
 
@@ -451,17 +441,11 @@ def get_linux_launcher_args(*args):
     """
 
     filename = "app_launcher"
-    if AYON_SERVER_ENABLED:
-        executable = os.environ["AYON_EXECUTABLE"]
-    else:
-        executable = os.environ["OPENPYPE_EXECUTABLE"]
+    executable = os.environ["OPENPYPE_EXECUTABLE"]
 
     executable_filename = os.path.basename(executable)
     if "python" in executable_filename.lower():
-        if AYON_SERVER_ENABLED:
-            root = os.environ["AYON_ROOT"]
-        else:
-            root = os.environ["OPENPYPE_ROOT"]
+        root = os.environ["OPENPYPE_ROOT"]
         script_path = os.path.join(root, "{}.py".format(filename))
         launch_args = [executable, script_path]
     else:

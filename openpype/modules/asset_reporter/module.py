@@ -1,6 +1,5 @@
 import os.path
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.modules import OpenPypeModule, ITrayAction
 from openpype.lib import run_detached_process, get_openpype_execute_args
 
@@ -14,7 +13,7 @@ class AssetReporterAction(OpenPypeModule, ITrayAction):
         pass
 
     def initialize(self, modules_settings):
-        self.enabled = not AYON_SERVER_ENABLED
+        self.enabled = True
 
     def on_action_trigger(self):
         args = get_openpype_execute_args()

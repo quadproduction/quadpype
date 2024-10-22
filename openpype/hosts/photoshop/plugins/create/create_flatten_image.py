@@ -1,6 +1,5 @@
 from openpype.pipeline import CreatedInstance
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.lib import BoolDef
 import openpype.hosts.photoshop.api as api
 from openpype.hosts.photoshop.lib import PSAutoCreator, clean_subset_name
@@ -41,8 +40,6 @@ class AutoImageCreator(PSAutoCreator):
 
         if existing_instance is None:
             existing_instance_asset = None
-        elif AYON_SERVER_ENABLED:
-            existing_instance_asset = existing_instance["folderPath"]
         else:
             existing_instance_asset = existing_instance["asset"]
 
@@ -55,10 +52,7 @@ class AutoImageCreator(PSAutoCreator):
             data = {
                 "task": task_name,
             }
-            if AYON_SERVER_ENABLED:
-                data["folderPath"] = asset_name
-            else:
-                data["asset"] = asset_name
+            data["asset"] = asset_name
 
             if not self.active_on_create:
                 data["active"] = False
@@ -82,10 +76,7 @@ class AutoImageCreator(PSAutoCreator):
                 self.default_variant, task_name, asset_doc,
                 project_name, host_name
             )
-            if AYON_SERVER_ENABLED:
-                existing_instance["folderPath"] = asset_name
-            else:
-                existing_instance["asset"] = asset_name
+            existing_instance["asset"] = asset_name
             existing_instance["task"] = task_name
             existing_instance["subset"] = subset_name
 

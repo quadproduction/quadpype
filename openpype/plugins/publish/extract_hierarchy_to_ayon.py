@@ -7,7 +7,6 @@ import pyblish.api
 from ayon_api import slugify_string
 from ayon_api.entity_hub import EntityHub
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.client import get_assets, get_asset_name_identifier
 from openpype.pipeline.template_data import (
     get_asset_template_data,
@@ -27,16 +26,7 @@ class ExtractHierarchyToAYON(pyblish.api.ContextPlugin):
     families = ["clip", "shot"]
 
     def process(self, context):
-        if not AYON_SERVER_ENABLED:
-            return
-
-        if not context.data.get("hierarchyContext"):
-            self.log.debug("Skipping ExtractHierarchyToAYON")
-            return
-
-        project_name = context.data["projectName"]
-        self._create_hierarchy(context, project_name)
-        self._fill_instance_entities(context, project_name)
+        return
 
     def _fill_instance_entities(self, context, project_name):
         instances_by_asset_name = collections.defaultdict(list)

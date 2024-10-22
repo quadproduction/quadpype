@@ -1,6 +1,6 @@
 import os
 
-from openpype import PLUGINS_DIR, AYON_SERVER_ENABLED
+from openpype import PLUGINS_DIR
 from openpype.modules import (
     OpenPypeModule,
     ITrayAction,
@@ -8,6 +8,7 @@ from openpype.modules import (
 
 from openpype.widgets import PasswordDialog
 from openpype.lib import is_admin_password_required
+
 
 class LauncherAction(OpenPypeModule, ITrayAction):
     label = "Launcher"
@@ -55,10 +56,7 @@ class LauncherAction(OpenPypeModule, ITrayAction):
     def _create_window(self):
         if self._window:
             return
-        if AYON_SERVER_ENABLED:
-            from openpype.tools.ayon_launcher.ui import LauncherWindow
-        else:
-            from openpype.tools.launcher import LauncherWindow
+        from openpype.tools.launcher import LauncherWindow
         self._window = LauncherWindow()
 
     def _show_launcher(self):

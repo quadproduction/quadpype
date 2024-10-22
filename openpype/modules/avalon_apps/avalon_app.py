@@ -1,6 +1,5 @@
 import os
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.modules import OpenPypeModule, ITrayModule
 
 
@@ -77,10 +76,7 @@ class AvalonModule(OpenPypeModule, ITrayModule):
     def show_library_loader(self):
         if self._library_loader_window is None:
             from openpype.pipeline import install_openpype_plugins
-            if AYON_SERVER_ENABLED:
-                self._init_ayon_loader()
-            else:
-                self._init_library_loader()
+            self._init_library_loader()
 
             install_openpype_plugins()
 

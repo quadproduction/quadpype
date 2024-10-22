@@ -1,6 +1,5 @@
 import pyblish
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.pipeline.editorial import is_overlapping_otio_ranges
 
 from openpype.hosts.hiero import api as phiero
@@ -233,10 +232,7 @@ class PrecollectInstances(pyblish.api.ContextPlugin):
                 asset_name
             )
 
-        if AYON_SERVER_ENABLED:
-            asset = folder_path
-        else:
-            asset = asset_name
+        asset = asset_name
 
         return asset, asset_name
 

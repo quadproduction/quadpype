@@ -9,7 +9,6 @@ from openpype.hosts.resolve.api.lib import (
     get_publish_attribute,
     get_otio_clip_instance_data,
 )
-from openpype import AYON_SERVER_ENABLED
 
 
 class PrecollectInstances(pyblish.api.ContextPlugin):
@@ -61,10 +60,7 @@ class PrecollectInstances(pyblish.api.ContextPlugin):
                 if k not in ("id", "applieswhole", "label")
             })
 
-            if AYON_SERVER_ENABLED:
-                asset = tag_data["folder_path"]
-            else:
-                asset = tag_data["asset_name"]
+            asset = tag_data["asset_name"]
 
             subset = tag_data["subset"]
 

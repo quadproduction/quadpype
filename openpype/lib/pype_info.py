@@ -5,7 +5,6 @@ import platform
 import getpass
 import socket
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.settings.lib import get_local_settings
 from .execute import get_openpype_execute_args
 from .local_settings import get_local_site_id
@@ -74,10 +73,7 @@ def get_all_current_info():
         "env": os.environ.copy(),
         "local_settings": get_local_settings()
     }
-    if AYON_SERVER_ENABLED:
-        output["ayon"] = get_ayon_info()
-    else:
-        output["openpype"] = get_openpype_info()
+    output["openpype"] = get_openpype_info()
     return output
 
 

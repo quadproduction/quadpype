@@ -24,7 +24,6 @@ import traceback
 import threading
 import copy
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.client.mongo import (
     MongoEnvNotSet,
     get_default_components,
@@ -333,17 +332,13 @@ class Logger:
         # Change initialization state to prevent runtime changes
         # if is executed during runtime
         cls.initialized = False
-        if not AYON_SERVER_ENABLED:
-            cls.log_mongo_url_components = get_default_components()
+        cls.log_mongo_url_components = get_default_components()
 
         # Define if should logging to mongo be used
-        if AYON_SERVER_ENABLED:
-            use_mongo_logging = False
-        else:
-            use_mongo_logging = (
-                log4mongo is not None
-                and os.environ.get("OPENPYPE_LOG_TO_SERVER") == "1"
-            )
+        use_mongo_logging = (
+            log4mongo is not None
+            and os.environ.get("OPENPYPE_LOG_TO_SERVER") == "1"
+        )
 
         # Set mongo id for process (ONLY ONCE)
         if use_mongo_logging and cls.mongo_process_id is None:

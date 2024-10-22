@@ -188,7 +188,7 @@ def create_unreal_project(project_name: str,
 
     As there is no way I know to create a project via command line, this is
     easiest option. Unreal project file is basically a JSON file. If we find
-    the `AYON_UNREAL_PLUGIN` environment variable we assume this is the
+    the `QUADPYPE_UNREAL_PLUGIN` environment variable we assume this is the
     location of the Integration Plugin and we copy its content to the project
     folder and enable this plugin.
 
@@ -461,7 +461,7 @@ def copy_built_plugin(engine_path: Path, plugin_path: Path) -> None:
 
 def check_plugin_existence(engine_path: Path, env: dict = None) -> bool:
     env = env or os.environ
-    integration_plugin_path: Path = Path(env.get("AYON_UNREAL_PLUGIN", ""))
+    integration_plugin_path: Path = Path(env.get("QUADPYPE_UNREAL_PLUGIN", ""))
 
     if not os.path.isdir(integration_plugin_path):
         raise RuntimeError("Path to the integration plugin is null!")
@@ -482,7 +482,7 @@ def check_plugin_existence(engine_path: Path, env: dict = None) -> bool:
 def try_installing_plugin(engine_path: Path, env: dict = None) -> None:
     env = env or os.environ
 
-    integration_plugin_path: Path = Path(env.get("AYON_UNREAL_PLUGIN", ""))
+    integration_plugin_path: Path = Path(env.get("QUADPYPE_UNREAL_PLUGIN", ""))
 
     if not os.path.isdir(integration_plugin_path):
         raise RuntimeError("Path to the integration plugin is null!")
@@ -509,7 +509,7 @@ def _build_and_move_plugin(engine_path: Path,
     uat_path: Path = get_path_to_uat(engine_path)
 
     env = env or os.environ
-    integration_plugin_path: Path = Path(env.get("AYON_UNREAL_PLUGIN", ""))
+    integration_plugin_path: Path = Path(env.get("QUADPYPE_UNREAL_PLUGIN", ""))
 
     if uat_path.is_file():
         temp_dir: Path = integration_plugin_path.parent / "Temp"

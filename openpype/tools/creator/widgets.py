@@ -5,7 +5,6 @@ from qtpy import QtWidgets, QtCore, QtGui
 
 import qtawesome
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.pipeline.create import SUBSET_NAME_ALLOWED_SYMBOLS
 from openpype.tools.utils import ErrorMessageBox
 
@@ -48,8 +47,8 @@ class CreateErrorMessageBox(ErrorMessageBox):
             " in Asset: \"{asset}\""
             "\n\nError: {message}"
         ).format(
-            subset_label="Product" if AYON_SERVER_ENABLED else "Subset",
-            family_label="Type" if AYON_SERVER_ENABLED else "Family",
+            subset_label="Subset",
+            family_label="Family",
             subset=self._subset_name,
             family=self._family,
             asset=self._asset_name,
@@ -65,9 +64,9 @@ class CreateErrorMessageBox(ErrorMessageBox):
             "<span style='font-weight:bold;'>{}:</span> {{}}<br>"
             "<span style='font-weight:bold;'>{}:</span> {{}}<br>"
         ).format(
-            "Product type" if AYON_SERVER_ENABLED else "Family",
-            "Product name" if AYON_SERVER_ENABLED else "Subset",
-            "Folder" if AYON_SERVER_ENABLED else "Asset"
+            "Family",
+            "Subset",
+            "Asset"
         )
         exc_msg_template = "<span style='font-weight:bold'>{}</span>"
 
@@ -159,21 +158,15 @@ class VariantLineEdit(QtWidgets.QLineEdit):
 
     def as_empty(self):
         self._set_border("empty")
-        self.report.emit("Empty {} name ..".format(
-            "product" if AYON_SERVER_ENABLED else "subset"
-        ))
+        self.report.emit("Empty {} name ..".format("subset"))
 
     def as_exists(self):
         self._set_border("exists")
-        self.report.emit("Existing {}, appending next version.".format(
-            "product" if AYON_SERVER_ENABLED else "subset"
-        ))
+        self.report.emit("Existing {}, appending next version.".format("subset"))
 
     def as_new(self):
         self._set_border("new")
-        self.report.emit("New {}, creating first version.".format(
-            "product" if AYON_SERVER_ENABLED else "subset"
-        ))
+        self.report.emit("New {}, creating first version.".format("subset"))
 
     def _set_border(self, status):
         qcolor, style = self.colors[status]

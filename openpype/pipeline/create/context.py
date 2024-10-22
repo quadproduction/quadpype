@@ -11,7 +11,6 @@ from contextlib import contextmanager
 import pyblish.logic
 import pyblish.api
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.client import (
     get_assets,
     get_asset_by_name,
@@ -931,12 +930,7 @@ class CreatedInstance:
         data.pop("family", None)
         data.pop("subset", None)
 
-        if AYON_SERVER_ENABLED:
-            asset_name = data.pop("asset", None)
-            if "folderPath" not in data:
-                data["folderPath"] = asset_name
-
-        elif "folderPath" in data:
+        if "folderPath" in data:
             asset_name = data.pop("folderPath").split("/")[-1]
             if "asset" not in data:
                 data["asset"] = asset_name
@@ -1283,8 +1277,6 @@ class CreatedInstance:
     def has_set_asset(self):
         """Asset name is set in data."""
 
-        if AYON_SERVER_ENABLED:
-            return "folderPath" in self._data
         return "asset" in self._data
 
     @property
@@ -2021,10 +2013,7 @@ class CreateContext:
             self.host_name
         )
         asset_name = get_asset_name_identifier(asset_doc)
-        if AYON_SERVER_ENABLED:
-            asset_name_key = "folderPath"
-        else:
-            asset_name_key = "asset"
+        asset_name_key = "asset"
 
         instance_data = {
             asset_name_key: asset_name,
@@ -2252,10 +2241,7 @@ class CreateContext:
         task_names_by_asset_name = {}
         for instance in instances:
             task_name = instance.get("task")
-            if AYON_SERVER_ENABLED:
-                asset_name = instance.get("folderPath")
-            else:
-                asset_name = instance.get("asset")
+            asset_name = instance.get("asset")
             if asset_name:
                 task_names_by_asset_name[asset_name] = set()
                 if task_name:
@@ -2267,8 +2253,6 @@ class CreateContext:
             if asset_name is not None
         }
         fields = {"name", "data.tasks"}
-        if AYON_SERVER_ENABLED:
-            fields |= {"data.parents"}
         asset_docs = list(get_assets(
             self.project_name,
             asset_names=asset_names,
@@ -2287,16 +2271,7 @@ class CreateContext:
             if not instance.has_valid_asset or not instance.has_valid_task:
                 continue
 
-            if AYON_SERVER_ENABLED:
-                asset_name = instance["folderPath"]
-                if asset_name and "/" not in asset_name:
-                    asset_docs = asset_docs_by_name.get(asset_name)
-                    if len(asset_docs) == 1:
-                        asset_name = get_asset_name_identifier(asset_docs[0])
-                        instance["folderPath"] = asset_name
-            else:
-                asset_name = instance["asset"]
-
+            asset_name = instance["asset"]
             if asset_name not in task_names_by_asset_name:
                 instance.set_asset_invalid(True)
                 continue

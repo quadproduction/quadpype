@@ -1,4 +1,4 @@
-from openpype import AYON_SERVER_ENABLED
+
 from openpype.client import get_asset_by_name
 from openpype.pipeline import CreatedInstance
 from openpype.hosts.tvpaint.api.plugin import TVPaintAutoCreator
@@ -32,8 +32,6 @@ class TVPaintWorkfileCreator(TVPaintAutoCreator):
 
         if existing_instance is None:
             existing_asset_name = None
-        elif AYON_SERVER_ENABLED:
-            existing_asset_name = existing_instance["folderPath"]
         else:
             existing_asset_name = existing_instance["asset"]
 
@@ -50,10 +48,7 @@ class TVPaintWorkfileCreator(TVPaintAutoCreator):
                 "task": task_name,
                 "variant": self.default_variant
             }
-            if AYON_SERVER_ENABLED:
-                data["folderPath"] = asset_name
-            else:
-                data["asset"] = asset_name
+            data["asset"] = asset_name
 
             new_instance = CreatedInstance(
                 self.family, subset_name, data, self
@@ -76,9 +71,6 @@ class TVPaintWorkfileCreator(TVPaintAutoCreator):
                 host_name,
                 existing_instance
             )
-            if AYON_SERVER_ENABLED:
-                existing_instance["folderPath"] = asset_name
-            else:
-                existing_instance["asset"] = asset_name
+            existing_instance["asset"] = asset_name
             existing_instance["task"] = task_name
             existing_instance["subset"] = subset_name

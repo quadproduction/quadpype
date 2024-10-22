@@ -1,6 +1,5 @@
 import bpy
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.pipeline import CreatedInstance, AutoCreator
 from openpype.client import get_asset_by_name
 from openpype.hosts.blender.api.plugin import BaseCreator
@@ -40,8 +39,6 @@ class CreateWorkfile(BaseCreator, AutoCreator):
 
         existing_asset_name = None
         if workfile_instance is not None:
-            if AYON_SERVER_ENABLED:
-                existing_asset_name = workfile_instance.get("folderPath")
 
             if existing_asset_name is None:
                 existing_asset_name = workfile_instance["asset"]
@@ -55,10 +52,7 @@ class CreateWorkfile(BaseCreator, AutoCreator):
                 "task": task_name,
                 "variant": task_name,
             }
-            if AYON_SERVER_ENABLED:
-                data["folderPath"] = asset_name
-            else:
-                data["asset"] = asset_name
+            data["asset"] = asset_name
             data.update(
                 self.get_dynamic_data(
                     task_name,
@@ -84,11 +78,7 @@ class CreateWorkfile(BaseCreator, AutoCreator):
             subset_name = self.get_subset_name(
                 task_name, task_name, asset_doc, project_name, host_name
             )
-            if AYON_SERVER_ENABLED:
-                workfile_instance["folderPath"] = asset_name
-            else:
-                workfile_instance["asset"] = asset_name
-
+            workfile_instance["asset"] = asset_name
             workfile_instance["task"] = task_name
             workfile_instance["subset"] = subset_name
 

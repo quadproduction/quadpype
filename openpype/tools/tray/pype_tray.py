@@ -8,7 +8,6 @@ import platform
 from qtpy import QtCore, QtGui, QtWidgets
 
 import openpype.version
-from openpype import AYON_SERVER_ENABLED
 from openpype import resources, style
 from openpype.lib import (
     Logger,
@@ -620,18 +619,11 @@ class TrayManager:
         self.tray_widget.showMessage(*args, **kwargs)
 
     def _add_version_item(self):
-        if AYON_SERVER_ENABLED:
-            login_action = QtWidgets.QAction("Login", self.tray_widget)
-            login_action.triggered.connect(self._on_ayon_login)
-            self.tray_widget.menu.addAction(login_action)
 
         subversion = os.environ.get("OPENPYPE_SUBVERSION")
         client_name = os.environ.get("OPENPYPE_CLIENT")
 
-        if AYON_SERVER_ENABLED:
-            version_string = os.getenv("AYON_VERSION", "AYON Info")
-        else:
-            version_string = "Ver.:  {}".format(openpype.version.__version__)  # double space for readability
+        version_string = "Ver.:  {}".format(openpype.version.__version__)  # double space for readability
         if subversion:
             version_string += " ({})".format(subversion)
 

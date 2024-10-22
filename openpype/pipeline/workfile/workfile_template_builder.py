@@ -19,7 +19,6 @@ from abc import ABCMeta, abstractmethod
 
 import six
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.client import (
     get_asset_by_name,
     get_linked_assets,
@@ -1318,42 +1317,23 @@ class PlaceholderLoadMixin(object):
             {"value": action_name, "label": action.label or action_name}
             for action_name, action in actions_by_name.items()
         )
-        if AYON_SERVER_ENABLED:
-            builder_type_enum_items = [
-                {"label": "Current folder", "value": "context_folder"},
-                # TODO implement linked folders
-                # {"label": "Linked folders", "value": "linked_folders"},
-                {"label": "All folders", "value": "all_folders"},
-            ] + libraries_project_items,
-            build_type_label = "Folder Builder Type"
-            build_type_help = (
-                "Folder Builder Type\n"
-                "\nBuilder type describe what template loader will look"
-                " for."
-                "\nCurrent Folder: Template loader will look for products"
-                " of current context folder (Folder /assets/bob will"
-                " find asset)"
-                "\nAll folders: All folders matching the regex will be"
-                " used."
-            )
-        else:
-            builder_type_enum_items = [
-                {"label": "Current asset", "value": "context_asset"},
-                {"label": "Linked assets", "value": "linked_asset"},
-                {"label": "All assets", "value": "all_assets"},
-            ] + libraries_project_items,
-            build_type_label = "Asset Builder Type"
-            build_type_help = (
-                "Asset Builder Type\n"
-                "\nBuilder type describe what template loader will look"
-                " for."
-                "\ncontext_asset : Template loader will look for subsets"
-                " of current context asset (Asset bob will find asset)"
-                "\nlinked_asset : Template loader will look for assets"
-                " linked to current context asset."
-                "\nLinked asset are looked in database under"
-                " field \"inputLinks\""
-            )
+        builder_type_enum_items = [
+            {"label": "Current asset", "value": "context_asset"},
+            {"label": "Linked assets", "value": "linked_asset"},
+            {"label": "All assets", "value": "all_assets"},
+        ] + libraries_project_items,
+        build_type_label = "Asset Builder Type"
+        build_type_help = (
+            "Asset Builder Type\n"
+            "\nBuilder type describe what template loader will look"
+            " for."
+            "\ncontext_asset : Template loader will look for subsets"
+            " of current context asset (Asset bob will find asset)"
+            "\nlinked_asset : Template loader will look for assets"
+            " linked to current context asset."
+            "\nLinked asset are looked in database under"
+            " field \"inputLinks\""
+        )
 
         attr_defs = [
             attribute_definitions.UISeparatorDef(),
@@ -1433,61 +1413,37 @@ class PlaceholderLoadMixin(object):
             attribute_definitions.UILabelDef("Optional attributes"),
             attribute_definitions.UISeparatorDef(),
         ]
-        if AYON_SERVER_ENABLED:
-            attr_defs.extend([
-                attribute_definitions.TextDef(
-                    "folder_path",
-                    label="Folder filter",
-                    default=options.get("folder_path"),
-                    placeholder="regex filtering by folder path",
-                    tooltip=(
-                        "Filtering assets by matching"
-                        " field regex to folder path"
-                    )
-                ),
-                attribute_definitions.TextDef(
-                    "product_name",
-                    label="Product filter",
-                    default=options.get("product_name"),
-                    placeholder="regex filtering by product name",
-                    tooltip=(
-                        "Filtering assets by matching"
-                        " field regex to product name"
-                    )
-                ),
-            ])
-        else:
-            attr_defs.extend([
-                attribute_definitions.TextDef(
-                    "asset",
-                    label="Asset filter",
-                    default=options.get("asset"),
-                    placeholder="regex filtering by asset name",
-                    tooltip=(
-                        "Filtering assets by matching"
-                        " field regex to asset's name"
-                    )
-                ),
-                attribute_definitions.TextDef(
-                    "subset",
-                    label="Subset filter",
-                    default=options.get("subset"),
-                    placeholder="regex filtering by subset name",
-                    tooltip=(
-                        "Filtering assets by matching"
-                        " field regex to subset's name"
-                    )
-                ),
-                attribute_definitions.TextDef(
-                    "hierarchy",
-                    label="Hierarchy filter",
-                    default=options.get("hierarchy"),
-                    placeholder="regex filtering by asset's hierarchy",
-                    tooltip=(
-                        "Filtering assets by matching field asset's hierarchy"
-                    )
+        attr_defs.extend([
+            attribute_definitions.TextDef(
+                "asset",
+                label="Asset filter",
+                default=options.get("asset"),
+                placeholder="regex filtering by asset name",
+                tooltip=(
+                    "Filtering assets by matching"
+                    " field regex to asset's name"
                 )
-            ])
+            ),
+            attribute_definitions.TextDef(
+                "subset",
+                label="Subset filter",
+                default=options.get("subset"),
+                placeholder="regex filtering by subset name",
+                tooltip=(
+                    "Filtering assets by matching"
+                    " field regex to subset's name"
+                )
+            ),
+            attribute_definitions.TextDef(
+                "hierarchy",
+                label="Hierarchy filter",
+                default=options.get("hierarchy"),
+                placeholder="regex filtering by asset's hierarchy",
+                tooltip=(
+                    "Filtering assets by matching field asset's hierarchy"
+                )
+            )
+        ])
         return attr_defs
 
     def parse_loader_args(self, loader_args):
@@ -1647,10 +1603,6 @@ class PlaceholderLoadMixin(object):
             List[Dict[str, Any]]: Representation documents matching filters
                 from placeholder data.
         """
-
-        if AYON_SERVER_ENABLED:
-            return self._get_representations_ayon(placeholder)
-
         # An AYON placeholder loaded in OpenPype
         if "folder_path" in placeholder.data:
             return []

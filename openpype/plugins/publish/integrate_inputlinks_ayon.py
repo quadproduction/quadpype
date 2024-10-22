@@ -7,8 +7,6 @@ from ayon_api import (
     get_versions_links,
 )
 
-from openpype import AYON_SERVER_ENABLED
-
 
 class IntegrateInputLinksAYON(pyblish.api.ContextPlugin):
     """Connecting version level dependency links"""
@@ -203,5 +201,4 @@ class IntegrateInputLinksAYON(pyblish.api.ContextPlugin):
                     )
 
 
-if not AYON_SERVER_ENABLED:
-    del IntegrateInputLinksAYON
+del IntegrateInputLinksAYON

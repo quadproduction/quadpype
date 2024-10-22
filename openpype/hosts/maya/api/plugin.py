@@ -7,7 +7,6 @@ import six
 from maya import cmds
 from maya.app.renderSetup.model import renderSetup
 
-from openpype import AYON_SERVER_ENABLED
 from openpype.lib import BoolDef, Logger
 from openpype.settings import get_project_settings
 from openpype.pipeline import (
@@ -474,10 +473,7 @@ class RenderlayerCreator(NewCreator, MayaCreatorBase):
                     "task": self.create_context.get_current_task_name(),
                     "variant": layer.name(),
                 }
-                if AYON_SERVER_ENABLED:
-                    instance_data["folderPath"] = asset_name
-                else:
-                    instance_data["asset"] = asset_name
+                instance_data["asset"] = asset_name
                 asset_doc = get_asset_by_name(project_name, asset_name)
                 subset_name = self.get_subset_name(
                     layer.name(),
