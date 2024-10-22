@@ -15,7 +15,7 @@ import os
 from openpype.client import get_asset_by_name
 from openpype.pipeline import registered_host
 from openpype.pipeline.create import CreateContext
-from openpype.resources import get_openpype_icon_filepath
+from openpype.resources import get_app_icon_filepath
 
 import hou
 import stateutils
@@ -172,7 +172,7 @@ def install():
         # and update the tools file if creator identifiers change
         os.remove(filepath)
 
-    icon = get_openpype_icon_filepath()
+    icon = get_app_icon_filepath()
     tab_menu_label = os.environ.get("AVALON_LABEL") or "AYON"
 
     # Create context only to get creator plugins, so we don't reset and only

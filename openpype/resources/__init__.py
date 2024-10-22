@@ -1,5 +1,4 @@
 import os
-from openpype import AYON_SERVER_ENABLED
 from openpype.lib.openpype_version import is_running_staging, is_running_locally
 
 RESOURCES_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -9,7 +8,7 @@ def get_resource(*args):
     """ Serves to simple resources access
 
     :param *args: should contain *subfolder* names and *filename* of
-                  resource from resources folder
+                  resource from the resource folder
     :type *args: list
     """
     return os.path.normpath(os.path.join(RESOURCES_DIR, *args))
@@ -40,65 +39,21 @@ def get_liberation_font_path(bold=False, italic=False):
     return font_path
 
 
-def get_openpype_production_icon_filepath():
-    filename = "openpype_icon.png"
-    if AYON_SERVER_ENABLED:
-        filename = "AYON_icon.png"
-    return get_resource("icons", filename)
-
-
-def get_openpype_staging_icon_filepath():
-    filename = "openpype_icon_staging.png"
-    if AYON_SERVER_ENABLED:
-        filename = "AYON_icon_staging.png"
-    return get_resource("icons", filename)
-
-
-def get_openpype_dev_staging_icon_filepath():
-    return get_resource("icons", "openpype_icon_dev_staging.png")
-
-
-def get_openpype_dev_icon_filepath():
-    return get_resource("icons", "openpype_icon_dev.png")
-
-def get_openpype_icon_filepath(staging=None):
-    if AYON_SERVER_ENABLED and os.getenv("AYON_USE_DEV") == "1":
-        return get_resource("icons", "AYON_icon_dev.png")
-
-    if staging is None:
-        staging = is_running_staging()
-
+def _get_app_image_variation_name():
     if is_running_locally():
-        if staging:
-            return get_openpype_dev_staging_icon_filepath()
-        return get_openpype_dev_icon_filepath()
+        return "dev"
+    elif is_running_staging():
+        return "staging"
 
-    if staging:
-        return get_openpype_staging_icon_filepath()
-    return get_openpype_production_icon_filepath()
+    return "default"
 
-
-def get_openpype_splash_filepath(staging=None):
-    if staging is None:
-        staging = is_running_staging()
-
-    if AYON_SERVER_ENABLED:
-        if os.getenv("AYON_USE_DEV") == "1":
-            splash_file_name = "AYON_splash_dev.png"
-        elif staging:
-            splash_file_name = "AYON_splash_staging.png"
-        else:
-            splash_file_name = "AYON_splash.png"
-    elif staging:
-        splash_file_name = "openpype_splash_staging.png"
-    else:
-        splash_file_name = "openpype_splash.png"
-    return get_resource("icons", splash_file_name)
+def get_app_icon_filepath(variation_name=None):
+    if not variation_name:
+        variation_name = _get_app_image_variation_name()
+    return get_resource("icons", "quadpype_icon_{}.png".format(variation_name))
 
 
-def pype_icon_filepath(staging=None):
-    return get_openpype_icon_filepath(staging)
-
-
-def pype_splash_filepath(staging=None):
-    return get_openpype_splash_filepath(staging)
+def get_app_splash_filepath(variation_name=None):
+    if not variation_name:
+        variation_name = _get_app_image_variation_name()
+    return get_resource("icons", "quadpype_splash_{}.png".format(variation_name))

@@ -26,7 +26,7 @@ class CredentialsDialog(QtWidgets.QDialog):
         self._is_logged = False
         self._in_advance_mode = False
 
-        icon = QtGui.QIcon(resources.get_openpype_icon_filepath())
+        icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
 
         self.setWindowFlags(

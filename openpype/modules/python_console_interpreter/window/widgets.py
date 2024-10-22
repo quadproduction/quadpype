@@ -359,7 +359,7 @@ class PythonInterpreterWidget(QtWidgets.QWidget):
         self.setWindowTitle("{} Console".format(
             "AYON" if AYON_SERVER_ENABLED else "OpenPype"
         ))
-        self.setWindowIcon(QtGui.QIcon(resources.get_openpype_icon_filepath()))
+        self.setWindowIcon(QtGui.QIcon(resources.get_app_icon_filepath()))
 
         self.ansi_escape = re.compile(
             r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]"

@@ -177,7 +177,7 @@ class Window(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(Window, self).__init__(parent=parent)
         self.setWindowTitle(self.title)
-        icon = QtGui.QIcon(resources.get_openpype_icon_filepath())
+        icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.Window)
 

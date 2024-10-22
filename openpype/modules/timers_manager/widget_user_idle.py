@@ -13,7 +13,7 @@ class WidgetUserIdle(BaseToolWidget):
 
         self.setWindowTitle("OpenPype - Stop timers")
 
-        icon = QtGui.QIcon(resources.get_openpype_icon_filepath())
+        icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
 
         window_flags = self.windowFlags() | QtCore.Qt.WindowCloseButtonHint | QtCore.Qt.WindowMinimizeButtonHint

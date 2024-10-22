@@ -8,7 +8,7 @@ import arrow
 from qtpy import QtWidgets, QtCore, QtGui
 
 from openpype import style
-from openpype.resources import get_openpype_icon_filepath
+from openpype.resources import get_app_icon_filepath
 from openpype.tools import resources
 from openpype.tools.utils import (
     IconButton,
@@ -600,7 +600,7 @@ class PublishReportViewerWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(PublishReportViewerWindow, self).__init__(parent)
         self.setWindowTitle("Publish report viewer")
-        icon = QtGui.QIcon(get_openpype_icon_filepath())
+        icon = QtGui.QIcon(get_app_icon_filepath())
         self.setWindowIcon(icon)
 
         body = QtWidgets.QSplitter(self)

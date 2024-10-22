@@ -14,7 +14,7 @@ from openpype.hosts.fusion.api.lib import (
     set_asset_resolution,
 )
 from openpype.pipeline import get_current_asset_name
-from openpype.resources import get_openpype_icon_filepath
+from openpype.resources import get_app_icon_filepath
 from openpype.tools.utils import get_qt_app
 
 from .pipeline import FusionEventHandler
@@ -34,7 +34,7 @@ class OpenPypeMenu(QtWidgets.QWidget):
 
         self.setObjectName(f"{MENU_LABEL}Menu")
 
-        icon_path = get_openpype_icon_filepath()
+        icon_path = get_app_icon_filepath()
         icon = QtGui.QIcon(icon_path)
         self.setWindowIcon(icon)
 
