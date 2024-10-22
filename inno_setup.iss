@@ -26,7 +26,7 @@ AllowCancelDuringInstall=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-SetupIconFile=igniter\openpype.ico
+SetupIconFile=igniter\resources\icons\quadpype.ico
 OutputDir=build\
 Compression=lzma2
 SolidCompression=yes
