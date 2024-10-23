@@ -213,7 +213,7 @@ def set_node_tree(
             render_layer_node = node
         elif node.bl_idname == compositor_type:
             composite_node = node
-        elif node.bl_idname == output_type and "AYON" in node.name:
+        elif node.bl_idname == output_type and "QuadPype" in node.name:
             old_output_node = node
         if render_layer_node and composite_node and old_output_node:
             break

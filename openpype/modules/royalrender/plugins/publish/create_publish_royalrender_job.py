@@ -231,13 +231,13 @@ class CreatePublishRoyalRenderJob(pyblish.api.InstancePlugin,
         ]
 
         job = RRJob(
-            Software="AYON",
+            Software="QuadPype",
             Renderer="Once",
             SeqStart=1,
             SeqEnd=1,
             SeqStep=1,
             SeqFileOffset=0,
-            Version=os.environ["AYON_BUNDLE_NAME"],
+            Version=os.environ["QUADPYPE_BUNDLE_NAME"],
             SceneName=abs_metadata_path,
             # command line arguments
             CustomAddCmdFlags=" ".join(args),
