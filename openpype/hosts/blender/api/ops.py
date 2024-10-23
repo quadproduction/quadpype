@@ -358,7 +358,7 @@ class LaunchWorkFiles(LaunchQtApp):
 
 
 class SetFrameRange(bpy.types.Operator):
-    bl_idname = "wm.ayon_set_frame_range"
+    bl_idname = "wm.set_frame_range"
     bl_label = "Set Frame Range"
 
     def execute(self, context):
@@ -368,7 +368,7 @@ class SetFrameRange(bpy.types.Operator):
 
 
 class SetResolution(bpy.types.Operator):
-    bl_idname = "wm.ayon_set_resolution"
+    bl_idname = "wm.set_resolution"
     bl_label = "Set Resolution"
 
     def execute(self, context):
