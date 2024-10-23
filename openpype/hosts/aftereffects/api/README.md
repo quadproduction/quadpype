@@ -32,9 +32,9 @@ python -c ^"import quadpype.hosts.photoshop;quadpype.hosts..aftereffects.launch(
 
 ## Usage
 
-The After Effects extension can be found under `Window > Extensions > AYON`. Once launched you should be presented with a panel like this:
+The After Effects extension can be found under `Window > Extensions > QuadPype`. Once launched you should be presented with a panel like this:
 
-![Ayon Panel](panel.png "Ayon Panel")
+![QuadPype Panel](panel.png "QuadPype Panel")
 
 
 ## Developing
@@ -45,8 +45,8 @@ When developing the extension you can load it [unsigned](https://github.com/Adob
 When signing the extension you can use this [guide](https://github.com/Adobe-CEP/Getting-Started-guides/tree/master/Package%20Distribute%20Install#package-distribute-install-guide).
 
 ```
-ZXPSignCmd -selfSignedCert NA NA Ayon Avalon-After-Effects Ayon extension.p12
-ZXPSignCmd -sign {path to addon}/api/extension {path to addon}/api/extension.zxp extension.p12 Ayon
+ZXPSignCmd -selfSignedCert NA NA QuadPype Avalon-After-Effects QuadPype extension.p12
+ZXPSignCmd -sign {path to addon}/api/extension {path to addon}/api/extension.zxp extension.p12 QuadPype
 ```
 
 ### Plugin Examples

@@ -53,7 +53,7 @@ class ValidateRenderPasses(OptionalPyblishPluginMixin,
                work/{task[name]}/render/3dsmax/John_Doe/
 
         2. Check image extension(s) of the render output(s)
-           matches the image format in OP/AYON setting, e.g.
+           matches the image format in QuadPype setting, e.g.
                The current image format in settings: png
                The expected render outputs: John_Doe.png
 

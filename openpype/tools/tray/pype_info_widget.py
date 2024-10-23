@@ -2,14 +2,12 @@ import os
 import json
 import collections
 
-import ayon_api
 from qtpy import QtCore, QtGui, QtWidgets
 
 from quadpype import style
 import quadpype.version
 from quadpype import resources
 from quadpype.settings.lib import get_local_settings
-from quadpype.lib import get_quadpype_execute_args
 from quadpype.lib.pype_info import (
     get_all_current_info,
     get_quadpype_info,

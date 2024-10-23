@@ -37,7 +37,6 @@ class CreateMultishotLayout(plugin.MayaCreator):
 
         """
         Todo: `get_folder_by_name` should be switched to `get_folder_by_path`
-              once the fork to pure AYON is done.
 
         Warning: this will not work for projects where the asset name
                  is not unique across the project until the switch mentioned

@@ -32,7 +32,7 @@
 		</Lifecycle>
         <UI>
           <Type>Panel</Type>
-          <Menu>AYON</Menu>
+          <Menu>QuadPype</Menu>
           <Geometry>
             <Size>
               <Width>300</Width>
@@ -44,7 +44,7 @@
             </MaxSize>
           </Geometry>
           <Icons>
-            <Icon Type="Normal">./icons/ayon_logo.png</Icon>
+            <Icon Type="Normal">./icons/iconQuadPype.png</Icon>
           </Icons>
         </UI>
       </DispatchInfo>

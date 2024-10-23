@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Base class for AYON addons."""
+"""Base class for QuadPype addons."""
 import copy
 import os
 import sys

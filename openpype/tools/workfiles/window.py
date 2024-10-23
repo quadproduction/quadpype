@@ -104,8 +104,7 @@ class SidePanelWidget(QtWidgets.QWidget):
         """Get user name from file path"""
         # Only run on Unix because pwd module is not available on Windows.
         # NOTE: we tried adding "win32security" module but it was not working
-        # on all hosts so we decided to just support Linux until migration
-        # to Ayon
+        # on all hosts so we decided to just support Linux until migration for now
         if platform.system().lower() == "windows":
             return None
         import pwd
