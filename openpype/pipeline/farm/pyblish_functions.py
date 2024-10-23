@@ -729,8 +729,6 @@ def get_resources(project_name, version, extension=None):
     if extension:
         extensions = [extension]
 
-    # there is a `context_filter` argument that won't probably work in
-    # final release of AYON. SO we'll rather not use it
     repre_docs = list(get_representations(
         project_name, version_ids=[version["_id"]]))
 
