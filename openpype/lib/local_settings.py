@@ -37,7 +37,6 @@ from quadpype.settings import (
 )
 import quadpype.settings.lib as sett_lib
 from quadpype.client.mongo import validate_mongo_connection
-from quadpype.client import get_ayon_server_api_connection
 
 _PLACEHOLDER = object()
 
@@ -521,22 +520,6 @@ def _create_local_site_id(registry=None):
     registry.set_item("localId", new_id)
 
     return new_id
-
-
-def get_ayon_appdirs(*args):
-    """Local app data directory of AYON client.
-
-    Args:
-        *args (Iterable[str]): Subdirectories/files in local app data dir.
-
-    Returns:
-        str: Path to directory/file in local app data dir.
-    """
-
-    return os.path.join(
-        appdirs.user_data_dir("AYON", "Ynput"),
-        *args
-    )
 
 
 def get_local_site_id():

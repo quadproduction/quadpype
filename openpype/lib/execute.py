@@ -334,9 +334,6 @@ def get_linux_launcher_args(*args):
     It is possible that this function is used in QuadPype build which does
     not have yet the new executable. In that case 'None' is returned.
 
-    Todos:
-        Replace by script in scripts for ayon-launcher.
-
     Args:
         args (iterable): List of additional arguments added after executable
             argument.

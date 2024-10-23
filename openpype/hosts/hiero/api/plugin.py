@@ -731,7 +731,7 @@ class PublishClip:
             self.tag_data["asset_name"] = self.ti_name
             self.tag_data["hierarchyData"]["shot"] = self.ti_name
 
-        # AYON unique identifier
+        # QUADPYPE unique identifier
         folder_path = "/{}/{}".format(
             tag_hierarchy_data["hierarchy"],
             self.tag_data["asset_name"]
