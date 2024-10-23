@@ -293,9 +293,9 @@ class HoudiniSubmitDeadline(
                 )
                 # Note: To use different versions of Redshift on Deadline
                 #       set the `REDSHIFT_VERSION` env variable in the Tools
-                #       settings in the AYON Application plugin. You will also
-                #       need to set that version in `Redshift.param` file
-                #       of the Redshift Deadline plugin:
+                #       settings in the QuadPype Application plugin.
+                #       You will also need to set that version in `Redshift.param`
+                #       file of the Redshift Deadline plugin:
                 #           [Redshift_Executable_*]
                 #           where * is the version number.
                 if os.getenv("REDSHIFT_VERSION"):

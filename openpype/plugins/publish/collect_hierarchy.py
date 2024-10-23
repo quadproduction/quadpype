@@ -62,8 +62,7 @@ class CollectHierarchy(pyblish.api.ContextPlugin):
                 "pixelAspect": instance.data["pixelAspect"],
                 "tools_env": context.data["tools_env"]
             }
-            # Split by '/' for AYON where asset is a path
-            name = instance.data["asset"].split("/")[-1]
+            name = instance.data["asset"]
             actual = {name: shot_data}
 
             for parent in reversed(instance.data["parents"]):

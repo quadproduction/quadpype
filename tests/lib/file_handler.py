@@ -13,7 +13,7 @@ import six
 import shutil
 import requests
 
-USER_AGENT = "AYON-launcher"
+USER_AGENT = "QuadPype-launcher"
 
 
 @six.add_metaclass(ABCMeta)
