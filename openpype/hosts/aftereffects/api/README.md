@@ -45,8 +45,8 @@ When developing the extension you can load it [unsigned](https://github.com/Adob
 When signing the extension you can use this [guide](https://github.com/Adobe-CEP/Getting-Started-guides/tree/master/Package%20Distribute%20Install#package-distribute-install-guide).
 
 ```
-ZXPSignCmd -selfSignedCert NA NA Ayon Avalon-After-Effects Ayon extension.p12
-ZXPSignCmd -sign {path to addon}/api/extension {path to addon}/api/extension.zxp extension.p12 Ayon
+ZXPSignCmd -selfSignedCert NA NA Quad Avalon-After-Effects QuadPype sign_certificate.p12
+ZXPSignCmd -sign {path to addon}/api/extension {path to addon}/api/extension.zxp sign_certificate.p12 QuadPype
 ```
 
 ### Plugin Examples
