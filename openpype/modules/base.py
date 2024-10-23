@@ -427,8 +427,8 @@ def _load_modules():
 
 
 @six.add_metaclass(ABCMeta)
-class AYONAddon(object):
-    """Base class of AYON addon.
+class QuadPypeModule(object):
+    """Base class for QuadPype module.
 
     Attributes:
         id (UUID): Addon object id.
@@ -437,7 +437,7 @@ class AYONAddon(object):
 
     Args:
         manager (ModulesManager): Manager object who discovered addon.
-        settings (dict[str, Any]): AYON settings.
+        settings (dict[str, Any]): QuadPype settings.
     """
 
     enabled = True
@@ -489,7 +489,7 @@ class AYONAddon(object):
         """Connect with other enabled addons.
 
         Args:
-            enabled_addons (list[AYONAddon]): Addons that are enabled.
+            enabled_addons (list[QuadPypeModule]): Addons that are enabled.
         """
 
         pass
@@ -545,7 +545,7 @@ class AYONAddon(object):
         used to separate commands.
 
         Example:
-            class MyPlugin(AYONAddon):
+            class MyPlugin(QuadPypeModule):
                 ...
                 def cli(self, module_click_group):
                     module_click_group.add_command(cli_main)
@@ -567,25 +567,11 @@ class AYONAddon(object):
         pass
 
 
-class QuadPypeModule(AYONAddon):
-    """Base class of QuadPype module.
-
-    Instead of 'AYONAddon' are passed in module settings.
-
-    Args:
-        manager (ModulesManager): Manager object who discovered addon.
-        settings (dict[str, Any]): QuadPype settings.
-    """
-
-    # Disable by default
-    enabled = False
-
-
 class QuadPypeAddOn(QuadPypeModule):
     # Enable Addon by default
     enabled = True
 
-    def initialize(self, module_settings):
+    def initialize(self, settings):
         """Initialization is not be required for most of addons."""
         pass
 
@@ -626,7 +612,7 @@ class ModulesManager:
             default (Any): Default output if module is not available.
 
         Returns:
-            Union[AYONAddon, None]: Module found by name or None.
+            Union[QuadPypeModule, None]: Module found by name or None.
         """
 
         return self.modules_by_name.get(module_name, default)
@@ -642,7 +628,7 @@ class ModulesManager:
                 not enabled.
 
         Returns:
-            Union[AYONAddon, None]: Enabled module found by name or None.
+            Union[QuadPypeModule, None]: Enabled module found by name or None.
         """
 
         module = self.get(module_name)
@@ -659,7 +645,7 @@ class ModulesManager:
 
         self.log.debug("*** {} initialization.".format("QuadPype modules"))
         # Prepare settings for modules
-        system_settings = self._system_settings
+        system_settings = getattr(self, "_system_settings", None)
         if system_settings is None:
             system_settings = get_system_settings()
 
@@ -675,13 +661,13 @@ class ModulesManager:
             for name in dir(module):
                 modules_item = getattr(module, name, None)
                 # Filter globals that are not classes which inherit from
-                #   AYONAddon
+                #   QuadPypeModule
                 if (
                     not inspect.isclass(modules_item)
-                    or modules_item is AYONAddon
+                    or modules_item is QuadPypeModule
                     or modules_item is QuadPypeModule
                     or modules_item is QuadPypeAddOn
-                    or not issubclass(modules_item, AYONAddon)
+                    or not issubclass(modules_item, QuadPypeModule)
                 ):
                     continue
 
@@ -765,7 +751,7 @@ class ModulesManager:
         """Enabled modules initialized by the manager.
 
         Returns:
-            list[AYONAddon]: Initialized and enabled modules.
+            list[QuadPypeModule]: Initialized and enabled modules.
         """
 
         return [
@@ -951,7 +937,7 @@ class ModulesManager:
             host_name (str): Host name for which is found host module.
 
         Returns:
-            AYONAddon: Found host module by name.
+            QuadPypeModule: Found host module by name.
             None: There was not found module inheriting IHostAddon which has
                 host name set to passed 'host_name'.
         """
@@ -1143,7 +1129,7 @@ class TrayModulesManager(ModulesManager):
         Missing feature how to define default callback.
 
         Args:
-            addon (AYONAddon): Addon object.
+            addon (QuadPypeModule): Addon object.
             callback (FunctionType): Function callback.
         """
         callback_name = "_".join([module.name, callback.__name__])
@@ -1168,7 +1154,7 @@ class TrayModulesManager(ModulesManager):
         """Enabled tray modules.
 
         Returns:
-            list[AYONAddon]: Enabled addons that inherit from tray interface.
+            list[QuadPypeModule]: Enabled addons that inherit from tray interface.
         """
 
         return [
