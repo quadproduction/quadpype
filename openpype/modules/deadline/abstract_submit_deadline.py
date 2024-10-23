@@ -398,7 +398,7 @@ class DeadlineJobInfo(object):
             setattr(self, key, value)
 
     def add_render_job_env_var(self):
-        """Check if in QuadPype or AYON mode and use appropriate env var."""
+        """Check if in QuadPype mode and use appropriate env var."""
         self.EnvironmentKeyValue["QUADPYPE_RENDER_JOB"] = "1"
 
 

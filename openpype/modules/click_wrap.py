@@ -1,6 +1,6 @@
 """Simplified wrapper for 'click' python module.
 
-Module 'click' is used as main cli handler in AYON/QuadPype. Addons can
+Module 'click' is used as main cli handler in QuadPype. Addons can
 register their own subcommands with options. This wrapper allows to define
 commands and options as with 'click', but without any dependency.
 
