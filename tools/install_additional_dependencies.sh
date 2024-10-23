@@ -70,8 +70,8 @@ main () {
 
   pushd "$quadpype_root" > /dev/null || return > /dev/null
 
-  echo -e "${BIGreen}>>>${RST} Running Pype tool ..."
-  "$POETRY_HOME/bin/poetry" run python "$quadpype_root/tools/fetch_thirdparty_libs.py"
+  echo -e "${BIGreen}>>>${RST} Installing Additional Dependencies ..."
+  "$POETRY_HOME/bin/poetry" run python "$quadpype_root/tools/install_additional_dependencies.py"
 }
 
 main

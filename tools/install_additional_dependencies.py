@@ -1,26 +1,29 @@
 # -*- coding: utf-8 -*-
-"""Fetch, verify and process third-party dependencies of QuadPype.
+"""Install runtime python modules required by QuadPype.
 
 Those should be defined in `pyproject.toml` in QuadPype sources root.
-
 """
+
 import os
-import sys
-import toml
 import shutil
-from pathlib import Path
-from urllib.parse import urlparse
-import requests
-import enlighten
+import sys
 import platform
-import blessed
-import tempfile
-import math
 import hashlib
-import tarfile
-import zipfile
 import time
 import subprocess
+from pathlib import Path
+
+import toml
+import enlighten
+import blessed
+
+# Imports for the install_thirdparty function:
+from urllib.parse import urlparse
+import requests
+import tempfile
+import math
+import tarfile
+import zipfile
 
 
 term = blessed.Terminal()
@@ -29,7 +32,7 @@ hash_buffer_size = 65536
 
 
 def sha256_sum(filename: Path):
-    """Calculate sha256 hash for given file.
+    """Calculate sha256 hash for the given file.
 
     Args:
         filename (Path): path to file.
@@ -67,7 +70,7 @@ def _print(msg: str, message_type: int = 0) -> None:
     print(f"{header}{msg}")
 
 
-def _pip_install(quadpype_root, package, version=None):
+def _pip_install(python_vendor_dir, package, version=None):
     arg = None
     if package and version:
         arg = f"{package}=={version}"
@@ -80,12 +83,13 @@ def _pip_install(quadpype_root, package, version=None):
 
     _print(f"We'll install {arg}")
 
-    python_vendor_dir = quadpype_root / "vendor" / "python"
     try:
         subprocess.run(
             [
                 sys.executable,
-                "-m", "pip", "install", "--upgrade", arg,
+                "-m", "pip",
+                "install",
+                "--upgrade", arg,
                 "-t", str(python_vendor_dir)
             ],
             check=True,
@@ -97,14 +101,42 @@ def _pip_install(quadpype_root, package, version=None):
         sys.exit(1)
 
 
-def install_qtbinding(pyproject, quadpype_root, platform_name):
-    _print("Handling Qt binding framework ...")
-    qtbinding_def = pyproject["quadpype"]["qtbinding"][platform_name]
+def install_qtbinding(
+    pyproject, python_vendor_dir, platform_name, use_pyside2
+):
+    _print("Install Qt binding framework ...")
+
+    qt_variants = []
+    if use_pyside2:
+        qt_variants.append("pyside2")
+
+    # Use QT_BINDING environment variable if set
+    # - existence is not validate, if does not exists it is just skipped
+    qt_package = os.getenv("QT_BINDING")
+    if qt_package:
+        qt_variants.append(qt_package)
+
+    # Special handling for specific distro (e.g. centos7 and rocky8)
+    if platform_name == "linux":
+        import distro
+
+        qt_variants.append(f"{distro.id()}{distro.major_version()}")
+
+    qt_binding_options = pyproject["quadpype"]["qtbinding"]
+    qtbinding_def = None
+    for qt_variant in qt_variants:
+        qtbinding_def = qt_binding_options.get(qt_variant)
+        if qtbinding_def:
+            break
+
+    # Use platform default Qt binding
+    if not qtbinding_def:
+        qtbinding_def = pyproject["quadpype"]["qtbinding"][platform_name]
+
     package = qtbinding_def["package"]
     version = qtbinding_def.get("version")
-    _pip_install(quadpype_root, package, version)
 
-    python_vendor_dir = quadpype_root / "vendor" / "python"
+    _pip_install(python_vendor_dir, package, version)
 
     # Remove libraries for QtSql which don't have available libraries
     #   by default and Postgre library would require to modify rpath of
@@ -117,33 +149,41 @@ def install_qtbinding(pyproject, quadpype_root, platform_name):
             os.remove(str(filepath))
 
 
-def install_runtime_dependencies(pyproject, quadpype_root):
+def install_runtime_dependencies(pyproject, python_vendor_dir):
     _print("Installing Runtime Dependencies ...")
-    runtime_deps = pyproject["quadpype"]["runtime-deps"]
+    runtime_deps = (
+        pyproject
+        .get("quadpype", {})
+        .get("runtime", {})
+        .get("deps", {})
+    )
     for package, version in runtime_deps.items():
-        _pip_install(quadpype_root, package, version)
+        _pip_install(python_vendor_dir, package, version)
 
 
-def install_thirdparty(pyproject, quadpype_root, platform_name):
+def install_thirdparty(pyproject, platform_name):
     _print("Processing third-party dependencies ...")
-    try:
-        thirdparty = pyproject["quadpype"]["thirdparty"]
-    except AttributeError:
-        _print("No third-party libraries specified in pyproject.toml", 1)
-        sys.exit(1)
+
+    quadpype_root = Path(os.path.dirname(__file__)).parent
+
+    thirdparty = (
+        pyproject
+        .get("quadpype", {})
+        .get("thirdparty", {})
+    )
 
     for k, v in thirdparty.items():
         _print(f"processing {k}")
         destination_path = quadpype_root / "vendor" / "bin" / k
 
         if not v.get(platform_name):
-            _print(("missing definition for current "
+            _print(("No definition for current "
                     f"platform [ {platform_name} ]"), 2)
             _print("trying to get universal url for all platforms")
             url = v.get("url")
             if not url:
                 _print("cannot get url for all platforms", 1)
-                _print((f"Warning: {k} is not installed for current platform "
+                _print((f"Warning: {k} cannot be installed for current platform "
                        "and it might be missing in the build"), 1)
                 continue
         else:
@@ -152,7 +192,7 @@ def install_thirdparty(pyproject, quadpype_root, platform_name):
 
         parsed_url = urlparse(url)
 
-        # check if file is already extracted in /vendor/bin
+        # check if the file is already extracted in /vendor/bin
         if destination_path.exists():
             _print("destination path already exists, deleting ...", 2)
             if destination_path.is_dir():
@@ -180,7 +220,7 @@ def install_thirdparty(pyproject, quadpype_root, platform_name):
                         file_handle.write(chunk)
                         counter.update()
 
-            # get file with checksum
+            # Compute the file checksum
             _print("Calculating sha256 ...", 2)
             calc_checksum = sha256_sum(temp_file)
 
@@ -197,14 +237,13 @@ def install_thirdparty(pyproject, quadpype_root, platform_name):
             if not destination_path.exists():
                 destination_path.mkdir(parents=True)
 
-            # extract to destination
+            # Extract to destination
             archive_type = temp_file.suffix.lstrip(".")
             _print(f"Extracting {archive_type} file to {destination_path}")
             if archive_type in ['zip']:
                 zip_file = zipfile.ZipFile(temp_file)
                 zip_file.extractall(destination_path)
                 zip_file.close()
-
             elif archive_type in [
                 'tar', 'tgz', 'tar.gz', 'tar.xz', 'tar.bz2'
             ]:
@@ -224,17 +263,27 @@ def install_thirdparty(pyproject, quadpype_root, platform_name):
                     raise SystemExit("corrupted archive")
                 tar_file.extractall(destination_path)
                 tar_file.close()
+
             _print("Extraction OK", 3)
 
 
 def main():
     start_time = time.time_ns()
-    quadpype_root = Path(os.path.dirname(__file__)).parent
-    pyproject = toml.load(quadpype_root / "pyproject.toml")
+    repo_root = Path(os.path.dirname(__file__)).parent
+    python_vendor_dir = repo_root / "vendor" / "python"
+    if python_vendor_dir.exists():
+        _print("Removing existing vendor directory")
+        shutil.rmtree(python_vendor_dir)
+    python_vendor_dir.mkdir(parents=True, exist_ok=True)
+    pyproject = toml.load(repo_root / "pyproject.toml")
     platform_name = platform.system().lower()
-    install_qtbinding(pyproject, quadpype_root, platform_name)
-    install_runtime_dependencies(pyproject, quadpype_root)
-    install_thirdparty(pyproject, quadpype_root, platform_name)
+    use_pyside2 = "--use-pyside2" in sys.argv
+
+    install_qtbinding(
+        pyproject, python_vendor_dir, platform_name, use_pyside2
+    )
+    install_runtime_dependencies(pyproject, python_vendor_dir)
+    install_thirdparty(pyproject, platform_name)
     end_time = time.time_ns()
     total_time = (end_time - start_time) / 1000000000
     _print(f"Downloading and extracting took {total_time} secs.")

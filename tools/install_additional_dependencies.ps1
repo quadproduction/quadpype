@@ -8,7 +8,7 @@
 
 .EXAMPLE
 
-PS> .\fetch_thirdparty_libs.ps1
+PS> .\install_runtime_dependencies.ps1
 
 #>
 $current_dir = Get-Location
@@ -34,8 +34,9 @@ if (-not (Test-Path -PathType Container -Path "$($env:POETRY_HOME)\bin")) {
 } else {
     Write-Color -Text "OK" -Color Green
 }
+Write-Color -Text ">>> ", "Installing Additional Dependencies ..." -Color Green, Gray
 $startTime = [int][double]::Parse((Get-Date -UFormat %s))
-& "$($env:POETRY_HOME)\bin\poetry" run python "$($quadpype_root)\tools\fetch_thirdparty_libs.py"
+& "$($env:POETRY_HOME)\bin\poetry" run python "$($quadpype_root)\tools\install_additional_dependencies.py"
 $endTime = [int][double]::Parse((Get-Date -UFormat %s))
 Set-Location -Path $current_dir
 try

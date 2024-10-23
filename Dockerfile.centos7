@@ -101,7 +101,7 @@ RUN source $HOME/.bashrc \
     && ./tools/create_env.sh
 
 RUN source $HOME/.bashrc \
-    && ./tools/fetch_thirdparty_libs.sh
+    && ./tools/install_additional_dependencies.sh
 
 RUN echo 'export PYTHONPATH="/opt/quadpype/vendor/python:$PYTHONPATH"'>> $HOME/.bashrc
 RUN source $HOME/.bashrc \
