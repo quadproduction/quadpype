@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Base class for QuadPype addons."""
-import copy
 import os
 import sys
 import json
@@ -16,7 +15,6 @@ from uuid import uuid4
 from abc import ABCMeta, abstractmethod
 
 import six
-import appdirs
 
 from quadpype.settings import (
     get_system_settings,
@@ -58,19 +56,6 @@ IGNORED_DEFAULT_FILENAMES = (
     "example_addons",
     "default_modules",
 )
-# Addons that won't be loaded in AYON mode from "./quadpype/modules"
-# - the same addons are ignored in "./server_addon/create_ayon_addons.py"
-IGNORED_FILENAMES_IN_AYON = {
-    "ftrack",
-    "shotgrid",
-    "sync_server",
-    "slack",
-    "kitsu",
-}
-IGNORED_HOSTS_IN_AYON = {
-    "flame",
-    "harmony",
-}
 
 
 # Inherit from `object` for Python 2 hosts
@@ -346,7 +331,6 @@ def _load_modules():
     if os.path.exists(addons_dir):
         module_dirs.append(addons_dir)
 
-    ignored_host_names = set(IGNORED_HOSTS_IN_AYON)
     ignored_current_dir_filenames = set(IGNORED_DEFAULT_FILENAMES)
 
     processed_paths = set()
@@ -373,12 +357,6 @@ def _load_modules():
             if (
                 is_in_current_dir
                 and filename in ignored_current_dir_filenames
-            ):
-                continue
-
-            if (
-                is_in_host_dir
-                and filename in ignored_host_names
             ):
                 continue
 

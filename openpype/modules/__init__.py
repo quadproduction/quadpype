@@ -11,7 +11,6 @@ from .interfaces import (
 )
 
 from .base import (
-    QuadPypeAddon,
     QuadPypeModule,
     QuadPypeAddOn,
 

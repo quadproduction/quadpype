@@ -32,10 +32,10 @@ class ValidateDeadlinePublish(pyblish.api.InstancePlugin,
         tree = bpy.context.scene.node_tree
         output_type = "CompositorNodeOutputFile"
         output_node = None
-        # Remove all output nodes that inlcude "QUADPYPE" in the name.
+        # Remove all output nodes that incude "QuadPype" in the name.
         # There should be only one.
         for node in tree.nodes:
-            if node.bl_idname == output_type and "QUADPYPE" in node.name:
+            if node.bl_idname == output_type and "QuadPype" in node.name:
                 output_node = node
                 break
         if not output_node:
