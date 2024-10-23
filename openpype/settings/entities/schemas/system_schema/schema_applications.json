@@ -114,10 +114,6 @@
       "name": "schema_openrv"
     },
     {
-      "type": "schema",
-      "name": "schema_3dequalizer"
-    },
-    {
       "type": "dict-modifiable",
       "key": "additional_apps",
       "label": "Additional",
