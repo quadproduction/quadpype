@@ -41,7 +41,7 @@ igniter/
 
 ## QuadPype
 
-This is the main package of the QuadPype logic, it could be loosely described as a combination of [Avalon](https://getavalon.github.io), [Pyblish](https://pyblish.com/) and glue around those with custom QuadPype only elements, things are in progress of being moved around to better prepare for V4, which will be released under a new name AYON.
+This is the main package of the QuadPype logic, it could be loosely described as a combination of [Avalon](https://getavalon.github.io), [Pyblish](https://pyblish.com/) and glue around those with custom QuadPype only elements, things are in progress of being moved around to better prepare for V4.
 
 ```
 quadpype/

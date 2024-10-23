@@ -34,7 +34,7 @@ class MaxSceneLoader(load.LoaderPlugin):
         rt.MergeMaxFile(path, quiet=True, includeFullGroup=True)
         max_objects = rt.getLastMergedNodes()
         max_object_names = [obj.name for obj in max_objects]
-        # implement the OP/AYON custom attributes before load
+        # implement the QP custom attributes before load
         max_container = []
         namespace = unique_namespace(
             name + "_",

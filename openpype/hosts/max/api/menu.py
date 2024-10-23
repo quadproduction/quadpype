@@ -9,7 +9,7 @@ from quadpype.hosts.max.api import lib
 
 
 class QuadPypeMenu(object):
-    """Object representing QuadPype/AYON menu.
+    """Object representing QuadPype menu.
 
     This is using "hack" to inject itself before "Help" menu of 3dsmax.
     For some reason `postLoadingMenus` event doesn't fire, and main menu
@@ -53,15 +53,15 @@ class QuadPypeMenu(object):
     def get_or_create_quadpype_menu(
             self, name: str = "&QuadPype",
             before: str = "&Help") -> QtWidgets.QAction:
-        """Create AYON menu.
+        """Create menu.
 
         Args:
-            name (str, Optional): AYON menu name.
+            name (str, Optional): menu name.
             before (str, Optional): Name of the 3dsmax main menu item to
-                add AYON menu before.
+                add menu before.
 
         Returns:
-            QtWidgets.QAction: AYON menu action.
+            QtWidgets.QAction: menu action.
 
         """
         if self.menu is not None:
@@ -78,7 +78,7 @@ class QuadPypeMenu(object):
 
             if before in item.title():
                 help_action = item.menuAction()
-        tab_menu_label = os.environ.get("AVALON_LABEL") or "AYON"
+        tab_menu_label = os.environ.get("AVALON_LABEL") or "QUADPYPE"
         op_menu = QtWidgets.QMenu("&{}".format(tab_menu_label))
         menu_bar.insertMenu(help_action, op_menu)
 
@@ -86,7 +86,7 @@ class QuadPypeMenu(object):
         return op_menu
 
     def build_quadpype_menu(self) -> QtWidgets.QAction:
-        """Build items in AYON menu."""
+        """Build items in menu."""
         quadpype_menu = self.get_or_create_quadpype_menu()
         load_action = QtWidgets.QAction("Load...", quadpype_menu)
         load_action.triggered.connect(self.load_callback)

@@ -176,7 +176,7 @@ def containerise(name: str, nodes: list, context,
 
 
 def load_custom_attribute_data():
-    """Re-loading the AYON custom parameter built by the creator
+    """Re-loading the custom parameter built by the creator
 
     Returns:
         attribute: re-loading the custom QuadPype attributes set in Maxscript
@@ -214,7 +214,7 @@ def import_custom_attribute_data(container: str, selections: list):
 
 
 def update_custom_attribute_data(container: str, selections: list):
-    """Updating the AYON custom parameter built by the creator
+    """Updating the custom parameter built by the creator
 
     Args:
         container (str): target container which adds custom attributes

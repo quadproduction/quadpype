@@ -14,7 +14,7 @@ class UnrealAddon(QuadPypeModule, IHostAddon):
 
     def get_global_environments(self):
         return {
-            "AYON_UNREAL_ROOT": UNREAL_ROOT_DIR,
+            "QUADPYPE_UNREAL_ROOT": UNREAL_ROOT_DIR,
         }
 
     def add_implementation_envs(self, env, app):
