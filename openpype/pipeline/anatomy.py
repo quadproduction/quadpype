@@ -15,7 +15,7 @@ from quadpype.settings.constants import (
     DEFAULT_PROJECT_KEY,
     PROJECTS_SETTINGS_KEY
 )
-from quadpype.client import get_project, get_ayon_server_api_connection
+from quadpype.client import get_project
 from quadpype.lib import Logger, get_local_site_id
 from quadpype.lib.path_templates import (
     TemplateUnsolved,

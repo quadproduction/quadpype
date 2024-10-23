@@ -18,7 +18,6 @@ from abc import ABCMeta, abstractmethod
 import six
 import appdirs
 
-from quadpype.client import get_ayon_server_api_connection
 from quadpype.settings import (
     get_system_settings,
     SYSTEM_SETTINGS_KEY,
@@ -319,52 +318,6 @@ def load_modules(force=False):
         while _LoadCache.modules_lock.locked():
             time.sleep(0.1)
 
-
-def _get_ayon_bundle_data():
-    con = get_ayon_server_api_connection()
-    bundles = con.get_bundles()["bundles"]
-
-    bundle_name = os.getenv("AYON_BUNDLE_NAME")
-
-    return next(
-        (
-            bundle
-            for bundle in bundles
-            if bundle["name"] == bundle_name
-        ),
-        None
-    )
-
-
-def _get_ayon_addons_information(bundle_info):
-    """Receive information about addons to use from server.
-
-    Todos:
-        Actually ask server for the information.
-        Allow project name as optional argument to be able to query information
-            about used addons for specific project.
-
-    Returns:
-        List[Dict[str, Any]]: List of addon information to use.
-    """
-
-    output = []
-    bundle_addons = bundle_info["addons"]
-    con = get_ayon_server_api_connection()
-    addons = con.get_addons_info()["addons"]
-    for addon in addons:
-        name = addon["name"]
-        versions = addon.get("versions")
-        addon_version = bundle_addons.get(name)
-        if addon_version is None or not versions:
-            continue
-        version = versions.get(addon_version)
-        if version:
-            version = copy.deepcopy(version)
-            version["name"] = name
-            version["version"] = addon_version
-            output.append(version)
-    return output
 
 
 def _load_modules():

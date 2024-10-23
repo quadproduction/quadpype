@@ -16,8 +16,7 @@ from quadpype.client import (
     get_project,
     get_asset_by_id,
     get_asset_by_name,
-    version_is_latest,
-    get_ayon_server_api_connection,
+    version_is_latest
 )
 from quadpype.lib.events import emit_event
 from quadpype.modules import load_modules, ModulesManager

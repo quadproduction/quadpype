@@ -1,7 +1,6 @@
 from .mongo import (
     QuadPypeMongoConnection,
 )
-from .server.utils import get_ayon_server_api_connection
 
 from .entities import (
     get_projects,
@@ -59,8 +58,6 @@ from .operations import (
 
 __all__ = (
     "QuadPypeMongoConnection",
-
-    "get_ayon_server_api_connection",
 
     "get_projects",
     "get_project",

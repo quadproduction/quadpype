@@ -3,7 +3,7 @@ import copy
 import logging
 
 from quadpype.lib import Logger
-from quadpype.client import get_project, get_ayon_server_api_connection
+from quadpype.client import get_project
 from . import legacy_io
 from .anatomy import Anatomy
 from .plugin_discover import (

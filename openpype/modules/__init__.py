@@ -39,7 +39,6 @@ __all__ = (
     "ISettingsChangeListener",
     "IHostAddon",
 
-    "AYONAddon",
     "QuadPypeModule",
     "QuadPypeAddOn",
 
