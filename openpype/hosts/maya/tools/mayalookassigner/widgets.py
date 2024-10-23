@@ -3,7 +3,6 @@ from collections import defaultdict
 
 from qtpy import QtWidgets, QtCore
 
-from quadpype.client import get_asset_name_identifier
 from quadpype.tools.utils.models import TreeModel
 from quadpype.tools.utils.lib import (
     preserve_expanded_rows,
@@ -127,7 +126,7 @@ class AssetOutliner(QtWidgets.QWidget):
         asset_namespaces = defaultdict(set)
         for item in items:
             asset_id = str(item["asset"]["_id"])
-            asset_name = get_asset_name_identifier(item["asset"])
+            asset_name = item["asset"]["name"]
             asset_namespaces[asset_name].add(item.get("namespace"))
 
             if asset_name in assets:

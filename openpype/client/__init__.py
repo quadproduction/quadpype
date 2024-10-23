@@ -43,9 +43,7 @@ from .entities import (
     get_thumbnails,
     get_thumbnail_id_from_source,
 
-    get_workfile_info,
-
-    get_asset_name_identifier,
+    get_workfile_info
 )
 
 from .entity_links import (
@@ -110,6 +108,4 @@ __all__ = (
     "get_linked_representation_id",
 
     "create_project",
-
-    "get_asset_name_identifier",
 )

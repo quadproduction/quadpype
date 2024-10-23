@@ -30,8 +30,7 @@ import pyblish.api
 from quadpype.client import (
     get_assets,
     get_subsets,
-    get_last_versions,
-    get_asset_name_identifier,
+    get_last_versions
 )
 from quadpype.pipeline.version_start import get_versioning_start
 from quadpype.pipeline.latest_version import get_latest_version_number
@@ -64,7 +63,7 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
         context_asset_doc = context.data.get("assetEntity")
         context_asset_name = None
         if context_asset_doc:
-            context_asset_name = get_asset_name_identifier(context_asset_doc)
+            context_asset_name = context_asset_doc["name"]
 
         instances_with_missing_asset_doc = collections.defaultdict(list)
         for instance in context:
@@ -74,8 +73,7 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
             # There is possibility that assetEntity on instance is already set
             # which can happen in standalone publisher
             if instance_asset_doc:
-                instance_asset_name = get_asset_name_identifier(
-                    instance_asset_doc)
+                instance_asset_name = instance_asset_doc["name"]
                 if instance_asset_name == _asset_name:
                     continue
 
@@ -98,7 +96,7 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
 
         asset_docs = get_assets(project_name, asset_names=asset_names)
         asset_docs_by_name = {
-            get_asset_name_identifier(asset_doc): asset_doc
+            asset_doc["name"]: asset_doc
             for asset_doc in asset_docs
         }
 

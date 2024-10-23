@@ -4,7 +4,7 @@ from collections import defaultdict
 
 import maya.cmds as cmds
 
-from quadpype.client import get_assets, get_asset_name_identifier
+from quadpype.client import get_assets
 from quadpype.pipeline import (
     remove_container,
     registered_host,
@@ -157,7 +157,7 @@ def create_items_from_nodes(nodes):
             namespace = get_namespace_from_node(node)
             namespaces.add(namespace)
 
-        label = get_asset_name_identifier(asset_doc)
+        label = asset_doc["name"]
         asset_view_items.append({
             "label": label,
             "asset": asset_doc,

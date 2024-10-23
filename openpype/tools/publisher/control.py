@@ -16,8 +16,7 @@ import pyblish.api
 from quadpype.client import (
     get_assets,
     get_asset_by_id,
-    get_subsets,
-    get_asset_name_identifier,
+    get_subsets
 )
 from quadpype.lib.events import EventSystem
 from quadpype.lib.attribute_definitions import (
@@ -107,7 +106,7 @@ class AssetDocsCache:
             elif "tasks" not in asset_doc["data"]:
                 asset_doc["data"]["tasks"] = {}
 
-            asset_name = get_asset_name_identifier(asset_doc)
+            asset_name = asset_doc["name"]
             asset_tasks = asset_doc["data"]["tasks"]
             task_names_by_asset_name[asset_name] = list(asset_tasks.keys())
             asset_docs_by_name[asset_name] = asset_doc

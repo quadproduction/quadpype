@@ -1,7 +1,6 @@
 import pyblish.api
 
 from quadpype.settings import PROJECT_SETTINGS_KEY
-from quadpype.client import get_asset_name_identifier
 import quadpype.hosts.flame.api as opfapi
 from quadpype.hosts.flame.otio import flame_export
 from quadpype.pipeline.create import get_subset_name
@@ -35,7 +34,7 @@ class CollecTimelineOTIO(pyblish.api.ContextPlugin):
             project_settings=context.data[PROJECT_SETTINGS_KEY]
         )
 
-        asset_name = get_asset_name_identifier(asset_doc)
+        asset_name = asset_doc["name"]
 
         # adding otio timeline to context
         with opfapi.maintained_segment_selection(sequence) as selected_seg:

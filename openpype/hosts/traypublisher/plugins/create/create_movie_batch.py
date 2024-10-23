@@ -2,7 +2,6 @@ import copy
 import os
 import re
 
-from quadpype.client import get_asset_name_identifier
 from quadpype.lib import (
     FileDef,
     BoolDef,
@@ -65,7 +64,7 @@ class BatchMovieCreator(TrayPublishCreator):
             subset_name, task_name = self._get_subset_and_task(
                 asset_doc, data["variant"], self.project_name)
 
-            asset_name = get_asset_name_identifier(asset_doc)
+            asset_name = asset_doc["name"]
 
             instance_data["task"] = task_name
             instance_data["asset"] = asset_name

@@ -2,7 +2,7 @@ from pprint import pformat
 
 import pyblish.api
 
-from quadpype.client import get_assets, get_asset_name_identifier
+from quadpype.client import get_assets
 
 
 class ValidateEditorialAssetName(pyblish.api.ContextPlugin):
@@ -34,7 +34,7 @@ class ValidateEditorialAssetName(pyblish.api.ContextPlugin):
         self.log.debug("__ db_assets: {}".format(db_assets))
 
         asset_db_docs = {
-            get_asset_name_identifier(asset_doc): list(
+            asset_doc["name"]: list(
                 asset_doc["data"]["parents"]
             )
             for asset_doc in db_assets

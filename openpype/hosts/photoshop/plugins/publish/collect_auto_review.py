@@ -67,7 +67,7 @@ class CollectAutoReview(pyblish.api.ContextPlugin):
         host_name = context.data["hostName"]
         asset_doc = context.data["assetEntity"]
 
-        asset_name = get_asset_name_identifier(asset_doc)
+        asset_name = asset_doc["name"]
 
         subset_name = get_subset_name(
             family,

@@ -2,8 +2,7 @@ import pyblish.api
 
 from quadpype.client import (
     get_subset_by_name,
-    get_asset_by_name,
-    get_asset_name_identifier,
+    get_asset_by_name
 )
 import quadpype.lib.usdlib as usdlib
 
@@ -103,7 +102,7 @@ class CollectUsdBootstrap(pyblish.api.InstancePlugin):
         # Allow it to be created during this publish session
         context = instance.context
 
-        asset_doc_name = get_asset_name_identifier(asset_doc)
+        asset_doc_name = asset_doc["name"]
         for inst in context:
             if (
                 inst.data["subset"] == subset_name

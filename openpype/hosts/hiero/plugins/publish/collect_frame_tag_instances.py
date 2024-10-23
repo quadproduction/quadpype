@@ -5,8 +5,6 @@ import json
 
 import pyblish.api
 
-from quadpype.client import get_asset_name_identifier
-
 
 class CollectFrameTagInstances(pyblish.api.ContextPlugin):
     """Collect frames from tags.
@@ -102,7 +100,7 @@ class CollectFrameTagInstances(pyblish.api.ContextPlugin):
         # first collect all available subset tag frames
         subset_data = {}
         context_asset_doc = context.data["assetEntity"]
-        context_asset_name = get_asset_name_identifier(context_asset_doc)
+        context_asset_name = context_asset_doc["name"]
 
         for tag_data in sequence_tags:
             frame = int(tag_data["start"])

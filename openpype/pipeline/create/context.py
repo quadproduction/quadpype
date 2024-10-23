@@ -13,8 +13,7 @@ import pyblish.api
 
 from quadpype.client import (
     get_assets,
-    get_asset_by_name,
-    get_asset_name_identifier,
+    get_asset_by_name
 )
 from quadpype.settings import (
     get_system_settings,
@@ -2012,7 +2011,7 @@ class CreateContext:
             project_name,
             self.host_name
         )
-        asset_name = get_asset_name_identifier(asset_doc)
+        asset_name = asset_doc["name"]
         asset_name_key = "asset"
 
         instance_data = {
@@ -2262,7 +2261,7 @@ class CreateContext:
         task_names_by_asset_name = {}
         asset_docs_by_name = collections.defaultdict(list)
         for asset_doc in asset_docs:
-            asset_name = get_asset_name_identifier(asset_doc)
+            asset_name = asset_doc["name"]
             tasks = asset_doc.get("data", {}).get("tasks") or {}
             task_names_by_asset_name[asset_name] = set(tasks.keys())
             asset_docs_by_name[asset_doc["name"]].append(asset_doc)

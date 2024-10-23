@@ -1,8 +1,7 @@
 from quadpype.client import (
     get_assets,
     get_subsets,
-    get_last_versions,
-    get_asset_name_identifier,
+    get_last_versions
 )
 from quadpype.lib.attribute_definitions import (
     FileDef,
@@ -168,7 +167,7 @@ class SettingsCreator(TrayPublishCreator):
             fields=["_id", "name", "data.parents"]
         )
         asset_names_by_id = {
-            asset_doc["_id"]: get_asset_name_identifier(asset_doc)
+            asset_doc["_id"]: asset_doc["name"]
             for asset_doc in asset_docs
         }
         subset_docs = list(get_subsets(

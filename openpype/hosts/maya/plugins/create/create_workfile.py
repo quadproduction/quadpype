@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating workfiles."""
 from quadpype.pipeline import CreatedInstance, AutoCreator
-from quadpype.client import get_asset_by_name, get_asset_name_identifier
+from quadpype.client import get_asset_by_name
 from quadpype.hosts.maya.api import plugin
 from maya import cmds
 
@@ -64,7 +64,7 @@ class CreateWorkfile(plugin.MayaCreatorBase, AutoCreator):
             subset_name = self.get_subset_name(
                 variant, task_name, asset_doc, project_name, host_name
             )
-            asset_name = get_asset_name_identifier(asset_doc)
+            asset_name = asset_doc["name"]
 
             current_instance["asset"] = asset_name
             current_instance["task"] = task_name

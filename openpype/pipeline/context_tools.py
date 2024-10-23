@@ -17,7 +17,6 @@ from quadpype.client import (
     get_asset_by_id,
     get_asset_by_name,
     version_is_latest,
-    get_asset_name_identifier,
     get_ayon_server_api_connection,
 )
 from quadpype.lib.events import emit_event
@@ -609,7 +608,7 @@ def compute_session_changes(
         task_name = None
         asset_name = None
     else:
-        asset_name = get_asset_name_identifier(asset_doc)
+        asset_name = asset_doc["name"]
 
     # Detect any changes compared session
     mapping = {

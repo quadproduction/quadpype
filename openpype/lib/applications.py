@@ -12,7 +12,6 @@ from abc import ABCMeta, abstractmethod
 import six
 
 from quadpype import PACKAGE_DIR
-from quadpype.client import get_asset_name_identifier
 from quadpype.settings import (
     get_system_settings,
     get_project_settings,
@@ -1746,7 +1745,7 @@ def prepare_context_environments(data, env_group=None, modules_manager=None):
         "AVALON_APP_NAME": app.full_name
     }
     if asset_doc:
-        asset_name = get_asset_name_identifier(asset_doc)
+        asset_name = asset_doc["name"]
         context_env["AVALON_ASSET"] = asset_name
 
         if task_name:

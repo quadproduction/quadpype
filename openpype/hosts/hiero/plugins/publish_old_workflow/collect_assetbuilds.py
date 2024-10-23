@@ -1,6 +1,6 @@
 from pyblish import api
 
-from quadpype.client import get_assets, get_asset_name_identifier
+from quadpype.client import get_assets
 
 
 class CollectAssetBuilds(api.ContextPlugin):
@@ -24,7 +24,7 @@ class CollectAssetBuilds(api.ContextPlugin):
             if asset_doc["data"].get("entityType") != "AssetBuild":
                 continue
 
-            asset_name = get_asset_name_identifier(asset_doc)
+            asset_name = asset_doc["name"]
             self.log.debug("Found \"{}\" in database.".format(asset_doc))
             asset_builds[asset_name] = asset_doc
 

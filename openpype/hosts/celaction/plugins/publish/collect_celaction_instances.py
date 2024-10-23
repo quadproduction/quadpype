@@ -1,8 +1,6 @@
 import os
 import pyblish.api
 
-from quadpype.client import get_asset_name_identifier
-
 
 class CollectCelactionInstances(pyblish.api.ContextPlugin):
     """ Adds the celaction render instances """
@@ -19,7 +17,7 @@ class CollectCelactionInstances(pyblish.api.ContextPlugin):
         asset_entity = context.data["assetEntity"]
         project_entity = context.data["projectEntity"]
 
-        asset_name = get_asset_name_identifier(asset_entity)
+        asset_name = asset_entity["name"]
 
         shared_instance_data = {
             "asset": asset_name,

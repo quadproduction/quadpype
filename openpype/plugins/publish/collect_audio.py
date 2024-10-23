@@ -5,8 +5,7 @@ from quadpype.client import (
     get_assets,
     get_subsets,
     get_last_versions,
-    get_representations,
-    get_asset_name_identifier,
+    get_representations
 )
 from quadpype.pipeline.load import get_representation_path_with_anatomy
 
@@ -126,7 +125,7 @@ class CollectAudio(pyblish.api.ContextPlugin):
         )
 
         asset_id_by_name = {
-            get_asset_name_identifier(asset_doc): asset_doc["_id"]
+            asset_doc["name"]: asset_doc["_id"]
             for asset_doc in asset_docs
         }
         asset_ids = set(asset_id_by_name.values())

@@ -37,7 +37,7 @@ Todos:
 import collections
 from typing import Any, Optional, Union
 
-from quadpype.client import get_asset_by_name, get_asset_name_identifier
+from quadpype.client import get_asset_by_name
 from quadpype.lib import (
     prepare_template_data,
     AbstractAttrDef,
@@ -784,7 +784,7 @@ class TVPaintAutoDetectRenderCreator(TVPaintCreator):
             project_name,
             host_name=self.create_context.host_name,
         )
-        asset_name = get_asset_name_identifier(asset_doc)
+        asset_name = asset_doc["name"]
         if existing_instance is not None:
             existing_instance["asset"] = asset_name
             existing_instance["task"] = task_name
@@ -821,7 +821,7 @@ class TVPaintAutoDetectRenderCreator(TVPaintCreator):
             for layer_name in render_pass["layer_names"]:
                 render_pass_by_layer_name[layer_name] = render_pass
 
-        asset_name = get_asset_name_identifier(asset_doc)
+        asset_name = asset_doc["name"]
 
         for layer in layers:
             layer_name = layer["name"]
