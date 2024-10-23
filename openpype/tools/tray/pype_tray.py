@@ -642,27 +642,6 @@ class TrayManager:
 
         self._restart_action = restart_action
 
-    def _on_ayon_login(self):
-        self.execute_in_main_thread(self._show_ayon_login)
-
-    def _show_ayon_login(self):
-        from ayon_common.connection.credentials import change_user_ui
-
-        result = change_user_ui()
-        if result.shutdown:
-            self.exit()
-
-        elif result.restart or result.token_changed:
-            # Remove environment variables from current connection
-            # - keep develop, staging, headless values
-            for key in {
-                "AYON_SERVER_URL",
-                "AYON_API_KEY",
-                "AYON_BUNDLE_NAME",
-            }:
-                os.environ.pop(key, None)
-            self.restart()
-
     def _on_restart_action(self):
         self.restart(use_expected_version=True)
 

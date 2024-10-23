@@ -24,9 +24,9 @@ python -c ^"import quadpype.hosts.photoshop;quadpype.hosts.photoshop.launch(""C:
 
 ## Usage
 
-The Photoshop extension can be found under `Window > Extensions > Ayon`. Once launched you should be presented with a panel like this:
+The Photoshop extension can be found under `Window > Extensions > QuadPype`. Once launched you should be presented with a panel like this:
 
-![Ayon Panel](panel.png "AYON Panel")
+![QuadPype Panel](panel.png "QuadPype Panel")
 
 
 ## Developing
@@ -37,7 +37,7 @@ When developing the extension you can load it [unsigned](https://github.com/Adob
 When signing the extension you can use this [guide](https://github.com/Adobe-CEP/Getting-Started-guides/tree/master/Package%20Distribute%20Install#package-distribute-install-guide).
 
 ```
-ZXPSignCmd -selfSignedCert NA NA Ayon Ayon-Photoshop Ayon extension.p12
+ZXPSignCmd -selfSignedCert NA NA QuadPype QuadPype-Photoshop QuadPype extension.p12
 ZXPSignCmd -sign {path to avalon-core}\avalon\photoshop\extension {path to avalon-core}\avalon\photoshop\extension.zxp extension.p12 avalon
 ```
 

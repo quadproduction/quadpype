@@ -60,7 +60,7 @@ class AYONThumbnailCache:
 
         if self._thumbnails_dir is None:
             # TODO use generic function
-            directory = appdirs.user_data_dir("AYON", "Ynput")
+            directory = appdirs.user_data_dir("quadpype", "quad")
             self._thumbnails_dir = os.path.join(directory, "thumbnails")
         return self._thumbnails_dir
 
