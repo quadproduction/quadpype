@@ -1492,7 +1492,6 @@ class PlaceholderLoadMixin(object):
             List[Dict[str, Any]]: Representation documents matching filters
                 from placeholder data.
         """
-        # An AYON placeholder loaded in QuadPype
         if "folder_path" in placeholder.data:
             return []
 

@@ -463,9 +463,7 @@ class Anatomy(BaseAnatomy):
         Notes:
             This logic handles local overrides of studio site which may be
                 available even when sync server is not enabled.
-            Handling of 'studio' and 'local' site was separated as preparation
-                for AYON development where that will be received from
-                separated sources.
+            Handling of 'studio' and 'local' site are separated
 
         Args:
             project_name (str): Name of project.

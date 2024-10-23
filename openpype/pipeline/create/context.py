@@ -925,7 +925,6 @@ class CreatedInstance:
         self._orig_data = copy.deepcopy(data)
 
         # Pop family and subset to prevent unexpected changes
-        # TODO change to 'productType' and 'productName' in AYON
         data.pop("family", None)
         data.pop("subset", None)
 

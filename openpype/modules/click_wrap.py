@@ -4,7 +4,7 @@ Module 'click' is used as main cli handler in QuadPype. Addons can
 register their own subcommands with options. This wrapper allows to define
 commands and options as with 'click', but without any dependency.
 
-Why not to use 'click' directly? Version of 'click' used in AYON/QuadPype
+Why not to use 'click' directly? Version of 'click' used in QuadPype
 is not compatible with 'click' version used in some DCCs (e.g. Houdini 20+).
 And updating 'click' would break other DCCs.
 
@@ -112,7 +112,7 @@ Example:
 
 import collections
 
-FUNC_ATTR_NAME = "__ayon_cli_options__"
+FUNC_ATTR_NAME = "__quadpype_cli_options__"
 
 
 class Command(object):

@@ -715,17 +715,6 @@ def get_resources(project_name, version, extension=None):
 
     This will return all get all files from representation.
 
-    Todo:
-        This is really weird function, and it's use is
-        highly controversial. First, it will not probably work
-        ar all in final release of AYON, second, the logic isn't sound.
-        It should try to find representation matching the current one -
-        because it is used to pull out files from previous version to
-        be included in this one.
-
-    .. deprecated:: 3.15.5
-       This won't work in AYON and even the logic must be refactored.
-
     Args:
         project_name (str): Name of the project.
         version (dict): Version document.
@@ -736,9 +725,6 @@ def get_resources(project_name, version, extension=None):
         list: of files
 
     """
-    warnings.warn((
-        "This won't work in AYON and even "
-        "the logic must be refactored."), DeprecationWarning)
     extensions = []
     if extension:
         extensions = [extension]

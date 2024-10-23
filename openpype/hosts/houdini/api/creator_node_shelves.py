@@ -198,14 +198,14 @@ def install():
             if not network_categories:
                 continue
 
-            key = "ayon_create.{}".format(identifier)
+            key = "quadpype_create.{}".format(identifier)
             log.debug(f"Registering {key}")
             script = CREATE_SCRIPT.format(identifier=identifier)
             data = {
                 "script": script,
                 "language": hou.scriptLanguage.Python,
                 "icon": icon,
-                "help": "Create Ayon publish instance for {}".format(
+                "help": "Create QuadPype publish instance for {}".format(
                     creator.label
                 ),
                 "help_url": None,
