@@ -673,7 +673,6 @@ class PublishClip:
         else:
             self.tag_data["asset_name"] = self.ti_name
 
-        # AYON unique identifier
         folder_path = "/{}/{}".format(
             self.tag_data["hierarchy"],
             self.tag_data["asset_name"]
