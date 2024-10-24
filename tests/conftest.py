@@ -11,7 +11,7 @@ def pytest_addoption(parser):
 
     parser.addoption(
         "--persist", action="store", default=None,
-        help="True - keep test_db, test_openpype, outputted test files"
+        help="True - keep test_db, test_quadpype, outputted test files"
     )
 
     parser.addoption(

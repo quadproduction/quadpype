@@ -1,6 +1,6 @@
 import pytest
 from tests.lib.testing_classes import ModuleUnitTest
-from openpype.pipeline import legacy_io
+from quadpype.pipeline import legacy_io
 
 
 class TestPipeline(ModuleUnitTest):

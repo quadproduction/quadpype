@@ -1,0 +1,60 @@
+{
+    Action
+    {
+        ID = "QuadPype_Menu",
+        Category = "QuadPype",
+        Name = "QuadPype Menu",
+
+        Targets =
+        {
+            Composition =
+            {
+                Execute = _Lua [=[
+                    local scriptPath = app:MapPath("QuadPype:../MenuScripts/launch_menu.py")
+                    if bmd.fileexists(scriptPath) == false then
+                        print("[QuadPype Error] Can't run file: " .. scriptPath)
+                    else
+                        target:RunScript(scriptPath)
+                    end
+                ]=],
+            },
+        },
+    },
+    Action
+    {
+        ID = "QuadPype_Install_PySide2",
+        Category = "QuadPype",
+        Name = "Install PySide2",
+
+        Targets =
+        {
+            Composition =
+            {
+                Execute = _Lua [=[
+                    local scriptPath = app:MapPath("QuadPype:../MenuScripts/install_pyside2.py")
+                    if bmd.fileexists(scriptPath) == false then
+                        print("[QuadPype Error] Can't run file: " .. scriptPath)
+                    else
+                        target:RunScript(scriptPath)
+                    end
+                ]=],
+            },
+        },
+    },
+    Menus
+    {
+        Target = "ChildFrame",
+
+        Before "Help"
+        {
+            Sub "QuadPype"
+            {
+                "QuadPype_Menu{}",
+                "_",
+                Sub "Admin" {
+                    "QuadPype_Install_PySide2{}"
+                }
+            }
+        },
+    },
+}

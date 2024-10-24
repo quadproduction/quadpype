@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Create OpenPype version from live sources."""
+"""Create QuadPype version from live sources."""
 from igniter import bootstrap_repos
 import click
 import enlighten
@@ -20,7 +20,7 @@ def main(path):
     # create zip file
 
     progress_bar = enlighten.Counter(
-        total=100, desc="OpenPype ZIP", units="%", color="green")
+        total=100, desc="QuadPype ZIP", units="%", color="green")
 
     def progress(inc: int):
         """Progress handler."""

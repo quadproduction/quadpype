@@ -1,51 +1,55 @@
 # -*- coding: utf-8 -*-
-"""Progress window to show when OpenPype is updating/installing locally."""
+"""Progress window to show when QuadPype is updating/installing locally."""
 import os
+import logging as log
 
+from pathlib import Path
 from qtpy import QtCore, QtGui, QtWidgets
 
 from .update_thread import UpdateThread
-from .bootstrap_repos import OpenPypeVersion
+from .bootstrap_repos import QuadPypeVersion, ZXPExtensionData
 from .nice_progress_bar import NiceProgressBar
-from .tools import load_stylesheet
+from .tools import load_stylesheet, get_app_icon_path, get_fonts_dir_path
 
 
 class UpdateWindow(QtWidgets.QDialog):
-    """OpenPype update window."""
+    """QuadPype update window."""
 
     _width = 500
     _height = 100
 
-    def __init__(self, version: OpenPypeVersion, parent=None):
-        super(UpdateWindow, self).__init__(parent)
-        self._openpype_version = version
+    def __init__(self, version: QuadPypeVersion, zxp_hosts: [ZXPExtensionData], parent=None):
+        super().__init__(parent)
+        self._quadpype_version = version
+        self._zxp_hosts = zxp_hosts
         self._result_version_path = None
+        self._log = log.getLogger(str(__class__))
 
         self.setWindowTitle(
-            f"OpenPype is updating ..."
+            f"QuadPype is updating ..."
         )
         self.setModal(True)
         self.setWindowFlags(
             QtCore.Qt.WindowMinimizeButtonHint
         )
 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        roboto_font_path = os.path.join(current_dir, "RobotoMono-Regular.ttf")
-        poppins_font_path = os.path.join(current_dir, "Poppins")
-        icon_path = os.path.join(current_dir, "openpype_icon.png")
+        fonts_dir = Path(get_fonts_dir_path())
+        roboto_font_path = str(fonts_dir.joinpath("RobotoMono-Regular.ttf"))
+        poppins_font_path = str(fonts_dir.joinpath("Poppins"))
+        icon_path = get_app_icon_path()
 
-        # Install roboto font
+        # Install fonts
         QtGui.QFontDatabase.addApplicationFont(roboto_font_path)
         for filename in os.listdir(poppins_font_path):
             if os.path.splitext(filename)[1] == ".ttf":
                 QtGui.QFontDatabase.addApplicationFont(filename)
 
         # Load logo
-        pixmap_openpype_logo = QtGui.QPixmap(icon_path)
-        # Set logo as icon of window
-        self.setWindowIcon(QtGui.QIcon(pixmap_openpype_logo))
+        pixmap_app_logo = QtGui.QPixmap(icon_path)
+        # Set logo as icon of the window
+        self.setWindowIcon(QtGui.QIcon(pixmap_app_logo))
 
-        self._pixmap_openpype_logo = pixmap_openpype_logo
+        self._pixmap_app_logo = pixmap_app_logo
 
         self._update_thread = None
 
@@ -60,7 +64,7 @@ class UpdateWindow(QtWidgets.QDialog):
         # Main info
         # --------------------------------------------------------------------
         main_label = QtWidgets.QLabel(
-            f"<b>OpenPype</b> is updating to {self._openpype_version}", self)
+            f"<b>QuadPype</b> is updating to {self._quadpype_version}", self)
         main_label.setWordWrap(True)
         main_label.setObjectName("MainLabel")
 
@@ -78,6 +82,7 @@ class UpdateWindow(QtWidgets.QDialog):
         main.addWidget(progress_bar, 0)
         main.addSpacing(15)
 
+        self._main_label = main_label
         self._progress_bar = progress_bar
 
     def showEvent(self, event):
@@ -101,9 +106,11 @@ class UpdateWindow(QtWidgets.QDialog):
             return
         self._progress_bar.setRange(0, 0)
         update_thread = UpdateThread(self)
-        update_thread.set_version(self._openpype_version)
-        update_thread.message.connect(self.update_console)
-        update_thread.progress.connect(self._update_progress)
+        update_thread.set_version(self._quadpype_version)
+        update_thread.set_zxp_hosts(self._zxp_hosts)
+        update_thread.log_signal.connect(self._print)
+        update_thread.step_text_signal.connect(self.update_step_text)
+        update_thread.progress_signal.connect(self._update_progress)
         update_thread.finished.connect(self._installation_finished)
 
         self._update_thread = update_thread
@@ -119,7 +126,10 @@ class UpdateWindow(QtWidgets.QDialog):
         self._progress_bar.setRange(0, 1)
         self._update_progress(100)
         QtWidgets.QApplication.processEvents()
-        self.done(0)
+        self.done(int(QtWidgets.QDialog.Accepted))
+        if self._update_thread.isRunning():
+            self._update_thread.quit()
+        self.close()
 
     def _update_progress(self, progress: int):
         # not updating progress as we are not able to determine it
@@ -137,11 +147,22 @@ class UpdateWindow(QtWidgets.QDialog):
         """
         return
 
-    def update_console(self, msg: str, error: bool = False) -> None:
-        """Display message in console.
+    def _print(self, message: str, error: bool = False) -> None:
+        """Print the message in the console.
 
         Args:
-            msg (str): message.
+            message (str): message.
             error (bool): if True, print it red.
         """
-        print(msg)
+        if error:
+            self._log.error(message)
+        else:
+            self._log.info(message)
+
+    def update_step_text(self, text: str) -> None:
+        """Print the message in the console.
+
+        Args:
+            text (str): Text describing the current step.
+        """
+        self._main_label.setText(text)

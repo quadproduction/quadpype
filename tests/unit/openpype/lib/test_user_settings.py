@@ -4,7 +4,7 @@ import pytest
 from igniter.user_settings import (
     IniSettingRegistry,
     JSONSettingRegistry,
-    OpenPypeSecureRegistry
+    QuadPypeSecureRegistry
 )
 from uuid import uuid4
 import configparser
@@ -13,7 +13,7 @@ import configparser
 @pytest.fixture
 def secure_registry():
     name = "pypetest_{}".format(str(uuid4()))
-    r = OpenPypeSecureRegistry(name)
+    r = QuadPypeSecureRegistry(name)
     yield r
 
 

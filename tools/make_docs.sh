@@ -1,28 +1,8 @@
 #!/usr/bin/env bash
 
-# This script will run apidoc over OpenPype sources and generate new source rst
+# This script will run apidoc over QuadPype sources and generate new source rst
 # files for documentation. Then it will run build_sphinx to create test html
 # documentation build.
-
-art () {
-  cat <<-EOF
-
-             . .   ..     .    ..
-        _oOOP3OPP3Op_. .
-     .PPpo~·   ··   ~2p.  ··  ····  ·  ·
-    ·Ppo · .pPO3Op.· · O:· · · ·
-   .3Pp · oP3'· 'P33· · 4 ··   ·  ·   · ·· ·  ·  ·
-  ·~OP    3PO·  .Op3    : · ··  _____  _____  _____
-  ·P3O  · oP3oP3O3P' · · ·   · /    /·/    /·/    /
-   O3:·   O3p~ ·       ·:· · ·/____/·/____/ /____/
-   'P ·   3p3·  oP3~· ·.P:· ·  · ··  ·   · ·· ·  ·  ·
-  · ':  · Po'  ·Opo'· .3O· .  o[ by Pype Club ]]]==- - - ·  ·
-    · '_ ..  ·    . _OP3··  ·  ·https://openpype.io·· ·
-         ~P3·OPPPO3OP~ · ··  ·
-           ·  ' '· ·  ·· · · · ··  ·
-
-EOF
-}
 
 # Colors for terminal
 
@@ -74,17 +54,13 @@ realpath () {
 
 # Main
 main () {
-  echo -e "${BGreen}"
-  art
-  echo -e "${RST}"
-
   # Directories
-  openpype_root=$(realpath $(dirname $(dirname "${BASH_SOURCE[0]}")))
+  quadpype_root=$(realpath $(dirname $(dirname "${BASH_SOURCE[0]}")))
 
-  _inside_openpype_tool="1"
+  _inside_quadpype_tool="1"
 
   if [[ -z $POETRY_HOME ]]; then
-    export POETRY_HOME="$openpype_root/.poetry"
+    export POETRY_HOME="$quadpype_root/.poetry"
   fi
 
   echo -e "${BIGreen}>>>${RST} Reading Poetry ... \c"
@@ -93,17 +69,17 @@ main () {
   else
     echo -e "${BIYellow}NOT FOUND${RST}"
     echo -e "${BIYellow}***${RST} We need to install Poetry and virtual env ..."
-    . "$openpype_root/tools/create_env.sh" || { echo -e "${BIRed}!!!${RST} Poetry installation failed"; return; }
+    . "$quadpype_root/tools/create_env.sh" || { echo -e "${BIRed}!!!${RST} Poetry installation failed"; return; }
   fi
 
-  pushd "$openpype_root" > /dev/null || return > /dev/null
+  pushd "$quadpype_root" > /dev/null || return > /dev/null
 
   echo -e "${BIGreen}>>>${RST} Running apidoc ..."
-  "$POETRY_HOME/bin/poetry" run sphinx-apidoc -M -e -d 10  --ext-intersphinx --ext-todo --ext-coverage --ext-viewcode -o "$openpype_root/docs/source" igniter
-  "$POETRY_HOME/bin/poetry" run sphinx-apidoc -M -e -d 10 --ext-intersphinx --ext-todo --ext-coverage --ext-viewcode -o "$openpype_root/docs/source" openpype vendor, openpype\vendor
+  "$POETRY_HOME/bin/poetry" run sphinx-apidoc -M -e -d 10  --ext-intersphinx --ext-todo --ext-coverage --ext-viewcode -o "$quadpype_root/docs/source" igniter
+  "$POETRY_HOME/bin/poetry" run sphinx-apidoc -M -e -d 10 --ext-intersphinx --ext-todo --ext-coverage --ext-viewcode -o "$quadpype_root/docs/source" quadpype vendor, quadpype\vendor
 
   echo -e "${BIGreen}>>>${RST} Building html ..."
-  "$POETRY_HOME/bin/poetry" run python3 "$openpype_root/setup.py" build_sphinx
+  "$POETRY_HOME/bin/poetry" run python3 "$quadpype_root/setup.py" build_sphinx
 }
 
 main

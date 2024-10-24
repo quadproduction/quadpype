@@ -5,16 +5,18 @@ import sys
 import re
 import collections
 
+from pathlib import Path
 from qtpy import QtCore, QtGui, QtWidgets
 
 from .install_thread import InstallThread
 from .tools import (
     validate_mongo_connection,
-    get_openpype_icon_path
+    get_app_icon_path,
+    get_fonts_dir_path
 )
 
 from .nice_progress_bar import NiceProgressBar
-from .user_settings import OpenPypeSecureRegistry
+from .user_settings import QuadPypeSecureRegistry
 from .tools import load_stylesheet
 from .version import __version__
 
@@ -23,7 +25,7 @@ class ButtonWithOptions(QtWidgets.QFrame):
     option_clicked = QtCore.Signal(str)
 
     def __init__(self, commands, parent=None):
-        super(ButtonWithOptions, self).__init__(parent)
+        super().__init__(parent)
 
         self.setObjectName("ButtonWithOptions")
 
@@ -83,7 +85,7 @@ class ButtonWithOptions(QtWidgets.QFrame):
 
 class ConsoleWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(ConsoleWidget, self).__init__(parent)
+        super().__init__(parent)
 
         # style for normal and error console text
         default_console_style = QtGui.QTextCharFormat()
@@ -172,44 +174,44 @@ class InstallDialog(QtWidgets.QDialog):
     ])
 
     def __init__(self, parent=None):
-        super(InstallDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle(
-            f"OpenPype Igniter {__version__}"
+            f"QuadPype Igniter {__version__}"
         )
         self.setWindowFlags(
             QtCore.Qt.WindowCloseButtonHint
             | QtCore.Qt.WindowMinimizeButtonHint
         )
 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        roboto_font_path = os.path.join(current_dir, "RobotoMono-Regular.ttf")
-        poppins_font_path = os.path.join(current_dir, "Poppins")
+        fonts_dir = Path(get_fonts_dir_path())
+        roboto_font_path = str(fonts_dir.joinpath("RobotoMono-Regular.ttf"))
+        poppins_font_path = str(fonts_dir.joinpath("Poppins"))
 
-        # Install roboto font
+        # Install fonts
         QtGui.QFontDatabase.addApplicationFont(roboto_font_path)
         for filename in os.listdir(poppins_font_path):
             if os.path.splitext(filename)[1] == ".ttf":
                 QtGui.QFontDatabase.addApplicationFont(filename)
 
         # Load logo
-        icon_path = get_openpype_icon_path()
-        pixmap_openpype_logo = QtGui.QPixmap(icon_path)
-        # Set logo as icon of window
-        self.setWindowIcon(QtGui.QIcon(pixmap_openpype_logo))
+        icon_path = get_app_icon_path()
+        pixmap_app_logo = QtGui.QPixmap(icon_path)
+        # Set logo as icon of the window
+        self.setWindowIcon(QtGui.QIcon(pixmap_app_logo))
 
-        secure_registry = OpenPypeSecureRegistry("mongodb")
+        secure_registry = QuadPypeSecureRegistry("mongodb")
         mongo_url = ""
         try:
             mongo_url = (
-                os.getenv("OPENPYPE_MONGO", "")
-                or secure_registry.get_item("openPypeMongo")
+                os.getenv("QUADPYPE_MONGO", "")
+                or secure_registry.get_item("quadpypeMongo")
             )
         except ValueError:
             pass
 
         self.mongo_url = mongo_url
-        self._pixmap_openpype_logo = pixmap_openpype_logo
+        self._pixmap_app_logo = pixmap_app_logo
 
         self._secure_registry = secure_registry
         self._controls_disabled = False
@@ -229,7 +231,7 @@ class InstallDialog(QtWidgets.QDialog):
 
         # Main info
         # --------------------------------------------------------------------
-        main_label = QtWidgets.QLabel("Welcome to <b>OpenPype</b>", self)
+        main_label = QtWidgets.QLabel("Welcome to <b>QuadPype</b>", self)
         main_label.setWordWrap(True)
         main_label.setObjectName("MainLabel")
 
@@ -268,15 +270,15 @@ class InstallDialog(QtWidgets.QDialog):
 
         btns_widget = QtWidgets.QWidget(bottom_widget)
 
-        openpype_logo_label = QtWidgets.QLabel("openpype logo", bottom_widget)
-        openpype_logo_label.setPixmap(self._pixmap_openpype_logo)
+        app_logo_label = QtWidgets.QLabel("QuadPype logo", bottom_widget)
+        app_logo_label.setPixmap(self._pixmap_app_logo)
 
         run_button = ButtonWithOptions(
             self.commands,
             btns_widget
         )
         run_button.setMinimumSize(64, 24)
-        run_button.setToolTip("Run OpenPype")
+        run_button.setToolTip("Run QuadPype")
 
         # install button - - - - - - - - - - - - - - - - - - - - - - - - - - -
         exit_button = QtWidgets.QPushButton("Exit", btns_widget)
@@ -293,7 +295,7 @@ class InstallDialog(QtWidgets.QDialog):
         bottom_layout = QtWidgets.QHBoxLayout(bottom_widget)
         bottom_layout.setContentsMargins(0, 0, 0, 0)
         bottom_layout.setAlignment(QtCore.Qt.AlignHCenter)
-        bottom_layout.addWidget(openpype_logo_label, 0)
+        bottom_layout.addWidget(quadpype_logo_label, 0)
         bottom_layout.addStretch(1)
         bottom_layout.addWidget(btns_widget, 0)
 
@@ -348,22 +350,22 @@ class InstallDialog(QtWidgets.QDialog):
             return
 
         if option == "run":
-            self._run_openpype()
+            self._run_quadpype()
         elif option == "run_from_code":
-            self._run_openpype_from_code()
+            self._run_quadpype_from_code()
         else:
             raise AssertionError("BUG: Unknown variant \"{}\"".format(option))
 
-    def _run_openpype_from_code(self):
-        os.environ["OPENPYPE_MONGO"] = self.mongo_url
+    def _run_quadpype_from_code(self):
+        os.environ["QUADPYPE_MONGO"] = self.mongo_url
         try:
-            self._secure_registry.set_item("openPypeMongo", self.mongo_url)
+            self._secure_registry.set_item("quadpypeMongo", self.mongo_url)
         except ValueError:
             print("Couldn't save Mongo URL to keyring")
 
         self.done(2)
 
-    def _run_openpype(self):
+    def _run_quadpype(self):
         """Start install process.
 
         This will once again validate entered path and mongo if ok, start

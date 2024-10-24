@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-  Helper script to run tests for OpenPype.
+  Helper script to run tests for QuadPype.
 
 .DESCRIPTION
-  This will use virtual environment and pytest to run test for OpenPype.
+  This will use virtual environment and pytest to run test for QuadPype.
 
 .EXAMPLE
 
@@ -13,10 +13,10 @@ PS> .\run_test.ps1
 
 $current_dir = Get-Location
 $script_dir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$openpype_root = (Get-Item $script_dir).parent.FullName
+$quadpype_root = (Get-Item $script_dir).parent.FullName
 
 # Install PSWriteColor to support colorized output to terminal
-$env:PSModulePath = $env:PSModulePath + ";$($openpype_root)\tools\modules\powershell"
+$env:PSModulePath = $env:PSModulePath + ";$($quadpype_root)\tools\modules\powershell"
 
 function Exit-WithCode($exitcode) {
    # Only exit this host process if it's a child of another PowerShell parent process...
@@ -35,66 +35,46 @@ function Show-PSWarning() {
     }
 }
 
-$art = @"
-
-             . .   ..     .    ..
-        _oOOP3OPP3Op_. .
-     .PPpo~.   ..   ~2p.  ..  ....  .  .
-    .Ppo . .pPO3Op.. . O:. . . .
-   .3Pp . oP3'. 'P33. . 4 ..   .  .   . .. .  .  .
-  .~OP    3PO.  .Op3    : . ..  _____  _____  _____
-  .P3O  . oP3oP3O3P' . . .   . /    /./    /./    /
-   O3:.   O3p~ .       .:. . ./____/./____/ /____/
-   'P .   3p3.  oP3~. ..P:. .  . ..  .   . .. .  .  .
-  . ':  . Po'  .Opo'. .3O. .  o[ by Pype Club ]]]==- - - .  .
-    . '_ ..  .    . _OP3..  .  .https://openpype.io.. .
-         ~P3.OPPPO3OP~ . ..  .
-           .  ' '. .  .. . . . ..  .
-
-"@
-
-Write-Host $art -ForegroundColor DarkGreen
-
 # Enable if PS 7.x is needed.
 # Show-PSWarning
 
-$env:_INSIDE_OPENPYPE_TOOL = "1"
+$env:_INSIDE_QUADPYPE_TOOL = "1"
 
 if (-not (Test-Path 'env:POETRY_HOME')) {
-    $env:POETRY_HOME = "$openpype_root\.poetry"
+    $env:POETRY_HOME = "$quadpype_root\.poetry"
 }
 
-Set-Location -Path $openpype_root
+Set-Location -Path $quadpype_root
 
-$version_file = Get-Content -Path "$($openpype_root)\openpype\version.py"
+$version_file = Get-Content -Path "$($quadpype_root)\quadpype\version.py"
 $result = [regex]::Matches($version_file, '__version__ = "(?<version>\d+\.\d+.\d+.*)"')
-$openpype_version = $result[0].Groups['version'].Value
-if (-not $openpype_version) {
-  Write-Color -Text "!!! ", "Cannot determine OpenPype version." -Color Yellow, Gray
+$quadpype_version = $result[0].Groups['version'].Value
+if (-not $quadpype_version) {
+  Write-Color -Text "!!! ", "Cannot determine QuadPype version." -Color Yellow, Gray
   Exit-WithCode 1
 }
 
-Write-Color -Text ">>> ", "OpenPype [ ", $openpype_version, " ]" -Color Green, White, Cyan, White
+Write-Color -Text ">>> ", "QuadPype [ ", $quadpype_version, " ]" -Color Green, White, Cyan, White
 
 Write-Color -Text ">>> ", "Reading Poetry ... " -Color Green, Gray -NoNewline
 if (-not (Test-Path -PathType Container -Path "$($env:POETRY_HOME)\bin")) {
     Write-Color -Text "NOT FOUND" -Color Yellow
     Write-Color -Text "*** ", "We need to install Poetry create virtual env first ..." -Color Yellow, Gray
-    & "$openpype_root\tools\create_env.ps1"
+    & "$quadpype_root\tools\create_env.ps1"
 } else {
     Write-Color -Text "OK" -Color Green
 }
 
 Write-Color -Text ">>> ", "Cleaning cache files ... " -Color Green, Gray -NoNewline
-Get-ChildItem $openpype_root -Filter "*.pyc" -Force -Recurse | Where-Object { $_.FullName -inotmatch 'build' } | Remove-Item -Force
-Get-ChildItem $openpype_root -Filter "*.pyo" -Force -Recurse | Where-Object { $_.FullName -inotmatch 'build' } | Remove-Item -Force
-Get-ChildItem $openpype_root -Filter "__pycache__" -Force -Recurse | Where-Object { $_.FullName -inotmatch 'build' } | Remove-Item -Force -Recurse
+Get-ChildItem $quadpype_root -Filter "*.pyc" -Force -Recurse | Where-Object { $_.FullName -inotmatch 'build' } | Remove-Item -Force
+Get-ChildItem $quadpype_root -Filter "*.pyo" -Force -Recurse | Where-Object { $_.FullName -inotmatch 'build' } | Remove-Item -Force
+Get-ChildItem $quadpype_root -Filter "__pycache__" -Force -Recurse | Where-Object { $_.FullName -inotmatch 'build' } | Remove-Item -Force -Recurse
 Write-Color -Text "OK" -Color green
 
-Write-Color -Text ">>> ", "Testing OpenPype ..." -Color Green, White
+Write-Color -Text ">>> ", "Testing QuadPype ..." -Color Green, White
 $original_pythonpath = $env:PYTHONPATH
-$env:PYTHONPATH="$($openpype_root);$($env:PYTHONPATH)"
-& "$env:POETRY_HOME\bin\poetry" run pytest -x --capture=sys --print -W ignore::DeprecationWarning "$($openpype_root)/tests"
+$env:PYTHONPATH="$($quadpype_root);$($env:PYTHONPATH)"
+& "$env:POETRY_HOME\bin\poetry" run pytest -x --capture=sys --print -W ignore::DeprecationWarning "$($quadpype_root)/tests"
 $env:PYTHONPATH = $original_pythonpath
 
 Write-Color -Text ">>> ", "Restoring current directory" -Color Green, Gray

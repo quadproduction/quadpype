@@ -14,7 +14,7 @@ Folder for libs and tooling for automatic testing.
     - unzips if zip
     
 - testing_wrapper.py - base class to use for testing
-    - all env var necessary for running (OPENPYPE_MONGO ...)
+    - all env var necessary for running (QUADPYPE_MONGO ...)
     - implements reusable fixtures to:
         - load test data (uses `file_handler`)
         - prepare DB (uses `db_handler`)
@@ -43,4 +43,4 @@ Currently it is expected that test file will be zip file with structure:
 
 Example
 -------
-See `tests\unit\openpype\modules\sync_server\test_site_operations.py` for example usage of implemented classes.
+See `tests\unit\quadpype\modules\sync_server\test_site_operations.py` for example usage of implemented classes.

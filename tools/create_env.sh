@@ -2,27 +2,7 @@
 
 # This script will detect Python installation, create venv with Poetry
 # and install all necessary packages from `poetry.lock` or `pyproject.toml`
-# needed by OpenPype to be included during application freeze on unix.
-
-art () {
-  cat <<-EOF
-
-             . .   ..     .    ..
-        _oOOP3OPP3Op_. .
-     .PPpo~·   ··   ~2p.  ··  ····  ·  ·
-    ·Ppo · .pPO3Op.· · O:· · · ·
-   .3Pp · oP3'· 'P33· · 4 ··   ·  ·   · ·· ·  ·  ·
-  ·~OP    3PO·  .Op3    : · ··  _____  _____  _____
-  ·P3O  · oP3oP3O3P' · · ·   · /    /·/    /·/    /
-   O3:·   O3p~ ·       ·:· · ·/____/·/____/ /____/
-   'P ·   3p3·  oP3~· ·.P:· ·  · ··  ·   · ·· ·  ·  ·
-  · ':  · Po'  ·Opo'· .3O· .  o[ by Pype Club ]]]==- - - ·  ·
-    · '_ ..  ·    . _OP3··  ·  ·https://openpype.io·· ·
-         ~P3·OPPPO3OP~ · ··  ·
-           ·  ' '· ·  ·· · · · ··  ·
-
-EOF
-}
+# needed by QuadPype to be included during application freeze on unix.
 
 # Colors for terminal
 
@@ -108,7 +88,7 @@ detect_python () {
 
 install_poetry () {
   echo -e "${BIGreen}>>>${RST} Installing Poetry ..."
-  export POETRY_HOME="$openpype_root/.poetry"
+  export POETRY_HOME="$quadpype_root/.poetry"
   export POETRY_VERSION="1.3.2"
   command -v curl >/dev/null 2>&1 || { echo -e "${BIRed}!!!${RST}${BIYellow} Missing ${RST}${BIBlue}curl${BIYellow} command.${RST}"; return 1; }
   curl -sSL https://install.python-poetry.org/ | python -
@@ -125,7 +105,7 @@ install_poetry () {
 ###############################################################################
 clean_pyc () {
   local path
-  path=$openpype_root
+  path=$quadpype_root
   echo -e "${BIGreen}>>>${RST} Cleaning pyc at [ ${BIWhite}$path${RST} ] ... \c"
   find "$path" -path ./build -o -regex '^.*\(__pycache__\|\.py[co]\)$' -delete
   echo -e "${BIGreen}DONE${RST}"
@@ -145,23 +125,17 @@ realpath () {
 }
 
 main () {
-  # Main
-  if [[ -z $_inside_openpype_tool ]]; then
-    echo -e "${BGreen}"
-    art
-    echo -e "${RST}"
-  fi
   detect_python || return 1
 
   # Directories
-  openpype_root=$(realpath $(dirname $(dirname "${BASH_SOURCE[0]}")))
+  quadpype_root=$(realpath $(dirname $(dirname "${BASH_SOURCE[0]}")))
 
   if [[ -z $POETRY_HOME ]]; then
-    export POETRY_HOME="$openpype_root/.poetry"
+    export POETRY_HOME="$quadpype_root/.poetry"
   fi
 
 
-  pushd "$openpype_root" > /dev/null || return > /dev/null
+  pushd "$quadpype_root" > /dev/null || return > /dev/null
 
   echo -e "${BIGreen}>>>${RST} Reading Poetry ... \c"
   if [ -f "$POETRY_HOME/bin/poetry" ]; then
@@ -171,7 +145,7 @@ main () {
     install_poetry || { echo -e "${BIRed}!!!${RST} Poetry installation failed"; return 1; }
   fi
 
-  if [ -f "$openpype_root/poetry.lock" ]; then
+  if [ -f "$quadpype_root/poetry.lock" ]; then
     echo -e "${BIGreen}>>>${RST} Updating dependencies ..."
   else
     echo -e "${BIGreen}>>>${RST} Installing dependencies ..."
@@ -190,8 +164,8 @@ main () {
   # cx_freeze will crash on missing __pychache__ on these but
   # reinstalling them solves the problem.
   echo -e "${BIGreen}>>>${RST} Post-venv creation fixes ..."
-  local openpype_index=$("$POETRY_HOME/bin/poetry" run python "$openpype_root/tools/parse_pyproject.py" tool.poetry.source.0.url)
-  echo -e "${BIGreen}-   ${RST} Using index: ${BIWhite}$openpype_index${RST}"
+  local quadpype_index=$("$POETRY_HOME/bin/poetry" run python "$quadpype_root/tools/parse_pyproject.py" tool.poetry.source.0.url)
+  echo -e "${BIGreen}-   ${RST} Using index: ${BIWhite}$quadpype_index${RST}"
   "$POETRY_HOME/bin/poetry" run python -m pip install --disable-pip-version-check --force-reinstall pip
   echo -e "${BIGreen}>>>${RST} Installing pre-commit hooks ..."
   "$POETRY_HOME/bin/poetry" run pre-commit install

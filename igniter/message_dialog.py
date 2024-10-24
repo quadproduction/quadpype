@@ -2,19 +2,19 @@ from qtpy import QtWidgets, QtGui
 
 from .tools import (
     load_stylesheet,
-    get_openpype_icon_path
+    get_app_icon_path
 )
 
 
 class MessageDialog(QtWidgets.QDialog):
     """Simple message dialog with title, message and OK button."""
     def __init__(self, title, message):
-        super(MessageDialog, self).__init__()
+        super().__init__()
 
-        # Set logo as icon of window
-        icon_path = get_openpype_icon_path()
-        pixmap_openpype_logo = QtGui.QPixmap(icon_path)
-        self.setWindowIcon(QtGui.QIcon(pixmap_openpype_logo))
+        # Set logo as icon of the window
+        icon_path = get_app_icon_path()
+        pixmap_app_logo = QtGui.QPixmap(icon_path)
+        self.setWindowIcon(QtGui.QIcon(pixmap_app_logo))
 
         # Set title
         self.setWindowTitle(title)

@@ -1,4 +1,4 @@
-Integration test for OpenPype
+Integration test for QuadPype
 =============================
 Contains end-to-end tests for automatic testing of OP.
 
@@ -10,13 +10,13 @@ and "automated" one.
 
 How to run
 ----------
-- activate `{OPENPYPE_ROOT}/.venv`
+- activate `{QUADPYPE_ROOT}/.venv`
 - run in cmd
-`{OPENPYPE_ROOT}/.venv/Scripts/python.exe {OPENPYPE_ROOT}/start.py runtests {OPENPYPE_ROOT}/tests/integration`
-  - add `hosts/APP_NAME` after integration part to limit only on specific app (eg. `{OPENPYPE_ROOT}/tests/integration/hosts/maya`)
+`{QUADPYPE_ROOT}/.venv/Scripts/python.exe {QUADPYPE_ROOT}/start.py runtests {QUADPYPE_ROOT}/tests/integration`
+  - add `hosts/APP_NAME` after integration part to limit only on specific app (eg. `{QUADPYPE_ROOT}/tests/integration/hosts/maya`)
 
 OR can use built executables
-`openpype_console runtests {ABS_PATH}/tests/integration`
+`quadpype_console runtests {ABS_PATH}/tests/integration`
 
 Command line arguments
 ----------------------
@@ -36,16 +36,16 @@ In case of failed test you might want to run it manually and visually debug what
 For that:
 - run tests that is failing
 - add environment variables (to command line process or your IDE)
-  - OPENPYPE_DATABASE_NAME = openpype_tests
+  - QUADPYPE_DATABASE_NAME = quadpype_tests
   - AVALON_DB = avalon_tests
 - run tray as usual
-  - `{OPENPYPE_ROOT}/.venv/Scripts/python.exe {OPENPYPE_ROOT}/start.py run tray --debug`
+  - `{QUADPYPE_ROOT}/.venv/Scripts/python.exe {QUADPYPE_ROOT}/start.py run tray --debug`
 
 You should see only test asset and state of databases for that particular use case.
 
 How to check logs/errors from app
 --------------------------------
-Keep PERSIST to True in the class and check `test_openpype.logs` collection.
+Keep PERSIST to True in the class and check `test_quadpype.logs` collection.
 
 How to create test for publishing from host
 ------------------------------------------
@@ -62,17 +62,17 @@ How to create test for publishing from host
 - `startup_scripts` - must contain pointing host to startup script saved into `test_data/input/startup`
   -- Script must contain something like (pseudocode)
 ```
-import openpype
+import quadpype
 from avalon import api, HOST
 
-from openpype.api import Logger
+from quadpype.api import Logger
 
 log = Logger().get_logger(__name__)
 
 api.install(HOST)
 log_lines = []
 for result in pyblish.util.publish_iter():
-    for record in result["records"]:  # for logging to test_openpype DB
+    for record in result["records"]:  # for logging to test_quadpype DB
         log_lines.append("{}: {}".format(
             result["plugin"].label, record.msg))
 

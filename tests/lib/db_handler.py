@@ -257,7 +257,7 @@ class DBHandler:
 # backup_dir = "c:\\projects\\test_zips\\test_nuke_deadline_publish\\input\\dumps"  # noqa
 # # #
 # handler.backup_to_dump("avalon_tests", backup_dir, True, collection="test_project")  # noqa
-#handler.backup_to_dump("openpype_tests", backup_dir, True, collection="settings")  # noqa
+#handler.backup_to_dump("quadpype_tests", backup_dir, True, collection="settings")  # noqa
 
 # handler.setup_from_dump("avalon_tests", backup_dir, True, db_name_out="avalon_tests", collection="test_project")  # noqa
 # handler.setup_from_sql_file("avalon_tests", "c:\\projects\\sql\\item.sql",

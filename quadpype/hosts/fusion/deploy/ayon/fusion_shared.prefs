@@ -1,0 +1,19 @@
+{
+Locked = true,
+Global = {
+  Paths = {
+    Map = {
+      ["QuadPype:"] = "$(QUADPYPE_FUSION)/deploy/quadpype",
+      ["Config:"] = "UserPaths:Config;QuadPype:Config",
+      ["Scripts:"] = "UserPaths:Scripts;Reactor:System/Scripts",
+    },
+  },
+  Script = {
+    PythonVersion = 3,
+    Python3Forced = true
+    },
+  UserInterface = {
+    Language = "en_US"
+    },
+  },
+}

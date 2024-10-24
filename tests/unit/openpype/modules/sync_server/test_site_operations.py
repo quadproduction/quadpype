@@ -16,7 +16,7 @@ from bson.objectid import ObjectId
 
 from tests.lib.testing_classes import ModuleUnitTest
 
-from openpype.modules.sync_server.utils import SiteAlreadyPresentError
+from quadpype.modules.sync_server.utils import SiteAlreadyPresentError
 
 
 
@@ -30,7 +30,7 @@ class TestSiteOperation(ModuleUnitTest):
     @pytest.fixture(scope="module")
     def setup_sync_server_module(self, dbcon):
         """Get sync_server_module from ModulesManager"""
-        from openpype.modules import ModulesManager
+        from quadpype.modules import ModulesManager
 
         manager = ModulesManager()
         sync_server = manager.modules_by_name["sync_server"]

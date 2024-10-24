@@ -27,12 +27,12 @@ class TestDeadlinePublishInNuke(NukeDeadlinePublishTestClass):
         Checks tmp folder if all expected files were published.
 
         How to run:
-        (in cmd with activated {OPENPYPE_ROOT}/.venv)
-        {OPENPYPE_ROOT}/.venv/Scripts/python.exe {OPENPYPE_ROOT}/start.py
+        (in cmd with activated {QUADPYPE_ROOT}/.venv)
+        {QUADPYPE_ROOT}/.venv/Scripts/python.exe {QUADPYPE_ROOT}/start.py
         runtests ../tests/integration/hosts/nuke  # noqa: E501
 
         To check log/errors from launched app's publish process keep PERSIST
-        to True and check `test_openpype.logs` collection.
+        to True and check `test_quadpype.logs` collection.
     """
     # https://drive.google.com/file/d/1SUurHj2aiQ21ZIMJfGVBI2KjR8kIjBGI/view?usp=sharing  # noqa: E501
     TEST_FILES = [
@@ -47,7 +47,7 @@ class TestDeadlinePublishInNuke(NukeDeadlinePublishTestClass):
     # could be overwritten by command line arguments
     # keep empty to locate latest installed variant or explicit
     APP_VARIANT = ""
-    PERSIST = False  # True - keep test_db, test_openpype, outputted test files
+    PERSIST = False  # True - keep test_db, test_quadpype, outputted test files
     TEST_DATA_FOLDER = None
 
     def test_db_asserts(self, dbcon, publish_finished):
