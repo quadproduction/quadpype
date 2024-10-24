@@ -91,7 +91,7 @@ class ExperimentalTools:
                 self._show_publisher,
                 hosts_filter=["blender", "maya", "nuke", "celaction", "flame",
                               "fusion", "harmony", "hiero", "resolve",
-                              "tvpaint", "unreal"]
+                              "tvpaint"]
             )
         ]
 

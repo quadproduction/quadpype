@@ -460,13 +460,6 @@
                     "task_types": [],
                     "hosts": [],
                     "workfile_template": "work"
-                },
-                {
-                    "task_types": [],
-                    "hosts": [
-                        "unreal"
-                    ],
-                    "workfile_template": "unreal"
                 }
             ],
             "last_workfile_on_startup": [
@@ -555,7 +548,7 @@
                 }
             ],
             "hero_template_name_profiles": [],
-            "custom_staging_dir_profiles": []
+            "custom_staging_dir_profiles": [],
             "symlink": {
                 "file_regex_pattern": "^[^\\/\\\\]*[\\/\\\\]prod[\\/\\\\].*$"
             }

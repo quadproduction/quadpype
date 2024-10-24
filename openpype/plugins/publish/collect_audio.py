@@ -39,8 +39,7 @@ class CollectAudio(pyblish.api.ContextPlugin):
         "resolve",
         "webpublisher",
         "aftereffects",
-        "flame",
-        "unreal"
+        "flame"
     ]
 
     audio_subset_name = "audioMain"

@@ -27,11 +27,6 @@
         "path": "{@folder}/{@file}"
     },
     "delivery": {},
-    "unreal": {
-        "folder": "{root[work]}/{project[name]}/unreal/{task[name]}",
-        "file": "{project[code]}_{asset}.{ext}",
-        "path": "{@folder}/{@file}"
-    },
     "others": {
         "maya2unreal": {
             "folder": "{root[work]}/{project[name]}/{hierarchy}/{asset}/publish/{family}",

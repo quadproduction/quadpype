@@ -177,7 +177,6 @@ class HostsEnumEntity(BaseEnumEntity):
         "photoshop",
         "resolve",
         "tvpaint",
-        "unreal",
         "standalonepublisher",
         "substancepainter",
         "traypublisher",

@@ -49,8 +49,7 @@ class ValidateFtrackAttributes(pyblish.api.InstancePlugin):
         "hiero",
         "photoshop",
         "premiere",
-        "resolve",
-        "unreal"
+        "resolve"
     ]
 
     def process(self, instance):

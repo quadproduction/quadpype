@@ -154,7 +154,6 @@
             "create_render": "Render",
             "create_mov_batch": "Batch Mov",
             "create_texture_batch": "Batch Texture",
-            "create_simple_unreal_texture": "Simple Unreal Texture",
             "create_vdb": "VDB Cache"
         }
     },

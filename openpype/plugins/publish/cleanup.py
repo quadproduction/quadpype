@@ -30,8 +30,7 @@ class CleanUp(pyblish.api.InstancePlugin):
         "nuke",
         "photoshop",
         "resolve",
-        "tvpaint",
-        "unreal",
+        "tvpaint"
         "standalonepublisher",
         "webpublisher",
         "shell"
