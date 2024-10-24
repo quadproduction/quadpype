@@ -9,7 +9,7 @@ from quadpype.hosts.blender.api.pipeline import (
 )
 
 
-class CreateWorkfile(BaseCreator, AutoCreator):
+class CreateWorkfile(BlenderCreator, AutoCreator):
     """Workfile auto-creator.
 
     The workfile instance stores its data on the `AVALON_CONTAINERS` collection

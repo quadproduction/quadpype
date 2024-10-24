@@ -5,7 +5,7 @@ import bpy
 from quadpype.hosts.blender.api import plugin, lib
 
 
-class CreateModel(plugin.BaseCreator):
+class CreateModel(plugin.BlenderCreator):
     """Polygonal static geometry."""
 
     identifier = "io.quadpype.creators.blender.model"

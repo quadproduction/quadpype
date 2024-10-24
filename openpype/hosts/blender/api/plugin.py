@@ -5,12 +5,14 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import bpy
-
+import pyblish.api
 from quadpype.pipeline import (
     Creator,
     CreatedInstance,
     LoaderPlugin,
+    AVALON_INSTANCE_ID,
 )
+from quadpype.pipeline.publish import Extractor
 from quadpype.lib import BoolDef
 
 from .pipeline import (
@@ -24,7 +26,8 @@ from .ops import (
 )
 from .lib import imprint
 
-VALID_EXTENSIONS = [".blend", ".json", ".abc", ".fbx"]
+VALID_EXTENSIONS = [".blend", ".json", ".abc", ".fbx",
+                    ".usd", ".usdc", ".usda"]
 
 
 def prepare_scene_name(
@@ -141,18 +144,36 @@ def deselect_all():
         if obj.mode != 'OBJECT':
             modes.append((obj, obj.mode))
             bpy.context.view_layer.objects.active = obj
-            bpy.ops.object.mode_set(mode='OBJECT')
+            context_override = create_blender_context(active=obj)
+            with bpy.context.temp_override(**context_override):
+                bpy.ops.object.mode_set(mode='OBJECT')
 
-    bpy.ops.object.select_all(action='DESELECT')
+    context_override = create_blender_context()
+    with bpy.context.temp_override(**context_override):
+        bpy.ops.object.select_all(action='DESELECT')
 
     for p in modes:
         bpy.context.view_layer.objects.active = p[0]
-        bpy.ops.object.mode_set(mode=p[1])
+        context_override = create_blender_context(active=p[0])
+        with bpy.context.temp_override(**context_override):
+            bpy.ops.object.mode_set(mode=p[1])
 
     bpy.context.view_layer.objects.active = active
 
 
-class BaseCreator(Creator):
+class BlenderInstancePlugin(pyblish.api.InstancePlugin):
+    settings_category = "blender"
+
+
+class BlenderContextPlugin(pyblish.api.ContextPlugin):
+    settings_category = "blender"
+
+
+class BlenderExtractor(Extractor):
+    settings_category = "blender"
+
+
+class BlenderCreator(Creator):
     """Base class for Blender Creator plug-ins."""
     defaults = ['Main']
 
@@ -256,7 +277,7 @@ class BaseCreator(Creator):
         return instance_node
 
     def collect_instances(self):
-        """Override abstract method from BaseCreator.
+        """Override abstract method from BlenderCreator.
         Collect existing instances related to this creator plugin."""
 
         # Cache subsets in shared data
@@ -283,7 +304,7 @@ class BaseCreator(Creator):
             self._add_instance_to_context(instance)
 
     def update_instances(self, update_list):
-        """Override abstract method from BaseCreator.
+        """Override abstract method from BlenderCreator.
         Store changes of existing instances so they can be recollected.
 
         Args:
@@ -368,13 +389,7 @@ class BaseCreator(Creator):
         ]
 
 
-class Loader(LoaderPlugin):
-    """Base class for Loader plug-ins."""
-
-    hosts = ["blender"]
-
-
-class AssetLoader(LoaderPlugin):
+class BlenderLoader(LoaderPlugin):
     """A basic AssetLoader for Blender
 
     This will implement the basic logic for linking/appending assets

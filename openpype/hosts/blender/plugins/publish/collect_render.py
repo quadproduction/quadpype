@@ -6,11 +6,10 @@ import re
 
 import bpy
 
-from quadpype.hosts.blender.api import colorspace
-import pyblish.api
+from quadpype.hosts.blender.api import colorspace, plugin
 
 
-class CollectBlenderRender(pyblish.api.InstancePlugin):
+class CollectBlenderRender(plugin.BlenderInstancePlugin):
     """Gather all publishable render instances."""
 
     order = pyblish.api.CollectorOrder + 0.01
@@ -105,7 +104,7 @@ class CollectBlenderRender(pyblish.api.InstancePlugin):
             "frameStartHandle": frame_handle_start,
             "frameEndHandle": frame_handle_end,
             "fps": context.data["fps"],
-            "byFrameStep": bpy.context.scene.frame_step,
+            "byFrameStep": instance.data["creator_attributes"].get("step", 1),
             "review": render_data.get("review", False),
             "multipartExr": ext == "exr" and multilayer,
             "farm": True,
@@ -116,5 +115,8 @@ class CollectBlenderRender(pyblish.api.InstancePlugin):
             "colorspaceConfig": "",
             "colorspaceDisplay": "sRGB",
             "colorspaceView": "ACES 1.0 SDR-video",
-            "renderProducts": colorspace.ARenderProduct(),
+            "renderProducts": colorspace.ARenderProduct(
+                frame_start=frame_start,
+                frame_end=frame_end
+            ),
         })

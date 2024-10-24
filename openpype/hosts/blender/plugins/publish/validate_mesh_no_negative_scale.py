@@ -10,10 +10,12 @@ from quadpype.pipeline.publish import (
     PublishValidationError
 )
 import quadpype.hosts.blender.api.action
+from quadpype.hosts.blender.api import plugin
 
-
-class ValidateMeshNoNegativeScale(pyblish.api.Validator,
-                                  OptionalPyblishPluginMixin):
+class ValidateMeshNoNegativeScale(
+    plugin.BlenderInstancePlugin,
+    OptionalPyblishPluginMixin
+):
     """Ensure that meshes don't have a negative scale."""
 
     order = ValidateContentsOrder

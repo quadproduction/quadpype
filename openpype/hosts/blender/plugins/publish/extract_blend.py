@@ -3,9 +3,11 @@ import os
 import bpy
 
 from quadpype.pipeline import publish
+from quadpype.hosts.blender.api import plugin
 
-
-class ExtractBlend(publish.Extractor, publish.OptionalPyblishPluginMixin):
+class ExtractBlend(
+    plugin.BlenderExtractor, publish.OptionalPyblishPluginMixin
+):
     """Extract a blend file."""
 
     label = "Extract Blend"

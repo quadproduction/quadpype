@@ -5,7 +5,7 @@ import bpy
 from quadpype.hosts.blender.api import plugin, lib
 
 
-class CreateBlendScene(plugin.BaseCreator):
+class CreateBlendScene(plugin.BlenderCreator):
     """Generic group of assets."""
 
     identifier = "io.quadpype.creators.blender.blendscene"

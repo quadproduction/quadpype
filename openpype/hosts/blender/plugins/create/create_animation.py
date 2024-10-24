@@ -3,7 +3,7 @@
 from quadpype.hosts.blender.api import plugin, lib
 
 
-class CreateAnimation(plugin.BaseCreator):
+class CreateAnimation(plugin.BlenderCreator):
     """Animation output for character rigs."""
 
     identifier = "io.quadpype.creators.blender.animation"

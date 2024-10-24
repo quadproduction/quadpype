@@ -2,11 +2,14 @@ import os
 import traceback
 import importlib
 import contextlib
-from typing import Dict, List, Union
+from typing import Dict, List, Union, TYPE_CHECKING
 
 import bpy
 import addon_utils
-from quadpype.lib import Logger
+from quadpype.lib import Logger, NumberDef
+
+if TYPE_CHECKING:
+    from quadpype.pipeline.create import CreateContext  # noqa: F401
 
 from . import pipeline
 
@@ -33,7 +36,7 @@ def load_scripts(paths):
         if register:
             try:
                 register()
-            except:
+            except:  # noqa E722
                 traceback.print_exc()
         else:
             print("\nWarning! '%s' has no register function, "
@@ -45,7 +48,7 @@ def load_scripts(paths):
         if unregister:
             try:
                 unregister()
-            except:
+            except:  # noqa E722
                 traceback.print_exc()
 
     def test_reload(mod):
@@ -57,7 +60,7 @@ def load_scripts(paths):
 
         try:
             return importlib.reload(mod)
-        except:
+        except:  # noqa E722
             traceback.print_exc()
 
     def test_register(mod):
@@ -365,3 +368,209 @@ def maintained_time():
         yield
     finally:
         bpy.context.scene.frame_current = current_time
+
+
+def get_all_parents(obj):
+    """Get all recursive parents of object.
+
+    Arguments:
+        obj (bpy.types.Object): Object to get all parents for.
+
+    Returns:
+        List[bpy.types.Object]: All parents of object
+
+    """
+    result = []
+    while True:
+        obj = obj.parent
+        if not obj:
+            break
+        result.append(obj)
+    return result
+
+
+def get_highest_root(objects):
+    """Get the highest object (the least parents) among the objects.
+
+    If multiple objects have the same amount of parents (or no parents) the
+    first object found in the input iterable will be returned.
+
+    Note that this will *not* return objects outside of the input list, as
+    such it will not return the root of node from a child node. It is purely
+    intended to find the highest object among a list of objects. To instead
+    get the root from one object use, e.g. `get_all_parents(obj)[-1]`
+
+    Arguments:
+        objects (List[bpy.types.Object]): Objects to find the highest root in.
+
+    Returns:
+        Optional[bpy.types.Object]: First highest root found or None if no
+            `bpy.types.Object` found in input list.
+
+    """
+    included_objects = {obj.name_full for obj in objects}
+    num_parents_to_obj = {}
+    for obj in objects:
+        if isinstance(obj, bpy.types.Object):
+            parents = get_all_parents(obj)
+            # included parents
+            parents = [parent for parent in parents if
+                       parent.name_full in included_objects]
+            if not parents:
+                # A node without parents must be a highest root
+                return obj
+
+            num_parents_to_obj.setdefault(len(parents), obj)
+
+    if not num_parents_to_obj:
+        return
+
+    minimum_parent = min(num_parents_to_obj)
+    return num_parents_to_obj[minimum_parent]
+
+
+@contextlib.contextmanager
+def attribute_overrides(
+        obj,
+        attribute_values
+):
+    """Apply attribute or property overrides during context.
+
+    Supports nested/deep overrides, that is also why it does not use **kwargs
+    as function arguments because it requires the keys to support dots (`.`).
+
+    Example:
+        >>> with attribute_overrides(scene, {
+        ...     "render.fps": 30,
+        ...     "frame_start": 1001}
+        ... ):
+        ...     print(scene.render.fps)
+        ...     print(scene.frame_start)
+        # 30
+        # 1001
+
+    Arguments:
+        obj (Any): The object to set attributes and properties on.
+        attribute_values: (dict[str, Any]): The property names mapped to the
+            values that will be applied during the context.
+    """
+    if not attribute_values:
+        # do nothing
+        yield
+        return
+
+    # Helper functions to get and set nested keys on the scene object like
+    # e.g. "scene.unit_settings.scale_length" or "scene.render.fps"
+    # by doing `setattr_deep(scene, "unit_settings.scale_length", 10)`
+    def getattr_deep(root, path):
+        for key in path.split("."):
+            root = getattr(root, key)
+        return root
+
+    def setattr_deep(root, path, value):
+        keys = path.split(".")
+        last_key = keys.pop()
+        for key in keys:
+            root = getattr(root, key)
+        return setattr(root, last_key, value)
+
+    # Get original values
+    original = {
+        key: getattr_deep(obj, key) for key in attribute_values
+    }
+    try:
+        for key, value in attribute_values.items():
+            setattr_deep(obj, key, value)
+        yield
+    finally:
+        for key, value in original.items():
+            setattr_deep(obj, key, value)
+
+
+def collect_animation_defs(create_context, step=True, fps=False):
+    """Get the basic animation attribute definitions for the publisher.
+
+    Arguments:
+        create_context (CreateContext): The context of publisher will be
+            used to define the defaults for the attributes to use the current
+            context's entity frame range as default values.
+        step (bool): Whether to include `step` attribute definition.
+        fps (bool): Whether to include `fps` attribute definition.
+
+    Returns:
+        List[NumberDef]: List of number attribute definitions.
+
+    """
+
+    # get scene values as defaults
+    scene = bpy.context.scene
+    # frame_start = scene.frame_start
+    # frame_end = scene.frame_end
+    # handle_start = 0
+    # handle_end = 0
+
+    # use task entity attributes to set defaults based on current context
+    task_entity = create_context.get_current_task_entity()
+    attrib: dict = task_entity["attrib"]
+    frame_start = attrib["frameStart"]
+    frame_end = attrib["frameEnd"]
+    handle_start = attrib["handleStart"]
+    handle_end = attrib["handleEnd"]
+
+    # build attributes
+    defs = [
+        NumberDef("frameStart",
+                  label="Frame Start",
+                  default=frame_start,
+                  decimals=0),
+        NumberDef("frameEnd",
+                  label="Frame End",
+                  default=frame_end,
+                  decimals=0),
+        NumberDef("handleStart",
+                  label="Handle Start",
+                  tooltip="Frames added before frame start to use as handles.",
+                  default=handle_start,
+                  decimals=0),
+        NumberDef("handleEnd",
+                  label="Handle End",
+                  tooltip="Frames added after frame end to use as handles.",
+                  default=handle_end,
+                  decimals=0),
+    ]
+
+    if step:
+        defs.append(
+            NumberDef(
+                "step",
+                label="Step size",
+                tooltip="Number of frames to skip forward while rendering/"
+                        "playing back each frame",
+                default=1,
+                decimals=0
+            )
+        )
+
+    if fps:
+        current_fps = scene.render.fps / scene.render.fps_base
+        fps_def = NumberDef(
+            "fps", label="FPS", default=current_fps, decimals=5
+        )
+        defs.append(fps_def)
+
+    return defs
+
+
+def get_cache_modifiers(obj, modifier_type="MESH_SEQUENCE_CACHE"):
+    modifiers_dict = {}
+    modifiers = [modifier for modifier in obj.modifiers
+                 if modifier.type == modifier_type]
+    if modifiers:
+        modifiers_dict[obj.name] = modifiers
+    else:
+        for sub_obj in obj.children:
+            for ob in sub_obj.children:
+                cache_modifiers = [modifier for modifier in ob.modifiers
+                                   if modifier.type == modifier_type]
+                modifiers_dict[ob.name] = cache_modifiers
+    return modifiers_dict

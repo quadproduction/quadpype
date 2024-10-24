@@ -5,7 +5,7 @@ import bpy
 from quadpype.hosts.blender.api import lib, plugin
 
 
-class CreateAction(plugin.BaseCreator):
+class CreateAction(plugin.BlenderCreator):
     """Action output for character rigs."""
 
     identifier = "io.quadpype.creators.blender.action"

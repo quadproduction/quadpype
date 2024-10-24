@@ -6,8 +6,8 @@ from quadpype.pipeline import publish
 
 
 class ExtractBlendAnimation(
-        publish.Extractor,
-        publish.OptionalPyblishPluginMixin,
+    plugin.BlenderExtractor,
+    publish.OptionalPyblishPluginMixin,
 ):
     """Extract a blend file."""
 

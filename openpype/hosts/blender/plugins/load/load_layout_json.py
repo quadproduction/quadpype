@@ -23,7 +23,7 @@ from quadpype.hosts.blender.api.pipeline import (
 from quadpype.hosts.blender.api import plugin
 
 
-class JsonLayoutLoader(plugin.AssetLoader):
+class JsonLayoutLoader(plugin.BlenderLoader):
     """Load layout published from Unreal."""
 
     families = ["layout"]

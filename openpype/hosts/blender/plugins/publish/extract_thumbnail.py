@@ -2,14 +2,13 @@ import os
 import glob
 
 import pyblish.api
-from quadpype.pipeline import publish
-from quadpype.hosts.blender.api import capture
+from quadpype.hosts.blender.api import capture, plugin
 from quadpype.hosts.blender.api.lib import maintained_time
 
 import bpy
 
 
-class ExtractThumbnail(publish.Extractor):
+class ExtractThumbnail(plugin.BlenderExtractor):
     """Extract viewport thumbnail.
 
     Takes review camera and creates a thumbnail based on viewport
@@ -21,7 +20,7 @@ class ExtractThumbnail(publish.Extractor):
     hosts = ["blender"]
     families = ["review"]
     order = pyblish.api.ExtractorOrder + 0.01
-    presets = {}
+    presets = "{}"
 
     def process(self, instance):
         self.log.info("Extracting capture..")

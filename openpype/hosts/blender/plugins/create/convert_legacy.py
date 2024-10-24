@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Converter for legacy Houdini subsets."""
+"""Converter for legacy Blender subsets."""
 from quadpype.pipeline.create.creator_plugins import SubsetConvertorPlugin
 from quadpype.hosts.blender.api.lib import imprint
 
@@ -42,7 +42,7 @@ class BlenderLegacyConvertor(SubsetConvertorPlugin):
         parameter on them.
 
         This is using cached entries done in
-        :py:meth:`~BaseCreator.cache_subsets()`
+        :py:meth:`~BlenderCreator.cache_instance_data()`
 
         """
         self.legacy_subsets = self.collection_shared_data.get(

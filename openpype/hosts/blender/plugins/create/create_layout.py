@@ -5,7 +5,7 @@ import bpy
 from quadpype.hosts.blender.api import plugin, lib
 
 
-class CreateLayout(plugin.BaseCreator):
+class CreateLayout(plugin.BlenderCreator):
     """Layout output for character rigs."""
 
     identifier = "io.quadpype.creators.blender.layout"

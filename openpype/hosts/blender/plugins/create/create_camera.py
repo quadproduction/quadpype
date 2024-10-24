@@ -6,7 +6,7 @@ from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.pipeline import AVALON_INSTANCES
 
 
-class CreateCamera(plugin.BaseCreator):
+class CreateCamera(plugin.BlenderCreator):
     """Polygonal static geometry."""
 
     identifier = "io.quadpype.creators.blender.camera"

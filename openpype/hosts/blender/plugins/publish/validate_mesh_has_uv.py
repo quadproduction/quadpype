@@ -2,19 +2,17 @@ from typing import List
 
 import bpy
 
-import pyblish.api
-
 from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     OptionalPyblishPluginMixin,
     PublishValidationError
 )
 import quadpype.hosts.blender.api.action
-
+from quadpype.hosts.blender.api import plugin
 
 class ValidateMeshHasUvs(
-        pyblish.api.InstancePlugin,
-        OptionalPyblishPluginMixin,
+    plugin.BlenderInstancePlugin,
+    OptionalPyblishPluginMixin,
 ):
     """Validate that the current mesh has UV's."""
 

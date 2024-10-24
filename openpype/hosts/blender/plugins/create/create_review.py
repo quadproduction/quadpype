@@ -3,7 +3,7 @@
 from quadpype.hosts.blender.api import plugin, lib
 
 
-class CreateReview(plugin.BaseCreator):
+class CreateReview(plugin.BlenderCreator):
     """Single baked camera."""
 
     identifier = "io.quadpype.creators.blender.review"

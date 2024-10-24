@@ -1,22 +1,22 @@
-"""Create a pointcache asset."""
+"""Create a USD Export."""
 
 from quadpype.hosts.blender.api import plugin, lib
 
+class CreateUSD(plugin.BlenderCreator):
+    """Create USD Export"""
 
-class CreatePointcache(plugin.BlenderCreator):
-    """Polygonal static geometry."""
-
-    identifier = "io.quadpype.creators.blender.pointcache"
-    label = "Point Cache"
-    family = "pointcache"
+    identifier = "io.openpype.creators.blender.usd"
+    name = "usdMain"
+    label = "USD"
+    product_type = "usd"
     icon = "gears"
 
     def create(
-        self, subset_name: str, instance_data: dict, pre_create_data: dict
+        self, product_name: str, instance_data: dict, pre_create_data: dict
     ):
         # Run parent create method
         collection = super().create(
-            subset_name, instance_data, pre_create_data
+            product_name, instance_data, pre_create_data
         )
 
         if pre_create_data.get("use_selection"):
