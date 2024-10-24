@@ -10,7 +10,7 @@ def get_release_type_github(Log, github_token):
     minor_labels = ["Bump Minor"]
 
     g = Github(github_token)
-    repo = g.get_repo("ynput/QuadPype")
+    repo = g.get_repo("quadproduction/QuadPype")
 
     labels = set()
     for line in Log.splitlines():

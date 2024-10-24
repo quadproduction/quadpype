@@ -235,7 +235,7 @@ class BaseCreator:
                 " System settings argument will not be passed to"
                 " '__init__' and 'apply_settings' methods in future versions"
                 " of QuadPype. Planned version to drop the support"
-                " is 3.16.6 or 3.17.0. Please contact Ynput core team if you"
+                " is 3.16.6 or 3.17.0. Please contact Quad core team if you"
                 " need to keep system settings."
             ).format(self.__class__.__name__))
 

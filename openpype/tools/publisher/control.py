@@ -2538,7 +2538,7 @@ class PublisherController(BasePublisherController):
                 else:
                     msg = (
                         "Something went wrong. Send report"
-                        " to your supervisor or Ynput team."
+                        " to your supervisor or Quad team."
                     )
                 self.publish_error_msg = msg
                 self.publish_has_crashed = True

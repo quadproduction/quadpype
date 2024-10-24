@@ -8,10 +8,6 @@ class CollectReviewInfo(pyblish.api.InstancePlugin):
     ExtractReview plugin requires frame start/end, fps on instance data which
     are missing on instances from TrayPublishes.
 
-    Warning:
-        This is temporary solution to "make it work". Contains removed changes
-            from https://github.com/ynput/QuadPype/pull/4383 reduced only for
-            review instances.
     """
 
     label = "Collect Review Info"
