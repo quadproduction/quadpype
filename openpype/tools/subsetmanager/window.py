@@ -5,6 +5,7 @@ from qtpy import QtWidgets, QtCore
 import qtawesome
 
 from quadpype import style
+from quadpype.widgets import BaseToolDialog
 from quadpype.pipeline import registered_host
 from quadpype.tools.utils import PlaceholderLineEdit
 from quadpype.tools.utils.lib import (
@@ -23,17 +24,15 @@ module = sys.modules[__name__]
 module.window = None
 
 
-class SubsetManagerWindow(QtWidgets.QDialog):
+class SubsetManagerWindow(BaseToolDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setWindowTitle("Subset Manager 0.1")
         self.setObjectName("SubsetManager")
-        if not parent:
+        if self.can_stay_on_top:
             self.setWindowFlags(
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )
-
-        self.resize(780, 430)
 
         # Trigger refresh on first called show
         self._first_show = True
@@ -91,6 +90,8 @@ class SubsetManagerWindow(QtWidgets.QDialog):
         self._view = view
         self._details_widget = details_widget
         self._refresh_btn = refresh_btn
+
+        self.resize(780, 430)
 
     def _on_refresh_clicked(self):
         self.refresh()

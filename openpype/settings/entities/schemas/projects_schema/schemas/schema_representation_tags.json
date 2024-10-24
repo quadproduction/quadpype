@@ -32,6 +32,9 @@
             "sequence": "Output as image sequence"
         },
         {
+            "sequence_with_gaps": "Sequence with gap(s)"
+        },
+        {
             "no-audio": "Do not add audio"
         }
     ]

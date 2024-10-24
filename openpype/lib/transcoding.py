@@ -591,7 +591,7 @@ def convert_for_ffmpeg(
     )
     # Add input compression if available
     if compression:
-        oiio_cmd.extend(["--compression", compression])
+        oiio_cmd.append(f"--compression {compression}")
 
     # Collect channels to export
     input_arg, channels_arg = get_oiio_input_and_channel_args(input_info)
@@ -599,16 +599,16 @@ def convert_for_ffmpeg(
     oiio_cmd.extend([
         input_arg, first_input_path,
         # Tell oiiotool which channels should be put to top stack (and output)
-        "--ch", channels_arg,
+        f"--ch {channels_arg}",
         # Use first subimage
-        "--subimage", "0"
+        "--subimage 0"
     ])
 
     # Add frame definitions to arguments
     if is_sequence:
-        oiio_cmd.extend([
-            "--frames", "{}-{}".format(input_frame_start, input_frame_end)
-        ])
+        oiio_cmd.append(
+            "--frames {}-{}".format(input_frame_start, input_frame_end)
+        )
 
     for attr_name, attr_value in input_info["attribs"].items():
         if not isinstance(attr_value, str):
@@ -638,7 +638,7 @@ def convert_for_ffmpeg(
             logger.info((
                 "Removed attribute \"{}\" from metadata because {}."
             ).format(attr_name, erase_reason))
-            oiio_cmd.extend(["--eraseattrib", attr_name])
+            oiio_cmd.append(f"--eraseattrib {attr_name}")
 
     # Add last argument - path to output
     if is_sequence:
@@ -649,9 +649,7 @@ def convert_for_ffmpeg(
     else:
         base_filename = os.path.basename(first_input_path)
     output_path = os.path.join(output_dir, base_filename)
-    oiio_cmd.extend([
-        "-o", output_path
-    ])
+    oiio_cmd.append(f"-o {output_path}")
 
     logger.debug("Conversion command: {}".format(" ".join(oiio_cmd)))
     run_subprocess(oiio_cmd, logger=logger)
@@ -716,15 +714,15 @@ def convert_input_paths_for_ffmpeg(
         )
         # Add input compression if available
         if compression:
-            oiio_cmd.extend(["--compression", compression])
+            oiio_cmd.append(f"--compression {compression}")
 
         oiio_cmd.extend([
             input_arg, input_path,
             # Tell oiiotool which channels should be put to top stack
             #   (and output)
-            "--ch", channels_arg,
+            f"--ch {channels_arg}",
             # Use first subimage
-            "--subimage", "0"
+            "--subimage 0"
         ])
 
         for attr_name, attr_value in input_info["attribs"].items():
@@ -755,14 +753,12 @@ def convert_input_paths_for_ffmpeg(
                 logger.info((
                     "Removed attribute \"{}\" from metadata because {}."
                 ).format(attr_name, erase_reason))
-                oiio_cmd.extend(["--eraseattrib", attr_name])
+                oiio_cmd.append(f"--eraseattrib {attr_name}")
 
         # Add last argument - path to output
         base_filename = os.path.basename(input_path)
         output_path = os.path.join(output_dir, base_filename)
-        oiio_cmd.extend([
-            "-o", output_path
-        ])
+        oiio_cmd.append(f"-o {output_path}")
 
         logger.debug("Conversion command: {}".format(" ".join(oiio_cmd)))
         run_subprocess(oiio_cmd, logger=logger)
@@ -784,14 +780,14 @@ def get_ffprobe_data(path_to_file, logger=None):
     ffprobe_args = get_ffmpeg_tool_args("ffprobe")
     args = ffprobe_args + [
         "-hide_banner",
-        "-loglevel", "fatal",
+        "-loglevel fatal",
         "-show_error",
         "-show_format",
         "-show_streams",
         "-show_programs",
         "-show_chapters",
         "-show_private_data",
-        "-print_format", "json",
+        "-print_format json",
         path_to_file
     ]
 
@@ -905,7 +901,7 @@ def _ffmpeg_mxf_format_args(ffprobe_data, source_ffmpeg_cmd):
     operational_pattern_ul = format_tags.get("operational_pattern_ul") or ""
     output = []
     if operational_pattern_ul == "060e2b34.04010102.0d010201.10030000":
-        output.extend(["-f", "mxf_opatom"])
+        output.append("-f mxf_opatom")
     return output
 
 
@@ -955,17 +951,17 @@ def get_ffmpeg_codec_args(ffprobe_data, source_ffmpeg_cmd=None, logger=None):
 
     output = []
     if codec_name:
-        output.extend(["-codec:v", codec_name])
+        output.append(f"-codec:v {codec_name}")
 
     bit_rate = video_stream.get("bit_rate")
     if bit_rate:
-        output.extend(["-b:v", bit_rate])
+        output.append(f"-b:v {bit_rate}")
 
     pix_fmt = video_stream.get("pix_fmt")
     if pix_fmt:
-        output.extend(["-pix_fmt", pix_fmt])
+        output.append(f"-pix_fmt {pix_fmt}")
 
-    output.extend(["-g", "1"])
+    output.append("-g 1")
 
     return output
 
@@ -984,11 +980,11 @@ def _ffmpeg_prores_codec_args(stream_data, source_ffmpeg_cmd):
     else:
         codec_name = "prores"
 
-    output.extend(["-codec:v", codec_name])
+    output.append(f"-codec:v {codec_name}")
 
     pix_fmt = stream_data.get("pix_fmt")
     if pix_fmt:
-        output.extend(["-pix_fmt", pix_fmt])
+        output.append(f"-pix_fmt {pix_fmt}")
 
     # Rest of arguments is prores_kw specific
     if codec_name == "prores_ks":
@@ -1004,13 +1000,13 @@ def _ffmpeg_prores_codec_args(stream_data, source_ffmpeg_cmd):
         if codec_tag_str:
             profile = codec_tag_to_profile_map.get(codec_tag_str)
             if profile:
-                output.extend(["-profile:v", profile])
+                output.append(f"-profile:v {profile}")
 
     return output
 
 
 def _ffmpeg_h264_codec_args(stream_data, source_ffmpeg_cmd):
-    output = ["-codec:v", "h264"]
+    output = ["-codec:v h264"]
 
     # Use arguments from source if are available source arguments
     if source_ffmpeg_cmd:
@@ -1028,14 +1024,14 @@ def _ffmpeg_h264_codec_args(stream_data, source_ffmpeg_cmd):
 
     pix_fmt = stream_data.get("pix_fmt")
     if pix_fmt:
-        output.extend(["-pix_fmt", pix_fmt])
+        output.append(f"-pix_fmt {pix_fmt}")
 
-    output.extend(["-g", "1"])
+    output.append("-g 1")
     return output
 
 
 def _ffmpeg_dnxhd_codec_args(stream_data, source_ffmpeg_cmd):
-    output = ["-codec:v", "dnxhd"]
+    output = ["-codec:v dnxhd"]
 
     # Use source profile (profiles in metadata are not usable in args directly)
     profile = stream_data.get("profile") or ""
@@ -1058,11 +1054,11 @@ def _ffmpeg_dnxhd_codec_args(stream_data, source_ffmpeg_cmd):
     if cleaned_profile in dnx_profiles:
         if cleaned_profile != "dnxhd":
             bit_rate_must_be_defined = False
-        output.extend(["-profile:v", cleaned_profile])
+        output.append(f"-profile:v {cleaned_profile}")
 
     pix_fmt = stream_data.get("pix_fmt")
     if pix_fmt:
-        output.extend(["-pix_fmt", pix_fmt])
+        output.append(f"-pix_fmt {pix_fmt}")
 
     # Use arguments from source if are available source arguments
     bit_rate_defined = False
@@ -1085,9 +1081,9 @@ def _ffmpeg_dnxhd_codec_args(stream_data, source_ffmpeg_cmd):
     if bit_rate_must_be_defined and not bit_rate_defined:
         src_bit_rate = stream_data.get("bit_rate")
         if src_bit_rate:
-            output.extend(["-b:v", src_bit_rate])
+            output.append(f"-b:v {src_bit_rate}")
 
-    output.extend(["-g", "1"])
+    output.append("-g 1")
     return output
 
 
@@ -1183,6 +1179,9 @@ def convert_colorspace(
     Raises:
         ValueError: if misconfigured
     """
+    if logger is None:
+        logger = logging.getLogger(__name__)
+
     def chunk_list(frame_start, frame_end, chunk_size):
         """Chunk the frame numbers into groups."""
         numbers = list(range(frame_start, frame_end + 1))
@@ -1197,7 +1196,7 @@ def convert_colorspace(
             input_path = re.sub(frame_regex, frame_group, input_path)
             output_path = re.sub(frame_regex, frame_group, output_path)
 	
-    	input_info = get_oiio_info_for_input(input_path, logger=logger)
+        input_info = get_oiio_info_for_input(input_path, logger=logger)
 
         # Collect channels to export
         input_arg, channels_arg = get_oiio_input_and_channel_args(input_info)
@@ -1207,15 +1206,15 @@ def convert_colorspace(
             "oiiotool",
             # Don't add any additional attributes
             "--nosoftwareattrib",
-            "--colorconfig", config_path
+            f"--colorconfig {config_path}"
         )
         oiio_cmd.extend([
             input_arg, input_path,
             # Tell oiiotool which channels should be put to top stack
             #   (and output)
-            "--ch", channels_arg,
+            f"--ch {channels_arg}",
             # Use first subimage
-            "--subimage", "0"
+            "--subimage 0"
         ])
 
         if all([target_colorspace, view, display]):
@@ -1229,20 +1228,15 @@ def convert_colorspace(
             oiio_cmd.extend(additional_command_args)
 
         if target_colorspace:
-            oiio_cmd.extend(["--colorconvert",
-                             source_colorspace,
-                             target_colorspace])
+            oiio_cmd.append(f"--colorconvert {source_colorspace} {target_colorspace}")
         if view and display:
-            oiio_cmd.extend(["--iscolorspace", source_colorspace])
-            oiio_cmd.extend(["--ociodisplay", display, view])
+            oiio_cmd.append(f"--iscolorspace {source_colorspace}")
+            oiio_cmd.append(f"--ociodisplay {display} {view}")
 
-        oiio_cmd.extend(["-o", output_path])
+        oiio_cmd.append(f"-o {output_path}")
 
         logger.debug("Conversion command: {}".format(" ".join(oiio_cmd)))
         run_subprocess(oiio_cmd, logger=logger)
-
-    if logger is None:
-        logger = logging.getLogger(__name__)
 
     frame_data = input_path.split('.')[-2]
     if '-' in frame_data:
@@ -1353,7 +1347,7 @@ def get_rescaled_command_arguments(
         if bg_color:
             color = convert_color_values(application, bg_color)
             pad += ":{0}".format(color)
-        command_args.extend(["-vf", "{0},{1}".format(scale, pad)])
+        command_args.append(f"-vf {scale},{pad}")
 
     elif application == "oiiotool":
         input_info = get_oiio_info_for_input(input_path, logger=log)
@@ -1364,38 +1358,33 @@ def get_rescaled_command_arguments(
         command_args.extend([
             # Tell oiiotool which channels should be put to top stack
             #   (and output)
-            "--ch", channels_arg,
+            f"--ch {channels_arg}",
             # Use first subimage
-            "--subimage", "0"
+            "--subimage 0"
         ])
 
         if input_par != 1.0:
-            command_args.extend(["--pixelaspect", "1"])
+            command_args.append("--pixelaspect 1")
 
         width_shift = int((target_width - input_width) / 2)
         height_shift = int((target_height - input_height) / 2)
 
         # default resample is not scaling source image
         resample = [
-            "--resize",
-            "{0}x{1}".format(input_width, input_height),
-            "--origin",
-            "+{0}+{1}".format(width_shift, height_shift),
+            "--resize {0}x{1}".format(input_width, input_height),
+            "--origin +{0}+{1}".format(width_shift, height_shift),
         ]
         # scaled source image to target size
         if input_width > target_width or input_height > target_height:
             # form resample command
             resample = [
-                "--resize:filter=lanczos3",
-                "{0}x{1}".format(rescaled_width, rescaled_height),
-                "--origin",
-                "+{0}+{1}".format(rescaled_width_shift, rescaled_height_shift),
+                "--resize:filter=lanczos3 {0}x{1}".format(rescaled_width, rescaled_height),
+                "--origin +{0}+{1}".format(rescaled_width_shift, rescaled_height_shift),
             ]
         command_args.extend(resample)
 
         fullsize = [
-            "--fullsize",
-            "{0}x{1}".format(target_width, target_height)
+            "--fullsize {0}x{1}".format(target_width, target_height)
         ]
         if bg_color:
             color = convert_color_values(application, bg_color)

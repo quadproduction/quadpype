@@ -2,6 +2,7 @@
     "studio_name": "Studio name",
     "studio_code": "stu",
     "admin_password": "",
+    "windows_can_stay_on_top": true,
     "environment": {},
     "log_to_server": true,
     "disk_mapping": {

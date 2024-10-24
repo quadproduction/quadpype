@@ -1,4 +1,4 @@
-from aiohttp.web_response import Response
+from fastapi import Response, status
 from quadpype.lib import Logger
 
 
@@ -34,4 +34,4 @@ class SyncServerModuleRestApi:
         """Force timer to run immediately."""
         self.module.reset_timer()
 
-        return Response(status=200)
+        return Response(status_code=status.HTTP_200_OK)

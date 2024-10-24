@@ -1,5 +1,6 @@
 import collections
 
+from quadpype.lib import optimize_path_compatibility
 from quadpype.lib.attribute_definitions import BoolDef
 from quadpype.pipeline import (
     get_representation_context,
@@ -86,12 +87,12 @@ class LoadImage(plugin.Loader):
         subset_name = context["subset"]["name"]
         layer_name = self.get_unique_layer_name(asset_name, subset_name)
 
-        path = self.filepath_from_context(context)
+        path = optimize_path_compatibility(self.filepath_from_context(context)).replace("\\", "/")
 
         # Fill import script with filename and layer name
         # - filename mus not contain backwards slashes
         george_script = self.import_script.format(
-            path.replace("\\", "/"),
+            path,
             layer_name,
             load_options_str
         )

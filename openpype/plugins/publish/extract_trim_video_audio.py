@@ -77,21 +77,21 @@ class ExtractTrimVideoAudio(publish.Extractor):
                 ]
 
             ffmpeg_args = ffmpeg_tool_args + [
-                "-ss", str(clip_start_h / fps),
-                "-i", video_file_path,
-                "-t", str(clip_dur_h / fps)
+                f"-ss {str(clip_start_h / fps)}",
+                f"-i {video_file_path}",
+                f"-t {str(clip_dur_h / fps)}"
             ]
             if ext in [".mov", ".mp4"]:
                 ffmpeg_args.extend([
-                    "-crf", "18",
-                    "-pix_fmt", "yuv420p"
+                    "-crf 18",
+                    "-pix_fmt yuv420p"
                 ])
             elif ext in ".wav":
                 ffmpeg_args.extend([
                     "-vn",
-                    "-acodec", "pcm_s16le",
-                    "-ar", "48000",
-                    "-ac", "2"
+                    "-acodec pcm_s16le",
+                    "-ar 48000",
+                    "-ac 2"
                 ])
 
             # add output path

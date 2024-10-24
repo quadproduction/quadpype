@@ -1,6 +1,6 @@
 import os
 
-from quadpype.lib import StringTemplate
+from quadpype.lib import StringTemplate, optimize_path_compatibility
 from quadpype.pipeline import (
     registered_host,
     get_current_context,
@@ -32,8 +32,7 @@ class LoadWorkfile(plugin.Loader):
     def load(self, context, name, namespace, options):
         # Load context of current workfile as first thing
         #   - which context and extension has
-        filepath = self.filepath_from_context(context)
-        filepath = filepath.replace("\\", "/")
+        filepath = optimize_path_compatibility(self.filepath_from_context(context)).replace("\\", "/")
 
         if not os.path.exists(filepath):
             raise FileExistsError(

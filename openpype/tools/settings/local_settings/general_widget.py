@@ -12,30 +12,33 @@ class LocalGeneralWidgets(QtWidgets.QWidget):
 
         self._loading_local_settings = False
 
-        username_input = PlaceholderLineEdit(self)
-        username_input.setPlaceholderText(getpass.getuser())
+        self.username_input = PlaceholderLineEdit(self)
+        self.username_input.setPlaceholderText(getpass.getuser())
 
-        is_admin_input = QtWidgets.QCheckBox(self)
+        self.is_admin_input = QtWidgets.QCheckBox(self)
 
         layout = QtWidgets.QFormLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        layout.addRow("QuadPype Username", username_input)
-        layout.addRow("Admin permissions", is_admin_input)
+        layout.addRow("QuadPype Username", self.username_input)
+        layout.addRow("Admin permissions", self.is_admin_input)
 
-        is_admin_input.stateChanged.connect(self._on_admin_check_change)
+        self.is_admin_input.stateChanged.connect(self._on_admin_check_change)
 
-        self.username_input = username_input
-        self.is_admin_input = is_admin_input
+        self.windows_can_stay_on_top_input = QtWidgets.QCheckBox(self)
+        layout.addRow("Allow Pipeline Windows to Stay On Top", self.windows_can_stay_on_top_input)
 
     def update_local_settings(self, value):
         self._loading_local_settings = True
 
         username = ""
         is_admin = False
+        windows_can_stay_on_top = True
+
         if value:
             username = value.get("username", username)
             is_admin = value.get("is_admin", is_admin)
+            windows_can_stay_on_top = value.get("windows_can_stay_on_top", windows_can_stay_on_top)
 
         self.username_input.setText(username)
 
@@ -46,6 +49,14 @@ class LocalGeneralWidgets(QtWidgets.QWidget):
             else:
                 state = QtCore.Qt.Unchecked
             self.is_admin_input.setCheckState(state)
+
+        if self.windows_can_stay_on_top_input.isChecked() != windows_can_stay_on_top:
+            # Use state as `stateChanged` is connected to callbacks
+            if windows_can_stay_on_top:
+                state = QtCore.Qt.Checked
+            else:
+                state = QtCore.Qt.Unchecked
+            self.windows_can_stay_on_top_input.setCheckState(state)
 
         self._loading_local_settings = False
 
@@ -72,8 +83,7 @@ class LocalGeneralWidgets(QtWidgets.QWidget):
             self.is_admin_input.setCheckState(state)
 
     def settings_value(self):
-        # Add changed
-        # If these have changed then
+        # Add only diffs compared with default values
         output = {}
         username = self.username_input.text()
         if username:
@@ -82,4 +92,9 @@ class LocalGeneralWidgets(QtWidgets.QWidget):
         is_admin = self.is_admin_input.isChecked()
         if is_admin:
             output["is_admin"] = is_admin
+
+        windows_can_stay_on_top = self.windows_can_stay_on_top_input.isChecked()
+        if not windows_can_stay_on_top:
+            output["windows_can_stay_on_top"] = windows_can_stay_on_top
+
         return output

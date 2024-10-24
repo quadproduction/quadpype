@@ -273,6 +273,16 @@
                             "key": "review_bg",
                             "label": "Review BG color",
                             "use_alpha": false
+                        },
+                        {
+                            "type": "label",
+                            "label": "<b>Render BG color</b> is used for whole scene render."
+                        },
+                        {
+                            "type": "color",
+                            "key": "render_bg",
+                            "label": "Render BG color",
+                            "use_alpha": false
                         }
                     ]
                 },

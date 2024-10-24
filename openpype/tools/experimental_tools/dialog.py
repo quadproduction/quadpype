@@ -1,5 +1,6 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
+from quadpype.widgets import BaseToolDialog
 from quadpype.style import (
     load_stylesheet,
     app_icon_path
@@ -21,7 +22,7 @@ class ToolButton(QtWidgets.QPushButton):
         self.triggered.emit(self._identifier)
 
 
-class ExperimentalToolsDialog(QtWidgets.QDialog):
+class ExperimentalToolsDialog(BaseToolDialog):
     refresh_interval = 3000
 
     def __init__(self, parent=None):
@@ -31,6 +32,11 @@ class ExperimentalToolsDialog(QtWidgets.QDialog):
         icon = QtGui.QIcon(app_icon_path())
         self.setWindowIcon(icon)
         self.setStyleSheet(load_stylesheet())
+
+        if self.can_stay_on_top:
+            self.setWindowFlags(
+                self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
+            )
 
         # Widgets for cases there are not available experimental tools
         empty_widget = QtWidgets.QWidget(self)
@@ -112,6 +118,8 @@ class ExperimentalToolsDialog(QtWidgets.QDialog):
         self._refresh_on_active = True
         # Is window active
         self._window_is_active = False
+
+        self.resize(600, 600)
 
     def refresh(self):
         app_label = "QuadPype"

@@ -68,7 +68,7 @@ class PublisherWindow(BaseToolDialog):
                        | QtCore.Qt.WindowMinimizeButtonHint \
                        | QtCore.Qt.WindowCloseButtonHint
 
-        if self.window_stays_on_top:
+        if self.can_stay_on_top:
             window_flags |= QtCore.Qt.WindowStaysOnTopHint
 
         self.setWindowFlags(window_flags)

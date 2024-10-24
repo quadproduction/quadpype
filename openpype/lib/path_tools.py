@@ -2,6 +2,10 @@ import os
 import re
 import logging
 import platform
+import sys
+import ctypes
+from pathlib import Path
+from ctypes import wintypes
 
 import clique
 
@@ -9,10 +13,10 @@ log = logging.getLogger(__name__)
 
 
 def format_file_size(file_size, suffix=None):
-    """Returns formatted string with size in appropriate unit.
+    """Returns formatted string with size in the appropriate unit.
 
     Args:
-        file_size (int): Size of file in bytes.
+        file_size (int): Size of the file in bytes.
         suffix (str): Suffix for formatted size. Default is 'B' (as bytes).
 
     Returns:
@@ -257,3 +261,66 @@ def get_last_version_from_path(path_dir, filter):
         return filtred_files[-1]
 
     return None
+
+
+def check_input_is_optimizable_path(input):
+    if not input:
+        return False
+
+    # Skip if input contains template path syntax: {template_var}
+    if re.search(r'{[\w.-]+}', input):
+        return False
+
+    # Expand environment variables and user home in the input element
+    input_expanded = os.path.expandvars(input)
+    input_expanded = os.path.expanduser(input_expanded)
+
+    low_platform = platform.system().lower()
+    # Check if input is a valid path according to the platform
+    if low_platform == "windows":
+        # Match path with drive letter or network syntax
+        # Examples: C:/blabla , D:\blabla , //blabla , \\blabla
+        path_regex = r'^([a-zA-Z]:[/\\]|^[/\\]{2}).+$'
+    else:
+        # Unix (MacOS or Linux)
+        # Examples: /blabla , ///blabla
+        path_regex = r'^/(//)?.+$'
+
+    return True if re.match(path_regex, input_expanded) else False
+
+
+def optimize_path_compatibility(input_string):
+    # Check if filepath is None or empty first, return original value
+    if not input_string:
+        return input_string
+
+    if not check_input_is_optimizable_path(input_string):
+        return input_string
+
+    try:
+        workfile_path = Path(input_string)
+        workfile_path.parent.mkdir(parents=True, exist_ok=True)
+    except (PermissionError, OSError):
+         return input_string
+
+    if 'win' not in sys.platform:
+        # Nothing done, only applicable for Windows
+        return input_string
+
+    # Windows-specific logic to convert the filepath to its short path form.
+    _GetShortPathNameW = ctypes.windll.kernel32.GetShortPathNameW
+    _GetShortPathNameW.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD]
+    _GetShortPathNameW.restype = wintypes.DWORD
+
+    workfile_parent = str(workfile_path.parent)
+    output_buf_size = len(workfile_parent)
+    # Iteratively try to get the short path name, increasing buffer size if needed.
+    while True:
+        output_buf = ctypes.create_unicode_buffer(output_buf_size)
+        needed_size = _GetShortPathNameW(workfile_parent, output_buf, output_buf_size)
+        if needed_size == 0:
+            raise ctypes.WinError()
+        if output_buf_size >= needed_size:
+            return os.path.join(output_buf.value, workfile_path.name)  # Return the short path version.
+        else:
+            output_buf_size = needed_size  # Adjust the buffer size if needed.

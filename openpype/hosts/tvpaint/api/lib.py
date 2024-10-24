@@ -3,6 +3,7 @@ import logging
 import tempfile
 
 from .communication_server import CommunicationWrapper
+from quadpype.lib import optimize_path_compatibility
 
 log = logging.getLogger(__name__)
 
@@ -50,8 +51,7 @@ def parse_layers_data(data):
             "group_id": int(group_id),
             "visible": visible == "ON",
             "position": int(position),
-            # Opacity from 'tv_layerinfo' is always set to '0' so it's unusable
-            # "opacity": int(opacity),
+            "opacity": get_layer_opacity(layer_id),
             "name": name,
             "type": layer_type,
             "frame_start": int(frame_start),
@@ -69,7 +69,7 @@ def parse_layers_data(data):
 
 def get_layers_data_george_script(output_filepath, layer_ids=None):
     """Prepare george script which will collect all layers from workfile."""
-    output_filepath = output_filepath.replace("\\", "/")
+    output_filepath = optimize_path_compatibility(output_filepath).replace("\\", "/")
     george_script_lines = [
         # Variable containing full path to output file
         "output_path = \"{}\"".format(output_filepath),
@@ -201,7 +201,7 @@ def get_groups_data(communicator=None):
     )
     output_file.close()
 
-    output_filepath = output_file.name.replace("\\", "/")
+    output_filepath = optimize_path_compatibility(output_file.name).replace("\\", "/")
     george_script_lines = (
         # Variable containing full path to output file
         "output_path = \"{}\"".format(output_filepath),
@@ -264,7 +264,7 @@ def get_layers_pre_post_behavior(layer_ids, communicator=None):
     )
     output_file.close()
 
-    output_filepath = output_file.name.replace("\\", "/")
+    output_filepath = optimize_path_compatibility(output_file.name).replace("\\", "/")
     george_script_lines = [
         # Variable containing full path to output file
         "output_path = \"{}\"".format(output_filepath),
@@ -340,7 +340,7 @@ def get_layers_exposure_frames(layer_ids, layers_data=None, communicator=None):
         mode="w", prefix="a_tvp_", suffix=".txt", delete=False
     )
     tmp_file.close()
-    tmp_output_path = tmp_file.name.replace("\\", "/")
+    tmp_output_path = optimize_path_compatibility(tmp_file.name).replace("\\", "/")
     george_script_lines = [
         "output_path = \"{}\"".format(tmp_output_path)
     ]
@@ -423,7 +423,7 @@ def get_exposure_frames(
         mode="w", prefix="a_tvp_", suffix=".txt", delete=False
     )
     tmp_file.close()
-    tmp_output_path = tmp_file.name.replace("\\", "/")
+    tmp_output_path = optimize_path_compatibility(tmp_file.name).replace("\\", "/")
     george_script_lines = [
         "tv_layerset {}".format(layer_id),
         "output_path = \"{}\"".format(tmp_output_path),
@@ -510,22 +510,22 @@ def get_scene_data(communicator=None):
 
 
 def get_scene_bg_color(communicator=None):
-    """Background color set on scene.
+    """Background color set on the scene.
 
     Is important for review exporting where scene bg color is used as
-    background.
+    the background color.
     """
     output_file = tempfile.NamedTemporaryFile(
         mode="w", prefix="a_tvp_", suffix=".txt", delete=False
     )
     output_file.close()
-    output_filepath = output_file.name.replace("\\", "/")
+    output_filepath = optimize_path_compatibility(output_file.name).replace("\\", "/")
     george_script_lines = [
-        # Variable containing full path to output file
+        # Variable containing the full path to the output file
         "output_path = \"{}\"".format(output_filepath),
         "tv_background",
         "bg_color = result",
-        # Write data to output file
+        # Write data to the output file
         "tv_writetextfile \"strict\" \"append\" '\"'output_path'\"' bg_color"
     ]
 
@@ -540,3 +540,15 @@ def get_scene_bg_color(communicator=None):
     if not data:
         return None
     return data.split(" ")
+
+
+def get_layer_opacity(layer_id):
+    """Return the opacity set on layer.
+    layer_id(int): id of the layer to get the opacity
+    Returns:
+        int: Layer Opacity (0-100).
+    """
+    execute_george("tv_layerset {}".format(layer_id))
+    opacity = execute_george("tv_layerdensity")
+    execute_george("tv_layerdensity {}".format(opacity))
+    return int(opacity)

@@ -91,9 +91,9 @@ class ExtractOtioAudioTracks(pyblish.api.ContextPlugin):
 
                 cmd = get_ffmpeg_tool_args(
                     "ffmpeg",
-                    "-ss", str(start_sec),
-                    "-t", str(duration_sec),
-                    "-i", audio_file,
+                    f"-ss {str(start_sec)}",
+                    f"-t {str(duration_sec)}",
+                    f"-i {audio_file}",
                     audio_fpath
                 )
 
@@ -213,9 +213,9 @@ class ExtractOtioAudioTracks(pyblish.api.ContextPlugin):
         # create empty cmd
         cmd = get_ffmpeg_tool_args(
             "ffmpeg",
-            "-f", "lavfi",
+            "-f lavfi",
             "-i", "anullsrc=channel_layout=stereo:sample_rate=48000",
-            "-t", str(max_duration_sec),
+            f"-t {str(max_duration_sec)}",
             empty_fpath
         )
 
@@ -257,9 +257,9 @@ class ExtractOtioAudioTracks(pyblish.api.ContextPlugin):
         tag_names = []
         for index, audio_input in enumerate(audio_inputs):
             input_args.extend([
-                "-ss", str(audio_input["startSec"]),
-                "-t", str(audio_input["durationSec"]),
-                "-i", audio_input["mediaPath"]
+                f'-ss {str(audio_input["startSec"])}',
+                f'-t {str(audio_input["durationSec"])}',
+                f'-i {audio_input["mediaPath"]}'
             ])
 
             # Output tag of a filtered audio input
@@ -299,8 +299,8 @@ class ExtractOtioAudioTracks(pyblish.api.ContextPlugin):
         args = get_ffmpeg_tool_args("ffmpeg")
         args.extend(input_args)
         args.extend([
-            "-filter_complex_script", filters_tmp_filepath,
-            "-map", "[a]"
+            f"-filter_complex_script {filters_tmp_filepath}",
+            "-map [a]"
         ])
         args.append(audio_temp_fpath)
 

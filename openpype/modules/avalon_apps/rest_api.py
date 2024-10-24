@@ -3,7 +3,7 @@ import datetime
 
 from bson.objectid import ObjectId
 
-from aiohttp.web_response import Response
+from fastapi import Response, status
 
 from quadpype.client import (
     get_projects,
@@ -27,9 +27,9 @@ class AvalonProjectsEndpoint(_RestApiEndpoint):
             for project_doc in get_projects()
         ]
         return Response(
-            status=200,
-            body=self.resource.encode(output),
-            content_type="application/json"
+            status_code=status.HTTP_200_OK,
+            content=self.resource.encode(output),
+            media_type="application/json"
         )
 
 
@@ -38,13 +38,13 @@ class AvalonProjectEndpoint(_RestApiEndpoint):
         project_doc = get_project(project_name)
         if project_doc:
             return Response(
-                status=200,
-                body=self.resource.encode(project_doc),
-                content_type="application/json"
+                status_code=status.HTTP_200_OK,
+                content=self.resource.encode(project_doc),
+                media_type="application/json"
             )
         return Response(
-            status=404,
-            reason="Project name {} not found".format(project_name)
+            status_code=status.HTTP_404_NOT_FOUND,
+            content="Project name {} not found".format(project_name)
         )
 
 
@@ -52,9 +52,9 @@ class AvalonAssetsEndpoint(_RestApiEndpoint):
     async def get(self, project_name) -> Response:
         asset_docs = list(get_assets(project_name))
         return Response(
-            status=200,
-            body=self.resource.encode(asset_docs),
-            content_type="application/json"
+            status_code=status.HTTP_200_OK,
+            content=self.resource.encode(asset_docs),
+            media_type="application/json"
         )
 
 
@@ -63,13 +63,13 @@ class AvalonAssetEndpoint(_RestApiEndpoint):
         asset_doc = get_asset_by_name(project_name, asset_name)
         if asset_doc:
             return Response(
-                status=200,
-                body=self.resource.encode(asset_doc),
-                content_type="application/json"
+                status_code=status.HTTP_200_OK,
+                content=self.resource.encode(asset_doc),
+                media_type="application/json"
             )
         return Response(
-            status=404,
-            reason="Asset name {} not found in project {}".format(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content="Asset name {} not found in project {}".format(
                 asset_name, project_name
             )
         )

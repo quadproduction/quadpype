@@ -1,4 +1,5 @@
 import re
+from enum import Enum
 
 from quadpype.pipeline import LoaderPlugin
 from quadpype.pipeline.create import (
@@ -13,6 +14,16 @@ from .lib import get_layers_data
 
 
 SHARED_DATA_KEY = "quadpype.tvpaint.instances"
+
+
+class TVPaintReviewType(Enum):
+    Video = 1
+    Seq_Img = 2
+
+    @classmethod
+    def _missing_(cls, value):
+        # Returning default value
+        return cls.Video
 
 
 class TVPaintCreatorCommon:

@@ -52,6 +52,7 @@ from quadpype.pipeline.create import (
     CreatorError,
 )
 from quadpype.hosts.tvpaint.api.plugin import (
+    TVPaintReviewType,
     TVPaintCreator,
     TVPaintAutoCreator,
 )
@@ -1031,6 +1032,7 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
 
     # Settings
     default_pass_name = "beauty"
+
     mark_for_review = True
     active_on_create = False
 
@@ -1038,12 +1040,25 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
         plugin_settings = (
             project_settings["tvpaint"]["create"]["create_render_scene"]
         )
+
+        self.enabled = plugin_settings.get("enabled", True)
         self.default_variant = plugin_settings["default_variant"]
         self.default_variants = plugin_settings["default_variants"]
         self.mark_for_review = plugin_settings["mark_for_review"]
         self.active_on_create = plugin_settings["active_on_create"]
         self.default_pass_name = plugin_settings["default_pass_name"]
         self.extract_psd = plugin_settings.get("extract_psd", True)
+
+        self.apply_background = False
+        self.keep_frame_index = False
+        self.exports_types = ['scene', 'camera']
+        self.review_types = [el.name for el in TVPaintReviewType]
+
+        # A global value to ignore transparency for the subsets exists, this option here adds the ability
+        # to override this value for the "render.scene" subset instances, so we put the global value as
+        # the default value.
+        self.ignore_layers_transparency = \
+            project_settings["tvpaint"]["publish"]["CollectRenderInstances"]["ignore_render_pass_transparency"]
 
     def get_dynamic_data(self, variant, *args, **kwargs):
         dynamic_data = super().get_dynamic_data(variant, *args, **kwargs)
@@ -1067,21 +1082,21 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
             host_name
         )
         data = {
+            "asset": asset_name,
             "task": task_name,
             "variant": self.default_variant,
             "creator_attributes": {
                 "render_pass_name": self.default_pass_name,
+                "apply_background": self.apply_background,
                 "mark_for_review": True,
                 "extract_psd": self.extract_psd,
             },
             "label": self._get_label(
                 subset_name,
                 self.default_pass_name
-            )
+            ),
+            "active": self.active_on_create
         }
-        data["asset"] = asset_name
-        if not self.active_on_create:
-            data["active"] = False
 
         new_instance = CreatedInstance(
             self.family, subset_name, data, self
@@ -1155,14 +1170,53 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
                     " label after refresh."
                 )
             ),
+            UISeparatorDef("render_pass_separator"),
+            BoolDef(
+                "mark_for_review",
+                label="Review Publish on Tracker",
+                default=self.mark_for_review
+            ),
+            EnumDef(
+                "review_media_type",
+                self.review_types,
+                label="Review Media Type:",
+                default=self.review_types[0]
+            ),
+            BoolDef(
+                "keep_frame_index",
+                label="Keep actual frame index in Files/Review",
+                default=self.keep_frame_index
+            ),
+            BoolDef(
+                "make_playblast",
+                label="Make Playblast",
+                default=True
+            ),
+            EnumDef(
+                "export_type",
+                self.exports_types,
+                label="Export Playblast Through",
+                default=self.exports_types[0]
+            ),
+            UISeparatorDef("layer_options_separator"),
+            UILabelDef(label="Export Options"),
+            BoolDef(
+                "ignore_layers_transparency",
+                label="All Layers are Full Opaque",
+                default=self.ignore_layers_transparency
+            ),
+            BoolDef(
+                "apply_background",
+                label="Apply BG Color (as defined in settings)",
+                default=self.apply_background
+            ),
+            TextDef("export_frames_selection",
+                    label="Frames to Export",
+                    placeholder="[1-15], 18, 20"
+            ),
             BoolDef(
                 "extract_psd",
                 label="Extract PSD",
                 default=self.extract_psd
-            ),
-            BoolDef(
-                "mark_for_review",
-                label="Review",
-                default=self.mark_for_review
             )
         ]

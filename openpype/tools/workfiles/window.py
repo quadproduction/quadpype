@@ -21,6 +21,7 @@ from quadpype.pipeline import (
     get_current_asset_name,
     get_current_task_name,
 )
+from quadpype.widgets import BaseToolWidget
 from quadpype.pipeline import legacy_io
 from quadpype.tools.utils.assets_widget import SingleSelectAssetsWidget
 from quadpype.tools.utils.tasks_widget import TasksWidget
@@ -169,7 +170,7 @@ class SidePanelWidget(QtWidgets.QWidget):
         return self._workfile_doc, data
 
 
-class Window(QtWidgets.QWidget):
+class Window(BaseToolWidget):
     """Work Files Window"""
     title = "Work Files"
 
@@ -178,7 +179,11 @@ class Window(QtWidgets.QWidget):
         self.setWindowTitle(self.title)
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
-        self.setWindowFlags(self.windowFlags() | QtCore.Qt.Window)
+
+        window_flags = self.windowFlags() | QtCore.Qt.Window
+        if self.can_stay_on_top:
+            window_flags |= QtCore.Qt.WindowStaysOnTopHint
+        self.setWindowFlags(window_flags)
 
         # Create pages widget and set it as central widget
         pages_widget = QtWidgets.QStackedWidget(self)
@@ -297,10 +302,6 @@ class Window(QtWidgets.QWidget):
         # Pull window to the front.
         self.raise_()
         self.activateWindow()
-
-    @property
-    def project_name(self):
-        return get_current_project_name()
 
     def showEvent(self, event):
         super(Window, self).showEvent(event)

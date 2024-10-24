@@ -8,8 +8,8 @@ from quadpype.client import get_asset_by_name, get_subsets
 from quadpype import style
 from quadpype.settings import get_current_project_settings
 from quadpype.tools.utils.lib import qt_app_context
+from quadpype.widgets import BaseToolDialog
 from quadpype.pipeline import (
-    get_current_project_name,
     get_current_asset_name,
     get_current_task_name,
 )
@@ -35,12 +35,12 @@ module = sys.modules[__name__]
 module.window = None
 
 
-class CreatorWindow(QtWidgets.QDialog):
+class CreatorWindow(BaseToolDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Instance Creator")
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
-        if not parent:
+        if self.can_stay_on_top:
             self.setWindowFlags(
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )
@@ -220,12 +220,11 @@ class CreatorWindow(QtWidgets.QDialog):
             self._set_valid_state(False)
             return
 
-        project_name = get_current_project_name()
         asset_doc = None
         if creator_plugin:
             # Get the asset from the database which match with the name
             asset_doc = get_asset_by_name(
-                project_name, asset_name, fields=["_id"]
+                self.project_name, asset_name, fields=["_id"]
             )
 
         # Get plugin
@@ -245,7 +244,7 @@ class CreatorWindow(QtWidgets.QDialog):
 
         # Calculate subset name with Creator plugin
         subset_name = creator_plugin.get_subset_name(
-            user_input_text, task_name, asset_id, project_name
+            user_input_text, task_name, asset_id, self.project_name
         )
         # Force replacement of prohibited symbols
         # QUESTION should Creator care about this and here should be only
@@ -274,7 +273,7 @@ class CreatorWindow(QtWidgets.QDialog):
 
         # Get all subsets of the current asset
         subset_docs = get_subsets(
-            project_name, asset_ids=[asset_id], fields=["name"]
+            self.project_name, asset_ids=[asset_id], fields=["name"]
         )
         existing_subset_names = {
             subset_doc["name"]

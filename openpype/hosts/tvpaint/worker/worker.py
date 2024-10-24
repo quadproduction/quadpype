@@ -10,6 +10,7 @@ from quadpype.hosts.tvpaint.api.communication_server import (
     CommunicationWrapper
 )
 from quadpype_modules.job_queue.job_workers import WorkerJobsConnection
+from quadpype.lib import optimize_path_compatibility
 
 from .worker_job import ProcessTVPaintCommands
 
@@ -50,7 +51,7 @@ class TVPaintWorkerCommunicator(BaseCommunicator):
         with tempfile.NamedTemporaryFile(
             mode="w", prefix="a_tvp_", suffix=".tvpp"
         ) as tmp_file:
-            tmp_filepath = tmp_file.name.replace("\\", "/")
+            tmp_filepath = optimize_path_compatibility(tmp_file.name).replace("\\", "/")
 
         shutil.copy(init_filepath, tmp_filepath)
         george_script = "tv_LoadProject '\"'\"{}\"'\"'".format(tmp_filepath)

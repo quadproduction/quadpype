@@ -32,6 +32,14 @@
             "type": "splitter"
         },
         {
+            "type": "boolean",
+            "key": "windows_can_stay_on_top",
+            "label": "Allow Pipeline Windows to Stay On Top"
+        },
+        {
+            "type": "splitter"
+        },
+        {
             "key": "environment",
             "label": "Environment",
             "type": "raw-json",

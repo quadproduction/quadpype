@@ -1,6 +1,7 @@
 from quadpype.lib.attribute_definitions import BoolDef
 from quadpype.hosts.tvpaint.api import plugin
 from quadpype.hosts.tvpaint.api.lib import execute_george_through_file
+from quadpype.lib import optimize_path_compatibility
 
 
 class ImportImage(plugin.Loader):
@@ -77,7 +78,7 @@ class ImportImage(plugin.Loader):
         )
         # Fill import script with filename and layer name
         # - filename mus not contain backwards slashes
-        path = self.filepath_from_context(context).replace("\\", "/")
+        path = optimize_path_compatibility(self.filepath_from_context(context)).replace("\\", "/")
         george_script = self.import_script.format(
             path,
             layer_name,

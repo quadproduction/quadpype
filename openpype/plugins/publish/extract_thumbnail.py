@@ -491,11 +491,11 @@ class ExtractThumbnail(pyblish.api.InstancePlugin):
 
         cmd_args = [
             "-y",
-            "-ss", str(duration * self.duration_split),
-            "-i", video_file_path,
-            "-analyzeduration", max_int,
-            "-probesize", max_int,
-            "-vframes", "1"
+            f"-ss {str(duration * self.duration_split)}",
+            f"-i {video_file_path}",
+            f"-analyzeduration {max_int}",
+            f"-probesize {max_int}",
+            "-vframes 1"
         ]
 
         # add output file path

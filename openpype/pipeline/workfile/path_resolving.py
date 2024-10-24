@@ -9,6 +9,7 @@ from quadpype.lib import (
     filter_profiles,
     Logger,
     StringTemplate,
+    optimize_path_compatibility
 )
 from quadpype.pipeline import version_start, Anatomy
 from quadpype.pipeline.template_data import get_template_data
@@ -330,7 +331,7 @@ def get_last_workfile(
         filename = StringTemplate.format_strict_template(file_template, data)
 
     if full_path:
-        return os.path.normpath(os.path.join(workdir, filename))
+        return optimize_path_compatibility(os.path.normpath(os.path.join(workdir, filename)))
 
     return filename
 

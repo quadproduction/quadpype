@@ -5,7 +5,7 @@ import datetime
 import collections
 import subprocess
 from bson.objectid import ObjectId
-from aiohttp.web_response import Response
+from fastapi import Response, status
 
 from quadpype.client import (
     get_projects,
@@ -92,9 +92,9 @@ class ProjectsEndpoint(ResourceRestApiEndpoint):
             }
             output.append(ret_val)
         return Response(
-            status=200,
-            body=self.resource.encode(output),
-            content_type="application/json"
+            status_code=status.HTTP_200_OK,
+            content=self.resource.encode(output),
+            media_type="application/json"
         )
 
 
@@ -157,9 +157,9 @@ class HiearchyEndpoint(ResourceRestApiEndpoint):
         roots = [x for x in assets.values() if x.parent is None]
 
         return Response(
-            status=200,
-            body=self.resource.encode(roots[0]),
-            content_type="application/json"
+            status_code=status.HTTP_200_OK,
+            content=self.resource.encode(roots[0]),
+            media_type="application/json"
         )
 
 
@@ -297,8 +297,8 @@ class BatchPublishEndpoint(WebpublishApiEndpoint):
             subprocess.Popen(args)
 
         return Response(
-            status=200,
-            content_type="application/json"
+            status_code=status.HTTP_200_OK,
+            media_type="application/json"
         )
 
 
@@ -306,9 +306,9 @@ class TaskPublishEndpoint(WebpublishApiEndpoint):
     """Prepared endpoint triggered after each task - for future development."""
     async def post(self, request) -> Response:
         return Response(
-            status=200,
-            body=self.resource.encode([]),
-            content_type="application/json"
+            status_code=status.HTTP_200_OK,
+            content=self.resource.encode([]),
+            media_type="application/json"
         )
 
 
@@ -322,17 +322,17 @@ class BatchStatusEndpoint(WebpublishApiEndpoint):
         output = self.dbcon.find_one({"batch_id": batch_id})
 
         if output:
-            status = 200
+            out_status = status.HTTP_200_OK
         else:
             output = {"msg": "Batch id {} not found".format(batch_id),
                       "status": "queued",
                       "progress": 0}
-            status = 404
+            out_status = status.HTTP_404_NOT_FOUND
         body = self.resource.encode(output)
         return Response(
-            status=status,
-            body=body,
-            content_type="application/json"
+            status_code=out_status,
+            content=body,
+            media_type="application/json"
         )
 
 
@@ -347,16 +347,16 @@ class UserReportEndpoint(WebpublishApiEndpoint):
                                       projection={"log": False}))
 
         if output:
-            status = 200
+            out_status = status.HTTP_200_OK
         else:
             output = {"msg": "User {} not found".format(user)}
-            status = 404
+            out_status = status.HTTP_404_NOT_FOUND
         body = self.resource.encode(output)
 
         return Response(
-            status=status,
-            body=body,
-            content_type="application/json"
+            status_code=out_status,
+            content=body,
+            media_type="application/json"
         )
 
 
@@ -394,9 +394,9 @@ class ConfiguredExtensionsEndpoint(WebpublishApiEndpoint):
                 configured["file_exts"].update(mapping["extensions"])
 
         return Response(
-            status=200,
-            body=self.resource.encode(dict(configured)),
-            content_type="application/json"
+            status_code=status.HTTP_200_OK,
+            content=self.resource.encode(dict(configured)),
+            media_type="application/json"
         )
 
 
@@ -416,14 +416,14 @@ class BatchReprocessEndpoint(WebpublishApiEndpoint):
                 {"$set": {"status": REPROCESS_STATUS}}
             )
             output = [{"msg": "Batch id {} set to reprocess".format(batch_id)}]
-            status = 200
+            out_status = status.HTTP_200_OK
         else:
             output = [{"msg": "Batch id {} not found".format(batch_id)}]
-            status = 404
+            out_status = status.HTTP_404_NOT_FOUND
         body = self.resource.encode(output)
 
         return Response(
-            status=status,
-            body=body,
-            content_type="application/json"
+            status_code=out_status,
+            content=body,
+            media_type="application/json"
         )

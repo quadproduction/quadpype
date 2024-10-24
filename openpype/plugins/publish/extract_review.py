@@ -154,6 +154,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
             repre_name = str(repre.get("name"))
             tags = repre.get("tags") or []
             custom_tags = repre.get("custom_tags")
+            files = repre.get("files")
             if "review" not in tags:
                 self.log.debug((
                     "Repre: {} - Didn't find \"review\" in tags. Skipping"
@@ -184,10 +185,15 @@ class ExtractReview(pyblish.api.InstancePlugin):
                 )
                 continue
 
+            # Filter output definition by "single_frame_filter"
+            frame_outputs = self.filter_outputs_by_frame(
+                profile_outputs, files, input_ext
+            )
+
             # Filter output definition by representation's
             # custom tags (optional)
             outputs = self.filter_outputs_by_custom_tags(
-                profile_outputs, custom_tags)
+                frame_outputs, custom_tags)
             if not outputs:
                 self.log.info((
                     "Skipped representation. All output definitions from"
@@ -649,7 +655,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
         # Define which layer should be used
         if layer_name:
-            ffmpeg_input_args.extend(["-layer", layer_name])
+            ffmpeg_input_args.append(f"-layer {layer_name}")
 
         if temp_data["input_is_sequence"]:
             # Set start frame of input sequence (just frame in filename)
@@ -658,9 +664,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
             start_number = temp_data["first_sequence_frame"]
             if temp_data["without_handles"] and temp_data["handles_are_set"]:
                 start_number += temp_data["handle_start"]
-            ffmpeg_input_args.extend([
-                "-start_number", str(start_number)
-            ])
+            ffmpeg_input_args.append(f"-start_number {str(start_number)}")
 
             # TODO add fps mapping `{fps: fraction}` ?
             # - e.g.: {
@@ -669,29 +673,22 @@ class ExtractReview(pyblish.api.InstancePlugin):
             #     "23.976": "24000/1001"
             # }
             # Add framerate to input when input is sequence
-            ffmpeg_input_args.extend([
-                "-framerate", str(temp_data["fps"])
-            ])
+            ffmpeg_input_args.append(f'-framerate {str(temp_data["fps"])}')
             # Add duration of an input sequence if output is video
             if not temp_data["output_is_sequence"]:
-                ffmpeg_input_args.extend([
-                    "-to", "{:0.10f}".format(duration_seconds)
-                ])
+                ffmpeg_input_args.append("-to {:0.10f}".format(duration_seconds))
 
         if temp_data["output_is_sequence"]:
             # Set start frame of output sequence (just frame in filename)
             # - this is definition of an output
-            ffmpeg_output_args.extend([
-                "-start_number", str(temp_data["output_frame_start"])
-            ])
+            ffmpeg_output_args.append(f'-start_number {str(temp_data["output_frame_start"])}')
 
         # Change output's duration and start point if should not contain
         # handles
         if temp_data["without_handles"] and temp_data["handles_are_set"]:
             # Set output duration in seconds
-            ffmpeg_output_args.extend([
-                "-t", "{:0.10}".format(duration_seconds)
-            ])
+            ffmpeg_output_args.append(
+                "-t {:0.10}".format(duration_seconds))
 
             # Add -ss (start offset in seconds) if input is not sequence
             if not temp_data["input_is_sequence"]:
@@ -699,20 +696,14 @@ class ExtractReview(pyblish.api.InstancePlugin):
                 # Set start time without handles
                 # - Skip if start sec is 0.0
                 if start_sec > 0.0:
-                    ffmpeg_input_args.extend([
-                        "-ss", "{:0.10f}".format(start_sec)
-                    ])
+                    ffmpeg_input_args.append("-ss {:0.10f}".format(start_sec))
 
         # Set frame range of output when input or output is sequence
         elif temp_data["output_is_sequence"]:
-            ffmpeg_output_args.extend([
-                "-frames:v", str(output_frames_len)
-            ])
+            ffmpeg_output_args.append(f"-frames:v {str(output_frames_len)}")
 
         # Add video/image input path
-        ffmpeg_input_args.extend([
-            "-i", path_to_subprocess_arg(temp_data["full_input_path"])
-        ])
+        ffmpeg_input_args.append(f'-i {path_to_subprocess_arg(temp_data["full_input_path"])}')
 
         # Add audio arguments if there are any. Skipped when output are images.
         if not temp_data["output_ext_is_image"] and temp_data["with_audio"]:
@@ -789,7 +780,8 @@ class ExtractReview(pyblish.api.InstancePlugin):
         for arg in in_args:
             sub_args = arg.split(" -")
             if len(sub_args) == 1:
-                if arg and arg not in splitted_args:
+                ignore_arg = True if (arg.startswith("-") and arg in splitted_args) else False
+                if arg and not ignore_arg:
                     splitted_args.append(arg)
                 continue
 
@@ -922,17 +914,18 @@ class ExtractReview(pyblish.api.InstancePlugin):
         """
 
         repre = temp_data["origin_repre"]
+        repre_files_collection = None
         src_staging_dir = repre["stagingDir"]
         dst_staging_dir = new_repre["stagingDir"]
 
         if temp_data["input_is_sequence"]:
-            collections = clique.assemble(repre["files"])[0]
+            repre_files_collection = clique.assemble(repre["files"])[0][0]
             full_input_path = os.path.join(
                 src_staging_dir,
-                collections[0].format("{head}{padding}{tail}")
+                repre_files_collection.format("{head}{padding}{tail}")
             )
 
-            filename = collections[0].format("{head}")
+            filename = repre_files_collection.format("{head}")
             if filename.endswith("."):
                 filename = filename[:-1]
 
@@ -974,20 +967,27 @@ class ExtractReview(pyblish.api.InstancePlugin):
             output_ext_is_image
             and "sequence" in output_def["tags"]
         )
+
+        sequence_with_gaps = bool("sequence_with_gaps" in output_def["tags"])
+
         if output_is_sequence:
             new_repre_files = []
             frame_start = temp_data["output_frame_start"]
             frame_end = temp_data["output_frame_end"]
 
             filename_base = "{}_{}".format(filename, filename_suffix)
-            # Temporary tempalte for frame filling. Example output:
+            # Temporary template for frame filling. Example output:
             # "basename.%04d.exr" when `frame_end` == 1001
             repr_file = "{}.%{:0>2}d.{}".format(
                 filename_base, len(str(frame_end)), output_ext
             )
 
-            for frame in range(frame_start, frame_end + 1):
-                new_repre_files.append(repr_file % frame)
+            if not sequence_with_gaps:
+                for frame in range(frame_start, frame_end + 1):
+                    new_repre_files.append(repr_file % frame)
+            else:
+                for frame in repre_files_collection.indexes:
+                    new_repre_files.append(repr_file % frame)
 
             new_repre["sequence_file"] = repr_file
             full_output_path = os.path.join(
@@ -1605,6 +1605,47 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
         self.log.debug("__ filtered_outputs: {}".format(
             [_o["filename_suffix"] for _o in filtered_outputs]
+        ))
+
+        return filtered_outputs
+
+    def filter_outputs_by_frame(self, outputs, files, file_extension):
+        """Filter output definitions by frame filter.
+        Filters a list of output definitions related to 'single_frame_filter' condition
+        that checks whether the provided files match certain criteria (single or
+        multiple frame file, video or all types).
+        Args:
+            outputs (list): Contain list of output definitions from presets.
+            files (str or list): A string or a list of filenames
+            file_extension (str): File extension
+        Returns:
+            list: Contain all output definitions matching entered "single_frame_filter".
+        """
+        filtered_outputs = []
+        self.log.debug(files)
+
+        # Check if files is a string (single file) or a list (potentially multiple files)
+        is_single_file = isinstance(files, str)
+        is_multi_file = file_extension in self.video_exts or isinstance(files, list) and len(files) > 1
+        is_single_file_in_list = isinstance(files, list) and len(files) == 1
+
+        for output_def in outputs:
+            frame_filter = output_def.get("filter", {}).get("single_frame_filter")
+            valid = False
+
+            if frame_filter == "everytime":
+                valid = True
+            elif frame_filter == "single_frame":
+                valid = is_single_file or is_single_file_in_list
+            elif frame_filter == "multi_frame":
+                valid = is_multi_file
+
+            if valid:
+                filtered_outputs.append(output_def)
+
+        # Logging the filenames of the filtered outputs
+        self.log.debug("__ filtered_outputs: {}".format(
+            [_o.get("filename_suffix", "unknown") for _o in filtered_outputs]
         ))
 
         return filtered_outputs

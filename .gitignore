@@ -1,12 +1,11 @@
-# Created by .ignore support plugin (hsz.mobi)
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Mac Stuff
-###########
+# MacOS
+#######
 # General
 .DS_Store
 .AppleDouble
@@ -38,7 +37,6 @@ Temporary Items
 /build
 /dist/
 /server_addon/packages/*
-
 /vendor/bin/*
 /vendor/python/*
 /.venv
@@ -73,15 +71,16 @@ node_modules
 package-lock.json
 package.json
 yarn.lock
-
 quadpype/premiere/ppro/js/debug.log
 
 
 # IDEA
 ######
 .idea/
+.run/*
 
-# VScode files
+# VS Code
+#########
 .vscode/
 .env
 dump.sql
@@ -93,25 +92,21 @@ website/translated_docs
 website/build/
 website/node_modules
 website/i18n/*
-
 website/debug.log
-
 website/.docusaurus
 
 # Poetry
 ########
-
 .poetry/
 .python-version
 .editorconfig
 .pre-commit-config.yaml
 mypy.ini
-
 tools/run_eventserver.*
+install-pyenv-win.ps1
 
 #  Developer tools
 tools/dev_*
-
 .github_changelog_generator
 
 

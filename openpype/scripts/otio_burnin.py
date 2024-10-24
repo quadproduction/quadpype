@@ -1,9 +1,11 @@
 import os
+import re
 import sys
 import subprocess
 import platform
 import json
 import tempfile
+from pathlib import Path
 from string import Formatter
 
 import opentimelineio_contrib.adapters.ffmpeg_burnins as ffmpeg_burnins
@@ -42,8 +44,8 @@ def _get_ffprobe_data(source):
     """
     command = get_ffmpeg_tool_args(
         "ffprobe",
-        "-v", "quiet",
-        "-print_format", "json",
+        "-v quiet",
+        "-print_format json",
         "-show_format",
         "-show_streams",
         source
@@ -502,13 +504,19 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
             raise RuntimeError(
                 "Failed to render '{}': {}'".format(output, command)
             )
-        if is_sequence:
-            output = output % duration
 
-        if not os.path.exists(output):
-            raise RuntimeError(
-                "Failed to generate this f*cking file '%s'" % output
-            )
+        if is_sequence:
+            folder_path, filename = output.rsplit('/', maxsplit=1)
+            file_identifier_match = re.match(r"^.*%0\dd(?P<identifier>.+)", filename)
+            if not file_identifier_match:
+                raise RuntimeError("Failed to ensure sequence has been properly generated '%s'" % output)
+
+            folder_path_obj = Path(folder_path)
+            matched_files = folder_path_obj.glob("*{}".format(file_identifier_match.group("identifier")))
+            if not matched_files or len(list(matched_files)) != duration:
+                raise RuntimeError("Failed to generate the sequence '%s'" % output)
+        elif not os.path.exists(output):
+            raise RuntimeError("Failed to generate the file '%s'" % output)
 
         for path in self.cleanup_paths:
             if os.path.exists(path):

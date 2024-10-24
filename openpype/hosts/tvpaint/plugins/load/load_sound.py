@@ -4,6 +4,7 @@ from quadpype.hosts.tvpaint.api import plugin
 from quadpype.hosts.tvpaint.api.lib import (
     execute_george_through_file,
 )
+from quadpype.lib import optimize_path_compatibility
 
 
 class ImportSound(plugin.Loader):
@@ -57,10 +58,10 @@ class ImportSound(plugin.Loader):
             mode="w", prefix="pype_tvp_", suffix=".txt", delete=False
         )
         output_file.close()
-        output_filepath = output_file.name.replace("\\", "/")
+        output_filepath = optimize_path_compatibility(output_file.name).replace("\\", "/")
 
         # Prepare george script
-        path = self.filepath_from_context(context).replace("\\", "/")
+        path = optimize_path_compatibility(self.filepath_from_context(context)).replace("\\", "/")
         import_script = "\n".join(self.import_script_lines)
         george_script = import_script.format(
             path,

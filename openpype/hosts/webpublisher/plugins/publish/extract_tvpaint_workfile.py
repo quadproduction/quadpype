@@ -490,8 +490,8 @@ class ExtractTVPaintSequences(pyblish.api.Extractor):
         self.log.debug("Filling frames not rendered frames.")
         for layer_id, render_data in extraction_data_by_layer_id.items():
             frame_references = render_data["frame_references"]
-            filepaths_by_frame = filepaths_by_layer_id[layer_id]
-            fill_reference_frames(frame_references, filepaths_by_frame)
+            filepath_by_frame_index = filepaths_by_layer_id[layer_id]
+            fill_reference_frames(frame_references, filepath_by_frame_index)
 
         # Prepare final filepaths where compositing should store result
         self.log.info("Started compositing of layer frames.")

@@ -1,6 +1,6 @@
 import json
 
-from aiohttp.web_response import Response
+from fastapi import Response, status
 from quadpype.lib import Logger
 
 
@@ -53,19 +53,19 @@ class TimersManagerModuleRestApi:
                 " 'asset_name' and 'task_name'"
             )
             self.log.error(msg)
-            return Response(status=400, message=msg)
+            return Response(status_code=status.HTTP_400_BAD_REQUEST, content=msg)
 
         self.module.stop_timers()
         try:
             self.module.start_timer(project_name, asset_name, task_name)
         except Exception as exc:
-            return Response(status=404, message=str(exc))
+            return Response(status_code=status.HTTP_404_NOT_FOUND, content=str(exc))
 
-        return Response(status=200)
+        return Response(status_code=status.HTTP_200_OK)
 
     async def stop_timer(self, request):
         self.module.stop_timers()
-        return Response(status=200)
+        return Response(status_code=status.HTTP_200_OK)
 
     async def get_task_time(self, request):
         data = await request.json()
@@ -79,7 +79,7 @@ class TimersManagerModuleRestApi:
                 " 'task_name'"
             )
             self.log.warning(message)
-            return Response(text=message, status=404)
+            return Response(content=message, status_code=status.HTTP_404_NOT_FOUND)
 
         time = self.module.get_task_time(project_name, asset_name, task_name)
-        return Response(text=json.dumps(time))
+        return Response(content=json.dumps(time))

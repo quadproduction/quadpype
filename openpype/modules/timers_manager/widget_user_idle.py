@@ -17,7 +17,7 @@ class WidgetUserIdle(BaseToolWidget):
         self.setWindowIcon(icon)
 
         window_flags = self.windowFlags() | QtCore.Qt.WindowCloseButtonHint | QtCore.Qt.WindowMinimizeButtonHint
-        if self.window_stays_on_top:
+        if self.can_stay_on_top:
             window_flags |= QtCore.Qt.WindowStaysOnTopHint
 
         self.setWindowFlags(
