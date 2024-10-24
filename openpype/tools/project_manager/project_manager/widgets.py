@@ -20,7 +20,7 @@ from quadpype.tools.utils import (
 )
 from quadpype.settings.lib import get_default_anatomy_settings
 
-from qtpy import QtWidgets, QtCore, QtGui
+from qtpy import QtWidgets, QtCore
 
 
 class NameTextEdit(QtWidgets.QLineEdit):

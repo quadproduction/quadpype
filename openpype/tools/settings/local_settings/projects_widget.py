@@ -13,7 +13,7 @@ from .constants import (
     LABEL_ADD_DEFAULT,
     LABEL_REMOVE_PROJECT,
     LABEL_ADD_PROJECT,
-    LABEL_DISCARD_CHANGES
+    LABEL_DISCARD_CHANGES,
 )
 
 NOT_SET = type("NOT_SET", (), {})()

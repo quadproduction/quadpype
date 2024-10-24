@@ -1,4 +1,3 @@
-import os
 import logging
 
 from quadpype.pipeline.plugin_discover import (

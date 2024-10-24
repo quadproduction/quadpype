@@ -2,8 +2,6 @@
 """Create Unreal Static Mesh data to be extracted as FBX."""
 import os
 
-from maya import cmds  # noqa
-
 import pyblish.api
 
 from quadpype.pipeline import publish

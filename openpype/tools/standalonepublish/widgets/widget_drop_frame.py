@@ -1,9 +1,6 @@
 import os
 import re
-import json
 import clique
-import subprocess
-import quadpype.lib
 from qtpy import QtWidgets, QtCore
 
 from quadpype.lib import get_ffprobe_data

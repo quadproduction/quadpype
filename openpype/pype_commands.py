@@ -3,8 +3,6 @@
 import os
 import sys
 import json
-import time
-import signal
 
 
 class PypeCommands:

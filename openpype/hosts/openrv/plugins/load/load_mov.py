@@ -2,7 +2,6 @@ from quadpype.pipeline import (
     load,
     get_representation_context
 )
-from quadpype.hosts.openrv.api.pipeline import imprint_container
 from quadpype.hosts.openrv.api.ocio import (
     set_group_ocio_active_state,
     set_group_ocio_colorspace

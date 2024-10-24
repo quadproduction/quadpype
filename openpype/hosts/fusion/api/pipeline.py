@@ -28,7 +28,6 @@ from quadpype.tools.utils import host_tools
 
 from .lib import (
     get_current_comp,
-    comp_lock_and_undo_chunk,
     validate_comp_prefs
 )
 

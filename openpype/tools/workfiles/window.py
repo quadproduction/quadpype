@@ -17,7 +17,6 @@ from quadpype import style
 from quadpype import resources
 from quadpype.pipeline import (
     Anatomy,
-    get_current_project_name,
     get_current_asset_name,
     get_current_task_name,
 )

@@ -2,7 +2,6 @@
 import os
 
 import rv
-import pymu
 
 def get_path_annotated_frame(frame=None, asset=None, asset_folder=None):
     """Get path for annotations

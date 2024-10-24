@@ -1,6 +1,5 @@
 import copy
 import attr
-import pyblish.api
 import os
 import clique
 from copy import deepcopy
@@ -164,8 +163,7 @@ def get_transferable_representations(instance):
 
 
 def create_skeleton_instance(
-        instance, families_transfer=None, instance_transfer=None):
-    # type: (pyblish.api.Instance, list, dict) -> dict
+        instance, families_transfer=None, instance_transfer=None) -> dict:
     """Create skeleton instance from original instance data.
 
     This will create dictionary containing skeleton

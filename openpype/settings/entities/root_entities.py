@@ -50,9 +50,7 @@ from quadpype.settings.lib import (
 
     get_available_project_settings_overrides_versions,
     get_available_studio_project_settings_overrides_versions,
-    get_available_studio_project_anatomy_overrides_versions,
-
-    apply_overrides
+    get_available_studio_project_anatomy_overrides_versions
 )
 
 
