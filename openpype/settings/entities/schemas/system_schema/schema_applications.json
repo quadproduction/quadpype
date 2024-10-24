@@ -103,10 +103,6 @@
     },
     {
       "type": "schema",
-      "name": "schema_unreal"
-    },
-    {
-      "type": "schema",
       "name": "schema_djv"
     },
     {

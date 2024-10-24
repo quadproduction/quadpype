@@ -163,10 +163,6 @@
                     "name": "schema_project_webpublisher"
                 },
                 {
-                    "type": "schema",
-                    "name": "schema_project_unreal"
-                },
-                {
                     "type": "dynamic_schema",
                     "name": "project_settings/global"
                 }
