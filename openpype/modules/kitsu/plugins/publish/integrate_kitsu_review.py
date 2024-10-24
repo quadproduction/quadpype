@@ -3,7 +3,7 @@ import re
 import gazu
 import pyblish.api
 
-from openpype.pipeline.anatomy import Anatomy
+from quadpype.pipeline.anatomy import Anatomy
 
 
 class IntegrateKitsuReview(pyblish.api.InstancePlugin):

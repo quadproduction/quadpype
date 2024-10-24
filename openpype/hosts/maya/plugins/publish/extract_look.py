@@ -186,7 +186,7 @@ class MakeRSTexBin(TextureProcessor):
 
             self.log.debug("converting colorspace {0} to redshift render "
                            "colorspace".format(colorspace))
-            subprocess_args.extend(f"-cs {colorspace}")
+            subprocess_args.append(f"-cs {colorspace}")
 
         hash_args = ["rstex"]
         texture_hash = source_hash(source, *hash_args)
@@ -373,7 +373,7 @@ class MakeTX(TextureProcessor):
         ])
 
         destination = os.path.join(resources_dir, fname + ".tx")
-        subprocess_args.extend(f"-o {destination}")
+        subprocess_args.append(f"-o {destination}")
 
         # We want to make sure we are explicit about what OCIO config gets
         # used. So when we supply no --colorconfig flag that no fallback to
