@@ -137,10 +137,6 @@ class ServerThumbnailResolver(ThumbnailResolver):
 
     @classmethod
     def _get_cache(cls):
-        if cls._cache is None:
-            from quadpype.client.server.thumbnails import AYONThumbnailCache
-
-            cls._cache = AYONThumbnailCache()
         return cls._cache
 
     def process(self, thumbnail_entity, thumbnail_type):
