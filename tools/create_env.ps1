@@ -63,7 +63,7 @@ function Install-Poetry() {
                 Exit-WithCode 1
             }
         }
-        $python = & pyenv which python
+        $python = Get-Command python | Select-Object -ExpandProperty Path
 
     }
 
@@ -87,10 +87,7 @@ function Test-Python() {
         Set-Location -Path $current_dir
         Exit-WithCode 1
     }
-    $version_command = @'
-import sys
-print('{0}.{1}'.format(sys.version_info[0], sys.version_info[1]))
-'@
+    $version_command = "import sys; print('{0}.{1}'.format(sys.version_info[0], sys.version_info[1]))"
 
     $p = & $python -c $version_command
     $env:PYTHON_VERSION = $p
