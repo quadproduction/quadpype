@@ -142,6 +142,7 @@ class ServerThumbnailResolver(ThumbnailResolver):
     def process(self, thumbnail_entity, thumbnail_type):
         return None
 
+
 # Thumbnail resolvers
 def discover_thumbnail_resolvers():
     return discover(ThumbnailResolver)
