@@ -12,13 +12,12 @@
       <env name="_INSIDE_QUADPYPE_TOOL" value="1" />
     </envs>
     <option name="SDK_HOME" value="" />
-    <option name="SDK_NAME" value="Python 3.9 (quadpype)" />
     <option name="WORKING_DIRECTORY" value="" />
-    <option name="IS_MODULE_SDK" value="false" />
+    <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/source/toolkit_dev/run/_common/pre_run.py" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/tools/_lib/run/pre_run.py" />
     <option name="PARAMETERS" value="-d" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="true" />

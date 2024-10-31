@@ -35,12 +35,12 @@ Temporary Items
 # CX_Freeze
 ###########
 /build/
-/source/build/
+src/build/
 dist/
-source/dist/
+src/dist/
 server_addon/packages/*
-source/vendor/bin/*
-source/vendor/python/*
+src/vendor/bin/*
+src/vendor/python/*
 
 # Environment
 #############
@@ -55,7 +55,7 @@ venv.bak/
 # Documentation
 ###############
 /docs/build/
-source/docs/build/
+src/docs/build/
 
 # Editor backup files #
 #######################
@@ -82,7 +82,7 @@ node_modules
 package-lock.json
 package.json
 yarn.lock
-source/quadpype/premiere/ppro/js/debug.log
+src/quadpype/premiere/ppro/js/debug.log
 
 
 # IDEA
@@ -99,12 +99,6 @@ test_localsystem.txt
 ##########
 /site/
 /docs/
-source/website/translated_docs/
-source/website/build/
-source/website/node_modules/
-source/website/i18n/*
-source/website/debug.log
-source/website/.docusaurus
 
 # Poetry
 ########
@@ -113,15 +107,14 @@ source/website/.docusaurus
 .editorconfig
 .pre-commit-config.yaml
 mypy.ini
-source/tools/run_eventserver.*
 install-pyenv-win.ps1
 
 #  Developer tools
-source/tools/dev_*
+src/tools/dev_*
 .github_changelog_generator
 
 
 # Addons
 ########
-source/quadpype/addons/*
-!source/quadpype/addons/README.md
+src/quadpype/addons/*
+!src/quadpype/addons/README.md
