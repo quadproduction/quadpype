@@ -1,0 +1,16 @@
+package: quadpype_menu
+author: Quad Dev Team
+organization: Quad
+version: 1.0
+rv: 3.12
+openrv: 1.0.0
+requires: ''
+optional: true
+
+modes:
+  - file: quadpype_menu
+    load: immediate
+
+description: |
+
+  <p> Adds QuadPype to OpenRV </p>

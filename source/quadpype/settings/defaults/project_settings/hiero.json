@@ -1,0 +1,91 @@
+{
+    "imageio": {
+        "activate_host_color_management": true,
+        "ocio_config": {
+            "override_global_config": false,
+            "filepath": []
+        },
+        "file_rules": {
+            "activate_host_rules": false,
+            "rules": {}
+        },
+        "workfile": {
+            "ocioConfigName": "aces_1.2",
+            "workingSpace": "role_scene_linear",
+            "viewerLut": "ACES/sRGB",
+            "thumbnailLut": "ACES/sRGB",
+            "monitorOutLut": "ACES/sRGB",
+            "eightBitLut": "role_matte_paint",
+            "sixteenBitLut": "role_texture_paint",
+            "logLut": "role_compositing_log",
+            "floatLut": "role_scene_linear"
+        },
+        "regexInputs": {
+            "inputs": [
+                {
+                    "regex": "[^-a-zA-Z0-9](plateRef).*(?=mp4)",
+                    "colorspace": "sRGB"
+                }
+            ]
+        }
+    },
+    "create": {
+        "CreateShotClip": {
+            "hierarchy": "{folder}/{sequence}",
+            "clipRename": true,
+            "clipName": "{track}{sequence}{shot}",
+            "countFrom": 10,
+            "countSteps": 10,
+            "folder": "shots",
+            "episode": "ep01",
+            "sequence": "sq01",
+            "track": "{_track_}",
+            "shot": "sh###",
+            "symlink": false,
+            "vSyncOn": false,
+            "workfileFrameStart": 1001,
+            "handleStart": 10,
+            "handleEnd": 10
+        }
+    },
+    "load": {
+        "LoadClip": {
+            "enabled": true,
+            "families": [
+                "render2d",
+                "source",
+                "plate",
+                "render",
+                "review"
+            ],
+            "clip_name_template": "{asset}_{subset}_{representation}"
+        }
+    },
+    "publish": {
+        "CollectInstanceVersion": {
+            "enabled": false
+        },
+        "ExtractReviewCutUpVideo": {
+            "enabled": true,
+            "tags_addition": [
+                "review"
+            ]
+        },
+        "CollectClipEffects": {
+            "enabled": true,
+            "effect_categories": {}
+        }
+    },
+    "scriptsmenu": {
+        "name": "QuadPype Tools",
+        "definition": [
+            {
+                "type": "action",
+                "sourcetype": "python",
+                "title": "QuadPype Docs",
+                "command": "import webbrowser;webbrowser.open(url='https://quadpype.io/docs/artist_hosts_hiero')",
+                "tooltip": "Open the QuadPype Hiero user doc page"
+            }
+        ]
+    }
+}

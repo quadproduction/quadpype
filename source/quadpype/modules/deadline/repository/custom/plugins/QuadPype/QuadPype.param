@@ -1,0 +1,27 @@
+[About]
+Type=label
+Label=About
+Category=About Plugin
+CategoryOrder=-1
+Index=0
+Default=QuadPype Plugin for Deadline
+Description=Not configurable
+
+[QuadPypeInstallationDirs]
+Type=multilinemultifolder
+Label=Directories where QuadPype versions are installed
+Category=QuadPype Installation Directories
+CategoryOrder=0
+Index=0
+Default=C:\Program Files (x86)\QuadPype
+Description=Path or paths to directories where multiple versions of QuadPype might be installed. Enter every such path on separate lines.
+
+[QuadPypeExecutable]
+Type=multilinemultifilename
+Label=QuadPype Executable
+Category=QuadPype Executables
+CategoryOrder=1
+Index=0
+Default=
+Description=The path to the QuadPype executable. Enter alternative paths on separate lines.
+

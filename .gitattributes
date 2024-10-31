@@ -2,5 +2,6 @@
 *.sh text eol=lf
 *.command eol=lf
 *.bat text eol=crlf
+*.ps1 text eol=crlf
 *.js  eol=lf
 *.c   eol=lf

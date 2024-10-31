@@ -34,17 +34,28 @@ Temporary Items
 
 # CX_Freeze
 ###########
-/build
-/dist/
-/server_addon/packages/*
-/vendor/bin/*
-/vendor/python/*
-/.venv
-/venv/
+/build/
+/source/build/
+dist/
+source/dist/
+server_addon/packages/*
+source/vendor/bin/*
+source/vendor/python/*
+
+# Environment
+#############
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # Documentation
 ###############
-/docs/build
+/docs/build/
+source/docs/build/
 
 # Editor backup files #
 #######################
@@ -57,7 +68,7 @@ htmlcov/
 .nox/
 .coverage
 .coverage.*
-/coverage
+coverage/
 .cache
 nosetests.xml
 coverage.xml
@@ -71,29 +82,29 @@ node_modules
 package-lock.json
 package.json
 yarn.lock
-quadpype/premiere/ppro/js/debug.log
+source/quadpype/premiere/ppro/js/debug.log
 
 
 # IDEA
 ######
 .idea/
-.run/*
 
 # VS Code
 #########
 .vscode/
-.env
 dump.sql
 test_localsystem.txt
 
 # website
 ##########
-website/translated_docs
-website/build/
-website/node_modules
-website/i18n/*
-website/debug.log
-website/.docusaurus
+/site/
+/docs/
+source/website/translated_docs/
+source/website/build/
+source/website/node_modules/
+source/website/i18n/*
+source/website/debug.log
+source/website/.docusaurus
 
 # Poetry
 ########
@@ -102,15 +113,15 @@ website/.docusaurus
 .editorconfig
 .pre-commit-config.yaml
 mypy.ini
-tools/run_eventserver.*
+source/tools/run_eventserver.*
 install-pyenv-win.ps1
 
 #  Developer tools
-tools/dev_*
+source/tools/dev_*
 .github_changelog_generator
 
 
 # Addons
 ########
-/quadpype/addons/*
-!/quadpype/addons/README.md
+source/quadpype/addons/*
+!source/quadpype/addons/README.md

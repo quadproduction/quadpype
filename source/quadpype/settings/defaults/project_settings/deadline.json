@@ -1,0 +1,167 @@
+{
+    "deadline_servers": [],
+    "deadline_batch_name": "{asset}_{task[name]}_{version}_{subversion}.{ext}",
+    "deadline_job_name": "{asset}_{task[name]}_{version}_{subversion}.{ext} - {inst_name}",
+    "JobAttrsValues": {
+        "DefaultValues": {
+            "pool": "",
+            "pool_secondary": "",
+            "priority": 50,
+            "limit_machine": 0,
+            "limits_plugin": []
+        },
+        "profiles": []
+    },
+    "publish": {
+        "CollectDefaultDeadlineServer": {
+            "pass_mongo_url": true
+        },
+        "ValidateExpectedFiles": {
+            "enabled": true,
+            "active": true,
+            "allow_user_override": true,
+            "families": [
+                "render"
+            ],
+            "targets": [
+                "deadline"
+            ]
+        },
+        "MayaSubmitDeadline": {
+            "enabled": true,
+            "optional": false,
+            "active": true,
+            "tile_assembler_plugin": "DraftTileAssembler",
+            "use_published": true,
+            "import_reference": false,
+            "asset_dependencies": true,
+            "tile_priority": 50,
+            "group": "none",
+            "jobInfo": {},
+            "pluginInfo": {},
+            "scene_patches": [],
+            "strict_error_checking": true
+        },
+        "HoudiniCacheSubmitDeadline": {
+            "enabled": true,
+            "optional": false,
+            "active": true,
+            "chunk_size": 999999,
+            "group": ""
+        },
+        "HoudiniSubmitDeadline": {
+            "enabled": true,
+            "optional": false,
+            "active": true,
+            "chunk_size": 1,
+            "group": "",
+            "export_priority": 50,
+            "export_chunk_size": 10,
+            "export_group": ""
+        },
+        "MaxSubmitDeadline": {
+            "enabled": true,
+            "optional": false,
+            "active": true,
+            "use_published": true,
+            "chunk_size": 10,
+            "group": "none"
+        },
+        "FusionSubmitDeadline": {
+            "enabled": true,
+            "optional": false,
+            "active": true,
+            "chunk_size": 10,
+            "concurrent_tasks": 1,
+            "group": "",
+            "plugin": "Fusion"
+        },
+        "NukeSubmitDeadline": {
+            "enabled": true,
+            "optional": false,
+            "active": true,
+            "chunk_size": 10,
+            "concurrent_tasks": 1,
+            "group": "",
+            "department": "",
+            "use_gpu": true,
+            "workfile_dependency": true,
+            "use_published_workfile": true,
+            "env_allowed_keys": [],
+            "env_search_replace_values": {}
+        },
+        "HarmonySubmitDeadline": {
+            "enabled": true,
+            "optional": false,
+            "active": true,
+            "use_published": true,
+            "chunk_size": 10000,
+            "group": "",
+            "department": ""
+        },
+        "AfterEffectsSubmitDeadline": {
+            "enabled": true,
+            "optional": false,
+            "active": true,
+            "use_published": true,
+            "chunk_size": 10000,
+            "group": "",
+            "department": "",
+            "multiprocess": true
+        },
+        "CelactionSubmitDeadline": {
+            "enabled": true,
+            "department": "",
+            "group": "",
+            "chunk_size": 10,
+            "job_delay": "00:00:00:00"
+        },
+        "BlenderSubmitDeadline": {
+            "enabled": true,
+            "optional": false,
+            "active": true,
+            "use_published": true,
+            "chunk_size": 10,
+            "group": "none",
+            "job_delay": "00:00:00:00"
+        },
+        "ProcessSubmittedCacheJobOnFarm": {
+            "enabled": true,
+            "department": "",
+            "group": "",
+            "chunk_size": 1
+        },
+        "ProcessSubmittedJobOnFarm": {
+            "enabled": true,
+            "department": "",
+            "group": "",
+            "chunk_size": 1,
+            "publishing_script": "",
+            "skip_integration_repre_list": [],
+            "families_transfer": ["render3d", "render2d", "ftrack", "slate"],
+            "aov_filter": {
+                "maya": [
+                    ".*([Bb]eauty).*"
+                ],
+                "blender": [
+                    ".*([Bb]eauty).*"
+                ],
+                "aftereffects": [
+                    ".*"
+                ],
+                "celaction": [
+                    ".*"
+                ],
+                "harmony": [
+                    ".*"
+                ],
+                "max": [
+                    ".*"
+                ],
+                "fusion": [
+                    ".*"
+                ]
+            }
+        }
+    }
+}
