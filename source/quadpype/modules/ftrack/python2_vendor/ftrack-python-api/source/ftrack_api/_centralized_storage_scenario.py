@@ -251,7 +251,7 @@ class ConfigureCentralizedStorageScenario(object):
                             configure_location.get('location_name')
                         )
                     ).first()
-                except UnicodeEncodeError:                
+                except UnicodeEncodeError:
                     next_step = 'configure_location'
                     warning_message += (
                         '**The location name contains non-ascii characters. '

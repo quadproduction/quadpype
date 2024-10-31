@@ -28,4 +28,3 @@ Create a new user::
 Invite our new user::
 
     new_user.send_invite()
-

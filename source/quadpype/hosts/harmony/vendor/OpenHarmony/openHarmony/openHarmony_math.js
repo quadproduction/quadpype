@@ -714,4 +714,3 @@ Object.defineProperty($.oVector.prototype, "degreesAngle", {
 $.oVector.prototype.toString = function(){
   return "<$.oVector ["+this.x+", "+this.y+", "+this.z+"]>";
 }
-

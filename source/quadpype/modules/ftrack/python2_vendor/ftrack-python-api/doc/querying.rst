@@ -147,14 +147,14 @@ This query could be written without ``has``, giving the same results::
     )
 
 ``any`` should be used for collection relationships. For example, to find all
-projects that have at least one metadata instance that has `key=some_key` 
+projects that have at least one metadata instance that has `key=some_key`
 and `value=some_value` the query would be::
 
     projects_where_some_key_is_some_value = session.query(
         'Project where metadata any (key=some_key and value=some_value)'
     )
 
-If the query was written without ``any``, projects with one metadata matching 
+If the query was written without ``any``, projects with one metadata matching
 *key* and another matching the *value* would be returned.
 
 ``any`` can also be used to query for empty relationship collections::

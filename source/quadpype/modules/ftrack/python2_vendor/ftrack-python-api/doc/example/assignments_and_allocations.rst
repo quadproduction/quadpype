@@ -11,7 +11,7 @@ Working with assignments and allocations
 
 The API exposes `assignments` and `allocations` relationships on objects in
 the project hierarchy. You can use these to retrieve the allocated or assigned
-resources, which can be either groups or users. 
+resources, which can be either groups or users.
 
 Allocations can be used to allocate users or groups to a project team, while
 assignments are more explicit and is used to assign users to tasks. Both
@@ -79,4 +79,3 @@ To list the current user's assigned tasks, see the example below::
     )
     for task in assigned_tasks:
         print u' / '.join(item['name'] for item in task['link'])
-

@@ -290,7 +290,7 @@ def test_component_without_committed_version_relation():
 
 
 @pytest.mark.xfail(
-    raises=ftrack_api.exception.ServerError, 
+    raises=ftrack_api.exception.ServerError,
     reason='Due to user permission errors.'
 )
 def test_component_without_committed_asset_relation():

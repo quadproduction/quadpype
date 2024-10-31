@@ -67,5 +67,5 @@ def pytest_report_header(config):
         versions += 'unknown version'
 
     versions += os.linesep
-    
+
     return versions

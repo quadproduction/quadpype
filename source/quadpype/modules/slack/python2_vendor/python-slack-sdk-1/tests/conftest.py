@@ -36,4 +36,3 @@ def slackclient():
 def channel(server):
     my_channel = Channel(server, "somechannel", "C12341234", ["user"])
     return my_channel
-

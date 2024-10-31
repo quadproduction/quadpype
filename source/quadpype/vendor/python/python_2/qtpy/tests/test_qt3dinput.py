@@ -30,4 +30,3 @@ def test_qt3dinput():
     assert Qt3DInput.QAction is not None
     assert Qt3DInput.QAbstractPhysicalDevice is not None
     assert Qt3DInput.QAxisSetting is not None
-    

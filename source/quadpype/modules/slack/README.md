@@ -4,7 +4,7 @@ Slack notification for publishing
 This module allows configuring profiles(when to trigger, for which combination of task, host and family)
 and templates(could contain {} placeholder, as "{asset} published").
 
-These need to be configured in 
+These need to be configured in
 ```Project settings > Slack > Publish plugins > Notification to Slack```
 
 Slack module must be enabled in System Setting, could be configured per Project.
@@ -17,7 +17,7 @@ used, follow instruction https://api.slack.com/reference/manifests#using
 ## Settings
 
 ### Token
-Most important for module to work is to fill authentication token 
+Most important for module to work is to fill authentication token
 ```Project settings > Slack > Publish plugins > Token```
 
 This token should be available after installation of app in Slack dashboard.
@@ -45,6 +45,6 @@ Only keys available in 'anatomyData' are currently implemented.
 Example of message content:
 ```{SUBSET} for {Asset} was published.```
 
-Integration can upload 'thumbnail' file (if present in instance), for that bot must be 
+Integration can upload 'thumbnail' file (if present in instance), for that bot must be
 manually added to target channel by Slack admin!
 (In target channel write: ```/invite @QuadPypeNotifier``)

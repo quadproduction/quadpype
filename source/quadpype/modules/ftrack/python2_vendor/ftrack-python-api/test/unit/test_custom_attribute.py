@@ -205,7 +205,7 @@ def test_set_custom_attribute_on_new_but_persisted_version(
 
 
 @pytest.mark.xfail(
-    raises=ftrack_api.exception.ServerError, 
+    raises=ftrack_api.exception.ServerError,
     reason='Due to user permission errors.'
 )
 def test_batch_create_entity_and_custom_attributes(
@@ -246,6 +246,3 @@ def test_refresh_custom_attribute(new_asset_version):
         new_asset_version['custom_attributes']['versiontest'] ==
         asset_version_two['custom_attributes']['versiontest']
     )
-
-
-

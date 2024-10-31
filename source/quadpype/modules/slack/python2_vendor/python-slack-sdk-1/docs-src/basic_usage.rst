@@ -38,7 +38,7 @@ There are some unique options specific to sending IMs, so be sure to read the **
 section of the `chat.postMessage <https://api.slack.com/methods/chat.postMessage#channels>`_
 page for a full list of formatting and authorship options.
 
-Sending an ephemeral message, which is only visible to an assigned user in a specified channel, is nearly the same 
+Sending an ephemeral message, which is only visible to an assigned user in a specified channel, is nearly the same
 as sending a regular message, but with an additional ``user`` parameter.
 
 .. code-block:: python
@@ -61,7 +61,7 @@ See `chat.postEphemeral <https://api.slack.com/methods/chat.postEphemeral>`_ for
 
 Customizing a message's layout
 -----------------------
-The chat.postMessage method takes an optional blocks argument that allows you to customize the layout of a message. 
+The chat.postMessage method takes an optional blocks argument that allows you to customize the layout of a message.
 Blocks for Web API methods are all specified in a single object literal, so just add additional keys for any optional argument.
 
 To send a message to a channel, use the channel's ID. For IMs, use the user's ID.
@@ -432,4 +432,3 @@ containing the number of seconds until you can retry.
 See the documentation on `Rate Limiting <https://api.slack.com/docs/rate-limits>`_ for more info.
 
 .. include:: metadata.rst
-

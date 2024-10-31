@@ -13,4 +13,3 @@ Locale: en-US
 ## PSWriteColor Cmdlets
 ### [Write-Color](Write-Color.md)
 Write-Color is a wrapper around Write-Host delivering a lot of additional features for easier color options.
-

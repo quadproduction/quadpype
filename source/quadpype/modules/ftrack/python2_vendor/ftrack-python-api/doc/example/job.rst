@@ -31,7 +31,7 @@ description as the `data` key:
     serialised.
 
 .. code-block:: python
-    
+
     import json
 
     job = session.create('Job', {
@@ -66,7 +66,7 @@ relation and then use the ftrack server location to get the download URL::
 
     for job_component in job['job_components']:
         print 'Download URL: {0}'.format(
-            server_location.get_url(job_component['component'])   
+            server_location.get_url(job_component['component'])
         )
 
 To add an attachment to a job you have to add it to the ftrack server location
@@ -74,7 +74,7 @@ and create a `jobComponent`::
 
     server_location = session.query(
         'Location where name is "ftrack.server"'
-    ).one()    
+    ).one()
 
     # Create component and name it "My file".
     component = session.create_component(

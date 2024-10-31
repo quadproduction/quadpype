@@ -9,7 +9,7 @@ Working with thumbnails
 
 Components can be used as thumbnails on various entities, including
 `Project`, `Task`, `AssetVersion` and `User`.  To create and set a thumbnail
-you can use the helper method 
+you can use the helper method
 :meth:`~ftrack_api.entity.component.CreateThumbnailMixin.create_thumbnail` on
 any entity that can have a thumbnail::
 

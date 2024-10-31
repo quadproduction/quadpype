@@ -1195,7 +1195,7 @@ def convert_colorspace(
             frame_regex = r'\.\d+-\d+#\.'
             input_path = re.sub(frame_regex, frame_group, input_path)
             output_path = re.sub(frame_regex, frame_group, output_path)
-	
+
         input_info = get_oiio_info_for_input(input_path, logger=logger)
 
         # Collect channels to export

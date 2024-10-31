@@ -91,7 +91,7 @@ $.oDatabase.prototype.getEnvironments = function(){
 
 /**
  * Lists the jobs in the given environment in the local database
- * @param {string}  [environment]    The name of the environment to return the jobs from. Returns the jobs from the current environment by default. 
+ * @param {string}  [environment]    The name of the environment to return the jobs from. Returns the jobs from the current environment by default.
  * @return {string[]}  The list of job names in the environment.
  */
 $.oDatabase.prototype.getJobs = function(environment){
@@ -114,7 +114,7 @@ $.oDatabase.prototype.getJobs = function(environment){
 
 /**
  * Lists the scenes in the given environment in the local database
- * @param {string}  [job]    The name of the jobs to return the scenes from. Returns the scenes from the current job by default. 
+ * @param {string}  [job]    The name of the jobs to return the scenes from. Returns the scenes from the current job by default.
  * @return {string[]}  The list of scene names in the job.
  */
 $.oDatabase.prototype.getScenes = function(job){

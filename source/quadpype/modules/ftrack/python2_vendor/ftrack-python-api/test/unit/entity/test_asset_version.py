@@ -48,7 +48,7 @@ def test_encode_media(new_asset_version, video_path):
     assert 'component_id' in job_data['output'][0]
 
     component_id = job_data['output'][0]['component_id']
-    component = session.get('FileComponent', component_id) 
+    component = session.get('FileComponent', component_id)
 
     # Component should be associated with the version.
     assert component['version_id'] == new_asset_version['id']

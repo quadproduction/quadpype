@@ -66,4 +66,3 @@ parent_finalize = setuptools.dist:_Distribution.finalize_options
 
 [setuptools.installation]
 eggsecutable = setuptools.command.easy_install:bootstrap
-

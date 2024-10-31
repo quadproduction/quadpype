@@ -51,6 +51,3 @@ Create all tasks in a random task template directly under the project::
         )
 
     session.commit()
-
-
-

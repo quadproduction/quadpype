@@ -24,4 +24,3 @@ CategoryOrder=1
 Index=0
 Default=
 Description=The path to the QuadPype executable. Enter alternative paths on separate lines.
-

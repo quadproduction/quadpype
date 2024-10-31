@@ -11,9 +11,9 @@ Using notes
 
 Notes can be written on almost all levels in ftrack. To retrieve notes on an
 entity you can either query them or use the relation called `notes`::
-    
+
     task = session.query('Task').first()
-    
+
     # Retrieve notes using notes property.
     notes_on_task = task['notes']
 
@@ -51,7 +51,7 @@ can have notes or use :meth:`Session.create` to create them manually::
         'content': 'My new note',
         'author': user
     })
-    
+
     task['notes'].append(note)
 
 Replying to an existing note can also be done with a helper method or by
@@ -66,7 +66,7 @@ using :meth:`Session.create`::
         'content': 'My new note',
         'author': user
     })
-    
+
     first_note_on_task.replies.append(reply)
 
 Notes can have labels. Use the label argument to set labels on the
@@ -151,7 +151,7 @@ and create a `NoteComponent`::
 
     server_location = session.query(
         'Location where name is "ftrack.server"'
-    ).one()    
+    ).one()
 
     # Create component and name it "My file".
     component = session.create_component(

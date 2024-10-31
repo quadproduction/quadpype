@@ -94,5 +94,3 @@ def test_patched_qheaderview():
             headerview.setMovable(True)
         with pytest.warns(UserWarning):
             headerview.setResizeMode(0, QHeaderView.Interactive)
-
-

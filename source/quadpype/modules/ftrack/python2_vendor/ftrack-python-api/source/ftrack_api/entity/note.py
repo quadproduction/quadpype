@@ -43,7 +43,7 @@ class CreateNoteMixin(object):
         NoteLabels can be set by including *labels*.
 
         Note category can be set by including *category*.
-        
+
         *recipients* can be specified as a list of user or group instances.
 
         '''

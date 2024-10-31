@@ -681,4 +681,3 @@ $.oSignal.prototype.emit = function () {
 $.oSignal.prototype.toString = function(){
   return "Signal";
 }
-

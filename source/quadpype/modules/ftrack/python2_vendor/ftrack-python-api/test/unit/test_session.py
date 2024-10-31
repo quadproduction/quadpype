@@ -188,7 +188,7 @@ def test_ensure_entity_with_non_string_data_types(session):
     ).first()
 
     first = session.ensure(
-        'Timelog', 
+        'Timelog',
         {
             'start': datetime,
             'duration': 10,
@@ -199,10 +199,10 @@ def test_ensure_entity_with_non_string_data_types(session):
 
     with mock.patch.object(session, 'create') as mocked:
         session.ensure(
-            'Timelog', 
+            'Timelog',
             {
-                'start': datetime, 
-                'duration': 10, 
+                'start': datetime,
+                'duration': 10,
                 'user_id': user['id'],
                 'context_id': task['id']
             }

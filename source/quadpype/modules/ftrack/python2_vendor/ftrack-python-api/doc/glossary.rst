@@ -24,7 +24,7 @@ Glossary
         Application programming interface.
 
     arrow
-        A Python library that offers a sensible, human-friendly approach to 
+        A Python library that offers a sensible, human-friendly approach to
         creating, manipulating, formatting and converting dates, times, and
         timestamps. Read more at http://crsmithdev.com/arrow/
 
@@ -49,7 +49,7 @@ Glossary
         the component names as 'hires' and 'lowres' respectively.
 
     PEP-8
-        Style guide for :term:`Python` code. Read the guide at 
+        Style guide for :term:`Python` code. Read the guide at
         https://www.python.org/dev/peps/pep-0008/
 
     plugin

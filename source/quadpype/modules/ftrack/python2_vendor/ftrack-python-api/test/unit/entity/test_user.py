@@ -46,4 +46,3 @@ def test_reset_user_api_key(new_user):
 
     # make sure all api keys are unique
     assert len(set(api_keys)) == 10
-

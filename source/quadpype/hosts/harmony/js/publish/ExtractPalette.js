@@ -30,7 +30,7 @@ ExtractPalette.prototype.getPalette = function(paletteId) {
     return [
         palette_name,
         (palette.getPath() + '/' + palette.getName() + '.plt')
-    ];  
+    ];
 };
 
 // add self to Pype Loaders

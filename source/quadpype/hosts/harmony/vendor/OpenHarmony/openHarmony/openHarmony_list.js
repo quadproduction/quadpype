@@ -39,18 +39,18 @@
 //////////////////////////////////////////////////////////////////////////////////////
 
 
-/** 
- * Constructor to generate an $.oList type object. 
+/**
+ * Constructor to generate an $.oList type object.
  * @constructor
- * @classdesc 
+ * @classdesc
  * The base class for the $.oList.<br>
  * Provides a list of values similar to an array, but with simpler filtering and sorting functions provided.<br>
- * It can have any starting index and so can implement lists with a first index of 1 like the $.oColumn.frames returned value.   
+ * It can have any starting index and so can implement lists with a first index of 1 like the $.oColumn.frames returned value.
  * @param   {object[]}                 initArray             An array to initialize the list.
  * @param   {int}                      [startIndex=0]        The first index exposed in the list.
  * @param   {int}                      [length=0]            The length of the list -- the max between this value and the initial array's length is used.
  * @param   {function}                 [getFunction=null]    The function used to initialize the list when accessing an uninitiated element in the list.<br>In form <i>function( listItem, index ){ return value; }</i>
- * @param   {function}                 [setFunction=null]    The function run when setting an entry in the list.<br>In form <i>function( listItem, index, value ){ return resolvedValue; }</i> -- must return a resolved value. 
+ * @param   {function}                 [setFunction=null]    The function run when setting an entry in the list.<br>In form <i>function( listItem, index, value ){ return resolvedValue; }</i> -- must return a resolved value.
  * @param   {function}                 [sizeFunction=null]   The function run when resizing the list.<br>In form <i>function( listItem, length ){ }</i>
  */
 $.oList = function( initArray, startIndex, length, getFunction, setFunction, sizeFunction ){
@@ -58,22 +58,22 @@ $.oList = function( initArray, startIndex, length, getFunction, setFunction, siz
   if(typeof startIndex == 'undefined') var startIndex = 0;
   if(typeof getFunction == 'undefined') var getFunction = false;
   if(typeof setFunction == 'undefined') var setFunction = false;
-  if(typeof sizeFunction == 'undefined') var sizeFunction = false; 
+  if(typeof sizeFunction == 'undefined') var sizeFunction = false;
   if(typeof length == 'undefined') var length = 0;
-  
+
   //Extend the cache if the content has been provided initially.
   //Must be not enumerable. . .
   // this._initArray      = initArray;
   // this._cache          = [];
-  
+
   // this._getFunction    = getFunction;
-  // this._setFunction    = setFunction;  
+  // this._setFunction    = setFunction;
   // this._sizeFunction   = sizeFunction;
-  
+
   // this.startIndex    = startIndex;
   // this._length       = Math.max( initArray.length, startIndex+length );
   // this.currentIndex  = startIndex;
-  
+
   Object.defineProperty( this, '_initArray', {
     enumerable : false, writable : true,
     value: initArray
@@ -113,7 +113,7 @@ $.oList = function( initArray, startIndex, length, getFunction, setFunction, siz
     enumerable : false, writable : true, configurable: false,
     value: Math.max( initArray.length, startIndex+length )
   });
-  
+
   this.createGettersSetters();
 }
 
@@ -132,21 +132,21 @@ Object.defineProperty( $.oList.prototype, '_type', {
 Object.defineProperty($.oList.prototype, 'createGettersSetters', {
   enumerable : false,
   value: function(){
-    { 
+    {
       //Dynamic getter/setters.
       var func_get  =  function( listItem, index ){
                         if( index >= listItem._cache._length ) return null;
-                        if( listItem._cache[index].cacheAvailable ){                  
-                         return listItem._cache[index].value;                     
-                        }                    
-                        if( listItem._getFunction ){                     
-                          listItem._cache[index].cacheAvailable = true;             
-                          listItem._cache[index].value          = listItem._getFunction( listItem, index );          
-                          return listItem._cache[ index ].value;                    
+                        if( listItem._cache[index].cacheAvailable ){
+                         return listItem._cache[index].value;
+                        }
+                        if( listItem._getFunction ){
+                          listItem._cache[index].cacheAvailable = true;
+                          listItem._cache[index].value          = listItem._getFunction( listItem, index );
+                          return listItem._cache[ index ].value;
                         }
                         return null;
                       };
-      
+
       //Either set the cache function directly, or run the setFunction to get a value and set it.
       var func_set  =  function( listItem, index, value ){
                         if( index >= listItem._cache._length ){
@@ -156,7 +156,7 @@ Object.defineProperty($.oList.prototype, 'createGettersSetters', {
                             throw new ReferenceError( 'Index of out of range: '+index+ ' out of ' + listItem._cache._length )
                           }
                         }
-                          
+
                         if( listItem._setFunction ){
                           listItem._cache[index].cacheAvailable = true;
                           try{
@@ -167,24 +167,24 @@ Object.defineProperty($.oList.prototype, 'createGettersSetters', {
                           listItem._cache[index].value          = value;
                         }
                        };
-    
-      var setup_length           = Math.max( this._length, this._cache.length ); 
+
+      var setup_length           = Math.max( this._length, this._cache.length );
       if( this._cache.length < setup_length ){
         this._cache                = this._cache.concat( new Array( setup_length-this._cache.length ) );
       }
-      
+
       for( var n=0;n<this._length;n++ ){
         if( !this._cache[n] ){
           var cacheAvail = n<this._initArray.length;
-          this._cache[n] = { 
+          this._cache[n] = {
                         "cacheAvailable": cacheAvail,
                         "enumerable"    : false,
                         "value"         : cacheAvail ? this._initArray[n] : null,
                       };
         }
-        
+
         var currentEnumerable = n>=this.startIndex && n< this.length;
-        
+
         if( currentEnumerable && !this._cache[n].enumerable ){
           Object.defineProperty( this, n, {
             enumerable : true,
@@ -217,11 +217,11 @@ Object.defineProperty( $.oList.prototype, 'startIndex', {
   get: function(){
     return this._startIndex;
   },
-  
+
   set: function( val ){
     this._startIndex = val;
     this.currentIndex = Math.max( this.currentIndex, val );
-    
+
     this.createGettersSetters();
   }
 });
@@ -238,16 +238,16 @@ Object.defineProperty($.oList.prototype, 'length', {
   get: function(){
     return this._length;
   },
-  
+
   set: function( val ){
     //Reset the size as needed.
-    
+
     var new_val = val+this.startIndex;
     if( new_val != this._length ){
       this._length = new_val;
       this.createGettersSetters();
     }
-     
+
     this._sizeFunction( this, this._length );
   }
 });
@@ -278,15 +278,15 @@ Object.defineProperty($.oList.prototype, 'first', {
  * var item = myList.first();  // 1
  *
  * while( item != undefined ){
- *   $.log(item)               // traces the whole array one item at a time : 1,2,3   
- *   item = myList.next();   
+ *   $.log(item)               // traces the whole array one item at a time : 1,2,3
+ *   item = myList.next();
  * }
  */
 Object.defineProperty($.oList.prototype, 'next', {
   enumerable : false,
   value: function(){
     this.currentIndex++;
-    
+
     if( this.currentIndex >= this.length ){
       return;
     }
@@ -323,7 +323,7 @@ Object.defineProperty($.oList.prototype, 'push', {
   value : function( newElement ){
     var origLength = this.length;
     this.length    = origLength+1;
-    
+
     this[ origLength ] = newElement;
     return origLength+1;
   }
@@ -343,11 +343,11 @@ Object.defineProperty($.oList.prototype, 'pop', {
     if( !this.hasOwnProperty( origLength-1 ) ){
       return;
     }
-    
+
     var cache = this._cache.pop();
-  
+
     this.length    = origLength-1;
-    
+
     return cache.value;
   }
 });
@@ -387,11 +387,11 @@ Object.defineProperty($.oList.prototype, 'filterByFunction', {
  * @example
  * var doc = $.s // grab the scene object
  * var nodeList = new $.oList(doc.nodes, 1) // get a list of all the nodes, with a first index of 1
- * 
+ *
  * $.log(nodeList) // outputs the list of all the node paths
- * 
+ *
  * var readNodes = nodeList.filterByProperty("type", "READ") // get a new list of only the nodes of type 'READ'
- * 
+ *
  * $.log(readNodes.extractProperty("name"))  // prints the names of the result
  *
  */
@@ -503,7 +503,7 @@ Object.defineProperty($.oList.prototype, 'toArray', {
 /**
  * outputs the list to a string for easy logging
  * @name $.oList#toString
- * @function 
+ * @function
  * @type {string}
  */
 Object.defineProperty($.oList.prototype, 'toString', {

@@ -1,5 +1,5 @@
 @echo off
-SETLOCAL ENABLEDELAYEDEXPANSION 
+SETLOCAL ENABLEDELAYEDEXPANSION
 SET dlPath=%~dp0
 set harmonyPrefsDir=%appdata%\Toon Boom Animation
 
@@ -28,8 +28,8 @@ for /d %%D in ("%harmonyPrefsDir%\*Harmony*") do (
       if not exist "!installDir!" mkdir "!installDir!"
 
       cd !installDir!
-      
-      set "script=include(System.getenv('LIB_OPENHARMONY_PATH')+'openHarmony.js');" 
+
+      set "script=include(System.getenv('LIB_OPENHARMONY_PATH')+'openHarmony.js');"
       echo !script!> openHarmony.js
     )
     echo ---- done. ----

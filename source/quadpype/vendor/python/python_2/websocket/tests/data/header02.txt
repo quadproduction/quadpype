@@ -3,4 +3,3 @@ Connection: Upgrade
 Upgrade WebSocket
 Sec-WebSocket-Accept: Kxep+hNu9n51529fGidYu7a3wO0=
 some_header: something
-

@@ -123,7 +123,7 @@ configuration can have one of the following as `entity_type`:
     Represents Asset custom attribute configurations.
 
     .. note::
-       
+
         Asset custom attributes have limited support in the ftrack web
         interface.
 

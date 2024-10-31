@@ -71,29 +71,29 @@
 /**
  * The preferences of Harmony can be accessed with the following keywords.
  * @class preferences
- * @hideconstructor 
+ * @hideconstructor
  * @namespace
  * @example
  * // To access the preferences of Harmony, grab the preference object in the $.oApp class:
  * var prefs = $.app.preferences;
- * 
+ *
  * // It's then possible to access all available preferences of the software:
  * for (var i in prefs){
  *   log (i+" "+prefs[i]);
  * }
- * 
+ *
  * // accessing the preference value can be done directly by using the dot notation:
  * prefs.USE_OVERLAY_UNDERLAY_ART = true;
  * log (prefs.USE_OVERLAY_UNDERLAY_ART);
- * 
+ *
  * //the details objects of the preferences object allows access to more information about each preference
  * var details = prefs.details
  * log(details.USE_OVERLAY_UNDERLAY_ART.category+" "+details.USE_OVERLAY_UNDERLAY_ART.id+" "+details.USE_OVERLAY_UNDERLAY_ART.type);
- * 
+ *
  * for (var i in details){
  *   log(i+" "+JSON.stringify(details[i]))       // each object inside detail is a complete oPreference instance
  * }
- * 
+ *
  * // the preference object also holds a categories array with the list of all categories
  * log (prefs.categories)
  */
@@ -101,10 +101,10 @@
 /**
  * Preferences in the Internal category.
  * @name preferences#Internal
- * @property {string} PREFERENCE_SET=Cutout Animation 
+ * @property {string} PREFERENCE_SET=Cutout Animation
  * @property {TUPencilDeformationQualityItem} DEFAULT_PENCIL_DEFORMATION_QUALITY=Low Default Pencil Line Deformation Quality
- * @property {bool} DEFAULT_PRESERVE_LINE_THICKNESS=false 
- * @property {int} TV_DEFAULT_VIEW=3 
+ * @property {bool} DEFAULT_PRESERVE_LINE_THICKNESS=false
+ * @property {int} TV_DEFAULT_VIEW=3
  * @property {double} DBL_STEP_2DPOSITION_X=0.1 Internal
  * @property {double} DBL_STEP_2DPOSITION_Y=0.1 Internal
  * @property {double} DBL_STEP_3DPOSITION_X=0.1 Internal
@@ -170,8 +170,8 @@
  * @property {double} DBL_STEP_ANGLE=1 Internal
  * @property {double} DBL_STEP_ANGLE_SKEW=1 Internal
  * @property {double} DBL_STEP_SET_FOCUS=0.1 Internal
- * @property {double} DBL_STEP_SCALE_LINE_THICKNESS=0.01 
- * @property {double} DBL_STEP_LINE_THICKNESS=0.1 
+ * @property {double} DBL_STEP_SCALE_LINE_THICKNESS=0.01
+ * @property {double} DBL_STEP_LINE_THICKNESS=0.1
  * @property {double} DBL_STEP_GLUE_BIAS=0.1 Internal
  * @property {double} DBL_STEP_GLUE_TENSION=0.1 Internal
  * @property {double} DBL_STEP_NB_FRAMES_TAIL=1 Internal
@@ -282,11 +282,11 @@
  * @property {string} UNIX_HTML_BROWSER= HTML Browser for Unix
  * @property {bool} VECT_SHOW_STROKES=false Show the strokes
  * @property {color} EXPORTVIDDLG_BACKGROUND_COLOR=#ffffffff Export Video Bg Colour
- * @property {color} TIMECODE_BGCOLOR=#000000ff 
- * @property {color} TIMECODE_COLOR=#ffffffff 
- * @property {font} TIMECODE_FONT=arial 
- * @property {int} TIMECODE_HEIGHT=10 
- * @property {position} TIMECODE_POSITION=BOTTOM_CENTER 
+ * @property {color} TIMECODE_BGCOLOR=#000000ff
+ * @property {color} TIMECODE_COLOR=#ffffffff
+ * @property {font} TIMECODE_FONT=arial
+ * @property {int} TIMECODE_HEIGHT=10
+ * @property {position} TIMECODE_POSITION=BOTTOM_CENTER
  * @property {bool} SCRIPT_BUSY_WARNING=false Display script in progress warning
  * @property {int} VECTOR_LAYER_DEFAULT_RESOLUTION_FACTOR=100 Default vector layer resolution factor used when creating a new project.
  * @property {int} BITMAP_LAYER_DEFAULT_RESOLUTION_FACTOR=100 Default bitmap layer resolution factor used when creating a new project.
@@ -515,15 +515,15 @@
  * @property {bool} DRAWING_ENHANCED_ONION_SKIN=false Shows Auto Light Table on Every Drawing Visible in the Onion Skin
  * @property {bool} DRAWING_AUTOSAVE_PENSTYLE=true Auto Save Pencil Styles
  * @property {bool} DRAWING_USE_ROTATION_LEVER=false Use Rotation Lever Handle for Select Tool and Transform Tool.
- * @property {TUOnionSkinRenderModeItem} DRAWING_ONIONSKIN_RENDER_MODE=SHADE Onion Skin Render Mode (Normal, Shade or Outline) 
- * @property {TUOnionSkinDrawingModeItem} DRAWING_ONIONSKIN_DRAWING_MODE=byFrames Onion Skin Drawing Mode (byFrames or byDrawing) 
+ * @property {TUOnionSkinRenderModeItem} DRAWING_ONIONSKIN_RENDER_MODE=SHADE Onion Skin Render Mode (Normal, Shade or Outline)
+ * @property {TUOnionSkinDrawingModeItem} DRAWING_ONIONSKIN_DRAWING_MODE=byFrames Onion Skin Drawing Mode (byFrames or byDrawing)
  * @property {bool} DRAWING_SELECT_TOOL_IS_LASSO=true Select Tool Is Lasso
  * @property {bool} TOOL_BOUNDING_BOX_MOVABLE=false Select Tool Bounding Box is Movable
  * @property {bool} DRAWING_SYNCHRONIZE_ERASER=false Synchronize Eraser
  * @property {bool} DRAWING_DEFAULT_COLOR_PICKER_IS_MULTIWHEEL=false Default Colour Picker interface is Multiwheel
  * @property {bool} DRAWING_MOUSEMOVE_INTERPOLATION=true Interpolates the input points from the tablet (or the mouse) to generate a smooth curve.
- * @property {DT_StabilizerMode} DRAWING_STABILIZER_MODE=NoStabilizer 
- * @property {DT_StabilizerMode} DRAWING_STABILIZER_ACTIVE_MODE=NoStabilizer 
+ * @property {DT_StabilizerMode} DRAWING_STABILIZER_MODE=NoStabilizer
+ * @property {DT_StabilizerMode} DRAWING_STABILIZER_ACTIVE_MODE=NoStabilizer
  * @property {bool} DRAWING_BRUSH_SIZE_CURSOR_ON=false Display real brush cursor
  * @property {bool} DRAWING_NEW_COLOR=false Create the new colour in the palette
  * @property {bool} DRAWING_TOOL_MODE_OVERRIDE=true Tool overrides may also change internal tool mode
@@ -579,10 +579,10 @@
  * @property {int} DRAWING_PAPER_ZOOM_MAGNIFY_OFFSETX=-90 Magnifier zoom window horizontal offset.
  * @property {int} DRAWING_PAPER_ZOOM_MAGNIFY_OFFSETY=90 Magnifier zoom window vertical offset.
  * @property {double} QUICK_ZOOM_MAGNIFY_ZOOM=4 Quick Close Up zoom factor.
- * @property {DT_PencilTipModeItem} DRAWING_CUTTER_TIP_MODE=BevelTip 
- * @property {DT_PencilTipModeItem} DRAWING_CONTOUR_EDITOR_TIP_MODE=RoundTip 
- * @property {DT_PencilTipModeItem} DRAWING_ERASER_TIP_MODE=BevelTip 
- * @property {DT_PencilTipModeItem} DRAWING_INK_TIP_MODE=BevelTip 
+ * @property {DT_PencilTipModeItem} DRAWING_CUTTER_TIP_MODE=BevelTip
+ * @property {DT_PencilTipModeItem} DRAWING_CONTOUR_EDITOR_TIP_MODE=RoundTip
+ * @property {DT_PencilTipModeItem} DRAWING_ERASER_TIP_MODE=BevelTip
+ * @property {DT_PencilTipModeItem} DRAWING_INK_TIP_MODE=BevelTip
  */
 
 /**
@@ -655,7 +655,7 @@
  * @property {int} SCANNING_THRESHOLD=100 The threshold value from 1 to 255
  * @property {int} SCANNING_WHITEPOINT=190 The white point value from 1 to 255
  * @property {int} SCANNING_BLACKPOINT=70 The black point value from 1 to 255
- * @property {int} SCANNING_SCANNER=0 
+ * @property {int} SCANNING_SCANNER=0
  * @property {int} SCANNING_PAPERSIZE=1 Paper size of the scanned object
  * @property {bool} SCANNING_OPTREG=true The optical registration value
  * @property {bool} SCANNING_FLIPDRAWING=false Do we flip the drawing
@@ -674,7 +674,7 @@
  * @property {int} SOFT_RENDER_IMAGE_MEMORY_PERCENT=25 Cache size for intermediate preview images (percentage of system RAM)
  * @property {string} SOFT_RENDER_CACHE_PATH= Cache path and size on disk for intermediate preview images
  * @property {bool} SOFT_RENDER_ENABLE_DISK_CACHE=false Enable the cache on disk for intermediate preview images
- * @property {int} SOFT_RENDER_THREADS=0 Number of rendering threads for all type of soft rendering. A value of zero automatically sets the number of threads based on the number of CPU cores. 
+ * @property {int} SOFT_RENDER_THREADS=0 Number of rendering threads for all type of soft rendering. A value of zero automatically sets the number of threads based on the number of CPU cores.
  * @property {bool} SOFT_RENDER_GPU=true Enable the GPU
  * @property {bool} SOFT_RENDER_LOAD_OPENCL=true Enable the GPU (requires a restart of the application)
  * @property {bool} RENDER_ENABLE_TONE_AND_HIGHLIGHT=true Disabling this will produce a drawing performance improvement in the OpenGL views.
@@ -683,7 +683,7 @@
  * @property {bool} RENDER_ENABLE_TEXTURES_IN_PENCIL_LINES=true Disabling this will produce a drawing performance improvement in the OpenGL views.
  * @property {bool} RENDER_ENABLE_COLOUR_OVERRIDE=true Disabling this will produce a drawing performance improvement in the OpenGL views.
  * @property {bool} RENDER_ENABLE_VARIABLE_LINE_THICKNESS=false Disabling this will produce a drawing performance improvement in the OpenGL views.
- * @property {bool} RENDER_ENABLE_GLUE_MODULE=true 
+ * @property {bool} RENDER_ENABLE_GLUE_MODULE=true
  * @property {bool} OPENGL_ENABLE_PLAYBACK_CACHE=true Enable image caching for opengl playback
  * @property {int} OPENGL_PLAYBACK_CACHE_SIZE_MB=2000 Cache size for playback images in Mb
  * @property {bool} OPENGL_ENABLE_CACHELOCK_NODE=true Enable rendering caching of GL cache lock nodes
@@ -725,173 +725,173 @@
 /**
  * Preferences in the Backdrops category.
  * @name preferences#Backdrops
- * @property {color} BACKDROP_INNER_STROKE_COLOR=#373737ff 
- * @property {color} BACKDROP_RESIZE_COLOR=#373737ff 
- * @property {int} BACKDROP_SELECTED_TRANSPARENCY=220 
- * @property {int} BACKDROP_UNSELECTED_TRANSPARENCY=170 
- * @property {int} BACKDROP_DEFAULT_TITLE_SIZE=14 
- * @property {int} BACKDROP_DEFAULT_DESCRIPTION_SIZE=14 
- * @property {int} BACKDROP_COLOR_LIST_SIZE=17 
- * @property {color} BACKDROP_COLOR_0=#9a0707ff 
- * @property {color} BACKDROP_COLOR_1=#c11717ff 
- * @property {color} BACKDROP_COLOR_2=#843a16ff 
- * @property {color} BACKDROP_COLOR_3=#e16b14ff 
- * @property {color} BACKDROP_COLOR_4=#dcaa32ff 
- * @property {color} BACKDROP_COLOR_5=#81c615ff 
- * @property {color} BACKDROP_COLOR_6=#7b8d03ff 
- * @property {color} BACKDROP_COLOR_7=#077f04ff 
- * @property {color} BACKDROP_COLOR_8=#084c18ff 
- * @property {color} BACKDROP_COLOR_9=#0d6b58ff 
- * @property {color} BACKDROP_COLOR_10=#023cbeff 
- * @property {color} BACKDROP_COLOR_11=#460fe3ff 
- * @property {color} BACKDROP_COLOR_12=#6c0e9cff 
- * @property {color} BACKDROP_COLOR_13=#a521a3ff 
- * @property {color} BACKDROP_COLOR_14=#e30fa0ff 
- * @property {color} BACKDROP_COLOR_15=#e30f69ff 
- * @property {color} BACKDROP_COLOR_16=#323232ff 
+ * @property {color} BACKDROP_INNER_STROKE_COLOR=#373737ff
+ * @property {color} BACKDROP_RESIZE_COLOR=#373737ff
+ * @property {int} BACKDROP_SELECTED_TRANSPARENCY=220
+ * @property {int} BACKDROP_UNSELECTED_TRANSPARENCY=170
+ * @property {int} BACKDROP_DEFAULT_TITLE_SIZE=14
+ * @property {int} BACKDROP_DEFAULT_DESCRIPTION_SIZE=14
+ * @property {int} BACKDROP_COLOR_LIST_SIZE=17
+ * @property {color} BACKDROP_COLOR_0=#9a0707ff
+ * @property {color} BACKDROP_COLOR_1=#c11717ff
+ * @property {color} BACKDROP_COLOR_2=#843a16ff
+ * @property {color} BACKDROP_COLOR_3=#e16b14ff
+ * @property {color} BACKDROP_COLOR_4=#dcaa32ff
+ * @property {color} BACKDROP_COLOR_5=#81c615ff
+ * @property {color} BACKDROP_COLOR_6=#7b8d03ff
+ * @property {color} BACKDROP_COLOR_7=#077f04ff
+ * @property {color} BACKDROP_COLOR_8=#084c18ff
+ * @property {color} BACKDROP_COLOR_9=#0d6b58ff
+ * @property {color} BACKDROP_COLOR_10=#023cbeff
+ * @property {color} BACKDROP_COLOR_11=#460fe3ff
+ * @property {color} BACKDROP_COLOR_12=#6c0e9cff
+ * @property {color} BACKDROP_COLOR_13=#a521a3ff
+ * @property {color} BACKDROP_COLOR_14=#e30fa0ff
+ * @property {color} BACKDROP_COLOR_15=#e30f69ff
+ * @property {color} BACKDROP_COLOR_16=#323232ff
  */
 
 /**
  * Preferences in the user category.
  * @name preferences#user
- * @property {bool} ADVANCED_PALETTELIST=false 
- * @property {string} AMG_VIEW_RESOURCE_FOLDER= 
- * @property {bool} ANIMATE_WAS_NEVER_RUN=false 
- * @property {bool} COLORVIEW_SHOW_PALETTELIST=true 
- * @property {int} COLOR_SELECTION_STARTINGBUTTON=0 
- * @property {double} DBL_MEDIAN_MODULE_STEP_RADIUS=0.1 
- * @property {double} DBL_MEDIAN_MODULE_STEP_RADIUS_MAX=2160 
- * @property {double} DBL_MEDIAN_MODULE_STEP_RADIUS_MIN=0 
- * @property {double} DBL_SHAKE_ANGLE_PARAMETER=0.1 
- * @property {double} DBL_SHAKE_NORMAL_PARAMETER=0.01 
- * @property {double} DBL_SHAKE_POSITION_PARAMETER=0.1 
- * @property {double} DBL_STEP_MATTEBLUR_COLOUR_GAIN=0.1 
- * @property {double} DBL_STEP_MATTEBLUR_COLOUR_GAIN_MAX=1.79769e+308 
- * @property {double} DBL_STEP_MATTEBLUR_COLOUR_GAIN_MIN=0 
- * @property {bool} DRAWING_CLOSE_GAP_ON=false 
- * @property {string} DRAWING_PRESSURE_CURVE= 
- * @property {bool} DRAWING_STABILIZER_CATCH_UP=true 
- * @property {bool} DRAWING_STABILIZER_SHOW_STRING=true 
- * @property {double} DRAWING_STABILIZER_SMOOTHING=0 
- * @property {bool} DRAWING_STABILIZER_WITH_ERASER=false 
- * @property {int} DeformationConvertDrawingsTextureSize=1024 
- * @property {color} DeformationDeformedControlHandle=#19592aff 
- * @property {color} DeformationDeformedHandle=#00ff00ff 
- * @property {color} DeformationDeformedSelectedChild=#dcff00ff 
- * @property {color} DeformationDeformedSelectedSkeleton=#ffffffff 
- * @property {color} DeformationDeformedSkeleton=#00ff00ff 
- * @property {color} DeformationModuleDarkColor=#576a36ff 
- * @property {color} DeformationModuleLightColor=#25a919ff 
- * @property {color} DeformationRestingControlHandle=#951f39ff 
- * @property {color} DeformationRestingHandle=#ff0000ff 
- * @property {color} DeformationRestingSelectedChild=#ff7f00ff 
- * @property {color} DeformationRestingSelectedSkeleton=#ffffffff 
- * @property {color} DeformationRestingSkeleton=#ff0000ff 
- * @property {double} DeformationScalingFieldSize=2 
- * @property {double} DeformationScalingPixelSize=64 
- * @property {bool} DeformationScalingUsePixelSize=false 
- * @property {string} EXPORTMMX_AUDIOCONFIG= 
- * @property {int} EXPORTMMX_CUSTOMRESX=0 
- * @property {string} EXPORTMMX_DISPLAY=Display 
- * @property {bool} EXPORTMMX_EXPORTALL=false 
+ * @property {bool} ADVANCED_PALETTELIST=false
+ * @property {string} AMG_VIEW_RESOURCE_FOLDER=
+ * @property {bool} ANIMATE_WAS_NEVER_RUN=false
+ * @property {bool} COLORVIEW_SHOW_PALETTELIST=true
+ * @property {int} COLOR_SELECTION_STARTINGBUTTON=0
+ * @property {double} DBL_MEDIAN_MODULE_STEP_RADIUS=0.1
+ * @property {double} DBL_MEDIAN_MODULE_STEP_RADIUS_MAX=2160
+ * @property {double} DBL_MEDIAN_MODULE_STEP_RADIUS_MIN=0
+ * @property {double} DBL_SHAKE_ANGLE_PARAMETER=0.1
+ * @property {double} DBL_SHAKE_NORMAL_PARAMETER=0.01
+ * @property {double} DBL_SHAKE_POSITION_PARAMETER=0.1
+ * @property {double} DBL_STEP_MATTEBLUR_COLOUR_GAIN=0.1
+ * @property {double} DBL_STEP_MATTEBLUR_COLOUR_GAIN_MAX=1.79769e+308
+ * @property {double} DBL_STEP_MATTEBLUR_COLOUR_GAIN_MIN=0
+ * @property {bool} DRAWING_CLOSE_GAP_ON=false
+ * @property {string} DRAWING_PRESSURE_CURVE=
+ * @property {bool} DRAWING_STABILIZER_CATCH_UP=true
+ * @property {bool} DRAWING_STABILIZER_SHOW_STRING=true
+ * @property {double} DRAWING_STABILIZER_SMOOTHING=0
+ * @property {bool} DRAWING_STABILIZER_WITH_ERASER=false
+ * @property {int} DeformationConvertDrawingsTextureSize=1024
+ * @property {color} DeformationDeformedControlHandle=#19592aff
+ * @property {color} DeformationDeformedHandle=#00ff00ff
+ * @property {color} DeformationDeformedSelectedChild=#dcff00ff
+ * @property {color} DeformationDeformedSelectedSkeleton=#ffffffff
+ * @property {color} DeformationDeformedSkeleton=#00ff00ff
+ * @property {color} DeformationModuleDarkColor=#576a36ff
+ * @property {color} DeformationModuleLightColor=#25a919ff
+ * @property {color} DeformationRestingControlHandle=#951f39ff
+ * @property {color} DeformationRestingHandle=#ff0000ff
+ * @property {color} DeformationRestingSelectedChild=#ff7f00ff
+ * @property {color} DeformationRestingSelectedSkeleton=#ffffffff
+ * @property {color} DeformationRestingSkeleton=#ff0000ff
+ * @property {double} DeformationScalingFieldSize=2
+ * @property {double} DeformationScalingPixelSize=64
+ * @property {bool} DeformationScalingUsePixelSize=false
+ * @property {string} EXPORTMMX_AUDIOCONFIG=
+ * @property {int} EXPORTMMX_CUSTOMRESX=0
+ * @property {string} EXPORTMMX_DISPLAY=Display
+ * @property {bool} EXPORTMMX_EXPORTALL=false
  * @property {string} EXPORTMMX_LASTSCENE_NAME=
  * @property {string} EXPORTMMX_OUTPUTFILE=
- * @property {string} EXPORTMMX_OUTPUTFORMAT=mov 
- * @property {int} EXPORTMMX_RANGESTART=1 
- * @property {int} EXPORTMMX_RANGESTOP=318 
- * @property {int} EXPORTMMX_RESOLUTION=2 
- * @property {string} EXPORTMMX_VIDEOAUDIOCONFIG=Enable Sound(true)Enable Video(true)QT(000000000000000000000000000003BE7365616E000000010000000600000000000001AF76696465000000010000001000000000000000227370746C000000010000000000000000726C652000000000002000000300000000207470726C000000010000000000000000000002000000000000000018000000246472617400000001000000000000000000000000000000000000000000000000000000156D70736F00000001000000000000000000000000186D66726100000001000000000000000000000000000000187073667200000001000000000000000000000000000000156266726100000001000000000000000000000000166D70657300000001000000000000000000000000002868617264000000010000000000000000000000000000000000000000000000000000000000000016656E647300000001000000000000000000000000001663666C67000000010000000000000000004400000018636D66720000000100000000000000006170706C00000014636C757400000001000000000000000000000014636465630000000100000000000000000000001C766572730000000100000000000000000003001C000100000000001574726E6300000001000000000000000000000001066973697A00000001000000090000000000000018697764740000000100000000000000000000000000000018696867740000000100000000000000000000000000000018707764740000000100000000000000000000000000000018706867740000000100000000000000000000000000000034636C617000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C706173700000000100000000000000000000000000000000000000187363616D000000010000000000000000000000000000001564696E74000000010000000000000000000000001575656E66000000010000000000000000000000008C736F756E0000000100000005000000000000001873736374000000010000000000000000736F777400000018737372740000000100000000000000005622000000000016737373730000000100000000000000000010000000167373636300000001000000000000000000010000001C76657273000000010000000000000000000300140001000000000015656E76690000000100000000000000000100000015656E736F000000010000000000000000010000003F7361766500000001000000020000000000000015666173740000000100000000000000000100000016737374790000000100000000000000000001) 
- * @property {string} EXPORTMMX_VIDEOCONFIG= 
- * @property {bool} EXPORT_IMAGE_ALLFRAMES=false 
- * @property {int} EXPORT_IMAGE_EXPORTFROM=1 
- * @property {int} EXPORT_IMAGE_EXPORTTO=47 
+ * @property {string} EXPORTMMX_OUTPUTFORMAT=mov
+ * @property {int} EXPORTMMX_RANGESTART=1
+ * @property {int} EXPORTMMX_RANGESTOP=318
+ * @property {int} EXPORTMMX_RESOLUTION=2
+ * @property {string} EXPORTMMX_VIDEOAUDIOCONFIG=Enable Sound(true)Enable Video(true)QT(000000000000000000000000000003BE7365616E000000010000000600000000000001AF76696465000000010000001000000000000000227370746C000000010000000000000000726C652000000000002000000300000000207470726C000000010000000000000000000002000000000000000018000000246472617400000001000000000000000000000000000000000000000000000000000000156D70736F00000001000000000000000000000000186D66726100000001000000000000000000000000000000187073667200000001000000000000000000000000000000156266726100000001000000000000000000000000166D70657300000001000000000000000000000000002868617264000000010000000000000000000000000000000000000000000000000000000000000016656E647300000001000000000000000000000000001663666C67000000010000000000000000004400000018636D66720000000100000000000000006170706C00000014636C757400000001000000000000000000000014636465630000000100000000000000000000001C766572730000000100000000000000000003001C000100000000001574726E6300000001000000000000000000000001066973697A00000001000000090000000000000018697764740000000100000000000000000000000000000018696867740000000100000000000000000000000000000018707764740000000100000000000000000000000000000018706867740000000100000000000000000000000000000034636C617000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C706173700000000100000000000000000000000000000000000000187363616D000000010000000000000000000000000000001564696E74000000010000000000000000000000001575656E66000000010000000000000000000000008C736F756E0000000100000005000000000000001873736374000000010000000000000000736F777400000018737372740000000100000000000000005622000000000016737373730000000100000000000000000010000000167373636300000001000000000000000000010000001C76657273000000010000000000000000000300140001000000000015656E76690000000100000000000000000100000015656E736F000000010000000000000000010000003F7361766500000001000000020000000000000015666173740000000100000000000000000100000016737374790000000100000000000000000001)
+ * @property {string} EXPORTMMX_VIDEOCONFIG=
+ * @property {bool} EXPORT_IMAGE_ALLFRAMES=false
+ * @property {int} EXPORT_IMAGE_EXPORTFROM=1
+ * @property {int} EXPORT_IMAGE_EXPORTTO=47
  * @property {string} EXPORT_IMAGE_LAST_SCENE_NAME=
- * @property {bool} EXPORT_IMAGE_PREVIEW=false 
- * @property {bool} GUIDE_ALIGN_ENABLED=true 
- * @property {bool} GUIDE_ERASER_ENABLED=false 
- * @property {bool} GUIDE_FULL_DISPLAY_ENABLED=true 
- * @property {int} GUIDE_GRID_DENSITY=10 
- * @property {bool} GUIDE_GRID_ENABLED=false 
- * @property {bool} GUIDE_LOCK_ENABLED=true 
- * @property {bool} IMPORTIMGDLG_IMAGE_ADDTOLAYER=false 
- * @property {int} IMPORTIMGDLG_IMAGE_ALIGNMENT=4 
- * @property {bool} IMPORTIMGDLG_IMAGE_BITMAP_ART=true 
- * @property {int} IMPORTIMGDLG_IMAGE_BITMAP_LAYER_ALIGNMENT=6 
- * @property {int} IMPORTIMGDLG_IMAGE_BITMAP_LAYER_TRANSPARENCY=2 
- * @property {bool} IMPORTIMGDLG_IMAGE_ELEMENTONFILENAME=false 
+ * @property {bool} EXPORT_IMAGE_PREVIEW=false
+ * @property {bool} GUIDE_ALIGN_ENABLED=true
+ * @property {bool} GUIDE_ERASER_ENABLED=false
+ * @property {bool} GUIDE_FULL_DISPLAY_ENABLED=true
+ * @property {int} GUIDE_GRID_DENSITY=10
+ * @property {bool} GUIDE_GRID_ENABLED=false
+ * @property {bool} GUIDE_LOCK_ENABLED=true
+ * @property {bool} IMPORTIMGDLG_IMAGE_ADDTOLAYER=false
+ * @property {int} IMPORTIMGDLG_IMAGE_ALIGNMENT=4
+ * @property {bool} IMPORTIMGDLG_IMAGE_BITMAP_ART=true
+ * @property {int} IMPORTIMGDLG_IMAGE_BITMAP_LAYER_ALIGNMENT=6
+ * @property {int} IMPORTIMGDLG_IMAGE_BITMAP_LAYER_TRANSPARENCY=2
+ * @property {bool} IMPORTIMGDLG_IMAGE_ELEMENTONFILENAME=false
  * @property {string} IMPORTIMGDLG_IMAGE_LASTIMPORT=
- * @property {string} IMPORTIMGDLG_IMAGE_LAYERNAME= 
- * @property {bool} IMPORTIMGDLG_IMAGE_NEWLAYER=true 
+ * @property {string} IMPORTIMGDLG_IMAGE_LAYERNAME=
+ * @property {bool} IMPORTIMGDLG_IMAGE_NEWLAYER=true
  * @property {string} IMPORTIMGDLG_IMAGE_NEWLAYERNAME=
- * @property {bool} IMPORTIMGDLG_IMAGE_ONEELEMENT=true 
- * @property {int} IMPORTIMGDLG_IMAGE_TRANSPARENCY=2 
- * @property {string} IMPORTIMGDLG_IMAGE_VECTORIZATION=Grey 
- * @property {bool} IMPORTIMGDLG_IMAGE_VECTORIZE=false 
- * @property {double} LENSFLARE_ANGLE_STEP=1 
- * @property {double} LENSFLARE_BLUR_STEP=0.1 
- * @property {double} LENSFLARE_INTENSITY_STEP=1 
- * @property {double} LENSFLARE_POSITION_STEP=0.01 
- * @property {double} LENSFLARE_SIZE_STEP=0.1 
- * @property {double} LENSFLARE_SPACING_STEP=0.1 
- * @property {bool} NAVIGATE_USING_NODE_VIEW_PARENTING=false 
- * @property {bool} PALETTE_BROWSER_RECOLOR_SELECTED=false 
- * @property {double} PARTICLE_ANGLE_STEP=1 
- * @property {double} PARTICLE_FIELD_STEP=0.05 
- * @property {double} PARTICLE_MAGNITUDE_STEP=0.01 
- * @property {double} PARTICLE_UNIT_STEP=1 
- * @property {int} PENSTYLE_BITMAP_BRUSH_LIST_SEL=-1 
- * @property {int} PENSTYLE_BITMAP_ERASER_LIST_SEL=-1 
- * @property {int} PENSTYLE_BRUSH_LIST_SEL=0 
- * @property {int} PENSTYLE_ERASER_LIST_SEL=-1 
- * @property {int} PENSTYLE_PENCIL_LIST_SEL=0 
- * @property {int} PENSTYLE_STAMP_LIST_SEL=-1 
- * @property {int} PENSTYLE_TEXTURE_QUALITY=100 
- * @property {bool} PLAYBACK_IN_PERSPECTIVE_VIEW_ENABLED=false 
- * @property {bool} PLAYBACK_IN_SIDE_VIEW_ENABLED=false 
- * @property {bool} PLAYBACK_IN_TOP_VIEW_ENABLED=false 
- * @property {bool} PLAYBACK_IN_XSHEET_VIEW_ENABLED=false 
- * @property {color} ParticleNV_actionColor=#b547ffff 
- * @property {color} ParticleNV_bakerColor=#e2d06eff 
- * @property {color} ParticleNV_regionColor=#09e1a3ff 
- * @property {color} ParticleNV_regionCompositeColor=#99c87dff 
- * @property {color} ParticleNV_shapeColor=#00c8c8ff 
- * @property {color} ParticleNV_systemCompositeColor=#4b78f4ff 
- * @property {color} ParticleNV_visualizerColor=#9a18ffff 
- * @property {bool} ParticleShowParticlesAsDotsInOpenGL=false 
- * @property {int} RENDER_TEXTUREMEMORY=1591 
- * @property {int} RIG_CACHE_DEFAULT_RENDER_POLICY=2 
- * @property {int} RIG_CACHE_RESOLUTION_LEVEL=9 
- * @property {int} ShiftAndTracePegPosition=0 
- * @property {bool} ShiftAndTraceShowCrossHair=true 
- * @property {bool} ShiftAndTraceShowManipulator=true 
- * @property {bool} ShiftAndTraceShowOutline=false 
- * @property {bool} ShiftAndTraceShowPegs=true 
+ * @property {bool} IMPORTIMGDLG_IMAGE_ONEELEMENT=true
+ * @property {int} IMPORTIMGDLG_IMAGE_TRANSPARENCY=2
+ * @property {string} IMPORTIMGDLG_IMAGE_VECTORIZATION=Grey
+ * @property {bool} IMPORTIMGDLG_IMAGE_VECTORIZE=false
+ * @property {double} LENSFLARE_ANGLE_STEP=1
+ * @property {double} LENSFLARE_BLUR_STEP=0.1
+ * @property {double} LENSFLARE_INTENSITY_STEP=1
+ * @property {double} LENSFLARE_POSITION_STEP=0.01
+ * @property {double} LENSFLARE_SIZE_STEP=0.1
+ * @property {double} LENSFLARE_SPACING_STEP=0.1
+ * @property {bool} NAVIGATE_USING_NODE_VIEW_PARENTING=false
+ * @property {bool} PALETTE_BROWSER_RECOLOR_SELECTED=false
+ * @property {double} PARTICLE_ANGLE_STEP=1
+ * @property {double} PARTICLE_FIELD_STEP=0.05
+ * @property {double} PARTICLE_MAGNITUDE_STEP=0.01
+ * @property {double} PARTICLE_UNIT_STEP=1
+ * @property {int} PENSTYLE_BITMAP_BRUSH_LIST_SEL=-1
+ * @property {int} PENSTYLE_BITMAP_ERASER_LIST_SEL=-1
+ * @property {int} PENSTYLE_BRUSH_LIST_SEL=0
+ * @property {int} PENSTYLE_ERASER_LIST_SEL=-1
+ * @property {int} PENSTYLE_PENCIL_LIST_SEL=0
+ * @property {int} PENSTYLE_STAMP_LIST_SEL=-1
+ * @property {int} PENSTYLE_TEXTURE_QUALITY=100
+ * @property {bool} PLAYBACK_IN_PERSPECTIVE_VIEW_ENABLED=false
+ * @property {bool} PLAYBACK_IN_SIDE_VIEW_ENABLED=false
+ * @property {bool} PLAYBACK_IN_TOP_VIEW_ENABLED=false
+ * @property {bool} PLAYBACK_IN_XSHEET_VIEW_ENABLED=false
+ * @property {color} ParticleNV_actionColor=#b547ffff
+ * @property {color} ParticleNV_bakerColor=#e2d06eff
+ * @property {color} ParticleNV_regionColor=#09e1a3ff
+ * @property {color} ParticleNV_regionCompositeColor=#99c87dff
+ * @property {color} ParticleNV_shapeColor=#00c8c8ff
+ * @property {color} ParticleNV_systemCompositeColor=#4b78f4ff
+ * @property {color} ParticleNV_visualizerColor=#9a18ffff
+ * @property {bool} ParticleShowParticlesAsDotsInOpenGL=false
+ * @property {int} RENDER_TEXTUREMEMORY=1591
+ * @property {int} RIG_CACHE_DEFAULT_RENDER_POLICY=2
+ * @property {int} RIG_CACHE_RESOLUTION_LEVEL=9
+ * @property {int} ShiftAndTracePegPosition=0
+ * @property {bool} ShiftAndTraceShowCrossHair=true
+ * @property {bool} ShiftAndTraceShowManipulator=true
+ * @property {bool} ShiftAndTraceShowOutline=false
+ * @property {bool} ShiftAndTraceShowPegs=true
  * @property {string} TB_EXTERNAL_SCRIPT_PACKAGES_FOLDER=
- * @property {string} TEMPLATE_LIBRARY_PATH0= 
- * @property {int} TEMPLATE_LIBRARY_PATH_NB=1 
- * @property {int} TIMELINE_EXTRATRACK_CELL_WIDTH_NO_HDPI=8 
- * @property {int} TIMELINE_TRACK_CELL_WIDTH_NO_HDPI=8 
- * @property {bool} TL_LAYERCONNECTION_VISIBLE=false 
- * @property {bool} TL_LAYERDATAVIEW_VISIBLE=false 
- * @property {bool} TOOL_APPLY_TO_ALL_LAYERS=true 
- * @property {bool} TOOL_AUTO_FILL_ELLIPSE=false 
- * @property {bool} TOOL_AUTO_FILL_PEN=false 
- * @property {bool} TOOL_AUTO_FILL_POLYLINE=false 
- * @property {bool} TOOL_AUTO_FILL_RECT=false 
- * @property {bool} TOOL_AUTO_FILL_STROKE=false 
- * @property {bool} TOOL_LINE_MODE_STROKE=false 
- * @property {int} TOOL_MERGE_WITH_TOP_LAYER_MODE=0 
- * @property {bool} TOOL_SNAP_MODE_STROKE=false 
- * @property {double} TOOL_STROKE_SMOOTH_VALUE=3 
- * @property {bool} TOOL_TRIM_EXTRA_PEN=false 
- * @property {bool} TOOL_TRIM_EXTRA_POLYLINE=false 
- * @property {bool} TOOL_TRIM_EXTRA_STROKE=false 
- * @property {bool} TOOL_TRIM_MATCH_PEN=false 
- * @property {bool} TOOL_TRIM_MATCH_POLYLINE=false 
- * @property {bool} TOOL_TRIM_MATCH_STROKE=false 
- * @property {int} TP_PENCIL_PANEL_PENSTYLELIST_DISPLAY_MODE=2 
- * @property {int} TP_PEN_PENSTYLELIST_DISPLAY_MODE=2 
- * @property {bool} WM_SHOW_WS_WEB_MESSAGE=true 
- * @property {bool} deformationCreatePosedDeformation=true 
- * @property {int} particleImageEmitterHorizontalPreviewResolution=360 
+ * @property {string} TEMPLATE_LIBRARY_PATH0=
+ * @property {int} TEMPLATE_LIBRARY_PATH_NB=1
+ * @property {int} TIMELINE_EXTRATRACK_CELL_WIDTH_NO_HDPI=8
+ * @property {int} TIMELINE_TRACK_CELL_WIDTH_NO_HDPI=8
+ * @property {bool} TL_LAYERCONNECTION_VISIBLE=false
+ * @property {bool} TL_LAYERDATAVIEW_VISIBLE=false
+ * @property {bool} TOOL_APPLY_TO_ALL_LAYERS=true
+ * @property {bool} TOOL_AUTO_FILL_ELLIPSE=false
+ * @property {bool} TOOL_AUTO_FILL_PEN=false
+ * @property {bool} TOOL_AUTO_FILL_POLYLINE=false
+ * @property {bool} TOOL_AUTO_FILL_RECT=false
+ * @property {bool} TOOL_AUTO_FILL_STROKE=false
+ * @property {bool} TOOL_LINE_MODE_STROKE=false
+ * @property {int} TOOL_MERGE_WITH_TOP_LAYER_MODE=0
+ * @property {bool} TOOL_SNAP_MODE_STROKE=false
+ * @property {double} TOOL_STROKE_SMOOTH_VALUE=3
+ * @property {bool} TOOL_TRIM_EXTRA_PEN=false
+ * @property {bool} TOOL_TRIM_EXTRA_POLYLINE=false
+ * @property {bool} TOOL_TRIM_EXTRA_STROKE=false
+ * @property {bool} TOOL_TRIM_MATCH_PEN=false
+ * @property {bool} TOOL_TRIM_MATCH_POLYLINE=false
+ * @property {bool} TOOL_TRIM_MATCH_STROKE=false
+ * @property {int} TP_PENCIL_PANEL_PENSTYLELIST_DISPLAY_MODE=2
+ * @property {int} TP_PEN_PENSTYLELIST_DISPLAY_MODE=2
+ * @property {bool} WM_SHOW_WS_WEB_MESSAGE=true
+ * @property {bool} deformationCreatePosedDeformation=true
+ * @property {int} particleImageEmitterHorizontalPreviewResolution=360
  */

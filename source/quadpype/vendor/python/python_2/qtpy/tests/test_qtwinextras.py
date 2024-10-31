@@ -26,4 +26,3 @@ def test_qtwinextras():
         assert QtWinExtras.QWinColorizationChangeEvent is not None
         assert QtWinExtras.QWinCompositionChangeEvent is not None
         assert QtWinExtras.QWinEvent is not None
-

@@ -1,4 +1,4 @@
-$.html merge=ours 
+$.html merge=ours
 $.oAttribute.html merge=ours
 $.oBackdrop.html merge=ours
 $.oBox.html merge=ours

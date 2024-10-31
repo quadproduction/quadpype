@@ -41,5 +41,3 @@ if ($CURR_USER_PATH.IndexOf("$($env:POETRY_HOME)\bin") -Eq -1) {
 
 # Execute the activate script in the current process
 & $PATH_ACTIVATE_SCRIPT
-
-

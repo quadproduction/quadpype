@@ -83,7 +83,7 @@ if (-not $quadpype_version) {
 
 $env:BUILD_VERSION = $quadpype_version
 
-iscc 
+iscc
 
 Write-Color ">>> ", "Detecting host Python ... " -Color Green, White -NoNewline
 $python = "python"

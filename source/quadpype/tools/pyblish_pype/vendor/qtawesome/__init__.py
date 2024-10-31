@@ -36,4 +36,3 @@ def font(*args, **kwargs):
 
 def set_defaults(**kwargs):
     return set_global_defaults(**kwargs)
-

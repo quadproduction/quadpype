@@ -1139,4 +1139,3 @@ def get_system_settings(*args, **kwargs):
 
 def get_project_settings(project_name, *args, **kwargs):
     return _get_project_settings(project_name, *args, **kwargs)
-

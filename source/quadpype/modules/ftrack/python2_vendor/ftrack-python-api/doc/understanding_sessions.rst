@@ -177,7 +177,7 @@ the attributes that are available.
 Configuring plugins
 ===================
 
-Plugins are used by the API to extend it with new functionality, such as 
+Plugins are used by the API to extend it with new functionality, such as
 :term:`locations <location>` or adding convenience methods to
 :ref:`understanding_sessions/entity_types`. In addition to new API
 functionality, event plugins may also be used for event processing by listening
@@ -186,7 +186,7 @@ to :ref:`ftrack update events <handling_events>` or adding custom functionality 
 
 
 When starting a new :class:`Session` either pass the *plugins_paths* to search
-explicitly or rely on the environment variable 
+explicitly or rely on the environment variable
 :envvar:`FTRACK_EVENT_PLUGIN_PATH`. As each session is independent of others,
 you can configure plugins per session.
 

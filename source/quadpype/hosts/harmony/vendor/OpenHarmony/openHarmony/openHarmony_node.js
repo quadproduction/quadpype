@@ -2834,7 +2834,7 @@ $.oGroupNode.prototype.importTemplate = function( tplPath, destinationNodes, ext
       backdrops[i].x += nodePosition.x;
       backdrops[i].y += nodePosition.y;
     }
-    
+
     // move waypoints in the top level of the template
     for (var i in _nodes) {
       var nodePorts = _nodes[i].outPorts;
@@ -2851,7 +2851,7 @@ $.oGroupNode.prototype.importTemplate = function( tplPath, destinationNodes, ext
         }
       }
     }
-    
+
   }
 
   this.$.endUndo();
@@ -3488,4 +3488,3 @@ $.oGroupNode.prototype.importQT = function( path, importSound, extendScene, alig
   this.$.endUndo();
   return _movieNode;
 }
-

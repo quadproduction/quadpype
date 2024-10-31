@@ -21,21 +21,21 @@ For example:
 from qtpy import QtCore
 
 class ExampleWorker(QtCore.QObject):
-    
+
     finished = QtCore.Signal()
     failed = QtCore.Signal(str)
     progress = QtCore.Signal(int)
     log = QtCore.Signal(str)
     stage_begin = QtCore.Signal(str)
-    
+
     foo = None
     bar = None
-    
+
     def run(self):
         # The code goes here
         print("Hello world!")
         self.finished.emit()
-        
+
     def setup(self,
               foo: str,
               bar: str,):
@@ -80,7 +80,7 @@ In this example code, before executing the process the worker needs to be instan
 `QtCore.QThread` object. After this, needed signals have to be connected to the desired slots to make full use of
 the splash screen. Finally, the `start_thread` and `show_ui` is called.
 
-**Note that when the `show_ui` function is called the thread is blocked until the splash screen quits automatically, or 
+**Note that when the `show_ui` function is called the thread is blocked until the splash screen quits automatically, or
 it is closed by the user in case the process fails! The `start_thread` method in that case must be called before
 showing the UI!**
 

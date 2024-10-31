@@ -40,4 +40,3 @@ class LazyLogMessage(object):
     def __str__(self):
         '''Return string representation.'''
         return self.message.format(*self.args, **self.kwargs)
-

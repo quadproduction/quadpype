@@ -319,7 +319,7 @@ input[type=button]:active {
     box-shadow: inset 0 1px rgba(0,0,0,0.1);
 }
 
-/* Reset anchor styles to an unstyled default to be in parity with design surface. It 
+/* Reset anchor styles to an unstyled default to be in parity with design surface. It
    is presumed that most link styles in real-world designs are custom (non-default). */
 a, a:visited, a:hover, a:active {
     color: inherit;

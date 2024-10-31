@@ -7,7 +7,7 @@
 Tutorial
 ********
 
-This tutorial is a walkthrough on how you interact with Locations using the 
+This tutorial is a walkthrough on how you interact with Locations using the
 ftrack :term:`API`. Before you read this tutorial, make sure you familiarize
 yourself with the location concepts by reading the :ref:`locations/overview`.
 
@@ -30,11 +30,11 @@ Locations can be created just like any other entity using
     location = session.create('Location', dict(name='my.location'))
     session.commit()
 
-.. note:: 
+.. note::
     Location names beginning with ``ftrack.`` are reserved for internal use. Do
     not use this prefix for your location names.
 
-To create a location only if it doesn't already exist use the convenience 
+To create a location only if it doesn't already exist use the convenience
 method :meth:`Session.ensure <ftrack_api.session.Session.ensure>`. This will return
 either an existing matching location or a newly created one.
 
@@ -161,13 +161,13 @@ Obtaining component availability
 ================================
 
 Components in locations have a notion of availability. For regular components,
-consisting of a single file, the availability would be either 0 if the 
-component is unavailable or 100 percent if the component is available in the 
-location. Composite components, like image sequences, have an availability 
-which is proportional to the amount of child components that have been added to 
-the location. 
+consisting of a single file, the availability would be either 0 if the
+component is unavailable or 100 percent if the component is available in the
+location. Composite components, like image sequences, have an availability
+which is proportional to the amount of child components that have been added to
+the location.
 
-For example, an image sequence might currently be in a state of being 
+For example, an image sequence might currently be in a state of being
 transferred to :data:`test.location`. If half of the images are transferred,  it
 might be possible to start working with the sequence. To check availability use
 the helper :meth:`Session.get_component_availability
@@ -186,7 +186,7 @@ retrieving availability as well::
 Location events
 ===============
 
-If you want to receive event notifications when components are added to or 
+If you want to receive event notifications when components are added to or
 removed from locations, you can subscribe to the topics published,
 :data:`ftrack_api.symbol.COMPONENT_ADDED_TO_LOCATION_TOPIC` or
 :data:`ftrack_api.symbol.COMPONENT_REMOVED_FROM_LOCATION_TOPIC` and the callback

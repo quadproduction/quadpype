@@ -112,4 +112,3 @@ class DeleteEntityOperation(Operation):
         super(DeleteEntityOperation, self).__init__()
         self.entity_type = entity_type
         self.entity_key = entity_key
-

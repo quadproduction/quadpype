@@ -1,4 +1,4 @@
-Dump of content from: view.currentToolManager() 
+Dump of content from: view.currentToolManager()
 
 deleteLater()
 selectionChanged()

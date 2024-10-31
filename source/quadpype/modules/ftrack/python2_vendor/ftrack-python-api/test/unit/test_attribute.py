@@ -143,4 +143,3 @@ def test_iterate_over_attributes_collection():
         attributes.remove(attribute)
 
     assert len(attributes) == 0
-

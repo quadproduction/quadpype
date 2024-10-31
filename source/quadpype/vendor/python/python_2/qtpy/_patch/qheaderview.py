@@ -90,7 +90,3 @@ def introduce_renamed_methods_qheaderview(QHeaderView):
                         'setSectionResizeMode instead.', stacklevel=2)
         _setResizeMode(self, *args)
     QHeaderView.setResizeMode = setResizeMode
-
-
-
-

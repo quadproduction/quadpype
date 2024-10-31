@@ -28,7 +28,7 @@ In the above example `link['to']` is the shot and `link['from']` could be an
 asset build or something else that is linked to the shot. There is an equivalent
 `outgoing_links` that can be used to access outgoing links on an object.
 
-To create a new link between objects or asset versions create a new 
+To create a new link between objects or asset versions create a new
 `TypedContextLink` or `AssetVersionLink` entity with the from and to properties
 set. In this example we will link two asset versions::
 

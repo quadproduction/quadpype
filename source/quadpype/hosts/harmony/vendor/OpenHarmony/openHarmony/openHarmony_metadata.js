@@ -52,7 +52,7 @@
 
 /**
  * The constructor for the $.oMetadata class.
- * @classdesc  Provides access to getting/setting metadata as an object interface.<br>Given a node as a source, will use provide the metadata associated to that node, 
+ * @classdesc  Provides access to getting/setting metadata as an object interface.<br>Given a node as a source, will use provide the metadata associated to that node,
  * otherwise provides metadata for the scene.
  * @param   {$.oNode}                 source            A node as the source of the metadata-- otherwise provides the scene metadata.
  * @todo Need to extend this to allow node metadata.
@@ -66,9 +66,9 @@ $.oMetadata = function( source ){
   this._type             = "metadata";
   if( !source ){ source = 'scene'; }
   this.source = source;
-  
+
   this._metadatas = {};
-  
+
   this.refresh();
 }
 
@@ -80,12 +80,12 @@ $.oMetadata = function( source ){
  * @function
  */
 $.oMetadata.prototype.refresh = function(){
-  
+
   //----------------------------
   //GETTER/SETTERS
   var set_val = function( meta, name, val ){
     var metadata = meta._metadatas[ name ];
-    
+
     var valtype = false;
     var jsonify = false;
     switch( typeof val ){
@@ -110,11 +110,11 @@ $.oMetadata.prototype.refresh = function(){
         jsonify = true;
         break
     }
-    
+
     if(jsonify){
       val = 'json('+JSON.stringify( val )+')';
     }
-    
+
     if( meta.source == "scene" ){
       var type = false;
       scene.setMetadata( {
@@ -131,17 +131,17 @@ $.oMetadata.prototype.refresh = function(){
         metaAttr[ name ] = val;
       }
     }
-    
+
     meta.refresh();
   }
-  
+
   var get_val = function( meta, name ){
     return meta._metadatas[name].value;
   }
-  
+
   //Definition of properties.
   var getterSetter_create = function( targ, id, type, value ){
-  
+
     if( type == "string" ){
       if( value.slice( 0, 5 ) == "json(" ){
           var obj = value.slice( 5, value.length-1 );
@@ -149,7 +149,7 @@ $.oMetadata.prototype.refresh = function(){
       }
     }
     targ._metadatas[ id ] = { "value": value, "type":type };
-   
+
     //Create a getter/setter for it!
     Object.defineProperty( targ, id, {
       enumerable : true,
@@ -158,8 +158,8 @@ $.oMetadata.prototype.refresh = function(){
       get : eval( 'val = function(){ return get_val( targ, "'+id+'"); }' )
     });
   }
-  
-  
+
+
   //Clear this objects previous getter/setters to make room for new ones.
   if( this._metadatas ){
     for( n in this._metadatas ){ //Remove them if they've disappeared.
@@ -175,7 +175,7 @@ $.oMetadata.prototype.refresh = function(){
 
   if( this.source == "scene" ){
     var metadatas = scene.metadatas();
-    
+
     for( var n=0;n<metadatas.length;n++ ){
       var metadata = metadatas[n];
       getterSetter_create( this, metadata.name.toLowerCase(), metadata.type, metadata.value );
@@ -192,7 +192,7 @@ $.oMetadata.prototype.refresh = function(){
         }
       }
     }
-    
+
   }
 }
 
@@ -209,7 +209,7 @@ $.oMetadata.prototype.create = function( name, val ){
   if( this[ name ] ){
     throw ReferenceError( "Metadata already exists by name: " + name );
   }
-  
+
   var valtype = false;
   var jsonify = false;
   switch( typeof val ){
@@ -234,11 +234,11 @@ $.oMetadata.prototype.create = function( name, val ){
       jsonify = true;
       break
   }
-  
+
   if(jsonify){
     val = 'json('+JSON.stringify( val )+')';
   }
-  
+
   if( this.source == "scene" ){
     scene.setMetadata( {
                          "name"       : name,
@@ -250,8 +250,8 @@ $.oMetadata.prototype.create = function( name, val ){
                      );
   }else{
     var attr = this.source.createAttribute( "meta."+name, valtype, valtype, false );
-    if( attr ){ 
-      attr.setValue( val, 1 ); 
+    if( attr ){
+      attr.setValue( val, 1 );
     }
   }
   this.refresh();
@@ -265,7 +265,7 @@ $.oMetadata.prototype.create = function( name, val ){
 $.oMetadata.prototype.remove = function( name ){
   var name = name.toLowerCase();
   if( !this.hasOwnProperty( name ) ){ return true; }
-  
+
   var res = false;
   if( this.source == "scene" ){
     if( !scene.removeMetadata ){
@@ -276,7 +276,7 @@ $.oMetadata.prototype.remove = function( name ){
   }else{
     res = this.source.removeAttribute( "meta."+name );
   }
-  
+
   this.refresh();
   return res;
 }

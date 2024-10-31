@@ -17,7 +17,7 @@ instance.
     review_sessions = session.query(
         'ReviewSession where name is "Weekly review"'
     )
-    
+
     project_review_sessions = project['review_sessions']
 
 To create a new review session on a specific project use :meth:`Session.create`.
@@ -49,8 +49,8 @@ To list all objects in a review session.
 
     review_session_objects = review_session['review_session_objects']
 
-Listing and adding collaborators to review session can be done using 
-:meth:`Session.create` and the `review_session_invitees` relation on a 
+Listing and adding collaborators to review session can be done using
+:meth:`Session.create` and the `review_session_invitees` relation on a
 review session.
 
 .. code-block:: python
@@ -60,9 +60,9 @@ review session.
         'email': 'john.doe@example.com',
         'review_session': review_session
     })
-    
+
     session.commit()
-    
+
     invitees = review_session['review_session_invitees']
 
 To remove a collaborator simply delete the object using

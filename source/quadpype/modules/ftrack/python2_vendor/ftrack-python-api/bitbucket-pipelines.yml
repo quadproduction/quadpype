@@ -11,7 +11,7 @@ definitions:
         email: $DOCKER_HUB_EMAIL
 pipelines:
   default:
-    - parallel:  
+    - parallel:
       - step:
           name: run tests against python 2.7.x
           image: python:2.7

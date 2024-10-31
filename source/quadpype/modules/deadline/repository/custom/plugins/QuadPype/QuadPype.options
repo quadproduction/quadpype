@@ -7,4 +7,3 @@ Index=1
 Description=The arguments to pass to the script. If no arguments are required, leave this blank.
 Required=false
 DisableIfBlank=true
-

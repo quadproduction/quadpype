@@ -16,28 +16,28 @@ try{
  */
 function oh_anim_smartKey(){
   System.println("");
-  
+
   scene.beginUndoRedoAccum( "oh_anim_smartKey" );
-  
+
   var timeline = $.scene.getTimeline();
   var layers   = timeline.selectedLayers;
-  
+
   //--------------------------------------------------
-  //--- The key function, used 
-    
+  //--- The key function, used
+
   var smart_key_item = function( attr ){
-    var cfrm  = $.scene.currentFrame; 
-    
+    var cfrm  = $.scene.currentFrame;
+
     var frame = attr.frames[ cfrm ];
 
-    
+
     if( attr.node.type == "READ" ){
-      
+
       if( attr.column.type == "DRAWING" ){
         frame.isKeyFrame = true;
         return;
       }
-      
+
       //DONT KEY THE OFFSETS IF ITS NOT ANIMATEABLE.
       var check_pos = {
                         "offset.x"        : true,
@@ -53,11 +53,11 @@ function oh_anim_smartKey(){
         return;
       }
     }
-    
+
     if( !frame.isKeyFrame ){
       var lk    = frame.keyframeLeft;
       frame.isKeyFrame = true;
-      
+
       if(!lk){
         //Consider this as static.
         frame.constant   = true;
@@ -67,7 +67,7 @@ function oh_anim_smartKey(){
           // lk.constant      = true;   //UNNECESSARY, DEFAULT APPRAOCH TO isKeyFrame = true;
         }else{
           var rk    = frame.keyframeRight;
-          
+
           if( rk ){
             //Something is to the right, keep the tween.
             frame.constant   = false;
@@ -80,11 +80,11 @@ function oh_anim_smartKey(){
       }
     }
   }
-  
-  
+
+
   if( layers.length == 0 ){
     var layers = timeline.compositionLayers;
-    
+
     var items = [];
     for( var n=0;n<layers.length;n++ ){
       var tlayer = layers[n];
@@ -107,7 +107,7 @@ function oh_anim_smartKey(){
     for( var n=0;n<layers.length;n++ ){
       var tlayer = layers[n];
       if( tlayer.attribute ){
-        if( tlayer.attribute.column ){  
+        if( tlayer.attribute.column ){
           smart_key_item( tlayer.attribute );
         }
       }

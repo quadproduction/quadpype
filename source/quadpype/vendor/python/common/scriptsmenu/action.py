@@ -45,11 +45,11 @@ module.{module_name}()"""
     @command.setter
     def command(self, value):
         """
-        Store the command in the QAction 
+        Store the command in the QAction
 
         Args:
             value (str): the full command which will be executed when clicked
-        
+
         Return:
              None
         """
@@ -66,7 +66,7 @@ module.{module_name}()"""
 
         Args:
             value (str): the name of the command type
-        
+
         Returns:
             None
 
@@ -100,7 +100,7 @@ module.{module_name}()"""
 
         Args:
             value (str): an abbreviation of the name
-        
+
         Returns:
             None
 
@@ -136,19 +136,19 @@ module.{module_name}()"""
 
     def process_command(self):
         """
-        Check if the command is a file which needs to be launched and if it 
-        has a relative path, if so return the full path by expanding 
-        environment variables. Wrap any mel command in a executable string 
-        for Python and return the string if the source type is  
-        
+        Check if the command is a file which needs to be launched and if it
+        has a relative path, if so return the full path by expanding
+        environment variables. Wrap any mel command in a executable string
+        for Python and return the string if the source type is
+
         Add your own source type and required process to ensure callback
         is stored correctly.
-        
-        An example of a process is the sourcetype is MEL 
-        (Maya Embedded Language) as Python cannot run it on its own so it 
-        needs to be wrapped in a string in which we explicitly import mel and 
-        run it as a mel.eval. The string is then parsed to python as 
-        exec("command"). 
+
+        An example of a process is the sourcetype is MEL
+        (Maya Embedded Language) as Python cannot run it on its own so it
+        needs to be wrapped in a string in which we explicitly import mel and
+        run it as a mel.eval. The string is then parsed to python as
+        exec("command").
 
         Returns:
             str: a clean command which can be used
@@ -172,16 +172,16 @@ module.{module_name}()"""
 
     def has_tag(self, tag):
         """Check whether the tag matches with the action's tags.
-        
+
         A partial match will also return True, for example tag `a` will match
         correctly with the `ape` tag on the Action.
 
         Args:
             tag (str): The tag
-        
+
         Returns
             bool: Whether the action is tagged with given tag
-        
+
         """
 
         for tagitem in self.tags:

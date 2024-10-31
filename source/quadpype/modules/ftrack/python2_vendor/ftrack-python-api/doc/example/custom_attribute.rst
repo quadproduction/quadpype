@@ -35,7 +35,7 @@ Updating a custom attributes can also be done similar to a dictionary::
 
 To query for tasks with a custom attribute, ``my_text_field``, you can use the
 key from the configuration::
- 
+
     for task in session.query(
         'Task where custom_attributes any '
         '(key is "my_text_field" and value is "bar")'
@@ -89,6 +89,6 @@ raised with debug information::
 
     Traceback (most recent call last):
         ...
-    ftrack_api.exception.ServerError: Server reported error: 
+    ftrack_api.exception.ServerError: Server reported error:
     ValidationError(Custom attribute value for "fstart" must be of type number.
     Got "test" of type <type 'unicode'>)

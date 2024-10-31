@@ -656,6 +656,3 @@ $.oColor.prototype.hexToRgba = function (hexString){
 
     return _rgba;
 }
-
-
-

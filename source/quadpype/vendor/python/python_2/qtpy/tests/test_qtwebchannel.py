@@ -10,4 +10,3 @@ def test_qtwebchannel():
 
     assert QtWebChannel.QWebChannel is not None
     assert QtWebChannel.QWebChannelAbstractTransport is not None
-

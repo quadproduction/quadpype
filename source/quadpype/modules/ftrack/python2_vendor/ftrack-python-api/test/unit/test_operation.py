@@ -76,4 +76,3 @@ def test_operations_iter():
         operations, [operation_a, operation_b, operation_c]
     ):
         assert operation is expected
-

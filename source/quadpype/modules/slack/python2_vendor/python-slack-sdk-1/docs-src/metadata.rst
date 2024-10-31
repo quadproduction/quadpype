@@ -16,4 +16,3 @@
 .. _Contributor License Agreement: https://docs.google.com/a/slack-corp.com/forms/d/e/1FAIpQLSfzjVoCM7ohBnjWf7eDYQxzti1EPpinsIJQA5RAUBwJKRUQHg/viewform
 .. _Real Time Messaging (RTM) API: https://api.slack.com/rtm
 .. _Web API: https://api.slack.com/web
-

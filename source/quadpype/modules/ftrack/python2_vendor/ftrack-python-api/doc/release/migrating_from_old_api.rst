@@ -30,8 +30,8 @@ management systems. We think we succeeded, and we hope you agree.
 Installing
 ==========
 
-Before, you used to download the API package from your ftrack instance. With 
-each release of the new API we make it available on :term:`PyPi`, and 
+Before, you used to download the API package from your ftrack instance. With
+each release of the new API we make it available on :term:`PyPi`, and
 installing is super simple:
 
 .. code-block:: none
@@ -140,7 +140,7 @@ the option to specify them when initializing the session::
 In the examples below, will assume that you have imported the package and
 created a session.
 
-.. seealso:: 
+.. seealso::
 
     * :ref:`environment_variables`
     * :ref:`tutorial`
@@ -183,7 +183,7 @@ efficient query.
 Creating objects
 ================
 
-In the old API, you create objects using specialized methods, such as 
+In the old API, you create objects using specialized methods, such as
 :meth:`ftrack.createProject`, :meth:`Project.createSequence` and
 :meth:`Task.createShot`.
 
@@ -261,7 +261,7 @@ Updating objects
 ================
 
 Updating objects in the new API works in a similar way to the old API. Instead
-of using the :meth:`set` method on objects, you simply set the key of the 
+of using the :meth:`set` method on objects, you simply set the key of the
 entity to the new value, and call :meth:`Session.commit` to persist the
 changes to the database.
 
@@ -291,7 +291,7 @@ Date and datetime attributes
 ============================
 
 In the old API, date and datetime attributes where represented using a standard
-:mod:`datetime` object. In the new API we have opted to use the :term:`arrow` 
+:mod:`datetime` object. In the new API we have opted to use the :term:`arrow`
 library instead. Datetime attributes are represented in the server timezone,
 but with the timezone information stripped.
 
@@ -322,8 +322,8 @@ Custom attributes
 =================
 
 In the old API, custom attributes could be retrieved from an entity by using
-the methods :meth:`get` and :meth:`set`, like standard attributes. In the new 
-API, custom attributes can be written and read from entities using the 
+the methods :meth:`get` and :meth:`set`, like standard attributes. In the new
+API, custom attributes can be written and read from entities using the
 ``custom_attributes`` property, which provides a dictionary-like interface.
 
 Old API::
@@ -423,7 +423,7 @@ Plugin registration
 To make event and location plugin register functions work with both old and new
 API the function should be updated to validate the input arguments. For old
 plugins the register method should validate that the first input is of type
-``ftrack.Registry``, and for the new API it should be of type 
+``ftrack.Registry``, and for the new API it should be of type
 :class:`ftrack_api.session.Session`.
 
 If the input parameter is not validated, a plugin might be mistakenly
@@ -519,7 +519,7 @@ New API::
     # but if set to false you can update it by setting the key on the version.
     version['is_published'] = True
 
-    # Persist the changes 
+    # Persist the changes
     session.commit()
 
     # Add thumbnail to version.
@@ -538,7 +538,7 @@ Workarounds for missing convenience methods
 Query object by path
 --------------------
 
-In the old API, there existed a convenience methods to get an object by 
+In the old API, there existed a convenience methods to get an object by
 referencing the path (i.e object and parent names).
 
 Old API::
@@ -558,7 +558,7 @@ Retrieving an object's parents
 
 To retrieve a list of an object's parents, you could call the method
 :meth:`getParents` in the old API. Currently, it is not possible to fetch this
-in a single call using the new API, so you will have to traverse the ancestors 
+in a single call using the new API, so you will have to traverse the ancestors
 one-by-one and fetch each object's parent.
 
 Old API::
@@ -602,12 +602,12 @@ There is currently no helper class for creating actions using the new API. We
 will add one in the near future.
 
 In the meantime, it is still possible to create actions without the base class
-by listening and responding to the 
-:ref:`ftrack:developing/events/list/ftrack.action.discover` and 
+by listening and responding to the
+:ref:`ftrack:developing/events/list/ftrack.action.discover` and
 :ref:`ftrack:developing/events/list/ftrack.action.launch` events.
 
 Legacy location
 ---------------
 
-The ftrack legacy disk locations utilizing the 
+The ftrack legacy disk locations utilizing the
 :class:`InternalResourceIdentifierTransformer` has been deprecated.

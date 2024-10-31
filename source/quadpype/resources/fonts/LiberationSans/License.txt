@@ -9,7 +9,7 @@ User License Agreement.
 "Software") consists of TrueType-OpenType formatted font software for
 rendering LIBERATION typefaces in sans serif, serif, and monospaced character
 styles. You are licensed to use, modify, copy, and distribute the Software
-pursuant to the GNU General Public License v.2 with the following exceptions:  
+pursuant to the GNU General Public License v.2 with the following exceptions:
 1) As a special exception, if you create a document which uses this font, and
 embed this font or unaltered portions of this font into the document, this
 font does not by itself cause the resulting document to be covered by the GNU
@@ -17,7 +17,7 @@ General Public License.  This exception does not however invalidate any other
 reasons why the document might be covered by the GNU General Public License. 
 If you modify this font, you may extend this exception to your version of the
 font, but you are not obligated to do so. If you do not wish to do so, delete
-this exception statement from your version. 
+this exception statement from your version.
 
 2) As a further exception, any distribution of the object code of the Software
 in a physical product must provide you the right to access and modify the
@@ -35,19 +35,19 @@ Client to distribute modified versions of the Software using Red Hat's
 trademarks. If Client makes a redistribution of a modified version of the
 Software, then Client must modify the files names to remove any reference to
 the Red Hat trademarks and must not use the Red Hat trademarks in any way to
-reference or promote the modified Software. 
+reference or promote the modified Software.
 3. Limited Warranty. To the maximum extent permitted under applicable law, the
 Software is provided and licensed "as is" without warranty of any kind,
 expressed or implied, including the implied warranties of merchantability,
 non-infringement or fitness for a particular purpose. Red Hat does not warrant
 that the functions contained in the Software will meet Client's requirements
 or that the operation of the Software will be entirely error free or appear
-precisely as described in the accompanying documentation. 
+precisely as described in the accompanying documentation.
 4. Limitation of Remedies and Liability.  To the maximum extent permitted by
 applicable law, Red Hat or any Red Hat authorized dealer will not be liable to
 Client for any incidental or consequential damages, including lost profits or
 lost savings arising out of the use or inability to use the Software, even if
-Red Hat or such dealer has been advised of the possibility of such damages. 
+Red Hat or such dealer has been advised of the possibility of such damages.
 5. Export Control. As required by U.S. law, Client represents and warrants
 that it: (a) understands that the Software is subject to export controls under
 the U.S. Commerce Department's Export Administration Regulations ("EAR"); (b)

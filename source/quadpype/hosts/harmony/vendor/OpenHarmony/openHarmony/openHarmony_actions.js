@@ -64,12 +64,12 @@
 /**
  * Actions are used by the Harmony interface to represent something the user can ask the software to do. This is a list of all the available names and responders available.
  * @class actions
- * @hideconstructor 
+ * @hideconstructor
  * @namespace
  * @example
  * // To check whether an action is available, call the synthax:
  * Action.validate (<actionName>, <responder>);
- * 
+ *
  * // To launch an action, call the synthax:
  * Action.perform (<actionName>, <responder>, parameters);
  */
