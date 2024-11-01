@@ -129,7 +129,7 @@ class _ModuleClass(object):
 class _InterfacesClass(_ModuleClass):
     """Fake module class for storing QuadPype interfaces.
 
-    MissingInterface object is returned if interfaces does not exists.
+    MissingInterface object is returned if interfaces does not exist.
     - this is because interfaces must be available even if are missing
         implementation
     """
@@ -212,18 +212,18 @@ def get_dynamic_modules_dirs():
 
 def get_module_dirs():
     """List of paths where QuadPype modules can be found."""
-    _dirpaths = []
-    _dirpaths.extend(get_default_modules_dir())
-    _dirpaths.extend(get_dynamic_modules_dirs())
+    _dir_paths = []
+    _dir_paths.extend(get_default_modules_dir())
+    _dir_paths.extend(get_dynamic_modules_dirs())
 
-    dirpaths = []
-    for path in _dirpaths:
+    dir_paths = []
+    for path in _dir_paths:
         if not path:
             continue
         normalized = os.path.normpath(path)
-        if normalized not in dirpaths:
-            dirpaths.append(normalized)
-    return dirpaths
+        if normalized not in dir_paths:
+            dir_paths.append(normalized)
+    return dir_paths
 
 
 def load_interfaces(force=False):
@@ -334,22 +334,22 @@ def _load_modules():
     ignored_current_dir_filenames = set(IGNORED_DEFAULT_FILENAMES)
 
     processed_paths = set()
-    for dirpath in frozenset(module_dirs):
+    for dir_path in frozenset(module_dirs):
         # Skip already processed paths
-        if dirpath in processed_paths:
+        if dir_path in processed_paths:
             continue
-        processed_paths.add(dirpath)
+        processed_paths.add(dir_path)
 
-        if not os.path.exists(dirpath):
+        if not os.path.exists(dir_path):
             log.warning((
                 "Could not find path when loading QuadPype modules \"{}\""
-            ).format(dirpath))
+            ).format(dir_path))
             continue
 
-        is_in_current_dir = dirpath == current_dir
-        is_in_host_dir = dirpath == hosts_dir
+        is_in_current_dir = dir_path == current_dir
+        is_in_host_dir = dir_path == hosts_dir
 
-        for filename in os.listdir(dirpath):
+        for filename in os.listdir(dir_path):
             # Ignore filenames
             if filename in IGNORED_FILENAMES:
                 continue
@@ -360,7 +360,7 @@ def _load_modules():
             ):
                 continue
 
-            fullpath = os.path.join(dirpath, filename)
+            fullpath = os.path.join(dir_path, filename)
             basename, ext = os.path.splitext(filename)
 
             if basename in ignore_addon_names:
@@ -394,7 +394,7 @@ def _load_modules():
                 elif is_in_host_dir:
                     import_str = "quadpype.hosts.{}".format(basename)
                     new_import_str = "{}.{}".format(modules_key, basename)
-                    # Until all hosts are converted to be able use them as
+                    # Until all hosts are converted to be able to use them as
                     #   modules is this error check needed
                     try:
                         default_module = __import__(
@@ -410,7 +410,7 @@ def _load_modules():
                         )
 
                 elif os.path.isdir(fullpath):
-                    import_module_from_dirpath(dirpath, filename, modules_key)
+                    import_module_from_dirpath(dir_path, filename, modules_key)
 
                 else:
                     module = import_filepath(fullpath)
@@ -431,9 +431,8 @@ class QuadPypeModule(object):
     """Base class for QuadPype module.
 
     Attributes:
-        id (UUID): Addon object id.
-        enabled (bool): Is addon enabled.
-        name (str): Addon name.
+        _id (UUID): Module object id.
+        enabled (bool): Is module enabled.
 
     Args:
         manager (ModulesManager): Manager object who discovered addon.
@@ -465,10 +464,10 @@ class QuadPypeModule(object):
     @property
     @abstractmethod
     def name(self):
-        """Addon name.
+        """Module name.
 
         Returns:
-            str: Addon name.
+            str: Module name.
         """
 
         pass
@@ -497,7 +496,7 @@ class QuadPypeModule(object):
     def get_global_environments(self):
         """Get global environments values of module.
 
-        Environment variables that can be get only from system settings.
+        Environment variables that can be got only from system settings.
 
         Returns:
             dict[str, str]: Environment variables.
@@ -525,7 +524,7 @@ class QuadPypeModule(object):
         specific for the module. The module is kept in memory for rest of
         the process.
 
-        Arguments may change in future. E.g. 'host_name' should be possible
+        Arguments may change in the future. E.g. 'host_name' should be possible
         to receive from 'host' object.
 
         Args:
@@ -761,7 +760,7 @@ class ModulesManager:
         ]
 
     def collect_global_environments(self):
-        """Helper to collect global environment variabled from modules.
+        """Helper to collect global environment variables from modules.
 
         Returns:
             dict: Global environment variables from enabled modules.
@@ -983,7 +982,7 @@ class ModulesManager:
         """Print out report of time spent on modules initialization parts.
 
         Reporting is not automated must be implemented for each initialization
-        part separatelly. Reports must be stored to `_report` attribute.
+        part separately. Reports must be stored to `_report` attribute.
         Print is skipped if `_report` is empty.
 
         Attribute `_report` is dictionary where key is "label" describing
@@ -991,7 +990,7 @@ class ModulesManager:
         class name and value is time delta of it's processing.
 
         It is good idea to add total time delta on processed part under key
-        which is defined in attribute `_report_total_key`. By default has value
+        which is defined in attribute `_report_total_key`. By default, has value
         `"Total"` but use the attribute please.
 
         ```javascript
@@ -1014,7 +1013,7 @@ class ModulesManager:
 
         # Prepare ordered dictionary for columns
         cols = collections.OrderedDict()
-        # Add module names to first columnt
+        # Add module names to first column
         cols["Module name"] = list(sorted(
             module.__class__.__name__
             for module in self.modules
@@ -1109,7 +1108,7 @@ class TrayModulesManager(ModulesManager):
         "tray_publisher",          # Publisher
         "standalone_publisher",    # Publisher (legacy)
         "clockify",                # Clockify
-        "local_settings",          # Local Settings
+        "user_settings",           # User Settings
         # More Tools Submenu -----------------------------
         "sync_server",             # Sync Queue
         "update_zxp_extensions",   # Update ZXP Extensions
@@ -1123,6 +1122,8 @@ class TrayModulesManager(ModulesManager):
     )
 
     def __init__(self):
+        super().__init__()
+
         self.log = Logger.get_logger(self.__class__.__name__)
 
         self.modules = []
@@ -1138,13 +1139,13 @@ class TrayModulesManager(ModulesManager):
     def add_doubleclick_callback(self, module, callback):
         """Register doubleclick callbacks on tray icon.
 
-        Currently there is no way how to determine which is launched. Name of
+        Currently, there is no way how to determine which is launched. Name of
         callback can be defined with `doubleclick_callback` attribute.
 
         Missing feature how to define default callback.
 
         Args:
-            addon (QuadPypeModule): Addon object.
+            module (QuadPypeModule): Addon object.
             callback (FunctionType): Function callback.
         """
         callback_name = "_".join([module.name, callback.__name__])
@@ -1320,13 +1321,13 @@ def get_module_settings_defs():
             if inspect.isabstract(attr):
                 # Find missing implementations by convention on `abc` module
                 not_implemented = []
-                for attr_name in dir(attr):
-                    attr = getattr(attr, attr_name, None)
+                for curr_attr_name in dir(attr):
+                    attr = getattr(attr, curr_attr_name, None)
                     abs_method = getattr(
                         attr, "__isabstractmethod__", None
                     )
                     if attr and abs_method:
-                        not_implemented.append(attr_name)
+                        not_implemented.append(curr_attr_name)
 
                 # Log missing implementations
                 log.warning((
@@ -1407,7 +1408,7 @@ class BaseModuleSettingsDef:
 
 
 class ModuleSettingsDef(BaseModuleSettingsDef):
-    """Settings definition with separated system and procect settings parts.
+    """Settings definition with separated system and project settings parts.
 
     Reduce conditions that must be checked and adds predefined methods for
     each case.
@@ -1448,7 +1449,7 @@ class ModuleSettingsDef(BaseModuleSettingsDef):
         """Schemas and templates usable in system settings schemas.
 
         Returns:
-            dict: Schemas and templates by it's names. Names must be unique
+            dict: Schemas and templates by its names. Names must be unique
                 across whole QuadPype.
         """
         pass
@@ -1458,7 +1459,7 @@ class ModuleSettingsDef(BaseModuleSettingsDef):
         """Schemas and templates usable in project settings schemas.
 
         Returns:
-            dict: Schemas and templates by it's names. Names must be unique
+            dict: Schemas and templates by its names. Names must be unique
                 across whole QuadPype.
         """
         pass
@@ -1467,7 +1468,7 @@ class ModuleSettingsDef(BaseModuleSettingsDef):
     def get_system_dynamic_schemas(self):
         """System schemas by dynamic schema name.
 
-        If dynamic schema name is not available in then schema will not used.
+        If dynamic schema name is not available in then schema will not be used.
 
         Returns:
             dict: Schemas or list of schemas by dynamic schema name.
@@ -1478,7 +1479,7 @@ class ModuleSettingsDef(BaseModuleSettingsDef):
     def get_project_dynamic_schemas(self):
         """Project schemas by dynamic schema name.
 
-        If dynamic schema name is not available in then schema will not used.
+        If dynamic schema name is not available in then schema will not be used.
 
         Returns:
             dict: Schemas or list of schemas by dynamic schema name.
@@ -1521,7 +1522,7 @@ class ModuleSettingsDef(BaseModuleSettingsDef):
 
 
 class JsonFilesSettingsDef(ModuleSettingsDef):
-    """Preimplemented settings definition using json files and file structure.
+    """Reimplemented settings definition using json files and file structure.
 
     Expected file structure:
     ┕ root
@@ -1593,9 +1594,11 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
             schemas_dir, "project_schemas"
         )
 
-    def _load_json_file_data(self, path):
+    @staticmethod
+    def _load_json_file_data(path):
         if os.path.exists(path):
             return load_json_file(path)
+
         return {}
 
     def get_default_system_settings(self):
@@ -1614,13 +1617,14 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
         """
         return self._load_json_file_data(self.project_defaults_filepath)
 
-    def _save_data_to_filepath(self, path, data):
-        dirpath = os.path.dirname(path)
-        if not os.path.exists(dirpath):
-            os.makedirs(dirpath)
+    @staticmethod
+    def _save_data_to_filepath(path, data):
+        dir_path = os.path.dirname(path)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
 
-        with open(path, "w") as file_stream:
-            json.dump(data, file_stream, indent=4)
+        with open(path, "w", encoding='utf-8') as file_stream:
+            json.dump(data, file_stream, ensure_ascii=False, indent=4)
 
     def save_system_defaults(self, data):
         """Save default system settings values.
@@ -1639,7 +1643,7 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
     def get_system_dynamic_schemas(self):
         """System schemas by dynamic schema name.
 
-        If dynamic schema name is not available in then schema will not used.
+        If dynamic schema name is not available in then schema will not be used.
 
         Returns:
             dict: Schemas or list of schemas by dynamic schema name.
@@ -1649,7 +1653,7 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
     def get_project_dynamic_schemas(self):
         """Project schemas by dynamic schema name.
 
-        If dynamic schema name is not available in then schema will not used.
+        If dynamic schema name is not available in then schema will not be used.
 
         Returns:
             dict: Schemas or list of schemas by dynamic schema name.
@@ -1693,7 +1697,7 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
         """Schemas and templates usable in system settings schemas.
 
         Returns:
-            dict: Schemas and templates by it's names. Names must be unique
+            dict: Schemas and templates by its names. Names must be unique
                 across whole QuadPype.
         """
         return self._load_files_from_path(self.system_schemas_dir)
@@ -1702,7 +1706,7 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
         """Schemas and templates usable in project settings schemas.
 
         Returns:
-            dict: Schemas and templates by it's names. Names must be unique
+            dict: Schemas and templates by its names. Names must be unique
                 across whole QuadPype.
         """
         return self._load_files_from_path(self.project_schemas_dir)

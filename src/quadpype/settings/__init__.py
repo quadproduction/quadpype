@@ -3,7 +3,6 @@ from .constants import (
     SYSTEM_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     PROJECT_ANATOMY_KEY,
-    LOCAL_SETTINGS_KEY,
 
     GENERAL_SETTINGS_KEY,
     ENV_SETTINGS_KEY,
@@ -31,7 +30,7 @@ from .lib import (
     get_project_settings,
     get_current_project_settings,
     get_anatomy_settings,
-    get_local_settings,
+    get_user_settings,
 )
 from .entities import (
     SystemSettings,
@@ -45,7 +44,6 @@ __all__ = (
     "SYSTEM_SETTINGS_KEY",
     "PROJECT_SETTINGS_KEY",
     "PROJECT_ANATOMY_KEY",
-    "LOCAL_SETTINGS_KEY",
 
     "GENERAL_SETTINGS_KEY",
     "ENV_SETTINGS_KEY",
@@ -71,7 +69,7 @@ __all__ = (
     "get_project_settings",
     "get_current_project_settings",
     "get_anatomy_settings",
-    "get_local_settings",
+    "get_user_settings",
 
     "SystemSettings",
     "ProjectSettings",

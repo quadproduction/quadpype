@@ -109,9 +109,9 @@ class DropboxHandler(AbstractProvider):
         ]
 
     @classmethod
-    def get_local_settings_schema(cls):
+    def get_user_settings_schema(cls):
         """
-            Returns dict for editable properties on local settings level
+            Returns dict for editable properties on user settings level
 
 
             Returns:
@@ -408,7 +408,7 @@ class DropboxHandler(AbstractProvider):
             Returns root values for path resolving
 
             Takes value from Anatomy which takes values from Settings
-            overridden by Local Settings
+            overridden by the User Settings
 
         Returns:
             (dict) - {"root": {"root": "/My Drive"}}

@@ -41,11 +41,11 @@ DEFAULTS_DIR = os.path.join(
 # Variable where cache of default settings are stored
 _DEFAULT_SETTINGS = None
 
-# Handler of studio overrides
+# Handler for studio overrides
 _SETTINGS_HANDLER = None
 
-# Handler of local settings
-_LOCAL_SETTINGS_HANDLER = None
+# Handler for users
+_USER_HANDLER = None
 
 
 def clear_metadata_from_settings(values):
@@ -87,9 +87,9 @@ def create_settings_handler():
     return MongoSettingsHandler()
 
 
-def create_local_settings_handler():
-    from .handlers import MongoLocalSettingsHandler
-    return MongoLocalSettingsHandler()
+def create_user_handler():
+    from .handlers import MongoUserHandler
+    return MongoUserHandler()
 
 
 def require_handler(func):
@@ -102,12 +102,12 @@ def require_handler(func):
     return wrapper
 
 
-def require_local_handler(func):
+def require_user_handler(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        global _LOCAL_SETTINGS_HANDLER
-        if _LOCAL_SETTINGS_HANDLER is None:
-            _LOCAL_SETTINGS_HANDLER = create_local_settings_handler()
+        global _USER_HANDLER
+        if _USER_HANDLER is None:
+            _USER_HANDLER = create_user_handler()
         return func(*args, **kwargs)
     return wrapper
 
@@ -512,18 +512,29 @@ def clear_project_settings_overrides_for_version(
     )
 
 
-@require_local_handler
-def save_local_settings(data):
-    return _LOCAL_SETTINGS_HANDLER.save_local_settings(data)
+@require_user_handler
+def save_user_settings(data):
+    return _USER_HANDLER.save_user_settings(data)
 
 
-@require_local_handler
-def _get_local_settings():
-    return _LOCAL_SETTINGS_HANDLER.get_local_settings()
+@require_user_handler
+def get_user_settings():
+    return _USER_HANDLER.get_user_settings()
 
 
-def get_local_settings():
-    return _get_local_settings()
+@require_user_handler
+def create_user_profile():
+    return _USER_HANDLER.create_user_profile()
+
+
+@require_user_handler
+def get_user_profile():
+    return _USER_HANDLER.get_user_profile()
+
+
+@require_user_handler
+def update_user_profile_on_startup():
+    return _USER_HANDLER.update_user_profile_on_startup()
 
 
 def load_quadpype_default_settings():
@@ -715,11 +726,11 @@ def apply_overrides(source_data, override_data):
     return merge_overrides(_source_data, override_data)
 
 
-def _apply_applications_settings_override(system_settings, local_settings):
+def _apply_applications_settings_override(system_settings, user_settings):
     current_platform = platform.system().lower()
     apps_settings = system_settings[APPS_SETTINGS_KEY]
     additional_apps = apps_settings["additional_apps"]
-    for app_group_name, value in local_settings[APPS_SETTINGS_KEY].items():
+    for app_group_name, value in user_settings[APPS_SETTINGS_KEY].items():
         if not value:
             continue
 
@@ -753,64 +764,64 @@ def _apply_applications_settings_override(system_settings, local_settings):
             )
             # TODO This is temporary fix until launch arguments will be stored
             #   per platform and not per executable.
-            # - local settings store only executable
+            # - user settings store only executable
             new_executables = [executable]
             new_executables.extend(platform_executables)
             variants[app_name]["executables"] = new_executables
 
 
-def _apply_modules_settings_override(system_settings, local_settings):
+def _apply_modules_settings_override(system_settings, user_settings):
     modules_settings = system_settings[MODULES_SETTINGS_KEY]
-    for module_name, property in local_settings[MODULES_SETTINGS_KEY].items():
+    for module_name, property in user_settings[MODULES_SETTINGS_KEY].items():
         modules_settings[module_name].update(property)
 
 
-def apply_local_settings_on_system_settings(system_settings, local_settings):
-    """Apply local settings on studio system settings.
+def apply_user_settings_on_system_settings(system_settings, user_settings):
+    """Apply user settings on studio system settings.
 
-    ATM local settings can modify only application executables. Executable
+    ATM user settings can modify only application executables. Executable
     values are not overridden but prepended.
     """
-    if not local_settings:
+    if not user_settings:
         return
 
-    if APPS_SETTINGS_KEY in local_settings:
-        _apply_applications_settings_override(system_settings, local_settings)
+    if APPS_SETTINGS_KEY in user_settings:
+        _apply_applications_settings_override(system_settings, user_settings)
 
-    if MODULES_SETTINGS_KEY in local_settings:
-        _apply_modules_settings_override(system_settings, local_settings)
+    if MODULES_SETTINGS_KEY in user_settings:
+        _apply_modules_settings_override(system_settings, user_settings)
 
 
-def apply_local_settings_on_anatomy_settings(
-    anatomy_settings, local_settings, project_name, site_name=None
+def apply_user_settings_on_anatomy_settings(
+    anatomy_settings, user_settings, project_name, site_name=None
 ):
-    """Apply local settings on anatomy settings.
+    """Apply user settings on anatomy settings.
 
-    ATM local settings can modify project roots. Project name is required as
-    local settings have data stored data by project's name.
+    ATM user settings can modify project roots. Project name is required as
+    user settings have data stored data by project's name.
 
     Local settings override root values in this order:
-    1.) Check if local settings contain overrides for default project and
+    1.) Check if user settings contain overrides for default project and
         apply it's values on roots if there are any.
     2.) If passed `project_name` is not None then check project specific
-        overrides in local settings for the project and apply it's value on
+        overrides in user settings for the project and apply it's value on
         roots if there are any.
 
-    NOTE: Root values of default project from local settings are always applied
+    NOTE: Root values of default project from user settings are always applied
         if are set.
 
     Args:
         anatomy_settings (dict): Data for anatomy settings.
-        local_settings (dict): Data of local settings.
+        user_settings (dict): Data of user settings.
         project_name (str): Name of project for which anatomy data are.
         site_name (str): Name of the site
     """
-    if not local_settings:
+    if not user_settings:
         return
 
-    local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY) or {}
+    local_project_settings = user_settings.get(PROJECTS_SETTINGS_KEY) or {}
 
-    # Check for roots existence in local settings first
+    # Check for roots existence in user settings first
     roots_project_locals = (
         local_project_settings
         .get(project_name, {})
@@ -838,11 +849,11 @@ def apply_local_settings_on_anatomy_settings(
     if not site_name:
         return
 
-    # Combine roots from local settings
+    # Combine roots from user settings
     roots_locals = roots_default_locals.get(site_name) or {}
     roots_locals.update(roots_project_locals.get(site_name) or {})
     # Skip processing if roots for current active site are not available in
-    #   local settings
+    #   user settings
     if not roots_locals:
         return
 
@@ -857,26 +868,26 @@ def apply_local_settings_on_anatomy_settings(
         )
 
 
-def get_site_local_overrides(project_name, site_name, local_settings=None):
-    """Site overrides from local settings for passed project and site name.
+def get_site_local_overrides(project_name, site_name, user_settings=None):
+    """Site overrides from user settings for passed project and site name.
 
     Args:
         project_name (str): For which project are overrides.
         site_name (str): For which site are overrides needed.
-        local_settings (dict): Preloaded local settings. They are loaded
+        user_settings (dict): Preloaded user settings. They are loaded
             automatically if not passed.
     """
-    # Check if local settings were passed
-    if local_settings is None:
-        local_settings = get_local_settings()
+    # Check if user settings were passed
+    if user_settings is None:
+        user_settings = get_user_settings()
 
     output = {}
 
-    # Skip if local settings are empty
-    if not local_settings:
+    # Skip if user settings are empty
+    if not user_settings:
         return output
 
-    local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY) or {}
+    local_project_settings = user_settings.get(PROJECTS_SETTINGS_KEY) or {}
 
     # Prepare overrides for entered project and for default project
     project_locals = None
@@ -884,33 +895,33 @@ def get_site_local_overrides(project_name, site_name, local_settings=None):
         project_locals = local_project_settings.get(project_name)
     default_project_locals = local_project_settings.get(DEFAULT_PROJECT_KEY)
 
-    # First load and use local settings from default project
+    # First load and use user settings from default project
     if default_project_locals and site_name in default_project_locals:
         output.update(default_project_locals[site_name])
 
-    # Apply project specific local settings if there are any
+    # Apply project specific user settings if there are any
     if project_locals and site_name in project_locals:
         output.update(project_locals[site_name])
 
     return output
 
 
-def apply_local_settings_on_project_settings(
-    project_settings, local_settings, project_name
+def apply_user_settings_on_project_settings(
+    project_settings, user_settings, project_name
 ):
-    """Apply local settings on project settings.
+    """Apply user settings on project settings.
 
     Currently is modifying active site and remote site in sync server.
 
     Args:
         project_settings (dict): Data for project settings.
-        local_settings (dict): Data of local settings.
+        user_settings (dict): Data of user settings.
         project_name (str): Name of project for which settings data are.
     """
-    if not local_settings:
+    if not user_settings:
         return
 
-    local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY)
+    local_project_settings = user_settings.get(PROJECTS_SETTINGS_KEY)
     if not local_project_settings:
         return
 
@@ -943,15 +954,15 @@ def _get_system_settings(clear_metadata=True, exclude_locals=None):
     if clear_metadata:
         clear_metadata_from_settings(result)
 
-    # Apply local settings
+    # Apply user settings
     # Default behavior is based on `clear_metadata` value
     if exclude_locals is None:
         exclude_locals = not clear_metadata
 
     if not exclude_locals:
-        # TODO local settings may be required to apply for environments
-        local_settings = get_local_settings()
-        apply_local_settings_on_system_settings(result, local_settings)
+        # TODO user settings may be required to apply for environments
+        user_settings = get_user_settings()
+        apply_user_settings_on_system_settings(result, user_settings)
 
     return result
 
@@ -965,14 +976,14 @@ def get_default_project_settings(clear_metadata=True, exclude_locals=None):
     if clear_metadata:
         clear_metadata_from_settings(result)
 
-    # Apply local settings
+    # Apply user settings
     if exclude_locals is None:
         exclude_locals = not clear_metadata
 
     if not exclude_locals:
-        local_settings = get_local_settings()
-        apply_local_settings_on_project_settings(
-            result, local_settings, None
+        user_settings = get_user_settings()
+        apply_user_settings_on_project_settings(
+            result, user_settings, None
         )
     return result
 
@@ -987,14 +998,14 @@ def get_default_anatomy_settings(clear_metadata=True, exclude_locals=None):
     if clear_metadata:
         clear_metadata_from_settings(result)
 
-    # Apply local settings
+    # Apply user settings
     if exclude_locals is None:
         exclude_locals = not clear_metadata
 
     if not exclude_locals:
-        local_settings = get_local_settings()
-        apply_local_settings_on_anatomy_settings(
-            result, local_settings, None
+        user_settings = get_user_settings()
+        apply_user_settings_on_anatomy_settings(
+            result, user_settings, None
         )
     return result
 
@@ -1022,14 +1033,14 @@ def get_anatomy_settings(
     if clear_metadata:
         clear_metadata_from_settings(result)
 
-    # Apply local settings
+    # Apply user settings
     if exclude_locals is None:
         exclude_locals = not clear_metadata
 
     if not exclude_locals:
-        local_settings = get_local_settings()
-        apply_local_settings_on_anatomy_settings(
-            result, local_settings, project_name, site_name
+        user_settings = get_user_settings()
+        apply_user_settings_on_anatomy_settings(
+            result, user_settings, project_name, site_name
         )
 
     return result
@@ -1056,14 +1067,14 @@ def _get_project_settings(
     if clear_metadata:
         clear_metadata_from_settings(result)
 
-    # Apply local settings
+    # Apply user settings
     if exclude_locals is None:
         exclude_locals = not clear_metadata
 
     if not exclude_locals:
-        local_settings = get_local_settings()
-        apply_local_settings_on_project_settings(
-            result, local_settings, project_name
+        user_settings = get_user_settings()
+        apply_user_settings_on_project_settings(
+            result, user_settings, project_name
         )
 
     return result
@@ -1120,8 +1131,8 @@ def _get_general_environments():
 
     whitelist_envs = result[GENERAL_SETTINGS_KEY].get("local_env_white_list")
     if whitelist_envs:
-        local_settings = get_local_settings()
-        local_envs = local_settings.get(ENV_SETTINGS_KEY) or {}
+        user_settings = get_user_settings()
+        local_envs = user_settings.get(ENV_SETTINGS_KEY) or {}
         for key, value in local_envs.items():
             if key in whitelist_envs and key in environments:
                 environments[key] = value

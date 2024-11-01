@@ -31,11 +31,11 @@ class BaseInfoDialog(QtWidgets.QDialog):
         other_information_layout = QtWidgets.QFormLayout(other_information)
         other_information_layout.setContentsMargins(0, 0, 0, 0)
         for label, value in (
+            ("User ID", info_obj.user_id),
             ("Username", info_obj.username),
-            ("Host name", info_obj.hostname),
-            ("Host IP", info_obj.hostip),
-            ("System name", info_obj.system_name),
-            ("Local ID", info_obj.local_id),
+            ("Workstation Name", info_obj.workstation_name),
+            ("Host IP", info_obj.host_ip),
+            ("System Name", info_obj.system_name),
         ):
             other_information_layout.addRow(
                 label,

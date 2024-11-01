@@ -1,7 +1,6 @@
-import getpass
-import quadpype.settings.lib as sett_lib
-
 from quadpype.modules import QuadPypeModule, ITrayAction
+from quadpype.settings import get_system_settings, GENERAL_SETTINGS_KEY
+from quadpype.settings.lib import get_user_profile
 
 
 class SettingsAction(QuadPypeModule, ITrayAction):
@@ -17,16 +16,18 @@ class SettingsAction(QuadPypeModule, ITrayAction):
         super().__init__(manager, settings)
 
     def initialize(self, _modules_settings):
-        self.enabled = False
+        self.enabled = True
 
-        # User role
-        username = getpass.getuser()
-        admins_doc = sett_lib._SETTINGS_HANDLER.collection.find_one({"type": "administrators"})
-        if admins_doc and username in admins_doc["data"]["usernames"]:
-            self.user_role = "administrator"
+        user_profile = get_user_profile()
+        self.user_role = user_profile["role"]
 
-        if self.user_role in ["developer", "administrator"]:
-            self.enabled = True
+        system_settings = get_system_settings()
+        #if user_id in system_settings[GENERAL_SETTINGS_KEY]["administrators"]:
+        #    self.user_role = "administrator"
+
+        if system_settings[GENERAL_SETTINGS_KEY]["access_restricted"]:
+             if self.user_role != "administrator":
+                 self.enabled = False
 
     def tray_init(self):
         """Initialization in tray implementation of ITrayAction."""
@@ -84,8 +85,8 @@ class SettingsAction(QuadPypeModule, ITrayAction):
 
 class LocalSettingsAction(QuadPypeModule, ITrayAction):
     """Action to show Settings tool."""
-    name = "local_settings"
-    label = "Local Settings"
+    name = "user_settings"
+    label = "User Settings"
 
     def __init__(self, manager, settings):
         self.settings_window = None

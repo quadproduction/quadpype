@@ -15,7 +15,7 @@ class WorkfileLockDialog(QtWidgets.QDialog):
 
         message = "{} on {} machine is working on the same workfile.".format(
             data["username"],
-            data["hostname"]
+            data["workstation_name"]
         )
 
         msg_label = QtWidgets.QLabel(message, self)

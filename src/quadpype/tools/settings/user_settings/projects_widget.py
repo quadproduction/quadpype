@@ -419,13 +419,13 @@ class SitesWidget(QtWidgets.QWidget):
 
             project_values[site_name][key] = value
 
-    def update_local_settings(self, local_project_settings):
+    def update_user_settings(self, local_project_settings):
         self.local_project_settings = local_project_settings
         self.local_project_settings_orig = copy.deepcopy(
             dict(local_project_settings)
         )
-        self.active_site_widget.update_local_settings(local_project_settings)
-        self.remote_site_widget.update_local_settings(local_project_settings)
+        self.active_site_widget.update_user_settings(local_project_settings)
+        self.remote_site_widget.update_user_settings(local_project_settings)
 
     def change_project(self, project_name):
         self._project_name = None
@@ -487,9 +487,9 @@ class _SiteCombobox(QtWidgets.QWidget):
 
     def is_modified(self, current_value=NOT_SET, orig_value=NOT_SET):
         if current_value is NOT_SET:
-            current_value = self._get_local_settings_item(self.project_name)
+            current_value = self._get_user_settings_item(self.project_name)
         if orig_value is NOT_SET:
-            orig_value = self._get_local_settings_item(
+            orig_value = self._get_user_settings_item(
                 self.project_name, self.local_project_settings_orig
             )
         if current_value and orig_value:
@@ -504,8 +504,8 @@ class _SiteCombobox(QtWidgets.QWidget):
         if self.project_name is None:
             return ""
 
-        current_value = self._get_local_settings_item(self.project_name)
-        orig_value = self._get_local_settings_item(
+        current_value = self._get_user_settings_item(self.project_name)
+        orig_value = self._get_user_settings_item(
             self.project_name, self.local_project_settings_orig
         )
 
@@ -519,7 +519,7 @@ class _SiteCombobox(QtWidgets.QWidget):
             if current_value:
                 return "overridden"
 
-            studio_value = self._get_local_settings_item(DEFAULT_PROJECT_KEY)
+            studio_value = self._get_user_settings_item(DEFAULT_PROJECT_KEY)
             if studio_value:
                 return "studio"
         return ""
@@ -541,7 +541,7 @@ class _SiteCombobox(QtWidgets.QWidget):
         settings_value = self._get_value_from_project_settings()
         combobox_value = None
         if self.project_name == DEFAULT_PROJECT_KEY:
-            combobox_value = self._get_local_settings_item(DEFAULT_PROJECT_KEY)
+            combobox_value = self._get_user_settings_item(DEFAULT_PROJECT_KEY)
             if combobox_value:
                 idx = self.combobox_input.findText(combobox_value)
                 if idx < 0:
@@ -556,15 +556,15 @@ class _SiteCombobox(QtWidgets.QWidget):
             self._set_current_text(combobox_value)
             self.project_name = _project_name
 
-        self._set_local_settings_value("")
+        self._set_user_settings_value("")
         self._update_style()
 
     def _add_to_local(self):
-        self._set_local_settings_value(self.current_text())
+        self._set_user_settings_value(self.current_text())
         self._update_style()
 
     def discard_changes(self):
-        orig_value = self._get_local_settings_item(
+        orig_value = self._get_user_settings_item(
             self.project_name, self.local_project_settings_orig
         )
         self._set_current_text(orig_value)
@@ -583,7 +583,7 @@ class _SiteCombobox(QtWidgets.QWidget):
             remove_label = LABEL_REMOVE_PROJECT
             add_label = LABEL_ADD_PROJECT
 
-        has_value = self._get_local_settings_item(self.project_name)
+        has_value = self._get_user_settings_item(self.project_name)
         if has_value:
             action = QtWidgets.QAction(remove_label)
             callback = self._remove_from_local
@@ -605,7 +605,7 @@ class _SiteCombobox(QtWidgets.QWidget):
             if to_run:
                 to_run()
 
-    def update_local_settings(self, local_project_settings):
+    def update_user_settings(self, local_project_settings):
         self.local_project_settings = local_project_settings
         self.local_project_settings_orig = copy.deepcopy(
             dict(local_project_settings)
@@ -628,11 +628,11 @@ class _SiteCombobox(QtWidgets.QWidget):
         site_items = self._get_project_sites()
         self.combobox_input.addItems(site_items)
 
-        default_item = self._get_local_settings_item(DEFAULT_PROJECT_KEY)
+        default_item = self._get_user_settings_item(DEFAULT_PROJECT_KEY)
         if is_default_project:
             project_item = None
         else:
-            project_item = self._get_local_settings_item(project_name)
+            project_item = self._get_user_settings_item(project_name)
 
         index = None
         if project_item:
@@ -664,13 +664,13 @@ class _SiteCombobox(QtWidgets.QWidget):
         if self.project_name is None:
             return
 
-        self._set_local_settings_value(self.current_text())
+        self._set_user_settings_value(self.current_text())
         self._update_style()
         self.value_changed.emit()
 
-    def _set_local_settings_value(self, value):
+    def _set_user_settings_value(self, value):
         raise NotImplementedError(
-            "{} `_set_local_settings_value` not implemented".format(
+            "{} `_set_user_settings_value` not implemented".format(
                 self.__class__.__name__
             )
         )
@@ -682,9 +682,9 @@ class _SiteCombobox(QtWidgets.QWidget):
             )
         )
 
-    def _get_local_settings_item(self, project_name=None, data=None):
+    def _get_user_settings_item(self, project_name=None, data=None):
         raise NotImplementedError(
-            "{}`_get_local_settings_item` not implemented".format(
+            "{}`_get_user_settings_item` not implemented".format(
                 self.__class__.__name__
             )
         )
@@ -710,7 +710,7 @@ class AciveSiteCombo(_SiteCombobox):
             )
         return sync_server_module.get_active_sites(self.project_name)
 
-    def _get_local_settings_item(self, project_name=None, data=None):
+    def _get_user_settings_item(self, project_name=None, data=None):
         if project_name is None:
             project_name = self.project_name
 
@@ -726,7 +726,7 @@ class AciveSiteCombo(_SiteCombobox):
         global_entity = self.project_settings[PROJECT_SETTINGS_KEY]["global"]
         return global_entity["sync_server"]["config"]["active_site"].value
 
-    def _set_local_settings_value(self, value):
+    def _set_user_settings_value(self, value):
         if self.project_name not in self.local_project_settings:
             self.local_project_settings[self.project_name] = {}
         self.local_project_settings[self.project_name]["active_site"] = value
@@ -740,7 +740,7 @@ class RemoteSiteCombo(_SiteCombobox):
 
         self.setVisible(self.combobox_input.count() > 0)
         if not self.isVisible():
-            self._set_local_settings_value("")
+            self._set_user_settings_value("")
 
     def _get_project_sites(self):
         sync_server_module = (
@@ -752,7 +752,7 @@ class RemoteSiteCombo(_SiteCombobox):
             )
         return sync_server_module.get_remote_sites(self.project_name)
 
-    def _get_local_settings_item(self, project_name=None, data=None):
+    def _get_user_settings_item(self, project_name=None, data=None):
         if project_name is None:
             project_name = self.project_name
         if data is None:
@@ -767,7 +767,7 @@ class RemoteSiteCombo(_SiteCombobox):
         global_entity = self.project_settings[PROJECT_SETTINGS_KEY]["global"]
         return global_entity["sync_server"]["config"]["remote_site"].value
 
-    def _set_local_settings_value(self, value):
+    def _set_user_settings_value(self, value):
         if self.project_name not in self.local_project_settings:
             self.local_project_settings[self.project_name] = {}
         self.local_project_settings[self.project_name]["remote_site"] = value
@@ -790,9 +790,9 @@ class RootSiteWidget(QtWidgets.QWidget):
 
         self.sites_widget = sites_widget
 
-    def update_local_settings(self, local_project_settings):
+    def update_user_settings(self, local_project_settings):
         self.local_project_settings = local_project_settings
-        self.sites_widget.update_local_settings(local_project_settings)
+        self.sites_widget.update_user_settings(local_project_settings)
         project_name = self._project_name
         if project_name is None:
             project_name = DEFAULT_PROJECT_KEY
@@ -845,12 +845,12 @@ class ProjectSettingsWidget(QtWidgets.QWidget):
             project_name = DEFAULT_PROJECT_KEY
         self.root_site_widget.change_project(project_name)
 
-    def update_local_settings(self, value):
+    def update_user_settings(self, value):
         if not value:
             value = {}
         self.local_project_settings = ProjectValue(value)
 
-        self.root_site_widget.update_local_settings(
+        self.root_site_widget.update_user_settings(
             self.local_project_settings
         )
 

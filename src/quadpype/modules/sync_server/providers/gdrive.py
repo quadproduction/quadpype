@@ -167,9 +167,9 @@ class GDriveHandler(AbstractProvider):
         return editable
 
     @classmethod
-    def get_local_settings_schema(cls):
+    def get_user_settings_schema(cls):
         """
-            Returns dict for editable properties on local settings level
+            Returns dict for editable properties on user settings level
 
 
             Returns:
@@ -190,7 +190,7 @@ class GDriveHandler(AbstractProvider):
         """
             Returns root values for path resolving
 
-            Use only Settings as GDrive cannot be modified by Local Settings
+            Use only Settings as GDrive cannot be modified by the User Settings
 
         Returns:
             (dict) - {"root": {"root": "/My Drive"}}

@@ -10,7 +10,7 @@ class LocalGeneralWidgets(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self._loading_local_settings = False
+        self._loading_user_settings = False
 
         self.username_input = PlaceholderLineEdit(self)
         self.username_input.setPlaceholderText(getpass.getuser())
@@ -28,8 +28,8 @@ class LocalGeneralWidgets(QtWidgets.QWidget):
         self.windows_can_stay_on_top_input = QtWidgets.QCheckBox(self)
         layout.addRow("Allow Pipeline Windows to Stay On Top", self.windows_can_stay_on_top_input)
 
-    def update_local_settings(self, value):
-        self._loading_local_settings = True
+    def update_user_settings(self, value):
+        self._loading_user_settings = True
 
         username = ""
         is_admin = False
@@ -58,10 +58,10 @@ class LocalGeneralWidgets(QtWidgets.QWidget):
                 state = QtCore.Qt.Unchecked
             self.windows_can_stay_on_top_input.setCheckState(state)
 
-        self._loading_local_settings = False
+        self._loading_user_settings = False
 
     def _on_admin_check_change(self):
-        if self._loading_local_settings:
+        if self._loading_user_settings:
             return
 
         if not self.is_admin_input.isChecked():

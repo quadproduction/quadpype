@@ -148,7 +148,7 @@ class ExperimentalToolsDialog(BaseToolDialog):
 
             elif is_new or button.isEnabled():
                 button.setToolTip((
-                    "You can enable this tool in local settings."
+                    "You can enable this tool in user settings."
                     "\n\n{} Tray > Settings > Experimental Tools"
                 ).format(app_label))
 

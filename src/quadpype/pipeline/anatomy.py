@@ -9,7 +9,7 @@ import six
 import time
 
 from quadpype.settings.lib import (
-    get_local_settings,
+    get_user_settings,
 )
 from quadpype.settings.constants import (
     DEFAULT_PROJECT_KEY,
@@ -93,7 +93,7 @@ class BaseAnatomy(object):
 
         anatomy_data = self._project_doc_to_anatomy_data(project_doc)
 
-        self._apply_local_settings_on_anatomy_data(
+        self._apply_user_settings_on_anatomy_data(
             anatomy_data,
             root_overrides
         )
@@ -329,31 +329,31 @@ class BaseAnatomy(object):
 
         return output
 
-    def _apply_local_settings_on_anatomy_data(
+    def _apply_user_settings_on_anatomy_data(
         self, anatomy_data, root_overrides
     ):
-        """Apply local settings on anatomy data.
+        """Apply user settings on anatomy data.
 
-        ATM local settings can modify project roots. Project name is required
-        as local settings have data stored data by project's name.
+        ATM user settings can modify project roots. Project name is required
+        as user settings have data stored data by project's name.
 
         Local settings override root values in this order:
-        1.) Check if local settings contain overrides for default project and
+        1.) Check if user settings contain overrides for default project and
             apply it's values on roots if there are any.
         2.) If passed `project_name` is not None then check project specific
-            overrides in local settings for the project and apply it's value on
+            overrides in user settings for the project and apply it's value on
             roots if there are any.
 
-        NOTE: Root values of default project from local settings are always
+        NOTE: Root values of default project from user settings are always
         applied if are set.
 
         Args:
             anatomy_data (dict): Data for anatomy.
-            root_overrides (dict): Data of local settings.
+            root_overrides (dict): Data of user settings.
         """
 
         # Skip processing if roots for current active site are not available in
-        #   local settings
+        #   user settings
         if not root_overrides:
             return
 
@@ -457,8 +457,8 @@ class Anatomy(BaseAnatomy):
         return cls._sync_server_addon_cache.data
 
     @classmethod
-    def _get_studio_roots_overrides(cls, project_name, local_settings=None):
-        """This would return 'studio' site override by local settings.
+    def _get_studio_roots_overrides(cls, project_name, user_settings=None):
+        """This would return 'studio' site override by user settings.
 
         Notes:
             This logic handles local overrides of studio site which may be
@@ -467,19 +467,19 @@ class Anatomy(BaseAnatomy):
 
         Args:
             project_name (str): Name of project.
-            local_settings (Optional[dict[str, Any]]): Prepared local settings.
+            user_settings (Optional[dict[str, Any]]): Prepared user settings.
 
         Returns:
             Union[Dict[str, str], None]): Local root overrides.
         """
-        if local_settings is None:
-            local_settings = get_local_settings()
+        if user_settings is None:
+            user_settings = get_user_settings()
 
-        local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY) or {}
+        local_project_settings = user_settings.get(PROJECTS_SETTINGS_KEY) or {}
         if not local_project_settings:
             return None
 
-        # Check for roots existence in local settings first
+        # Check for roots existence in user settings first
         roots_project_locals = (
             local_project_settings
             .get(project_name, {})
@@ -493,7 +493,7 @@ class Anatomy(BaseAnatomy):
         if not roots_project_locals and not roots_default_locals:
             return
 
-        # Combine roots from local settings
+        # Combine roots from user settings
         roots_locals = roots_default_locals.get("studio") or {}
         roots_locals.update(roots_project_locals.get("studio") or {})
         return roots_locals
@@ -510,9 +510,9 @@ class Anatomy(BaseAnatomy):
         """
 
         # Local settings may be used more than once or may not be used at all
-        # - to avoid slowdowns 'get_local_settings' is not called until it's
+        # - to avoid slowdowns 'get_user_settings' is not called until it's
         #   really needed
-        local_settings = None
+        user_settings = None
 
         # First check if sync server is available and enabled
         sync_server = cls.get_sync_server_addon()
@@ -524,10 +524,10 @@ class Anatomy(BaseAnatomy):
             # Use sync server to receive active site name
             project_cache = cls._default_site_id_cache[project_name]
             if project_cache.is_outdated:
-                local_settings = get_local_settings()
+                user_settings = get_user_settings()
                 project_cache.update_data(
                     sync_server.get_active_site_type(
-                        project_name, local_settings
+                        project_name, user_settings
                     )
                 )
             site_name = project_cache.data
@@ -538,12 +538,12 @@ class Anatomy(BaseAnatomy):
                 # Handle studio root overrides without sync server
                 # - studio root overrides can be done even without sync server
                 roots_overrides = cls._get_studio_roots_overrides(
-                    project_name, local_settings
+                    project_name, user_settings
                 )
             else:
                 # Ask sync server to get roots overrides
                 roots_overrides = sync_server.get_site_root_overrides(
-                    project_name, site_name, local_settings
+                    project_name, site_name, user_settings
                 )
             site_cache.update_data(roots_overrides)
         return site_cache.data

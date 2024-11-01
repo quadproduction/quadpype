@@ -19,14 +19,30 @@
             "type": "splitter"
         },
         {
-            "type": "label",
-            "label": "This is <b>NOT a securely stored password!</b> It only acts as a simple barrier to stop users from accessing studio wide settings."
+            "key": "administrators",
+            "label": "Administrators",
+            "type": "list",
+            "object_type": {
+                "type": "list-strict",
+                "key": "item",
+                 "object_types": [
+                    {
+                        "label": "Source",
+                        "type": "path"
+                    },
+                    {
+                        "label": "Destination",
+                        "type": "path"
+                    }
+                ]
+            }
         },
         {
-            "type": "password",
-            "key": "admin_password",
-            "label": "Admin password",
-            "disabled": true
+            "type": "boolean",
+            "key": "access_restricted",
+            "label": "Restrict settings access (admins only)",
+            "require_restart": true
+
         },
         {
             "type": "splitter"
@@ -34,7 +50,7 @@
         {
             "type": "boolean",
             "key": "windows_can_stay_on_top",
-            "label": "Allow Pipeline Windows to Stay On Top"
+            "label": "Allow windows to stay on top"
         },
         {
             "type": "splitter"
@@ -125,8 +141,8 @@
         },
         {
             "type": "dict",
-            "key": "project",
-            "label": "Project",
+            "key": "projects",
+            "label": "Projects",
             "collapsible": true,
             "collapsed": false,
             "children": [

@@ -1530,7 +1530,7 @@ def get_workfile_info(
 
 """
 ## Custom data storage:
-- Settings - QuadPype settings overrides and local settings
+- Settings - QuadPype settings overrides and user settings
 - Logging - logs from Logger
 - Webpublisher - jobs
 - Ftrack - events

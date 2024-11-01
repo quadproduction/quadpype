@@ -278,7 +278,7 @@ def user_cache_dir(appname=None, appauthor=None, version=None, opinion=True):
         Win XP:     C:\Documents and Settings\<username>\Local Settings\Application Data\<AppAuthor>\<AppName>\Cache
         Vista:      C:\Users\<username>\AppData\Local\<AppAuthor>\<AppName>\Cache
 
-    On Windows the only suggestion in the MSDN docs is that local settings go in
+    On Windows the only suggestion in the MSDN docs is that user settings go in
     the `CSIDL_LOCAL_APPDATA` directory. This is identical to the non-roaming
     app data dir (the default returned by `user_data_dir` above). Apps typically
     put cache data somewhere *under* the given dir here. Some examples:
@@ -377,7 +377,7 @@ def user_log_dir(appname=None, appauthor=None, version=None, opinion=True):
         Win XP:     C:\Documents and Settings\<username>\Local Settings\Application Data\<AppAuthor>\<AppName>\Logs
         Vista:      C:\Users\<username>\AppData\Local\<AppAuthor>\<AppName>\Logs
 
-    On Windows the only suggestion in the MSDN docs is that local settings
+    On Windows the only suggestion in the MSDN docs is that user settings
     go in the `CSIDL_LOCAL_APPDATA` directory. (Note: I'm interested in
     examples of what some windows apps use for a logs dir.)
 

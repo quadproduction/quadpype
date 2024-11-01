@@ -403,8 +403,8 @@ class Logger:
 
         cls.process_data = {
             "process_id": cls.mongo_process_id,
-            "hostname": host_name,
-            "hostip": host_ip,
+            "workstation_name": host_name,
+            "host_ip": host_ip,
             "username": getpass.getuser(),
             "system_name": platform.system(),
             "process_name": process_name

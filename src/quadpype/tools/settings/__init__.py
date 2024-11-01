@@ -7,7 +7,7 @@ from .lib import (
     BTN_FIXED_SIZE,
     CHILD_OFFSET
 )
-from .local_settings import LocalSettingsWindow
+from .user_settings import LocalSettingsWindow
 from .settings import (
     MainWidget,
     ProjectListWidget

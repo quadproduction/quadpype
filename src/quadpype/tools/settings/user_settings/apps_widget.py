@@ -69,7 +69,7 @@ class AppVariantWidget(QtWidgets.QWidget):
             path_widget.setReadOnly(True)
             content_layout.addWidget(path_widget)
 
-    def update_local_settings(self, value):
+    def update_user_settings(self, value):
         if not self.executable_input_widget:
             return
 
@@ -147,12 +147,12 @@ class AppGroupWidget(QtWidgets.QWidget):
 
         self.widgets_by_variant_name = widgets_by_variant_name
 
-    def update_local_settings(self, value):
+    def update_user_settings(self, value):
         if not value:
             value = {}
 
         for variant_name, widget in self.widgets_by_variant_name.items():
-            widget.update_local_settings(value.get(variant_name))
+            widget.update_user_settings(value.get(variant_name))
 
     def settings_value(self):
         output = {}
@@ -237,14 +237,14 @@ class LocalApplicationsWidgets(QtWidgets.QWidget):
                 group_widget.setVisible(False)
                 group_widget.deleteLater()
 
-    def update_local_settings(self, value):
+    def update_user_settings(self, value):
         if not value:
             value = {}
 
         self._reset_apps_widgets()
 
         for group_name, widget in self.widgets_by_group_name.items():
-            widget.update_local_settings(value.get(group_name))
+            widget.update_user_settings(value.get(group_name))
 
     def settings_value(self):
         output = {}

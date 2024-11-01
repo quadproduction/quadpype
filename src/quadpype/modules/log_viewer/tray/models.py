@@ -6,23 +6,23 @@ from quadpype.lib import Logger
 class LogModel(QtGui.QStandardItemModel):
     COLUMNS = (
         "process_name",
-        "hostname",
-        "hostip",
+        "workstation_name",
+        "host_ip",
         "username",
         "system_name",
         "started"
     )
-    colums_mapping = {
+    columns_mapping = {
         "process_name": "Process Name",
         "process_id": "Process Id",
-        "hostname": "Hostname",
-        "hostip": "Host IP",
+        "workstation_name": "Workstation Name",
+        "host_ip": "Host IP",
         "username": "Username",
-        "system_name": "System name",
+        "system_name": "System Name",
         "started": "Started at"
     }
     process_keys = (
-        "process_id", "hostname", "hostip",
+        "process_id", "workstation_name", "host_ip",
         "username", "system_name", "process_name"
     )
     log_keys = (
@@ -57,7 +57,7 @@ class LogModel(QtGui.QStandardItemModel):
         ):
             if section < len(self.COLUMNS):
                 key = self.COLUMNS[section]
-                return self.colums_mapping.get(key, key)
+                return self.columns_mapping.get(key, key)
 
         super(LogModel, self).headerData(section, orientation, role)
 

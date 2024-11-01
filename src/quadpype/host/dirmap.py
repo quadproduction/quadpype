@@ -81,7 +81,7 @@ class HostDirmap(object):
         """Go through all paths in Settings and set them using `dirmap`.
 
             If artists has Site Sync enabled, take dirmap mapping directly from
-            Local Settings when artist is syncing workfile locally.
+            the User Settings when artist is syncing a workfile locally.
 
         """
 
@@ -151,7 +151,7 @@ class HostDirmap(object):
             Returns dirmap if synch to local project is enabled.
 
             Only valid mapping is from roots of remote site to local site set
-            in Local Settings.
+            in the User Settings.
 
             Returns:
                 dict : { "source-path": [XXX], "destination-path": [YYYY]}

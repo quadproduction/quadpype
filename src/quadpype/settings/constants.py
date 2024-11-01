@@ -16,7 +16,6 @@ GLOBAL_SETTINGS_KEY = "global_settings"
 SYSTEM_SETTINGS_KEY = "system_settings"
 PROJECT_SETTINGS_KEY = "project_settings"
 PROJECT_ANATOMY_KEY = "project_anatomy"
-LOCAL_SETTINGS_KEY = "local_settings"
 
 GENERAL_SETTINGS_KEY = "general"
 ENV_SETTINGS_KEY = "environments"
@@ -46,7 +45,6 @@ __all__ = (
     "SYSTEM_SETTINGS_KEY",
     "PROJECT_SETTINGS_KEY",
     "PROJECT_ANATOMY_KEY",
-    "LOCAL_SETTINGS_KEY",
 
     "GENERAL_SETTINGS_KEY",
     "ENV_SETTINGS_KEY",

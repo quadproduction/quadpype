@@ -14,7 +14,7 @@ from quadpype.lib import (
     get_quadpype_execute_args,
     run_detached_process,
 )
-from quadpype.lib.local_settings import get_quadpype_username
+from quadpype.lib.user_settings import get_quadpype_username
 from quadpype.lib.quadpype_version import (
     op_version_control_available,
     get_expected_version,

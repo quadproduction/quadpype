@@ -31,7 +31,7 @@ from quadpype.pipeline import AvalonMongoDB, Anatomy
 from quadpype.settings.lib import (
     get_default_anatomy_settings,
     get_anatomy_settings,
-    get_local_settings,
+    get_user_settings,
 )
 from quadpype.settings.constants import (
     DEFAULT_PROJECT_KEY
@@ -703,7 +703,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
     def get_active_sites_from_settings(self, settings):
         """
             List available active sites from incoming 'settings'. Used for
-            returning 'default' values for Local Settings
+            returning 'default' values for the User Settings
 
             Args:
                 settings (dict): full settings (global + project)
@@ -727,10 +727,10 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             return get_local_site_id()
         return active_site
 
-    def get_active_site_type(self, project_name, local_settings=None):
+    def get_active_site_type(self, project_name, user_settings=None):
         """Active site which is defined by artist.
 
-        Unlike 'get_active_site' is this method also checking local settings
+        Unlike 'get_active_site' is this method also checking user settings
         where might be different active site set by user. The output is limited
         to "studio" and "local".
 
@@ -744,7 +744,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
         Args:
             project_name (str): Name of project where to look for active site.
-            local_settings (Optional[dict[str, Any]]): Prepared local settings.
+            user_settings (Optional[dict[str, Any]]): Prepared user settings.
 
         Returns:
             Literal["studio", "local"]: Active site.
@@ -753,10 +753,10 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         if not self.enabled:
             return "studio"
 
-        if local_settings is None:
-            local_settings = get_local_settings()
+        if user_settings is None:
+            user_settings = get_user_settings()
 
-        local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY)
+        local_project_settings = user_settings.get(PROJECTS_SETTINGS_KEY)
         project_settings = get_project_settings(project_name)
         sync_server_settings = project_settings["global"]["sync_server"]
         if not sync_server_settings["enabled"]:
@@ -777,7 +777,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         return project_active_site
 
     def get_site_root_overrides(
-        self, project_name, site_name, local_settings=None
+        self, project_name, site_name, user_settings=None
     ):
         """Get root overrides for project on a site.
 
@@ -787,7 +787,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             project_name (str): Project for which root overrides should be
                 received.
             site_name (str): Name of site for which should be received roots.
-            local_settings (Optional[dict[str, Any]]): Prepare local settigns
+            user_settings (Optional[dict[str, Any]]): Prepare local settigns
                 values.
 
         Returns:
@@ -796,7 +796,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
         # Validate that site name is valid
         if site_name not in ("studio", "local"):
-            # Considure local site id as 'local'
+            # Consider user id as 'local'
             if site_name != get_local_site_id():
                 raise ValueError((
                     "Root overrides are available only for"
@@ -804,15 +804,15 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                 ).format(site_name))
             site_name = "local"
 
-        if local_settings is None:
-            local_settings = get_local_settings()
+        if user_settings is None:
+            user_settings = get_user_settings()
 
-        if not local_settings:
+        if not user_settings:
             return
 
-        local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY) or {}
+        local_project_settings = user_settings.get(PROJECTS_SETTINGS_KEY) or {}
 
-        # Check for roots existence in local settings first
+        # Check for roots existence in user settings first
         roots_project_locals = (
             local_project_settings
             .get(project_name, {})
@@ -826,7 +826,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         if not roots_project_locals and not roots_default_locals:
             return
 
-        # Combine roots from local settings
+        # Combine roots from user settings
         roots_locals = roots_default_locals.get(site_name) or {}
         roots_locals.update(roots_project_locals.get(site_name) or {})
         return roots_locals
@@ -851,7 +851,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
     def get_remote_sites_from_settings(self, settings):
         """
-            Get remote sites for returning 'default' values for Local Settings
+            Get remote sites for returning 'default' values for the User Settings
         """
         sync_settings = self._parse_sync_settings_from_settings(settings)
 
@@ -872,7 +872,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         """
             Return 'site_name' or 'local' if 'site_name' is local id.
 
-            In some places Settings or Local Settings require 'local' instead
+            In some places Settings or User Settings require 'local' instead
             of real site name.
         """
         if site_name == get_local_site_id():
@@ -910,7 +910,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         return ret_dict
 
     @classmethod
-    def get_local_settings_schema(cls):
+    def get_user_settings_schema(cls):
         """ Gets local level schema of configurable items.
 
             It is not using Setting! Used for Setting UI to provide forms.
@@ -919,7 +919,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         for provider_code in lib.factory.providers:
             ret_dict[provider_code] = \
                 lib.factory.get_provider_cls(provider_code). \
-                get_local_settings_schema()
+                get_user_settings_schema()
 
         return ret_dict
 
@@ -980,7 +980,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
     #
     #     return editable
     #
-    # def get_local_settings_schema_for_project(self, project_name):
+    # def get_user_settings_schema_for_project(self, project_name):
     #     """Wrapper for Local settings - for specific 'project_name'"""
     #     return self.get_configurable_items_for_project(project_name,
     #                                                    EditableScopes.LOCAL)
@@ -1515,7 +1515,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         """
             Set sync_project_settings for all projects (caching)
             Args:
-                exclude_locals (bool): ignore overrides from Local Settings
+                exclude_locals (bool): ignore overrides from User Settings
             For performance
         """
         sync_project_settings = self._prepare_sync_project_settings(
@@ -1549,7 +1549,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
             Args:
                 project_name (str): used in project settings
-                exclude_locals (bool): ignore overrides from Local Settings
+                exclude_locals (bool): ignore overrides from User Settings
                 cached (bool): use pre-cached values, or return fresh ones
                     cached values needed for single loop (with all overrides)
                     fresh values needed for Local settings (without overrides)
@@ -1607,7 +1607,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         system_sites.update(self._get_default_site_configs(sync_enabled,
                                                            project_name))
         if local_editable_only:
-            local_schema = SyncServerModule.get_local_settings_schema()
+            local_schema = SyncServerModule.get_user_settings_schema()
             editable_keys = {}
             for provider_code, editables in local_schema.items():
                 editable_keys[provider_code] = ["enabled", "provider"]
@@ -1626,8 +1626,8 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         """
             Returns settings for 'studio' and user's local site
 
-            Returns base values from setting, not overridden by Local Settings,
-            eg. value used to push TO LS not to get actual value for syncing.
+            Returns base values from setting, not overridden by the User Settings,
+            e.g. value used to push TO LS not to get actual value for syncing.
         """
         if not project_name:
             anatomy_sett = get_default_anatomy_settings(exclude_locals=True)
@@ -1656,7 +1656,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
     def get_provider_for_site(self, project_name=None, site=None):
         """
-            Return provider name for site (unique name across all projects.
+            Return provider name for site (unique name across all projects).
         """
         sites = {self.DEFAULT_SITE: "local_drive",
                  self.LOCAL_SITE: "local_drive",
@@ -2214,8 +2214,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             Returns:
                 only logs, catches IndexError and OSError
         """
-        my_local_site = get_local_site_id()
-        if my_local_site != site_name:
+        if get_local_site_id() != site_name:
             self.log.warning("Cannot remove non local file for {}".
                              format(site_name))
             return

@@ -15,7 +15,7 @@ from quadpype import PACKAGE_DIR
 from quadpype.settings import (
     get_system_settings,
     get_project_settings,
-    get_local_settings,
+    get_user_settings,
     APPS_SETTINGS_KEY,
     GENERAL_SETTINGS_KEY,
     ENV_SETTINGS_KEY,
@@ -28,7 +28,7 @@ from quadpype.settings.constants import (
 )
 from .log import Logger
 from .profiles_filtering import filter_profiles
-from .local_settings import get_quadpype_username
+from .user_settings import get_quadpype_username
 
 from .python_module_tools import (
     modules_from_path,
@@ -1568,13 +1568,13 @@ def prepare_app_environments(
 
     _add_python_version_paths(app, source_env, log, modules_manager)
 
-    # Use environments from local settings
+    # Use environments from user settings
     filtered_local_envs = {}
     system_settings = data[SYSTEM_SETTINGS_KEY]
     whitelist_envs = system_settings[GENERAL_SETTINGS_KEY].get("local_env_white_list")
     if whitelist_envs:
-        local_settings = get_local_settings()
-        local_envs = local_settings.get(ENV_SETTINGS_KEY) or {}
+        user_settings = get_user_settings()
+        local_envs = user_settings.get(ENV_SETTINGS_KEY) or {}
         filtered_local_envs = {
             key: value
             for key, value in local_envs.items()

@@ -1,14 +1,14 @@
 import os
-from quadpype.settings import get_local_settings
+from quadpype.settings import get_user_settings
 
-# Constant key under which local settings are stored
+# Constant key under which user settings are stored
 LOCAL_EXPERIMENTAL_KEY = "experimental_tools"
 
 
 class ExperimentalTool(object):
     """Definition of experimental tool.
 
-    Definition is used in local settings.
+    Definition is used in user settings.
 
     Args:
         identifier (str): String identifier of tool (unique).
@@ -33,7 +33,7 @@ class ExperimentalTool(object):
 class ExperimentalHostTool(ExperimentalTool):
     """Definition of experimental tool.
 
-    Definition is used in local settings and in experimental tools dialog.
+    Definition is used in user settings and in experimental tools dialog.
 
     Args:
         identifier (str): String identifier of tool (unique).
@@ -150,10 +150,10 @@ class ExperimentalTools:
         return tools
 
     def refresh_availability(self):
-        """Reload local settings and check if any tool changed ability."""
-        local_settings = get_local_settings()
+        """Reload user settings and check if any tool changed ability."""
+        user_settings = get_user_settings()
         experimental_settings = (
-            local_settings.get(LOCAL_EXPERIMENTAL_KEY)
+            user_settings.get(LOCAL_EXPERIMENTAL_KEY)
         ) or {}
 
         for identifier, eperimental_tool in self.tools_by_identifier.items():

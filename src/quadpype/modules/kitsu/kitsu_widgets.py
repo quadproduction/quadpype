@@ -168,7 +168,7 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         if remember:
             save_credentials(login_value, pwd_value)
         else:
-            # Clear local settings
+            # Clear user settings
             clear_credentials()
 
             # Clear input fields

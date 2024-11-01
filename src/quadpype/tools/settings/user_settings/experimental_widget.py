@@ -15,7 +15,7 @@ class LocalExperimentalToolsWidgets(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self._loading_local_settings = False
+        self._loading_user_settings = False
 
         layout = QtWidgets.QFormLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -45,15 +45,15 @@ class LocalExperimentalToolsWidgets(QtWidgets.QWidget):
         self._checkboxes_by_identifier = checkboxes_by_identifier
         self._experimental_defs = experimental_defs
 
-    def update_local_settings(self, value):
-        self._loading_local_settings = True
+    def update_user_settings(self, value):
+        self._loading_user_settings = True
         value = value or {}
 
         for identifier, checkbox in self._checkboxes_by_identifier.items():
             checked = value.get(identifier, False)
             checkbox.setChecked(checked)
 
-        self._loading_local_settings = False
+        self._loading_user_settings = False
 
     def settings_value(self):
         # Add changed

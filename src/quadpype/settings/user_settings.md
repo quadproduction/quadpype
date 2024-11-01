@@ -1,5 +1,5 @@
-# Structure of local settings
-- local settings do not have any validation schemas right now this should help to see what is stored to local settings and how it works
+# Structure of user settings
+- user settings do not have any validation schemas right now this should help to see what is stored to user settings and how it works
 - they are stored by identifier site_id which should be unified identifier of workstation
 - all keys may and may not available on load
 - contain main categories: `general`, `applications`, `projects`
@@ -53,7 +53,7 @@
 ```json
 {
     "_id": "<ObjectId(...)>",
-    "site_id": "<site id>",
+    "user_id": "<user id>",
     "general": {
         "site_label": "MySite"
     },

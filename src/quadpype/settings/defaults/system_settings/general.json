@@ -1,7 +1,8 @@
 {
-    "studio_name": "Studio name",
+    "studio_name": "Studio Name",
     "studio_code": "stu",
-    "admin_password": "",
+    "administrators": [],
+    "access_restricted": false,
     "windows_can_stay_on_top": true,
     "environment": {},
     "log_to_server": true,
@@ -10,7 +11,7 @@
         "linux": [],
         "darwin": []
     },
-    "project": {
+    "projects": {
         "protect_anatomy_attributes": false
     },
     "local_env_white_list": [],

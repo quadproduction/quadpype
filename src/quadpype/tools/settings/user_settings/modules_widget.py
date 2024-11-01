@@ -46,7 +46,7 @@ class LocalModulesWidgets(QtWidgets.QWidget):
             self.modules_data[module_name]["widget"] = module_widget
             self.content_layout.addWidget(module_widget)
 
-    def update_local_settings(self, value):
+    def update_user_settings(self, value):
         if not value:
             value = {}
 

@@ -4,7 +4,7 @@ import os
 from typing import Tuple
 import gazu
 
-from quadpype.lib.local_settings import QuadPypeSecureRegistry
+from quadpype.lib.user_settings import QuadPypeSecureRegistry
 from quadpype.lib import emit_event
 
 
@@ -63,7 +63,7 @@ def clear_credentials():
     # Get user registry
     user_registry = QuadPypeSecureRegistry("kitsu_user")
 
-    # Set local settings
+    # Set user settings
     if user_registry.get_item("login", None) is not None:
         user_registry.delete_item("login")
     if user_registry.get_item("password", None) is not None:
@@ -80,7 +80,7 @@ def save_credentials(login: str, password: str):
     # Get user registry
     user_registry = QuadPypeSecureRegistry("kitsu_user")
 
-    # Set local settings
+    # Set user settings
     user_registry.set_item("login", login)
     user_registry.set_item("password", password)
 

@@ -434,7 +434,7 @@ class FtrackModule(
             return
 
         system_settings = get_system_settings()
-        protect_attrs = system_settings[GENERAL_SETTINGS_KEY].get("project", {}).get("protect_anatomy_attributes", False)
+        protect_attrs = system_settings[GENERAL_SETTINGS_KEY].get("projects", {}).get("protect_anatomy_attributes", False)
 
         # If we just create the project on the server (prepare project) we want to send attributes to Ftrack
         bypass_protect_anatomy_attributes = new_value_metadata.get("bypass_protect_anatomy_attributes", False)

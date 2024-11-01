@@ -6,7 +6,8 @@ from qtpy import QtCore, QtGui, QtWidgets
 
 from quadpype import style
 from quadpype import resources
-from quadpype.settings.lib import get_local_settings
+from quadpype.lib import get_user_id
+from quadpype.settings.lib import get_user_settings
 from quadpype.lib.pype_info import (
     get_all_current_info,
     get_quadpype_info,
@@ -216,7 +217,7 @@ class PypeInfoWidget(QtWidgets.QWidget):
 
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
-        self.setWindowTitle("{} info".format("QuadPype"))
+        self.setWindowTitle("QuadPype Information")
 
         scroll_area = QtWidgets.QScrollArea(self)
         info_widget = PypeInfoSubWidget(scroll_area)
@@ -328,9 +329,9 @@ class PypeInfoSubWidget(QtWidgets.QWidget):
         main_layout.addWidget(self._create_separator(), 0)
         main_layout.addWidget(self._create_workstation_widget(), 0)
         main_layout.addWidget(self._create_separator(), 0)
-        main_layout.addWidget(self._create_local_settings_widget(), 0)
+        main_layout.addWidget(self._create_user_settings_widget(), 0)
         main_layout.addWidget(self._create_separator(), 0)
-        main_layout.addWidget(self._create_environ_widget(), 1)
+        main_layout.addWidget(self._create_environment_widget(), 1)
 
     def set_content_height(self, height):
         if self.env_view:
@@ -349,25 +350,26 @@ class PypeInfoSubWidget(QtWidgets.QWidget):
 
     def _create_workstation_widget(self):
         key_label_mapping = {
+            "user_id": "User ID:",
             "system_name": "System:",
-            "local_id": "Local ID:",
             "username": "Username:",
-            "hostname": "Hostname:",
-            "hostip": "Host IP:"
+            "workstation_name": "Workstation Name:",
+            "host_ip": "Host IP:"
         }
         keys_order = [
+            "user_id",
             "system_name",
-            "local_id",
             "username",
-            "hostname",
-            "hostip"
+            "workstation_name",
+            "host_ip"
         ]
         workstation_info = get_workstation_info()
+        workstation_info["user_id"] = get_user_id()
         for key in workstation_info.keys():
             if key not in keys_order:
                 keys_order.append(key)
 
-        wokstation_info_widget = CollapsibleWidget("Workstation info", self)
+        workstation_info_widget = CollapsibleWidget("Workstation Information", self)
 
         info_widget = QtWidgets.QWidget(self)
         info_layout = QtWidgets.QGridLayout(info_widget)
@@ -393,26 +395,26 @@ class PypeInfoSubWidget(QtWidgets.QWidget):
                 value_label, row, 1, 1, 1
             )
 
-        wokstation_info_widget.set_content_widget(info_widget)
-        wokstation_info_widget.toggle_content()
+        workstation_info_widget.set_content_widget(info_widget)
+        workstation_info_widget.toggle_content()
 
-        return wokstation_info_widget
+        return workstation_info_widget
 
-    def _create_local_settings_widget(self):
-        local_settings = get_local_settings()
+    def _create_user_settings_widget(self):
+        user_settings = get_user_settings()
 
-        local_settings_widget = CollapsibleWidget("Local settings", self)
+        user_settings_widget = CollapsibleWidget("User Settings", self)
 
-        settings_input = QtWidgets.QPlainTextEdit(local_settings_widget)
+        settings_input = QtWidgets.QPlainTextEdit(user_settings_widget)
         settings_input.setReadOnly(True)
-        settings_input.setPlainText(json.dumps(local_settings, indent=4))
+        settings_input.setPlainText(json.dumps(user_settings, indent=4))
 
-        local_settings_widget.set_content_widget(settings_input)
+        user_settings_widget.set_content_widget(settings_input)
 
-        return local_settings_widget
+        return user_settings_widget
 
-    def _create_environ_widget(self):
-        env_widget = CollapsibleWidget("Environments", self)
+    def _create_environment_widget(self):
+        env_widget = CollapsibleWidget("Current Environment Variables", self)
 
         env_view = EnvironmentsView(env_widget)
         env_view.setMinimumHeight(300)
@@ -436,15 +438,15 @@ class PypeInfoSubWidget(QtWidgets.QWidget):
         # Prepare label mapping
         key_label_mapping = {
             "version_value": "Running version:",
-            "build_verison": "Build version:",
+            "build_version": "Build version:",
             "executable": "QuadPype executable:",
             "pype_root": "QuadPype location:",
-            "mongo_url": "QuadPype Mongo URL:"
+            "mongo_url": "QuadPype Mongo URI:"
         }
         # Prepare keys order
         keys_order = [
             "version_value",
-            "build_verison",
+            "build_version",
             "executable",
             "pype_root",
             "mongo_url"

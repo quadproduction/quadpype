@@ -50,7 +50,7 @@ class ActionWhereIRun(BaseAction):
     def _show_info(self, event):
         title = "Where Do I Run?"
         msgs = {}
-        all_keys = ["Hostname", "IP", "Username", "System name", "PC name"]
+        all_keys = ["Hostname", "IP", "Username", "System Name", "PC name"]
         try:
             host_name = socket.gethostname()
             msgs["Hostname"] = host_name
@@ -60,7 +60,7 @@ class ActionWhereIRun(BaseAction):
 
         try:
             system_name, pc_name, *_ = platform.uname()
-            msgs["System name"] = system_name
+            msgs["System Name"] = system_name
             msgs["PC name"] = pc_name
         except Exception:
             pass

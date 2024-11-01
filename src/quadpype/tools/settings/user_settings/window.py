@@ -13,8 +13,8 @@ from quadpype.settings import (
     PROJECTS_SETTINGS_KEY
 )
 from quadpype.settings.lib import (
-    get_local_settings,
-    save_local_settings
+    get_user_settings,
+    save_user_settings
 )
 from quadpype.lib import Logger
 from quadpype.tools.settings import CHILD_OFFSET
@@ -183,29 +183,29 @@ class LocalSettingsWidget(QtWidgets.QWidget):
 
         self.projects_widget = projects_widget
 
-    def update_local_settings(self, value):
+    def update_user_settings(self, value):
         if not value:
             value = {}
 
         self.system_settings.reset()
         self.project_settings.reset()
 
-        self.general_widget.update_local_settings(
+        self.general_widget.update_user_settings(
             value.get(GENERAL_SETTINGS_KEY)
         )
-        self.envs_widget.update_local_settings(
+        self.envs_widget.update_user_settings(
             value.get(ENV_SETTINGS_KEY)
         )
-        self.modules_widget.update_local_settings(
+        self.modules_widget.update_user_settings(
             value.get(MODULES_SETTINGS_KEY)
         )
-        self.apps_widget.update_local_settings(
+        self.apps_widget.update_user_settings(
             value.get(APPS_SETTINGS_KEY)
         )
-        self.projects_widget.update_local_settings(
+        self.projects_widget.update_user_settings(
             value.get(PROJECTS_SETTINGS_KEY)
         )
-        self.experimental_widget.update_local_settings(
+        self.experimental_widget.update_user_settings(
             value.get(LOCAL_EXPERIMENTAL_KEY)
         )
 
@@ -276,7 +276,7 @@ class LocalSettingsWindow(QtWidgets.QWidget):
         reset_btn.clicked.connect(self._on_reset_clicked)
 
         self._overlay_object = overlay_object
-        # Do not create local settings widget in init phase as it's using
+        # Do not create user settings widget in init phase as it's using
         #   settings objects that must be OK to be able create this widget
         #   - we want to show dialog if anything goes wrong
         #   - without resetting nothing is shown
@@ -303,12 +303,12 @@ class LocalSettingsWindow(QtWidgets.QWidget):
                 )
                 self._scroll_widget.setWidget(self._settings_widget)
 
-            value = get_local_settings()
-            self._settings_widget.update_local_settings(value)
+            value = get_user_settings()
+            self._settings_widget.update_user_settings(value)
 
         except Exception as exc:
             log.warning(
-                "Failed to create local settings window", exc_info=True
+                "Failed to create user settings window", exc_info=True
             )
             error_msg = str(exc)
 
@@ -345,6 +345,6 @@ class LocalSettingsWindow(QtWidgets.QWidget):
 
     def _on_save_clicked(self):
         value = self._settings_widget.settings_value()
-        save_local_settings(value)
+        save_user_settings(value)
         self._overlay_object.add_message("Saved...", message_type="success")
         self.reset()

@@ -113,12 +113,13 @@ from .transcoding import (
     get_rescaled_command_arguments,
 )
 
-from .local_settings import (
+from .user_settings import (
     IniSettingRegistry,
     JSONSettingRegistry,
     QuadPypeSecureRegistry,
     QuadPypeSettingsRegistry,
     get_local_site_id,
+    get_user_id,
     change_quadpype_mongo_url,
     get_quadpype_username,
     is_admin_password_required
@@ -245,6 +246,7 @@ __all__ = [
     "QuadPypeSecureRegistry",
     "QuadPypeSettingsRegistry",
     "get_local_site_id",
+    "get_user_id",
     "change_quadpype_mongo_url",
     "get_quadpype_username",
     "is_admin_password_required",

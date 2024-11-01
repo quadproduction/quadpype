@@ -73,7 +73,7 @@ class LocalEnvironmentsWidgets(QtWidgets.QWidget):
         self._content_layout = content_layout
         self._content_widget = content_widget
 
-    def update_local_settings(self, value):
+    def update_user_settings(self, value):
         if not value:
             value = {}
 

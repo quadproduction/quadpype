@@ -1,4 +1,4 @@
-from quadpype.settings import get_system_settings, get_local_settings, GENERAL_SETTINGS_KEY
+from quadpype.settings import get_system_settings, get_user_settings, GENERAL_SETTINGS_KEY
 from quadpype.pipeline import get_current_project_name
 from qtpy import QtWidgets, QtCore
 
@@ -13,7 +13,7 @@ class BaseToolMixin:
         self.can_stay_on_top = True
 
         # Get value from the system settings, then check if there is a local override
-        for settings in [get_system_settings(),  get_local_settings()]:
+        for settings in [get_system_settings(),  get_user_settings()]:
             if not settings:
                 continue
             self.can_stay_on_top = settings[GENERAL_SETTINGS_KEY].get(

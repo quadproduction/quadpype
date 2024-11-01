@@ -8,6 +8,7 @@ from datetime import datetime
 from abc import ABCMeta, abstractmethod
 
 from quadpype.settings import GENERAL_SETTINGS_KEY
+from quadpype.settings.lib import create_user_profile
 
 # TODO QUAD: Use pype igniter logic instead of using duplicated code
 # disable lru cache in Python 2
@@ -32,7 +33,7 @@ import six
 import appdirs
 
 from quadpype.settings import (
-    get_local_settings,
+    get_user_settings,
     get_system_settings
 )
 import quadpype.settings.lib as sett_lib
@@ -506,7 +507,7 @@ class QuadPypeSettingsRegistry(JSONSettingRegistry):
         super().__init__(name, path)
 
 
-def _create_local_site_id(registry=None):
+def _create_user_id(registry=None):
     """Create a local site identifier."""
     from coolname import generate_slug
 
@@ -515,29 +516,39 @@ def _create_local_site_id(registry=None):
 
     new_id = generate_slug(3)
 
-    print("Created local site id \"{}\"".format(new_id))
+    print("Created user id \"{}\"".format(new_id))
 
-    registry.set_item("localId", new_id)
+    registry.set_item("userId", new_id)
+
+    # Create a profile in the database
+    create_user_profile()
 
     return new_id
 
 
-def get_local_site_id():
-    """Get local site identifier.
+def get_user_id():
+    """Get user identifier.
 
     Identifier is created if does not exists yet.
     """
 
-    # override local id from environment
-    # used for background syncing
+    registry = QuadPypeSettingsRegistry()
+    try:
+        return registry.get_item("userId")
+    except ValueError:
+        return _create_user_id(registry=registry)
+
+
+def get_local_site_id():
+    """Get local site identifier."""
+
+    # Check if the value is set on the env variable
+    # This is used for background syncing
     if os.environ.get("QUADPYPE_LOCAL_ID"):
         return os.environ["QUADPYPE_LOCAL_ID"]
 
-    registry = QuadPypeSettingsRegistry()
-    try:
-        return registry.get_item("localId")
-    except ValueError:
-        return _create_local_site_id()
+    # Else using the user ID
+    return get_user_id()
 
 
 def change_quadpype_mongo_url(new_mongo_url):
@@ -568,9 +579,9 @@ def get_quadpype_username():
 
     username = os.environ.get("QUADPYPE_USERNAME")
     if not username:
-        local_settings = get_local_settings()
+        user_settings = get_user_settings()
         username = (
-            local_settings
+            user_settings
             .get(GENERAL_SETTINGS_KEY, {})
             .get("username")
         )
@@ -592,12 +603,12 @@ def is_admin_password_required(admin_bypass_enabled=True):
     if admins_doc and username in admins_doc["data"]["usernames"]:
         return False
 
-    # There is an option on the local settings (user) to switch to admin
+    # There is an option on the user settings (user) to switch to admin
     # By default admin users automatically bypass password requirement
     # admin_bypass_enabled, if set to False, means password is required even for admins
     if admin_bypass_enabled:
-        local_settings = get_local_settings()
-        is_admin = local_settings.get(GENERAL_SETTINGS_KEY, {}).get("is_admin", False)
+        user_settings = get_user_settings()
+        is_admin = user_settings.get(GENERAL_SETTINGS_KEY, {}).get("is_admin", False)
         if is_admin:
             return False
     return True

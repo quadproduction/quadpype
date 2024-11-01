@@ -4,6 +4,8 @@ import copy
 import collections
 import datetime
 from abc import ABCMeta, abstractmethod
+from copy import deepcopy
+
 import six
 
 import quadpype.version
@@ -20,7 +22,6 @@ from .constants import (
     SYSTEM_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     PROJECT_ANATOMY_KEY,
-    LOCAL_SETTINGS_KEY,
     M_OVERRIDDEN_KEY,
 
     APPS_SETTINGS_KEY,
@@ -28,6 +29,7 @@ from .constants import (
 
     LEGACY_SETTINGS_VERSION
 )
+from ..lib import get_user_id
 
 
 class SettingsStateInfo:
@@ -37,7 +39,7 @@ class SettingsStateInfo:
     information about the time when that happened and on which machine under
     which user and on which quadpype version.
 
-    To create currrent machine and time information use 'create_new' method.
+    To create current machine and time information use 'create_new' method.
     """
 
     timestamp_format = "%Y-%m-%d %H:%M:%S.%f"
@@ -48,11 +50,11 @@ class SettingsStateInfo:
         settings_type,
         project_name,
         timestamp,
-        hostname,
-        hostip,
+        workstation_name,
+        host_ip,
         username,
         system_name,
-        local_id
+        user_id
     ):
         self.quadpype_version = quadpype_version
         self.settings_type = settings_type
@@ -65,11 +67,11 @@ class SettingsStateInfo:
             )
         self.timestamp = timestamp
         self.timestamp_obj = timestamp_obj
-        self.hostname = hostname
-        self.hostip = hostip
+        self.workstation_name = workstation_name
+        self.host_ip = host_ip
         self.username = username
         self.system_name = system_name
-        self.local_id = local_id
+        self.user_id = user_id
 
     def copy(self):
         return self.from_data(self.to_data())
@@ -90,11 +92,11 @@ class SettingsStateInfo:
             settings_type,
             project_name,
             now.strftime(cls.timestamp_format),
-            workstation_info["hostname"],
-            workstation_info["hostip"],
+            workstation_info["workstation_name"],
+            workstation_info["host_ip"],
             workstation_info["username"],
             workstation_info["system_name"],
-            workstation_info["local_id"]
+            get_user_id()
         )
 
     @classmethod
@@ -106,11 +108,11 @@ class SettingsStateInfo:
             data["settings_type"],
             data["project_name"],
             data["timestamp"],
-            data["hostname"],
-            data["hostip"],
+            data["workstation_name"],
+            data["host_ip"],
             data["username"],
             data["system_name"],
-            data["local_id"]
+            data["user_id"]
         )
 
     def to_data(self):
@@ -164,11 +166,11 @@ class SettingsStateInfo:
     def to_document_data(self):
         return {
             "timestamp": self.timestamp,
-            "hostname": self.hostname,
-            "hostip": self.hostip,
+            "workstation_name": self.workstation_name,
+            "host_ip": self.host_ip,
             "username": self.username,
             "system_name": self.system_name,
-            "local_id": self.local_id,
+            "user_id": self.user_id,
         }
 
     def __eq__(self, other):
@@ -180,11 +182,11 @@ class SettingsStateInfo:
 
         return (
             self.quadpype_version == other.quadpype_version
-            and self.hostname == other.hostname
-            and self.hostip == other.hostip
+            and self.workstation_name == other.workstation_name
+            and self.host_ip == other.host_ip
             and self.username == other.username
             and self.system_name == other.system_name
-            and self.local_id == other.local_id
+            and self.user_id == other.user_id
         )
 
 
@@ -229,7 +231,7 @@ class SettingsHandler(object):
         Args:
             project_name(str, null): Project name for which overrides are
                 or None for global settings.
-            data(dict): Data of project overrides with override metadata.
+            overrides(dict): Data of project overrides with override metadata.
         """
         pass
 
@@ -240,7 +242,7 @@ class SettingsHandler(object):
         Args:
             project_name(str, null): Project name for which overrides are
                 or None for global settings.
-            data(dict): Data of project overrides with override metadata.
+            anatomy_data(dict): Data of project overrides with override metadata.
         """
         pass
 
@@ -372,7 +374,7 @@ class SettingsHandler(object):
         pass
 
     # Clear methods - per version
-    # - clearing may be helpfull when a version settings were created for
+    # - clearing may be helpfully when a version settings were created for
     #   testing purposes
     @abstractmethod
     def clear_studio_system_settings_overrides_for_version(self, version):
@@ -537,15 +539,25 @@ class SettingsHandler(object):
 
 
 @six.add_metaclass(ABCMeta)
-class LocalSettingsHandler:
-    """Handler that should handle about storing and loading of local settings.
+class UserHandler:
+    """Handler using to store and load user info & settings.
 
-    Local settings are "workstation" specific modifications that modify how
+    User settings are specific modifications that modify how
     system and project settings look on the workstation and only there.
     """
+    user_profile_template = {
+        "user_id": "",
+        "role": "user",
+        "first_connection": datetime.datetime.now(),
+        "last_connection": datetime.datetime.now(),
+        "last_workstation_profile_index": 0,
+        "workstation_profiles": [],
+        "settings": {}
+    }
+
     @abstractmethod
-    def save_local_settings(self, data):
-        """Save local data of local settings.
+    def save_user_settings(self, data):
+        """Save local data of user settings.
 
         Args:
             data(dict): Data of local data with override metadata.
@@ -553,8 +565,23 @@ class LocalSettingsHandler:
         pass
 
     @abstractmethod
-    def get_local_settings(self):
-        """Studio overrides of system settings."""
+    def get_user_settings(self):
+        """User overrides of system settings."""
+        pass
+
+    @abstractmethod
+    def create_user_profile(self):
+        """Create a new entry in the database for this new user."""
+        pass
+
+    @abstractmethod
+    def get_user_profile(self):
+        """Profile of the user in the database, including settings overrides."""
+        pass
+
+    @abstractmethod
+    def update_user_profile_on_startup(self):
+        """Update the user profile on startup."""
         pass
 
 
@@ -614,9 +641,6 @@ class MongoSettingsHandler(SettingsHandler):
     _all_versions_keys = "all_versions"
 
     def __init__(self):
-        # Get mongo connection
-        settings_collection = QuadPypeMongoConnection.get_mongo_client()
-
         self._anatomy_keys = None
         self._attribute_keys = None
 
@@ -628,15 +652,15 @@ class MongoSettingsHandler(SettingsHandler):
         self._current_version = quadpype.version.__version__
 
         database_name = os.environ["QUADPYPE_DATABASE_NAME"]
-        # TODO modify to not use hardcoded keys
         collection_name = "settings"
 
-        self.settings_collection = settings_collection
+        # Get mongo connection
+        self.mongo_client = QuadPypeMongoConnection.get_mongo_client()
 
         self.database_name = database_name
         self.collection_name = collection_name
 
-        self.collection = settings_collection[database_name][collection_name]
+        self.collection = self.mongo_client[database_name][collection_name]
 
         self.global_settings_cache = CacheValues()
         self.system_settings_cache = CacheValues()
@@ -723,7 +747,7 @@ class MongoSettingsHandler(SettingsHandler):
     ):
         """Apply global settings data to system settings.
 
-        Applification is skipped if document with global settings is not
+        Application is skipped if document with global settings is not
         available or does not have set data in.
 
         System settings document is "faked" like it exists if global document
@@ -872,7 +896,7 @@ class MongoSettingsHandler(SettingsHandler):
         Args:
             project_name(str, null): Project name for which overrides are
                 or None for global settings.
-            data(dict): Data of project overrides with override metadata.
+            overrides(dict): Data of project overrides with override metadata.
         """
         data_cache = self.project_settings_cache[project_name]
         data_cache.update_data(overrides, self._current_version)
@@ -898,7 +922,7 @@ class MongoSettingsHandler(SettingsHandler):
         Args:
             project_name(str, null): Project name for which overrides are
                 or None for global settings.
-            data(dict): Data of project overrides with override metadata.
+            anatomy_data(dict): Data of project overrides with override metadata.
         """
         data_cache = self.project_anatomy_cache[project_name]
         data_cache.update_data(anatomy_data, self._current_version)
@@ -945,10 +969,10 @@ class MongoSettingsHandler(SettingsHandler):
         host_info = get_workstation_info()
 
         document = {
-            "local_id": host_info["local_id"],
+            "user_id": get_user_id(),
             "username": host_info["username"],
-            "hostname": host_info["hostname"],
-            "hostip": host_info["hostip"],
+            "workstation_name": host_info["workstation_name"],
+            "host_ip": host_info["host_ip"],
             "system_name": host_info["system_name"],
             "date_created": datetime.datetime.now(),
             "project": project_name,
@@ -956,8 +980,7 @@ class MongoSettingsHandler(SettingsHandler):
             "changes": changes
         }
         collection_name = "settings_log"
-        collection = (self.settings_collection[self.database_name]
-                                              [collection_name])
+        collection = self.mongo_client[self.database_name][collection_name]
         collection.insert_one(document)
 
     def _save_project_anatomy_data(self, project_name, data_cache):
@@ -1236,7 +1259,7 @@ class MongoSettingsHandler(SettingsHandler):
         if legacy_settings_doc:
             src_doc_id = legacy_settings_doc["_id"]
 
-        # Find highest version which has available settings
+        # Find the highest version which has available settings
         if lower_versions:
             for version_str in reversed(lower_versions):
                 doc = versioned_settings_by_version.get(version_str)
@@ -1244,7 +1267,7 @@ class MongoSettingsHandler(SettingsHandler):
                     src_doc_id = doc["_id"]
                     break
 
-        # Use versions with higher version only if there are not legacy
+        # Use versions with higher version only if there are no legacy
         #   settings and there are not any versions before
         if src_doc_id is None and higher_versions:
             for version_str in higher_versions:
@@ -1390,7 +1413,7 @@ class MongoSettingsHandler(SettingsHandler):
         return document, version
 
     def get_system_last_saved_info(self):
-        # Make sure settings are recaches
+        # Make sure settings are re-cached
         self.system_settings_cache.set_outdated()
         self.get_studio_system_settings_overrides(False)
 
@@ -1434,7 +1457,7 @@ class MongoSettingsHandler(SettingsHandler):
         return document, version
 
     def get_project_last_saved_info(self, project_name):
-        # Make sure settings are recaches
+        # Make sure settings are re-cached
         self.project_settings_cache[project_name].set_outdated()
         self._get_project_settings_overrides(project_name, False)
 
@@ -1535,18 +1558,19 @@ class MongoSettingsHandler(SettingsHandler):
         """Studio overrides of default project anatomy data."""
         return self._get_project_anatomy_overrides(None, return_version)
 
-    def get_project_anatomy_overrides(self, project_name):
+    def get_project_anatomy_overrides(self, project_name, return_version):
         """Studio overrides of project anatomy for specific project.
 
         Args:
             project_name(str): Name of project for which data should be loaded.
+            return_version(bool): Version string will be added to output.
 
         Returns:
             dict: Only overrides for entered project, may be empty dictionary.
         """
         if not project_name:
             return {}
-        return self._get_project_anatomy_overrides(project_name, False)
+        return self._get_project_anatomy_overrides(project_name, return_version)
 
     # Implementations of abstract methods to get overrides for version
     def get_studio_system_settings_overrides_for_version(self, version):
@@ -1796,71 +1820,118 @@ class MongoSettingsHandler(SettingsHandler):
             )
 
 
-class MongoLocalSettingsHandler(LocalSettingsHandler):
-    """Settings handler that use mongo for store and load local settings.
+class MongoUserHandler(UserHandler):
+    """Settings handler that use mongo for store and load user info & settings.
 
-    Data have 2 query criteria. First is key "type" stored in constant
-    `LOCAL_SETTINGS_KEY`. Second is key "site_id" which value can be obstained
-    with `get_local_site_id` function.
+    The Data query criteria is the key "user_id" which can be obtained
+    with the `get_user_id` function.
     """
 
-    def __init__(self, local_site_id=None):
+    def __init__(self, user_id=None):
         # Get mongo connection
-        from quadpype.lib import get_local_site_id
+        from quadpype.lib import get_user_id
 
-        if local_site_id is None:
-            local_site_id = get_local_site_id()
-        settings_collection = QuadPypeMongoConnection.get_mongo_client()
-
-        # TODO prepare version of pype
-        # - pype version should define how are settings saved and loaded
+        if user_id is None:
+            user_id = get_user_id()
 
         database_name = os.environ["QUADPYPE_DATABASE_NAME"]
-        # TODO modify to not use hardcoded keys
-        collection_name = "settings"
+        collection_name = "users"
 
-        self.settings_collection = settings_collection
+        self.mongo_client = QuadPypeMongoConnection.get_mongo_client()
 
         self.database_name = database_name
         self.collection_name = collection_name
 
-        self.collection = settings_collection[database_name][collection_name]
+        self.collection = self.mongo_client[database_name][collection_name]
 
-        self.local_site_id = local_site_id
+        self.user_id = user_id
 
-        self.local_settings_cache = CacheValues()
+        self.user_settings_cache = CacheValues()
 
-    def save_local_settings(self, data):
-        """Save local settings.
+    def create_user_profile(self):
+        user_profile = deepcopy(self.user_profile_template)
+        user_profile["user_id"] = self.user_id
+
+        timestamp = datetime.datetime.now()
+        user_profile["first_connection"] = timestamp
+        user_profile["last_connection"] = timestamp
+
+        user_profile["workstation_profiles"].append(get_workstation_info())
+
+        self.collection.replace_one(
+            {"user_id": self.user_id},
+            user_profile, upsert=True
+        )
+        return user_profile
+
+    def get_user_profile(self):
+        user_profile = self.collection.find_one({
+            "user_id": self.user_id
+        })
+
+        if user_profile is None:
+            raise RuntimeError("Cannot find the user profile in the QuadPype database.\n"
+                               "This shouldn't be possible, please contact the Quad Dev Team.")
+
+        return user_profile
+
+    def update_user_profile_on_startup(self):
+        """Update user profile on startup"""
+        user_profile = self.get_user_profile()
+        user_profile["last_connection"] = datetime.datetime.now()
+
+        workstation_info = get_workstation_info()
+
+        workstation_profile_found = False
+        for index, workstation_profile in enumerate(user_profile["workstation_profiles"]):
+            if workstation_info == workstation_profile:
+                user_profile["last_workstation_profile_index"] = index
+                workstation_profile_found = True
+                break
+
+        if not workstation_profile_found:
+            user_profile["workstation_profiles"].append(workstation_info)
+            user_profile["last_workstation_profile_index"] = len(user_profile["workstation_profiles"]) - 1
+
+        self.collection.replace_one(
+            {"user_id": self.user_id},
+            user_profile, upsert=True
+        )
+
+        return user_profile
+
+    def save_user_settings(self, data):
+        """Save user settings.
 
         Args:
             data(dict): Data of studio overrides with override metadata.
         """
         data = data or {}
 
-        self.local_settings_cache.update_data(data, None)
+        self.user_settings_cache.update_data(data, None)
 
-        self.collection.replace_one(
-            {
-                "type": LOCAL_SETTINGS_KEY,
-                "site_id": self.local_site_id
-            },
-            {
-                "type": LOCAL_SETTINGS_KEY,
-                "site_id": self.local_site_id,
-                "data": self.local_settings_cache.data
-            },
-            upsert=True
+        user_profile = self.collection.find_one(
+            { "user_id": self.user_id }
         )
 
-    def get_local_settings(self):
-        """Local settings for local site id."""
-        if self.local_settings_cache.is_outdated:
+        if not user_profile:
+            raise RuntimeError("Cannot find the user profile in the QuadPype database.\n"
+                               "This shouldn't be possible, please contact the Quad Dev Team.")
+
+        user_profile["settings"] = data
+
+        self.collection.replace_one(
+            { "user_id": self.user_id },
+            user_profile
+        )
+
+    def get_user_settings(self):
+        """Get the user according to the user id."""
+        if self.user_settings_cache.is_outdated:
             document = self.collection.find_one({
-                "type": LOCAL_SETTINGS_KEY,
-                "site_id": self.local_site_id
+                "user_id": self.user_id
             })
 
-            self.local_settings_cache.update_from_document(document, None)
+            self.user_settings_cache.update_from_document(document["settings"], None)
 
-        return self.local_settings_cache.data_copy()
+        return self.user_settings_cache.data_copy()

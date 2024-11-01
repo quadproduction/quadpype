@@ -1062,7 +1062,7 @@ def boot():
             _print(("*** environment variable QUADPYPE_VERSION"
                     "is overridden by command line argument."))
         else:
-            _print(">>> version set by environment variable")
+            _print(">>> Version set by environment variable")
             use_version = os.getenv("QUADPYPE_VERSION")
 
     # ------------------------------------------------------------------------
@@ -1091,7 +1091,7 @@ def boot():
 
     global_settings = get_quadpype_global_settings(quadpype_mongo)
 
-    _print(">>> run disk mapping command ...")
+    _print(">>> Run disk mapping command ...")
     run_disk_mapping_commands(global_settings)
 
     # Logging to server enabled/disabled
@@ -1217,9 +1217,13 @@ def boot():
     except KeyError:
         pass
 
+    from quadpype.settings.lib import update_user_profile_on_startup
+
     # Do the program display popups to the users regarding updates or incompatibilities
     os.environ["QUADPYPE_VERSION_CHECK_POPUP"] = "False" if "disable_version_popup" in commands else "True"
-    _print(">>> loading environments ...")
+    _print(">>> Loading user profile ...")
+    user_profile = update_user_profile_on_startup()
+    _print(">>> Loading environments ...")
     # Avalon environments must be set before avalon module is imported
     _print("  - for Avalon ...")
     set_avalon_environments()
@@ -1227,10 +1231,9 @@ def boot():
     set_quadpype_global_environments()
     _print("  - for modules ...")
     set_modules_environments()
-    if os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE"):
-        _print(">>> skip ZXP extensions ...")
-    else:
-        _print(">>> check ZXP extensions ...")
+
+    if not os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE"):
+        _print(">>> Check ZXP extensions ...")
         update_zxp_extensions(quadpype_version)
 
     assert quadpype_version, "Version path not defined."

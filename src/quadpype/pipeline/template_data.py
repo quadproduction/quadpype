@@ -1,6 +1,6 @@
 from quadpype.client import get_project, get_asset_by_name
 from quadpype.settings import get_system_settings, GENERAL_SETTINGS_KEY
-from quadpype.lib.local_settings import get_quadpype_username
+from quadpype.lib.user_settings import get_quadpype_username
 
 
 def get_general_template_data(system_settings=None):

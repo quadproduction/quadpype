@@ -16,7 +16,7 @@ class AnatomyEntity(DictImmutableKeysEntity):
         # Anatomy Attributes should only be edited on the prod tracker side, then
         # the sync will retrieve and update the QuadPype data for the project.
         system_settings = get_system_settings()
-        protect_attrs = system_settings[GENERAL_SETTINGS_KEY].get("project", {}).get("protect_anatomy_attributes", False)
+        protect_attrs = system_settings[GENERAL_SETTINGS_KEY].get("projects", {}).get("protect_anatomy_attributes", False)
         self.non_gui_children["attributes"].protect_attrs = protect_attrs
         if protect_attrs:
             self.non_gui_children["attributes"].read_only = protect_attrs

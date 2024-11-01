@@ -5,8 +5,8 @@ from quadpype.resources import get_resource
 
 from quadpype.settings import get_system_settings, GENERAL_SETTINGS_KEY
 from quadpype.settings.lib import (
-    get_local_settings,
-    save_local_settings
+    get_user_settings,
+    save_user_settings
 )
 
 
@@ -141,13 +141,13 @@ class PasswordDialog(QtWidgets.QDialog):
             return
 
         if self.remember_password():
-            local_settings = get_local_settings()
-            if GENERAL_SETTINGS_KEY not in local_settings:
-                local_settings[GENERAL_SETTINGS_KEY] = {}
+            user_settings = get_user_settings()
+            if GENERAL_SETTINGS_KEY not in user_settings:
+                user_settings[GENERAL_SETTINGS_KEY] = {}
 
-            local_settings[GENERAL_SETTINGS_KEY]["is_admin"] = True
+            user_settings[GENERAL_SETTINGS_KEY]["is_admin"] = True
 
-            save_local_settings(local_settings)
+            save_user_settings(user_settings)
 
         self._final_result = input_value
         self.close()
