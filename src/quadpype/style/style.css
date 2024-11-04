@@ -1203,56 +1203,53 @@ CreateNextPageOverlay {
     font-size: 32pt;
 }
 
-/* Settings - NOT USED YET
-- we need to define font family for settings UI */
-
-#SettingsMainWidget {
+#ControlPanelMainWidget {
     background: #141a1f;
 }
 /* Change focus borders. */
-#SettingsMainWidget QAbstractSpinBox:focus, #SettingsMainWidget QLineEdit:focus, #SettingsMainWidget QPlainTextEdit:focus, #SettingsMainWidget QTextEdit:focus {
+#ControlPanelMainWidget QAbstractSpinBox:focus, #ControlPanelMainWidget QLineEdit:focus, #ControlPanelMainWidget QPlainTextEdit:focus, #ControlPanelMainWidget QTextEdit:focus {
     border-color: {color:settings:focus-border};
 }
 /* Modify tab widget for settings */
-#SettingsMainWidget QTabWidget::pane {
+#ControlPanelMainWidget QTabWidget::pane {
     border-top-style: none;
 }
 
-#SettingsMainWidget QTabBar {
+#ControlPanelMainWidget QTabBar {
    background: transparent;
 }
 
-#SettingsMainWidget QTabBar::tab {
+#ControlPanelMainWidget QTabBar::tab {
     border: none;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
     padding: 5px;
 }
 
-#SettingsMainWidget QTabBar::tab:selected {
+#ControlPanelMainWidget QTabBar::tab:selected {
     background: {color:bg};
     border-color: #9B9B9B;
     border-bottom-color: #C2C7CB;
 }
 
-#SettingsMainWidget QTabBar::tab:!selected {
+#ControlPanelMainWidget QTabBar::tab:!selected {
     margin-top: 2px;
     background: #21252B;
 }
 
-#SettingsMainWidget QTabBar::tab:!selected:hover {
+#ControlPanelMainWidget QTabBar::tab:!selected:hover {
     background: #333840;
 }
 
-#SettingsMainWidget QTabBar::tab:first:selected {
+#ControlPanelMainWidget QTabBar::tab:first:selected {
     margin-left: 0;
 }
 
-#SettingsMainWidget QTabBar::tab:last:selected {
+#ControlPanelMainWidget QTabBar::tab:last:selected {
     margin-right: 0;
 }
 
-#SettingsMainWidget QTabBar::tab:only-one {
+#ControlPanelMainWidget QTabBar::tab:only-one {
     margin: 0;
 }
 
@@ -1343,16 +1340,16 @@ CreateNextPageOverlay {
 }
 
 /* TODO Replace these with explicit widget types if possible */
-#SettingsMainWidget QWidget[input-state="modified"] {
+#ControlPanelMainWidget QWidget[input-state="modified"] {
     border-color: {color:settings:modified-mid};
 }
-#SettingsMainWidget QWidget[input-state="overridden-modified"] {
+#ControlPanelMainWidget QWidget[input-state="overridden-modified"] {
     border-color: {color:settings:modified-mid};
 }
-#SettingsMainWidget QWidget[input-state="overridden"] {
+#ControlPanelMainWidget QWidget[input-state="overridden"] {
     border-color: {color:settings:project-mid};
 }
-#SettingsMainWidget QWidget[input-state="invalid"] {
+#ControlPanelMainWidget QWidget[input-state="invalid"] {
     border-color: {color:settings:invalid-dark};
 }
 

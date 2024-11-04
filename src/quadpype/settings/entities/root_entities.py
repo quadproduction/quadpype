@@ -826,7 +826,7 @@ class ProjectSettings(RootEntity):
         return []
 
     def reset(self, new_state=None):
-        """Discard changes and reset entit's values.
+        """Discard changes and reset entity's values.
 
         Reload default values and studio override values and update entities.
 

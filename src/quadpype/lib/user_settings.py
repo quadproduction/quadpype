@@ -508,7 +508,7 @@ class QuadPypeSettingsRegistry(JSONSettingRegistry):
 
 
 def _create_user_id(registry=None):
-    """Create a local site identifier."""
+    """Create a user identifier."""
     from coolname import generate_slug
 
     if registry is None:
@@ -540,7 +540,7 @@ def get_user_id():
 
 
 def get_local_site_id():
-    """Get local site identifier."""
+    """Get the local site identifier."""
 
     # Check if the value is set on the env variable
     # This is used for background syncing
@@ -570,7 +570,7 @@ def change_quadpype_mongo_url(new_mongo_url):
 def get_quadpype_username():
     """QuadPype username used for templates and publishing.
 
-    May be different than machine's username.
+    May be different from machine's username.
 
     Always returns "QUADPYPE_USERNAME" environment if is set then tries local
     settings and last option is to use `getpass.getuser()` which returns
@@ -588,27 +588,3 @@ def get_quadpype_username():
         if not username:
             username = getpass.getuser()
     return username
-
-
-def is_admin_password_required(admin_bypass_enabled=True):
-    system_settings = get_system_settings()
-    password = system_settings[GENERAL_SETTINGS_KEY].get("admin_password")
-    if not password:
-        return False
-
-    # Check if the user (session username) is allow-listed
-    # In that case password isn't required
-    username = getpass.getuser()
-    admins_doc = sett_lib._SETTINGS_HANDLER.collection.find_one({"type": "administrators"})
-    if admins_doc and username in admins_doc["data"]["usernames"]:
-        return False
-
-    # There is an option on the user settings (user) to switch to admin
-    # By default admin users automatically bypass password requirement
-    # admin_bypass_enabled, if set to False, means password is required even for admins
-    if admin_bypass_enabled:
-        user_settings = get_user_settings()
-        is_admin = user_settings.get(GENERAL_SETTINGS_KEY, {}).get("is_admin", False)
-        if is_admin:
-            return False
-    return True

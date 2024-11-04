@@ -21,6 +21,8 @@
     <option name="MODULE_MODE" value="false" />
     <option name="REDIRECT_INPUT" value="false" />
     <option name="INPUT_FILE" value="" />
-    <method v="2" />
+    <method v="2">
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="dev_pre" run_configuration_type="PythonConfigurationType" />
+    </method>
   </configuration>
 </component>

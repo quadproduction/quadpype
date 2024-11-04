@@ -38,7 +38,7 @@ from .projects_widget import ProjectSettingsWidget
 log = Logger.get_logger(__name__)
 
 
-class LocalSettingsWidget(QtWidgets.QWidget):
+class UserSettingsWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -237,7 +237,7 @@ class LocalSettingsWidget(QtWidgets.QWidget):
         return output
 
 
-class LocalSettingsWindow(QtWidgets.QWidget):
+class UserSettingsWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -245,7 +245,7 @@ class LocalSettingsWindow(QtWidgets.QWidget):
 
         self.resize(1000, 600)
 
-        self.setWindowTitle("QuadPype Local settings")
+        self.setWindowTitle("QuadPype User Settings")
 
         overlay_object = MessageOverlayObject(self)
 
@@ -277,7 +277,7 @@ class LocalSettingsWindow(QtWidgets.QWidget):
 
         self._overlay_object = overlay_object
         # Do not create user settings widget in init phase as it's using
-        #   settings objects that must be OK to be able create this widget
+        #   settings objects that must be OK to be able to create this widget
         #   - we want to show dialog if anything goes wrong
         #   - without resetting nothing is shown
         self._settings_widget = None
@@ -286,7 +286,7 @@ class LocalSettingsWindow(QtWidgets.QWidget):
         self.save_btn = save_btn
 
     def showEvent(self, event):
-        super(LocalSettingsWindow, self).showEvent(event)
+        super(UserSettingsWindow, self).showEvent(event)
         if self._reset_on_show:
             self.reset()
 
@@ -298,7 +298,7 @@ class LocalSettingsWindow(QtWidgets.QWidget):
         try:
             # Create settings widget if is not created yet
             if self._settings_widget is None:
-                self._settings_widget = LocalSettingsWidget(
+                self._settings_widget = UserSettingsWidget(
                     self._scroll_widget
                 )
                 self._scroll_widget.setWidget(self._settings_widget)
@@ -326,7 +326,7 @@ class LocalSettingsWindow(QtWidgets.QWidget):
         title = "Something went wrong"
         msg = (
             "Bug: Loading of settings failed."
-            " Please contact your project manager or QuadPype team."
+            " Please contact your project manager or the Quad Dev team."
             "\n\nError message:\n{}"
         ).format(error_msg)
 

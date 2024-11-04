@@ -173,6 +173,11 @@ class SettingsStateInfo:
             "user_id": self.user_id,
         }
 
+    def get(self, key, fallback=None):
+        if key:
+            return getattr(self, key, fallback)
+        return fallback
+
     def __eq__(self, other):
         if not isinstance(other, SettingsStateInfo):
             return False
@@ -195,7 +200,6 @@ class SettingsHandler(object):
     global_keys = {
         "quadpype_path",
         "local_quadpype_path",
-        "admin_password",
         "log_to_server",
         "disk_mapping",
         "production_version",
@@ -1766,9 +1770,9 @@ class MongoSettingsHandler(SettingsHandler):
             "type": "last_opened_settings_ui",
             "version": self._current_version
         }) or {}
-        info_data = doc.get("info")
+        info_data = doc.get("info", {})
         if not info_data:
-            return None
+            return info_data
 
         # Fill not available information
         info_data["quadpype_version"] = self._current_version

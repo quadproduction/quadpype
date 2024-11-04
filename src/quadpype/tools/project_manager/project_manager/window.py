@@ -2,8 +2,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 
 from quadpype import resources
 from quadpype.style import load_stylesheet
-from quadpype.widgets import PasswordDialog
-from quadpype.lib import is_admin_password_required, Logger
+from quadpype.lib import Logger
 from quadpype.pipeline import AvalonMongoDB
 from quadpype.pipeline.project_folders import create_project_folders
 
@@ -31,8 +30,6 @@ class ProjectManagerWindow(QtWidgets.QWidget):
         self.log = Logger.get_logger(self.__class__.__name__)
 
         self._initial_reset = False
-        self._password_dialog = None
-        self._user_passed = False
 
         self.setWindowTitle("QuadPype Project Manager")
         self.setWindowIcon(QtGui.QIcon(resources.get_app_icon_filepath()))
@@ -291,40 +288,7 @@ class ProjectManagerWindow(QtWidgets.QWidget):
         self.show_message("Created project \"{}\"".format(project_name))
         self.refresh_projects(project_name)
 
-    def _show_password_dialog(self):
-        if self._password_dialog:
-            self._password_dialog.open()
-
-    def _on_password_dialog_close(self, password_passed):
-        # Store result for future settings reset
-        self._user_passed = password_passed
-        # Remove reference to password dialog
-        self._password_dialog = None
-        if password_passed:
-            self.reset()
-        else:
-            self.close()
-
     def reset(self):
-        if self._password_dialog:
-            return
-
-        if not self._user_passed:
-            self._user_passed = not is_admin_password_required()
-
-        if not self._user_passed:
-            self.setEnabled(False)
-            # Avoid doubled dialog
-            dialog = PasswordDialog(self)
-            dialog.setModal(True)
-            dialog.finished.connect(self._on_password_dialog_close)
-
-            self._password_dialog = dialog
-
-            QtCore.QTimer.singleShot(100, self._show_password_dialog)
-
-            return
-
         self.setEnabled(True)
 
         # Mark as was reset

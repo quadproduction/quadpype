@@ -1,6 +1,7 @@
 import sys
 import traceback
 import contextlib
+from abc import abstractmethod
 from enum import Enum
 from qtpy import QtWidgets, QtCore
 import qtawesome
@@ -45,7 +46,7 @@ from quadpype.settings import (
 )
 from quadpype.settings.lib import (
     get_system_last_saved_info,
-    get_project_last_saved_info,
+    get_project_last_saved_info
 )
 from .dialogs import SettingsLastSavedChanged, SettingsControlTaken
 from .widgets import (
@@ -91,7 +92,7 @@ class EditMode(Enum):
     PROTECT = 3
 
 
-class CategoryState(Enum):
+class PageState(Enum):
     Idle = object()
     Working = object()
 
@@ -119,12 +120,12 @@ class StandaloneCategoryWidget(QtWidgets.QWidget):
 
         self.content_widget = content_widget
         self.content_layout = content_layout
-        self._state = CategoryState.Idle
+        self._state = PageState.Idle
         self.ignore_input_changes = IgnoreInputChangesObj(self)
 
     @staticmethod
     def create_ui_for_entity(category_widget, entity, entity_widget):
-        return SettingsCategoryWidget.create_ui_for_entity(category_widget, entity, entity_widget)
+        return ControlPanelPageWidget.create_ui_for_entity(category_widget, entity, entity_widget)
 
     @property
     def state(self):
@@ -172,12 +173,12 @@ class StandaloneCategoryWidget(QtWidgets.QWidget):
 
     @contextlib.contextmanager
     def working_state_context(self):
-        self.set_state(CategoryState.Working)
+        self.set_state(PageState.Working)
         yield
-        self.set_state(CategoryState.Idle)
+        self.set_state(PageState.Idle)
 
 
-class SettingsCategoryWidget(QtWidgets.QWidget):
+class ControlPanelPageWidget(QtWidgets.QWidget):
     state_changed = QtCore.Signal()
     saved = QtCore.Signal(QtWidgets.QWidget)
     restart_required_trigger = QtCore.Signal()
@@ -218,7 +219,7 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
         self._reset_crashed = False
         self._read_only = False
 
-        self._state = CategoryState.Idle
+        self._state = PageState.Idle
 
         self._hide_studio_overrides = False
         self._updating_root = False
@@ -539,6 +540,10 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
         """Called from clicked widget."""
         self.breadcrumbs_bar.set_path(path)
 
+    @abstractmethod
+    def _on_modify_defaults(self):
+        pass
+
     def _add_developer_ui(self, footer_layout, footer_widget):
         modify_defaults_checkbox = QtWidgets.QCheckBox(footer_widget)
         modify_defaults_checkbox.setChecked(self._hide_studio_overrides)
@@ -576,9 +581,9 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
 
     @contextlib.contextmanager
     def working_state_context(self):
-        self.set_state(CategoryState.Working)
+        self.set_state(PageState.Working)
         yield
-        self.set_state(CategoryState.Idle)
+        self.set_state(PageState.Idle)
 
     def save(self):
         if not self._edit_mode:
@@ -624,9 +629,9 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
             dialog.setIcon(QtWidgets.QMessageBox.Critical)
 
             line_widths = set()
-            metricts = dialog.fontMetrics()
+            metrics = dialog.fontMetrics()
             for line in formatted_traceback:
-                line_widths.add(metricts.width(line))
+                line_widths.add(metrics.width(line))
             max_width = max(line_widths)
 
             spacer = QtWidgets.QSpacerItem(
@@ -634,7 +639,7 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
                 QtWidgets.QSizePolicy.Minimum,
                 QtWidgets.QSizePolicy.Expanding
             )
-            layout = dialog.layout()
+            layout: QtWidgets.QGridLayout = dialog.layout()  # noqa
             layout.addItem(
                 spacer, layout.rowCount(), 0, 1, layout.columnCount()
             )
@@ -653,7 +658,7 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
 
     def reset(self):
         self.reset_started.emit()
-        self.set_state(CategoryState.Working)
+        self.set_state(PageState.Working)
 
         self._on_reset_start()
 
@@ -716,9 +721,9 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
             dialog.setIcon(QtWidgets.QMessageBox.Critical)
 
             line_widths = set()
-            metricts = dialog.fontMetrics()
+            metrics = dialog.fontMetrics()
             for line in formatted_traceback:
-                line_widths.add(metricts.width(line))
+                line_widths.add(metrics.width(line))
             max_width = max(line_widths)
 
             spacer = QtWidgets.QSpacerItem(
@@ -726,7 +731,7 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
                 QtWidgets.QSizePolicy.Minimum,
                 QtWidgets.QSizePolicy.Expanding
             )
-            layout = dialog.layout()
+            layout: QtWidgets.QGridLayout = dialog.layout()  # noqa
             layout.addItem(
                 spacer, layout.rowCount(), 0, 1, layout.columnCount()
             )
@@ -752,7 +757,7 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
         set_style_property(self._source_version_label, "state", state_value)
         self._update_labels_visibility()
 
-        self.set_state(CategoryState.Idle)
+        self.set_state(PageState.Idle)
 
         if dialog:
             dialog.exec_()
@@ -897,12 +902,12 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
         else:
             require_restart = self.entity.require_restart
 
-        self.set_state(CategoryState.Working)
+        self.set_state(PageState.Working)
 
         if self.items_are_valid():
             self.save()
 
-        self.set_state(CategoryState.Idle)
+        self.set_state(PageState.Idle)
 
         self.saved.emit(self)
 
@@ -946,9 +951,10 @@ class SettingsCategoryWidget(QtWidgets.QWidget):
         self._hide_studio_overrides = (state == QtCore.Qt.Checked)
 
 
-class SystemWidget(SettingsCategoryWidget):
+class GlobalSettingsWidget(ControlPanelPageWidget):
     def __init__(self, *args, **kwargs):
         self._actions = []
+        self.breadcrumbs_model = None
         super().__init__(*args, **kwargs)
 
     def _check_last_saved_info(self):
@@ -1005,7 +1011,7 @@ class SystemWidget(SettingsCategoryWidget):
                 self.reset()
 
     def add_children_gui(self):
-        super(SystemWidget, self).add_children_gui()
+        super(GlobalSettingsWidget, self).add_children_gui()
 
         # The Read-Only logic is currently only relevant for
         # System Settings (not for Project)
@@ -1013,13 +1019,16 @@ class SystemWidget(SettingsCategoryWidget):
             input_field.set_read_only(self._read_only)
 
 
-class ProjectWidget(SettingsCategoryWidget):
+class ProjectSettingsWidget(ControlPanelPageWidget):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        self.breadcrumbs_model = None
+        self.project_name = None
         self.protect_attrs = False
+        self.project_list_widget = None
+        super().__init__(*args, **kwargs)
 
     def set_edit_mode(self, enabled):
-        super(ProjectWidget, self).set_edit_mode(enabled)
+        super(ProjectSettingsWidget, self).set_edit_mode(enabled)
         self.project_list_widget.set_edit_mode(enabled)
 
     def _check_last_saved_info(self):
@@ -1076,27 +1085,23 @@ class ProjectWidget(SettingsCategoryWidget):
         return self.project_list_widget.get_project_names()
 
     def on_saved(self, saved_tab_widget):
-        """Callback on any tab widget save.
-
-        Check if AVALON_MONGO is still same.
-        """
-        if self is saved_tab_widget:
-            return
+        """Callback on any tab widget save."""
+        pass
 
     def _on_context_version_trigger(self, version):
         self.project_list_widget.select_project(None)
-        super(ProjectWidget, self)._on_context_version_trigger(version)
+        super(ProjectSettingsWidget, self)._on_context_version_trigger(version)
 
     def _on_reset_start(self):
         self.project_list_widget.refresh()
 
     def _on_reset_crash(self):
         self._set_enabled_project_list(False)
-        super(ProjectWidget, self)._on_reset_crash()
+        super(ProjectSettingsWidget, self)._on_reset_crash()
 
     def _on_reset_success(self):
         self._set_enabled_project_list(True)
-        super(ProjectWidget, self)._on_reset_success()
+        super(ProjectSettingsWidget, self)._on_reset_success()
 
     def _set_enabled_project_list(self, enabled):
         if enabled and self.is_modifying_defaults:
@@ -1132,7 +1137,6 @@ class ProjectWidget(SettingsCategoryWidget):
                 self.modify_defaults_checkbox.setEnabled(True)
 
             self._set_enabled_project_list(True)
-
         except DefaultsNotDefined:
             if not self.modify_defaults_checkbox:
                 raise
@@ -1141,9 +1145,8 @@ class ProjectWidget(SettingsCategoryWidget):
             self.modify_defaults_checkbox.setChecked(True)
             self.modify_defaults_checkbox.setEnabled(False)
             self._set_enabled_project_list(False)
-
         except StudioDefaultsNotDefined:
-            self.select_default_project()
+            self.project_list_widget.select_default_project()
 
     def _on_project_change(self):
         project_name = self.project_list_widget.project_name()
@@ -1152,11 +1155,11 @@ class ProjectWidget(SettingsCategoryWidget):
 
         self.project_name = project_name
 
-        self.set_state(CategoryState.Working)
+        self.set_state(PageState.Working)
 
         self.reset()
 
-        self.set_state(CategoryState.Idle)
+        self.set_state(PageState.Idle)
 
     def _on_modify_defaults(self):
         if self.is_modifying_defaults:
