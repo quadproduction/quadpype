@@ -121,8 +121,7 @@ from .user_settings import (
     get_local_site_id,
     get_user_id,
     change_quadpype_mongo_url,
-    get_quadpype_username,
-    is_admin_password_required
+    get_quadpype_username
 )
 
 from .applications import (
@@ -249,7 +248,6 @@ __all__ = [
     "get_user_id",
     "change_quadpype_mongo_url",
     "get_quadpype_username",
-    "is_admin_password_required",
 
     "ApplicationLaunchFailed",
     "ApplictionExecutableNotFound",

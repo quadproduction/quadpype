@@ -33,7 +33,7 @@ if (($QUADPYPE_MONGO -eq "")) {
 
 # Save the environments variables to a file
 # Needed to ensure these will be used directly without restarting the terminal
-$PATH_ADDITIONAL_ENV_FILE = "$((get-item $SCRIPT_DIR).Parent.FullName)\.env"
+$PATH_ADDITIONAL_ENV_FILE = "$((get-item $SCRIPT_DIR).FullName)\.env"
 
 if (Test-Path -Path $PATH_ADDITIONAL_ENV_FILE) {
     Remove-Item $PATH_ADDITIONAL_ENV_FILE -Force -ErrorAction SilentlyContinue | Out-Null

@@ -2,9 +2,8 @@ from qtpy import QtWidgets, QtGui, QtCore
 
 from quadpype import style
 
-from quadpype.lib import is_admin_password_required
+from quadpype.lib import get_user_id
 from quadpype.lib.events import EventSystem
-from quadpype.widgets import PasswordDialog
 
 from quadpype.settings import get_system_settings
 from quadpype.settings.lib import (
@@ -15,21 +14,21 @@ from quadpype.settings.lib import (
 
 from .dialogs import SettingsUIOpenedElsewhere
 from .categories import (
-    CategoryState,
-    SystemWidget,
-    ProjectWidget,
+    PageState,
+    GlobalSettingsWidget,
+    ProjectSettingsWidget,
     EditMode
 )
 from .widgets import (
     ShadowWidget,
     RestartDialog,
-    SettingsTabWidget
+    ControlPanelTabWidget
 )
 from .search_dialog import SearchEntitiesDialog
 
 
-class SettingsController:
-    """Controller for settings tools.
+class ControlPanelController:
+    """Controller for the control panel window.
 
     Added when tool was finished for checks of last opened in settings
     categories and being able communicated with main widget logic.
@@ -94,10 +93,8 @@ class SettingsController:
 
         last_opened_info = get_last_opened_info()
         mode = EditMode.DISABLE
-        if (
-            last_opened_info is None
-            or self._opened_info == last_opened_info
-        ):
+        is_current_user = last_opened_info.get("user_id", "") == get_user_id()
+        if is_current_user or not last_opened_info or self._opened_info == last_opened_info:
             mode = EditMode.ENABLE
 
         self._last_opened_info = last_opened_info
@@ -110,26 +107,22 @@ class MainWidget(QtWidgets.QWidget):
 
     widget_width = 1000
     widget_height = 600
-    window_title = "QuadPype Settings"
+    window_title = "QuadPype Control Panel"
 
     def __init__(self, user_role, parent=None, reset_on_show=True):
         super().__init__(parent)
 
-        controller = SettingsController(user_role)
+        controller = ControlPanelController(user_role)
 
         # Object referencing to this machine and time when UI was opened
         # - is used on close event
         self._main_reset = False
         self._controller = controller
 
-        self._protect_system_settings = False
-
-        self._user_passed = False
+        self._protect_global_settings = False
         self._reset_on_show = reset_on_show
 
-        self._password_dialog = None
-
-        self.setObjectName("SettingsMainWidget")
+        self.setObjectName("ControlPanelMainWidget")
         self.setWindowTitle(self.window_title)
 
         self.resize(self.widget_width, self.widget_height)
@@ -138,26 +131,25 @@ class MainWidget(QtWidgets.QWidget):
         self.setStyleSheet(stylesheet)
         self.setWindowIcon(QtGui.QIcon(style.app_icon_path()))
 
-        header_tab_widget = SettingsTabWidget(parent=self)
+        header_tab_widget = ControlPanelTabWidget(parent=self)
 
-        studio_widget = SystemWidget(controller, header_tab_widget)
-        project_widget = ProjectWidget(controller, header_tab_widget)
-
+        global_settings_widget = GlobalSettingsWidget(controller, header_tab_widget)
+        project_settings_widget = ProjectSettingsWidget(controller, header_tab_widget)
         tab_widgets = [
-            studio_widget,
-            project_widget
+            global_settings_widget,
+            project_settings_widget
         ]
 
         current_settings = get_system_settings()
         production_version = current_settings.get('general').get("production_version")
         # If production_version is empty, this means no version can be found
         # Avoid blocking the system settings in that case
-        if production_version and production_version != studio_widget._current_version:
-            self._protect_system_settings = True
+        if production_version and production_version != global_settings_widget._current_version:
+            self._protect_global_settings = True
             self._controller.set_edit_mode(EditMode.PROTECT)
 
-        header_tab_widget.addTab(studio_widget, "System")
-        header_tab_widget.addTab(project_widget, "Project")
+        header_tab_widget.addTab(global_settings_widget, "Global Setting")
+        header_tab_widget.addTab(project_settings_widget, "Project Settings")
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
@@ -204,7 +196,7 @@ class MainWidget(QtWidgets.QWidget):
     def _on_state_change(self):
         any_working = False
         for widget in self.tab_widgets:
-            if widget.state is CategoryState.Working:
+            if widget.state is PageState.Working:
                 any_working = True
                 break
 
@@ -268,42 +260,8 @@ class MainWidget(QtWidgets.QWidget):
             take_control = (dialog.result() == 1)
             self._controller.set_edit_mode(take_control)
 
-    def _show_password_dialog(self):
-        if self._password_dialog:
-            self._password_dialog.open()
-
-    def _on_password_dialog_close(self, password_passed):
-        # Store result for future settings reset
-        self._user_passed = password_passed
-        # Remove reference to password dialog
-        self._password_dialog = None
-        if password_passed:
-            self.reset()
-            if not self.isVisible():
-                self.show()
-        else:
-            self.close()
-
     def reset(self):
-        if self._password_dialog:
-            return
-
-        if not self._user_passed:
-            self._user_passed = not is_admin_password_required(admin_bypass_enabled=False)
-
         self._on_state_change()
-
-        if not self._user_passed:
-            # Avoid doubled dialog
-            dialog = PasswordDialog(self, allow_remember=False)
-            dialog.setModal(True)
-            dialog.finished.connect(self._on_password_dialog_close)
-
-            self._password_dialog = dialog
-
-            QtCore.QTimer.singleShot(100, self._show_password_dialog)
-
-            return
 
         if self._reset_on_show:
             self._reset_on_show = False
@@ -313,9 +271,6 @@ class MainWidget(QtWidgets.QWidget):
             tab_widget.reset()
         self._main_reset = False
         self._check_on_reset()
-
-        # This is to show password dialog each time settings are opened
-        self._user_passed = False
 
     def _update_search_dialog(self, clear=False):
         if self._search_dialog.isVisible():
@@ -332,7 +287,7 @@ class MainWidget(QtWidgets.QWidget):
         self.setWindowTitle(title)
 
     def is_protected(self, current_widget):
-        return self._protect_system_settings and isinstance(current_widget, SystemWidget)
+        return self._protect_global_settings and isinstance(current_widget, GlobalSettingsWidget)
 
     def _on_tab_changed(self, event):
         current_widget = self._header_tab_widget.widget(event)

@@ -1,6 +1,6 @@
-from .window import LocalSettingsWindow
+from .window import UserSettingsWindow
 
 
 __all__ = (
-    "LocalSettingsWindow",
+    "UserSettingsWindow",
 )

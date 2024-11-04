@@ -6,9 +6,6 @@ from quadpype.modules import (
     ITrayAction,
 )
 
-from quadpype.widgets import PasswordDialog
-from quadpype.lib import is_admin_password_required
-
 
 class LauncherAction(QuadPypeModule, ITrayAction):
     label = "Launcher"
@@ -60,14 +57,6 @@ class LauncherAction(QuadPypeModule, ITrayAction):
         self._window = LauncherWindow()
 
     def _show_launcher(self):
-        password_required = is_admin_password_required(admin_bypass_enabled=False)
-        if password_required:
-            dialog = PasswordDialog(allow_remember=False)
-            dialog.setModal(True)
-            dialog.exec_()
-            if not dialog.result():
-                return
-
         if self._window:
             self._window.show()
             self._window.raise_()

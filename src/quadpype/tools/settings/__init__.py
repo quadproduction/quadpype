@@ -7,7 +7,7 @@ from .lib import (
     BTN_FIXED_SIZE,
     CHILD_OFFSET
 )
-from .user_settings import LocalSettingsWindow
+from .user_settings import UserSettingsWindow
 from .settings import (
     MainWidget,
     ProjectListWidget
@@ -40,6 +40,6 @@ __all__ = (
 
     "MainWidget",
     "ProjectListWidget",
-    "LocalSettingsWindow",
+    "UserSettingsWindow",
     "main"
 )

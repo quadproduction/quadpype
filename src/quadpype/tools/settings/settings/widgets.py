@@ -28,7 +28,7 @@ from .constants import (
 )
 
 
-class SettingsTabWidget(QtWidgets.QTabWidget):
+class ControlPanelTabWidget(QtWidgets.QTabWidget):
     context_menu_requested = QtCore.Signal(int)
 
     def __init__(self, *args, **kwargs):
@@ -36,7 +36,7 @@ class SettingsTabWidget(QtWidgets.QTabWidget):
         self._right_click_tab_idx = None
 
     def mousePressEvent(self, event):
-        super(SettingsTabWidget, self).mousePressEvent(event)
+        super(ControlPanelTabWidget, self).mousePressEvent(event)
         if event.button() == QtCore.Qt.RightButton:
             tab_bar = self.tabBar()
             pos = tab_bar.mapFromGlobal(event.globalPos())
@@ -46,14 +46,14 @@ class SettingsTabWidget(QtWidgets.QTabWidget):
             self._right_click_tab_idx = tab_idx
 
     def mouseReleaseEvent(self, event):
-        super(SettingsTabWidget, self).mouseReleaseEvent(event)
+        super(ControlPanelTabWidget, self).mouseReleaseEvent(event)
         if event.button() == QtCore.Qt.RightButton:
             tab_bar = self.tabBar()
             pos = tab_bar.mapFromGlobal(event.globalPos())
             tab_idx = tab_bar.tabAt(pos)
             if tab_idx == self._right_click_tab_idx:
                 self.context_menu_requested.emit(tab_idx)
-            self._right_click_tab = None
+            self._right_click_tab_idx = None
 
 
 class CompleterFilter(QtCore.QSortFilterProxyModel):

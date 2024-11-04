@@ -1115,9 +1115,9 @@ class TrayModulesManager(ModulesManager):
         "log_viewer",              # Show Logs
         "python_interpreter",      # Console
         # Admin Submenu ----------------------------------
-        "settings",                # Studio Settings
         "project_manager",         # Project Manager (beta)
         # Services Submenu -------------------------------
+        "control_panel",           # Studio Control Panel
         # Order currently not defined (this could be done)
     )
 
