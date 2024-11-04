@@ -17,7 +17,7 @@ from quadpype.hosts.blender.api.pipeline import (
 )
 
 
-class BlendLoader(plugin.AssetLoader):
+class BlendLoader(plugin.BlenderLoader):
     """Load assets from a .blend file."""
 
     families = ["model", "rig", "layout", "camera"]
@@ -135,7 +135,7 @@ class BlendLoader(plugin.AssetLoader):
         except ValueError:
             family = "model"
 
-        representation = str(context["representation"]["_id"])
+        representation = context["representation"]["id"]
 
         asset_name = plugin.prepare_scene_name(asset, subset)
         unique_number = plugin.get_unique_number(asset, subset)
@@ -160,10 +160,10 @@ class BlendLoader(plugin.AssetLoader):
             "name": name,
             "namespace": namespace or '',
             "loader": str(self.__class__.__name__),
-            "representation": str(context["representation"]["_id"]),
+            "representation": context["representation"]["id"],
             "libpath": libpath,
             "asset_name": asset_name,
-            "parent": str(context["representation"]["parent"]),
+            "parent": context["representation"]["parent"],
             "family": context["representation"]["context"]["family"],
             "objectName": group_name,
             "members": members,
@@ -232,8 +232,8 @@ class BlendLoader(plugin.AssetLoader):
 
         new_data = {
             "libpath": libpath,
-            "representation": str(representation["_id"]),
-            "parent": str(representation["parent"]),
+            "representation": representation["_id"],
+            "parent": representation["parent"],
             "members": members,
         }
 

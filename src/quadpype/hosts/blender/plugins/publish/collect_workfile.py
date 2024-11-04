@@ -1,9 +1,10 @@
 from pathlib import Path
 
-from pyblish.api import InstancePlugin, CollectorOrder
+from pyblish.api import CollectorOrder
+from quadpype.hosts.blender.api import plugin
 
 
-class CollectWorkfile(InstancePlugin):
+class CollectWorkfile(plugin.BlenderInstancePlugin):
     """Inject workfile data into its instance."""
 
     order = CollectorOrder
@@ -15,7 +16,15 @@ class CollectWorkfile(InstancePlugin):
         """Process collector."""
 
         context = instance.context
-        filepath = Path(context.data["currentFile"])
+        filepath = context.data.get("currentFile")
+        if not filepath:
+            self.log.warning("Deactivating workfile instance because no "
+                             "current filepath is found. Please save your "
+                             "workfile.")
+            instance.data["publish"] = False
+            return
+
+        filepath = Path(filepath)
         ext = filepath.suffix
 
         instance.data.update(

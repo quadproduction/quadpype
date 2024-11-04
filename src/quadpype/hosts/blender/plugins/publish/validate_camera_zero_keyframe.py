@@ -2,8 +2,7 @@ from typing import List
 
 import bpy
 
-import pyblish.api
-
+from quadpype.hosts.blender.api import plugin
 import quadpype.hosts.blender.api.action
 from quadpype.pipeline.publish import (
     ValidateContentsOrder,
@@ -12,8 +11,10 @@ from quadpype.pipeline.publish import (
 )
 
 
-class ValidateCameraZeroKeyframe(pyblish.api.InstancePlugin,
-                                 OptionalPyblishPluginMixin):
+class ValidateCameraZeroKeyframe(
+    plugin.BlenderInstancePlugin,
+    OptionalPyblishPluginMixin
+):
     """Camera must have a keyframe at frame 0.
 
     Unreal shifts the first keyframe to frame 0. Forcing the camera to have

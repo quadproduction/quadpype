@@ -1,11 +1,12 @@
 import pyblish.api
 from quadpype.pipeline.publish import OptionalPyblishPluginMixin
 from quadpype.hosts.blender.api.workio import save_file
+from quadpype.hosts.blender.api import plugin
 
 
 class IncrementWorkfileVersion(
-        pyblish.api.ContextPlugin,
-        OptionalPyblishPluginMixin
+    plugin.BlenderContextPlugin,
+    OptionalPyblishPluginMixin
 ):
     """Increment current workfile version."""
 

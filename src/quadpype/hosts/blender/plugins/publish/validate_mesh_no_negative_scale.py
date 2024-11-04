@@ -2,7 +2,6 @@ from typing import List
 
 import bpy
 
-import pyblish.api
 
 from quadpype.pipeline.publish import (
     ValidateContentsOrder,

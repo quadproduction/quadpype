@@ -3,11 +3,13 @@ import json
 import bpy
 
 from quadpype.pipeline import publish
-from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.pipeline import AVALON_PROPERTY
 
 
-class ExtractCameraABC(publish.Extractor, publish.OptionalPyblishPluginMixin):
+class ExtractCameraABC(
+    plugin.BlenderExtractor, publish.OptionalPyblishPluginMixin
+):
     """Extract camera as ABC."""
 
     label = "Extract Camera (ABC)"
@@ -75,13 +77,25 @@ class ExtractCameraABC(publish.Extractor, publish.OptionalPyblishPluginMixin):
         context = plugin.create_blender_context(
             active=active, selected=selected)
 
-        with bpy.context.temp_override(**context):
-            # We export the abc
-            bpy.ops.wm.alembic_export(
-                filepath=filepath,
-                selected=True,
-                flatten=True
-            )
+        scene_overrides = {
+            "unit_settings.scale_length": instance.data.get("unitScale"),
+        }
+        # Skip None value overrides
+        scene_overrides = {
+            key: value for key, value in scene_overrides.items()
+            if value is not None
+        }
+
+        with lib.attribute_overrides(bpy.context.scene, scene_overrides):
+            with bpy.context.temp_override(**context):
+                # We export the abc
+                bpy.ops.wm.alembic_export(
+                    filepath=filepath,
+                    selected=True,
+                    flatten=True,
+                    start=instance.data["frameStartHandle"],
+                    end=instance.data["frameEndHandle"]
+                )
 
         plugin.deselect_all()
 

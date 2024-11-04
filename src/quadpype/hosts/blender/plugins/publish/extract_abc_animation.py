@@ -7,8 +7,8 @@ from quadpype.hosts.blender.api import plugin
 
 
 class ExtractAnimationABC(
-        publish.Extractor,
-        publish.OptionalPyblishPluginMixin,
+    plugin.BlenderExtractor,
+    publish.OptionalPyblishPluginMixin,
 ):
     """Extract as ABC."""
 
@@ -60,7 +60,9 @@ class ExtractAnimationABC(
             bpy.ops.wm.alembic_export(
                 filepath=filepath,
                 selected=True,
-                flatten=False
+                flatten=False,
+                start=instance.data["frameStartHandle"],
+                end=instance.data["frameEndHandle"]
             )
 
         plugin.deselect_all()

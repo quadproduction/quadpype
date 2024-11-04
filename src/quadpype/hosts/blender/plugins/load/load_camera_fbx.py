@@ -17,7 +17,7 @@ from quadpype.hosts.blender.api.pipeline import (
 )
 
 
-class FbxCameraLoader(plugin.AssetLoader):
+class FbxCameraLoader(plugin.BlenderLoader):
     """Load a camera from FBX.
 
     Stores the imported asset in an empty named after the asset.
@@ -120,10 +120,10 @@ class FbxCameraLoader(plugin.AssetLoader):
             "name": name,
             "namespace": namespace or '',
             "loader": str(self.__class__.__name__),
-            "representation": str(context["representation"]["_id"]),
+            "representation": context["representation"]["_id"],
             "libpath": libpath,
             "asset_name": asset_name,
-            "parent": str(context["representation"]["parent"]),
+            "parent": context["representation"]["parent"],
             "family": context["representation"]["context"]["family"],
             "objectName": group_name
         }
@@ -193,7 +193,7 @@ class FbxCameraLoader(plugin.AssetLoader):
         asset_group.matrix_basis = mat
 
         metadata["libpath"] = str(libpath)
-        metadata["representation"] = str(representation["_id"])
+        metadata["representation"] = representation["_id"]
 
     def exec_remove(self, container: Dict) -> bool:
         """Remove an existing container from a Blender scene.

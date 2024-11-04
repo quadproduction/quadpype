@@ -2,18 +2,19 @@ from typing import List
 
 import bpy
 
-import pyblish.api
 
 import quadpype.hosts.blender.api.action
-from quadpype.pipeline.publish import (
+from ayon_core.pipeline.publish import (
     ValidateContentsOrder,
     OptionalPyblishPluginMixin,
     PublishValidationError
 )
 
 
-class ValidateNoColonsInName(pyblish.api.InstancePlugin,
-                             OptionalPyblishPluginMixin):
+class ValidateNoColonsInName(
+    plugin.BlenderInstancePlugin,
+    OptionalPyblishPluginMixin
+):
     """There cannot be colons in names
 
     Object or bone names cannot include colons. Other software do not

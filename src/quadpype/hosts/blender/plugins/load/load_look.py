@@ -16,7 +16,7 @@ from quadpype.hosts.blender.api.pipeline import (
 )
 
 
-class BlendLookLoader(plugin.AssetLoader):
+class BlendLookLoader(plugin.BlenderLoader):
     """Load models from a .blend file.
 
     Because they come from a .blend file we can simply link the collection that
@@ -130,7 +130,7 @@ class BlendLookLoader(plugin.AssetLoader):
         metadata["objects"] = objects
         metadata["materials"] = materials
 
-        metadata["parent"] = str(context["representation"]["parent"])
+        metadata["parent"] = context["representation"]["parent"]
         metadata["family"] = context["representation"]["context"]["family"]
 
         nodes = list(container.objects)
@@ -201,7 +201,7 @@ class BlendLookLoader(plugin.AssetLoader):
         collection_metadata["objects"] = objects
         collection_metadata["materials"] = materials
         collection_metadata["libpath"] = str(libpath)
-        collection_metadata["representation"] = str(representation["_id"])
+        collection_metadata["representation"] = representation["_id"]
 
     def remove(self, container: Dict) -> bool:
         collection = bpy.data.collections.get(container["objectName"])

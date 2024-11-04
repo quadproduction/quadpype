@@ -4,10 +4,11 @@ import bpy
 
 from quadpype.pipeline import publish
 from quadpype.hosts.blender.api import plugin
-from quadpype.hosts.blender.api.pipeline import AVALON_PROPERTY
 
 
-class ExtractFBX(publish.Extractor, publish.OptionalPyblishPluginMixin):
+class ExtractFBX(
+    plugin.BlenderExtractor, publish.OptionalPyblishPluginMixin
+):
     """Extract as FBX."""
 
     label = "Extract FBX"

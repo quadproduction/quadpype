@@ -4,7 +4,6 @@ from typing import List
 import mathutils
 import bpy
 
-import pyblish.api
 from quadpype.hosts.blender.api import plugin, lib
 import quadpype.hosts.blender.api.action
 from quadpype.pipeline.publish import (
@@ -15,8 +14,10 @@ from quadpype.pipeline.publish import (
 )
 
 
-class ValidateTransformZero(pyblish.api.InstancePlugin,
-                            OptionalPyblishPluginMixin):
+class ValidateTransformZero(
+    plugin.BlenderInstancePlugin,
+    OptionalPyblishPluginMixin
+):
     """Transforms can't have any values"""
 
     order = ValidateContentsOrder

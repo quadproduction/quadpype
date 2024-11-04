@@ -17,7 +17,7 @@ from quadpype.hosts.blender.api.pipeline import (
 )
 
 
-class AudioLoader(plugin.AssetLoader):
+class AudioLoader(plugin.BlenderLoader):
     """Load audio in Blender."""
 
     families = ["audio"]
@@ -81,10 +81,10 @@ class AudioLoader(plugin.AssetLoader):
             "name": name,
             "namespace": namespace or '',
             "loader": str(self.__class__.__name__),
-            "representation": str(context["representation"]["_id"]),
+            "representation": context["representation"]["id"],
             "libpath": libpath,
             "asset_name": asset_name,
-            "parent": str(context["representation"]["parent"]),
+            "parent": context["representation"]["parent"],
             "family": context["representation"]["context"]["family"],
             "objectName": group_name,
             "audio": audio
@@ -173,8 +173,8 @@ class AudioLoader(plugin.AssetLoader):
         window_manager.windows[-1].screen.areas[0].type = old_type
 
         metadata["libpath"] = str(libpath)
-        metadata["representation"] = str(representation["_id"])
-        metadata["parent"] = str(representation["parent"])
+        metadata["representation"] = representation["_id"]
+        metadata["parent"] = representation["parent"]
         metadata["audio"] = new_audio
 
     def exec_remove(self, container: Dict) -> bool:
