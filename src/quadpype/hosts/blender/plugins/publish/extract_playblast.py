@@ -6,11 +6,13 @@ import bpy
 import pyblish.api
 from quadpype.settings import PROJECT_SETTINGS_KEY
 from quadpype.pipeline import publish
-from quadpype.hosts.blender.api import capture
+from quadpype.hosts.blender.api import capture, plugin
 from quadpype.hosts.blender.api.lib import maintained_time
 
 
-class ExtractPlayblast(publish.Extractor, publish.OptionalPyblishPluginMixin):
+class ExtractPlayblast(
+    plugin.BlenderExtractor, publish.OptionalPyblishPluginMixin
+):
     """
     Extract viewport playblast.
 
@@ -42,7 +44,7 @@ class ExtractPlayblast(publish.Extractor, publish.OptionalPyblishPluginMixin):
         end = instance.data.get("frameEnd", bpy.context.scene.frame_end)
 
         self.log.info(f"start: {start}, end: {end}")
-        assert end > start, "Invalid time range !"
+        assert end >= start, "Invalid time range!"
 
         # get cameras
         camera = instance.data("review_camera", None)
@@ -90,6 +92,7 @@ class ExtractPlayblast(publish.Extractor, publish.OptionalPyblishPluginMixin):
         collections, remainder = clique.assemble(
             collected_files,
             patterns=[f"{filename}\\.{clique.DIGITS_PATTERN}\\.png$"],
+            minimum_items=1
         )
 
         if len(collections) > 1:
@@ -105,7 +108,10 @@ class ExtractPlayblast(publish.Extractor, publish.OptionalPyblishPluginMixin):
 
         self.log.info(f"We found collection of interest {frame_collection}")
 
-        instance.data.setdefault("representations", [])
+        # `instance.data["files"]` must be `str` if single frame
+        files = list(frame_collection)
+        if len(files) == 1:
+            files = files[0]
 
         tags = ["review"]
         if not instance.data.get("keepImages"):
@@ -114,7 +120,7 @@ class ExtractPlayblast(publish.Extractor, publish.OptionalPyblishPluginMixin):
         representation = {
             "name": "png",
             "ext": "png",
-            "files": list(frame_collection),
+            "files": files,
             "stagingDir": stagingdir,
             "frameStart": start,
             "frameEnd": end,
@@ -122,4 +128,4 @@ class ExtractPlayblast(publish.Extractor, publish.OptionalPyblishPluginMixin):
             "tags": tags,
             "camera_name": camera
         }
-        instance.data["representations"].append(representation)
+        instance.data.setdefault("representations", []).append(representation)

@@ -5,6 +5,7 @@ from pprint import pformat
 from typing import Dict, List, Optional
 
 import bpy
+import os
 
 from quadpype.pipeline import (
     get_representation_path,
@@ -18,7 +19,7 @@ from quadpype.hosts.blender.api.pipeline import (
 from quadpype.hosts.blender.api import plugin, lib
 
 
-class CacheModelLoader(plugin.AssetLoader):
+class CacheModelLoader(plugin.BlenderLoader):
     """Load cache models.
 
     Stores the imported asset in a collection named after the asset.
@@ -26,12 +27,50 @@ class CacheModelLoader(plugin.AssetLoader):
     Note:
         At least for now it only supports Alembic files.
     """
-    families = ["model", "pointcache", "animation"]
-    representations = ["abc"]
+    families = ["model", "pointcache", "animation", "usd"]
+    representations = ["abc", "usd"]
 
-    label = "Load Alembic"
+    label = "Load Cache"
     icon = "code-fork"
     color = "orange"
+
+    def _update_transform_cache_path(self, asset_group, libpath, prev_filename):
+        """search and update path in the transform cache modifier
+        If there is no transform cache modifier, it will create one
+        to update the filepath of the alembic.
+        """
+        bpy.ops.cachefile.open(filepath=libpath.as_posix())
+        for obj in asset_group.children:
+            asset_name = obj.name.rsplit(":", 1)[-1]
+            names = [modifier.name for modifier in obj.modifiers
+                     if modifier.type == "MESH_SEQUENCE_CACHE"]
+            file_list = [file for file in bpy.data.cache_files
+                         if file.name.startswith(prev_filename)]
+            if names:
+                for name in names:
+                    obj.modifiers.remove(obj.modifiers.get(name))
+            if file_list:
+                bpy.data.batch_remove(file_list)
+
+            obj.modifiers.new(name='MeshSequenceCache', type='MESH_SEQUENCE_CACHE')
+
+            modifiers = lib.get_cache_modifiers(obj)
+            for asset_name, modifier_list in modifiers.items():
+                for modifier in modifier_list:
+                    if modifier.type == "MESH_SEQUENCE_CACHE":
+                        modifier.cache_file = bpy.data.cache_files[-1]
+                        cache_file_name = os.path.basename(libpath.as_posix())
+                        modifier.cache_file.name = cache_file_name
+                        modifier.cache_file.filepath = libpath.as_posix()
+                        modifier.cache_file.scale = 1.0
+                        for object_path in modifier.cache_file.object_paths:
+                            base_object_name = os.path.basename(object_path.path)
+                            asset_name = asset_name.rsplit(":", 1)[-1]
+                            if base_object_name.endswith(asset_name):
+                                modifier.object_path = object_path.path
+                        bpy.context.evaluated_depsgraph_get()
+
+        return libpath
 
     def _remove(self, asset_group):
         objects = list(asset_group.children)
@@ -53,38 +92,29 @@ class CacheModelLoader(plugin.AssetLoader):
         plugin.deselect_all()
 
         relative = bpy.context.preferences.filepaths.use_relative_paths
-        bpy.ops.wm.alembic_import(
-            filepath=libpath,
-            relative_path=relative
-        )
 
-        imported = lib.get_selection()
+        if any(libpath.lower().endswith(ext)
+               for ext in [".usd", ".usda", ".usdc"]):
+            # USD
+            bpy.ops.wm.usd_import(
+                filepath=libpath,
+                relative_path=relative
+            )
 
-        # Use first EMPTY without parent as container
-        container = next(
-            (obj for obj in imported
-             if obj.type == "EMPTY" and not obj.parent),
-            None
-        )
-
-        objects = []
-        if container:
-            nodes = list(container.children)
-
-            for obj in nodes:
-                obj.parent = asset_group
-
-            bpy.data.objects.remove(container)
-
-            objects.extend(nodes)
-            for obj in nodes:
-                objects.extend(obj.children_recursive)
         else:
-            for obj in imported:
-                obj.parent = asset_group
-            objects = imported
+            # Alembic
+            bpy.ops.wm.alembic_import(
+                filepath=libpath,
+                relative_path=relative
+            )
+
+        objects = lib.get_selection()
 
         for obj in objects:
+            # reparent top object to asset_group
+            if not obj.parent:
+                obj.parent = asset_group
+
             # Unlink the object from all collections
             collections = obj.users_collection
             for collection in collections:
@@ -134,13 +164,15 @@ class CacheModelLoader(plugin.AssetLoader):
         """
 
         libpath = self.filepath_from_context(context)
-        asset = context["asset"]["name"]
-        subset = context["subset"]["name"]
+        folder_name = context["asset"]["name"]
+        product_name = context["subset"]["name"]
 
-        asset_name = plugin.prepare_scene_name(asset, subset)
-        unique_number = plugin.get_unique_number(asset, subset)
-        group_name = plugin.prepare_scene_name(asset, subset, unique_number)
-        namespace = namespace or f"{asset}_{unique_number}"
+        asset_name = plugin.prepare_scene_name(folder_name, product_name)
+        unique_number = plugin.get_unique_number(folder_name, product_name)
+        group_name = plugin.prepare_scene_name(
+            folder_name, product_name, unique_number
+        )
+        namespace = namespace or f"{folder_name}_{unique_number}"
 
         containers = bpy.data.collections.get(AVALON_CONTAINERS)
         if not containers:
@@ -165,10 +197,10 @@ class CacheModelLoader(plugin.AssetLoader):
             "name": name,
             "namespace": namespace or '',
             "loader": str(self.__class__.__name__),
-            "representation": str(context["representation"]["_id"]),
+            "representation": context["representation"]["_id"],
             "libpath": libpath,
             "asset_name": asset_name,
-            "parent": str(context["representation"]["parent"]),
+            "parent": context["representation"]["parent"],
             "family": context["representation"]["context"]["family"],
             "objectName": group_name
         }
@@ -176,7 +208,7 @@ class CacheModelLoader(plugin.AssetLoader):
         self[:] = objects
         return objects
 
-    def exec_update(self, container: Dict, representation: Dict):
+    def exec_update(self, container: Dict, context: Dict):
         """Update the loaded asset.
 
         This will remove all objects of the current collection, load the new
@@ -188,15 +220,16 @@ class CacheModelLoader(plugin.AssetLoader):
         Warning:
             No nested collections are supported at the moment!
         """
+        repre_entity = context["representation"]
         object_name = container["objectName"]
         asset_group = bpy.data.objects.get(object_name)
-        libpath = Path(get_representation_path(representation))
+        libpath = Path(get_representation_path(repre_entity))
         extension = libpath.suffix.lower()
 
         self.log.info(
             "Container: %s\nRepresentation: %s",
             pformat(container, indent=2),
-            pformat(representation, indent=2),
+            pformat(repre_entity, indent=2),
         )
 
         assert asset_group, (
@@ -221,7 +254,7 @@ class CacheModelLoader(plugin.AssetLoader):
         normalized_libpath = (
             str(Path(bpy.path.abspath(str(libpath))).resolve())
         )
-        self.log.info(
+        self.log.debug(
             "normalized_group_libpath:\n  %s\nnormalized_libpath:\n  %s",
             normalized_group_libpath,
             normalized_libpath,
@@ -230,24 +263,30 @@ class CacheModelLoader(plugin.AssetLoader):
             self.log.info("Library already loaded, not updating...")
             return
 
-        mat = asset_group.matrix_basis.copy()
-        self._remove(asset_group)
+        if any(str(libpath).lower().endswith(ext)
+               for ext in [".usd", ".usda", ".usdc"]):
+            mat = asset_group.matrix_basis.copy()
+            self._remove(asset_group)
 
-        objects = self._process(str(libpath), asset_group, object_name)
+            objects = self._process(str(libpath), asset_group, object_name)
 
-        containers = bpy.data.collections.get(AVALON_CONTAINERS)
-        self._link_objects(objects, asset_group, containers, asset_group)
+            containers = bpy.data.collections.get(AVALON_CONTAINERS)
+            self._link_objects(objects, asset_group, containers, asset_group)
 
-        asset_group.matrix_basis = mat
+            asset_group.matrix_basis = mat
+        else:
+            prev_filename = os.path.basename(container["libpath"])
+            libpath = self._update_transform_cache_path(asset_group, libpath, prev_filename)
+
 
         metadata["libpath"] = str(libpath)
-        metadata["representation"] = str(representation["_id"])
+        metadata["representation"] = repre_entity["_id"]
 
     def exec_remove(self, container: Dict) -> bool:
         """Remove an existing container from a Blender scene.
 
         Arguments:
-            container (quadpype:container-1.0): Container to remove,
+            container (openpype:container-1.0): Container to remove,
                 from `host.ls()`.
 
         Returns:

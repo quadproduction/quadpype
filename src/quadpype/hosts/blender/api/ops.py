@@ -38,22 +38,30 @@ def execute_function_in_main_thread(f):
     return wrapper
 
 
-class BlenderApplication(QtWidgets.QApplication):
+class BlenderApplication:
     _instance = None
     blender_windows = {}
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setQuitOnLastWindowClosed(False)
-
-        self.setStyleSheet(style.load_stylesheet())
-        self.lastWindowClosed.connect(self.__class__.reset)
 
     @classmethod
     def get_app(cls):
         if cls._instance is None:
-            cls._instance = cls(sys.argv)
+            # If any other addon or plug-in may have initialed a Qt application
+            # before AYON then we should take the existing instance instead.
+            application = QtWidgets.QApplication.instance()
+            if application is None:
+                application = QtWidgets.QApplication(sys.argv)
+
+            # Ensure it is configured to our needs
+            cls._prepare_qapplication(application)
+            cls._instance = application
+
         return cls._instance
+
+    @classmethod
+    def _prepare_qapplication(cls, application: QtWidgets.QApplication):
+        application.setQuitOnLastWindowClosed(False)
+        application.setStyleSheet(style.load_stylesheet())
+        application.lastWindowClosed.connect(cls.reset)
 
     @classmethod
     def reset(cls):
@@ -175,7 +183,7 @@ def _process_app_events() -> Optional[float]:
 
         # Refresh Manager
         if GlobalClass.app:
-            manager = GlobalClass.app.get_window("WM_OT_avalon_manager")
+            manager = BlenderApplication.get_window("WM_OT_avalon_manager")
             if manager:
                 manager.refresh()
 
@@ -184,16 +192,15 @@ def _process_app_events() -> Optional[float]:
             return TIMER_INTERVAL
 
         app = GlobalClass.app
-        if app._instance:
+        if app:
             app.processEvents()
             return TIMER_INTERVAL
     return TIMER_INTERVAL
 
 
 class LaunchQtApp(bpy.types.Operator):
-    """A Base class for opertors to launch a Qt app."""
+    """A Base class for operators to launch a Qt app."""
 
-    _app: QtWidgets.QApplication
     _window = Union[QtWidgets.QDialog, ModuleType]
     _tool_name: str = None
     _init_args: Optional[List] = list()
@@ -204,8 +211,7 @@ class LaunchQtApp(bpy.types.Operator):
         if self.bl_idname is None:
             raise NotImplementedError("Attribute `bl_idname` must be set!")
         print(f"Initialising {self.bl_idname}...")
-        self._app = BlenderApplication.get_app()
-        GlobalClass.app = self._app
+        GlobalClass.app = BlenderApplication.get_app()
 
         if not bpy.app.timers.is_registered(_process_app_events):
             bpy.app.timers.register(
@@ -230,23 +236,39 @@ class LaunchQtApp(bpy.types.Operator):
                 raise AttributeError("`self._window` is not set.")
 
         else:
-            window = self._app.get_window(self.bl_idname)
+            window = BlenderApplication.get_window(self.bl_idname)
             if window is None:
                 window = host_tools.get_tool_by_name(self._tool_name)
-                self._app.store_window(self.bl_idname, window)
+                BlenderApplication.store_window(self.bl_idname, window)
             self._window = window
 
         if not isinstance(self._window, (QtWidgets.QWidget, ModuleType)):
             raise AttributeError(
                 "`window` should be a `QWidget or module`. Got: {}".format(
-                    str(type(window))
+                    str(type(self._window))
                 )
             )
 
         self.before_window_show()
 
+        def pull_to_front(window):
+            """Pull window forward to screen.
+
+            If Window is minimized this will un-minimize, then it can be raised
+            and activated to the front.
+            """
+            window.setWindowState(
+                (window.windowState() & ~QtCore.Qt.WindowMinimized) |
+                QtCore.Qt.WindowActive
+            )
+            window.raise_()
+            window.activateWindow()
+
         if isinstance(self._window, ModuleType):
             self._window.show()
+            pull_to_front(self._window)
+
+            # Pull window to the front
             window = None
             if hasattr(self._window, "window"):
                 window = self._window.window
@@ -254,13 +276,14 @@ class LaunchQtApp(bpy.types.Operator):
                 window = self._window.window
 
             if window:
-                self._app.store_window(self.bl_idname, window)
+                BlenderApplication.store_window(self.bl_idname, window)
 
         else:
             origin_flags = self._window.windowFlags()
             on_top_flags = origin_flags | QtCore.Qt.WindowStaysOnTopHint
             self._window.setWindowFlags(on_top_flags)
             self._window.show()
+            pull_to_front(self._window)
 
             # if on_top_flags != origin_flags:
             #     self._window.setWindowFlags(origin_flags)
@@ -294,12 +317,6 @@ class LaunchLoader(LaunchQtApp):
     bl_label = "Load..."
     _tool_name = "loader"
 
-    def before_window_show(self):
-        self._window.set_context(
-            {"asset": get_current_asset_name()},
-            refresh=True
-        )
-
 
 class LaunchPublisher(LaunchQtApp):
     """Launch Avalon Publisher."""
@@ -319,9 +336,6 @@ class LaunchManager(LaunchQtApp):
     bl_label = "Manage..."
     _tool_name = "sceneinventory"
 
-    def before_window_show(self):
-        self._window.refresh()
-
 
 class LaunchLibrary(LaunchQtApp):
     """Launch Library Loader."""
@@ -329,9 +343,6 @@ class LaunchLibrary(LaunchQtApp):
     bl_idname = "wm.library_loader"
     bl_label = "Library..."
     _tool_name = "libraryloader"
-
-    def before_window_show(self):
-        self._window.refresh()
 
 
 class LaunchWorkFiles(LaunchQtApp):
@@ -342,19 +353,7 @@ class LaunchWorkFiles(LaunchQtApp):
     _tool_name = "workfiles"
 
     def execute(self, context):
-        result = super().execute(context)
-        self._window.set_context({
-            "asset": get_current_asset_name(),
-            "task": get_current_task_name()
-        })
-        return result
-
-    def before_window_show(self):
-        self._window.root = str(Path(
-            os.environ.get("AVALON_WORKDIR", ""),
-            os.environ.get("AVALON_SCENEDIR", ""),
-        ))
-        self._window.refresh()
+        return super().execute(context)
 
 
 class SetFrameRange(bpy.types.Operator):
@@ -374,6 +373,19 @@ class SetResolution(bpy.types.Operator):
     def execute(self, context):
         data = pipeline.get_asset_data()
         pipeline.set_resolution(data)
+        return {"FINISHED"}
+
+
+class SetUnitScale(bpy.types.Operator):
+    bl_idname = "wm.set_unit_scale"
+    bl_label = "Set Unit Scale"
+
+    def execute(self, context):
+        project = get_current_project_name()
+        settings = get_project_settings(project).get("blender")
+        unit_scale_settings = settings.get("unit_scale_settings")
+        pipeline.set_unit_scale_from_settings(
+            unit_scale_settings=unit_scale_settings)
         return {"FINISHED"}
 
 
@@ -416,6 +428,7 @@ class TOPBAR_MT_avalon(bpy.types.Menu):
         layout.separator()
         layout.operator(SetFrameRange.bl_idname, text="Set Frame Range")
         layout.operator(SetResolution.bl_idname, text="Set Resolution")
+        layout.operator(SetUnitScale.bl_idname, text="Set Unit Scale")
         layout.separator()
         layout.operator(LaunchWorkFiles.bl_idname, text="Work Files...")
 
@@ -435,6 +448,7 @@ classes = [
     LaunchWorkFiles,
     SetFrameRange,
     SetResolution,
+    SetUnitScale,
     TOPBAR_MT_avalon,
 ]
 
