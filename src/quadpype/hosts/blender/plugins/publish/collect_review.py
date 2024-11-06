@@ -1,9 +1,10 @@
 import bpy
 
 import pyblish.api
+from quadpype.hosts.blender.api.api import plugin
 
 
-class CollectReview(pyblish.api.InstancePlugin):
+class CollectReview(plugin.BlenderInstancePlugin):
     """Collect Review data
 
     """
@@ -14,7 +15,7 @@ class CollectReview(pyblish.api.InstancePlugin):
 
     def process(self, instance):
 
-        self.log.info(f"instance: {instance}")
+        self.log.debug(f"instance: {instance}")
 
         datablock = instance.data["transientData"]["instance_node"]
 
@@ -29,7 +30,7 @@ class CollectReview(pyblish.api.InstancePlugin):
             f"Not a single camera found in extraction: {cameras}"
         )
         camera = cameras[0].name
-        self.log.info(f"camera: {camera}")
+        self.log.debug(f"camera: {camera}")
 
         focal_length = cameras[0].data.lens
 
@@ -54,7 +55,7 @@ class CollectReview(pyblish.api.InstancePlugin):
                 "isolate": isolate_objects,
             })
 
-            self.log.info(f"instance data: {instance.data}")
+            self.log.debug(f"instance data: {instance.data}")
 
             # TODO : Collect audio
             audio_tracks = []

@@ -2,7 +2,6 @@ import bpy
 
 from quadpype.pipeline import CreatedInstance, AutoCreator
 from quadpype.client import get_asset_by_name
-from quadpype.hosts.blender.api.plugin import BaseCreator
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_PROPERTY,
     AVALON_CONTAINERS

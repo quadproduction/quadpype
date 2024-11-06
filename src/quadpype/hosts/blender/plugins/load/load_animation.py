@@ -8,7 +8,7 @@ from quadpype.hosts.blender.api import plugin
 from quadpype.hosts.blender.api.pipeline import AVALON_PROPERTY
 
 
-class BlendAnimationLoader(plugin.AssetLoader):
+class BlendAnimationLoader(plugin.BlenderLoader):
     """Load animations from a .blend file.
 
     Warning:

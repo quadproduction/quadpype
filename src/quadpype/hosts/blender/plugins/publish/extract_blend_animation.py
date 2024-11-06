@@ -3,7 +3,7 @@ import os
 import bpy
 
 from quadpype.pipeline import publish
-
+from quadpype.hosts.blender.api import plugin
 
 class ExtractBlendAnimation(
     plugin.BlenderExtractor,
@@ -15,6 +15,9 @@ class ExtractBlendAnimation(
     hosts = ["blender"]
     families = ["animation"]
     optional = True
+
+    # From settings
+    compress = False
 
     def process(self, instance):
         if not self.is_active(instance.data):
@@ -46,7 +49,7 @@ class ExtractBlendAnimation(
                         data_blocks.add(child.animation_data.action)
                         data_blocks.add(obj)
 
-        bpy.data.libraries.write(filepath, data_blocks)
+        bpy.data.libraries.write(filepath, data_blocks, compress=self.compress)
 
         if "representations" not in instance.data:
             instance.data["representations"] = []

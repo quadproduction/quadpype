@@ -10,6 +10,7 @@ from . import lib
 from . import ops
 
 import pyblish.api
+from typing import Union
 
 from quadpype.host import (
     HostBase,
@@ -20,8 +21,6 @@ from quadpype.host import (
 from quadpype.client import get_asset_by_name
 from quadpype.pipeline import (
     schema,
-    legacy_io,
-    get_current_project_name,
     get_current_asset_name,
     register_loader_plugin_path,
     register_creator_plugin_path,
@@ -29,6 +28,7 @@ from quadpype.pipeline import (
     deregister_creator_plugin_path,
     AVALON_CONTAINER_ID,
     Anatomy,
+    get_current_project_name
 )
 
 from quadpype.pipeline.context_tools import get_template_data_from_session
@@ -231,30 +231,78 @@ def get_asset_data():
     project_name = get_current_project_name()
     asset_name = get_current_asset_name()
     asset_doc = get_asset_by_name(project_name, asset_name)
-
     return asset_doc.get("data")
+
+def get_frame_range(task_entity=None) -> Union[Dict[str, int], None]:
+    """Get the task entity's frame range and handles
+
+    Args:
+        task_entity (Optional[dict]): Task Entity.
+            When not provided defaults to current context task.
+
+    Returns:
+        Union[Dict[str, int], None]: Dictionary with
+            frame start, frame end, handle start, handle end.
+    """
+    # Set frame start/end
+    if task_entity is None:
+        task_entity = get_current_task_entity(fields={"attrib"})
+    task_attributes = task_entity["attrib"]
+    frame_start = int(task_attributes["frameStart"])
+    frame_end = int(task_attributes["frameEnd"])
+    handle_start = int(task_attributes["handleStart"])
+    handle_end = int(task_attributes["handleEnd"])
+    frame_start_handle = frame_start - handle_start
+    frame_end_handle = frame_end + handle_end
+
+    return {
+        "frameStart": frame_start,
+        "frameEnd": frame_end,
+        "handleStart": handle_start,
+        "handleEnd": handle_end,
+        "frameStartHandle": frame_start_handle,
+        "frameEndHandle": frame_end_handle,
+    }
 
 
 def set_frame_range(data):
     scene = bpy.context.scene
 
     # Default scene settings
-    frameStart = scene.frame_start
-    frameEnd = scene.frame_end
+    frame_start = scene.frame_start
+    frame_end = scene.frame_end
     fps = scene.render.fps / scene.render.fps_base
 
     if not data:
         return
 
     if data.get("frameStart"):
-        frameStart = data.get("frameStart")
+        frame_start = data.get("frameStart")
     if data.get("frameEnd"):
-        frameEnd = data.get("frameEnd")
+        frame_end = data.get("frameEnd")
     if data.get("fps"):
         fps = data.get("fps")
 
-    scene.frame_start = frameStart
-    scene.frame_end = frameEnd
+    # Should handles be included, defined by settings
+    settings = get_project_settings(get_current_project_name())
+    task_type = entity.get("taskType")
+    include_handles_settings = settings["blender"]["include_handles"]
+    include_handles = include_handles_settings["include_handles_default"]
+    profile = filter_profiles(
+        include_handles_settings["profiles"],
+        key_values={
+            "task_types": task_type,
+            "task_names": entity["name"]
+        }
+    )
+    if profile:
+        include_handles = profile["include_handles"]
+    if include_handles:
+        frame_start -= int(attrib.get("handleStart", 0))
+        frame_end += int(attrib.get("handleEnd", 0))
+
+    scene.frame_start = frame_start
+    scene.frame_end = frame_end
     scene.render.fps = round(fps)
     scene.render.fps_base = round(fps) / fps
 
@@ -276,6 +324,15 @@ def set_resolution(data):
 
     scene.render.resolution_x = resolution_x
     scene.render.resolution_y = resolution_y
+
+
+def set_unit_scale_from_settings(unit_scale_settings=None):
+    if unit_scale_settings is None:
+        return
+    unit_scale_enabled = unit_scale_settings.get("enabled")
+    if unit_scale_enabled:
+        unit_scale = unit_scale_settings["base_file_unit_scale"]
+        bpy.context.scene.unit_settings.scale_length = unit_scale
 
 
 def on_new():
@@ -386,7 +443,7 @@ def _on_task_changed():
     # `directory` attribute, so it opens in that directory (does it?).
     # https://docs.blender.org/api/blender2.8/bpy.types.Operator.html#calling-a-file-selector
     # https://docs.blender.org/api/blender2.8/bpy.types.WindowManager.html#bpy.types.WindowManager.fileselect_add
-    workdir = legacy_io.Session["AVALON_WORKDIR"]
+    workdir = os.getenv("AVALON_WORKDIR")
     log.info("New working directory: %s", workdir)
 
 
@@ -555,6 +612,7 @@ def parse_container(container: bpy.types.Collection,
 
     # Append transient data
     data["objectName"] = container.name
+    data["node"] = container  # store parsed object for easy access in loader
 
     if validate:
         schema.validate(data)
@@ -569,10 +627,26 @@ def ls() -> Iterator:
     disk, it lists assets already loaded in Blender; once loaded they are
     called containers.
     """
+    container_ids = {
+        AYON_CONTAINER_ID,
+        # Backwards compatibility
+        AVALON_CONTAINER_ID
+    }
 
     for container in lib.lsattr("id", AVALON_CONTAINER_ID):
         yield parse_container(container)
 
+    # Compositor nodes are not in `bpy.data` that `lib.lsattr` looks in.
+    node_tree = bpy.context.scene.node_tree
+    if node_tree:
+        for node in node_tree.nodes:
+            if not node.get(AVALON_PROPERTY):
+                continue
+
+            if node.get(AVALON_PROPERTY).get("id") not in container_ids:
+                continue
+
+            yield parse_container(node)
 
 def publish():
     """Shorthand to publish from within host."""

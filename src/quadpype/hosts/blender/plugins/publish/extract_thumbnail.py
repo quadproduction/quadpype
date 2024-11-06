@@ -1,5 +1,6 @@
 import os
 import glob
+import json
 
 import pyblish.api
 from quadpype.hosts.blender.api import capture, plugin
@@ -43,7 +44,8 @@ class ExtractThumbnail(plugin.BlenderExtractor):
         family = instance.data.get("family")
         isolate = instance.data("isolate", None)
 
-        preset = self.presets.get(family, {})
+        presets = json.loads(self.presets)
+        preset = presets.get(family, {})
 
         preset.update({
             "camera": camera,
@@ -81,7 +83,7 @@ class ExtractThumbnail(plugin.BlenderExtractor):
         instance.data["representations"].append(representation)
 
     def _fix_output_path(self, filepath):
-        """"Workaround to return correct filepath.
+        """Workaround to return correct filepath.
 
         To workaround this we just glob.glob() for any file extensions and
         assume the latest modified file is the correct file and return it.

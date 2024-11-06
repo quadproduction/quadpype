@@ -4,6 +4,7 @@ from pathlib import Path
 from pprint import pformat
 from typing import Dict, List, Optional
 import json
+import os
 import bpy
 
 from quadpype.pipeline import (
@@ -17,7 +18,7 @@ from quadpype.hosts.blender.api.pipeline import (
 )
 
 
-class AbcCameraLoader(plugin.AssetLoader):
+class AbcCameraLoader(plugin.BlenderLoader):
     """Load a camera from Alembic file.
 
     Stores the imported asset in an empty named after the asset.
@@ -43,7 +44,10 @@ class AbcCameraLoader(plugin.AssetLoader):
     def _process(self, libpath, asset_group, group_name):
         plugin.deselect_all()
 
-        bpy.ops.wm.alembic_import(filepath=libpath)
+        # Force the creation of the transform cache even if the camera
+        # doesn't have an animation. We use the cache to update the camera.
+        bpy.ops.wm.alembic_import(
+            filepath=libpath, always_add_cache_reader=True)
 
         objects = lib.get_selection()
 
@@ -130,10 +134,10 @@ class AbcCameraLoader(plugin.AssetLoader):
             "name": name,
             "namespace": namespace or "",
             "loader": str(self.__class__.__name__),
-            "representation": str(context["representation"]["_id"]),
+            "representation": context["representation"]["_id"],
             "libpath": libpath,
             "asset_name": asset_name,
-            "parent": str(context["representation"]["parent"]),
+            "parent": context["representation"]["parent"],
             "family": context["representation"]["context"]["family"],
             "objectName": group_name,
         }
@@ -156,6 +160,7 @@ class AbcCameraLoader(plugin.AssetLoader):
         object_name = container["objectName"]
         asset_group = bpy.data.objects.get(object_name)
         libpath = Path(get_representation_path(representation))
+        prev_filename = os.path.basename(container["libpath"])        
         extension = libpath.suffix.lower()
 
         self.log.info(
@@ -188,15 +193,33 @@ class AbcCameraLoader(plugin.AssetLoader):
             self.log.info("Library already loaded, not updating...")
             return
 
-        mat = asset_group.matrix_basis.copy()
+        bpy.ops.cachefile.open(filepath=libpath.as_posix())
+        for obj in asset_group.children:
+            asset_name = obj.name.rsplit(":", 1)[-1]
+            names = [constraint.name for constraint in obj.constraints
+                     if constraint.type == "TRANSFORM_CACHE"]
+            file_list = [file for file in bpy.data.cache_files
+                        if file.name.startswith(prev_filename)]
+            if names:
+                for name in names:
+                    obj.constraints.remove(obj.constraints.get(name))
+            if file_list:
+                bpy.data.batch_remove(file_list)
 
-        self._remove(asset_group)
-        self._process(str(libpath), asset_group, object_name)
+            constraint = obj.constraints.new("TRANSFORM_CACHE")
+            constraint.cache_file = bpy.data.cache_files[-1]
+            constraint.cache_file.name = os.path.basename(libpath)
+            constraint.cache_file.filepath = libpath.as_posix()
+            constraint.cache_file.scale = 1.0
+            bpy.context.evaluated_depsgraph_get()
 
-        asset_group.matrix_basis = mat
+            for object_path in constraint.cache_file.object_paths:
+                base_object_name = os.path.basename(object_path.path)
+                if base_object_name.startswith(asset_name):
+                    constraint.object_path = object_path.path
 
         metadata["libpath"] = str(libpath)
-        metadata["representation"] = str(representation["_id"])
+        metadata["representation"] = representation["_id"]
 
     def exec_remove(self, container: Dict) -> bool:
         """Remove an existing container from a Blender scene.

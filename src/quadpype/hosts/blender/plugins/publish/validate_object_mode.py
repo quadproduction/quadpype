@@ -8,11 +8,12 @@ from quadpype.pipeline.publish import (
     PublishValidationError
 )
 import quadpype.hosts.blender.api.action
+from quadpype.hosts.blender.api import plugin
 
 
 class ValidateObjectIsInObjectMode(
-        pyblish.api.InstancePlugin,
-        OptionalPyblishPluginMixin,
+    plugin.BlenderInstancePlugin,
+    OptionalPyblishPluginMixin,
 ):
     """Validate that the objects in the instance are in Object Mode."""
 

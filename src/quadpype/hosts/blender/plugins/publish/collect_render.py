@@ -5,6 +5,7 @@ import os
 import re
 
 import bpy
+import pyblish.api
 
 from quadpype.hosts.blender.api import colorspace, plugin
 

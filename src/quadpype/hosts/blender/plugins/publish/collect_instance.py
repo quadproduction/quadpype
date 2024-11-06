@@ -4,15 +4,15 @@ import pyblish.api
 
 from quadpype.pipeline.publish import KnownPublishError
 from quadpype.hosts.blender.api.pipeline import AVALON_PROPERTY
+from quadpype.hosts.blender.api import plugin
 
-
-class CollectBlenderInstanceData(pyblish.api.InstancePlugin):
+class CollectBlenderInstanceData(plugin.BlenderInstancePlugin):
     """Validator to verify that the instance is not empty"""
 
     order = pyblish.api.CollectorOrder
     hosts = ["blender"]
     families = ["model", "pointcache", "animation", "rig", "camera", "layout",
-                "blendScene"]
+                "blendScene", "usd"]
     label = "Collect Instance"
 
     def process(self, instance):

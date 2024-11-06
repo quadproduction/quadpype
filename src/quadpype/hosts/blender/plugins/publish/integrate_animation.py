@@ -2,11 +2,12 @@ import json
 
 import pyblish.api
 from quadpype.pipeline.publish import OptionalPyblishPluginMixin
+from quadpype.hosts.blender.api import plugin
 
 
 class IntegrateAnimation(
-        pyblish.api.InstancePlugin,
-        OptionalPyblishPluginMixin,
+    plugin.BlenderInstancePlugin,
+    OptionalPyblishPluginMixin,
 ):
     """Generate a JSON file for animation."""
 

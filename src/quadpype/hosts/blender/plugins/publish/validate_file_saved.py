@@ -6,7 +6,7 @@ from quadpype.pipeline.publish import (
     OptionalPyblishPluginMixin,
     PublishValidationError
 )
-
+from quadpype.hosts.blender.api import plugin
 
 class SaveWorkfileAction(pyblish.api.Action):
     """Save Workfile."""
@@ -18,8 +18,10 @@ class SaveWorkfileAction(pyblish.api.Action):
         bpy.ops.wm.avalon_workfiles()
 
 
-class ValidateFileSaved(pyblish.api.ContextPlugin,
-                        OptionalPyblishPluginMixin):
+class ValidateFileSaved(
+    plugin.BlenderContextPlugin,
+    OptionalPyblishPluginMixin
+):
     """Validate that the workfile has been saved."""
 
     order = pyblish.api.ValidatorOrder - 0.01
@@ -36,7 +38,8 @@ class ValidateFileSaved(pyblish.api.ContextPlugin,
         if not context.data["currentFile"]:
             # File has not been saved at all and has no filename
             raise PublishValidationError(
-                "Current file is empty. Save the file before continuing."
+                "Current workfile has not been saved yet.\n"
+                "Save the workfile before continuing."
             )
 
         # Do not validate workfile has unsaved changes if only instances

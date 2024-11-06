@@ -1,8 +1,8 @@
 import pyblish.api
-from quadpype.hosts.blender.api import workio
+from quadpype.hosts.blender.api import workio, plugin
 
 
-class CollectBlenderCurrentFile(pyblish.api.ContextPlugin):
+class CollectBlenderCurrentFile(plugin.BlenderContextPlugin):
     """Inject the current working file into context"""
 
     order = pyblish.api.CollectorOrder - 0.5

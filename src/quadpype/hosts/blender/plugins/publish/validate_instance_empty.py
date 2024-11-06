@@ -1,8 +1,9 @@
 import pyblish.api
 from quadpype.pipeline.publish import PublishValidationError
+from quadpype.hosts.blender.api import plugin
 
 
-class ValidateInstanceEmpty(pyblish.api.InstancePlugin):
+class ValidateInstanceEmpty(plugin.BlenderInstancePlugin):
     """Validator to verify that the instance is not empty"""
 
     order = pyblish.api.ValidatorOrder - 0.01

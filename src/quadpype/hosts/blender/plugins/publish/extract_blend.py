@@ -15,6 +15,9 @@ class ExtractBlend(
     families = ["model", "camera", "rig", "action", "layout", "blendScene"]
     optional = True
 
+    # From settings
+    compress = False
+
     def process(self, instance):
         if not self.is_active(instance.data):
             return
@@ -55,7 +58,7 @@ class ExtractBlend(
                     if node.image and node.image.packed_file is None:
                         node.image.pack()
 
-        bpy.data.libraries.write(filepath, data_blocks)
+        bpy.data.libraries.write(filepath, data_blocks, compress=self.compress)
 
         if "representations" not in instance.data:
             instance.data["representations"] = []
