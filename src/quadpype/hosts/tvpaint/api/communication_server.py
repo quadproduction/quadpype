@@ -829,7 +829,7 @@ class BaseCommunicator:
         temporary_file.write(george_script)
         temporary_file.close()
         temp_file_path = temporary_file.name.replace("\\", "/")
-        self.execute_george("tv_runscript '\"{}\"'".format(temp_file_path))
+        self.execute_george("tv_runscript {}".format(temp_file_path))
         os.remove(temp_file_path)
 
 

@@ -633,7 +633,7 @@ class ExtractSequence(pyblish.api.Extractor):
             # Go to frame
             george_script_lines.append("tv_layerImage {}".format(frame_to_render))
             # Store image to output
-            george_script_lines.append("tv_saveimage \"{}\"".format(dst_path))
+            george_script_lines.append("tv_saveimage '{}'".format(dst_path))
 
         self.log.debug("Rendering Exposure frames {} of layer {} ({})".format(
             ",".join(frames_to_render), layer_id, layer["name"]

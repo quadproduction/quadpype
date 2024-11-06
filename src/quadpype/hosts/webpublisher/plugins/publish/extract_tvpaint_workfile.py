@@ -467,7 +467,7 @@ class ExtractTVPaintSequences(pyblish.api.Extractor):
             george_script_lines.append("tv_layerImage {}".format(frame_idx))
             # Store image to output
             george_script_lines.append(
-                "tv_saveimage \"{}\"".format(filepath.replace("\\", "/"))
+                "tv_saveimage '{}'".format(filepath.replace("\\", "/"))
             )
 
         tvpaint_commands.add_command(

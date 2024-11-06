@@ -158,9 +158,8 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
         # Execute george script to save workfile.
         filepath = filepath.replace("\\", "/")
-        george_script = u"tv_SaveProject '\"{}\"'".format(filepath)
-
-        return execute_george(george_script)
+        george_script = u"tv_SaveProject '{}'".format(filepath)
+        return execute_george_through_file(george_script)
 
     def work_root(self, session):
         return session["AVALON_WORKDIR"]
