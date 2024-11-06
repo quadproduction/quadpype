@@ -170,7 +170,7 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         # in QuadPype's core code.
         # So we check the returned value and send None if this
         # character is retrieved.
-        current_workfile = execute_george("tv_GetProjectName")
+        current_workfile = execute_george_through_file("tv_GetProjectName")
         if current_workfile == '\\':
             current_workfile = None
         return current_workfile
