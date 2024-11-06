@@ -39,7 +39,7 @@ Use :meth:`Session.create` to create a new custom attribute configuration::
 .. tip::
 
     The example above does not add security roles. This can be done either
-    from System Settings in the ftrack web application, or by following the
+    from Global Settings in the ftrack web application, or by following the
     :ref:`example/manage_custom_attribute_configuration/security_roles` example.
 
 Global or project specific

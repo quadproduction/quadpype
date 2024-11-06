@@ -495,7 +495,6 @@ def reset_segment_selection(sequence):
 
 
 def _get_shot_tokens_values(clip, tokens):
-    old_value = None
     output = {}
 
     if not clip.shot_name:

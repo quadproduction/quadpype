@@ -1,5 +1,4 @@
 from quadpype.modules import QuadPypeModule, ITrayAction
-from quadpype.settings import get_system_settings, GENERAL_SETTINGS_KEY
 from quadpype.settings.lib import get_user_profile
 
 

@@ -410,9 +410,6 @@ class NukePlaceholderLoadPlugin(NukePlaceholderPlugin, PlaceholderLoadMixin):
 
         min_x, min_y, max_x, max_y = get_extreme_positions(considered_nodes)
 
-        diff_x = diff_y = 0
-        contained_nodes = []  # for backdrops
-
         if offset_y is None:
             width_ph = placeholder_node.screenWidth()
             height_ph = placeholder_node.screenHeight()
@@ -814,9 +811,6 @@ class NukePlaceholderCreatePlugin(
         placeholder_node = nuke.toNode(placeholder.scene_identifier)
 
         min_x, min_y, max_x, max_y = get_extreme_positions(considered_nodes)
-
-        diff_x = diff_y = 0
-        contained_nodes = []  # for backdrops
 
         if offset_y is None:
             width_ph = placeholder_node.screenWidth()

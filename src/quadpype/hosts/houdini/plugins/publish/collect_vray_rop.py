@@ -48,7 +48,6 @@ class CollectVrayROPRenderProducts(pyblish.api.InstancePlugin):
         # Store whether we are splitting the render job in an export + render
         split_render = rop.parm("render_export_mode").eval() == "2"
         instance.data["splitRender"] = split_render
-        export_prefix = None
         export_products = []
         if split_render:
             export_prefix = evalParmNoFrame(

@@ -7,14 +7,15 @@ import ftrack_api.entity.factory
 
 
 def stub(self):
-    '''A stub method for testing only.'''
+    """A stub method for testing only."""
+    pass
 
 
 class Factory(ftrack_api.entity.factory.StandardFactory):
-    '''Entity class factory.'''
+    """Entity class factory."""
 
     def create(self, schema, bases=None):
-        '''Create and return entity class from *schema*.'''
+        """Create and return entity class from *schema*."""
         # Optionally change bases for class to be generated.
         cls = super(Factory, self).create(schema, bases=bases)
 
@@ -26,7 +27,7 @@ class Factory(ftrack_api.entity.factory.StandardFactory):
 
 
 def register(session):
-    '''Register plugin with *session*.'''
+    """Register plugin with *session*."""
     logger = logging.getLogger('ftrack_plugin:construct_entity_type.register')
 
     # Validate that session is an instance of ftrack_api.Session. If not, assume
@@ -42,7 +43,7 @@ def register(session):
     factory = Factory()
 
     def construct_entity_type(event):
-        '''Return class to represent entity type specified by *event*.'''
+        """Return class to represent entity type specified by *event*."""
         schema = event['data']['schema']
         return factory.create(schema)
 

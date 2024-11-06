@@ -39,9 +39,7 @@ class SetFrameRateDialog(QDialog):
   def _updateOkButtonState(self):
     # Cancel is always an option but only enable Ok if there is some text.
     currentFramerate = float(self.currentFramerateString())
-    enableOk = False
     enableOk = ((currentFramerate > 0.0) and (currentFramerate <= 250.0))
-    print("enabledOk", enableOk)
     self._buttonbox.button(QDialogButtonBox.Ok).setEnabled(enableOk)
 
   def _textChanged(self, newText):

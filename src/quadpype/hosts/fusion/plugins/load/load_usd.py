@@ -28,9 +28,9 @@ class FusionLoadUSD(load.LoaderPlugin):
     tool_type = "uLoader"
 
     @classmethod
-    def apply_settings(cls, project_settings, system_settings):
+    def apply_settings(cls, project_settings, global_settings):
         super(FusionLoadUSD, cls).apply_settings(project_settings,
-                                                 system_settings)
+                                                 global_settings)
         if cls.enabled:
             # Enable only in Fusion 18.5+
             fusion = get_fusion_module()

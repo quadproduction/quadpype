@@ -159,7 +159,6 @@ class RenderCreator(Creator):
             self._remove_instance_from_context(instance)
             self.host.remove_instance(instance)
 
-            subset = instance.data["subset"]
             comp_id = instance.data["members"][0]
             comp = api.get_stub().get_item(comp_id)
             orig_comp_name = instance.data.get("orig_comp_name")

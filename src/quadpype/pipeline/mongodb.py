@@ -120,7 +120,6 @@ class AvalonMongoDB:
         self.log = logging.getLogger(self.__class__.__name__)
 
     def __getattr__(self, attr_name):
-        attr = None
         if not self.is_installed() and self.auto_install:
             self.install()
 

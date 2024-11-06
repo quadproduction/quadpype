@@ -491,7 +491,6 @@ class IntegrateHierarchyToFtrack(pyblish.api.ContextPlugin):
             filter_data
         )
         status_id = None
-        status_name = None
         if profile:
             status_name = profile["status_name"]
             status_name_low = status_name.lower()

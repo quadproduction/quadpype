@@ -54,7 +54,6 @@ class HarmonyQuadPypePlugin( DeadlinePlugin ):
 
     def RenderExecutable( self ):
         version = int( self.GetPluginInfoEntry( "Version" ) )
-        exe = ""
         exeList = self.GetConfigEntry( "Harmony_RenderExecutable_" + str(version) )
         exe = FileUtils.SearchFileList( exeList )
         if( exe == "" ):

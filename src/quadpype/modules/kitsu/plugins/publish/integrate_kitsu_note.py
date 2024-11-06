@@ -62,7 +62,7 @@ class IntegrateKitsuNote(pyblish.api.ContextPlugin):
             families = set(
                 [instance.data["family"]] + instance.data.get("families", [])
             )
-            representations = instance.data.get("representations", [])
+            #representations = instance.data.get("representations", [])
 
             # Subset should have a review or a kitsureview tag
             is_review = "review" in families

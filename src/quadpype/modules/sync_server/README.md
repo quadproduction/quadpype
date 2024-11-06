@@ -18,7 +18,7 @@ I want to start syncing my newly published files:
 ------------------------------------------------
 
 - Check that Sync server is enabled globally in
-    `pype/settings/defaults/system_settings/modules.json`
+    `pype/settings/defaults/global_settings/modules.json`
 
 - Get credentials for service account, share target folder on Gdrive with it
 

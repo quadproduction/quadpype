@@ -58,9 +58,9 @@ class DropboxHandler(AbstractProvider):
         super().__init__()
 
     @classmethod
-    def get_system_settings_schema(cls):
+    def get_global_settings_schema(cls):
         """
-            Returns dict for editable properties on system settings level
+            Returns dict for editable properties on global settings level
 
 
             Returns:

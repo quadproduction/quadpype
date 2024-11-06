@@ -96,10 +96,10 @@ def is_running_staging():
     if not op_version_control_available():
         return False
 
-    from quadpype.settings import get_global_settings
+    from quadpype.settings import get_core_settings
 
-    global_settings = get_global_settings()
-    production_version = global_settings["production_version"]
+    core_settings = get_core_settings()
+    production_version = core_settings["production_version"]
     latest_version = None
     if not production_version or production_version == "latest":
         latest_version = get_latest_version(local=False, remote=True)
@@ -109,7 +109,7 @@ def is_running_staging():
     if current_version == production_version:
         return False
 
-    staging_version = global_settings["staging_version"]
+    staging_version = core_settings["staging_version"]
     if not staging_version or staging_version == "latest":
         if latest_version is None:
             latest_version = get_latest_version(local=False, remote=True)

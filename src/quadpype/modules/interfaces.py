@@ -381,7 +381,7 @@ class ISettingsChangeListener(QuadPypeInterface):
     """
 
     @abstractmethod
-    def on_system_settings_save(
+    def on_global_settings_save(
         self, old_value, new_value, changes, new_value_metadata
     ):
         pass

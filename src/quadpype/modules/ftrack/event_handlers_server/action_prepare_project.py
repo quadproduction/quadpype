@@ -3,7 +3,7 @@ import copy
 
 from quadpype.client import get_project, create_project
 from quadpype.settings import (
-    ProjectSettings,
+    ProjectSettingsEntity,
     SaveWarningExc,
     APPS_SETTINGS_KEY,
     PROJECT_ANATOMY_KEY
@@ -69,7 +69,7 @@ class PrepareProjectServer(ServerAction):
         project_entity = entities[0]
         project_name = project_entity["full_name"]
 
-        project_settings = ProjectSettings(project_name)
+        project_settings = ProjectSettingsEntity(project_name)
 
         project_anatom_settings = project_settings[PROJECT_ANATOMY_KEY]
         root_items = self.prepare_root_items(project_anatom_settings)
@@ -381,7 +381,7 @@ class PrepareProjectServer(ServerAction):
                 {"project_name": project_name}
             )
 
-        project_settings = ProjectSettings(project_name)
+        project_settings = ProjectSettingsEntity(project_name)
         project_anatomy_settings = project_settings[PROJECT_ANATOMY_KEY]
         project_anatomy_settings["roots"] = root_data
 

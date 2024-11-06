@@ -3,7 +3,7 @@ import shutil
 import os
 
 from quadpype.client import get_project, get_asset_by_id
-from quadpype.settings import get_system_settings, get_project_settings
+from quadpype.settings import get_global_settings, get_project_settings
 from quadpype.pipeline import Anatomy, registered_host
 from quadpype.pipeline.template_data import get_template_data
 from quadpype.pipeline.workfile import get_workdir_with_workdir_data
@@ -56,12 +56,12 @@ def main():
     asset_doc = get_asset_by_id(project_name, context["asset_id"])
     task_name = context["task_name"]
     host = registered_host()
-    system_settings = get_system_settings()
+    global_settings = get_global_settings()
     project_settings = get_project_settings(project_name)
     anatomy = Anatomy(project_name)
 
     workdir_data = get_template_data(
-        project_doc, asset_doc, task_name, host.name, system_settings
+        project_doc, asset_doc, task_name, host.name, global_settings
     )
 
     workdir = get_workdir_with_workdir_data(

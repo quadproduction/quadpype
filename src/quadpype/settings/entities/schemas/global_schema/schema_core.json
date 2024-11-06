@@ -1,7 +1,7 @@
 {
-    "key": "general",
+    "key": "core",
     "type": "dict",
-    "label": "General",
+    "label": "Core",
     "collapsible": true,
     "is_file": true,
     "children": [
@@ -13,7 +13,7 @@
         {
             "key": "studio_code",
             "type": "text",
-            "label": "Studio Short Code"
+            "label": "Studio ID"
         },
         {
             "type": "splitter"
@@ -147,6 +147,10 @@
             "collapsed": false,
             "children": [
                 {
+                    "type": "label",
+                    "label": "Ensure the Project Anatomy Attributes can **only** be updated via the tracker, not from the Project Settings tab."
+                },
+                {
                     "type": "boolean",
                     "key": "protect_anatomy_attributes",
                     "label": "Protect Anatomy Attributes",
@@ -161,7 +165,7 @@
             "type": "list",
             "key": "local_env_white_list",
             "label": "Local overrides of environment variable keys",
-            "tooltip": "Environment variable keys that can be changed per machine using Local settings UI.\nKey changes are applied only on applications and tools environments.",
+            "tooltip": "Environment variable keys that can be changed per machine using User Settings UI.\nVariables are applied only on applications and tools environments.",
             "use_label_wrap": true,
             "object_type": "text"
         },
@@ -175,7 +179,7 @@
             "children": [
                 {
                     "type": "label",
-                    "label": "Define location accessible by artist machine to check for zip updates with QuadPype code."
+                    "label": "Specify the location accessible by all machines to check for the QuadPype zip versions."
                 },
                 {
                     "type": "path",
@@ -187,7 +191,7 @@
                 },
                 {
                     "type": "label",
-                    "label": "Define custom location for artist machine where to unzip versions of QuadPype code. By default it is in user app data folder."
+                    "label": "Define custom location for artist machine where to unzip versions of QuadPype code. By default it's in user app data folder."
                 },
                 {
                     "type": "path",
@@ -219,12 +223,12 @@
                 },
                 {
                     "type": "label",
-                    "label": "Trigger validation if running QuadPype is using studio defined version each 'n' <b>minutes</b>. Validation happens in QuadPype tray application."
+                    "label": "Trigger a check to ensure users are using the correct QuadPype version and patch. To disable it, enter 0."
                 },
                 {
                     "type": "number",
                     "key": "version_check_interval",
-                    "label": "Version check interval",
+                    "label": "Version check interval (minutes)",
                     "minimum": 0
                 }
             ]

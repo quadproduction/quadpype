@@ -64,23 +64,21 @@ def evaluate_filepath_new(
         if (not isinstance(project_dir, type(None))) and project_dir != "":
             filepath = filepath.replace(project_dir, '.')
 
-    # get first and last frame from disk
+    # Get first and last frame from disk
     frames = []
-    firstframe = 0
-    lastframe = 0
     filepath_glob = basename + '*' + filetype
     glob_search_results = glob.glob(filepath_glob)
     for f in glob_search_results:
         frame = re.findall(r'\d+', f)[-1]
         frames.append(frame)
     frames = sorted(frames)
-    firstframe = frames[0]
-    lastframe = frames[len(frames) - 1]
+    first_frame = frames[0]
+    last_frame = frames[len(frames) - 1]
 
-    if int(lastframe) < 0:
-        lastframe = firstframe
+    if int(last_frame) < 0:
+        last_frame = first_frame
 
-    return filepath, firstframe, lastframe
+    return filepath, first_frame, last_frame
 
 
 def create_read_node(ndata, comp_start):

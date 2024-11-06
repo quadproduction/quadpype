@@ -248,7 +248,6 @@ class DropDataFrame(QtWidgets.QFrame):
         folder_path = os.path.dirname(remainder)
         file_base, file_ext = os.path.splitext(filename)
         repr_name = file_ext.replace('.', '')
-        file_info = None
 
         files = []
         files.append(remainder)
@@ -366,7 +365,7 @@ class DropDataFrame(QtWidgets.QFrame):
                 elif new_is_seq and not ex_is_seq:
                     if data['name'] not in item.in_data['name']:
                         continue
-                    ex_file = item.in_data['files'][0]
+                    # ex_file = item.in_data['files'][0]
 
                     a_name = 'merge'
                     item.add_action(a_name)

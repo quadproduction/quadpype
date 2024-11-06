@@ -1,7 +1,7 @@
 import os
 import logging
 
-from quadpype.settings import get_system_settings, get_project_settings
+from quadpype.settings import get_global_settings, get_project_settings
 from quadpype.pipeline import (
     schema,
     legacy_io,
@@ -40,7 +40,7 @@ class LoaderPlugin(list):
     log.propagate = True
 
     @classmethod
-    def apply_settings(cls, project_settings, system_settings):
+    def apply_settings(cls, project_settings, global_settings):
         host_name = os.environ.get("AVALON_APP")
         plugin_type = "load"
         plugin_type_settings = (
@@ -264,11 +264,11 @@ def discover_loader_plugins(project_name=None):
     plugins = discover(LoaderPlugin)
     if not project_name:
         project_name = legacy_io.active_project()
-    system_settings = get_system_settings()
+    global_settings = get_global_settings()
     project_settings = get_project_settings(project_name)
     for plugin in plugins:
         try:
-            plugin.apply_settings(project_settings, system_settings)
+            plugin.apply_settings(project_settings, global_settings)
         except Exception:
             log.warning(
                 "Failed to apply settings to loader {}".format(

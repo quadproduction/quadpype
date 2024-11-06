@@ -199,7 +199,7 @@ class ExtractPalette(publish.Extractor):
                       "black",
                       font=label_font)
 
-        draw = ImageDraw.Draw(img)
+        ImageDraw.Draw(img)
 
         img.save(dst_path)
         return dst_path

@@ -8,7 +8,7 @@ from quadpype.settings import PROJECT_SETTINGS_KEY
 class CollectDefaultDeadlineServer(pyblish.api.ContextPlugin):
     """Collect default Deadline Webservice URL.
 
-    DL webservice addresses must be configured first in System Settings for
+    DL webservice addresses must be configured first in Global Settings for
     project settings enum to work.
 
     Default webservice could be overriden by

@@ -47,8 +47,6 @@ class Creator(LegacyCreator):
                 return False
 
         with harmony.maintained_selection() as selection:
-            node = None
-
             if (self.options or {}).get("useSelection") and selection:
                 node = harmony.send(
                     {

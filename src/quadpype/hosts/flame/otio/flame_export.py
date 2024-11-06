@@ -462,7 +462,6 @@ def add_otio_metadata(otio_item, item, **kwargs):
 
 
 def _get_shot_tokens_values(clip, tokens):
-    old_value = None
     output = {}
 
     old_value = clip.shot_name.get_value()

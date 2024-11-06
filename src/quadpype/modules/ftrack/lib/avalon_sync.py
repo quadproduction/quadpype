@@ -2261,7 +2261,6 @@ class SyncEntitiesFactory:
         self._delete_subsets_without_asset(subsets_to_remove)
 
     def _delete_subsets_without_asset(self, not_existing_parents):
-        repre_ids = []
         to_delete = []
 
         subset_ids = []
@@ -2601,7 +2600,6 @@ class SyncEntitiesFactory:
         self.dbcon.update_many(filter, {"$set": {"type": "archived_asset"}})
 
     def create_ftrack_ent_from_avalon_ent(self, av_entity, parent_id):
-        new_entity = None
         parent_entity = self.entities_dict[parent_id]["entity"]
 
         _name = av_entity["name"]

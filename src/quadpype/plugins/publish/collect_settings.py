@@ -1,9 +1,9 @@
 from pyblish import api
 from quadpype.settings import (
     get_current_project_settings,
-    get_system_settings,
+    get_global_settings,
     PROJECT_SETTINGS_KEY,
-    SYSTEM_SETTINGS_KEY
+    GLOBAL_SETTINGS_KEY
 )
 
 
@@ -15,4 +15,4 @@ class CollectSettings(api.ContextPlugin):
 
     def process(self, context):
         context.data[PROJECT_SETTINGS_KEY] = get_current_project_settings()
-        context.data[SYSTEM_SETTINGS_KEY] = get_system_settings()
+        context.data[GLOBAL_SETTINGS_KEY] = get_global_settings()

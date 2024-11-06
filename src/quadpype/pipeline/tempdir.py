@@ -27,7 +27,6 @@ def create_custom_tempdir(project_name, anatomy=None):
     if not quadpype_tempdir:
         return
 
-    custom_tempdir = None
     if "{" in quadpype_tempdir:
         if anatomy is None:
             anatomy = Anatomy(project_name)

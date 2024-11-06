@@ -1305,7 +1305,6 @@ def create_write_node(
 
     GN = nuke.createNode("Group", "name {}".format(name))
 
-    prev_node = None
     with GN:
         if input:
             input_name = str(input.name()).replace(" ", "")
@@ -1504,7 +1503,6 @@ def create_write_node_legacy(
 
     GN = nuke.createNode("Group", "name {}".format(name))
 
-    prev_node = None
     with GN:
         if input:
             input_name = str(input.name()).replace(" ", "")
@@ -2814,9 +2812,6 @@ def find_free_space_to_paste_nodes(
     """
     if len(nodes) == 0:
         return 0, 0
-
-    group_xpos = list()
-    group_ypos = list()
 
     # get local coordinates of all nodes
     nodes_xpos = [n.xpos() for n in nodes] + \

@@ -222,7 +222,6 @@ class RenderSettings(object):
         for cam in cameras:
             camera = rt.getNodeByName(cam)
             layer_no = rt.batchRenderMgr.FindView(cam)
-            renderlayer = None
             if layer_no == 0:
                 renderlayer = rt.batchRenderMgr.CreateView(camera)
             else:

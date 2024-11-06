@@ -43,7 +43,6 @@ class CollectArnoldROPRenderProducts(pyblish.api.InstancePlugin):
         # Store whether we are splitting the render job (export + render)
         split_render = bool(rop.parm("ar_ass_export_enable").eval())
         instance.data["splitRender"] = split_render
-        export_prefix = None
         export_products = []
         if split_render:
             export_prefix = evalParmNoFrame(

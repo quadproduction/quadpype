@@ -337,7 +337,7 @@ class BaseAnatomy(object):
         ATM user settings can modify project roots. Project name is required
         as user settings have data stored data by project's name.
 
-        Local settings override root values in this order:
+        User settings override root values in this order:
         1.) Check if user settings contain overrides for default project and
             apply it's values on roots if there are any.
         2.) If passed `project_name` is not None then check project specific
@@ -509,7 +509,7 @@ class Anatomy(BaseAnatomy):
                 should be returned.
         """
 
-        # Local settings may be used more than once or may not be used at all
+        # User settings may be used more than once or may not be used at all
         # - to avoid slowdowns 'get_user_settings' is not called until it's
         #   really needed
         user_settings = None

@@ -790,14 +790,14 @@ class SyncServerProviders(DictConditionalEntity):
             provider, _ = provider_info
             provider_code_to_label[provider_code] = provider.LABEL
 
-        system_settings_schema = (
+        global_settings_schema = (
             sync_server
             .SyncServerModule
-            .get_system_settings_schema()
+            .get_global_settings_schema()
         )
 
         enum_children = []
-        for provider_code, configurables in system_settings_schema.items():
+        for provider_code, configurables in global_settings_schema.items():
             # any site could be exposed or vendorized by different site
             # eg studio site content could be mapped on sftp site, single file
             # accessible via 2 different protocols (sites)

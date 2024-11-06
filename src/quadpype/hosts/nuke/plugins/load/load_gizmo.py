@@ -122,7 +122,7 @@ class LoadGizmo(load.LoaderPlugin):
         last = version_data.get("frameEnd", None)
         namespace = container['namespace']
         colorspace = version_data.get("colorspace", None)
-        object_name = "{}_{}".format(name, namespace)
+        # object_name = "{}_{}".format(name, namespace)
 
         add_keys = ["frameStart", "frameEnd", "handleStart", "handleEnd",
                     "source", "author", "fps"]

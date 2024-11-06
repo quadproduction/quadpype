@@ -14,10 +14,10 @@ from quadpype.modules import (
 from quadpype.settings import (
     SaveWarningExc,
     get_project_settings,
-    GENERAL_SETTINGS_KEY,
+    CORE_SETTINGS_KEY,
     MODULES_SETTINGS_KEY
 )
-from quadpype.settings.lib import get_system_settings
+from quadpype.settings.lib import get_global_settings
 from quadpype.lib import Logger
 
 from quadpype.pipeline import (
@@ -309,7 +309,7 @@ class FtrackModule(
                 elif key == "user":
                     self.user_event_handlers_paths.extend(value)
 
-    def on_system_settings_save(
+    def on_global_settings_save(
         self, old_value, new_value, changes, new_value_metadata
     ):
         """Implementation of ISettingsChangeListener interface."""
@@ -433,8 +433,8 @@ class FtrackModule(
             # If no values or same as before, then just skip the update process
             return
 
-        system_settings = get_system_settings()
-        protect_attrs = system_settings[GENERAL_SETTINGS_KEY].get("projects", {}).get("protect_anatomy_attributes", False)
+        global_settings = get_global_settings()
+        protect_attrs = global_settings[CORE_SETTINGS_KEY].get("projects", {}).get("protect_anatomy_attributes", False)
 
         # If we just create the project on the server (prepare project) we want to send attributes to Ftrack
         bypass_protect_anatomy_attributes = new_value_metadata.get("bypass_protect_anatomy_attributes", False)

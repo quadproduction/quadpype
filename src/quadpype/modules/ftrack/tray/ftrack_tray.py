@@ -50,7 +50,6 @@ class FtrackTrayWrapper:
         QtGui.QDesktopServices.openUrl(self.module.ftrack_url)
 
     def validate(self):
-        validation = False
         cred = credentials.get_credentials()
         ft_user = cred.get("username")
         ft_api_key = cred.get("api_key")

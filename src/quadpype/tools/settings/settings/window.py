@@ -5,7 +5,7 @@ from quadpype import style
 from quadpype.lib import get_user_id
 from quadpype.lib.events import EventSystem
 
-from quadpype.settings import get_system_settings
+from quadpype.settings import get_global_settings, CORE_SETTINGS_KEY
 from quadpype.settings.lib import (
     get_last_opened_info,
     opened_settings_ui,
@@ -140,10 +140,10 @@ class MainWidget(QtWidgets.QWidget):
             project_settings_widget
         ]
 
-        current_settings = get_system_settings()
-        production_version = current_settings.get('general').get("production_version")
+        current_settings = get_global_settings()
+        production_version = current_settings.get(CORE_SETTINGS_KEY).get("production_version")
         # If production_version is empty, this means no version can be found
-        # Avoid blocking the system settings in that case
+        # Avoid blocking the global settings in that case
         if production_version and production_version != global_settings_widget._current_version:
             self._protect_global_settings = True
             self._controller.set_edit_mode(EditMode.PROTECT)

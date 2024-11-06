@@ -32,10 +32,7 @@ except ImportError:
 import six
 import appdirs
 
-from quadpype.settings import (
-    get_user_settings,
-    get_system_settings
-)
+from quadpype.settings import get_user_settings
 import quadpype.settings.lib as sett_lib
 from quadpype.client.mongo import validate_mongo_connection
 

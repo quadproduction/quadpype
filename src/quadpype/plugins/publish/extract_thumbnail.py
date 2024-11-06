@@ -371,7 +371,6 @@ class ExtractThumbnail(pyblish.api.InstancePlugin):
 
         repre_display = colorspace_data.get("display")
         repre_view = colorspace_data.get("view")
-        oiio_default_type = None
         oiio_default_display = None
         oiio_default_view = None
         oiio_default_colorspace = None

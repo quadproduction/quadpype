@@ -1,15 +1,15 @@
 from qtpy import QtWidgets
 
-from quadpype.settings import GENERAL_SETTINGS_KEY
+from quadpype.settings import CORE_SETTINGS_KEY
 from quadpype.tools.utils import PlaceholderLineEdit
 
 
 class LocalEnvironmentsWidgets(QtWidgets.QWidget):
-    def __init__(self, system_settings_entity, parent):
+    def __init__(self, global_settings_entity, parent):
         super().__init__(parent)
 
         self._widgets_by_env_key = {}
-        self.system_settings_entity = system_settings_entity
+        self.global_settings_entity = global_settings_entity
 
         content_widget = QtWidgets.QWidget(self)
         content_layout = QtWidgets.QGridLayout(content_widget)
@@ -39,7 +39,7 @@ class LocalEnvironmentsWidgets(QtWidgets.QWidget):
         content_layout = QtWidgets.QGridLayout(content_widget)
         content_layout.setContentsMargins(0, 0, 0, 0)
         white_list_entity = (
-            self.system_settings_entity[GENERAL_SETTINGS_KEY]["local_env_white_list"]
+            self.global_settings_entity[CORE_SETTINGS_KEY]["local_env_white_list"]
         )
         row = -1
         for row, item in enumerate(white_list_entity):

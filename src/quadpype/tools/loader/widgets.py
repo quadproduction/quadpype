@@ -1361,7 +1361,7 @@ class RepresentationWidget(QtWidgets.QWidget):
         rows = selection.selectedRows(column=0)
 
         items = self.get_selected_repre_items()
-        selected_side = self._get_selected_side(point_index, rows)
+        #selected_side = self._get_selected_side(point_index, rows)
         # Get all representation->loader combinations available for the
         # index under the cursor, so we can list the user the options.
         project_name = self.dbcon.active_project()

@@ -14,7 +14,7 @@ import pyblish.api
 from quadpype.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
 from quadpype.settings import (
     get_current_project_settings,
-    get_system_settings
+    get_global_settings
 )
 
 from quadpype.pipeline.template_data import get_template_data_with_names
@@ -252,11 +252,11 @@ class SubstanceHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
             project_name = self.get_current_project_name()
             asset_name = self.get_current_asset_name()
             task_name = self.get_current_asset_name()
-            system_settings = get_system_settings()
+            global_settings = get_global_settings()
             formatting_data = get_template_data_with_names(project_name,
                                                            asset_name,
                                                            task_name,
-                                                           system_settings)
+                                                           global_settings)
             anatomy = Anatomy(project_name)
             formatting_data["root"] = anatomy.roots
 

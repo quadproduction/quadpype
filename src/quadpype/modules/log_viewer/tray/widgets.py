@@ -213,13 +213,13 @@ class LogsWidget(QtWidgets.QWidget):
         # TODO will be any actions? it's ready
         return
 
-        point_index = self.view.indexAt(point)
-        if not point_index.isValid():
-            return
+        #point_index = self.view.indexAt(point)
+        #if not point_index.isValid():
+        #    return
 
         # Get selected subsets without groups
-        selection = self.view.selectionModel()
-        rows = selection.selectedRows(column=0)
+        #selection = self.view.selectionModel()
+        #rows = selection.selectedRows(column=0)
 
     def _selected_log(self):
         selection = self.view.selectionModel()

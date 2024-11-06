@@ -32,7 +32,7 @@ class FusionPrelaunch(PreLaunchHook):
         app_version = get_fusion_version(app_data)
         if not app_version:
             raise ApplicationLaunchFailed(
-                "Fusion version information not found in System settings.\n"
+                "Fusion version information not found in Global settings.\n"
                 "The key field in the 'applications/fusion/variants' should "
                 "consist a number, corresponding to major Fusion version."
             )

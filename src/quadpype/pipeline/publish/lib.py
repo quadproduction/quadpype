@@ -17,7 +17,7 @@ from quadpype.lib import (
 )
 from quadpype.settings import (
     get_project_settings,
-    get_system_settings,
+    get_global_settings,
 )
 from quadpype.pipeline import (
     tempdir,
@@ -426,7 +426,7 @@ def filter_pyblish_plugins(plugins):
     """Pyblish plugin filter which applies QuadPype settings.
 
     Apply QuadPype settings on discovered plugins. On plugin with implemented
-    class method 'def apply_settings(cls, project_settings, system_settings)'
+    class method 'def apply_settings(cls, project_settings, global_settings)'
     is called the method. Default behavior looks for plugin name and current
     host name to look for
 
@@ -444,7 +444,7 @@ def filter_pyblish_plugins(plugins):
     project_name = os.environ.get("AVALON_PROJECT")
 
     project_settings = get_project_settings(project_name)
-    system_settings = get_system_settings()
+    global_settings = get_global_settings()
 
     # iterate over plugins
     for plugin in plugins[:]:
@@ -466,7 +466,7 @@ def filter_pyblish_plugins(plugins):
                 # - make sure that both settings are passed, when can be
                 #   - that covers cases when *args are in method parameters
                 both_supported = is_func_signature_supported(
-                    apply_settings_func, project_settings, system_settings
+                    apply_settings_func, project_settings, global_settings
                 )
                 project_supported = is_func_signature_supported(
                     apply_settings_func, project_settings
@@ -474,7 +474,7 @@ def filter_pyblish_plugins(plugins):
                 if not both_supported and project_supported:
                     plugin.apply_settings(project_settings)
                 else:
-                    plugin.apply_settings(project_settings, system_settings)
+                    plugin.apply_settings(project_settings, global_settings)
             except Exception:  # noqa
                 log.warning(
                     (

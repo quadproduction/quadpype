@@ -103,7 +103,7 @@ class SettingsBreadcrumbs(BreadcrumbsModel):
         return True
 
 
-class SystemSettingsBreadcrumbs(SettingsBreadcrumbs):
+class GlobalSettingsBreadcrumbs(SettingsBreadcrumbs):
     def reset(self):
         root_item = self.invisibleRootItem()
         rows = root_item.rowCount()

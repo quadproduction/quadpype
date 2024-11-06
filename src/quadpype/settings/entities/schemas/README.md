@@ -13,12 +13,12 @@
     - `"is_group"` - define that all values under key in hierarchy will be overridden if any value is modified, this information is also stored to overrides
         - this keys is not allowed for all inputs as they may have not reason for that
         - key is validated, can be only once in hierarchy but is not required
-- currently there are `system settings` and `project settings`
+- currently there are `global settings` and `project settings`
 - all entities can have set `"tooltip"` key with description which will be shown in UI
 
 ## Inner schema
 - GUI schemas are huge json files, to be able to split whole configuration into multiple schema there's type `schema`
-- system configuration schemas are stored in `~/quadpype/settings/entities/schemas/system_schema/` and project configurations in `~/quadpype/settings/entities/schemas/projects_schema/`
+- global settings configuration schemas are stored in `~/quadpype/settings/entities/schemas/global_schema/` and project configurations in `~/quadpype/settings/entities/schemas/project_schema/`
 - each schema name is filename of json file except extension (without ".json")
 - if content is dictionary content will be used as `schema` else will be used as `schema_template`
 
@@ -482,7 +482,7 @@ How output of the schema could look like on save:
 ```
 
 ### apps-enum
-- enumeration of available application and their variants from system settings
+- enumeration of available application and their variants from global settings
     - applications without host name are excluded
 - can be used only in project settings
 - has only `multiselection`
@@ -496,7 +496,7 @@ How output of the schema could look like on save:
 ```
 
 ### tools-enum
-- enumeration of available tools and their variants from system settings
+- enumeration of available tools and their variants from global settings
 - can be used only in project settings
 - has only `multiselection`
 - used only in project anatomy
@@ -514,7 +514,7 @@ How output of the schema could look like on save:
 - has set `multiselection` to `True` but can be changed to `False` in schema
 
 ### deadline_url-enum
-- deadline module specific enumerator using deadline system settings to fill it's values
+- deadline module specific enumerator using deadline global settings to fill it's values
 - TODO: move this type to deadline module
 
 ## Inputs for setting value using Pure inputs

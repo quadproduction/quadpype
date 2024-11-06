@@ -634,8 +634,8 @@ class Loader(LoaderPlugin):
     load_settings = {}  # defined in settings
 
     @classmethod
-    def apply_settings(cls, project_settings, system_settings):
-        super(Loader, cls).apply_settings(project_settings, system_settings)
+    def apply_settings(cls, project_settings, global_settings):
+        super(Loader, cls).apply_settings(project_settings, global_settings)
         cls.load_settings = project_settings['maya']['load']
 
     def get_custom_namespace_and_group(self, context, options, loader_key):
@@ -1114,7 +1114,6 @@ class ActionBase(BuilderAction):
             loaded_containers.append(container)
             self._organize_containers(nodes, container)
             c += 1
-            namespace = None
 
         return loaded_containers
 

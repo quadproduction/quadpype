@@ -22,7 +22,7 @@ from quadpype.modules import (
 )
 from quadpype.settings import (
     get_project_settings,
-    get_system_settings,
+    get_global_settings,
     MODULES_SETTINGS_KEY,
     PROJECTS_SETTINGS_KEY
 )
@@ -131,7 +131,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
         # some parts of code need to run sequentially, not in async
         self.lock = None
-        self._sync_system_settings = None
+        self._sync_global_settings = None
         # settings for all enabled projects for sync
         self._sync_project_settings = None
         self.sync_server_thread = None  # asyncio requires new thread
@@ -318,7 +318,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             return metadata
 
         if (
-                not self.sync_system_settings["enabled"] or
+                not self.sync_global_settings["enabled"] or
                 not self.sync_project_settings[project_name]["enabled"]):
             return [create_metadata(self.DEFAULT_SITE)]
 
@@ -361,13 +361,13 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
     def _add_alternative_sites(self, attached_sites):
         """Add skeleton document for alternative sites
 
-        Each new configured site in System Setting could serve as a alternative
+        Each new configured site in global Setting could serve as a alternative
         site, it's a kind of alias. It means that files on 'a site' are
         physically accessible also on 'a alternative' site.
         Example is sftp site serving studio files via sftp protocol, physically
         file is only in studio, sftp server has this location mounted.
         """
-        additional_sites = self.sync_system_settings.get("sites", {})
+        additional_sites = self.sync_global_settings.get("sites", {})
 
         alt_site_pairs = self._get_alt_site_pairs(additional_sites)
 
@@ -689,7 +689,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             By default it returns ['studio'], this site is default
             and always present even if SyncServer is not enabled. (for publish)
 
-            Used mainly for Local settings for user override.
+            Used mainly for User Settings override.
 
             Args:
                 project_name (string):
@@ -838,7 +838,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
             If 'project_name' is not enabled for syncing returns [].
 
-            Used by Local setting to allow user choose remote site.
+            Used by User Settings to allow user choose remote site.
 
             Args:
                 project_name (string):
@@ -882,7 +882,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
     # Methods for Settings UI to draw appropriate forms
     @classmethod
-    def get_system_settings_schema(cls):
+    def get_global_settings_schema(cls):
         """ Gets system level schema of  configurable items
 
             Used for Setting UI to provide forms.
@@ -891,7 +891,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         for provider_code in lib.factory.providers:
             ret_dict[provider_code] = \
                 lib.factory.get_provider_cls(provider_code). \
-                get_system_settings_schema()
+                get_global_settings_schema()
 
         return ret_dict
 
@@ -981,7 +981,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
     #     return editable
     #
     # def get_user_settings_schema_for_project(self, project_name):
-    #     """Wrapper for Local settings - for specific 'project_name'"""
+    #     """Wrapper for User settings - for specific 'project_name'"""
     #     return self.get_configurable_items_for_project(project_name,
     #                                                    EditableScopes.LOCAL)
     #
@@ -1021,7 +1021,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
     #     allowed_sites = set()
     #     sites = self.get_all_site_configs(project_name)
     #     if project_name:
-    #         # Local Settings can select only from allowed sites for project
+    #         # User Settings can select only from allowed sites for project
     #         allowed_sites.update(set(self.get_active_sites(project_name)))
     #         allowed_sites.update(set(self.get_remote_sites(project_name)))
     #
@@ -1033,7 +1033,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
     #         items = self.get_configurable_items_for_site(project_name,
     #                                                      site_name,
     #                                                      scope)
-    #         # Local Settings need 'local' instead of real value
+    #         # User Settings need 'local' instead of real value
     #         site_name = site_name.replace(get_local_site_id(), 'local')
     #         editable[site_name] = items
     #
@@ -1255,7 +1255,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                 synced_file_id (str): id of the created file returned
                     by provider
         """
-        sites = self.sync_system_settings.get("sites", {})
+        sites = self.sync_global_settings.get("sites", {})
         sites[self.DEFAULT_SITE] = {"provider": "local_drive",
                                     "alternative_sites": []}
 
@@ -1497,12 +1497,12 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         return self._connection
 
     @property
-    def sync_system_settings(self):
-        if self._sync_system_settings is None:
-            self._sync_system_settings = get_system_settings()[MODULES_SETTINGS_KEY].\
+    def sync_global_settings(self):
+        if self._sync_global_settings is None:
+            self._sync_global_settings = get_global_settings()[MODULES_SETTINGS_KEY].\
                 get("sync_server")
 
-        return self._sync_system_settings
+        return self._sync_global_settings
 
     @property
     def sync_project_settings(self):
@@ -1552,7 +1552,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                 exclude_locals (bool): ignore overrides from User Settings
                 cached (bool): use pre-cached values, or return fresh ones
                     cached values needed for single loop (with all overrides)
-                    fresh values needed for Local settings (without overrides)
+                    fresh values needed for User Settings (without overrides)
             Returns:
                 (dict): settings dictionary for the enabled project,
                     empty if no settings or sync is disabled
@@ -1588,7 +1588,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                 (dict): {'studio': {'provider':'local_drive'...},
                          'MY_LOCAL': {'provider':....}}
         """
-        sync_sett = self.sync_system_settings
+        sync_sett = self.sync_global_settings
         project_enabled = True
         project_settings = None
         if project_name:
@@ -1672,7 +1672,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             if provider:
                 return provider
 
-        sync_sett = self.sync_system_settings
+        sync_sett = self.sync_global_settings
         for conf_site, detail in sync_sett.get("sites", {}).items():
             sites[conf_site] = detail.get("provider")
 
@@ -2279,7 +2279,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             no_errors = True
         except ValueError:
             self.log.info(
-                "No system setting for sync. Not syncing.", exc_info=True
+                "No global setting for sync. Not syncing.", exc_info=True
             )
         except KeyError:
             self.log.info((

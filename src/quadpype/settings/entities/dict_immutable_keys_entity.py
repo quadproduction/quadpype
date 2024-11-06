@@ -766,7 +766,7 @@ class SyncServerSites(DictImmutableKeysEntity):
 
     Can be used only in project settings.
 
-    Is loading sites from system settings. Uses site name as key and by site's
+    Is loading sites from global settings. Uses site name as key and by site's
     provider loads project settings schemas calling method
     `get_project_settings_schema` on provider.
 
@@ -829,8 +829,8 @@ class SyncServerSites(DictImmutableKeysEntity):
     def _get_children(self):
         from quadpype_modules import sync_server
 
-        # Load system settings to find out all created sites
-        modules_entity = self.get_entity_from_path("system_settings/modules")
+        # Load global settings to find out all created sites
+        modules_entity = self.get_entity_from_path("global_settings/modules")
         sync_server_settings_entity = modules_entity.get("sync_server")
 
         # Get project settings configurations for all providers

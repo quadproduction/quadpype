@@ -229,7 +229,6 @@ class CreatorWindow(BaseToolDialog):
 
         # Get plugin
         if not asset_doc or not creator_plugin:
-            subset_name = user_input_text
             self._build_menu()
 
             if not creator_plugin:

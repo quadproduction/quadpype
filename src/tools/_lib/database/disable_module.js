@@ -1,16 +1,16 @@
 db = connect('mongodb://localhost/quadpype');
 
-all_settings = db.settings.find({ type: { $in: ['system_settings', 'system_settings_versioned'] } });
+all_settings = db.settings.find({ type: { $in: ['global_settings', 'global_settings_versioned'] } });
 
-all_settings.forEach(function (system_setting) {
+all_settings.forEach(function (global_setting) {
 
-    if (! system_setting['data']['modules'].hasOwnProperty(moduleName)) {
+    if (! global_setting['data']['modules'].hasOwnProperty(moduleName)) {
         return;
     }
 
-    system_setting['data']['modules'][moduleName]['enabled'] = false;
+    global_setting['data']['modules'][moduleName]['enabled'] = false;
     db.settings.updateOne(
-        { _id: system_setting['_id'] },
-        { $set: { "data": system_setting['data'] } },
+        { _id: global_setting['_id'] },
+        { $set: { "data": global_setting['data'] } },
     );
 });

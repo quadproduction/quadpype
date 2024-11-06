@@ -195,7 +195,7 @@ class ExtractSequence(pyblish.api.Extractor):
         )
 
         # Fill tags and new families from project settings
-        instance_families = get_publish_instance_families(instance)
+        #instance_families = get_publish_instance_families(instance)
         tags = []
         custom_tags = []
         if "review" in instance.data["families"]:

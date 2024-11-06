@@ -293,7 +293,6 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
     def process_submission(self):
         from maya import cmds
         instance = self._instance
-        context = instance.context
 
         filepath = self.scene_path  # publish if `use_publish` else workfile
 

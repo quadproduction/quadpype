@@ -418,8 +418,6 @@ class ClipLoader:
             # Load file without the handles of the source media
             # We remove the handles from the source in and source out
             # so that the handles are excluded in the timeline
-            handle_start = 0
-            handle_end = 0
 
             # get version data frame data from db
             version_data = self.data["versionData"]

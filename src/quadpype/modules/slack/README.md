@@ -7,7 +7,7 @@ and templates(could contain {} placeholder, as "{asset} published").
 These need to be configured in
 ```Project settings > Slack > Publish plugins > Notification to Slack```
 
-Slack module must be enabled in System Setting, could be configured per Project.
+Slack module must be enabled in Global Setting, could be configured per Project.
 
 ## App installation
 

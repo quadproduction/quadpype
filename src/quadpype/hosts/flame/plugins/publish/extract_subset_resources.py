@@ -215,7 +215,6 @@ class ExtractSubsetResources(publish.Extractor):
                 )
             )
 
-            exporting_clip = None
             name_patern_xml = "<name>_{}.".format(
                 unique_name)
 

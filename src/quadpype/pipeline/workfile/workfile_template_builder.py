@@ -27,7 +27,7 @@ from quadpype.client import (
 from quadpype.client import get_projects
 from quadpype.settings import (
     get_project_settings,
-    get_system_settings,
+    get_global_settings,
 )
 from quadpype.host import IWorkfileHost, HostBase
 from quadpype.lib import (
@@ -128,7 +128,7 @@ class AbstractTemplateBuilder(object):
         self._creators_by_name = None
         self._create_context = None
 
-        self._system_settings = None
+        self._global_settings = None
         self._project_settings = None
 
         self._current_asset_doc = None
@@ -170,10 +170,10 @@ class AbstractTemplateBuilder(object):
         }
 
     @property
-    def system_settings(self):
-        if self._system_settings is None:
-            self._system_settings = get_system_settings()
-        return self._system_settings
+    def global_settings(self):
+        if self._global_settings is None:
+            self._global_settings = get_global_settings()
+        return self._global_settings
 
     @property
     def project_settings(self):
@@ -274,7 +274,7 @@ class AbstractTemplateBuilder(object):
         self._linked_asset_docs = None
         self._task_type = None
 
-        self._system_settings = None
+        self._global_settings = None
         self._project_settings = None
 
         self.clear_shared_data()

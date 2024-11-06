@@ -17,16 +17,16 @@ from abc import ABCMeta, abstractmethod
 import six
 
 from quadpype.settings import (
-    get_system_settings,
-    SYSTEM_SETTINGS_KEY,
+    get_global_settings,
+    GLOBAL_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
-    SCHEMA_KEY_SYSTEM_SETTINGS,
+    SCHEMA_KEY_GLOBAL_SETTINGS,
     SCHEMA_KEY_PROJECT_SETTINGS,
     MODULES_SETTINGS_KEY
 )
 
 from quadpype.settings.lib import (
-    get_studio_system_settings_overrides,
+    get_studio_global_settings_overrides,
     load_json_file,
 )
 
@@ -192,7 +192,7 @@ def get_dynamic_modules_dirs():
 
     output = []
 
-    value = get_studio_system_settings_overrides()
+    value = get_studio_global_settings_overrides()
     for key in (MODULES_SETTINGS_KEY, "addon_paths", platform.system().lower()):
         if key not in value:
             return output
@@ -496,7 +496,7 @@ class QuadPypeModule(object):
     def get_global_environments(self):
         """Get global environments values of module.
 
-        Environment variables that can be got only from system settings.
+        Environment variables that can be got only from global settings.
 
         Returns:
             dict[str, str]: Environment variables.
@@ -579,17 +579,17 @@ class ModulesManager:
     """Manager of Pype modules helps to load and prepare them to work.
 
     Args:
-        system_settings (Optional[dict[str, Any]]): QuadPype system settings.
+        global_settings (Optional[dict[str, Any]]): QuadPype global settings.
     """
 
     # Helper attributes for report
     _report_total_key = "Total"
-    _system_settings = None
+    _global_settings = None
 
-    def __init__(self, system_settings=None):
+    def __init__(self, global_settings=None):
         self.log = logging.getLogger(self.__class__.__name__)
 
-        self._system_settings = system_settings
+        self._global_settings = global_settings
 
         self.modules = []
         self.modules_by_id = {}
@@ -644,11 +644,11 @@ class ModulesManager:
 
         self.log.debug("*** {} initialization.".format("QuadPype modules"))
         # Prepare settings for modules
-        system_settings = getattr(self, "_system_settings", None)
-        if system_settings is None:
-            system_settings = get_system_settings()
+        global_settings = getattr(self, "_global_settings", None)
+        if global_settings is None:
+            global_settings = get_global_settings()
 
-        modules_settings = system_settings[MODULES_SETTINGS_KEY]
+        modules_settings = global_settings[MODULES_SETTINGS_KEY]
 
         report = {}
         time_start = time.time()
@@ -1387,7 +1387,7 @@ class BaseModuleSettingsDef:
     def get_defaults(self, top_key):
         """Default values for passed top key.
 
-        Top keys are (currently) "system_settings" or "project_settings".
+        Top keys are (currently) "global_settings" or "project_settings".
 
         Should return exactly what was passed with `save_defaults`.
 
@@ -1400,7 +1400,7 @@ class BaseModuleSettingsDef:
     def save_defaults(self, top_key, data):
         """Save default values for passed top key.
 
-        Top keys are (currently) "system_settings" or "project_settings".
+        Top keys are (currently) "global_settings" or "project_settings".
 
         Passed data are by path to first key defined in main schemas.
         """
@@ -1408,45 +1408,45 @@ class BaseModuleSettingsDef:
 
 
 class ModuleSettingsDef(BaseModuleSettingsDef):
-    """Settings definition with separated system and project settings parts.
+    """Settings definition with separated global and project settings parts.
 
     Reduce conditions that must be checked and adds predefined methods for
     each case.
     """
     def get_defaults(self, top_key):
         """Split method into 2 methods by top key."""
-        if top_key == SYSTEM_SETTINGS_KEY:
-            return self.get_default_system_settings() or {}
+        if top_key == GLOBAL_SETTINGS_KEY:
+            return self.get_default_global_settings() or {}
         elif top_key == PROJECT_SETTINGS_KEY:
             return self.get_default_project_settings() or {}
         return {}
 
     def save_defaults(self, top_key, data):
         """Split method into 2 methods by top key."""
-        if top_key == SYSTEM_SETTINGS_KEY:
-            self.save_system_defaults(data)
+        if top_key == GLOBAL_SETTINGS_KEY:
+            self.save_global_defaults(data)
         elif top_key == PROJECT_SETTINGS_KEY:
             self.save_project_defaults(data)
 
     def get_settings_schemas(self, schema_type):
         """Split method into 2 methods by schema type."""
-        if schema_type == SCHEMA_KEY_SYSTEM_SETTINGS:
-            return self.get_system_settings_schemas() or {}
+        if schema_type == SCHEMA_KEY_GLOBAL_SETTINGS:
+            return self.get_global_settings_schemas() or {}
         elif schema_type == SCHEMA_KEY_PROJECT_SETTINGS:
             return self.get_project_settings_schemas() or {}
         return {}
 
     def get_dynamic_schemas(self, schema_type):
         """Split method into 2 methods by schema type."""
-        if schema_type == SCHEMA_KEY_SYSTEM_SETTINGS:
-            return self.get_system_dynamic_schemas() or {}
+        if schema_type == SCHEMA_KEY_GLOBAl_SETTINGS:
+            return self.get_global_dynamic_schemas() or {}
         elif schema_type == SCHEMA_KEY_PROJECT_SETTINGS:
             return self.get_project_dynamic_schemas() or {}
         return {}
 
     @abstractmethod
-    def get_system_settings_schemas(self):
-        """Schemas and templates usable in system settings schemas.
+    def get_global_settings_schemas(self):
+        """Schemas and templates usable in global settings schemas.
 
         Returns:
             dict: Schemas and templates by its names. Names must be unique
@@ -1465,8 +1465,8 @@ class ModuleSettingsDef(BaseModuleSettingsDef):
         pass
 
     @abstractmethod
-    def get_system_dynamic_schemas(self):
-        """System schemas by dynamic schema name.
+    def get_global_dynamic_schemas(self):
+        """Global schemas by dynamic schema name.
 
         If dynamic schema name is not available in then schema will not be used.
 
@@ -1487,8 +1487,8 @@ class ModuleSettingsDef(BaseModuleSettingsDef):
         pass
 
     @abstractmethod
-    def get_default_system_settings(self):
-        """Default system settings values.
+    def get_default_global_settings(self):
+        """Default global settings values.
 
         Returns:
             dict: Default values by path to first key.
@@ -1505,8 +1505,8 @@ class ModuleSettingsDef(BaseModuleSettingsDef):
         pass
 
     @abstractmethod
-    def save_system_defaults(self, data):
-        """Save default system settings values.
+    def save_global_defaults(self, data):
+        """Save default global settings values.
 
         Passed data are by path to first key defined in main schemas.
         """
@@ -1529,21 +1529,21 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
       │
       │ # Default values
       ┝ defaults
-      │ ┝ system_settings.json
+      │ ┝ global_settings.json
       │ ┕ project_settings.json
       │
       │ # Schemas for `dynamic_template` type
       ┝ dynamic_schemas
-      │ ┝ system_dynamic_schemas.json
+      │ ┝ global_dynamic_schemas.json
       │ ┕ project_dynamic_schemas.json
       │
       │ # Schemas that can be used anywhere (enhancement for `dynamic_schemas`)
       ┕ schemas
-        ┝ system_schemas
-        │ ┝ <system schema.json> # Any schema or template files
+        ┝ global_schemas
+        │ ┝ <global schema.json> # Any schema or template files
         │ ┕ ...
         ┕ project_schemas
-          ┝ <system schema.json> # Any schema or template files
+          ┝ <project schema.json> # Any schema or template files
           ┕ ...
 
     Schemas can be loaded with prefix to avoid duplicated schema/template names
@@ -1573,22 +1573,22 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
             settings_root_dir, "schemas"
         )
 
-        self.system_defaults_filepath = os.path.join(
-            defaults_dir, "system_settings.json"
+        self.global_defaults_filepath = os.path.join(
+            defaults_dir, "global_settings.json"
         )
         self.project_defaults_filepath = os.path.join(
             defaults_dir, "project_settings.json"
         )
 
-        self.system_dynamic_schemas_filepath = os.path.join(
-            dynamic_schemas_dir, "system_dynamic_schemas.json"
+        self.global_dynamic_schemas_filepath = os.path.join(
+            dynamic_schemas_dir, "global_dynamic_schemas.json"
         )
         self.project_dynamic_schemas_filepath = os.path.join(
             dynamic_schemas_dir, "project_dynamic_schemas.json"
         )
 
-        self.system_schemas_dir = os.path.join(
-            schemas_dir, "system_schemas"
+        self.global_schemas_dir = os.path.join(
+            schemas_dir, "global_schemas"
         )
         self.project_schemas_dir = os.path.join(
             schemas_dir, "project_schemas"
@@ -1601,13 +1601,13 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
 
         return {}
 
-    def get_default_system_settings(self):
-        """Default system settings values.
+    def get_default_global_settings(self):
+        """Default global settings values.
 
         Returns:
             dict: Default values by path to first key.
         """
-        return self._load_json_file_data(self.system_defaults_filepath)
+        return self._load_json_file_data(self.global_defaults_filepath)
 
     def get_default_project_settings(self):
         """Default project settings values.
@@ -1626,12 +1626,12 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
         with open(path, "w", encoding='utf-8') as file_stream:
             json.dump(data, file_stream, ensure_ascii=False, indent=4)
 
-    def save_system_defaults(self, data):
-        """Save default system settings values.
+    def save_global_defaults(self, data):
+        """Save default global settings values.
 
         Passed data are by path to first key defined in main schemas.
         """
-        self._save_data_to_filepath(self.system_defaults_filepath, data)
+        self._save_data_to_filepath(self.global_defaults_filepath, data)
 
     def save_project_defaults(self, data):
         """Save default project settings values.
@@ -1640,15 +1640,15 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
         """
         self._save_data_to_filepath(self.project_defaults_filepath, data)
 
-    def get_system_dynamic_schemas(self):
-        """System schemas by dynamic schema name.
+    def get_global_dynamic_schemas(self):
+        """Global schemas by dynamic schema name.
 
         If dynamic schema name is not available in then schema will not be used.
 
         Returns:
             dict: Schemas or list of schemas by dynamic schema name.
         """
-        return self._load_json_file_data(self.system_dynamic_schemas_filepath)
+        return self._load_json_file_data(self.global_dynamic_schemas_filepath)
 
     def get_project_dynamic_schemas(self):
         """Project schemas by dynamic schema name.
@@ -1693,14 +1693,14 @@ class JsonFilesSettingsDef(ModuleSettingsDef):
 
         return output
 
-    def get_system_settings_schemas(self):
-        """Schemas and templates usable in system settings schemas.
+    def get_global_settings_schemas(self):
+        """Schemas and templates usable in global settings schemas.
 
         Returns:
             dict: Schemas and templates by its names. Names must be unique
                 across whole QuadPype.
         """
-        return self._load_files_from_path(self.system_schemas_dir)
+        return self._load_files_from_path(self.global_schemas_dir)
 
     def get_project_settings_schemas(self):
         """Schemas and templates usable in project settings schemas.

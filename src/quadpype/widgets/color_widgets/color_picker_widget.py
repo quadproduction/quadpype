@@ -79,8 +79,6 @@ class ColorPickerWidget(QtWidgets.QWidget):
         layout.setRowStretch(row, 1)
         row += 1
 
-        alpha_label = None
-        alpha_slider_proxy = None
         alpha_slider = None
         alpha_inputs = None
         if not use_alpha:

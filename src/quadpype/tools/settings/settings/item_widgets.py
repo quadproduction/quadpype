@@ -521,7 +521,6 @@ class QuadPypeVersionText(TextWidget):
     def _update_info_widget(self):
         value = self.input_value()
 
-        message = ""
         tooltip = ""
         state = None
         if self._is_invalid:

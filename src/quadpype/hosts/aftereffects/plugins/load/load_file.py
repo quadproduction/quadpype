@@ -41,8 +41,6 @@ class FileLoader(api.AfterEffectsLoader):
         stub = self.get_stub()
         layers = stub.get_items(comps=True, folders=True, footages=True)
         existing_layers = [layer.name for layer in layers]
-        comp_name = get_unique_layer_name(
-            existing_layers, "{}_{}".format(context["asset"]["name"], name))
 
         path = self.filepath_from_context(context)
         repr_cont = context["representation"]["context"]

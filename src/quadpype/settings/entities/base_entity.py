@@ -237,7 +237,7 @@ class BaseItemEntity(BaseEntity):
 
     @abstractmethod
     def get_entity_from_path(self, path):
-        """Return system settings entity."""
+        """Return global settings entity."""
         pass
 
     @abstractmethod

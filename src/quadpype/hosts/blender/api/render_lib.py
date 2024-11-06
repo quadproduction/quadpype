@@ -238,8 +238,6 @@ def set_node_tree(
     image_settings = bpy.context.scene.render.image_settings
     output.format.file_format = image_settings.file_format
 
-    slots = None
-
     # In case of a multilayer exr, we don't need to use the output node,
     # because the blender render already outputs a multilayer exr.
     multi_exr = ext == "exr" and multilayer

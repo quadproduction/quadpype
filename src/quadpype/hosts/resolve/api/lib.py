@@ -888,7 +888,7 @@ def get_otio_clip_instance_data(otio_timeline, timeline_item_data):
     """
 
     timeline_item = timeline_item_data["clip"]["item"]
-    track_name = timeline_item_data["track"]["name"]
+    # track_name = timeline_item_data["track"]["name"]
     timeline_range = create_otio_time_range_from_timeline_item_data(
         timeline_item_data)
 

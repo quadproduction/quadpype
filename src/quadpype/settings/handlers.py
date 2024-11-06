@@ -18,16 +18,13 @@ from quadpype.lib.pype_info import get_workstation_info
 
 
 from .constants import (
+    CORE_SETTINGS_KEY,
     GLOBAL_SETTINGS_KEY,
-    SYSTEM_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     PROJECT_ANATOMY_KEY,
     M_OVERRIDDEN_KEY,
 
-    APPS_SETTINGS_KEY,
-    GENERAL_SETTINGS_KEY,
-
-    LEGACY_SETTINGS_VERSION
+    APPS_SETTINGS_KEY
 )
 from ..lib import get_user_id
 
@@ -197,7 +194,7 @@ class SettingsStateInfo:
 
 @six.add_metaclass(ABCMeta)
 class SettingsHandler(object):
-    global_keys = {
+    core_keys = {
         "quadpype_path",
         "local_quadpype_path",
         "log_to_server",
@@ -208,12 +205,12 @@ class SettingsHandler(object):
 
     @abstractmethod
     def save_studio_settings(self, data):
-        """Save studio overrides of system settings.
+        """Save studio overrides of global settings.
 
-        Do not use to store whole system settings data with defaults but only
+        Do not use to store whole glboal settings data with defaults but only
         it's overrides with metadata defining how overrides should be applied
         in load function. For loading should be used function
-        `studio_system_settings`.
+        `studio_global_settings`.
 
         Args:
             data(dict): Data of studio overrides with override metadata.
@@ -258,13 +255,13 @@ class SettingsHandler(object):
             project_name(str, null): Project name for which overrides are
                 or None for global settings.
             changes(dict): Data of project overrides with override metadata.
-            settings_type (str): system|project|anatomy
+            settings_type (str): global|project|anatomy
         """
         pass
 
     @abstractmethod
-    def get_studio_system_settings_overrides(self, return_version):
-        """Studio overrides of system settings."""
+    def get_studio_global_settings_overrides(self, return_version):
+        """Studio overrides of global settings."""
         pass
 
     @abstractmethod
@@ -305,15 +302,15 @@ class SettingsHandler(object):
 
     # Getters for specific version overrides
     @abstractmethod
-    def get_studio_system_settings_overrides_for_version(self, version):
-        """Studio system settings overrides for specific version.
+    def get_studio_global_settings_overrides_for_version(self, version):
+        """Studio global settings overrides for specific version.
 
         Args:
             version(str): QuadPype version for which settings should be
                 returned.
 
         Returns:
-            None: If the version does not have system settings overrides.
+            None: If the version does not have global settings overrides.
             dict: Document with overrides data.
         """
         pass
@@ -327,7 +324,7 @@ class SettingsHandler(object):
                 returned.
 
         Returns:
-            None: If the version does not have system settings overrides.
+            None: If the version does not have project anatomy overrides.
             dict: Document with overrides data.
         """
         pass
@@ -341,7 +338,7 @@ class SettingsHandler(object):
                 returned.
 
         Returns:
-            None: If the version does not have system settings overrides.
+            None: If the version does not have project settings overrides.
             dict: Document with overrides data.
         """
         pass
@@ -359,16 +356,16 @@ class SettingsHandler(object):
                 returned.
 
         Returns:
-            None: If the version does not have system settings overrides.
+            None: If the version does not have project settings overrides.
             dict: Document with overrides data.
         """
         pass
 
     @abstractmethod
-    def get_global_settings(self):
-        """Studio global settings available across versions.
+    def get_core_settings(self):
+        """Studio core settings available across versions.
 
-        Output must contain all keys from 'global_keys'. If value is not set
+        Output must contain all keys from 'core_keys'. If value is not set
         the output value should be 'None'.
 
         Returns:
@@ -381,8 +378,8 @@ class SettingsHandler(object):
     # - clearing may be helpfully when a version settings were created for
     #   testing purposes
     @abstractmethod
-    def clear_studio_system_settings_overrides_for_version(self, version):
-        """Remove studio system settings overrides for specific version.
+    def clear_studio_global_settings_overrides_for_version(self, version):
+        """Remove studio global settings overrides for specific version.
 
         If version is not available then skip processing.
         """
@@ -416,10 +413,10 @@ class SettingsHandler(object):
 
     # Get versions that are available for each type of settings
     @abstractmethod
-    def get_available_studio_system_settings_overrides_versions(
+    def get_available_studio_global_settings_overrides_versions(
         self, sorted=None
     ):
-        """QuadPype versions that have any studio system settings overrides.
+        """QuadPype versions that have any studio global settings overrides.
 
         Returns:
             list<str>: QuadPype versions strings.
@@ -464,20 +461,20 @@ class SettingsHandler(object):
         pass
 
     @abstractmethod
-    def get_system_last_saved_info(self):
-        """State of last system settings overrides at the moment when called.
+    def get_global_settings_last_saved_info(self):
+        """State of last global settings overrides at the moment when called.
 
         This method must provide most recent data so using cached data is not
         the way.
 
         Returns:
-            SettingsStateInfo: Information about system settings overrides.
+            SettingsStateInfo: Information about global settings overrides.
         """
 
         pass
 
     @abstractmethod
-    def get_project_last_saved_info(self, project_name):
+    def get_project_settings_last_saved_info(self, project_name):
         """State of last project settings overrides at the moment when called.
 
         This method must provide most recent data so using cached data is not
@@ -547,7 +544,7 @@ class UserHandler:
     """Handler using to store and load user info & settings.
 
     User settings are specific modifications that modify how
-    system and project settings look on the workstation and only there.
+    global and project settings look on the workstation and only there.
     """
     user_profile_template = {
         "user_id": "",
@@ -570,7 +567,7 @@ class UserHandler:
 
     @abstractmethod
     def get_user_settings(self):
-        """User overrides of system settings."""
+        """User overrides of global settings."""
         pass
 
     @abstractmethod
@@ -650,7 +647,7 @@ class MongoSettingsHandler(SettingsHandler):
 
         self._version_order_checked = False
 
-        self._system_settings_key = SYSTEM_SETTINGS_KEY + self.key_suffix
+        self._global_settings_key = GLOBAL_SETTINGS_KEY + self.key_suffix
         self._project_settings_key = PROJECT_SETTINGS_KEY + self.key_suffix
         self._project_anatomy_key = PROJECT_ANATOMY_KEY + self.key_suffix
         self._current_version = quadpype.version.__version__
@@ -666,18 +663,18 @@ class MongoSettingsHandler(SettingsHandler):
 
         self.collection = self.mongo_client[database_name][collection_name]
 
+        self.core_settings_cache = CacheValues()
         self.global_settings_cache = CacheValues()
-        self.system_settings_cache = CacheValues()
         self.project_settings_cache = collections.defaultdict(CacheValues)
         self.project_anatomy_cache = collections.defaultdict(CacheValues)
 
     def _prepare_project_settings_keys(self):
-        from .entities import ProjectSettings
+        from .entities import ProjectSettingsEntity
         # Prepare anatomy keys and attribute keys
         # NOTE this is cached on first import
         # - keys may change only on schema change which should not happen
         #   during production
-        project_settings_root = ProjectSettings(
+        project_settings_root = ProjectSettingsEntity(
             reset=False, change_state=False
         )
         anatomy_entity = project_settings_root[PROJECT_ANATOMY_KEY]
@@ -700,188 +697,185 @@ class MongoSettingsHandler(SettingsHandler):
             self._prepare_project_settings_keys()
         return self._attribute_keys
 
-    def get_global_settings_doc(self):
-        if self.global_settings_cache.is_outdated:
+    def get_core_settings_doc(self):
+        if self.core_settings_cache.is_outdated:
             global_settings_doc = self.collection.find_one({
                 "type": GLOBAL_SETTINGS_KEY
             }) or {}
-            self.global_settings_cache.update_data(global_settings_doc, None)
-        return self.global_settings_cache.data_copy()
+            self.core_settings_cache.update_data(global_settings_doc, None)
+        return self.core_settings_cache.data_copy()
 
-    def get_global_settings(self):
-        global_settings_doc = self.get_global_settings_doc()
+    def get_core_settings(self):
+        global_settings_doc = self.get_core_settings_doc()
         global_settings = global_settings_doc.get("data", {})
         return {
             key: global_settings[key]
-            for key in self.global_keys
+            for key in self.core_keys
             if key in global_settings
         }
 
-    def _extract_global_settings(self, data):
-        """Extract global settings data from system settings overrides.
-
-        This is now limited to "general" key in system settings which must be
-        set as group in schemas.
+    def _extract_core_settings(self, data):
+        """Extract core settings data from global settings overrides.
 
         Returns:
-            dict: Global settings extracted from system settings data.
+            dict: Core settings extracted from global settings data.
         """
         output = {}
-        if GENERAL_SETTINGS_KEY not in data:
+        if CORE_SETTINGS_KEY not in data:
             return output
 
-        general_data = data[GENERAL_SETTINGS_KEY]
+        core_data = data[CORE_SETTINGS_KEY]
 
         # Add predefined keys to global settings if are set
-        for key in self.global_keys:
-            if key not in general_data:
+        for key in self.core_keys:
+            if key not in core_data:
                 continue
             # Pop key from values
-            output[key] = general_data.pop(key)
+            output[key] = core_data.pop(key)
             # Pop key from overridden metadata
             if (
-                M_OVERRIDDEN_KEY in general_data
-                and key in general_data[M_OVERRIDDEN_KEY]
+                M_OVERRIDDEN_KEY in core_data
+                and key in core_data[M_OVERRIDDEN_KEY]
             ):
-                general_data[M_OVERRIDDEN_KEY].remove(key)
+                core_data[M_OVERRIDDEN_KEY].remove(key)
         return output
 
-    def _apply_global_settings(
-        self, system_settings_document, globals_document
+    def _apply_core_settings(
+        self, global_settings_document, core_document
     ):
-        """Apply global settings data to system settings.
+        """Apply core settings data to global settings.
 
-        Application is skipped if document with global settings is not
+        Application is skipped if document with core settings is not
         available or does not have set data in.
 
-        System settings document is "faked" like it exists if global document
+        Global settings document is "faked" like it exists if core document
         has set values.
 
         Args:
-            system_settings_document (dict): System settings document from
+            global_settings_document (dict): Global settings document from
                 MongoDB.
-            globals_document (dict): Global settings document from MongoDB.
+            core_document (dict): Core settings document from MongoDB.
 
         Returns:
             Merged document which has applied global settings data.
         """
-        # Skip if globals document is not available
+        # Skip if core document is not available
         if (
-            not globals_document
-            or "data" not in globals_document
-            or not globals_document["data"]
+            not core_document
+            or "data" not in core_document
+            or not core_document["data"]
         ):
-            return system_settings_document
+            return global_settings_document
 
-        globals_data = globals_document["data"]
+        core_data = core_document["data"]
         # Check if data contain any key from predefined keys
         any_key_found = False
-        if globals_data:
-            for key in self.global_keys:
-                if key in globals_data:
+        if core_data:
+            for key in self.core_keys:
+                if key in core_data:
                     any_key_found = True
                     break
 
         # Skip if any key from predefined key was not found in globals
         if not any_key_found:
-            return system_settings_document
+            return global_settings_document
 
-        # "Fake" system settings document if document does not exist
-        # - global settings document may exist but system settings not yet
-        if not system_settings_document:
-            system_settings_document = {}
+        # "Fake" global settings document if document does not exist
+        # - global settings document may exist but global settings not yet
+        if not global_settings_document:
+            global_settings_document = {}
 
-        if "data" in system_settings_document:
-            system_settings_data = system_settings_document["data"]
+        if "data" in global_settings_document:
+            global_settings_data = global_settings_document["data"]
         else:
-            system_settings_data = {}
-            system_settings_document["data"] = system_settings_data
+            global_settings_data = {}
+            global_settings_document["data"] = global_settings_data
 
-        if GENERAL_SETTINGS_KEY in system_settings_data:
-            system_general = system_settings_data[GENERAL_SETTINGS_KEY]
+        if CORE_SETTINGS_KEY in global_settings_data:
+            global_core_data = global_settings_data[CORE_SETTINGS_KEY]
         else:
-            system_general = {}
-            system_settings_data[GENERAL_SETTINGS_KEY] = system_general
+            global_core_data = {}
+            global_settings_data[CORE_SETTINGS_KEY] = global_core_data
 
-        overridden_keys = system_general.get(M_OVERRIDDEN_KEY) or []
-        for key in self.global_keys:
-            if key not in globals_data:
+        overridden_keys = global_core_data.get(M_OVERRIDDEN_KEY) or []
+        for key in self.core_keys:
+            if key not in core_data:
                 continue
 
-            system_general[key] = globals_data[key]
+            global_core_data[key] = core_data[key]
             if key not in overridden_keys:
                 overridden_keys.append(key)
 
         if overridden_keys:
-            system_general[M_OVERRIDDEN_KEY] = overridden_keys
+            global_core_data[M_OVERRIDDEN_KEY] = overridden_keys
 
-        return system_settings_document
+        return global_settings_document
 
     def save_studio_settings(self, data):
-        """Save studio overrides of system settings.
+        """Save studio overrides of global settings.
 
-        Do not use to store whole system settings data with defaults but only
+        Do not use to store whole global settings data with defaults but only
         it's overrides with metadata defining how overrides should be applied
         in load function. For loading should be used function
-        `studio_system_settings`.
+        `studio_global_settings`.
 
         Args:
             data(dict): Data of studio overrides with override metadata.
         """
         # Update cache
-        self.system_settings_cache.update_data(data, self._current_version)
+        self.global_settings_cache.update_data(data, self._current_version)
 
         last_saved_info = SettingsStateInfo.create_new(
             self._current_version,
-            SYSTEM_SETTINGS_KEY
+            GLOBAL_SETTINGS_KEY
         )
-        self.system_settings_cache.update_last_saved_info(
+        self.global_settings_cache.update_last_saved_info(
             last_saved_info
         )
 
         # Get copy of just updated cache
-        system_settings_data = self.system_settings_cache.data_copy()
+        global_settings_data = self.global_settings_cache.data_copy()
 
-        # Extract global settings from system settings
-        global_settings = self._extract_global_settings(
-            system_settings_data
+        # Extract core settings from global settings
+        core_settings = self._extract_core_settings(
+            global_settings_data
         )
-        self.global_settings_cache.update_data(
-            global_settings,
+        self.core_settings_cache.update_data(
+            core_settings,
             None
         )
 
-        system_settings_doc = self.collection.find_one(
+        global_settings_doc = self.collection.find_one(
             {
-                "type": self._system_settings_key,
+                "type": self._global_settings_key,
                 "version": self._current_version
             },
             {"_id": True}
         )
 
-        # Store system settings
-        new_system_settings_doc = {
-            "type": self._system_settings_key,
+        # Store global settings
+        new_global_settings_doc = {
+            "type": self._global_settings_key,
             "version": self._current_version,
-            "data": system_settings_data,
+            "data": global_settings_data,
             "last_saved_info": last_saved_info.to_document_data()
         }
-        if not system_settings_doc:
-            self.collection.insert_one(new_system_settings_doc)
+        if not global_settings_doc:
+            self.collection.insert_one(new_global_settings_doc)
         else:
             self.collection.update_one(
-                {"_id": system_settings_doc["_id"]},
-                {"$set": new_system_settings_doc}
+                {"_id": global_settings_doc["_id"]},
+                {"$set": new_global_settings_doc}
             )
 
-        # Store global settings
+        # Store core settings
         self.collection.replace_one(
             {
-                "type": GLOBAL_SETTINGS_KEY
+                "type": CORE_SETTINGS_KEY
             },
             {
-                "type": GLOBAL_SETTINGS_KEY,
-                "data": global_settings
+                "type": CORE_SETTINGS_KEY,
+                "data": core_settings
             },
             upsert=True
         )
@@ -1178,7 +1172,7 @@ class MongoSettingsHandler(SettingsHandler):
             )
             for doc in docs:
                 project_name = doc.get("project_name")
-                version = doc.get("version", LEGACY_SETTINGS_VERSION)
+                version = doc.get("version")
                 output[project_name] = version
         return output
 
@@ -1292,10 +1286,10 @@ class MongoSettingsHandler(SettingsHandler):
             return None
         return self.collection.find_one({"_id": doc_id})
 
-    def _find_closest_system_settings(self):
+    def _find_closest_global_settings(self):
         return self._find_closest_settings(
-            self._system_settings_key,
-            SYSTEM_SETTINGS_KEY
+            self._global_settings_key,
+            GLOBAL_SETTINGS_KEY
         )
 
     def _find_closest_project_settings(self, project_name):
@@ -1318,38 +1312,26 @@ class MongoSettingsHandler(SettingsHandler):
             additional_filters
         )
 
-    def _get_studio_system_settings_overrides_for_version(self, version=None):
+    def _get_studio_global_settings_overrides_for_version(self, version=None):
         # QUESTION cache?
-        if version == LEGACY_SETTINGS_VERSION:
-            return self.collection.find_one({
-                "type": SYSTEM_SETTINGS_KEY
-            })
-
         if version is None:
             version = self._current_version
 
         return self.collection.find_one({
-            "type": self._system_settings_key,
+            "type": self._global_settings_key,
             "version": version
         })
 
     def _get_project_settings_overrides_for_version(
         self, project_name, version=None
     ):
-        # QUESTION cache?
-        if version == LEGACY_SETTINGS_VERSION:
-            document_filter = {
-                "type": PROJECT_SETTINGS_KEY
-            }
+        if version is None:
+            version = self._current_version
 
-        else:
-            if version is None:
-                version = self._current_version
-
-            document_filter = {
-                "type": self._project_settings_key,
-                "version": version
-            }
+        document_filter = {
+            "type": self._project_settings_key,
+            "version": version
+        }
 
         if project_name is None:
             document_filter["is_default"] = True
@@ -1359,12 +1341,6 @@ class MongoSettingsHandler(SettingsHandler):
 
     def _get_project_anatomy_overrides_for_version(self, version=None):
         # QUESTION cache?
-        if version == LEGACY_SETTINGS_VERSION:
-            return self.collection.find_one({
-                "type": PROJECT_ANATOMY_KEY,
-                "is_default": True
-            })
-
         if version is None:
             version = self._current_version
 
@@ -1374,54 +1350,51 @@ class MongoSettingsHandler(SettingsHandler):
             "version": version
         })
 
-    def get_studio_system_settings_overrides(self, return_version):
-        """Studio overrides of system settings."""
-        if self.system_settings_cache.is_outdated:
-            globals_document = self.get_global_settings_doc()
-            document, version = self._get_system_settings_overrides_doc()
+    def get_studio_global_settings_overrides(self, return_version):
+        """Studio overrides of global settings."""
+        if self.global_settings_cache.is_outdated:
+            core_document = self.get_core_settings_doc()
+            document, version = self._get_global_settings_overrides_doc()
 
             last_saved_info = SettingsStateInfo.from_document(
-                version, SYSTEM_SETTINGS_KEY, document
+                version, GLOBAL_SETTINGS_KEY, document
             )
-            merged_document = self._apply_global_settings(
-                document, globals_document
+            merged_document = self._apply_core_settings(
+                document, core_document
             )
 
-            self.system_settings_cache.update_from_document(
+            self.global_settings_cache.update_from_document(
                 merged_document, version
             )
-            self.system_settings_cache.update_last_saved_info(
+            self.global_settings_cache.update_last_saved_info(
                 last_saved_info
             )
 
-        cache = self.system_settings_cache
+        cache = self.global_settings_cache
         data = cache.data_copy()
         if return_version:
             return data, cache.version
         return data
 
-    def _get_system_settings_overrides_doc(self):
+    def _get_global_settings_overrides_doc(self):
         document = (
-            self._get_studio_system_settings_overrides_for_version()
+            self._get_studio_global_settings_overrides_for_version()
         )
         if document is None:
-            document = self._find_closest_system_settings()
+            document = self._find_closest_global_settings()
 
         version = None
         if document:
-            if document["type"] == self._system_settings_key:
-                version = document["version"]
-            else:
-                version = LEGACY_SETTINGS_VERSION
+            version = document["version"]
 
         return document, version
 
-    def get_system_last_saved_info(self):
+    def get_global_settings_last_saved_info(self):
         # Make sure settings are re-cached
-        self.system_settings_cache.set_outdated()
-        self.get_studio_system_settings_overrides(False)
+        self.global_settings_cache.set_outdated()
+        self.get_studio_global_settings_overrides(False)
 
-        return self.system_settings_cache.last_saved_info.copy()
+        return self.global_settings_cache.last_saved_info.copy()
 
     def _get_project_settings_overrides(self, project_name, return_version):
         if self.project_settings_cache[project_name].is_outdated:
@@ -1453,14 +1426,11 @@ class MongoSettingsHandler(SettingsHandler):
 
         version = None
         if document:
-            if document["type"] == self._project_settings_key:
-                version = document["version"]
-            else:
-                version = LEGACY_SETTINGS_VERSION
+            version = document["version"]
 
         return document, version
 
-    def get_project_last_saved_info(self, project_name):
+    def get_project_settings_last_saved_info(self, project_name):
         # Make sure settings are re-cached
         self.project_settings_cache[project_name].set_outdated()
         self._get_project_settings_overrides(project_name, False)
@@ -1537,10 +1507,8 @@ class MongoSettingsHandler(SettingsHandler):
 
                 version = None
                 if document:
-                    if document["type"] == self._project_anatomy_key:
-                        version = document["version"]
-                    else:
-                        version = LEGACY_SETTINGS_VERSION
+                    version = document["version"]
+
                 self.project_anatomy_cache[project_name].update_from_document(
                     document, version
                 )
@@ -1577,8 +1545,8 @@ class MongoSettingsHandler(SettingsHandler):
         return self._get_project_anatomy_overrides(project_name, return_version)
 
     # Implementations of abstract methods to get overrides for version
-    def get_studio_system_settings_overrides_for_version(self, version):
-        doc = self._get_studio_system_settings_overrides_for_version(version)
+    def get_studio_global_settings_overrides_for_version(self, version):
+        doc = self._get_studio_global_settings_overrides_for_version(version)
         if not doc:
             return doc
         return doc["data"]
@@ -1606,9 +1574,9 @@ class MongoSettingsHandler(SettingsHandler):
         return doc["data"]
 
     # Implementations of abstract methods to clear overrides for version
-    def clear_studio_system_settings_overrides_for_version(self, version):
+    def clear_studio_global_settings_overrides_for_version(self, version):
         self.collection.delete_one({
-            "type": self._system_settings_key,
+            "type": self._global_settings_key,
             "version": version
         })
 
@@ -1646,9 +1614,6 @@ class MongoSettingsHandler(SettingsHandler):
             return []
 
         set_versions = set(versions)
-        contain_legacy = LEGACY_SETTINGS_VERSION in set_versions
-        if contain_legacy:
-            set_versions.remove(LEGACY_SETTINGS_VERSION)
 
         from quadpype.lib.quadpype_version import get_QuadPypeVersion
 
@@ -1660,8 +1625,7 @@ class MongoSettingsHandler(SettingsHandler):
                 [QuadPypeVersion(version=version) for version in set_versions]
             )
             sorted_versions = [str(version) for version in obj_versions]
-            if contain_legacy:
-                sorted_versions.insert(0, LEGACY_SETTINGS_VERSION)
+
             return sorted_versions
 
         doc = self._get_versions_order_doc()
@@ -1678,26 +1642,21 @@ class MongoSettingsHandler(SettingsHandler):
         for version in sorted(set_versions):
             sorted_versions.insert(0, version)
 
-        if contain_legacy:
-            sorted_versions.insert(0, LEGACY_SETTINGS_VERSION)
         return sorted_versions
 
     # Get available versions for settings type
-    def get_available_studio_system_settings_overrides_versions(
+    def get_available_studio_global_settings_overrides_versions(
         self, sorted=None
     ):
         docs = self.collection.find(
             {"type": {
-                "$in": [self._system_settings_key, SYSTEM_SETTINGS_KEY]
+                "$in": [self._global_settings_key, GLOBAL_SETTINGS_KEY]
             }},
             {"type": True, "version": True}
         )
         output = set()
         for doc in docs:
-            if doc["type"] == self._system_settings_key:
-                output.add(doc["version"])
-            else:
-                output.add(LEGACY_SETTINGS_VERSION)
+            output.add(doc["version"])
         if not sorted:
             return output
         return self._sort_versions(output)
@@ -1713,10 +1672,7 @@ class MongoSettingsHandler(SettingsHandler):
         )
         output = set()
         for doc in docs:
-            if doc["type"] == self._project_anatomy_key:
-                output.add(doc["version"])
-            else:
-                output.add(LEGACY_SETTINGS_VERSION)
+            output.add(doc["version"])
         if not sorted:
             return output
         return self._sort_versions(output)
@@ -1735,10 +1691,7 @@ class MongoSettingsHandler(SettingsHandler):
         )
         output = set()
         for doc in docs:
-            if doc["type"] == self._project_settings_key:
-                output.add(doc["version"])
-            else:
-                output.add(LEGACY_SETTINGS_VERSION)
+            output.add(doc["version"])
         if not sorted:
             return output
         return self._sort_versions(output)
@@ -1757,10 +1710,7 @@ class MongoSettingsHandler(SettingsHandler):
         )
         output = set()
         for doc in docs:
-            if doc["type"] == self._project_settings_key:
-                output.add(doc["version"])
-            else:
-                output.add(LEGACY_SETTINGS_VERSION)
+            output.add(doc["version"])
         if not sorted:
             return output
         return self._sort_versions(output)

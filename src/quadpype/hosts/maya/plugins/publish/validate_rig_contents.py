@@ -167,6 +167,8 @@ class ValidateRigContents(pyblish.api.InstancePlugin,
             if cmds.nodeType(shape) not in cls.accepted_output:
                 invalid.append(shape)
 
+        return invalid
+
     @classmethod
     def validate_controls(cls, set_members):
         """
@@ -227,7 +229,6 @@ class ValidateSkeletonRigContents(ValidateRigContents):
             instance, objectsets, instance.data["rig_sets"])
 
         # Ensure contents in sets and retrieve long path for all objects
-        output_content = instance.data.get("skeleton_mesh", [])
         output_content = cmds.ls(skeleton_mesh_nodes, long=True)
 
         invalid_hierarchy = cls.invalid_hierarchy(

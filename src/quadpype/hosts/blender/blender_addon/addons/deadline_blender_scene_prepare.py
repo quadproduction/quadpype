@@ -4,7 +4,7 @@ import functools
 import logging
 import uuid
 
-from quadpype.settings import get_system_settings
+from quadpype.settings import get_global_settings
 from quadpype.hosts.blender.api.pipeline import get_path_from_template
 
 import bpy
@@ -331,8 +331,8 @@ class ExecutionOrder(bpy.types.Macro):
 
 
 def register():
-    system_settings = get_system_settings()
-    modules_settings = system_settings["modules"]
+    global_settings = get_global_settings()
+    modules_settings = global_settings["modules"]
     if modules_settings["deadline"].get("enabled", False):
         bpy.utils.register_class(PrepareTemporaryFile)
         bpy.utils.register_class(LoadPreviousScene)
@@ -357,8 +357,8 @@ def register():
 
 
 def unregister():
-    system_settings = get_system_settings()
-    modules_settings = system_settings["modules"]
+    global_settings = get_global_settings()
+    modules_settings = global_settings["modules"]
     if modules_settings["deadline"].get("enabled", False):
         bpy.utils.unregister_class(PrepareTemporaryFile)
         bpy.utils.unregister_class(LoadPreviousScene)

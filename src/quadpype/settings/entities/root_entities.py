@@ -9,7 +9,7 @@ from .base_entity import BaseItemEntity
 from .lib import (
     NOT_SET,
     WRAPPER_TYPES,
-    SCHEMA_KEY_SYSTEM_SETTINGS,
+    SCHEMA_KEY_GLOBAL_SETTINGS,
     SCHEMA_KEY_PROJECT_SETTINGS,
     OverrideState,
     SchemasHub,
@@ -20,7 +20,7 @@ from .exceptions import (
     InvalidKeySymbols
 )
 from quadpype.settings.constants import (
-    SYSTEM_SETTINGS_KEY,
+    GLOBAL_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     PROJECT_ANATOMY_KEY,
     KEY_REGEX
@@ -33,10 +33,10 @@ from quadpype.settings.lib import (
     get_default_settings,
     reset_default_settings,
 
-    get_studio_system_settings_overrides,
-    get_studio_system_settings_overrides_for_version,
+    get_studio_global_settings_overrides,
+    get_studio_global_settings_overrides_for_version,
     save_studio_settings,
-    get_available_studio_system_settings_overrides_versions,
+    get_available_studio_global_settings_overrides_versions,
 
     get_studio_project_settings_overrides,
     get_studio_project_settings_overrides_for_version,
@@ -480,20 +480,20 @@ class RootEntity(BaseItemEntity):
         self.set_override_state(OverrideState.PROJECT)
 
 
-class SystemSettings(RootEntity):
-    """Root entity for system settings.
+class GlobalSettingsEntity(RootEntity):
+    """Root entity for global settings.
 
-    Allows to modify system settings via entity system and loaded schemas.
+    Allows to modify global settings via entity system and loaded schemas.
 
     Args:
         set_studio_state (bool): Set studio values on initialization. By
             default is set to True.
         reset (bool): Reset values on initialization. By default is set to
             True.
-        schema_data (dict): Pass schema data to entity. This is for development
+        schema_hub (dict): Pass schema data to entity. This is for development
             and debugging purposes.
     """
-    root_key = SYSTEM_SETTINGS_KEY
+    root_key = GLOBAL_SETTINGS_KEY
 
     def __init__(
         self,
@@ -503,8 +503,8 @@ class SystemSettings(RootEntity):
         source_version=None
     ):
         if schema_hub is None:
-            # Load system schemas
-            schema_hub = SchemasHub(SCHEMA_KEY_SYSTEM_SETTINGS)
+            # Load global schemas
+            schema_hub = SchemasHub(SCHEMA_KEY_GLOBAL_SETTINGS)
 
         self._source_version = source_version
 
@@ -518,7 +518,7 @@ class SystemSettings(RootEntity):
         return self._source_version
 
     def get_entity_from_path(self, path):
-        """Return system settings entity."""
+        """Return global settings entity."""
         path_parts = path.split("/")
         first_part = path_parts[0]
         output = self
@@ -530,20 +530,20 @@ class SystemSettings(RootEntity):
         return output
 
     def _reset_values(self):
-        default_value = get_default_settings()[SYSTEM_SETTINGS_KEY]
+        default_value = get_default_settings()[GLOBAL_SETTINGS_KEY]
         for key, child_obj in self.non_gui_children.items():
             value = default_value.get(key, NOT_SET)
             child_obj.update_default_value(value)
 
         if self._source_version is None:
-            studio_overrides, version = get_studio_system_settings_overrides(
+            studio_overrides, version = get_studio_global_settings_overrides(
                 return_version=True
             )
             self._source_version = version
 
         else:
             studio_overrides = (
-                get_studio_system_settings_overrides_for_version(
+                get_studio_global_settings_overrides_for_version(
                     self._source_version
                 )
             )
@@ -553,7 +553,7 @@ class SystemSettings(RootEntity):
             child_obj.update_studio_value(value)
 
     def reset(self, new_state=None, source_version=None):
-        """Discard changes and reset entit's values.
+        """Discard changes and reset entity's values.
 
         Reload default values and studio override values and update entities.
 
@@ -568,7 +568,7 @@ class SystemSettings(RootEntity):
             new_state = OverrideState.DEFAULTS
 
         if new_state is OverrideState.PROJECT:
-            raise ValueError("System settings can't store poject overrides.")
+            raise ValueError("Global settings can't store project overrides.")
 
         if source_version is not None:
             self._source_version = source_version
@@ -582,7 +582,7 @@ class SystemSettings(RootEntity):
         return []
 
     def get_available_studio_versions(self, sorted=None):
-        return get_available_studio_system_settings_overrides_versions(
+        return get_available_studio_global_settings_overrides_versions(
             sorted=sorted
         )
 
@@ -591,12 +591,12 @@ class SystemSettings(RootEntity):
 
         Implementation of abstract method.
         """
-        return os.path.join(DEFAULTS_DIR, SYSTEM_SETTINGS_KEY)
+        return os.path.join(DEFAULTS_DIR, GLOBAL_SETTINGS_KEY)
 
     def _save_studio_values(self):
         settings_value = self.settings_value()
 
-        self.log.debug("Saving system settings: {}".format(
+        self.log.debug("Saving global settings: {}".format(
             json.dumps(settings_value, indent=4)
         ))
         save_studio_settings(settings_value)
@@ -604,16 +604,16 @@ class SystemSettings(RootEntity):
         self._source_version = None
 
     def _save_project_values(self):
-        """System settings can't have project overrides.
+        """Global settings can't have project overrides.
 
         Raises:
             ValueError: Raise when called as entity can't use or store project
                 overrides.
         """
-        raise ValueError("System settings can't save project overrides.")
+        raise ValueError("Global settings can't save project overrides.")
 
 
-class ProjectSettings(RootEntity):
+class ProjectSettingsEntity(RootEntity):
     """Root entity for project settings.
 
     Allows to modify project settings via entity system and loaded schemas.
@@ -641,12 +641,12 @@ class ProjectSettings(RootEntity):
     ):
         self._project_name = project_name
 
-        self._system_settings_entity = None
+        self._global_settings_entity = None
         self._source_version = source_version
         self._anatomy_source_version = anatomy_source_version
 
         if schema_hub is None:
-            # Load system schemas
+            # Load project schemas
             schema_hub = SchemasHub(SCHEMA_KEY_PROJECT_SETTINGS)
 
         super().__init__(schema_hub, reset)
@@ -674,11 +674,11 @@ class ProjectSettings(RootEntity):
         self.change_project(project_name)
 
     @property
-    def system_settings_entity(self):
-        output = self._system_settings_entity
+    def global_settings_entity(self):
+        output = self._global_settings_entity
         if output is None:
-            output = SystemSettings(set_studio_state=False)
-            self._system_settings_entity = output
+            output = GlobalSettingsEntity(set_studio_state=False)
+            self._global_settings_entity = output
 
         if self.override_state is OverrideState.DEFAULTS:
             if output.override_state is not OverrideState.DEFAULTS:
@@ -694,8 +694,8 @@ class ProjectSettings(RootEntity):
     def get_entity_from_path(self, path):
         path_parts = path.split("/")
         first_part = path_parts[0]
-        if first_part == SYSTEM_SETTINGS_KEY:
-            output = self.system_settings_entity
+        if first_part == GLOBAL_SETTINGS_KEY:
+            output = self.global_settings_entity
             path_parts.pop(0)
         else:
             output = self
@@ -840,7 +840,7 @@ class ProjectSettings(RootEntity):
         if new_state is OverrideState.NOT_DEFINED:
             new_state = OverrideState.DEFAULTS
 
-        self._system_settings_entity = None
+        self._global_settings_entity = None
 
         self._reset_values()
         self.set_override_state(new_state)

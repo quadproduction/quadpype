@@ -6,7 +6,7 @@ import six
 import platform
 
 from quadpype.lib import Logger
-from quadpype.settings import get_system_settings, MODULES_SETTINGS_KEY
+from quadpype.settings import get_global_settings, MODULES_SETTINGS_KEY
 from .abstract_provider import AbstractProvider
 from ..utils import time_function, ResumableError
 
@@ -122,9 +122,9 @@ class GDriveHandler(AbstractProvider):
         return self.presets.get("enabled") and self.service is not None
 
     @classmethod
-    def get_system_settings_schema(cls):
+    def get_global_settings_schema(cls):
         """
-            Returns dict for editable properties on system settings level
+            Returns dict for editable properties on global settings level
 
 
             Returns:
@@ -636,7 +636,7 @@ class GDriveHandler(AbstractProvider):
         provider_presets = None
         try:
             provider_presets = (
-                get_system_settings()[MODULES_SETTINGS_KEY]
+                get_global_settings()[MODULES_SETTINGS_KEY]
                 ["sync_server"]
                 ["providers"]
                 ["gdrive"]

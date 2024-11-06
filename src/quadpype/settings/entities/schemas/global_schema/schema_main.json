@@ -4,7 +4,7 @@
     "children": [
         {
             "type": "schema",
-            "name": "schema_general"
+            "name": "schema_core"
         },
         {
             "type": "schema",

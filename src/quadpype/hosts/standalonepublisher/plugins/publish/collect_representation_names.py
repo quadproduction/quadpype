@@ -16,7 +16,6 @@ class CollectRepresentationNames(pyblish.api.InstancePlugin):
 
     def process(self, instance):
         for repre in instance.data['representations']:
-            new_repre_name = None
             if isinstance(repre['files'], list):
                 shortened_name = os.path.splitext(repre['files'][0])[0]
                 new_repre_name = re.search(self.name_filter,

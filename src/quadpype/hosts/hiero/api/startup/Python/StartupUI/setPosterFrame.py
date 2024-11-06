@@ -36,7 +36,6 @@ class SetPosterFrameAction(QAction):
                                            self.eventHandler)
 
     def eventHandler(self, event):
-        view = event.sender
         # Add the Menu to the right-click menu
         event.menu.addAction(self)
 

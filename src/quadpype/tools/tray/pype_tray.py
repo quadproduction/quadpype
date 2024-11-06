@@ -29,11 +29,11 @@ from quadpype.lib.quadpype_version import (
 )
 from quadpype.modules import TrayModulesManager
 from quadpype.settings import (
-    get_system_settings,
-    SystemSettings,
-    ProjectSettings,
+    get_global_settings,
+    GlobalSettingsEntity,
+    ProjectSettingsEntity,
     DefaultsNotDefined,
-    GENERAL_SETTINGS_KEY,
+    CORE_SETTINGS_KEY,
     MODULES_SETTINGS_KEY
 )
 from quadpype.tools.utils import (
@@ -338,10 +338,10 @@ class TrayManager:
 
         self.log = Logger.get_logger(self.__class__.__name__)
 
-        system_settings = get_system_settings()
-        self.module_settings = system_settings[MODULES_SETTINGS_KEY]
+        global_settings = get_global_settings()
+        self.module_settings = global_settings[MODULES_SETTINGS_KEY]
 
-        version_check_interval = system_settings[GENERAL_SETTINGS_KEY].get(
+        version_check_interval = global_settings[CORE_SETTINGS_KEY].get(
             "version_check_interval"
         )
         if version_check_interval is None:
@@ -382,13 +382,13 @@ class TrayManager:
         self.validate_quadpype_version()
 
     def validate_quadpype_version(self):
-        using_requested = is_current_version_studio_latest()
+        is_running_latest_version = is_current_version_studio_latest()
         # TODO Handle situations when version can't be detected
-        if using_requested is None:
-            using_requested = True
+        if is_running_latest_version is None:
+            is_running_latest_version = True
 
-        self._restart_action.setVisible(not using_requested)
-        if using_requested:
+        self._restart_action.setVisible(not is_running_latest_version)
+        if is_running_latest_version:
             if (
                 self._version_dialog is not None
                 and self._version_dialog.isVisible()
@@ -472,8 +472,8 @@ class TrayManager:
         from quadpype.modules import ITrayService
 
         # Menu header
-        system_settings = get_system_settings()
-        studio_name = system_settings[GENERAL_SETTINGS_KEY]["studio_name"]
+        global_settings = get_global_settings()
+        studio_name = global_settings[CORE_SETTINGS_KEY]["studio_name"]
 
         header_label = QtWidgets.QLabel("QuadPype : {}".format(studio_name))
         header_label.setStyleSheet(
@@ -560,8 +560,8 @@ class TrayManager:
     def _validate_settings_defaults(self):
         valid = True
         try:
-            SystemSettings()
-            ProjectSettings()
+            GlobalSettingsEntity()
+            ProjectSettingsEntity()
 
         except DefaultsNotDefined as exception_obj:
             self.log.error(str(exception_obj))
@@ -872,7 +872,6 @@ def main():
 
     starter = PypeTrayStarter(app)
 
-    # TODO remove when pype.exe will have an icon
     if os.name == "nt":
         import ctypes
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(

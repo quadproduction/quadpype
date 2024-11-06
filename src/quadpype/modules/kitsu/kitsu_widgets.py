@@ -10,7 +10,7 @@ from quadpype.modules.kitsu.utils.credentials import (
 )
 from quadpype.resources import get_resource
 from quadpype.settings import (
-    get_system_settings,
+    get_global_settings,
     MODULES_SETTINGS_KEY
 )
 
@@ -28,18 +28,18 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         self.setWindowTitle("Kitsu Credentials")
         self.resize(300, 120)
 
-        system_settings = get_system_settings()
+        global_settings = get_global_settings()
         user_login, user_pwd = load_credentials()
         remembered = bool(user_login or user_pwd)
 
         self._final_result = None
         self._connectable = bool(
-            system_settings[MODULES_SETTINGS_KEY].get("kitsu", {}).get("server")
+            global_settings[MODULES_SETTINGS_KEY].get("kitsu", {}).get("server")
         )
 
         # Server label
         server_message = (
-            system_settings[MODULES_SETTINGS_KEY]["kitsu"]["server"]
+            global_settings[MODULES_SETTINGS_KEY]["kitsu"]["server"]
             if self._connectable
             else "no server url set in Studio Settings..."
         )

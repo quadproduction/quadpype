@@ -25,7 +25,7 @@ visuallise how values are applied.
 With help of setting entities it is possible to modify settings from code.
 
 QuadPype has (ATM) 2 types of settings:
-1.) System settings - global system settings, don't have project overrides
+1.) Global settings - global settings, don't have project overrides
 2.) Project settings - project specific settings
 
 Startpoint is root entity that cares about access to other setting entities
@@ -59,8 +59,8 @@ from .base_entity import (
 )
 
 from .root_entities import (
-    SystemSettings,
-    ProjectSettings
+    GlobalSettingsEntity,
+    ProjectSettingsEntity
 )
 
 from .item_entities import (
@@ -131,8 +131,8 @@ __all__ = (
     "BaseItemEntity",
     "ItemEntity",
 
-    "SystemSettings",
-    "ProjectSettings",
+    "GlobalSettingsEntity",
+    "ProjectSettingsEntity",
 
     "PathEntity",
     "ListStrictEntity",

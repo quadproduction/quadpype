@@ -9,8 +9,8 @@ import qtawesome
 from quadpype.lib import get_quadpype_version
 from quadpype.tools.utils import set_style_property
 from quadpype.settings.entities import (
-    SystemSettings,
-    ProjectSettings,
+    GlobalSettingsEntity,
+    ProjectSettingsEntity,
 
     GUIEntity,
     DictImmutableKeysEntity,
@@ -42,11 +42,11 @@ from quadpype.settings import (
     SaveWarningExc,
     PROJECT_ANATOMY_KEY,
     PROJECT_SETTINGS_KEY,
-    SYSTEM_SETTINGS_KEY
+    GLOBAL_SETTINGS_KEY
 )
 from quadpype.settings.lib import (
-    get_system_last_saved_info,
-    get_project_last_saved_info
+    get_global_settings_last_saved_info,
+    get_project_settings_last_saved_info
 )
 from .dialogs import SettingsLastSavedChanged, SettingsControlTaken
 from .widgets import (
@@ -55,7 +55,7 @@ from .widgets import (
 )
 from .breadcrumbs_widget import (
     BreadcrumbsAddressBar,
-    SystemSettingsBreadcrumbs,
+    GlobalSettingsBreadcrumbs,
     ProjectSettingsBreadcrumbs
 )
 from .constants import (
@@ -153,7 +153,7 @@ class StandaloneCategoryWidget(QtWidgets.QWidget):
 
         Args:
             full_path (str): Full path to settings entity. It is expected that
-                path starts with category name ("system_setting" etc.).
+                path starts with category name ("global_settings" etc.).
         """
         pass
 
@@ -195,7 +195,7 @@ class ControlPanelPageWidget(QtWidgets.QWidget):
     )
     protected_settings_label_text = (
         "Current version is different from the production version."
-        " You cannot save the System settings."
+        " You cannot save the Global settings."
     )
     source_version_tooltip = "Using settings of current QuadPype version"
     source_version_tooltip_outdated = (
@@ -319,7 +319,7 @@ class ControlPanelPageWidget(QtWidgets.QWidget):
             )
         elif mode == EditMode.PROTECT:
             tooltip = (
-                "System settings can only be saved with the QuadPype production version."
+                "Global settings can only be saved with the QuadPype production version."
             )
         else:
             tooltip = "Save settings"
@@ -506,7 +506,7 @@ class ControlPanelPageWidget(QtWidgets.QWidget):
 
         Args:
             full_path (str): Full path to settings entity. It is expected that
-                path starts with category name ("system_setting" etc.).
+                path starts with category name ("global_settings" etc.).
         """
         if not full_path:
             return
@@ -961,11 +961,11 @@ class GlobalSettingsWidget(ControlPanelPageWidget):
         if self.is_modifying_defaults:
             return True
 
-        last_saved_info = get_system_last_saved_info()
+        last_saved_info = get_global_settings_last_saved_info()
         return self._last_saved_info == last_saved_info
 
     def contain_category_key(self, category):
-        if category == SYSTEM_SETTINGS_KEY:
+        if category == GLOBAL_SETTINGS_KEY:
             return True
         return False
 
@@ -973,14 +973,14 @@ class GlobalSettingsWidget(ControlPanelPageWidget):
         self.breadcrumbs_bar.change_path(path)
 
     def _create_root_entity(self):
-        entity = SystemSettings(
+        entity = GlobalSettingsEntity(
             set_studio_state=False, source_version=self._use_version
         )
         entity.on_change_callbacks.append(self._on_entity_change)
         self.entity = entity
         last_saved_info = None
         if not self.is_modifying_defaults:
-            last_saved_info = get_system_last_saved_info()
+            last_saved_info = get_global_settings_last_saved_info()
         self._last_saved_info = last_saved_info
         try:
             if self.is_modifying_defaults:
@@ -999,7 +999,7 @@ class GlobalSettingsWidget(ControlPanelPageWidget):
             self.modify_defaults_checkbox.setEnabled(False)
 
     def ui_tweaks(self):
-        self.breadcrumbs_model = SystemSettingsBreadcrumbs()
+        self.breadcrumbs_model = GlobalSettingsBreadcrumbs()
         self.breadcrumbs_bar.set_model(self.breadcrumbs_model)
 
     def _on_modify_defaults(self):
@@ -1014,7 +1014,7 @@ class GlobalSettingsWidget(ControlPanelPageWidget):
         super(GlobalSettingsWidget, self).add_children_gui()
 
         # The Read-Only logic is currently only relevant for
-        # System Settings (not for Project)
+        # Global Settings (not for Project)
         for input_field in self.input_fields:
             input_field.set_read_only(self._read_only)
 
@@ -1035,7 +1035,7 @@ class ProjectSettingsWidget(ControlPanelPageWidget):
         if self.is_modifying_defaults:
             return True
 
-        last_saved_info = get_project_last_saved_info(self.project_name)
+        last_saved_info = get_project_settings_last_saved_info(self.project_name)
         return self._last_saved_info == last_saved_info
 
     def contain_category_key(self, category):
@@ -1110,7 +1110,7 @@ class ProjectSettingsWidget(ControlPanelPageWidget):
             self.project_list_widget.setEnabled(enabled)
 
     def _create_root_entity(self):
-        entity = ProjectSettings(
+        entity = ProjectSettingsEntity(
             change_state=False, source_version=self._use_version
         )
         entity.on_change_callbacks.append(self._on_entity_change)
@@ -1119,7 +1119,7 @@ class ProjectSettingsWidget(ControlPanelPageWidget):
 
         last_saved_info = None
         if not self.is_modifying_defaults:
-            last_saved_info = get_project_last_saved_info(self.project_name)
+            last_saved_info = get_project_settings_last_saved_info(self.project_name)
         self._last_saved_info = last_saved_info
         try:
             if self.is_modifying_defaults:

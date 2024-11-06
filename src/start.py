@@ -455,10 +455,10 @@ def set_avalon_environments():
 
 
 def update_zxp_extensions(quadpype_version):
-    from quadpype.settings import get_system_settings
+    from quadpype.settings import get_global_settings
 
-    system_settings = get_system_settings()
-    zxp_hosts_to_update = bootstrap.get_zxp_extensions_to_update(quadpype_version, system_settings)
+    global_settings = get_global_settings()
+    zxp_hosts_to_update = bootstrap.get_zxp_extensions_to_update(quadpype_version, global_settings)
     if not zxp_hosts_to_update:
         return
 
@@ -862,11 +862,11 @@ def _find_frozen_quadpype(use_version: str = None,
         pass
 
     if not is_inside:
-        from quadpype.settings import get_system_settings
+        from quadpype.settings import get_global_settings
 
-        system_settings = get_system_settings()
+        global_settings = get_global_settings()
         # install latest version to user data dir
-        zxp_hosts_to_update = bootstrap.get_zxp_extensions_to_update(quadpype_version, system_settings, force=True)
+        zxp_hosts_to_update = bootstrap.get_zxp_extensions_to_update(quadpype_version, global_settings, force=True)
         if in_headless_mode:
             version_path = bootstrap.install_version(
                 quadpype_version, force=True

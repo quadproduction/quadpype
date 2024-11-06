@@ -1,4 +1,4 @@
-from quadpype.settings import get_system_settings, GENERAL_SETTINGS_KEY
+from quadpype.settings import get_global_settings, CORE_SETTINGS_KEY
 from .dict_immutable_keys_entity import DictImmutableKeysEntity
 from .lib import OverrideState
 from .exceptions import EntitySchemaError
@@ -15,8 +15,8 @@ class AnatomyEntity(DictImmutableKeysEntity):
         # prod tracker (Shotgrid, Ftrack, Kitsu, ...)
         # Anatomy Attributes should only be edited on the prod tracker side, then
         # the sync will retrieve and update the QuadPype data for the project.
-        system_settings = get_system_settings()
-        protect_attrs = system_settings[GENERAL_SETTINGS_KEY].get("projects", {}).get("protect_anatomy_attributes", False)
+        global_settings = get_global_settings()
+        protect_attrs = global_settings[CORE_SETTINGS_KEY].get("projects", {}).get("protect_anatomy_attributes", False)
         self.non_gui_children["attributes"].protect_attrs = protect_attrs
         if protect_attrs:
             self.non_gui_children["attributes"].read_only = protect_attrs

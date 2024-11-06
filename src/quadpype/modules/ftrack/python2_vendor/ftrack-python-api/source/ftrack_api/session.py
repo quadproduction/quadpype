@@ -2153,7 +2153,7 @@ class Session(object):
                 [operation]
             )[0]
 
-        except ftrack_api.exception.ServerError as error:
+        except ftrack_api.exception.ServerError:
             raise
 
         return result['data']

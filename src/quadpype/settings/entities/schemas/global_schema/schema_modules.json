@@ -323,7 +323,7 @@
         },
         {
             "type": "dynamic_schema",
-            "name": "system_settings/modules"
+            "name": "global_settings/modules"
         },
         {
             "type": "dict",

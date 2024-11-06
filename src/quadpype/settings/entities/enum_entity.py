@@ -8,10 +8,10 @@ from .exceptions import EntitySchemaError
 from .lib import NOT_SET, STRING_TYPE
 
 from quadpype.settings import (
-    get_system_settings,
+    get_global_settings,
     APPS_SETTINGS_KEY,
     MODULES_SETTINGS_KEY,
-    SYSTEM_SETTINGS_KEY
+    GLOBAL_SETTINGS_KEY
 )
 
 
@@ -284,11 +284,11 @@ class AppsEnumEntity(BaseEnumEntity):
         self.placeholder = None
 
     def _get_enum_values(self):
-        system_settings_entity = self.get_entity_from_path(SYSTEM_SETTINGS_KEY)
+        global_settings_entity = self.get_entity_from_path(GLOBAL_SETTINGS_KEY)
 
         valid_keys = set()
         enum_items_list = []
-        applications_entity = system_settings_entity[APPS_SETTINGS_KEY]
+        applications_entity = global_settings_entity[APPS_SETTINGS_KEY]
         app_entities = {}
         additional_app_names = set()
         additional_apps_entity = None
@@ -365,11 +365,11 @@ class ToolsEnumEntity(BaseEnumEntity):
         self.placeholder = None
 
     def _get_enum_values(self):
-        system_settings_entity = self.get_entity_from_path(SYSTEM_SETTINGS_KEY)
+        global_settings_entity = self.get_entity_from_path(GLOBAL_SETTINGS_KEY)
 
         valid_keys = set()
         enum_items_list = []
-        tool_groups_entity = system_settings_entity["tools"]["tool_groups"]
+        tool_groups_entity = global_settings_entity["tools"]["tool_groups"]
         for group_name, tool_group in tool_groups_entity.items():
             # Try to get group label from entity
             group_label = None
@@ -535,7 +535,7 @@ class DeadlineUrlEnumEntity(DynamicEnumEntity):
 
     def _get_enum_values(self):
         deadline_urls_entity = self.get_entity_from_path(
-            "system_settings/modules/deadline/deadline_urls"
+            "global_settings/modules/deadline/deadline_urls"
         )
 
         valid_keys = set()
@@ -568,12 +568,12 @@ class DeadlineLimitsPluginEnumEntity(BaseEnumEntity):
         # Import here to avoid circular import
         from quadpype.modules.deadline import get_deadline_limits_plugin
 
-        modules_system_settings = get_system_settings()[MODULES_SETTINGS_KEY]
-        deadline_enabled = modules_system_settings["deadline"]["enabled"]
+        modules_global_settings = get_global_settings()[MODULES_SETTINGS_KEY]
+        deadline_enabled = modules_global_settings["deadline"]["enabled"]
         if not deadline_enabled:
             return [], set()
 
-        deadline_url = modules_system_settings["deadline"]["deadline_urls"].get("default", "")  # noqa
+        deadline_url = modules_global_settings["deadline"]["deadline_urls"].get("default", "")  # noqa
 
         try:
             requests.get(deadline_url)
@@ -658,12 +658,12 @@ class DeadlinePoolsEnumEntity(DynamicEnumEntity):
         # Import here to avoid circular import
         from quadpype.pipeline.context_tools import _get_modules_manager
 
-        modules_system_settings = get_system_settings()[MODULES_SETTINGS_KEY]
-        deadline_enabled = modules_system_settings["deadline"]["enabled"]
+        modules_global_settings = get_global_settings()[MODULES_SETTINGS_KEY]
+        deadline_enabled = modules_global_settings["deadline"]["enabled"]
         if not deadline_enabled:
             return [], set()
 
-        deadline_url = modules_system_settings["deadline"]["deadline_urls"].get("default", "")  # noqa
+        deadline_url = modules_global_settings["deadline"]["deadline_urls"].get("default", "")  # noqa
         manager = _get_modules_manager()
         deadline_module = manager.modules_by_name["deadline"]
         try:
@@ -702,7 +702,7 @@ class RoyalRenderRootEnumEntity(DynamicEnumEntity):
 
     def _get_enum_values(self):
         rr_root_entity = self.get_entity_from_path(
-            "system_settings/modules/royalrender/rr_paths"
+            "global_settings/modules/royalrender/rr_paths"
         )
 
         valid_keys = set()
@@ -720,7 +720,7 @@ class ShotgridUrlEnumEntity(DynamicEnumEntity):
 
     def _get_enum_values(self):
         shotgrid_settings = self.get_entity_from_path(
-            "system_settings/modules/shotgrid/shotgrid_settings"
+            "global_settings/modules/shotgrid/shotgrid_settings"
         )
 
         valid_keys = set()

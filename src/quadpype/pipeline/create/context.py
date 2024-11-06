@@ -16,7 +16,7 @@ from quadpype.client import (
     get_asset_by_name
 )
 from quadpype.settings import (
-    get_system_settings,
+    get_global_settings,
     get_project_settings
 )
 from quadpype.lib.attribute_definitions import (
@@ -1774,7 +1774,7 @@ class CreateContext:
 
     def _reset_creator_plugins(self):
         # Prepare settings
-        system_settings = get_system_settings()
+        global_settings = get_global_settings()
         project_settings = get_project_settings(self.project_name)
 
         # Discover and prepare creators
@@ -1812,7 +1812,7 @@ class CreateContext:
 
             creator = creator_class(
                 project_settings,
-                system_settings,
+                global_settings,
                 self,
                 self.headless
             )

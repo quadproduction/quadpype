@@ -1,6 +1,6 @@
 from .constants import (
+    CORE_SETTINGS_KEY,
     GLOBAL_SETTINGS_KEY,
-    SYSTEM_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     PROJECT_ANATOMY_KEY,
 
@@ -10,9 +10,7 @@ from .constants import (
     MODULES_SETTINGS_KEY,
     PROJECTS_SETTINGS_KEY,
 
-    LEGACY_SETTINGS_VERSION,
-
-    SCHEMA_KEY_SYSTEM_SETTINGS,
+    SCHEMA_KEY_GLOBAL_SETTINGS,
     SCHEMA_KEY_PROJECT_SETTINGS,
 
     DEFAULT_PROJECT_KEY,
@@ -25,23 +23,23 @@ from .exceptions import (
 )
 from .lib import (
     get_general_environments,
+    get_core_settings,
     get_global_settings,
-    get_system_settings,
     get_project_settings,
     get_current_project_settings,
     get_anatomy_settings,
     get_user_settings,
 )
 from .entities import (
-    SystemSettings,
-    ProjectSettings,
+    GlobalSettingsEntity,
+    ProjectSettingsEntity,
     DefaultsNotDefined
 )
 
 
 __all__ = (
+    "CORE_SETTINGS_KEY",
     "GLOBAL_SETTINGS_KEY",
-    "SYSTEM_SETTINGS_KEY",
     "PROJECT_SETTINGS_KEY",
     "PROJECT_ANATOMY_KEY",
 
@@ -51,9 +49,7 @@ __all__ = (
     "MODULES_SETTINGS_KEY",
     "PROJECTS_SETTINGS_KEY",
 
-    "LEGACY_SETTINGS_VERSION",
-
-    "SCHEMA_KEY_SYSTEM_SETTINGS",
+    "SCHEMA_KEY_GLOBAL_SETTINGS",
     "SCHEMA_KEY_PROJECT_SETTINGS",
 
     "DEFAULT_PROJECT_KEY",
@@ -64,14 +60,14 @@ __all__ = (
     "SaveWarningExc",
 
     "get_general_environments",
+    "get_core_settings",
     "get_global_settings",
-    "get_system_settings",
     "get_project_settings",
     "get_current_project_settings",
     "get_anatomy_settings",
     "get_user_settings",
 
-    "SystemSettings",
-    "ProjectSettings",
+    "GlobalSettingsEntity",
+    "ProjectSettingsEntity",
     "DefaultsNotDefined"
 )

@@ -30,9 +30,9 @@ class LocalDriveHandler(AbstractProvider):
         return True
 
     @classmethod
-    def get_system_settings_schema(cls):
+    def get_global_settings_schema(cls):
         """
-            Returns dict for editable properties on system settings level
+            Returns dict for editable properties on global settings level
 
 
             Returns:
@@ -199,7 +199,7 @@ class LocalDriveHandler(AbstractProvider):
         """
         source_file_size = os.path.getsize(source_path)
         target_file_size = 0
-        last_tick = status_val = None
+        last_tick = None
         while source_file_size != target_file_size:
             if not last_tick or \
                     time.time() - last_tick >= server.LOG_PROGRESS_SEC:
@@ -220,7 +220,7 @@ class LocalDriveHandler(AbstractProvider):
             time.sleep(0.5)
 
     def _normalize_site_name(self, site_name):
-        """Transform user id to 'local' for Local settings"""
+        """Transform local id to 'local' for User settings"""
         if site_name == get_local_site_id():
             return 'local'
         return site_name

@@ -5,7 +5,7 @@ import threading
 import platform
 
 from quadpype.lib import Logger
-from quadpype.settings import get_system_settings, MODULES_SETTINGS_KEY
+from quadpype.settings import get_global_settings, MODULES_SETTINGS_KEY
 from .abstract_provider import AbstractProvider
 log = Logger.get_logger("SyncServer-SFTPHandler")
 
@@ -73,9 +73,9 @@ class SFTPHandler(AbstractProvider):
         return self.presets.get("enabled") and self.conn is not None
 
     @classmethod
-    def get_system_settings_schema(cls):
+    def get_global_settings_schema(cls):
         """
-            Returns dict for editable properties on system settings level
+            Returns dict for editable properties on global settings level
 
 
             Returns:
@@ -376,7 +376,7 @@ class SFTPHandler(AbstractProvider):
         provider_presets = None
         try:
             provider_presets = (
-                get_system_settings()[MODULES_SETTINGS_KEY]
+                get_global_settings()[MODULES_SETTINGS_KEY]
                 ["sync_server"]
                 ["providers"]
                 ["sftp"]
@@ -438,7 +438,7 @@ class SFTPHandler(AbstractProvider):
             source_file_size = self.conn.stat(source_path).st_size
 
         target_file_size = 0
-        last_tick = status_val = None
+        last_tick = None
         while source_file_size != target_file_size:
             if not last_tick or \
                     time.time() - last_tick >= server.LOG_PROGRESS_SEC:

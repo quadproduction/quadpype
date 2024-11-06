@@ -3,7 +3,7 @@ import copy
 
 from quadpype.client import get_project, create_project
 from quadpype.settings import (
-    ProjectSettings,
+    ProjectSettingsEntity,
     SaveWarningExc,
     APPS_SETTINGS_KEY,
     PROJECT_ANATOMY_KEY,
@@ -72,7 +72,7 @@ class PrepareProjectLocal(BaseAction):
         project_entity = entities[0]
         project_name = project_entity["full_name"]
 
-        project_settings = ProjectSettings(project_name)
+        project_settings = ProjectSettingsEntity(project_name)
 
         project_anatom_settings = project_settings[PROJECT_ANATOMY_KEY]
         root_items = self.prepare_root_items(project_anatom_settings)
@@ -408,7 +408,7 @@ class PrepareProjectLocal(BaseAction):
                 {"project_name": project_name}
             )
 
-        project_settings = ProjectSettings(project_name)
+        project_settings = ProjectSettingsEntity(project_name)
         project_anatomy_settings = project_settings[PROJECT_ANATOMY_KEY]
         project_anatomy_settings["roots"] = root_data
         # Add a flag to be able to bypass the enabled protection for the anatomy attrs

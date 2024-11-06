@@ -7,13 +7,13 @@ from quadpype.tools.settings.settings.categories import (
 
 
 class LocalModulesWidgets(QtWidgets.QWidget):
-    def __init__(self, system_settings_entity, parent):
+    def __init__(self, global_settings_entity, parent):
         super().__init__(parent)
 
         self.modules_data = {}
-        self.system_settings_entity = system_settings_entity
+        self.global_settings_entity = global_settings_entity
 
-        for module_name, entity in self.system_settings_entity[MODULES_SETTINGS_KEY].items():
+        for module_name, entity in self.global_settings_entity[MODULES_SETTINGS_KEY].items():
             self.modules_data[module_name] = {
                 "entity": entity,
                 "widget": None,

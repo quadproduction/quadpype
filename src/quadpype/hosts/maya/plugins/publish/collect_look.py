@@ -323,9 +323,6 @@ class CollectLook(pyblish.api.InstancePlugin):
         self.log.debug("Looking for look associations "
                        "for %s" % instance.data['name'])
 
-        # Lookup set (optimization)
-        instance_lookup = set(cmds.ls(instance, long=True))
-
         # Discover related object sets
         self.log.debug("Gathering sets ...")
         sets = self.collect_sets(instance)

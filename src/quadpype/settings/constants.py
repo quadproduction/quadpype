@@ -13,21 +13,19 @@ METADATA_KEYS = frozenset([
 
 # Keys where studio's system overrides are stored
 GLOBAL_SETTINGS_KEY = "global_settings"
-SYSTEM_SETTINGS_KEY = "system_settings"
 PROJECT_SETTINGS_KEY = "project_settings"
 PROJECT_ANATOMY_KEY = "project_anatomy"
 
+CORE_SETTINGS_KEY = "core"
 GENERAL_SETTINGS_KEY = "general"
 ENV_SETTINGS_KEY = "environments"
 APPS_SETTINGS_KEY = "applications"
 MODULES_SETTINGS_KEY = "modules"
 PROJECTS_SETTINGS_KEY = "projects"
 
-LEGACY_SETTINGS_VERSION = "legacy"
-
 # Schema hub names
-SCHEMA_KEY_SYSTEM_SETTINGS = "system_schema"
-SCHEMA_KEY_PROJECT_SETTINGS = "projects_schema"
+SCHEMA_KEY_GLOBAL_SETTINGS = "global_schema"
+SCHEMA_KEY_PROJECT_SETTINGS = "project_schema"
 
 DEFAULT_PROJECT_KEY = "__default_project__"
 
@@ -41,8 +39,8 @@ __all__ = (
 
     "METADATA_KEYS",
 
+    "CORE_SETTINGS_KEY",
     "GLOBAL_SETTINGS_KEY",
-    "SYSTEM_SETTINGS_KEY",
     "PROJECT_SETTINGS_KEY",
     "PROJECT_ANATOMY_KEY",
 
@@ -52,9 +50,7 @@ __all__ = (
     "MODULES_SETTINGS_KEY",
     "PROJECTS_SETTINGS_KEY",
 
-    "LEGACY_SETTINGS_VERSION",
-
-    "SCHEMA_KEY_SYSTEM_SETTINGS",
+    "SCHEMA_KEY_GLOBAL_SETTINGS",
     "SCHEMA_KEY_PROJECT_SETTINGS",
 
     "DEFAULT_PROJECT_KEY",

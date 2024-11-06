@@ -1536,7 +1536,7 @@ class BootstrapRepos:
             # Cleaned up temporary files removed zip_path
             os.remove(zip_path)
 
-    def get_zxp_extensions_to_update(self, quadpype_version, system_settings, force=False) -> [ZXPExtensionData]:
+    def get_zxp_extensions_to_update(self, quadpype_version, global_settings, force=False) -> List[ZXPExtensionData]:
         # List of all Adobe software ids (named hosts) handled by QuadPype
         # TODO: where and how to store the list of Adobe software ids
         zxp_host_ids = ["photoshop", "aftereffects"]
@@ -1563,8 +1563,8 @@ class BootstrapRepos:
             if not force:
                 # Is the update required?
 
-                # Check if the software is enabled in the current system settings
-                if system_settings and not system_settings["applications"][zxp_host_id]["enabled"]:
+                # Check if the software is enabled in the current global settings
+                if global_settings and not global_settings["applications"][zxp_host_id]["enabled"]:
                     # The update isn't necessary if the soft is disabled for the studio, skipping
                     continue
 

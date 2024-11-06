@@ -171,7 +171,7 @@ class LoadEffects(load.LoaderPlugin):
         workfile_first_frame = int(nuke.root()["first_frame"].getValue())
         namespace = container['namespace']
         colorspace = version_data.get("colorspace", None)
-        object_name = "{}_{}".format(name, namespace)
+        # object_name = "{}_{}".format(name, namespace)
 
         add_keys = ["frameStart", "frameEnd", "handleStart", "handleEnd",
                     "source", "author", "fps"]

@@ -13,14 +13,14 @@ import six
 
 from quadpype import PACKAGE_DIR
 from quadpype.settings import (
-    get_system_settings,
+    get_global_settings,
     get_project_settings,
     get_user_settings,
     APPS_SETTINGS_KEY,
-    GENERAL_SETTINGS_KEY,
+    CORE_SETTINGS_KEY,
     ENV_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
-    SYSTEM_SETTINGS_KEY
+    GLOBAL_SETTINGS_KEY
 )
 from quadpype.settings.constants import (
     METADATA_KEYS,
@@ -389,12 +389,12 @@ class ApplicationManager:
     """Load applications and tools and store them by their full name.
 
     Args:
-        system_settings (dict): Preloaded system settings. When passed manager
+        global_settings (dict): Preloaded global settings. When passed manager
             will always use these values. Gives ability to create manager
             using different settings.
     """
 
-    def __init__(self, system_settings=None):
+    def __init__(self, global_settings=None):
         self.log = Logger.get_logger(self.__class__.__name__)
 
         self.app_groups = {}
@@ -402,16 +402,16 @@ class ApplicationManager:
         self.tool_groups = {}
         self.tools = {}
 
-        self._system_settings = system_settings
+        self._global_settings = global_settings
 
         self.refresh()
 
-    def set_system_settings(self, system_settings):
-        """Ability to change init system settings.
+    def set_global_settings(self, global_settings):
+        """Ability to change init global settings.
 
         This will trigger refresh of manager.
         """
-        self._system_settings = system_settings
+        self._global_settings = global_settings
 
         self.refresh()
 
@@ -422,10 +422,10 @@ class ApplicationManager:
         self.tool_groups.clear()
         self.tools.clear()
 
-        if self._system_settings is not None:
-            settings = copy.deepcopy(self._system_settings)
+        if self._global_settings is not None:
+            settings = copy.deepcopy(self._global_settings)
         else:
-            settings = get_system_settings(
+            settings = get_global_settings(
                 clear_metadata=False, exclude_locals=False
             )
 
@@ -1446,8 +1446,8 @@ class EnvironmentPrepData(dict):
         if data.get("env") is None:
             data["env"] = os.environ.copy()
 
-        if SYSTEM_SETTINGS_KEY not in data:
-            data[SYSTEM_SETTINGS_KEY] = get_system_settings()
+        if GLOBAL_SETTINGS_KEY not in data:
+            data[GLOBAL_SETTINGS_KEY] = get_global_settings()
 
         super().__init__(data)
 
@@ -1570,8 +1570,8 @@ def prepare_app_environments(
 
     # Use environments from user settings
     filtered_local_envs = {}
-    system_settings = data[SYSTEM_SETTINGS_KEY]
-    whitelist_envs = system_settings[GENERAL_SETTINGS_KEY].get("local_env_white_list")
+    global_settings = data[GLOBAL_SETTINGS_KEY]
+    whitelist_envs = global_settings[CORE_SETTINGS_KEY].get("local_env_white_list")
     if whitelist_envs:
         user_settings = get_user_settings()
         local_envs = user_settings.get(ENV_SETTINGS_KEY) or {}
@@ -1736,9 +1736,9 @@ def prepare_context_environments(data, env_group=None, modules_manager=None):
     # Load project specific environments
     project_name = project_doc["name"]
     project_settings = get_project_settings(project_name)
-    system_settings = get_system_settings()
+    global_settings = get_global_settings()
     data[PROJECT_SETTINGS_KEY] = project_settings
-    data[SYSTEM_SETTINGS_KEY] = system_settings
+    data[GLOBAL_SETTINGS_KEY] = global_settings
 
     app = data["app"]
     context_env = {
@@ -1778,7 +1778,7 @@ def prepare_context_environments(data, env_group=None, modules_manager=None):
         )
 
     workdir_data = get_template_data(
-        project_doc, asset_doc, task_name, app.host_name, system_settings
+        project_doc, asset_doc, task_name, app.host_name, global_settings
     )
     data["workdir_data"] = workdir_data
 

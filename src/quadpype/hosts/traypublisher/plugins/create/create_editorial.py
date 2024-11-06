@@ -498,7 +498,6 @@ or updating already created. Publishing will create OTIO file.
         Returns:
             dict: media file metadata
         """
-        return_data = {}
 
         try:
             media_data = get_ffprobe_data(

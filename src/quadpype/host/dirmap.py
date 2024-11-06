@@ -119,7 +119,7 @@ class HostDirmap(object):
         """Get translation from source-path to destination-path.
 
             It checks if Site Sync is enabled and user chose to use local
-            site, in that case configuration in Local Settings takes precedence
+            site, in that case configuration in User Settings takes precedence
         """
 
         dirmap_label = "{}-dirmap".format(self.host_name)

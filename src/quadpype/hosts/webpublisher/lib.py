@@ -54,7 +54,6 @@ def get_batch_asset_task_info(ctx):
     """
     task_type = "default_task_type"
     task_name = None
-    asset = None
 
     if ctx["type"] == "task":
         items = ctx["path"].split('/')

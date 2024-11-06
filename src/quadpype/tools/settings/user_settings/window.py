@@ -3,8 +3,8 @@ from qtpy import QtWidgets, QtGui
 from quadpype import style
 
 from quadpype.settings import (
-    SystemSettings,
-    ProjectSettings,
+    GlobalSettingsEntity,
+    ProjectSettingsEntity,
 
     GENERAL_SETTINGS_KEY,
     ENV_SETTINGS_KEY,
@@ -42,8 +42,8 @@ class UserSettingsWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.system_settings = SystemSettings()
-        self.project_settings = ProjectSettings()
+        self.global_settings = GlobalSettingsEntity()
+        self.project_settings = ProjectSettingsEntity()
         self.modules_manager = ModulesManager()
 
         self.main_layout = QtWidgets.QVBoxLayout(self)
@@ -124,7 +124,7 @@ class UserSettingsWidget(QtWidgets.QWidget):
         envs_expand_widget.set_content_widget(envs_content)
 
         envs_widget = LocalEnvironmentsWidgets(
-            self.system_settings, envs_content
+            self.global_settings, envs_content
         )
         envs_layout.addWidget(envs_widget)
 
@@ -141,7 +141,7 @@ class UserSettingsWidget(QtWidgets.QWidget):
         modules_expand_widget.set_content_widget(modules_content)
 
         modules_widget = LocalModulesWidgets(
-            self.system_settings, modules_content
+            self.global_settings, modules_content
         )
         modules_layout.addWidget(modules_widget)
 
@@ -159,7 +159,7 @@ class UserSettingsWidget(QtWidgets.QWidget):
         apps_expand_widget.set_content_widget(apps_content)
 
         apps_widget = LocalApplicationsWidgets(
-            self.system_settings, apps_content
+            self.global_settings, apps_content
         )
         apps_layout.addWidget(apps_widget)
 
@@ -187,7 +187,7 @@ class UserSettingsWidget(QtWidgets.QWidget):
         if not value:
             value = {}
 
-        self.system_settings.reset()
+        self.global_settings.reset()
         self.project_settings.reset()
 
         self.general_widget.update_user_settings(

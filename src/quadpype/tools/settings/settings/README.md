@@ -13,11 +13,11 @@
     - `"is_group"` - define that all values under key in hierarchy will be overridden if any value is modified, this information is also stored to overrides
         - this keys is not allowed for all inputs as they may have not reason for that
         - key is validated, can be only once in hierarchy but is not required
-- currently there are `system configurations` and `project configurations`
+- currently there are `global configurations` and `project configurations`
 
 ## Inner schema
 - GUI schemas are huge json files, to be able to split whole configuration into multiple schema there's type `schema`
-- system configuration schemas are stored in `~/tools/settings/settings/gui_schemas/system_schema/` and project configurations in `~/tools/settings/settings/gui_schemas/projects_schema/`
+- global settings configuration schemas are stored in `~/tools/settings/settings/gui_schemas/global_schema/` and project configurations in `~/tools/settings/settings/gui_schemas/project_schema/`
 - each schema name is filename of json file except extension (without ".json")
 - if content is dictionary content will be used as `schema` else will be used as `schema_template`
 

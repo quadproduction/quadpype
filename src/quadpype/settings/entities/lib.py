@@ -11,9 +11,9 @@ from .exceptions import (
 )
 
 from quadpype.settings.constants import (
-    SYSTEM_SETTINGS_KEY,
+    GLOBAL_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
-    SCHEMA_KEY_SYSTEM_SETTINGS,
+    SCHEMA_KEY_GLOBAL_SETTINGS,
     SCHEMA_KEY_PROJECT_SETTINGS
 )
 try:
@@ -744,7 +744,7 @@ class SchemasHub:
 class DynamicSchemaValueCollector:
     # Map schema hub type to store keys
     schema_hub_type_map = {
-        SCHEMA_KEY_SYSTEM_SETTINGS: SYSTEM_SETTINGS_KEY,
+        SCHEMA_KEY_GLOBAL_SETTINGS: GLOBAL_SETTINGS_KEY,
         SCHEMA_KEY_PROJECT_SETTINGS: PROJECT_SETTINGS_KEY
     }
 

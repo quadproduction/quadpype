@@ -177,7 +177,7 @@ def cli_publish(data, publish_paths, gui=True):
     legacy_io.install()
 
     # Create hash name folder in temp
-    chars = "".join([random.choice(string.ascii_letters) for i in range(15)])
+    chars = "".join([random.choice(string.ascii_letters) for _ in range(15)])
     staging_dir = tempfile.mkdtemp(chars)
 
     # create also json and fill with data
@@ -194,7 +194,7 @@ def cli_publish(data, publish_paths, gui=True):
         envcopy["PYBLISH_SUSPEND_LOGS"] = "1"
 
     project_name = os.environ["AVALON_PROJECT"]
-    env_copy = apply_project_environments_value(project_name, envcopy)
+    apply_project_environments_value(project_name, envcopy)
 
     args = get_quadpype_execute_args("run", PUBLISH_SCRIPT_PATH)
     result = execute(args, env=envcopy)

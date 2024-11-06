@@ -89,7 +89,7 @@ class CollectTextures(pyblish.api.ContextPlugin):
             processed_instance = False
             for repre in instance.data["representations"]:
                 ext = repre["ext"].replace('.', '')
-                asset_build = version = None
+                asset_build = None
 
                 if isinstance(repre["files"], list):
                     repre_file = repre["files"][0]

@@ -29,10 +29,10 @@ QuadPype modules should contain separated logic of specific kind of implementati
 
 ## Addon class `QuadPypeAddOn`
 - inherits from `QuadPypeModule` but is enabled by default and doesn't have to implement `initialize` and `connect_with_modules` methods
- - that is because it is expected that addons don't need to have system settings and `enabled` value on it (but it is possible...)
+ - that is because it is expected that addons don't need to have global settings and `enabled` value on it (but it is possible...)
 
 ## How to add addons/modules
-- in System settings go to `modules/addon_paths` (`Modules/QuadPype AddOn Paths`) where you have to add path to addon root folder
+- in Global settings go to `modules/addon_paths` (`Modules/QuadPype AddOn Paths`) where you have to add path to addon root folder
 - for quadpype example addons use `{QUADPYPE_REPOS_ROOT}/quadpype/modules/example_addons`
 
 ## Addon/module settings

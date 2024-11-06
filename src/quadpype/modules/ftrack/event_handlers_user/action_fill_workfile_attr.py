@@ -11,7 +11,7 @@ from quadpype.client import (
     get_project,
     get_assets,
 )
-from quadpype.settings import get_project_settings, get_system_settings
+from quadpype.settings import get_project_settings, get_global_settings
 from quadpype.lib import StringTemplate
 from quadpype.pipeline import Anatomy
 from quadpype.pipeline.template_data import get_template_data
@@ -277,7 +277,7 @@ class FillWorkfileAttributeAction(BaseAction):
         extension = "{ext}"
         project_doc = get_project(project_name)
         project_settings = get_project_settings(project_name)
-        system_settings = get_system_settings()
+        global_settings = get_global_settings()
         anatomy = Anatomy(project_name)
         templates_by_key = {}
 
@@ -289,7 +289,7 @@ class FillWorkfileAttributeAction(BaseAction):
                     asset_doc,
                     task_entity["name"],
                     host_name,
-                    system_settings
+                    global_settings
                 )
                 # Use version 1 for each workfile
                 workfile_data["version"] = 1

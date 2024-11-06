@@ -90,7 +90,6 @@ def create_connection(
             err = e
             if sock is not None:
                 sock.close()
-                sock = None
 
     if err is not None:
         raise err

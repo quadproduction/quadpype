@@ -18,7 +18,7 @@ class LocalGeneralWidgets(QtWidgets.QWidget):
 
         layout.addRow("Override QuadPype Username", self.username_input)
 
-        self.windows_can_stay_on_top_input = QtWidgets.QCheckBox("toto", self)
+        self.windows_can_stay_on_top_input = QtWidgets.QCheckBox("", self)
         layout.addRow("Windows can Stay On Top", self.windows_can_stay_on_top_input)
 
     def update_user_settings(self, value):

@@ -573,7 +573,7 @@ def create_project(
         dict: Created project document.
     """
 
-    from quadpype.settings import ProjectSettings, SaveWarningExc
+    from quadpype.settings import ProjectSettingsEntity, SaveWarningExc
     from quadpype.pipeline.schema import validate
 
     if get_project(project_name, fields=["name"]):
@@ -603,10 +603,10 @@ def create_project(
     )
     op_session.commit()
 
-    # Load ProjectSettings for the project and save it to store all attributes
+    # Load Project Settings for the project and save it to store all attributes
     #   and Anatomy
     try:
-        project_settings_entity = ProjectSettings(project_name)
+        project_settings_entity = ProjectSettingsEntity(project_name)
         # Add a flag to be able to bypass the enabled protection for the anatomy attrs
         project_settings_entity[PROJECT_ANATOMY_KEY]._current_metadata["bypass_protect_anatomy_attributes"] = True
         project_settings_entity.save()

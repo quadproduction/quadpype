@@ -167,11 +167,11 @@ class AppGroupWidget(QtWidgets.QWidget):
 
 
 class LocalApplicationsWidgets(QtWidgets.QWidget):
-    def __init__(self, system_settings_entity, parent):
+    def __init__(self, global_settings_entity, parent):
         super().__init__(parent)
 
         self.widgets_by_group_name = {}
-        self.system_settings_entity = system_settings_entity
+        self.global_settings_entity = global_settings_entity
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -204,7 +204,7 @@ class LocalApplicationsWidgets(QtWidgets.QWidget):
         app_items = {}
         additional_apps = set()
         additional_apps_entity = None
-        for key, entity in self.system_settings_entity[APPS_SETTINGS_KEY].items():
+        for key, entity in self.global_settings_entity[APPS_SETTINGS_KEY].items():
             if key != "additional_apps":
                 app_items[key] = entity
                 continue

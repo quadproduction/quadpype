@@ -9,7 +9,7 @@ import pyblish.api
 from quadpype.settings import (
     MODULES_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
-    SYSTEM_SETTINGS_KEY
+    GLOBAL_SETTINGS_KEY
 )
 from quadpype.pipeline.publish import KnownPublishError
 
@@ -51,7 +51,7 @@ class CollectDeadlineServerFromInstance(pyblish.api.InstancePlugin):
         from maya import cmds
         deadline_settings = (
             render_instance.context.data
-            [SYSTEM_SETTINGS_KEY]
+            [GLOBAL_SETTINGS_KEY]
             [MODULES_SETTINGS_KEY]
             ["deadline"]
         )

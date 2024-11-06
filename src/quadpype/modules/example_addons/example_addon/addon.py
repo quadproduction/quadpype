@@ -46,7 +46,7 @@ class AddonSettingsDef(JsonFilesSettingsDef):
 class ExampleAddon(QuadPypeAddOn, IPluginPaths, ITrayAction):
     """This Addon has defined its settings and interface.
 
-    This example has system settings with an enabled option. And use
+    This example has global settings with an enabled option. And use
     few other interfaces:
     - `IPluginPaths` to define custom plugin paths
     - `ITrayAction` to be shown in tray tool

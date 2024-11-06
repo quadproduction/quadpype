@@ -7,7 +7,7 @@ import datetime
 
 from qtpy import QtWidgets, QtGui, QtCore
 
-from quadpype.settings.entities import ProjectSettings
+from quadpype.settings.entities import ProjectSettingsEntity
 from quadpype.tools.settings import CHILD_OFFSET
 
 from .widgets import ExpandingWidget
@@ -394,7 +394,7 @@ class BaseWidget(QtWidgets.QWidget):
         # Try to find matching entity to be able paste values to same spot
         # - entity can't by dynamic or in dynamic item
         # - must be in same root entity as source copy
-        #       Can't copy system settings <-> project settings
+        #       Can't copy global settings <-> project settings
         matching_entity = None
         if path and root_key == self.entity.root_key:
             try:
@@ -473,7 +473,7 @@ class BaseWidget(QtWidgets.QWidget):
                     for item in self.entity.path.split("/")
                     if item
                 ]
-                entity = ProjectSettings(project_name)
+                entity = ProjectSettingsEntity(project_name)
                 for key in path_keys:
                     entity = entity[key]
                 self.entity.set(entity.value)

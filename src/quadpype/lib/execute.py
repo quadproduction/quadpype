@@ -373,7 +373,6 @@ def open_in_explorer(filepath):
     Args:
         filepath (str): The path to the file to be opened.
     """
-    result = None
     if 'win' in sys.platform:  # windows
         result = subprocess.call(f'explorer "{filepath}"', shell=True)
     elif sys.platform == 'darwin':  # macOS

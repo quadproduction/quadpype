@@ -373,7 +373,7 @@ class CustomSpreadsheetColumns(QObject):
             if option.state & QStyle.State_Selected:
                 painter.fillRect(option.rect, option.palette.highlight())
 
-            tags = item.tags()
+            #tags = item.tags()
             painter.save()
             painter.setClipRect(option.rect)
 

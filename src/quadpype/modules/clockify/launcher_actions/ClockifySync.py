@@ -38,7 +38,6 @@ class ClockifySync(LauncherAction):
             )
         project_name = session.get("AVALON_PROJECT") or ""
 
-        projects_to_sync = []
         if project_name.strip():
             projects_to_sync = [get_project(project_name)]
         else:

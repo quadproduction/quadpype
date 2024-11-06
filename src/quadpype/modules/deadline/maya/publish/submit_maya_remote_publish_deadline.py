@@ -70,7 +70,6 @@ class MayaSubmitRemotePublishDeadline(
         instance = self._instance
         context = instance.context
 
-        project_name = instance.context.data["projectName"]
         scene = instance.context.data["currentFile"]
         scenename = os.path.basename(scene)
 

@@ -5,7 +5,7 @@ from abc import ABCMeta, abstractmethod
 
 import six
 
-from quadpype.settings import get_system_settings, get_project_settings
+from quadpype.settings import get_global_settings, get_project_settings
 from quadpype.lib import Logger, is_func_signature_supported
 from quadpype.pipeline.plugin_discover import (
     discover,
@@ -200,7 +200,7 @@ class BaseCreator:
     settings_name = None
 
     def __init__(
-        self, project_settings, system_settings, create_context, headless=False
+        self, project_settings, global_settings, create_context, headless=False
     ):
         # Reference to CreateContext
         self.create_context = create_context
@@ -210,15 +210,15 @@ class BaseCreator:
         # - we may use UI inside processing this attribute should be checked
         self.headless = headless
 
-        expect_system_settings = False
+        expect_global_settings = False
         if is_func_signature_supported(
             self.apply_settings, project_settings
         ):
             self.apply_settings(project_settings)
         else:
-            expect_system_settings = True
-            # Backwards compatibility for system settings
-            self.apply_settings(project_settings, system_settings)
+            expect_global_settings = True
+            # Backwards compatibility for global settings
+            self.apply_settings(project_settings, global_settings)
 
         init_use_base = any(
             self.__class__.__init__ is cls.__init__
@@ -229,14 +229,14 @@ class BaseCreator:
                 AutoCreator,
             }
         )
-        if not init_use_base or expect_system_settings:
+        if not init_use_base or expect_global_settings:
             self.log.warning((
                 "WARNING: Source - Create plugin {}."
-                " System settings argument will not be passed to"
+                " Global settings argument will not be passed to"
                 " '__init__' and 'apply_settings' methods in future versions"
                 " of QuadPype. Planned version to drop the support"
                 " is 3.16.6 or 3.17.0. Please contact Quad core team if you"
-                " need to keep system settings."
+                " need to keep global settings."
             ).format(self.__class__.__name__))
 
     @staticmethod
@@ -278,7 +278,7 @@ class BaseCreator:
         'settings_name' is optional and class name is used if is not defined.
 
         Example data:
-            ProjectSettings {
+            ProjectSettingsEntity {
                 "maya": {                    # self.settings_category
                     "create": {              # Hardcoded key
                         "CreateAnimation": { # self.settings_name / class name
@@ -837,11 +837,11 @@ def discover_legacy_creator_plugins():
 
     plugins = discover(LegacyCreator)
     project_name = get_current_project_name()
-    system_settings = get_system_settings()
+    global_settings = get_global_settings()
     project_settings = get_project_settings(project_name)
     for plugin in plugins:
         try:
-            plugin.apply_settings(project_settings, system_settings)
+            plugin.apply_settings(project_settings, global_settings)
         except Exception:
             log.warning(
                 "Failed to apply settings to creator {}".format(

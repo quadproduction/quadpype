@@ -380,7 +380,6 @@ def reset_colorspace():
     if int(get_max_version()) < 2024:
         return
     project_name = get_current_project_name()
-    colorspace_mgr = rt.ColorPipelineMgr
     project_settings = get_project_settings(project_name)
 
     max_config_data = colorspace.get_imageio_config(
@@ -463,10 +462,7 @@ def unique_namespace(namespace, format="%02d",
         container_name = f"{unique}:{namespace}{con_suffix}"
         if not rt.getNodeByName(container_name):
             name_space = start + unique + end
-            increment_version = False
             return name_space
-        else:
-            increment_version = True
         iteration += 1
 
 

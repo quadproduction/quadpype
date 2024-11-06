@@ -13,12 +13,12 @@ from .constants import (
 
     METADATA_KEYS,
 
-    SYSTEM_SETTINGS_KEY,
+    CORE_SETTINGS_KEY,
+    GLOBAL_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     PROJECT_ANATOMY_KEY,
     DEFAULT_PROJECT_KEY,
 
-    GENERAL_SETTINGS_KEY,
     ENV_SETTINGS_KEY,
     APPS_SETTINGS_KEY,
     MODULES_SETTINGS_KEY,
@@ -113,13 +113,13 @@ def require_user_handler(func):
 
 
 @require_handler
-def get_system_last_saved_info():
-    return _SETTINGS_HANDLER.get_system_last_saved_info()
+def get_global_settings_last_saved_info():
+    return _SETTINGS_HANDLER.get_global_settings_last_saved_info()
 
 
 @require_handler
-def get_project_last_saved_info(project_name):
-    return _SETTINGS_HANDLER.get_project_last_saved_info(project_name)
+def get_project_settings_last_saved_info(project_name):
+    return _SETTINGS_HANDLER.get_project_settings_last_saved_info(project_name)
 
 
 @require_handler
@@ -139,9 +139,9 @@ def closed_settings_ui(info_obj):
 
 @require_handler
 def save_studio_settings(data):
-    """Save studio overrides of system settings.
+    """Save studio overrides of global settings.
 
-    Triggers callbacks on modules that want to know about system settings
+    Triggers callbacks on modules that want to know about global settings
     changes.
 
     Callbacks are triggered on all modules. They must check if their enabled
@@ -161,8 +161,8 @@ def save_studio_settings(data):
     # Notify Pype modules
     from quadpype.modules import ModulesManager, ISettingsChangeListener
 
-    old_data = get_system_settings()
-    default_values = get_default_settings()[SYSTEM_SETTINGS_KEY]
+    old_data = get_global_settings()
+    default_values = get_default_settings()[GLOBAL_SETTINGS_KEY]
     new_data = apply_overrides(default_values, copy.deepcopy(data))
     new_data_with_metadata = copy.deepcopy(new_data)
     clear_metadata_from_settings(new_data)
@@ -174,13 +174,13 @@ def save_studio_settings(data):
     for module in modules_manager.get_enabled_modules():
         if isinstance(module, ISettingsChangeListener):
             try:
-                module.on_system_settings_save(
+                module.on_global_settings_save(
                     old_data, new_data, changes, new_data_with_metadata
                 )
             except SaveWarningExc as exc:
                 warnings.extend(exc.warnings)
 
-    _SETTINGS_HANDLER.save_change_log(None, changes, "system")
+    _SETTINGS_HANDLER.save_change_log(None, changes, "global")
     _SETTINGS_HANDLER.save_studio_settings(data)
     if warnings:
         raise SaveWarningExc(warnings)
@@ -312,7 +312,7 @@ def save_project_anatomy(project_name, anatomy_data):
         raise SaveWarningExc(warnings)
 
 
-def _system_settings_backwards_compatible_conversion(studio_overrides):
+def _global_settings_backwards_compatible_conversion(studio_overrides):
     # Backwards compatibility of tools 3.9.1 - 3.9.2 to keep
     #   "tools" environments
     if (
@@ -356,14 +356,14 @@ def _project_anatomy_backwards_compatible_conversion(project_anatomy):
 
 
 @require_handler
-def get_studio_system_settings_overrides(return_version=False):
-    output = _SETTINGS_HANDLER.get_studio_system_settings_overrides(
+def get_studio_global_settings_overrides(return_version=False):
+    output = _SETTINGS_HANDLER.get_studio_global_settings_overrides(
         return_version
     )
     value = output
     if return_version:
-        value, version = output
-    _system_settings_backwards_compatible_conversion(value)
+        value, _ = output
+    _global_settings_backwards_compatible_conversion(value)
     return output
 
 
@@ -396,10 +396,10 @@ def get_project_anatomy_overrides(project_name):
 
 
 @require_handler
-def get_studio_system_settings_overrides_for_version(version):
+def get_studio_global_settings_overrides_for_version(version):
     return (
         _SETTINGS_HANDLER
-        .get_studio_system_settings_overrides_for_version(version)
+        .get_studio_global_settings_overrides_for_version(version)
     )
 
 
@@ -430,10 +430,10 @@ def get_project_settings_overrides_for_version(
 
 
 @require_handler
-def get_available_studio_system_settings_overrides_versions(sorted=None):
+def get_available_studio_global_settings_overrides_versions(sorted=None):
     return (
         _SETTINGS_HANDLER
-        .get_available_studio_system_settings_overrides_versions(
+        .get_available_studio_global_settings_overrides_versions(
             sorted=sorted
         )
     )
@@ -480,10 +480,10 @@ def find_closest_version_for_projects(project_names):
 
 
 @require_handler
-def clear_studio_system_settings_overrides_for_version(version):
+def clear_studio_global_settings_overrides_for_version(version):
     return (
         _SETTINGS_HANDLER
-        .clear_studio_system_settings_overrides_for_version(version)
+        .clear_studio_global_settings_overrides_for_version(version)
     )
 
 
@@ -556,14 +556,14 @@ def _get_default_settings():
     module_settings_defs = get_module_settings_defs()
     for module_settings_def_cls in module_settings_defs:
         module_settings_def = module_settings_def_cls()
-        system_defaults = module_settings_def.get_defaults(
-            SYSTEM_SETTINGS_KEY
+        global_defaults = module_settings_def.get_defaults(
+            GLOBAL_SETTINGS_KEY
         ) or {}
-        for path, value in system_defaults.items():
+        for path, value in global_defaults.items():
             if not path:
                 continue
 
-            subdict = defaults[SYSTEM_SETTINGS_KEY]
+            subdict = defaults[GLOBAL_SETTINGS_KEY]
             path_items = list(path.split("/"))
             last_key = path_items.pop(-1)
             for key in path_items:
@@ -726,9 +726,9 @@ def apply_overrides(source_data, override_data):
     return merge_overrides(_source_data, override_data)
 
 
-def _apply_applications_settings_override(system_settings, user_settings):
+def _apply_applications_settings_override(global_settings, user_settings):
     current_platform = platform.system().lower()
-    apps_settings = system_settings[APPS_SETTINGS_KEY]
+    apps_settings = global_settings[APPS_SETTINGS_KEY]
     additional_apps = apps_settings["additional_apps"]
     for app_group_name, value in user_settings[APPS_SETTINGS_KEY].items():
         if not value:
@@ -770,14 +770,14 @@ def _apply_applications_settings_override(system_settings, user_settings):
             variants[app_name]["executables"] = new_executables
 
 
-def _apply_modules_settings_override(system_settings, user_settings):
-    modules_settings = system_settings[MODULES_SETTINGS_KEY]
+def _apply_modules_settings_override(global_settings, user_settings):
+    modules_settings = global_settings[MODULES_SETTINGS_KEY]
     for module_name, property in user_settings[MODULES_SETTINGS_KEY].items():
         modules_settings[module_name].update(property)
 
 
-def apply_user_settings_on_system_settings(system_settings, user_settings):
-    """Apply user settings on studio system settings.
+def apply_user_settings_on_global_settings(global_settings, user_settings):
+    """Apply user settings on studio global settings.
 
     ATM user settings can modify only application executables. Executable
     values are not overridden but prepended.
@@ -786,10 +786,10 @@ def apply_user_settings_on_system_settings(system_settings, user_settings):
         return
 
     if APPS_SETTINGS_KEY in user_settings:
-        _apply_applications_settings_override(system_settings, user_settings)
+        _apply_applications_settings_override(global_settings, user_settings)
 
     if MODULES_SETTINGS_KEY in user_settings:
-        _apply_modules_settings_override(system_settings, user_settings)
+        _apply_modules_settings_override(global_settings, user_settings)
 
 
 def apply_user_settings_on_anatomy_settings(
@@ -800,7 +800,7 @@ def apply_user_settings_on_anatomy_settings(
     ATM user settings can modify project roots. Project name is required as
     user settings have data stored data by project's name.
 
-    Local settings override root values in this order:
+    User settings override root values in this order:
     1.) Check if user settings contain overrides for default project and
         apply it's values on roots if there are any.
     2.) If passed `project_name` is not None then check project specific
@@ -944,10 +944,10 @@ def apply_user_settings_on_project_settings(
         sync_server_config["remote_site"] = remote_site
 
 
-def _get_system_settings(clear_metadata=True, exclude_locals=None):
-    """System settings with applied studio overrides."""
-    default_values = get_default_settings()[SYSTEM_SETTINGS_KEY]
-    studio_values = get_studio_system_settings_overrides()
+def _get_global_settings(clear_metadata=True, exclude_locals=None):
+    """Global settings with applied studio overrides."""
+    default_values = get_default_settings()[GLOBAL_SETTINGS_KEY]
+    studio_values = get_studio_global_settings_overrides()
     result = apply_overrides(default_values, studio_values)
 
     # Clear overrides metadata from settings
@@ -962,7 +962,7 @@ def _get_system_settings(clear_metadata=True, exclude_locals=None):
     if not exclude_locals:
         # TODO user settings may be required to apply for environments
         user_settings = get_user_settings()
-        apply_user_settings_on_system_settings(result, user_settings)
+        apply_user_settings_on_global_settings(result, user_settings)
 
     return result
 
@@ -1097,18 +1097,18 @@ def get_current_project_settings():
 
 
 @require_handler
-def _get_global_settings():
+def _get_core_settings():
     default_settings = load_quadpype_default_settings()
-    default_values = default_settings[SYSTEM_SETTINGS_KEY][GENERAL_SETTINGS_KEY]
-    studio_values = _SETTINGS_HANDLER.get_global_settings()
+    default_values = default_settings[GLOBAL_SETTINGS_KEY][CORE_SETTINGS_KEY]
+    studio_values = _SETTINGS_HANDLER.get_core_settings()
     return {
         key: studio_values.get(key, default_values.get(key))
-        for key in _SETTINGS_HANDLER.global_keys
+        for key in _SETTINGS_HANDLER.core_keys
     }
 
 
-def get_global_settings():
-    return _get_global_settings()
+def get_core_settings():
+    return _get_core_settings()
 
 
 def _get_general_environments():
@@ -1118,18 +1118,18 @@ def _get_general_environments():
     `get_default_settings`.
     """
     # Use only quadpype defaults.
-    # - prevent to use `get_system_settings` where `get_default_settings`
+    # - prevent to use `get_global_settings` where `get_default_settings`
     #   is used
     default_values = load_quadpype_default_settings()
-    system_settings = default_values[SYSTEM_SETTINGS_KEY]
-    studio_overrides = get_studio_system_settings_overrides()
+    global_settings = default_values[GLOBAL_SETTINGS_KEY]
+    studio_overrides = get_studio_global_settings_overrides()
 
-    result = apply_overrides(system_settings, studio_overrides)
-    environments = result[GENERAL_SETTINGS_KEY]["environment"]
+    result = apply_overrides(global_settings, studio_overrides)
+    environments = result[CORE_SETTINGS_KEY]["environment"]
 
     clear_metadata_from_settings(environments)
 
-    whitelist_envs = result[GENERAL_SETTINGS_KEY].get("local_env_white_list")
+    whitelist_envs = result[CORE_SETTINGS_KEY].get("local_env_white_list")
     if whitelist_envs:
         user_settings = get_user_settings()
         local_envs = user_settings.get(ENV_SETTINGS_KEY) or {}
@@ -1144,8 +1144,8 @@ def get_general_environments():
     return _get_general_environments()
 
 
-def get_system_settings(*args, **kwargs):
-    return _get_system_settings(*args, **kwargs)
+def get_global_settings(*args, **kwargs):
+    return _get_global_settings(*args, **kwargs)
 
 
 def get_project_settings(project_name, *args, **kwargs):

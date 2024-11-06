@@ -50,7 +50,7 @@ import pyblish.api
 from quadpype.settings import (
     MODULES_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
-    SYSTEM_SETTINGS_KEY
+    GLOBAL_SETTINGS_KEY
 )
 from quadpype.pipeline import KnownPublishError
 from quadpype.lib import get_formatted_current_time
@@ -301,7 +301,7 @@ class CollectMayaRender(pyblish.api.InstancePlugin):
         }
 
         rr_settings = (
-            context.data[SYSTEM_SETTINGS_KEY][MODULES_SETTINGS_KEY]["royalrender"]
+            context.data[GLOBAL_SETTINGS_KEY][MODULES_SETTINGS_KEY]["royalrender"]
         )
         if rr_settings["enabled"]:
             data["rrPathName"] = instance.data.get("rrPathName")

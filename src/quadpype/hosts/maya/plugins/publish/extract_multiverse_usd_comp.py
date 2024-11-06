@@ -116,7 +116,6 @@ class ExtractMultiverseUsdComposition(publish.Extractor):
 
             import multiverse
 
-            time_opts = None
             frame_start = instance.data['frameStart']
             frame_end = instance.data['frameEnd']
             handle_start = instance.data['handleStart']

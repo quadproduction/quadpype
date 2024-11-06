@@ -1,24 +1,24 @@
 from quadpype.client import get_project, get_asset_by_name
-from quadpype.settings import get_system_settings, GENERAL_SETTINGS_KEY
+from quadpype.settings import get_global_settings, CORE_SETTINGS_KEY
 from quadpype.lib.user_settings import get_quadpype_username
 
 
-def get_general_template_data(system_settings=None):
-    """General template data based on system settings or machine.
+def get_general_template_data(global_settings=None):
+    """General template data based on global settings or machine.
 
     Output contains formatting keys:
-    - 'studio[name]'    - Studio name filled from system settings
-    - 'studio[code]'    - Studio code filled from system settings
+    - 'studio[name]'    - Studio name filled from global settings
+    - 'studio[code]'    - Studio code filled from global settings
     - 'user'            - User's name using 'get_quadpype_username'
 
     Args:
-        system_settings (Dict[str, Any]): System settings.
+        global_settings (Dict[str, Any]): Global settings.
     """
 
-    if not system_settings:
-        system_settings = get_system_settings()
-    studio_name = system_settings[GENERAL_SETTINGS_KEY]["studio_name"]
-    studio_code = system_settings[GENERAL_SETTINGS_KEY]["studio_code"]
+    if not global_settings:
+        global_settings = get_global_settings()
+    studio_name = global_settings[CORE_SETTINGS_KEY]["studio_name"]
+    studio_code = global_settings[CORE_SETTINGS_KEY]["studio_code"]
     return {
         "studio": {
             "name": studio_name,
@@ -155,11 +155,11 @@ def get_template_data(
     asset_doc=None,
     task_name=None,
     host_name=None,
-    system_settings=None
+    global_settings=None
 ):
     """Prepare data for templates filling from entered documents and info.
 
-    This function does not "auto fill" any values except system settings and
+    This function does not "auto fill" any values except global settings and
     it's on purpose.
 
     Universal function to receive template data from passed arguments. Only
@@ -175,14 +175,14 @@ def get_template_data(
         asset_doc (Dict[str, Any]): Mongo document of asset from MongoDB.
         task_name (Union[str, None]): Task name under passed asset.
         host_name (Union[str, None]): Used to fill '{app}' key.
-        system_settings (Union[Dict, None]): Prepared system settings.
+        global_settings (Union[Dict, None]): Prepared global settings.
             They're queried if not passed (may be slower).
 
     Returns:
         Dict[str, Any]: Data prepared for filling workdir template.
     """
 
-    template_data = get_general_template_data(system_settings)
+    template_data = get_general_template_data(global_settings)
     template_data.update(get_project_template_data(project_doc))
     if asset_doc:
         template_data.update(get_asset_template_data(
@@ -204,7 +204,7 @@ def get_template_data_with_names(
     asset_name=None,
     task_name=None,
     host_name=None,
-    system_settings=None
+    global_settings=None
 ):
     """Prepare data for templates filling from entered entity names and info.
 
@@ -219,7 +219,7 @@ def get_template_data_with_names(
         task_name (Union[str, None]): Task name under passed asset.
         host_name (Union[str, None]):Used to fill '{app}' key.
             because workdir template may contain `{app}` key.
-        system_settings (Union[Dict, None]): Prepared system settings.
+        global_settings (Union[Dict, None]): Prepared global settings.
             They're queried if not passed.
 
     Returns:
@@ -237,5 +237,5 @@ def get_template_data_with_names(
             fields=["name", "data.parents", "data.tasks"]
         )
     return get_template_data(
-        project_doc, asset_doc, task_name, host_name, system_settings
+        project_doc, asset_doc, task_name, host_name, global_settings
     )

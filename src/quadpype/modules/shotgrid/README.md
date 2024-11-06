@@ -8,7 +8,7 @@ Install and launch a [shotgrid leecher](https://github.com/Ellipsanime/shotgrid-
 
 The goal of this tutorial is to synchronize an already existing shotgrid project with QuadPype.
 
-- Activate the shotgrid module in the **system settings** and inform the shotgrid leecher server API url
+- Activate the shotgrid module in the **global settings** and inform the shotgrid leecher server API url
 
 - Create a new QuadPype project with the **project manager**
 

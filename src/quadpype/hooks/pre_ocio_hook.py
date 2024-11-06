@@ -1,4 +1,4 @@
-from quadpype.settings import PROJECT_SETTINGS_KEY, SYSTEM_SETTINGS_KEY
+from quadpype.settings import PROJECT_SETTINGS_KEY, GLOBAL_SETTINGS_KEY
 from quadpype.lib.applications import PreLaunchHook
 
 from quadpype.pipeline.colorspace import get_imageio_config
@@ -32,7 +32,7 @@ class OCIOEnvHook(PreLaunchHook):
             asset_name=self.data["asset_name"],
             task_name=self.data["task_name"],
             host_name=self.host_name,
-            system_settings=self.data[SYSTEM_SETTINGS_KEY]
+            global_settings=self.data[GLOBAL_SETTINGS_KEY]
         )
 
         config_data = get_imageio_config(
