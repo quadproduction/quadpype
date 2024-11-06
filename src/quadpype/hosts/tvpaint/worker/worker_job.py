@@ -9,7 +9,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 
 import six
 
-from quadpype.lib import Logger, optimize_path_compatibility
+from quadpype.lib import Logger
 from quadpype.modules import ModulesManager
 
 
@@ -213,13 +213,13 @@ class ExecuteGeorgeScript(BaseCommand):
             )
             output_file.close()
             format_key = "{" + key + "}"
-            output_path = optimize_path_compatibility(output_file.name).replace("\\", "/")
+            output_path = output_file.name.replace("\\", "/")
             script = script.replace(format_key, output_path)
             filepath_by_key[key] = output_path
 
         # Replace job queue root in script
         if self._root_dir_key:
-            job_queue_root = optimize_path_compatibility(self.job_queue_root()).replace("\\", "/")
+            job_queue_root = self.job_queue_root().replace("\\", "/")
             format_key = "{" + self._root_dir_key + "}"
             script = script.replace(
                 format_key, job_queue_root
@@ -384,8 +384,8 @@ class SenderTVPaintCommands(TVPaintCommands):
 
         It is expected that worker will add it's root before passed workfile.
         """
-        new_workfile = optimize_path_compatibility(workfile).replace("\\", "/")
-        job_queue_root = optimize_path_compatibility(self.job_queue_root()).replace("\\", "/")
+        new_workfile = workfile.replace("\\", "/")
+        job_queue_root = self.job_queue_root().replace("\\", "/")
         if job_queue_root not in new_workfile:
             raise ValueError((
                 "Workfile is not located in JobQueue root."
@@ -475,8 +475,8 @@ class ProcessTVPaintCommands(TVPaintCommands):
 
     def _prepare_workfile(self, workfile):
         """Preprend job queue root before passed workfile."""
-        workfile = optimize_path_compatibility(workfile).replace("\\", "/")
-        job_queue_root = optimize_path_compatibility(self.job_queue_root()).replace("\\", "/")
+        workfile = workfile.replace("\\", "/")
+        job_queue_root = self.job_queue_root().replace("\\", "/")
         new_workfile = "/".join([job_queue_root, workfile])
         while "//" in new_workfile:
             new_workfile = new_workfile.replace("//", "/")
@@ -507,7 +507,7 @@ class ProcessTVPaintCommands(TVPaintCommands):
         )
         temporary_file.write(george_script)
         temporary_file.close()
-        temp_file_path = optimize_path_compatibility(temporary_file.name).replace("\\", "/")
+        temp_file_path = temporary_file.name.replace("\\", "/")
         self.execute_george("tv_runscript {}".format(temp_file_path))
         os.remove(temp_file_path)
 
@@ -515,7 +515,7 @@ class ProcessTVPaintCommands(TVPaintCommands):
         """Open workfile in TVPaint."""
         workfile = self._workfile
         print("Opening workfile {}".format(workfile))
-        george_script = "tv_LoadProject '\"'\"{}\"'\"'".format(workfile)
+        george_script = "tv_LoadProject '\"{}\"'".format(workfile)
         self.execute_george_through_file(george_script)
 
     def _close_workfile(self):

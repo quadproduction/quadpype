@@ -21,7 +21,7 @@ from aiohttp_json_rpc.protocol import (
 )
 from aiohttp_json_rpc.exceptions import RpcError
 
-from quadpype.lib import emit_event, optimize_path_compatibility
+from quadpype.lib import emit_event
 from quadpype.hosts.tvpaint.tvpaint_plugin import get_plugin_files_path
 
 log = logging.getLogger(__name__)
@@ -571,7 +571,7 @@ class BaseCommunicator:
             source_plugins_dir,
             "additional_libraries"
         )
-        additional_libs_folder = optimize_path_compatibility(additional_libs_folder).replace("\\", "/")
+        additional_libs_folder = additional_libs_folder.replace("\\", "/")
         if (
             os.path.exists(additional_libs_folder)
             and additional_libs_folder not in os.environ["PATH"]
@@ -754,9 +754,9 @@ class BaseCommunicator:
             mode="w", prefix="a_tvp_", suffix=".txt", delete=False
         )
         tmp_file.close()
-        tmp_filepath = optimize_path_compatibility(tmp_file.name).replace("\\", "/")
+        tmp_filepath = tmp_file.name.replace("\\", "/")
         george_script = (
-            "tv_writetextfile \"strict\" \"append\" \"{}\" \"empty\""
+            "tv_writetextfile \"strict\" \"append\" '\"{}\"' \"empty\""
         ).format(tmp_filepath)
 
         result = CommunicationWrapper.execute_george(george_script)
@@ -824,12 +824,12 @@ class BaseCommunicator:
             george_script (str): George script to execute. May be multilined.
         """
         temporary_file = tempfile.NamedTemporaryFile(
-            mode="w", prefix="a_tvp_", suffix=".grg", delete=False
+            mode="w", encoding='utf-8', suffix=".grg", prefix="a_tvp_", delete=False
         )
         temporary_file.write(george_script)
         temporary_file.close()
-        temp_file_path = optimize_path_compatibility(temporary_file.name).replace("\\", "/")
-        self.execute_george("tv_runscript {}".format(temp_file_path))
+        temp_file_path = temporary_file.name.replace("\\", "/")
+        self.execute_george("tv_runscript '\"{}\"'".format(temp_file_path))
         os.remove(temp_file_path)
 
 

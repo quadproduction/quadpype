@@ -173,11 +173,6 @@ from .connections import (
     requests_post
 )
 
-from .path_tools import (
-    check_input_is_optimizable_path,
-    optimize_path_compatibility
-)
-
 terminal = Terminal
 
 __all__ = [
@@ -275,9 +270,6 @@ __all__ = [
     "version_up",
     "get_version_from_path",
     "get_last_version_from_path",
-
-    "check_input_is_optimizable_path",
-    "optimize_path_compatibility",
 
     "merge_dict",
     "TemplateMissingKey",
