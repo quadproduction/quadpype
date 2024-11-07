@@ -10,8 +10,7 @@ from PIL import Image
 import pyblish.api
 
 from quadpype.pipeline.publish import (
-    KnownPublishError,
-    get_publish_instance_families,
+    KnownPublishError
 )
 from quadpype.hosts.tvpaint.api.plugin import (
     TVPaintReviewType
@@ -30,7 +29,6 @@ from quadpype.hosts.tvpaint.lib import (
     rename_filepaths_by_frame_start,
     get_layer_pos_filename_template,
 )
-from quadpype.lib import optimize_path_compatibility
 
 
 class ExtractSequence(pyblish.api.Extractor):
@@ -134,7 +132,7 @@ class ExtractSequence(pyblish.api.Extractor):
             mark_out = export_frames_without_offset[-1]
 
         # Save to staging dir
-        output_dir = optimize_path_compatibility(instance.data.get("stagingDir")).replace("\\", "/")
+        output_dir = instance.data.get("stagingDir").replace("\\", "/")
         if not output_dir:
             # Create temp folder if staging dir is not set
             output_dir = (
@@ -300,10 +298,10 @@ class ExtractSequence(pyblish.api.Extractor):
 
         self.log.debug("Preparing data for rendering.")
         origin_first_filename = filename_template.format(frame=mark_in)
-        origin_first_frame_filepath = optimize_path_compatibility(os.path.join(
+        origin_first_frame_filepath = os.path.join(
             output_dir,
             origin_first_filename
-        )).replace("\\", "/")
+        ).replace("\\", "/")
 
         george_script_lines = []
 
@@ -635,7 +633,7 @@ class ExtractSequence(pyblish.api.Extractor):
             # Go to frame
             george_script_lines.append("tv_layerImage {}".format(frame_to_render))
             # Store image to output
-            george_script_lines.append("tv_saveimage \"{}\"".format(dst_path))
+            george_script_lines.append("tv_saveimage '{}'".format(dst_path))
 
         self.log.debug("Rendering Exposure frames {} of layer {} ({})".format(
             ",".join(frames_to_render), layer_id, layer["name"]

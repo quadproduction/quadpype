@@ -21,7 +21,6 @@ from quadpype.hosts.tvpaint.api.pipeline import (
     get_current_workfile_context,
     list_instances,
 )
-from quadpype.lib import optimize_path_compatibility
 
 
 class ResetTVPaintWorkfileMetadata(pyblish.api.Action):
@@ -196,7 +195,7 @@ class CollectWorkfileData(pyblish.api.ContextPlugin):
             mode="w", prefix="a_tvp_", suffix=".txt", delete=False
         )
         output_file.close()
-        output_filepath = optimize_path_compatibility(output_file.name).replace("\\", "/")
+        output_filepath = output_file.name.replace("\\", "/")
         george_script_lines = [
             # Variable containing full path to output file
             "output_path = \"{}\"".format(output_filepath),

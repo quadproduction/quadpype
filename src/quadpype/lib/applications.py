@@ -38,7 +38,6 @@ from .execute import (
     find_executable,
     get_linux_launcher_args
 )
-from .path_tools import optimize_path_compatibility
 
 _logger = None
 
@@ -1886,7 +1885,7 @@ def _prepare_last_workfile(data, workdir, modules_manager):
     )
 
     # Last workfile path
-    last_workfile_path = optimize_path_compatibility(data.get("last_workfile_path")) or ""
+    last_workfile_path = data.get("last_workfile_path") or ""
     if not last_workfile_path:
         host_module = modules_manager.get_host_module(app.host_name)
         if host_module:

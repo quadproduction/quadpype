@@ -3,7 +3,7 @@ import logging
 import tempfile
 
 from .communication_server import CommunicationWrapper
-from quadpype.lib import optimize_path_compatibility
+
 
 log = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ def parse_layers_data(data):
 
 def get_layers_data_george_script(output_filepath, layer_ids=None):
     """Prepare george script which will collect all layers from workfile."""
-    output_filepath = optimize_path_compatibility(output_filepath).replace("\\", "/")
+    output_filepath = output_filepath.replace("\\", "/")
     george_script_lines = [
         # Variable containing full path to output file
         "output_path = \"{}\"".format(output_filepath),
@@ -201,7 +201,7 @@ def get_groups_data(communicator=None):
     )
     output_file.close()
 
-    output_filepath = optimize_path_compatibility(output_file.name).replace("\\", "/")
+    output_filepath = output_file.name.replace("\\", "/")
     george_script_lines = (
         # Variable containing full path to output file
         "output_path = \"{}\"".format(output_filepath),
@@ -264,7 +264,7 @@ def get_layers_pre_post_behavior(layer_ids, communicator=None):
     )
     output_file.close()
 
-    output_filepath = optimize_path_compatibility(output_file.name).replace("\\", "/")
+    output_filepath = output_file.name.replace("\\", "/")
     george_script_lines = [
         # Variable containing full path to output file
         "output_path = \"{}\"".format(output_filepath),
@@ -340,7 +340,7 @@ def get_layers_exposure_frames(layer_ids, layers_data=None, communicator=None):
         mode="w", prefix="a_tvp_", suffix=".txt", delete=False
     )
     tmp_file.close()
-    tmp_output_path = optimize_path_compatibility(tmp_file.name).replace("\\", "/")
+    tmp_output_path = tmp_file.name.replace("\\", "/")
     george_script_lines = [
         "output_path = \"{}\"".format(tmp_output_path)
     ]
@@ -423,7 +423,7 @@ def get_exposure_frames(
         mode="w", prefix="a_tvp_", suffix=".txt", delete=False
     )
     tmp_file.close()
-    tmp_output_path = optimize_path_compatibility(tmp_file.name).replace("\\", "/")
+    tmp_output_path = tmp_file.name.replace("\\", "/")
     george_script_lines = [
         "tv_layerset {}".format(layer_id),
         "output_path = \"{}\"".format(tmp_output_path),
@@ -519,7 +519,7 @@ def get_scene_bg_color(communicator=None):
         mode="w", prefix="a_tvp_", suffix=".txt", delete=False
     )
     output_file.close()
-    output_filepath = optimize_path_compatibility(output_file.name).replace("\\", "/")
+    output_filepath = output_file.name.replace("\\", "/")
     george_script_lines = [
         # Variable containing the full path to the output file
         "output_path = \"{}\"".format(output_filepath),
