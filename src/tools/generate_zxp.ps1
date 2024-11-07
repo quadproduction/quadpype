@@ -1,4 +1,4 @@
-function Generate-Checksums($folder_to_parse, $checksum_file) {
+﻿function Generate-Checksums($folder_to_parse, $checksum_file) {
     # Get all the files in the folder and its subfolders
     $files = Get-ChildItem -Path $folder_to_parse -Recurse -File
     $output_lines = @()

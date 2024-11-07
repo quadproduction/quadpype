@@ -1,4 +1,4 @@
-Param(
+﻿Param(
     [alias("d")][switch]$DEV=$false,
     [alias("m")][string]$MONGO_URI=""
 )

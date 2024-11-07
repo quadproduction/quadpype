@@ -1,4 +1,4 @@
-$PATH_ORIGINAL_LOCATION = Get-Location
+﻿$PATH_ORIGINAL_LOCATION = Get-Location
 
 $SCRIPT_DIR=Split-Path -Path $MyInvocation.MyCommand.Definition -Parent -Resolve
 $PATH_QUADPYPE_PROJECT_DIR = $SCRIPT_DIR

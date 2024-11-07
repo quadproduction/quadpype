@@ -1,4 +1,4 @@
-function Write-Color {
+﻿function Write-Color {
     <#
     .SYNOPSIS
     Write-Color is a wrapper around Write-Host delivering a lot of additional features for easier color options.

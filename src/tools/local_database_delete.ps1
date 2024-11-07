@@ -1,4 +1,4 @@
-$QUADPYPE_MONGO_CONTAINER_NAME = "quadpype-mongo-dev"
+﻿$QUADPYPE_MONGO_CONTAINER_NAME = "quadpype-mongo-dev"
 
 # Check if the docker container is running
 # if yes stop (and kill to be sure it's stopped), then delete it

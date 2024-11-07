@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Helper script to build QuadPype Installer.
 

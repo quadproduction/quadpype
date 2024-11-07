@@ -123,8 +123,8 @@ bin_includes = [
 include_files = [
     "igniter",
     "quadpype",
-    "LICENSE",
-    "README.md"
+    "../LICENSE",
+    "../README.md"
 ]
 
 if IS_WINDOWS:
@@ -182,7 +182,7 @@ if IS_LINUX:
 setup(
     name="QuadPype",
     version=__version__,
-    description="QuadPype",
+    description="Open-source pipeline solution for all of productions (2D, 3D, VFX, …).",
     cmdclass={"build_sphinx": BuildDoc},
     options={
         "build_exe": build_exe_options,

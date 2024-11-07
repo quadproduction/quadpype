@@ -1,4 +1,4 @@
-$PATH_ORIGINAL_LOCATION = Get-Location
+﻿$PATH_ORIGINAL_LOCATION = Get-Location
 
 $SCRIPT_DIR=Split-Path -Path $MyInvocation.MyCommand.Definition -Parent -Resolve
 $PATH_QUADPYPE_PROJECT_DIR = $SCRIPT_DIR
@@ -90,7 +90,7 @@ try {
     Write-Color -Text "OK" -Color Green
 }
 catch {
-    Write-Color -Text "!!! ", "Cannot clean build directory, possibly because another process is using it." -Color Red, Yellow
+    Write-Color -Text "!!! ", "Cannot clean build directory, another process is potentially using it." -Color Red, Yellow
     Write-Color -Text $_.Exception.Message -Color Red
     Exit-WithCode 1
 }
@@ -98,8 +98,9 @@ catch {
 Write-Color -Text ">>> ", "Reading Poetry ... " -Color Green, Gray -NoNewline
 if (-not (Test-Path -PathType Container -Path "$($env:POETRY_HOME)\bin")) {
     Write-Color -Text "NOT FOUND" -Color Yellow
-    Write-Color -Text "*** ", "Dev environment seems not installed, starting the installation ..." -Color Yellow, Gray
-    & "$($SCRIPT_DIR)\install_environment.ps1"
+    Write-Color -Text "!!! ", "Dev environment seems not installed, starting the installation ..." -Color Red, Yellow
+    Write-Color -Text "!!! ", "You should execute the install_environment.ps1 script." -Color Red, Yellow
+    Exit-WithCode 1
 } else {
     Write-Color -Text "OK" -Color Green
 }
@@ -130,4 +131,5 @@ if ($LASTEXITCODE -ne 0) {
 Set-Location -Path "$($PATH_ORIGINAL_LOCATION)"
 
 $INSTALL_END_TIME = [int][double]::Parse((Get-Date -UFormat %s))
-Write-Color -Text "*** ", "All done in ", $($INSTALL_END_TIME - $INSTALL_START_TIME), " secs. You will find the build and the log in the ", "'src\build\'", " directory." -Color Green, Gray, White, Gray, White, Gray
+Write-Color -Text "*** ", "All done in ", $($INSTALL_END_TIME - $INSTALL_START_TIME), " secs. " -Color Green, Gray, White, Gray
+Write-Color -Text "*** ", "You will find the build and the log file in the ", "'src\build\'", " directory." -Color Green, Gray, White, Gray

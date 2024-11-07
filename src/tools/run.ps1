@@ -1,4 +1,4 @@
-$SCRIPT_DIR = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+﻿$SCRIPT_DIR = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 
 # Execute the pre-run logic
 $PRE_RUN_SCRIPT_PATH = Join-Path -Path $SCRIPT_DIR -ChildPath "pre_run.ps1"

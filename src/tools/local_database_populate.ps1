@@ -1,4 +1,4 @@
-Param(
+﻿Param(
     [alias("y")][switch]$YES_TO_ALL=$false,
     [alias("r")][switch]$FETCH_PROJECTS=$false,
     [alias("m")][string]$MONGO_URI=""

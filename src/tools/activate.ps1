@@ -1,4 +1,4 @@
-$SCRIPT_DIR = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent -Resolve
+﻿$SCRIPT_DIR = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent -Resolve
 $PATH_QUADPYPE_PROJECT_DIR = $SCRIPT_DIR
 while ((Split-Path $PATH_QUADPYPE_PROJECT_DIR -Leaf) -ne "src") {
     $PATH_QUADPYPE_PROJECT_DIR = (get-item $PATH_QUADPYPE_PROJECT_DIR).Parent.FullName

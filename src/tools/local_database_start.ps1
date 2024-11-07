@@ -1,4 +1,4 @@
-$QUADPYPE_MONGO_CONTAINER_NAME = "quadpype-mongo-dev"
+﻿$QUADPYPE_MONGO_CONTAINER_NAME = "quadpype-mongo-dev"
 $QUADPYPE_MONGO_CONTAINER_PORT = 27017
 
 # Check if the docker container is already running

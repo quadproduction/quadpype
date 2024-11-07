@@ -1,14 +1,25 @@
 [tool.poetry]
 name = "QuadPype"
 version = "4.0.0"
-description = "Open VFX and Animation pipeline with support."
+description = "Open-source pipeline solution for all of productions (2D, 3D, VFX, …)."
 authors = ["Quad Group Team <dev@quad.fr>"]
 license = "MIT License"
 homepage = "https://github.com/quadproduction/quadpype"
 documentation = "https://github.com/quadproduction/quadpype/blob/main/README.md"
 repository = "https://github.com/quadproduction/quadpype"
-readme = "README.md"
+readme = "../README.md"
 keywords = ["Pipeline", "VFX", "animation", "automation", "tracking", "asset management"]
+classifiers = [
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Artistic Software",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Multimedia :: Video"
+]
 packages = [
     {include = "igniter"},
     {include = "tools"},
@@ -18,6 +29,8 @@ packages = [
     {include = "pyproject.toml"},
     {include = "poetry.lock"}
 ]
+include = ["../LICENSE"]
+
 
 [tool.poetry.scripts]
 quadpype = 'start:boot'
