@@ -1,9 +1,9 @@
 ﻿$PATH_ORIGINAL_LOCATION = Get-Location
 
 $SCRIPT_DIR=Split-Path -Path $MyInvocation.MyCommand.Definition -Parent -Resolve
-$PATH_QUADPYPE_PROJECT_DIR = $SCRIPT_DIR
-while ((Split-Path $PATH_QUADPYPE_PROJECT_DIR -Leaf) -ne "src") {
-    $PATH_QUADPYPE_PROJECT_DIR = (get-item $PATH_QUADPYPE_PROJECT_DIR).Parent.FullName
+$PATH_QUADPYPE_ROOT = $SCRIPT_DIR
+while ((Split-Path $PATH_QUADPYPE_ROOT -Leaf) -ne "src") {
+    $PATH_QUADPYPE_ROOT = (get-item $PATH_QUADPYPE_ROOT).Parent.FullName
 }
 
 $PATH_PYENV_DIR=$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath("~\.pyenv")
@@ -13,8 +13,8 @@ $PATH_PYENV_INSTALL_FILE=$ExecutionContext.SessionState.Path.GetUnresolvedProvid
 $CURR_USER_PATH = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
 
 # Add path to the source directory into the user PATH
-if ($CURR_USER_PATH.IndexOf("$($PATH_QUADPYPE_PROJECT_DIR)$([IO.Path]::PathSeparator)") -Eq -1) {
-    [System.Environment]::SetEnvironmentVariable("Path", "$($PATH_QUADPYPE_PROJECT_DIR)$([IO.Path]::PathSeparator)$($CURR_USER_PATH)", [System.EnvironmentVariableTarget]::User)
+if ($CURR_USER_PATH.IndexOf("$($PATH_QUADPYPE_ROOT)$([IO.Path]::PathSeparator)") -Eq -1) {
+    [System.Environment]::SetEnvironmentVariable("Path", "$($PATH_QUADPYPE_ROOT)$([IO.Path]::PathSeparator)$($CURR_USER_PATH)", [System.EnvironmentVariableTarget]::User)
 }
 
 # 0. Install PSWriteColor to support colorized output to terminal
@@ -93,10 +93,10 @@ $OutputEncoding = $PrevOutputEncoding
 ###################################
 
 # 5.A Set the current location to the QuadPype source directory
-Set-Location -Path "$($PATH_QUADPYPE_PROJECT_DIR)"
+Set-Location -Path "$($PATH_QUADPYPE_ROOT)"
 
 # 5.B Check validity of the QuadPype version
-$PATH_QUADPYPE_VERSION_FILE = "$($PATH_QUADPYPE_PROJECT_DIR)\quadpype\version.py"
+$PATH_QUADPYPE_VERSION_FILE = "$($PATH_QUADPYPE_ROOT)\quadpype\version.py"
 $CONTENT_QUADPYPE_VERSION_FILE = Get-Content -Path $PATH_QUADPYPE_VERSION_FILE
 $RESULT = [regex]::Matches($CONTENT_QUADPYPE_VERSION_FILE, '__version__ = "(?<version>\d+\.\d+.\d+.*)"')
 $QUADPYPE_VERSION = $RESULT[0].Groups['version'].Value
@@ -159,7 +159,7 @@ function Install-Poetry() {
         $PYTHON = Get-Command python | Select-Object -ExpandProperty Path
     }
 
-    $env:POETRY_HOME="$($PATH_QUADPYPE_PROJECT_DIR)\.poetry"
+    $env:POETRY_HOME="$($PATH_QUADPYPE_ROOT)\.poetry"
     $env:POETRY_VERSION="1.3.2"
     (Invoke-WebRequest -Uri https://install.python-poetry.org/ -UseBasicParsing).Content | & $($PYTHON) -
 }
@@ -173,7 +173,7 @@ if (!$env:POETRY_HOME -Or -not (Test-Path -PathType Container -Path "$($env:POET
 }
 
 # 5.E Install the project requirements specified in the Poetry file
-if (-not (Test-Path -PathType Leaf -Path "$($PATH_QUADPYPE_PROJECT_DIR)\poetry.lock")) {
+if (-not (Test-Path -PathType Leaf -Path "$($PATH_QUADPYPE_ROOT)\poetry.lock")) {
     Write-Color -Text ">>> ", "Installing virtual environment and creating lock." -Color Green, Gray
 } else {
     Write-Color -Text ">>> ", "Installing virtual environment from lock." -Color Green, Gray

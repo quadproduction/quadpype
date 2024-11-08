@@ -9,12 +9,13 @@ import sys
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Union, Callable, List, Tuple
+from typing import Union, List, Tuple
 import hashlib
 import platform
 
 from zipfile import ZipFile, BadZipFile
 
+import blessed
 from appdirs import user_data_dir
 from speedcopy import copyfile
 import semver
@@ -31,15 +32,13 @@ from .tools import (
 )
 
 
-LOG_INFO = 0
-LOG_WARNING = 1
-LOG_ERROR = 3
+term = blessed.Terminal()
 
 
 def sanitize_long_path(path):
     """Sanitize long paths (260 characters) when on Windows.
 
-    Long paths are not capatible with ZipFile or reading a file, so we can
+    Long paths are not capable with ZipFile or reading a file, so we can
     shorten the path to use.
 
     Args:
@@ -79,9 +78,9 @@ def sha256sum(filename):
 
 
 class ZipFileLongPaths(ZipFile):
-    def _extract_member(self, member, targetpath, pwd):
+    def _extract_member(self, member, target_path, pwd):
         return ZipFile._extract_member(
-            self, member, sanitize_long_path(targetpath), pwd
+            self, member, sanitize_long_path(target_path), pwd
         )
 
 
@@ -327,7 +326,7 @@ class QuadPypeVersion(semver.VersionInfo):
     def get_local_quadpype_path(cls):
         """Path to unzipped versions.
 
-        By default it should be user appdata, but could be overridden by
+        By default, it should be user appdata, but could be overridden by
         settings.
         """
         if cls._local_quadpype_path:
@@ -582,42 +581,47 @@ class BootstrapRepos:
 
     """
 
-    def __init__(self, progress_callback: Callable = None, log_signal=None, step_text_signal=None):
+    def __init__(self, progress_bar=None, log_signal=None, step_text_signal=None):
         """Constructor.
 
         Args:
-            progress_callback (callable): Optional callback method to report
-                progress.
+            progress_bar: Optional instance of a progress bar.
             log_signal (QtCore.Signal, optional): Signal to report messages back.
 
         """
         # vendor and app used to construct user data dir
         self._log_signal = log_signal
         self._step_text_signal = step_text_signal
-        self._log = log.getLogger(str(__class__))
         self.data_dir = None
         self.set_data_dir(None)
         self.secure_registry = QuadPypeSecureRegistry("mongodb")
         self.registry = QuadPypeSettingsRegistry()
         self.zip_filter = [".pyc", "__pycache__"]
         self.quadpype_filter = [
-            "quadpype", "LICENSE"
+            "quadpype", "../LICENSE"
         ]
+        self._progress_bar = progress_bar
 
-        # dummy progress reporter
-        def empty_progress(x: int):
-            """Progress callback dummy."""
-            return x
+    def progress_bar_set_total(self, total):
+        if not self._progress_bar:
+            return
+        self._progress_bar.total = total
 
-        if not progress_callback:
-            progress_callback = empty_progress
-        self._progress_callback = progress_callback
+    def progress_bar_increment(self, value=1):
+        if not self._progress_bar:
+            return
+        self._progress_bar.update(incr=value)
+
+    def progress_bar_remove(self):
+        if not self._progress_bar:
+            return
+        self._progress_bar.close(clear=True)
 
     def set_data_dir(self, data_dir):
         if not data_dir:
             self.data_dir = Path(user_data_dir("quadpype", "quad"))
         else:
-            self._print(f"overriding local folder: {data_dir}")
+            self._print(f"Overriding local folder: {data_dir}")
             self.data_dir = data_dir
 
     @staticmethod
@@ -693,7 +697,7 @@ class BootstrapRepos:
             repo_dir = installed_version.path
 
         if not version_str:
-            self._print("QuadPype not found.", LOG_ERROR)
+            self._print("QuadPype not found.", level=log.ERROR)
             return
 
         # create destination directory
@@ -705,14 +709,16 @@ class BootstrapRepos:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_zip = \
                 Path(temp_dir) / f"quadpype-v{version_str}.zip"
-            self._print(f"creating zip: {temp_zip}")
+            self._print(f"Creating zip: {temp_zip}")
 
             self._create_quadpype_zip(temp_zip, repo_dir)
             if not os.path.exists(temp_zip):
-                self._print("make archive failed.", LOG_ERROR)
+                self._print("Make archive failed.", level=log.ERROR)
                 return None
 
             destination = self._move_zip_to_data_dir(temp_zip)
+
+        self.progress_bar_remove()
 
         return QuadPypeVersion(version=version_str, path=Path(destination))
 
@@ -736,23 +742,23 @@ class BootstrapRepos:
         if destination.exists():
             self._print(
                 f"Destination file {destination} exists, removing.",
-                LOG_WARNING)
+                level=log.WARNING)
             try:
                 destination.unlink()
             except Exception as e:
-                self._print(str(e), LOG_ERROR, exc_info=True)
+                self._print(str(e), level=log.ERROR)
                 return None
         if not destination_dir.exists():
             destination_dir.mkdir(parents=True)
         elif not destination_dir.is_dir():
             self._print(
-                "Destination exists but is not directory.", LOG_ERROR)
+                "Destination exists but is not directory.", level=log.ERROR)
             return None
 
         try:
             shutil.move(zip_file.as_posix(), destination_dir.as_posix())
         except shutil.Error as e:
-            self._print(str(e), LOG_ERROR, exc_info=True)
+            self._print(str(e), level=log.ERROR)
             return None
 
         return destination
@@ -799,24 +805,24 @@ class BootstrapRepos:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_zip = \
                 Path(temp_dir) / f"quadpype-v{version_str}.zip"
-            self._print(f"creating zip: {temp_zip}")
+            self._print(f"Creating zip: {temp_zip}")
 
             with ZipFile(temp_zip, "w") as zip_file:
-                progress = 0
-                quadpype_inc = 98.0 / float(len(quadpype_list))
+                self.progress_bar_set_total(len(quadpype_list))
+
                 file: Path
                 for file in quadpype_list:
-                    progress += quadpype_inc
-                    self._progress_callback(int(progress))
-
                     arc_name = file.relative_to(frozen_root.parent)
                     # we need to replace first part of path which starts with
                     # something like `exe.win/linux....` with `quadpype` as
                     # this is expected by QuadPype in zip archive.
                     arc_name = Path().joinpath(*arc_name.parts[1:])
                     zip_file.write(file, arc_name)
+                    self.progress_bar_increment()
 
             destination = self._move_zip_to_data_dir(temp_zip)
+
+        self.progress_bar_remove()
 
         return QuadPypeVersion(version=version_str, path=destination)
 
@@ -844,22 +850,16 @@ class BootstrapRepos:
             else:
                 quadpype_list.append(quadpype_path / f)
 
-        quadpype_files = len(quadpype_list)
-
-        quadpype_inc = 98.0 / float(quadpype_files)
-
         with ZipFile(zip_path, "w") as zip_file:
-            progress = 0
             quadpype_root = quadpype_path.resolve()
             # generate list of filtered paths
             dir_filter = [quadpype_root / f for f in self.quadpype_filter]
             checksums = []
 
             file: Path
+            # Adding 2 to the total for the checksum and test zip operations
+            self.progress_bar_set_total(len(quadpype_list) + 2)
             for file in quadpype_list:
-                progress += quadpype_inc
-                self._progress_callback(int(progress))
-
                 # if file resides in filtered path, skip it
                 is_inside = None
                 df: Path
@@ -872,9 +872,6 @@ class BootstrapRepos:
                 if not is_inside:
                     continue
 
-                processed_path = file
-                self._print(f"- processing {processed_path}")
-
                 checksums.append(
                     (
                         sha256sum(sanitize_long_path(file.as_posix())),
@@ -883,6 +880,7 @@ class BootstrapRepos:
                 )
                 zip_file.write(
                     file, file.resolve().relative_to(quadpype_root))
+                self.progress_bar_increment()
 
             checksums_str = ""
             for c in checksums:
@@ -891,9 +889,10 @@ class BootstrapRepos:
                     file_str = c[1].as_posix().replace("\\", "/")
                 checksums_str += "{}:{}\n".format(c[0], file_str)
             zip_file.writestr("checksums", checksums_str)
+            self.progress_bar_increment()
             # test if zip is ok
             zip_file.testzip()
-            self._progress_callback(100)
+            self.progress_bar_increment()
 
     def validate_quadpype_version(self, path: Path) -> tuple:
         """Validate version directory or zip file.
@@ -1249,7 +1248,7 @@ class BootstrapRepos:
             global_settings = get_quadpype_global_settings(location)
             quadpype_path = get_quadpype_path_from_settings(global_settings)
             if not quadpype_path:
-                self._print("cannot find QUADPYPE_PATH in settings.")
+                self._print("Cannot find QUADPYPE_PATH in settings.", level=log.ERROR)
                 return None
 
         # if not successful, consider location to be fs path.
@@ -1258,12 +1257,12 @@ class BootstrapRepos:
 
         # test if this path does exist.
         if not quadpype_path.exists():
-            self._print(f"{quadpype_path} doesn't exists.")
+            self._print(f"{quadpype_path} doesn't exists.", level=log.ERROR)
             return None
 
         # test if entered path isn't user data dir
         if self.data_dir == quadpype_path:
-            self._print("cannot point to user data dir", LOG_ERROR)
+            self._print("Cannot point to user data dir", level=log.ERROR)
             return None
 
         # find quadpype zip files in location. There can be
@@ -1272,8 +1271,8 @@ class BootstrapRepos:
         # files and directories and tries to parse `version.py` file.
         versions = self.find_quadpype(quadpype_path, include_zips=True)
         if versions:
-            self._print(f"found QuadPype in [ {quadpype_path} ]")
-            self._print(f"latest version found is [ {versions[-1]} ]")
+            self._print(f"Found QuadPype in [ {quadpype_path} ]")
+            self._print(f"Latest version found is [ {versions[-1]} ]")
 
             return self.install_version(versions[-1])
 
@@ -1282,36 +1281,43 @@ class BootstrapRepos:
         # data dir.
         live_quadpype = self.create_version_from_live_code(quadpype_path)
         if not live_quadpype.path.exists():
-            self._print(f"installing zip {live_quadpype} failed.", LOG_ERROR)
+            self._print(f"Installing zip {live_quadpype} failed.", level=log.ERROR)
             return None
         # install it
         return self.install_version(live_quadpype)
 
     def _print(self,
                message: str,
-               level: int = LOG_INFO,
-               exc_info: bool = False):
+               level: int = log.INFO,
+               exception: Exception = None):
         """Helper function passing logs to UI and to logger.
 
-        Supporting 3 levels of logs defined with `LOG_INFO`, `LOG_WARNING` and
-        `LOG_ERROR` constants.
+        Supporting 3 levels of logs defined with `log.INFO`, `log.WARNING` and
+        `log.ERROR` constants.
 
         Args:
             message (str): Message to log.
             level (int, optional): Log level to use.
-            exc_info (bool, optional): Exception info object to pass to logger.
+            exception (Exception, optional): Exception info object to pass to logger.
 
         """
         if self._log_signal:
-            self._log_signal.emit(message, level == LOG_ERROR)
+            self._log_signal.emit(message, level == log.ERROR)
 
-        if level == LOG_WARNING:
-            self._log.warning(message, exc_info=exc_info)
-            return
-        if level == LOG_ERROR:
-            self._log.error(message, exc_info=exc_info)
-            return
-        self._log.info(message, exc_info=exc_info)
+        if level == log.INFO:
+            header = term.aquamarine3(">>> ")
+        elif level == log.WARNING:
+            header = term.gold("*** ")
+        elif level == log.ERROR:
+            header = term.red("!!! ")
+        elif level == log.DEBUG:
+            header = term.tan1("... ")
+        else:
+            header = term.cyan("--- ")
+
+        print(f"{header}{message}")
+        if exception:
+            print(term.red(f"{str(exception)}"))
 
     def extract_quadpype(self, version: QuadPypeVersion) -> Union[Path, None]:
         """Extract zipped QuadPype version to user data directory.
@@ -1333,8 +1339,8 @@ class BootstrapRepos:
             try:
                 shutil.rmtree(destination)
             except OSError as e:
-                msg = f"!!! Cannot remove already existing {destination}"
-                self._print(msg, LOG_ERROR, exc_info=True)
+                msg = f"Cannot remove already existing {destination}"
+                self._print(msg, log.ERROR, exception=e)
                 raise e
 
         destination.mkdir(parents=True)
@@ -1400,19 +1406,19 @@ class BootstrapRepos:
 
         destination = self.data_dir / f"{quadpype_version.major}.{quadpype_version.minor}" / dir_name  # noqa
 
-        # test if destination directory already exist, if so lets delete it.
+        # test if destination directory already exist, if so let's delete it.
         if destination.exists() and force:
-            self._print("removing existing directory")
+            self._print("Removing existing directory")
             try:
                 shutil.rmtree(destination)
             except OSError as e:
                 self._print(
-                    f"cannot remove already existing {destination}",
-                    LOG_ERROR, exc_info=True)
+                    f"Cannot remove already existing {destination}",
+                    log.ERROR, exception=e)
                 raise QuadPypeVersionIOError(
-                    f"cannot remove existing {destination}") from e
+                    f"Cannot remove existing {destination}") from e
         elif destination.exists() and not force:
-            self._print("destination directory already exists")
+            self._print("Destination directory already exists")
             raise QuadPypeVersionExists(f"{destination} already exist.")
         else:
             # create destination parent directories even if they don't exist.
@@ -1423,15 +1429,14 @@ class BootstrapRepos:
         if quadpype_version.path.is_dir():
             # create zip inside temporary directory.
             self._print("Creating zip from directory ...")
-            self._progress_callback(0)
             with tempfile.TemporaryDirectory() as temp_dir:
                 temp_zip = \
                     Path(temp_dir) / f"quadpype-v{quadpype_version}.zip"
-                self._print(f"creating zip: {temp_zip}")
+                self._print(f"Creating zip: {temp_zip}")
 
                 self._create_quadpype_zip(temp_zip, quadpype_version.path)
                 if not os.path.exists(temp_zip):
-                    self._print("make archive failed.", LOG_ERROR)
+                    self._print("Make archive failed.", log.ERROR)
                     raise QuadPypeVersionIOError("Zip creation failed.")
 
                 # set zip as version source
@@ -1449,18 +1454,15 @@ class BootstrapRepos:
                 raise QuadPypeVersionInvalid("Invalid file format")
 
             if not self.is_inside_user_data(quadpype_version.path):
-                self._progress_callback(35)
                 quadpype_version.path = self._copy_zip(
                     quadpype_version.path, destination)
                 # Mark zip to be deleted when done
                 remove_source_file = True
 
         # extract zip there
-        self._print("extracting zip to destination ...")
+        self._print("Extracting zip to destination ...")
         with ZipFileLongPaths(quadpype_version.path, "r") as zip_ref:
-            self._progress_callback(75)
             zip_ref.extractall(destination)
-            self._progress_callback(100)
 
         # Remove zip file copied to local app data
         if remove_source_file:
@@ -1541,8 +1543,6 @@ class BootstrapRepos:
         # TODO: where and how to store the list of Adobe software ids
         zxp_host_ids = ["photoshop", "aftereffects"]
 
-        zxp_hosts_to_update = []
-
         # Determine the user-specific Adobe extensions directory
         user_extensions_dir = Path(os.getenv('APPDATA'), 'Adobe', 'CEP', 'extensions')
 
@@ -1590,8 +1590,8 @@ class BootstrapRepos:
                 _destination_zip.as_posix())
         except OSError as e:
             self._print(
-                "cannot copy version to user data directory", LOG_ERROR,
-                exc_info=True)
+                "Cannot copy version to user data directory", log.ERROR,
+                exception=e)
             raise QuadPypeVersionIOError((
                 f"can't copy version {source.as_posix()} "
                 f"to destination {destination.parent.as_posix()}")) from e
@@ -1619,18 +1619,18 @@ class BootstrapRepos:
             # add one 'quadpype' level as inside dir there should
             # be many other repositories.
             version_check = BootstrapRepos.get_version(dir_item)
-        except ValueError:
+        except ValueError as e:
             self._print(
-                f"cannot determine version from {dir_item}", True)
+                f"Cannot determine version from {dir_item}", level=log.ERROR, exception=e)
             return False
 
         version_main = version_check.get_main_version()
         detected_main = detected_version.get_main_version()
         if version_main != detected_main:
             self._print(
-                (f"dir version ({detected_version}) and "
+                (f"Dir version ({detected_version}) and "
                  f"its content version ({version_check}) "
-                 "doesn't match. Skipping."))
+                 "doesn't match. Skipping."), level=log.ERROR)
             return False
         return True
 
@@ -1666,7 +1666,7 @@ class BootstrapRepos:
                         version_check = QuadPypeVersion(
                             version=zip_version["__version__"])
                     except ValueError as e:
-                        self._print(str(e), True)
+                        self._print(str(e), level=log.ERROR)
                         return False
 
                     version_main = version_check.get_main_version()  # noqa: E501
@@ -1674,16 +1674,16 @@ class BootstrapRepos:
 
                     if version_main != detected_main:
                         self._print(
-                            (f"zip version ({detected_version}) "
-                             f"and its content version "
+                            (f"Zip version ({detected_version}) "
+                             "and its content version "
                              f"({version_check}) "
-                             "doesn't match. Skipping."), True)
+                             "doesn't match. Skipping."), level=log.ERROR)
                         return False
-        except BadZipFile:
-            self._print(f"{zip_item} is not a zip file", True)
+        except BadZipFile as e:
+            self._print(f"{zip_item} is not a zip file", level=log.ERROR, exception=e)
             return False
-        except KeyError:
-            self._print("Zip does not contain QuadPype", True)
+        except KeyError as e:
+            self._print("Zip does not contain QuadPype", level=log.ERROR, exception=e)
             return False
         return True
 

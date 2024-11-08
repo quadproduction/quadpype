@@ -3,13 +3,10 @@
 from igniter import bootstrap_repos
 import click
 import enlighten
-import blessed
 from pathlib2 import Path
 
 
-term = blessed.Terminal()
 manager = enlighten.get_manager()
-last_increment = 0
 
 
 @click.group(invoke_without_command=True)
@@ -20,15 +17,9 @@ def main(path):
     # create zip file
 
     progress_bar = enlighten.Counter(
-        total=100, desc="QuadPype Patch Creation", units="%", color="green")
+        total=100, desc="QuadPype Patch Creation", units="Files", color="green")
 
-    def progress(inc: int):
-        """Progress handler."""
-        global last_increment
-        progress_bar.update(incr=inc - last_increment)
-        last_increment = inc
-
-    bs = bootstrap_repos.BootstrapRepos(progress_callback=progress)
+    bs = bootstrap_repos.BootstrapRepos(progress_bar=progress_bar)
     if path:
         out_path = Path(path)
         bs.data_dir = out_path
@@ -36,12 +27,12 @@ def main(path):
             bs.data_dir = out_path.parent
 
     _print(f"Creating the patch zip archive in {bs.data_dir} ...")
-    repo_file = bs.create_version_from_live_code()
-    if not repo_file:
+    version = bs.create_version_from_live_code()
+    if not version:
         _print("Error while creating the patch zip archive.", 1)
         exit(1)
 
-    _print(f"Created {repo_file}")
+    _print(f"Successfully created patch archive v{version}")
 
 
 def _print(msg: str, message_type: int = 0) -> None:
@@ -53,13 +44,13 @@ def _print(msg: str, message_type: int = 0) -> None:
 
     """
     if message_type == 0:
-        header = term.aquamarine3(">>> ")
+        header = bootstrap_repos.term.aquamarine3(">>> ")
     elif message_type == 1:
-        header = term.orangered2("!!! ")
+        header = bootstrap_repos.term.orangered2("!!! ")
     elif message_type == 2:
-        header = term.tan1("... ")
+        header = bootstrap_repos.term.tan1("... ")
     else:
-        header = term.darkolivegreen3("--- ")
+        header = bootstrap_repos.term.darkolivegreen3("--- ")
 
     print(f"{header}{msg}")
 

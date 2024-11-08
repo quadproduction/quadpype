@@ -1,9 +1,9 @@
 ﻿$PATH_ORIGINAL_LOCATION = Get-Location
 
 $SCRIPT_DIR=Split-Path -Path $MyInvocation.MyCommand.Definition -Parent -Resolve
-$PATH_QUADPYPE_PROJECT_DIR = $SCRIPT_DIR
-while ((Split-Path $PATH_QUADPYPE_PROJECT_DIR -Leaf) -ne "src") {
-    $PATH_QUADPYPE_PROJECT_DIR = (get-item $PATH_QUADPYPE_PROJECT_DIR).Parent.FullName
+$PATH_QUADPYPE_ROOT = $SCRIPT_DIR
+while ((Split-Path $PATH_QUADPYPE_ROOT -Leaf) -ne "src") {
+    $PATH_QUADPYPE_ROOT = (get-item $PATH_QUADPYPE_ROOT).Parent.FullName
 }
 
 # Install PSWriteColor to support colorized output to terminal
@@ -58,13 +58,13 @@ function Exit-WithCode($exitcode) {
 
 
 # Set the current location to the QuadPype source directory
-Set-Location -Path "$($PATH_QUADPYPE_PROJECT_DIR)"
+Set-Location -Path "$($PATH_QUADPYPE_ROOT)"
 
 if (-not (Test-Path 'env:POETRY_HOME')) {
-    $env:POETRY_HOME = "$($PATH_QUADPYPE_PROJECT_DIR)\.poetry"
+    $env:POETRY_HOME = "$($PATH_QUADPYPE_ROOT)\.poetry"
 }
 
-$PATH_VERSION_FILE = Get-Content -Path "$($PATH_QUADPYPE_PROJECT_DIR)\quadpype\version.py"
+$PATH_VERSION_FILE = Get-Content -Path "$($PATH_QUADPYPE_ROOT)\quadpype\version.py"
 $MATCH_OBJ = [regex]::Matches($PATH_VERSION_FILE, '__version__ = "(?<version>\d+\.\d+.\d+.*)"')
 $QUADPYPE_VERSION = $null
 
@@ -80,13 +80,13 @@ if (-not $QUADPYPE_VERSION) {
 Write-Color -Text ">>> ", "QuadPype [ ", $QUADPYPE_VERSION, " ]" -Color Green, White, Cyan, White
 
 # Create build directory if not exist
-if (-not (Test-Path -PathType Container -Path "$($PATH_QUADPYPE_PROJECT_DIR)\build")) {
-    New-Item -ItemType Directory -Force -Path "$($PATH_QUADPYPE_PROJECT_DIR)\build"
+if (-not (Test-Path -PathType Container -Path "$($PATH_QUADPYPE_ROOT)\build")) {
+    New-Item -ItemType Directory -Force -Path "$($PATH_QUADPYPE_ROOT)\build"
 }
 
 Write-Color -Text ">>> ", "Cleaning build directory ... " -Color Green, Gray -NoNewline
 try {
-    Remove-Item -Recurse -Force "$($PATH_QUADPYPE_PROJECT_DIR)\build\*"
+    Remove-Item -Recurse -Force "$($PATH_QUADPYPE_ROOT)\build\*"
     Write-Color -Text "OK" -Color Green
 }
 catch {
@@ -106,20 +106,20 @@ if (-not (Test-Path -PathType Container -Path "$($env:POETRY_HOME)\bin")) {
 }
 
 Write-Color -Text ">>> ", "Cleaning cache files ... " -Color Green, Gray -NoNewline
-Get-ChildItem "$($PATH_QUADPYPE_PROJECT_DIR)" -Filter "__pycache__" -Force -Recurse|  Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force -Recurse
-Get-ChildItem "$($PATH_QUADPYPE_PROJECT_DIR)" -Filter "*.pyc" -Force -Recurse | Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force
-Get-ChildItem "$($PATH_QUADPYPE_PROJECT_DIR)" -Filter "*.pyo" -Force -Recurse | Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force
+Get-ChildItem "$($PATH_QUADPYPE_ROOT)" -Filter "__pycache__" -Force -Recurse|  Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force -Recurse
+Get-ChildItem "$($PATH_QUADPYPE_ROOT)" -Filter "*.pyc" -Force -Recurse | Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force
+Get-ChildItem "$($PATH_QUADPYPE_ROOT)" -Filter "*.pyo" -Force -Recurse | Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force
 Write-Color -Text "OK" -Color Green
 
 Write-Color -Text ">>> ", "Building QuadPype ..." -Color Green, White
 $INSTALL_START_TIME = [int][double]::Parse((Get-Date -UFormat %s))
 
 $out = & "$($env:POETRY_HOME)\bin\poetry" run python setup.py build 2>&1
-Set-Content -Path "$($PATH_QUADPYPE_PROJECT_DIR)\build\build.log" -Value $out
+Set-Content -Path "$($PATH_QUADPYPE_ROOT)\build\build.log" -Value $out
 
 if ($LASTEXITCODE -ne 0) {
     Write-Color -Text "------------------------------------------" -Color Red
-    Get-Content "$($PATH_QUADPYPE_PROJECT_DIR)\build\build.log"
+    Get-Content "$($PATH_QUADPYPE_ROOT)\build\build.log"
     Write-Color -Text "------------------------------------------" -Color Yellow
     Write-Color -Text "!!! ", "Build failed. Check the log: ", ".\build\build.log" -Color Red, Yellow, White
     Exit-WithCode $LASTEXITCODE

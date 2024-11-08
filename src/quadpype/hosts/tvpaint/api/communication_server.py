@@ -24,6 +24,7 @@ from aiohttp_json_rpc.exceptions import RpcError
 from quadpype.lib import emit_event
 from quadpype.hosts.tvpaint.tvpaint_plugin import get_plugin_files_path
 
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 

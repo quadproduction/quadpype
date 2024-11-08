@@ -6,9 +6,9 @@
 $env:_INSIDE_QUADPYPE_TOOL = "1"
 
 $SCRIPT_DIR = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent -Resolve
-$PATH_QUADPYPE_PROJECT_DIR = $SCRIPT_DIR
-while ((Split-Path $PATH_QUADPYPE_PROJECT_DIR -Leaf) -ne "src") {
-    $PATH_QUADPYPE_PROJECT_DIR = (get-item $PATH_QUADPYPE_PROJECT_DIR).Parent.FullName
+$PATH_QUADPYPE_ROOT = $SCRIPT_DIR
+while ((Split-Path $PATH_QUADPYPE_ROOT -Leaf) -ne "src") {
+    $PATH_QUADPYPE_ROOT = (get-item $PATH_QUADPYPE_ROOT).Parent.FullName
 }
 
 if ($DEV) {
@@ -22,13 +22,13 @@ if ($DEV) {
 if (($QUADPYPE_MONGO -eq "")) {
 	write-output "The MongoDB Connection String isn't set in the user environment variables or passed with --mongo-uri (-m) check usage."
     exit 1
-} elseIf (!(Test-Path -Path "$PATH_QUADPYPE_PROJECT_DIR")) {
+} elseIf (!(Test-Path -Path "$PATH_QUADPYPE_ROOT")) {
     write-output "The value passed in --path-quadpype (-p) doesnt point to a valid existing directory."
     exit 1
 }
 
 [System.Environment]::SetEnvironmentVariable("QUADPYPE_MONGO", $QUADPYPE_MONGO, [System.EnvironmentVariableTarget]::User)
-[System.Environment]::SetEnvironmentVariable("QUADPYPE_PROJECT_DIR", $PATH_QUADPYPE_PROJECT_DIR, [System.EnvironmentVariableTarget]::User)
+[System.Environment]::SetEnvironmentVariable("QUADPYPE_ROOT", $PATH_QUADPYPE_ROOT, [System.EnvironmentVariableTarget]::User)
 [System.Environment]::SetEnvironmentVariable("PYENV_ROOT", (Resolve-Path -Path "~\.pyenv"), [System.EnvironmentVariableTarget]::User)
 
 # Save the environments variables to a file
@@ -39,7 +39,7 @@ if (Test-Path -Path $PATH_ADDITIONAL_ENV_FILE) {
     Remove-Item $PATH_ADDITIONAL_ENV_FILE -Force -ErrorAction SilentlyContinue | Out-Null
 }
 
-New-Item "$($PATH_ADDITIONAL_ENV_FILE)" -ItemType File -Value "QUADPYPE_MONGO=$QUADPYPE_MONGO$([Environment]::NewLine)QUADPYPE_PROJECT_DIR=$PATH_QUADPYPE_PROJECT_DIR$([Environment]::NewLine)QUADPYPE_ROOT=$PATH_QUADPYPE_PROJECT_DIR\quadpype" | Out-Null
+New-Item "$($PATH_ADDITIONAL_ENV_FILE)" -ItemType File -Value "QUADPYPE_MONGO=$QUADPYPE_MONGO$([Environment]::NewLine)QUADPYPE_ROOT=$PATH_QUADPYPE_ROOT" | Out-Null
 
 
 # Launch the activate script

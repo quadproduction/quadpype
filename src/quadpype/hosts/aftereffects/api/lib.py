@@ -10,6 +10,7 @@ from quadpype.client import get_asset_by_name
 from quadpype.pipeline import get_current_host_name
 from .ws_stub import get_stub
 
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 

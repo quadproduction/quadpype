@@ -35,6 +35,7 @@ class Server(threading.Thread):
         self.message_id = 1
 
         # Setup logging.
+        logging.basicConfig(level=logging.INFO)
         self.log = logging.getLogger(__name__)
         self.log.setLevel(logging.DEBUG)
 

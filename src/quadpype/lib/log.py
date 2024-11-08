@@ -231,7 +231,7 @@ class Logger:
     _process_name = None
 
     @classmethod
-    def get_logger(cls, name=None, _host=None):
+    def get_logger(cls, name=None):
         if not cls.initialized:
             cls.initialize()
 
@@ -271,16 +271,6 @@ class Logger:
 
         # Do not propagate logs to root logger
         logger.propagate = False
-
-        if _host is not None:
-            # Warn about deprecated argument
-            # TODO remove backwards compatibility of host argument which is
-            # not used for more than a year
-            logger.warning(
-                "Logger \"{}\" is using argument `host` on `get_logger`"
-                " which is deprecated. Please remove as backwards"
-                " compatibility will be removed soon."
-            )
         return logger
 
     @classmethod
@@ -370,10 +360,12 @@ class Logger:
             # Check QUADPYPE_DEBUG for backwards compatibility
             op_debug = os.getenv("QUADPYPE_DEBUG")
             if op_debug and int(op_debug) > 0:
-                log_level = 10
+                log_level = logging.DEBUG
             else:
-                log_level = 20
+                log_level = logging.INFO
         cls.log_level = int(log_level)
+
+        logging.basicConfig(level=cls.log_level)
 
         if not os.environ.get("QUADPYPE_MONGO"):
             cls.use_mongo_logging = False
