@@ -6,9 +6,8 @@
 
 $SCRIPT_DIR = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 
-
 function reset_db() {
-    $RESET_DB_SCRIPT_PATH = Join-Path -Path (Split-Path $SCRIPT_DIR -Parent) -ChildPath "_lib\database\drop_databases.js"
+    $RESET_DB_SCRIPT_PATH = Join-Path -Path (Split-Path $SCRIPT_DIR -Parent) -ChildPath "tools\_lib\database\drop_databases.js"
     $RET_VAL = mongosh --file $RESET_DB_SCRIPT_PATH --quiet
     return $RET_VAL
 }
@@ -21,7 +20,7 @@ function dump_mongo_settings($HOST_NAME, $PORT_NUM) {
     } else {
         Remove-Item "${TMP_FOLDER_PATH}\*" -Recurse -Force
     }
-    $RET_VAL = mongodump --host="${HOST_NAME}" --port="${PORT_NUM}" --db=quadpype --collection=settings --out $TMP_FOLDER_PATH --quiet | mongorestore --host="localhost" --port="27017" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
+    $RET_VAL = mongodump --uri="${HOST_NAME}":"${PORT_NUM}" --db=quadpype --collection=settings --out $TMP_FOLDER_PATH --quiet | mongorestore --uri="${HOST_NAME}":"${PORT_NUM}" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
     return $RET_VAL
 }
 
@@ -33,13 +32,13 @@ function dump_projects($HOST_NAME, $PORT_NUM) {
     } else {
         Remove-Item "${TMP_FOLDER_PATH}\*" -Recurse -Force
     }
-    $RET_VAL = mongodump --host="${HOST_NAME}" --port="${PORT_NUM}" --db=avalon --out $TMP_FOLDER_PATH --quiet | mongorestore --host="localhost" --port="27017" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
+    $RET_VAL = mongodump --uri="${HOST_NAME}":"${PORT_NUM}" --db=avalon --out $TMP_FOLDER_PATH --quiet | mongorestore --uri="${HOST_NAME}":"${PORT_NUM}" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
     return $RET_VAL
 }
 
 
 function disable_module($MODULE_NAME) {
-    $DISABLE_MODULE_SCRIPT_PATH = Join-Path -Path (Split-Path $SCRIPT_DIR -Parent) -ChildPath "_lib\database\disable_module.js"
+    $DISABLE_MODULE_SCRIPT_PATH = Join-Path -Path (Split-Path $SCRIPT_DIR -Parent) -ChildPath "tools\_lib\database\disable_module.js"
     $RET_VAL = mongosh --file $DISABLE_MODULE_SCRIPT_PATH --quiet --eval "var moduleName='$MODULE_NAME'"
     return $RET_VAL
 }
@@ -50,8 +49,8 @@ function change_root_dir($ROOT_DIR) {
         new-item $ROOT_DIR -ItemType Directory > $null
     }
 
-    $CHANGE_ROOT_DIR_SCRIPT_PATH = Join-Path -Path (Split-Path $SCRIPT_DIR -Parent) -ChildPath "_lib\database\change_root_directory.js"
-    $RET_VAL = mongosh --file $CHANGE_ROOT_DIR_SCRIPT_PATH --eval "var rootDir='$ROOT_DIR'" --quiet
+    $CHANGE_ROOT_DIR_SCRIPT_PATH = Join-Path -Path (Split-Path $SCRIPT_DIR -Parent) -ChildPath "tools\_lib\database\change_root_directory.js"
+    $RET_VAL = mongosh --file $CHANGE_ROOT_DIR_SCRIPT_PATH --eval "var rootDir="$ROOT_DIR"" --quiet
     return $RET_VAL
 }
 
@@ -147,7 +146,7 @@ function main {
         return 1
     }
 
-    write-output "Fetching QuadPype settings from : mongodb://${HOST_NAME}:${PORT_NUM} ... "
+    write-output "Fetching QuadPype settings from : ${HOST_NAME}:${PORT_NUM} ... "
     if (!(dump_mongo_settings $HOST_NAME $PORT_NUM)) {
         write-output "OK"
     } else {
@@ -168,7 +167,7 @@ function main {
     }
 
     if ($ALSO_FETCH_PROJECTS) {
-        write-output "Fetching QuadPype projects from : mongodb://${HOST_NAME}:${PORT_NUM} ... "
+        write-output "Fetching QuadPype projects from : ${HOST_NAME}:${PORT_NUM} ... "
         if (!(dump_projects $HOST_NAME $PORT_NUM)) {
             write-output "OK"
         } else {
@@ -210,7 +209,7 @@ function main {
         return 1
     }
 
-    write-output "Your QuadPype local MongoDB connection string is mongodb://localhost:$PORT_NUM ..."
+    write-output "Your QuadPype local MongoDB connection string is mongodb:$PORT_NUM ..."
 }
 
 
