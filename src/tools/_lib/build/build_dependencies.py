@@ -115,8 +115,7 @@ if platform.system().lower() == "darwin":
         "Contents",
         "MacOS")
 else:
-    build_subdir = f"exe.{get_platform()}-{sys.version[:3]}"
-    build_dir = src_root.joinpath("build", build_subdir)
+    build_dir = src_root.joinpath("build", "exe_quadpype")
 
 _print(f"Using build at {build_dir}", 2)
 if not build_dir.exists():
