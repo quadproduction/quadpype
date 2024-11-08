@@ -25,6 +25,7 @@ from quadpype import style
 from quadpype.lib.applications import get_non_python_host_kwargs
 
 # Setup logging.
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 

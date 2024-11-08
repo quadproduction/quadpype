@@ -25,6 +25,7 @@ from quadpype.tools.adobe_webserver.app import WebServerTool
 from .ws_stub import get_stub
 from .lib import set_settings
 
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
