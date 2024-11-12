@@ -6,7 +6,6 @@ import json
 import copy
 from abc import ABCMeta, abstractmethod
 
-import six
 import clique
 
 # Global variable which store attribute definitions by type
@@ -91,8 +90,7 @@ class AbstractAttrDefMeta(ABCMeta):
         return obj
 
 
-@six.add_metaclass(AbstractAttrDefMeta)
-class AbstractAttrDef(object):
+class AbstractAttrDef(object, metaclass=AbstractAttrDefMeta):
     """Abstraction of attribute definition.
 
     Each attribute definition must have implemented validation and
@@ -341,7 +339,7 @@ class NumberDef(AbstractAttrDef):
         )
 
     def convert_value(self, value):
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             try:
                 value = float(value)
             except Exception:
@@ -388,12 +386,12 @@ class TextDef(AbstractAttrDef):
         if multiline is None:
             multiline = False
 
-        elif not isinstance(default, six.string_types):
+        elif not isinstance(default, str):
             raise TypeError((
                 "'default' argument must be a {}, not '{}'"
-            ).format(six.string_types, type(default)))
+            ).format(str, type(default)))
 
-        if isinstance(regex, six.string_types):
+        if isinstance(regex, str):
             regex = re.compile(regex)
 
         self.multiline = multiline
@@ -410,7 +408,7 @@ class TextDef(AbstractAttrDef):
         )
 
     def convert_value(self, value):
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             return value
         return self.default
 
@@ -728,7 +726,7 @@ class FileDefItem(object):
                 else:
                     output.append(item)
 
-            elif isinstance(item, six.string_types):
+            elif isinstance(item, str):
                 str_filepaths.append(item)
             else:
                 raise TypeError(
@@ -836,7 +834,7 @@ class FileDef(AbstractAttrDef):
                 if isinstance(default, dict):
                     FileDefItem.from_dict(default)
 
-                elif isinstance(default, six.string_types):
+                elif isinstance(default, str):
                     default = FileDefItem.from_paths([default.strip()])[0]
 
                 else:
@@ -875,14 +873,14 @@ class FileDef(AbstractAttrDef):
         )
 
     def convert_value(self, value):
-        if isinstance(value, six.string_types) or isinstance(value, dict):
+        if isinstance(value, str) or isinstance(value, dict):
             value = [value]
 
         if isinstance(value, (tuple, list, set)):
             string_paths = []
             dict_items = []
             for item in value:
-                if isinstance(item, six.string_types):
+                if isinstance(item, str):
                     string_paths.append(item.strip())
                 elif isinstance(item, dict):
                     try:

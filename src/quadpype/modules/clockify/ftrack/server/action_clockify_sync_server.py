@@ -16,8 +16,8 @@ class SyncClockifyServer(ServerAction):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        workspace_name = os.environ.get("CLOCKIFY_WORKSPACE")
-        api_key = os.environ.get("CLOCKIFY_API_KEY")
+        workspace_name = os.getenv("CLOCKIFY_WORKSPACE")
+        api_key = os.getenv("CLOCKIFY_API_KEY")
         self.clockify_api = ClockifyAPI(api_key)
         self.clockify_api.set_workspace(workspace_name)
         if api_key is None:

@@ -100,7 +100,7 @@ class ClockifyAPI:
 
     def set_workspace(self, name=None):
         if name is None:
-            name = os.environ.get("CLOCKIFY_WORKSPACE", None)
+            name = os.getenv("CLOCKIFY_WORKSPACE", None)
         self.workspace_name = name
         if self.workspace_name is None:
             return

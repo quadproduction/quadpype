@@ -2,7 +2,7 @@
 """Package to deal with saving and retrieving user specific settings."""
 import os
 from datetime import datetime
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 import json
 
 # disable lru cache in Python 2
@@ -24,8 +24,6 @@ except ImportError:
     import ConfigParser as configparser
 
 import platform
-
-import six
 import appdirs
 
 _PLACEHOLDER = object()
@@ -133,8 +131,7 @@ class QuadPypeSecureRegistry:
         keyring.delete_password(self._name, name)
 
 
-@six.add_metaclass(ABCMeta)
-class ASettingRegistry():
+class ASettingRegistry(ABC):
     """Abstract class defining structure of **SettingRegistry** class.
 
     It is implementing methods to store secure items into keyring, otherwise

@@ -54,13 +54,13 @@ class FontFactory:
         if sys.platform == "win32":
             # check the windows font repository
             # NOTE: must use uppercase WINDIR, to work around bugs in
-            # 1.5.2's os.environ.get()
-            windir = os.environ.get("WINDIR")
+            # 1.5.2's os.getenv()
+            windir = os.getenv("WINDIR")
             if windir:
                 dirs.append(os.path.join(windir, "fonts"))
 
         elif sys.platform in ("linux", "linux2"):
-            lindirs = os.environ.get("XDG_DATA_DIRS", "")
+            lindirs = os.getenv("XDG_DATA_DIRS", "")
             if not lindirs:
                 # According to the freedesktop spec, XDG_DATA_DIRS should
                 # default to /usr/share

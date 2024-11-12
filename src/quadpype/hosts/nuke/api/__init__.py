@@ -13,8 +13,7 @@ from .plugin import (
     NukeCreator,
     NukeWriteCreator,
     NukeCreatorError,
-    QuadPypeCreator,
-    get_instance_group_node_childs,
+    get_instance_group_node_children,
     get_colorspace_from_node
 )
 from .pipeline import (
@@ -69,9 +68,8 @@ __all__ = (
     "NukeCreator",
     "NukeWriteCreator",
     "NukeCreatorError",
-    "QuadPypeCreator",
     "NukeHost",
-    "get_instance_group_node_childs",
+    "get_instance_group_node_children",
     "get_colorspace_from_node",
 
     "ls",

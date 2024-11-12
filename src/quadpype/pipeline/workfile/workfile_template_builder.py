@@ -3,21 +3,19 @@
 Build templates are manually prepared using plugin definitions which create
 placeholders inside the template which are populated on import.
 
-This approach is very explicit to achive very specific build logic that can be
+This approach is very explicit to achieve very specific build logic that can be
 targeted by task types and names.
 
 Placeholders are created using placeholder plugins which should care about
 logic and data of placeholder items. 'PlaceholderItem' is used to keep track
-about it's progress.
+about its progress.
 """
 
 import os
 import re
 import collections
 import copy
-from abc import ABCMeta, abstractmethod
-
-import six
+from abc import ABC, abstractmethod
 
 from quadpype.client import (
     get_asset_by_name,
@@ -83,8 +81,7 @@ class TemplateLoadFailed(Exception):
     pass
 
 
-@six.add_metaclass(ABCMeta)
-class AbstractTemplateBuilder(object):
+class AbstractTemplateBuilder(ABC):
     """Abstraction of Template Builder.
 
     Builder cares about context, shared data, cache, discovery of plugins
@@ -112,7 +109,7 @@ class AbstractTemplateBuilder(object):
         if isinstance(host, HostBase):
             host_name = host.name
         else:
-            host_name = os.environ.get("AVALON_APP")
+            host_name = os.getenv("AVALON_APP")
 
         self._host = host
         self._host_name = host_name
@@ -876,8 +873,7 @@ class AbstractTemplateBuilder(object):
         }
 
 
-@six.add_metaclass(ABCMeta)
-class PlaceholderPlugin(object):
+class PlaceholderPlugin(ABC):
     """Plugin which care about handling of placeholder items logic.
 
     Plugin create and update placeholders in scene and populate them on
@@ -2037,7 +2033,7 @@ def should_build_first_workfile(
 
 
 def get_last_workfile_path():
-    return os.environ.get("AVALON_LAST_WORKFILE")
+    return os.getenv("AVALON_LAST_WORKFILE")
 
 
 def is_last_workfile_exists():

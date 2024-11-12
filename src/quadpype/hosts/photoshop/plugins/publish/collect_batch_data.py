@@ -39,7 +39,7 @@ class CollectBatchData(pyblish.api.ContextPlugin):
 
     def process(self, context):
         self.log.info("CollectBatchData")
-        batch_dir = os.environ.get("QUADPYPE_PUBLISH_DATA")
+        batch_dir = os.getenv("QUADPYPE_PUBLISH_DATA")
         if is_in_tests():
             self.log.debug("Automatic testing, no batch data, skipping")
             return
@@ -50,7 +50,7 @@ class CollectBatchData(pyblish.api.ContextPlugin):
         assert os.path.exists(batch_dir), \
             "Folder {} doesn't exist".format(batch_dir)
 
-        project_name = os.environ.get("AVALON_PROJECT")
+        project_name = os.getenv("AVALON_PROJECT")
         if project_name is None:
             raise AssertionError(
                 "Environment `AVALON_PROJECT` was not found."

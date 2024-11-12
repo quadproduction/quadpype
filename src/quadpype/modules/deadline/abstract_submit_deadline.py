@@ -12,7 +12,6 @@ import getpass
 from functools import partial
 from collections import OrderedDict
 
-import six
 import attr
 import requests
 
@@ -402,9 +401,8 @@ class DeadlineJobInfo(object):
         self.EnvironmentKeyValue["QUADPYPE_RENDER_JOB"] = "1"
 
 
-@six.add_metaclass(AbstractMetaInstancePlugin)
 class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
-                             QuadPypePyblishPluginMixin):
+                             QuadPypePyblishPluginMixin, metaclass=AbstractMetaInstancePlugin):
     """Class abstracting access to Deadline."""
 
     label = "Submit to Deadline"

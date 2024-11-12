@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys
 import pyblish.api
-import six
 
 from quadpype.pipeline import PublishValidationError
 
@@ -39,13 +37,7 @@ class ValidateCopOutputNode(pyblish.api.InstancePlugin):
         try:
             output_node = instance.data["output_node"]
         except KeyError:
-            six.reraise(
-                PublishValidationError,
-                PublishValidationError(
-                    "Can't determine COP output node.",
-                    title=cls.__name__),
-                sys.exc_info()[2]
-            )
+            raise PublishValidationError("Can't determine COP output node.")
 
         if output_node is None:
             node = hou.node(instance.data.get("instance_node"))

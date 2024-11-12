@@ -1,13 +1,11 @@
 import uuid
 import copy
-from abc import ABCMeta, abstractmethod, abstractproperty
-import six
+from abc import ABC, abstractmethod, abstractproperty
 
 REMOVED_VALUE = object()
 
 
-@six.add_metaclass(ABCMeta)
-class AbstractOperation(object):
+class AbstractOperation(ABC):
     """Base operation class.
 
     Operation represent a call into database. The call can create, change or

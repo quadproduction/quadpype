@@ -2,7 +2,6 @@ import os
 from pprint import pformat
 import re
 import json
-import six
 import functools
 import warnings
 import platform
@@ -192,7 +191,7 @@ def get_node_data(node, knobname):
 
     rawdata = node[knobname].getValue()
     if (
-        isinstance(rawdata, six.string_types)
+        isinstance(rawdata, str)
         and rawdata.startswith(JSON_PREFIX)
     ):
         try:
@@ -260,7 +259,7 @@ def create_knobs(data, tab=None):
         int: nuke.Int_Knob
         float: nuke.Double_Knob
         list: nuke.Enumeration_Knob
-        six.string_types: nuke.String_Knob
+        str: nuke.String_Knob
 
         dict: If it's a nested dict (all values are dict), will turn into
             A tabs group. Or just a knobs group.
@@ -309,7 +308,7 @@ def create_knobs(data, tab=None):
             knob = nuke.Int_Knob(name, nice)
             knob.setValue(value)
 
-        elif isinstance(value, six.string_types):
+        elif isinstance(value, str):
             knob = nuke.String_Knob(name, nice)
             knob.setValue(value)
 
@@ -536,7 +535,7 @@ def fix_data_for_node_create(data):
     """[DEPRECATED] Fixing data to be used for nuke knobs
     """
     for k, v in data.items():
-        if isinstance(v, six.text_type):
+        if isinstance(v, str):
             data[k] = str(v)
         if str(v).startswith("0x"):
             data[k] = int(v, 16)
@@ -1747,7 +1746,7 @@ def set_node_knobs_from_settings(node, knob_settings, **kwargs):
 def convert_knob_value_to_correct_type(knob_type, knob_value):
     # first convert string types to string
     # just to ditch unicode
-    if isinstance(knob_value, six.text_type):
+    if isinstance(knob_value, str):
         knob_value = str(knob_value)
 
     # set correctly knob types
@@ -2359,7 +2358,7 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
                 # write all knobs to node
                 for knob in nuke_imageio_writes["knobs"]:
                     value = knob["value"]
-                    if isinstance(value, six.text_type):
+                    if isinstance(value, str):
                         value = str(value)
                     if str(value).startswith("0x"):
                         value = int(value, 16)
@@ -3034,7 +3033,7 @@ def process_workfile_builder():
     create_fv_on = workfile_builder.get("create_first_version") or None
     builder_on = workfile_builder.get("builder_on_start") or None
 
-    last_workfile_path = os.environ.get("AVALON_LAST_WORKFILE")
+    last_workfile_path = os.getenv("AVALON_LAST_WORKFILE")
 
     # generate first version in file not existing and feature is enabled
     if create_fv_on and not os.path.exists(last_workfile_path):

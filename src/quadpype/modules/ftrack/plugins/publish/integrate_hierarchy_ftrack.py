@@ -1,6 +1,4 @@
-import sys
 import collections
-import six
 from copy import deepcopy
 
 import pyblish.api
@@ -355,11 +353,10 @@ class IntegrateHierarchyToFtrack(pyblish.api.ContextPlugin):
             if self.session.recorded_operations:
                 try:
                     self.session.commit()
-                except Exception:
-                    tp, value, tb = sys.exc_info()
+                except Exception as e:
                     self.session.rollback()
                     self.session._configure_locations()
-                    six.reraise(tp, value, tb)
+                    raise e
 
             # TASKS
             instances_by_task_name = collections.defaultdict(list)
@@ -401,11 +398,10 @@ class IntegrateHierarchyToFtrack(pyblish.api.ContextPlugin):
             self.create_links(project_name, entity_data, entity)
             try:
                 self.session.commit()
-            except Exception:
-                tp, value, tb = sys.exc_info()
+            except Exception as e:
                 self.session.rollback()
                 self.session._configure_locations()
-                six.reraise(tp, value, tb)
+                raise e
 
             # Create notes.
             entity_comments = entity_data.get("comments")
@@ -415,11 +411,10 @@ class IntegrateHierarchyToFtrack(pyblish.api.ContextPlugin):
 
                 try:
                     self.session.commit()
-                except Exception:
-                    tp, value, tb = sys.exc_info()
+                except Exception as e:
                     self.session.rollback()
                     self.session._configure_locations()
-                    six.reraise(tp, value, tb)
+                    raise e
 
             # Import children.
             children = entity_data.get("childs")
@@ -437,11 +432,10 @@ class IntegrateHierarchyToFtrack(pyblish.api.ContextPlugin):
             self.session.delete(link)
             try:
                 self.session.commit()
-            except Exception:
-                tp, value, tb = sys.exc_info()
+            except Exception as e:
                 self.session.rollback()
                 self.session._configure_locations()
-                six.reraise(tp, value, tb)
+                raise e
 
         # Create new links.
         for asset_id in entity_data.get("inputs", []):
@@ -518,11 +512,10 @@ class IntegrateHierarchyToFtrack(pyblish.api.ContextPlugin):
 
         try:
             self.session.commit()
-        except Exception:
-            tp, value, tb = sys.exc_info()
+        except Exception as e:
             self.session.rollback()
             self.session._configure_locations()
-            six.reraise(tp, value, tb)
+            raise e
 
         if status_id is not None:
             ftrack_status_by_task_id[task["id"]] = None

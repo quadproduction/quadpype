@@ -37,7 +37,7 @@ def afterNewProjectCreated(event):
     add_tags_to_workfile()
 
     # Workfiles.
-    if int(os.environ.get("WORKFILES_STARTUP", "0")):
+    if int(os.getenv("WORKFILES_STARTUP", "0")):
         hiero.core.events.sendEvent("kStartWorkfiles", None)
         # reset workfiles startup not to open any more in session
         os.environ["WORKFILES_STARTUP"] = "0"

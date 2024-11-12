@@ -50,7 +50,7 @@ def main(*subprocess_args):
     launcher = ProcessLauncher(subprocess_args)
     launcher.start()
 
-    if os.environ.get("HEADLESS_PUBLISH"):
+    if os.getenv("HEADLESS_PUBLISH"):
         manager = ModulesManager()
         webpublisher_addon = manager["webpublisher"]
 
@@ -63,7 +63,7 @@ def main(*subprocess_args):
             )
         )
 
-    elif os.environ.get("AVALON_PHOTOSHOP_WORKFILES_ON_LAUNCH", True):
+    elif os.getenv("AVALON_PHOTOSHOP_WORKFILES_ON_LAUNCH", True):
         save = False
         if os.getenv("WORKFILES_SAVE_AS"):
             save = True

@@ -22,7 +22,7 @@ def validate_credentials(
         bool: Are credentials valid?
     """
     if kitsu_url is None:
-        kitsu_url = os.environ.get("KITSU_SERVER")
+        kitsu_url = os.getenv("KITSU_SERVER")
 
     # Connect to server
     validate_host(kitsu_url)

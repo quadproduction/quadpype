@@ -7,9 +7,7 @@ import platform
 import collections
 import inspect
 import subprocess
-from abc import ABCMeta, abstractmethod
-
-import six
+from abc import ABC, abstractmethod
 
 from quadpype import PACKAGE_DIR
 from quadpype.settings import (
@@ -150,7 +148,7 @@ def parse_environments(env_data, env_group=None, platform_name=None):
             value = os.pathsep.join(value)
 
         # Set key to output if value is string
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             output[key] = value
     return output
 
@@ -778,10 +776,9 @@ class UndefinedApplicationExecutable(ApplicationExecutable):
         return True
 
 
-@six.add_metaclass(ABCMeta)
-class LaunchHook:
+class LaunchHook(ABC):
     """Abstract base class of launch hook."""
-    # Order of prelaunch hook, will be executed as last if set to None.
+    # Order of pre-launch hook, will be executed as last if set to None.
     order = None
     # List of host implementations, skipped if empty.
     hosts = set()
@@ -1099,7 +1096,7 @@ class ApplicationLaunchContext:
                 continue
 
             # Convert string to list
-            if isinstance(hook_paths, six.string_types):
+            if isinstance(hook_paths, str):
                 hook_paths = [hook_paths]
 
             # Skip invalid types
@@ -1875,7 +1872,7 @@ def _prepare_last_workfile(data, workdir, modules_manager):
     data["env"]["AVALON_OPEN_LAST_WORKFILE"] = (
         str(int(bool(start_last_workfile)))
     )
-    data["env"]["QUADPYPE_WORKFILE_TOOL_ON_START"] = (
+    data["env"]["AVALON_WORKFILE_TOOL_ON_START"] = (
         str(int(bool(workfile_startup)))
     )
 
@@ -1990,7 +1987,7 @@ def should_workfile_tool_start(
     """Define if host should start workfile tool at host launch.
 
     Default output is `False`. Can be overridden with environment variable
-    `QUADPYPE_WORKFILE_TOOL_ON_START`, valid values without case sensitivity are
+    `AVALON_WORKFILE_TOOL_ON_START`, valid values without case sensitivity are
     `"0", "1", "true", "false", "yes", "no"`.
 
     Args:
@@ -2053,7 +2050,7 @@ def get_non_python_host_kwargs(kwargs, allow_console=True):
     if platform.system().lower() != "windows":
         return kwargs
 
-    executable_path = os.environ.get("QUADPYPE_EXECUTABLE")
+    executable_path = os.getenv("QUADPYPE_EXECUTABLE")
 
     executable_filename = ""
     if executable_path:

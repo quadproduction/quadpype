@@ -1,10 +1,9 @@
 import os
 import re
-import six
 import pyblish.api
 import copy
 from datetime import datetime
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 import time
 
 from quadpype.client import QuadPypeMongoConnection
@@ -57,10 +56,7 @@ class IntegrateSlackAPI(pyblish.api.InstancePlugin):
 
             project = instance.context.data["anatomyData"]["project"]["code"]
             for channel in message_profile["channels"]:
-                if six.PY2:
-                    client = SlackPython2Operations(token, self.log)
-                else:
-                    client = SlackPython3Operations(token, self.log)
+                client = SlackPython3Operations(token, self.log)
 
                 if "@" in message:
                     cache_key = "__cache_slack_ids"
@@ -264,8 +260,7 @@ class IntegrateSlackAPI(pyblish.api.InstancePlugin):
         return message
 
 
-@six.add_metaclass(ABCMeta)
-class AbstractSlackOperations:
+class AbstractSlackOperations(ABC):
 
     @abstractmethod
     def _get_users_list(self):

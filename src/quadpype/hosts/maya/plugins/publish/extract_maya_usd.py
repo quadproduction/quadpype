@@ -1,5 +1,4 @@
 import os
-import six
 import json
 import contextlib
 
@@ -183,7 +182,7 @@ class ExtractMayaUsd(publish.Extractor):
 
             # Ensure the data is of correct type
             value = instance.data[key]
-            if isinstance(value, six.text_type):
+            if isinstance(value, str):
                 value = str(value)
             if not isinstance(value, self.options[key]):
                 self.log.warning(

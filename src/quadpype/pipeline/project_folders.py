@@ -2,8 +2,6 @@ import os
 import re
 import json
 
-import six
-
 from pathlib import Path
 
 from quadpype.settings import get_project_settings
@@ -134,6 +132,6 @@ def get_project_basic_paths(project_name):
     if not folder_structure:
         return []
 
-    if isinstance(folder_structure, six.string_types):
+    if isinstance(folder_structure, str):
         folder_structure = json.loads(folder_structure)
     return _list_path_items(folder_structure)

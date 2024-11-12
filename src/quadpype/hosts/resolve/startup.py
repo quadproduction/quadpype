@@ -46,7 +46,7 @@ def open_workfile(path):
 
 def main():
     # Open last workfile
-    workfile_path = os.environ.get("QUADPYPE_RESOLVE_OPEN_ON_LAUNCH")
+    workfile_path = os.getenv("QUADPYPE_RESOLVE_OPEN_ON_LAUNCH")
 
     if workfile_path and os.path.exists(workfile_path):
         log.info(f"Opening last workfile: {workfile_path}")

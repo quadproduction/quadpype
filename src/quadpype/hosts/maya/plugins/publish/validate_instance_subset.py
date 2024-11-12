@@ -1,7 +1,6 @@
 import pyblish.api
 import string
 
-import six
 from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishValidationError
@@ -34,7 +33,7 @@ class ValidateSubsetName(pyblish.api.InstancePlugin):
             raise PublishValidationError("Instance is missing subset "
                                "name: {0}".format(subset))
 
-        if not isinstance(subset, six.string_types):
+        if not isinstance(subset, str):
             raise TypeError("Instance subset name must be string, "
                             "got: {0} ({1})".format(subset, type(subset)))
 

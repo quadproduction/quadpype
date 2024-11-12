@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 """Class for handling Render Settings."""
-import six
-import sys
-
 from quadpype.lib import Logger
 from quadpype.settings import get_project_settings
 
@@ -344,12 +341,8 @@ class RenderSettings(object):
             try:
                 sep_idx = separators.index(aov_separator)
             except ValueError:
-                six.reraise(
-                    CreatorError,
-                    CreatorError(
-                        "AOV character {} not in {}".format(
-                            aov_separator, separators)),
-                    sys.exc_info()[2])
+                raise CreatorError("AOV character {} not in {}".format(
+                    aov_separator, separators))
 
             cmds.optionMenuGrp(MENU, edit=True, select=sep_idx + 1)
 

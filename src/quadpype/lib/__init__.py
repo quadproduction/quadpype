@@ -193,6 +193,8 @@ __all__ = [
     "env_value_to_bool",
     "get_paths_from_environ",
 
+    "Terminal",
+
     "ToolNotFoundError",
     "find_executable",
     "get_vendor_bin_path",

@@ -5,7 +5,7 @@ import json
 import getpass
 import platform
 from datetime import datetime
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 
 from quadpype.settings import GENERAL_SETTINGS_KEY
 from quadpype.settings.lib import create_user_profile
@@ -29,7 +29,6 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-import six
 import appdirs
 
 from quadpype.settings import get_user_settings
@@ -141,8 +140,7 @@ class QuadPypeSecureRegistry:
         keyring.delete_password(self._name, name)
 
 
-@six.add_metaclass(ABCMeta)
-class ASettingRegistry():
+class ASettingRegistry(ABC):
     """Abstract class defining structure of **SettingRegistry** class.
 
     It is implementing methods to store secure items into keyring, otherwise
@@ -541,7 +539,7 @@ def get_local_site_id():
 
     # Check if the value is set on the env variable
     # This is used for background syncing
-    if os.environ.get("QUADPYPE_LOCAL_ID"):
+    if os.getenv("QUADPYPE_LOCAL_ID"):
         return os.environ["QUADPYPE_LOCAL_ID"]
 
     # Else using the user ID
@@ -574,7 +572,7 @@ def get_quadpype_username():
     machine username.
     """
 
-    username = os.environ.get("QUADPYPE_USERNAME")
+    username = os.getenv("QUADPYPE_USERNAME")
     if not username:
         user_settings = get_user_settings()
         username = (

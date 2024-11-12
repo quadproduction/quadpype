@@ -460,7 +460,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         # QUICK FIX : add all gizmos and plugin paths to the NUKE_PATH for the render farm
         # CORRECT WAY : the proper way is to declare tools in settings to add them to the soft
         # import nuke
-        # nuke_path = os.environ.get("NUKE_PATH", "")
+        # nuke_path = os.getenv("NUKE_PATH", "")
         # nuke_paths = [path for path in nuke_path.split(os.pathsep) if path]
         # for nuke_plugin_path in nuke.pluginPath():
         #     if nuke_plugin_path not in nuke_paths:

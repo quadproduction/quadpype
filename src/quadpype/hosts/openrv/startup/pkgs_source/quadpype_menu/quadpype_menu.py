@@ -94,7 +94,7 @@ class QuadPypeMenus(MinorMode):
 
 
 def data_loader():
-    incoming_data_file = os.environ.get(
+    incoming_data_file = os.getenv(
         "QUADPYPE_LOADER_REPRESENTATIONS", None
     )
     if incoming_data_file:

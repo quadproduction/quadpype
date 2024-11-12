@@ -15,7 +15,7 @@ API_KEY_KEY = "api_key"
 
 def get_ftrack_hostname(ftrack_server=None):
     if not ftrack_server:
-        ftrack_server = os.environ.get("FTRACK_SERVER")
+        ftrack_server = os.getenv("FTRACK_SERVER")
 
     if not ftrack_server:
         return None
@@ -87,7 +87,7 @@ def clear_credentials(ftrack_server=None):
 
 def check_credentials(username, api_key, ftrack_server=None):
     if not ftrack_server:
-        ftrack_server = os.environ.get("FTRACK_SERVER")
+        ftrack_server = os.getenv("FTRACK_SERVER")
 
     if not ftrack_server or not username or not api_key:
         return False

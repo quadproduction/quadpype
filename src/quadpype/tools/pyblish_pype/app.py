@@ -28,7 +28,7 @@ def application():
     else:
         print("Using existing QApplication..")
         yield app
-        if os.environ.get("PYBLISH_GUI_ALWAYS_EXEC"):
+        if os.getenv("PYBLISH_GUI_ALWAYS_EXEC"):
             app.exec_()
 
 

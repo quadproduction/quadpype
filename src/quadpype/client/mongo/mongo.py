@@ -61,7 +61,7 @@ def get_project_database_name():
         str: Name of database name where projects are.
     """
 
-    return os.environ.get("AVALON_DB") or "avalon"
+    return os.getenv("AVALON_DB") or "avalon"
 
 
 def _decompose_url(url):
@@ -111,7 +111,7 @@ def _decompose_url(url):
 
 
 def get_default_components():
-    mongo_url = os.environ.get("QUADPYPE_MONGO")
+    mongo_url = os.getenv("QUADPYPE_MONGO")
     if mongo_url is None:
         raise MongoEnvNotSet(
             "URL for Mongo logging connection is not set."
@@ -215,7 +215,7 @@ class QuadPypeMongoConnection:
             ))
 
         if timeout is None:
-            timeout = int(os.environ.get("AVALON_TIMEOUT") or 1000)
+            timeout = int(os.getenv("AVALON_TIMEOUT") or 1000)
 
         kwargs = {
             "serverSelectionTimeoutMS": timeout

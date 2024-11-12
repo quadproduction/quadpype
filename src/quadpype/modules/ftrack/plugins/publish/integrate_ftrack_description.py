@@ -4,11 +4,8 @@ Requires:
     context > ftrackSession
     instance > ftrackIntegratedAssetVersionsData
 """
-
-import sys
 import json
 
-import six
 import pyblish.api
 from quadpype.lib import StringTemplate
 
@@ -106,8 +103,7 @@ class IntegrateFtrackDescription(pyblish.api.InstancePlugin):
                 self.log.debug("Comment added to AssetVersion \"{}\"".format(
                     str(asset_version)
                 ))
-            except Exception:
-                tp, value, tb = sys.exc_info()
+            except Exception as e:
                 session.rollback()
                 session._configure_locations()
-                six.reraise(tp, value, tb)
+                raise e

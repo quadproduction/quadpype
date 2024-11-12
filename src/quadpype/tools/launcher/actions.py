@@ -48,7 +48,7 @@ def register_config_actions():
 def register_environment_actions():
     """Register actions from AVALON_ACTIONS for Launcher."""
 
-    paths_str = os.environ.get("AVALON_ACTIONS") or ""
+    paths_str = os.getenv("AVALON_ACTIONS") or ""
     register_actions_from_paths(paths_str.split(os.pathsep))
 
 

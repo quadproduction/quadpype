@@ -4,9 +4,6 @@ Requires:
     context > ftrackSession
     instance > ftrackIntegratedAssetVersionsData
 """
-
-import sys
-import six
 from pathlib import Path
 
 import pyblish.api
@@ -73,8 +70,7 @@ class IntegrateFtrackSourceWorkfile(pyblish.api.InstancePlugin):
                         workfile, str(asset_version_data)
                     )
                 )
-            except Exception: # noqa
-                tp, value, tb = sys.exc_info()
+            except Exception as e: # noqa
                 session.rollback()
                 session._configure_locations()
-                six.reraise(tp, value, tb)
+                raise e

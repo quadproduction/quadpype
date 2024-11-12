@@ -41,7 +41,7 @@ class LoaderPlugin(list):
 
     @classmethod
     def apply_settings(cls, project_settings, global_settings):
-        host_name = os.environ.get("AVALON_APP")
+        host_name = os.getenv("AVALON_APP")
         plugin_type = "load"
         plugin_type_settings = (
             project_settings

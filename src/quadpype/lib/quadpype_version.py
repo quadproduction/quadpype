@@ -59,7 +59,7 @@ def is_running_from_build():
 
 
 def is_staging_enabled():
-    return os.environ.get("QUADPYPE_USE_STAGING") == "1"
+    return os.getenv("QUADPYPE_USE_STAGING") == "1"
 
 
 def is_running_locally():
@@ -90,7 +90,7 @@ def is_running_staging():
         bool: Using staging version or not.
     """
 
-    if os.environ.get("QUADPYPE_IS_STAGING") == "1":
+    if os.getenv("QUADPYPE_IS_STAGING") == "1":
         return True
 
     if not op_version_control_available():

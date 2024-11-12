@@ -4,8 +4,6 @@ import copy
 import platform
 import collections
 import numbers
-
-import six
 import time
 
 from quadpype.settings.lib import (
@@ -427,7 +425,7 @@ class Anatomy(BaseAnatomy):
 
     def __init__(self, project_name=None, site_name=None):
         if not project_name:
-            project_name = os.environ.get("AVALON_PROJECT")
+            project_name = os.getenv("AVALON_PROJECT")
 
         if not project_name:
             raise ProjectNotSet((
@@ -452,7 +450,7 @@ class Anatomy(BaseAnatomy):
         if cls._sync_server_addon_cache.is_outdated:
             manager = ModulesManager()
             cls._sync_server_addon_cache.update_data(
-                manager.get_enabled_module("sync_server")
+                manager.get_enabled_module("sitesync")
             )
         return cls._sync_server_addon_cache.data
 
@@ -695,7 +693,7 @@ class AnatomyTemplates(TemplatesDict):
                     v_queue.append(value)
 
                 elif (
-                    isinstance(value, six.string_types)
+                    isinstance(value, str)
                     and "{task}" in value
                 ):
                     item[key] = value.replace("{task}", "{task[name]}")
@@ -760,7 +758,7 @@ class AnatomyTemplates(TemplatesDict):
 
                 if not (
                     isinstance(replace_value, numbers.Number)
-                    or isinstance(replace_value, six.string_types)
+                    or isinstance(replace_value, str)
                 ):
                     raise ValueError((
                         "Anatomy templates can't be filled."
@@ -788,7 +786,7 @@ class AnatomyTemplates(TemplatesDict):
             for key in tuple(keys_to_solve):
                 value = key_values[key]
 
-                if isinstance(value, six.string_types):
+                if isinstance(value, str):
                     matches = cls.inner_key_pattern.findall(value)
                     if not matches:
                         keys_to_solve.remove(key)
@@ -1498,7 +1496,7 @@ class Roots:
             parent_keys = []
         is_last = False
         for value in data.values():
-            if isinstance(value, six.string_types):
+            if isinstance(value, str):
                 is_last = True
                 break
 

@@ -1,6 +1,5 @@
 import nuke
-import six
-import sys
+
 from quadpype.hosts.nuke.api import (
     INSTANCE_DATA_KNOB,
     NukeCreator,
@@ -72,11 +71,8 @@ class CreateSource(NukeCreator):
                     instance.data_to_store()
                 )
 
-        except Exception as er:
-            six.reraise(
-                NukeCreatorError,
-                NukeCreatorError("Creator error: {}".format(er)),
-                sys.exc_info()[2])
+        except Exception as e:
+            raise NukeCreatorError("Creator error: {}".format(e))
 
     def set_selected_nodes(self, pre_create_data):
         if pre_create_data.get("use_selection"):

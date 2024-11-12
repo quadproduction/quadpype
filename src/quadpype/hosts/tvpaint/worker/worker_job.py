@@ -5,9 +5,7 @@ import copy
 import json
 import time
 from uuid import uuid4
-from abc import ABCMeta, abstractmethod, abstractproperty
-
-import six
+from abc import ABC, abstractmethod, abstractproperty
 
 from quadpype.lib import Logger
 from quadpype.modules import ModulesManager
@@ -31,8 +29,7 @@ class JobFailed(Exception):
         super().__init__(error_msg)
 
 
-@six.add_metaclass(ABCMeta)
-class BaseCommand:
+class BaseCommand(ABC):
     """Abstract TVPaint command which can be executed through worker.
 
     Each command must have unique name and implemented 'execute' and
@@ -290,8 +287,7 @@ class CollectSceneData(BaseCommand):
         return cls(data)
 
 
-@six.add_metaclass(ABCMeta)
-class TVPaintCommands:
+class TVPaintCommands(ABC):
     """Wrapper around TVPaint commands to be able send multiple commands.
 
     Commands may send one or multiple commands at once. Also gives api access

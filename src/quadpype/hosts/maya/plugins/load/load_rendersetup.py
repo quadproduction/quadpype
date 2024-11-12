@@ -7,8 +7,6 @@ instance.
 """
 
 import json
-import sys
-import six
 
 from quadpype.pipeline import (
     load,
@@ -96,9 +94,9 @@ class RenderSetupLoader(load.LoaderPlugin):
             try:
                 renderSetup.instance().decode(
                     json.load(file), renderSetup.DECODE_AND_OVERWRITE, None)
-            except Exception:
+            except Exception as e:
                 self.log.error("There were errors during loading")
-                six.reraise(*sys.exc_info())
+                raise e
 
         # Update metadata
         node = container["objectName"]

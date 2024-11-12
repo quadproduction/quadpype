@@ -1,6 +1,5 @@
 import os
 import sys
-import six
 import re
 import json
 
@@ -298,11 +297,10 @@ class FtrackComponentCreator:
     def _commit(self):
         try:
             self.session.commit()
-        except Exception:
-            tp, value, tb = sys.exc_info()
+        except Exception as e:
             # self.session.rollback()
             # self.session._configure_locations()
-            six.reraise(tp, value, tb)
+            raise e
 
     def _get_ftrack_location(self, name=None):
         name = name or self.default_location
@@ -369,11 +367,10 @@ class FtrackEntityOperator:
     def commit(self):
         try:
             self.session.commit()
-        except Exception:
-            tp, value, tb = sys.exc_info()
+        except Exception as e:
             self.session.rollback()
             self.session._configure_locations()
-            six.reraise(tp, value, tb)
+            raise e
 
     def create_ftrack_entity(self, session, type, name, parent=None):
         parent = parent or self.project_entity
@@ -383,11 +380,11 @@ class FtrackEntityOperator:
         })
         try:
             session.commit()
-        except Exception:
-            tp, value, tb = sys.exc_info()
+        except Exception as e:
             session.rollback()
             session._configure_locations()
-            six.reraise(tp, value, tb)
+            raise e
+
         return entity
 
     def get_ftrack_entity(self, session, type, name, parent):

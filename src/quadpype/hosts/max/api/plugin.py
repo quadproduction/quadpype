@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 """3dsmax specific Avalon/Pyblish plugin definitions."""
-from abc import ABCMeta
-
-import six
 from pymxs import runtime as rt
 
 from quadpype.lib import BoolDef
@@ -197,7 +194,6 @@ class MaxCreatorBase(object):
         return node
 
 
-@six.add_metaclass(ABCMeta)
 class MaxCreator(Creator, MaxCreatorBase):
     selected_nodes = []
 
