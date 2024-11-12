@@ -12,12 +12,12 @@ class AvalonModule(QuadPypeModule, ITrayModule):
 
         avalon_settings = modules_settings[self.name]
 
-        thumbnail_root = os.environ.get("AVALON_THUMBNAIL_ROOT")
+        thumbnail_root = os.getenv("AVALON_THUMBNAIL_ROOT")
         if not thumbnail_root:
             thumbnail_root = avalon_settings["AVALON_THUMBNAIL_ROOT"]
 
         # Mongo timeout
-        avalon_mongo_timeout = os.environ.get("AVALON_TIMEOUT")
+        avalon_mongo_timeout = os.getenv("AVALON_TIMEOUT")
         if not avalon_mongo_timeout:
             avalon_mongo_timeout = avalon_settings["AVALON_TIMEOUT"]
 

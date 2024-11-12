@@ -197,7 +197,7 @@ def launch(application_path, *args):
     setup_startup_scripts()
     check_libs()
 
-    if not os.environ.get("AVALON_HARMONY_WORKFILES_ON_LAUNCH", False):
+    if not os.getenv("AVALON_HARMONY_WORKFILES_ON_LAUNCH", False):
         open_empty_workfile()
         return
 

@@ -15,7 +15,7 @@ FAMILY = 'test.family'
 
 REGISTERED = pyblish.plugin.registered_paths()
 PACKAGEPATH = pyblish.lib.main_package_path()
-ENVIRONMENT = os.environ.get("PYBLISHPLUGINPATH", "")
+ENVIRONMENT = os.getenv("PYBLISHPLUGINPATH", "")
 PLUGINPATH = os.path.join(PACKAGEPATH, '..', 'tests', 'plugins')
 
 
@@ -85,4 +85,4 @@ def is_in_tests():
     In tests mode different source DB is used, some plugins might be disabled
     etc.
     """
-    return os.environ.get("IS_TEST") == '1'
+    return os.getenv("IS_TEST") == '1'

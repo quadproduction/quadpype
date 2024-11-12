@@ -3115,7 +3115,7 @@ def set_colorspace():
     ocio_v2_maya_version = 2022
     maya_version = int(cmds.about(version=True))
     ocio_v2_support = use_ocio_v2 = maya_version >= ocio_v2_maya_version
-    is_ocio_set = bool(os.environ.get("OCIO"))
+    is_ocio_set = bool(os.getenv("OCIO"))
 
     use_workfile_settings = imageio.get("workfile", {}).get("enabled")
     if use_workfile_settings:

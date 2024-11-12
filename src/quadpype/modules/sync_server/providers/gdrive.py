@@ -178,7 +178,7 @@ class GDriveHandler(AbstractProvider):
                 'key': "credentials_url",
                 'label': "Credentials url",
                 'type': 'text',
-                'namespace': '{project_settings}/global/sitesync/sites/{site}/credentials_url/{platform}'  # noqa: E501
+                'namespace': '{project_settings}/global/sync_server/sites/{site}/credentials_url/{platform}'  # noqa: E501
             }
         ]
         return editable
@@ -634,7 +634,7 @@ class GDriveHandler(AbstractProvider):
         try:
             provider_presets = (
                 get_global_settings()[MODULES_SETTINGS_KEY]
-                ["sitesync"]
+                ["sync_server"]
                 ["providers"]
                 ["gdrive"]
             )

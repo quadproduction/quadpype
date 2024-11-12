@@ -324,14 +324,14 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
 
         # Get the accessible sites for Site Sync
         modules_by_name = instance.context.data["quadpypeModules"]
-        sitesitesync_addon = modules_by_name.get("sitesync")
-        if sitesitesync_addon is None:
+        sync_server_module = modules_by_name.get("sync_server")
+        if sync_server_module is None:
             sites = [{
                 "name": "studio",
                 "created_dt": datetime.datetime.now()
             }]
         else:
-            sites = sitesitesync_addon.compute_resource_sync_sites(
+            sites = sync_server_module.compute_resource_sync_sites(
                 project_name=instance.data["projectEntity"]["name"]
             )
         self.log.debug("Sync Server Sites: {}".format(sites))

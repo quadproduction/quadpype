@@ -104,7 +104,7 @@ class HostBase(ABC):
             Union[str, None]: Current project name.
         """
 
-        return os.environ.get("QUADPYPE_PROJECT")
+        return os.getenv("AVALON_PROJECT")
 
     def get_current_asset_name(self):
         """
@@ -112,7 +112,7 @@ class HostBase(ABC):
             Union[str, None]: Current asset name.
         """
 
-        return os.environ.get("QUADPYPE_ASSET")
+        return os.getenv("AVALON_ASSET")
 
     def get_current_task_name(self):
         """
@@ -120,7 +120,7 @@ class HostBase(ABC):
             Union[str, None]: Current task name.
         """
 
-        return os.environ.get("QUADPYPE_TASK")
+        return os.getenv("AVALON_TASK")
 
     def get_current_context(self):
         """Get current context information.

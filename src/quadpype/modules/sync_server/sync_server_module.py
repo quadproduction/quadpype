@@ -1182,7 +1182,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
     def _reset_timer_with_rest_api(self):
         # POST to webserver sites to add to representations
-        webserver_url = os.environ.get("QUADPYPE_WEBSERVER_URL")
+        webserver_url = os.getenv("QUADPYPE_WEBSERVER_URL")
         if not webserver_url:
             self.log.warning("Couldn't find webserver url")
             return

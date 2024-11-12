@@ -32,23 +32,23 @@ class HostDirmap(ABC):
         host_name,
         project_name,
         project_settings=None,
-        sitesync_addon=None
+        sync_module=None
     ):
         self.host_name = host_name
         self.project_name = project_name
         self._project_settings = project_settings
-        self._sitesync_addon = sitesync_addon
+        self._sync_module = sync_module
         # To limit reinit of the addon
-        self._sitesync_addon_discovered = sitesync_addon is not None
+        self._sync_module_discovered = sync_module is not None
         self._log = None
 
     @property
-    def sitesync_addon(self):
-        if not self._sitesync_addon_discovered:
-            self._sitesync_addon_discovered = True
+    def sync_module(self):
+        if not self._sync_module_discovered:
+            self._sync_module_discovered = True
             manager = ModulesManager()
-            self._sitesync_addon = manager.get("sitesync")
-        return self._sitesync_addon
+            self._sync_module = manager.get("sync_server")
+        return self._sync_module
 
     @property
     def project_settings(self):
@@ -154,37 +154,37 @@ class HostDirmap(ABC):
         """
         project_name = self.project_name
 
-        sitesync_addon = self.sitesync_addon
+        sync_module = self.sync_module
         mapping = {}
         if (
-            sitesync_addon is None
-            or not sitesync_addon.enabled
-            or not sitesync_addon.is_project_enabled(project_name, True)
+            sync_module is None
+            or not sync_module.enabled
+            or not sync_module.is_project_enabled(project_name, True)
         ):
             return mapping
 
-        active_site = sitesync_addon.get_local_normalized_site(
-            sitesync_addon.get_active_site(project_name))
-        remote_site = sitesync_addon.get_local_normalized_site(
-            sitesync_addon.get_remote_site(project_name))
+        active_site = sync_module.get_local_normalized_site(
+            sync_module.get_active_site(project_name))
+        remote_site = sync_module.get_local_normalized_site(
+            sync_module.get_remote_site(project_name))
         self.log.debug(
             "active {} - remote {}".format(active_site, remote_site)
         )
 
         if active_site == "local" and active_site != remote_site:
-            sync_settings = sitesync_addon.get_sync_project_setting(
+            sync_settings = sync_module.get_sync_project_setting(
                 project_name,
                 exclude_locals=False,
                 cached=False)
 
             active_roots_overrides = self._get_site_root_overrides(
-                sitesync_addon, project_name, active_site)
+                sync_module, project_name, active_site)
 
             remote_roots_overrides = self._get_site_root_overrides(
-                sitesync_addon, project_name, remote_site)
+                sync_module, project_name, remote_site)
 
             current_platform = platform.system().lower()
-            remote_provider = sitesync_addon.get_provider_for_site(
+            remote_provider = sync_module.get_provider_for_site(
                 project_name, remote_site
             )
             # dirmap has sense only with regular disk provider, in the workfile
@@ -216,12 +216,12 @@ class HostDirmap(ABC):
         return mapping
 
     def _get_site_root_overrides(
-            self, sitesync_addon, project_name, site_name):
+            self, sync_module, project_name, site_name):
         """Safely handle root overrides.
         SiteSync raises ValueError for non-local or studio sites.
         """
         try:
-            site_roots_overrides = sitesync_addon.get_site_root_overrides(
+            site_roots_overrides = sync_module.get_site_root_overrides(
                 project_name, site_name)
         except ValueError:
             site_roots_overrides = {}

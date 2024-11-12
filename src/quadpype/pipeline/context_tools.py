@@ -146,7 +146,7 @@ def install_host(host):
 
     MessageHandler.emit = modified_emit
 
-    if os.environ.get("QUADPYPE_REMOTE_PUBLISH"):
+    if os.getenv("QUADPYPE_REMOTE_PUBLISH"):
         # target "farm" == rendering on farm, expects QUADPYPE_PUBLISH_DATA
         # target "remote" == remote execution, installs host
         print("Registering pyblish target: remote")
@@ -158,8 +158,8 @@ def install_host(host):
         print("Registering pyblish target: automated")
         pyblish.api.register_target("automated")
 
-    project_name = os.environ.get("AVALON_PROJECT")
-    host_name = os.environ.get("AVALON_APP")
+    project_name = os.getenv("AVALON_PROJECT")
+    host_name = os.getenv("AVALON_APP")
 
     # Give option to handle host installation
     for module in modules_manager.get_enabled_modules():
@@ -179,7 +179,7 @@ def install_quadpype_plugins(project_name=None, host_name=None):
     register_inventory_action_path(INVENTORY_PATH)
 
     if host_name is None:
-        host_name = os.environ.get("AVALON_APP")
+        host_name = os.getenv("AVALON_APP")
 
     modules_manager = _get_modules_manager()
     publish_plugin_dirs = modules_manager.collect_publish_plugin_paths(
@@ -207,7 +207,7 @@ def install_quadpype_plugins(project_name=None, host_name=None):
         register_builder_action_path(path)
 
     if project_name is None:
-        project_name = os.environ.get("AVALON_PROJECT")
+        project_name = os.getenv("AVALON_PROJECT")
 
     # Register studio specific plugins
     if project_name:
@@ -350,7 +350,7 @@ def get_current_host_name():
     host = registered_host()
     if isinstance(host, HostBase):
         return host.name
-    return os.environ.get("AVALON_APP")
+    return os.getenv("AVALON_APP")
 
 
 def get_global_context():
@@ -375,9 +375,9 @@ def get_global_context():
     """
 
     return {
-        "project_name": os.environ.get("AVALON_PROJECT"),
-        "asset_name": os.environ.get("AVALON_ASSET"),
-        "task_name": os.environ.get("AVALON_TASK"),
+        "project_name": os.getenv("AVALON_PROJECT"),
+        "asset_name": os.getenv("AVALON_ASSET"),
+        "task_name": os.getenv("AVALON_TASK"),
     }
 
 

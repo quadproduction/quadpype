@@ -6,7 +6,7 @@ from quadpype.client import (
 )
 
 from quadpype.pipeline import (
-    QUADPYPE_CONTAINER_ID,
+    AVALON_CONTAINER_ID,
     load,
     get_representation_path,
     get_current_project_name
@@ -293,7 +293,7 @@ class LoadEffects(load.LoaderPlugin):
         data_imprint = {
             object_name: {
                 "schema": "quadpype:container-2.0",
-                "id": QUADPYPE_CONTAINER_ID,
+                "id": AVALON_CONTAINER_ID,
                 "name": str(name),
                 "namespace": str(namespace),
                 "loader": str(loader),

@@ -244,7 +244,7 @@ class CustomEventHubSession(ftrack_api.session.Session):
         self._closed = False
 
         if server_url is None:
-            server_url = os.environ.get('FTRACK_SERVER')
+            server_url = os.getenv('FTRACK_SERVER')
 
         if not server_url:
             raise TypeError(
@@ -255,10 +255,10 @@ class CustomEventHubSession(ftrack_api.session.Session):
         self._server_url = server_url
 
         if api_key is None:
-            api_key = os.environ.get(
+            api_key = os.getenv(
                 'FTRACK_API_KEY',
                 # Backwards compatibility
-                os.environ.get('FTRACK_APIKEY')
+                os.getenv('FTRACK_APIKEY')
             )
 
         if not api_key:
@@ -270,7 +270,7 @@ class CustomEventHubSession(ftrack_api.session.Session):
         self._api_key = api_key
 
         if api_user is None:
-            api_user = os.environ.get('FTRACK_API_USER')
+            api_user = os.getenv('FTRACK_API_USER')
             if not api_user:
                 try:
                     api_user = getpass.getuser()
@@ -354,7 +354,7 @@ class CustomEventHubSession(ftrack_api.session.Session):
 
         self._plugin_paths = plugin_paths
         if self._plugin_paths is None:
-            self._plugin_paths = os.environ.get(
+            self._plugin_paths = os.getenv(
                 'FTRACK_EVENT_PLUGIN_PATH', ''
             ).split(os.pathsep)
 
@@ -365,7 +365,7 @@ class CustomEventHubSession(ftrack_api.session.Session):
         if schema_cache_path is not False:
             if schema_cache_path is None:
                 schema_cache_path = appdirs.user_cache_dir()
-                schema_cache_path = os.environ.get(
+                schema_cache_path = os.getenv(
                     'FTRACK_API_SCHEMA_CACHE_PATH', schema_cache_path
                 )
 

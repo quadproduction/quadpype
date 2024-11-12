@@ -132,7 +132,7 @@ def convert_progress(value):
     return progress
 
 
-def translate_provider_for_icon(sitesync, project, site):
+def translate_provider_for_icon(sync_server, project, site):
     """
         Get provider for 'site'
 
@@ -140,9 +140,9 @@ def translate_provider_for_icon(sitesync, project, site):
         then local sites, even the provider 'local_drive' is same
 
     """
-    if site == sitesync.DEFAULT_SITE:
-        return sitesync.DEFAULT_SITE
-    return sitesync.get_provider_for_site(site=site)
+    if site == sync_server.DEFAULT_SITE:
+        return sync_server.DEFAULT_SITE
+    return sync_server.get_provider_for_site(site=site)
 
 
 def get_value_from_id_by_role(model, object_id, role):

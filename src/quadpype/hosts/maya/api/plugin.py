@@ -9,7 +9,7 @@ from maya.app.renderSetup.model import renderSetup
 from quadpype.lib import BoolDef, Logger
 from quadpype.settings import get_project_settings
 from quadpype.pipeline import (
-    QUADPYPE_CONTAINER_ID,
+    AVALON_CONTAINER_ID,
     Anatomy,
 
     CreatedInstance,
@@ -984,7 +984,7 @@ class ReferenceLoader(Loader):
             id_attr = "{}.id".format(node)
             if not cmds.attributeQuery("id", node=node, exists=True):
                 continue
-            if cmds.getAttr(id_attr) == QUADPYPE_CONTAINER_ID:
+            if cmds.getAttr(id_attr) == AVALON_CONTAINER_ID:
                 cmds.sets(node, forceElement=container)
 
 
@@ -1132,5 +1132,5 @@ class ActionBase(BuilderAction):
             id_attr = "{}.id".format(node)
             if not cmds.attributeQuery("id", node=node, exists=True):
                 continue
-            if cmds.getAttr(id_attr) == QUADPYPE_CONTAINER_ID:
+            if cmds.getAttr(id_attr) == AVALON_CONTAINER_ID:
                 cmds.sets(node, forceElement=container)

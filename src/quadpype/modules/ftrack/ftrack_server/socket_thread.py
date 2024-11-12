@@ -12,7 +12,7 @@ from quadpype.lib import get_quadpype_execute_args, Logger
 class SocketThread(threading.Thread):
     """Thread that checks suprocess of storer of processor of events"""
 
-    MAX_TIMEOUT = int(os.environ.get("QUADPYPE_FTRACK_SOCKET_TIMEOUT", 45))
+    MAX_TIMEOUT = int(os.getenv("QUADPYPE_FTRACK_SOCKET_TIMEOUT", 45))
 
     def __init__(self, name, port, filepath, additional_args=[]):
         super().__init__()

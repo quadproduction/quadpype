@@ -1738,15 +1738,15 @@ def prepare_context_environments(data, env_group=None, modules_manager=None):
 
     app = data["app"]
     context_env = {
-        "QUADPYPE_PROJECT": project_doc["name"],
-        "QUADPYPE_HOST_FULLNAME": app.full_name
+        "AVALON_PROJECT": project_doc["name"],
+        "AVALON_APP_NAME": app.full_name
     }
     if asset_doc:
         asset_name = asset_doc["name"]
-        context_env["QUADPYPE_ASSET"] = asset_name
+        context_env["AVALON_ASSET"] = asset_name
 
         if task_name:
-            context_env["QUADPYPE_TASK"] = task_name
+            context_env["AVALON_TASK"] = task_name
 
     log.debug(
         "Context environments set:\n{}".format(
@@ -1764,7 +1764,7 @@ def prepare_context_environments(data, env_group=None, modules_manager=None):
     if not app.is_host:
         return
 
-    data["env"]["QUADPYPE_HOST_NAME"] = app.host_name
+    data["env"]["AVALON_APP"] = app.host_name
 
     if not asset_doc or not task_name:
         # QUESTION replace with log.info and skip workfile discovery?
@@ -1810,7 +1810,7 @@ def prepare_context_environments(data, env_group=None, modules_manager=None):
                 "Couldn't create workdir because: {}".format(str(exc))
             )
 
-    data["env"]["QUADPYPE_WORKDIR"] = workdir
+    data["env"]["AVALON_WORKDIR"] = workdir
 
     _prepare_last_workfile(data, workdir, modules_manager)
 
@@ -1869,10 +1869,10 @@ def _prepare_last_workfile(data, workdir, modules_manager):
     data["workfile_startup"] = workfile_startup
 
     # Store boolean as "0"(False) or "1"(True)
-    data["env"]["QUADPYPE_OPEN_LAST_WORKFILE"] = (
+    data["env"]["AVALON_OPEN_LAST_WORKFILE"] = (
         str(int(bool(start_last_workfile)))
     )
-    data["env"]["QUADPYPE_WORKFILE_TOOL_ON_START"] = (
+    data["env"]["AVALON_WORKFILE_TOOL_ON_START"] = (
         str(int(bool(workfile_startup)))
     )
 
@@ -1927,7 +1927,7 @@ def _prepare_last_workfile(data, workdir, modules_manager):
         "Setting last workfile path: {}".format(last_workfile_path)
     )
 
-    data["env"]["QUADPYPE_LAST_WORKFILE"] = last_workfile_path
+    data["env"]["AVALON_LAST_WORKFILE"] = last_workfile_path
     data["last_workfile_path"] = last_workfile_path
 
 
@@ -1937,7 +1937,7 @@ def should_start_last_workfile(
     """Define if host should start last version workfile if possible.
 
     Default output is `False`. Can be overridden with environment variable
-    `QUADPYPE_OPEN_LAST_WORKFILE`, valid values without case sensitivity are
+    `AVALON_OPEN_LAST_WORKFILE`, valid values without case sensitivity are
     `"0", "1", "true", "false", "yes", "no"`.
 
     Args:
@@ -1987,7 +1987,7 @@ def should_workfile_tool_start(
     """Define if host should start workfile tool at host launch.
 
     Default output is `False`. Can be overridden with environment variable
-    `QUADPYPE_WORKFILE_TOOL_ON_START`, valid values without case sensitivity are
+    `AVALON_WORKFILE_TOOL_ON_START`, valid values without case sensitivity are
     `"0", "1", "true", "false", "yes", "no"`.
 
     Args:
@@ -2050,7 +2050,7 @@ def get_non_python_host_kwargs(kwargs, allow_console=True):
     if platform.system().lower() != "windows":
         return kwargs
 
-    executable_path = os.environ.get("QUADPYPE_EXECUTABLE")
+    executable_path = os.getenv("QUADPYPE_EXECUTABLE")
 
     executable_filename = ""
     if executable_path:

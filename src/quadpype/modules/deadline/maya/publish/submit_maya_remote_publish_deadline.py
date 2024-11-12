@@ -127,13 +127,13 @@ class MayaSubmitRemotePublishDeadline(
         environment["AVALON_PROJECT"] = project_name
         environment["AVALON_ASSET"] = instance.context.data["asset"]
         environment["AVALON_TASK"] = instance.context.data["task"]
-        environment["AVALON_APP_NAME"] = os.environ.get("AVALON_APP_NAME")
+        environment["AVALON_APP_NAME"] = os.getenv("AVALON_APP_NAME")
         environment["QUADPYPE_LOG_NO_COLORS"] = "1"
         environment["QUADPYPE_USERNAME"] = instance.context.data["user"]
         environment["QUADPYPE_PUBLISH_SUBSET"] = instance.data["subset"]
         environment["QUADPYPE_REMOTE_PUBLISH"] = "1"
         environment["QUADPYPE_REMOTE_PUBLISH"] = "1"
-        environment["AVALON_DB"] = os.environ.get("AVALON_DB")
+        environment["AVALON_DB"] = os.getenv("AVALON_DB")
         for key, value in environment.items():
             job_info.EnvironmentKeyValue[key] = value
 

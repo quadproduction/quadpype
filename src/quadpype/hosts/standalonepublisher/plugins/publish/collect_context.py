@@ -41,7 +41,7 @@ class CollectContextDataSAPublish(pyblish.api.ContextPlugin):
         legacy_io.install()
 
         # get json file context
-        input_json_path = os.environ.get("SAPUBLISH_INPATH")
+        input_json_path = os.getenv("SAPUBLISH_INPATH")
 
         with open(input_json_path, "r") as f:
             in_data = json.load(f)

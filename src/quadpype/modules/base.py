@@ -1107,7 +1107,7 @@ class TrayModulesManager(ModulesManager):
         "clockify",                # Clockify
         "user_settings",           # User Settings
         # More Tools Submenu -----------------------------
-        "sitesync",             # Sync Queue
+        "sync_server",             # Sync Queue
         "update_zxp_extensions",   # Update ZXP Extensions
         "log_viewer",              # Show Logs
         "python_interpreter",      # Console

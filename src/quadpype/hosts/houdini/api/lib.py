@@ -1038,7 +1038,7 @@ def self_publish():
 def add_self_publish_button(node):
     """Adds a self publish button to the rop node."""
 
-    label = os.environ.get("QUADPYPE_LABEL") or "QuadPype"
+    label = os.getenv("AVALON_LABEL") or "QuadPype"
 
     button_parm = hou.ButtonParmTemplate(
         "quadpype_self_publish",

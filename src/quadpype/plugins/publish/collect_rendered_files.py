@@ -141,7 +141,7 @@ class CollectRenderedFiles(pyblish.api.ContextPlugin):
     def process(self, context):
         self._context = context
 
-        if not os.environ.get("QUADPYPE_PUBLISH_DATA"):
+        if not os.getenv("QUADPYPE_PUBLISH_DATA"):
             raise KnownPublishError("Missing `QUADPYPE_PUBLISH_DATA`")
 
         # QUESTION

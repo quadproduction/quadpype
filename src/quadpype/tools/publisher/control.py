@@ -1803,9 +1803,9 @@ class PublisherController(BasePublisherController):
             context_title = self._host.get_context_title()
 
         if context_title is None:
-            context_title = os.getenv("QUADPYPE_HOST_FULLNAME")
+            context_title = os.getenv("AVALON_APP_NAME")
             if context_title is None:
-                context_title = os.getenv("QUADPYPE_HOST_NAME")
+                context_title = os.getenv("AVALON_APP")
 
         return context_title
 

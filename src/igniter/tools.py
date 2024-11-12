@@ -69,7 +69,7 @@ def validate_mongo_connection(cnx: str) -> (bool, str):
         return False, "Not mongodb schema"
 
     kwargs = {
-        "serverSelectionTimeoutMS": os.environ.get("AVALON_TIMEOUT", 2000)
+        "serverSelectionTimeoutMS": os.getenv("AVALON_TIMEOUT", 2000)
     }
     # Add certificate path if should be required
     if should_add_certificate_path_to_mongo_url(cnx):
@@ -153,7 +153,7 @@ def get_quadpype_global_settings(url: str) -> dict:
         # Create mongo connection
         client = MongoClient(url, **kwargs)
         # Access settings collection
-        quadpype_db = os.environ.get("QUADPYPE_DATABASE_NAME") or "quadpype"
+        quadpype_db = os.getenv("QUADPYPE_DATABASE_NAME") or "quadpype"
         col = client[quadpype_db]["settings"]
         # Query global settings
         global_settings = col.find_one({"type": "global_settings"}) or {}
@@ -220,7 +220,7 @@ def get_expected_studio_version_str(
     Returns:
         str: QuadPype version which should be used. Empty string means latest.
     """
-    mongo_url = os.environ.get("QUADPYPE_MONGO")
+    mongo_url = os.getenv("QUADPYPE_MONGO")
     if global_settings is None:
         global_settings = get_quadpype_global_settings(mongo_url)
     key = "staging_version" if staging else "production_version"

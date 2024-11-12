@@ -248,7 +248,7 @@ class Controller(QtCore.QObject):
 
         self.context.data["host"] = reversed(pyblish.api.registered_hosts())
         self.context.data["port"] = int(
-            os.environ.get("PYBLISH_CLIENT_PORT", -1)
+            os.getenv("PYBLISH_CLIENT_PORT", -1)
         )
         self.context.data["connectTime"] = pyblish.lib.time(),
         self.context.data["pyblishVersion"] = pyblish.version,

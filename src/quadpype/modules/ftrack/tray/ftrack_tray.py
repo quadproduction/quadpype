@@ -65,7 +65,7 @@ class FtrackTrayWrapper:
         if not validation and ft_user and ft_api_key:
             self.log.warning(
                 "Current Ftrack credentials are not valid. {}: {} - {}".format(
-                    str(os.environ.get("FTRACK_SERVER")), ft_user, ft_api_key
+                    str(os.getenv("FTRACK_SERVER")), ft_user, ft_api_key
                 )
             )
 

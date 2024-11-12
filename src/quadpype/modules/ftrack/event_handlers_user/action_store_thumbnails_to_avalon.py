@@ -95,7 +95,7 @@ class StoreThumbnailsToAvalon(BaseAction):
                 "message": msg
             }
 
-        thumbnail_roots = os.environ.get(self.thumbnail_key)
+        thumbnail_roots = os.getenv(self.thumbnail_key)
         if (
             "{thumbnail_root}" in anatomy.templates["publish"]["thumbnail"]
             and not thumbnail_roots

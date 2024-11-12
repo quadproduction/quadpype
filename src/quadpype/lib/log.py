@@ -218,7 +218,7 @@ class Logger:
     log_mongo_url_components = None
 
     # Database name in Mongo
-    log_database_name = os.environ.get("QUADPYPE_DATABASE_NAME")
+    log_database_name = os.getenv("QUADPYPE_DATABASE_NAME")
     # Collection name under database in Mongo
     log_collection_name = "logs"
 
@@ -327,7 +327,7 @@ class Logger:
         # Define if should logging to mongo be used
         use_mongo_logging = (
             log4mongo is not None
-            and os.environ.get("QUADPYPE_LOG_TO_SERVER") == "1"
+            and os.getenv("QUADPYPE_LOG_TO_SERVER") == "1"
         )
 
         # Set mongo id for process (ONLY ONCE)
@@ -367,7 +367,7 @@ class Logger:
 
         logging.basicConfig(level=cls.log_level)
 
-        if not os.environ.get("QUADPYPE_MONGO"):
+        if not os.getenv("QUADPYPE_MONGO"):
             cls.use_mongo_logging = False
 
         # Mark as initialized
@@ -424,7 +424,7 @@ class Logger:
             return cls._process_name
 
         # Get process name
-        process_name = os.environ.get("AVALON_APP_NAME")
+        process_name = os.getenv("AVALON_APP_NAME")
         if not process_name:
             try:
                 import psutil

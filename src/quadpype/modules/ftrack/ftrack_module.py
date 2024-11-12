@@ -576,8 +576,8 @@ class FtrackModule(
         # - ftrack event server may crash when credentials are tried to load
         #   from keyring
         if not api_key or not api_user:
-            api_key = os.environ.get("FTRACK_API_KEY")
-            api_user = os.environ.get("FTRACK_API_USER")
+            api_key = os.getenv("FTRACK_API_KEY")
+            api_user = os.getenv("FTRACK_API_USER")
 
         if not api_key or not api_user:
             from .lib import credentials

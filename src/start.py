@@ -445,7 +445,7 @@ def set_avalon_environments():
     environment variables.
     """
 
-    avalon_db = os.environ.get("AVALON_DB") or "avalon"  # for tests
+    avalon_db = os.getenv("AVALON_DB") or "avalon"  # for tests
     os.environ.update({
         # Mongo DB name where avalon docs are stored
         "AVALON_DB": avalon_db,
@@ -495,7 +495,7 @@ def _startup_validations():
     try:
         _validate_thirdparty_binaries()
     except Exception as exc:
-        if os.environ.get("QUADPYPE_HEADLESS_MODE"):
+        if os.getenv("QUADPYPE_HEADLESS_MODE"):
             raise
 
         import tkinter
@@ -1026,7 +1026,7 @@ def _boot_print_versions(quadpype_root):
 
 def _boot_handle_missing_version(local_version, message):
     _print(message, True)
-    if os.environ.get("QUADPYPE_HEADLESS_MODE") == "1":
+    if os.getenv("QUADPYPE_HEADLESS_MODE") == "1":
         quadpype_versions = bootstrap.find_quadpype(
             include_zips=True)
         list_versions(quadpype_versions, local_version)
@@ -1055,7 +1055,7 @@ def boot():
     # ------------------------------------------------------------------------
 
     use_version, commands = _process_arguments()
-    use_staging = os.environ.get("QUADPYPE_USE_STAGING") == "1"
+    use_staging = os.getenv("QUADPYPE_USE_STAGING") == "1"
 
     if os.getenv("QUADPYPE_VERSION"):
         if use_version:
@@ -1079,13 +1079,13 @@ def boot():
     os.environ["QUADPYPE_MONGO"] = quadpype_mongo
     # name of Pype database
     os.environ["QUADPYPE_DATABASE_NAME"] = \
-        os.environ.get("QUADPYPE_DATABASE_NAME") or "quadpype"
+        os.getenv("QUADPYPE_DATABASE_NAME") or "quadpype"
 
-    if os.environ.get("IS_TEST") == "1":
+    if os.getenv("IS_TEST") == "1":
         # change source DBs to predefined ones set for automatic testing
         if "_tests" not in os.environ["QUADPYPE_DATABASE_NAME"]:
             os.environ["QUADPYPE_DATABASE_NAME"] += "_tests"
-        avalon_db = os.environ.get("AVALON_DB") or "avalon"
+        avalon_db = os.getenv("AVALON_DB") or "avalon"
         if "_tests" not in avalon_db:
             os.environ["AVALON_DB"] = avalon_db + "_tests"
 
@@ -1286,21 +1286,21 @@ def get_info(use_staging=None) -> list:
     else:
         inf.append(("QuadPype variant", "production"))
     inf.extend([
-        ("Running QuadPype from", os.environ.get('QUADPYPE_REPOS_ROOT')),
+        ("Running QuadPype from", os.getenv('QUADPYPE_REPOS_ROOT')),
         ("Using mongodb", components["host"])]
     )
 
-    if os.environ.get("FTRACK_SERVER"):
+    if os.getenv("FTRACK_SERVER"):
         inf.append(("Using FTrack at",
-                    os.environ.get("FTRACK_SERVER")))
+                    os.getenv("FTRACK_SERVER")))
 
-    if os.environ.get('DEADLINE_REST_URL'):
+    if os.getenv('DEADLINE_REST_URL'):
         inf.append(("Using Deadline webservice at",
-                    os.environ.get("DEADLINE_REST_URL")))
+                    os.getenv("DEADLINE_REST_URL")))
 
-    if os.environ.get('MUSTER_REST_URL'):
+    if os.getenv('MUSTER_REST_URL'):
         inf.append(("Using Muster at",
-                    os.environ.get("MUSTER_REST_URL")))
+                    os.getenv("MUSTER_REST_URL")))
 
     # Reinitialize
     Logger.initialize()

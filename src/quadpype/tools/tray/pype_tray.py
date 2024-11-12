@@ -619,8 +619,8 @@ class TrayManager:
 
     def _add_version_item(self):
 
-        subversion = os.environ.get("QUADPYPE_SUBVERSION")
-        client_name = os.environ.get("QUADPYPE_CLIENT")
+        subversion = os.getenv("QUADPYPE_SUBVERSION")
+        client_name = os.getenv("QUADPYPE_CLIENT")
 
         version_string = "Version :  {}".format(quadpype.version.__version__)  # double space for readability
         if subversion:

@@ -46,7 +46,7 @@ class CollectColorCodedInstances(pyblish.api.ContextPlugin):
 
     def process(self, context):
         self.log.info("CollectColorCodedInstances")
-        batch_dir = os.environ.get("QUADPYPE_PUBLISH_DATA")
+        batch_dir = os.getenv("QUADPYPE_PUBLISH_DATA")
         if (is_in_tests() and
                 (not batch_dir or not os.path.exists(batch_dir))):
             self.log.debug("Automatic testing, no batch data, skipping")

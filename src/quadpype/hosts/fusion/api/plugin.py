@@ -11,6 +11,7 @@ from quadpype.lib import (
     EnumDef,
 )
 from quadpype.pipeline import (
+    legacy_io,
     Creator,
     CreatedInstance
 )
@@ -135,7 +136,7 @@ class GenericCreateSaver(Creator):
         ext = data["creator_attributes"]["image_format"]
 
         # Subset change detected
-        workdir = os.path.normpath(os.getenv("QUADPYPE_WORKDIR"))
+        workdir = os.path.normpath(legacy_io.Session["AVALON_WORKDIR"])
         formatting_data.update({
             "workdir": workdir,
             "frame": "0" * frame_padding,

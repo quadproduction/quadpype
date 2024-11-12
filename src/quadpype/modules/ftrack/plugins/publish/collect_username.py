@@ -41,7 +41,7 @@ class CollectUsernameForWebpublish(pyblish.api.ContextPlugin):
         os.environ["FTRACK_API_KEY"] = os.environ["FTRACK_BOT_API_KEY"]
 
         # for publishes with studio processing
-        user_email = os.environ.get("USER_EMAIL")
+        user_email = os.getenv("USER_EMAIL")
         self.log.debug("Email from env:: {}".format(user_email))
         if not user_email:
             # for basic webpublishes

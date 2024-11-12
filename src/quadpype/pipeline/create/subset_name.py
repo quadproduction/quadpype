@@ -129,7 +129,7 @@ def get_subset_name(
         return ""
 
     if not host_name:
-        host_name = os.environ.get("AVALON_APP")
+        host_name = os.getenv("AVALON_APP")
 
     # Use only last part of class family value split by dot (`.`)
     family = family.rsplit(".", 1)[-1]

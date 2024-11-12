@@ -286,7 +286,7 @@ def _add_review_families(families):
     """
     # if we have one representation with preview tag
     # flag whole instance for review and for ftrack
-    if "ftrack" not in families and os.environ.get("FTRACK_SERVER"):
+    if "ftrack" not in families and os.getenv("FTRACK_SERVER"):
         families.append("ftrack")
     if "review" not in families:
         families.append("review")
@@ -318,7 +318,7 @@ def prepare_representations(skeleton_data, exp_files, anatomy, aov_filter,
 
     """
     representations = []
-    host_name = os.environ.get("AVALON_APP", "")
+    host_name = os.getenv("AVALON_APP", "")
     collections, remainders = clique.assemble(exp_files)
 
     log = Logger.get_logger("farm_publishing")
@@ -608,7 +608,7 @@ def _create_instances_for_aov(instance, skeleton, aov_filter, additional_data,
 
         log.info("Creating data for: {}".format(subset_name))
 
-        app = os.environ.get("AVALON_APP", "")
+        app = os.getenv("AVALON_APP", "")
 
         if isinstance(col, list):
             render_file_name = os.path.basename(col[0])

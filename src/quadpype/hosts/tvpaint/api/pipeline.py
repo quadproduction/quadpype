@@ -189,7 +189,7 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         # Setup project settings if its the template that's launched.
         # TODO also check for template creation when it's possible to define
         #   templates
-        last_workfile = os.environ.get("AVALON_LAST_WORKFILE")
+        last_workfile = os.getenv("AVALON_LAST_WORKFILE")
         if not last_workfile or os.path.exists(last_workfile):
             return
 
@@ -218,7 +218,7 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
             return
 
         # Stop application timer.
-        webserver_url = os.environ.get("QUADPYPE_WEBSERVER_URL")
+        webserver_url = os.getenv("QUADPYPE_WEBSERVER_URL")
         rest_api_url = "{}/timers_manager/stop_timer".format(webserver_url)
         requests.post(rest_api_url)
 

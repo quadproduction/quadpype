@@ -539,7 +539,7 @@ def get_local_site_id():
 
     # Check if the value is set on the env variable
     # This is used for background syncing
-    if os.environ.get("QUADPYPE_LOCAL_ID"):
+    if os.getenv("QUADPYPE_LOCAL_ID"):
         return os.environ["QUADPYPE_LOCAL_ID"]
 
     # Else using the user ID
@@ -572,7 +572,7 @@ def get_quadpype_username():
     machine username.
     """
 
-    username = os.environ.get("QUADPYPE_USERNAME")
+    username = os.getenv("QUADPYPE_USERNAME")
     if not username:
         user_settings = get_user_settings()
         username = (

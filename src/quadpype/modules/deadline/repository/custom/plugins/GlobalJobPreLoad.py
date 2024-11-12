@@ -362,7 +362,7 @@ def inject_quadpype_environment(deadlinePlugin):
             deadlinePlugin.SetEnvironmentVariable("QUADPYPE_MONGO",
                                                   quadpype_mongo)
 
-        if not os.environ.get("QUADPYPE_MONGO"):
+        if not os.getenv("QUADPYPE_MONGO"):
             print(">>> Missing QUADPYPE_MONGO env var, process won't work")
 
         os.environ["AVALON_TIMEOUT"] = "5000"

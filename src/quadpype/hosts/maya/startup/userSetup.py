@@ -36,7 +36,7 @@ if explicit_plugins_loading["enabled"]:
 
 # Open Workfile Post Initialization.
 key = "QUADPYPE_OPEN_WORKFILE_POST_INITIALIZATION"
-if bool(int(os.environ.get(key, "0"))):
+if bool(int(os.getenv(key, "0"))):
     def _log_and_open():
         path = os.environ["AVALON_LAST_WORKFILE"]
         print("Opening \"{}\"".format(path))

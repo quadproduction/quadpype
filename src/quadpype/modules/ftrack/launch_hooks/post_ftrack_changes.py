@@ -33,7 +33,7 @@ class PostFtrackHook(PostLaunchHook):
 
         required_keys = ("FTRACK_SERVER", "FTRACK_API_USER", "FTRACK_API_KEY")
         for key in required_keys:
-            if not os.environ.get(key):
+            if not os.getenv(key):
                 self.log.debug((
                     "Missing required environment \"{}\""
                     " for Ftrack after launch procedure."

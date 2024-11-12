@@ -1425,7 +1425,7 @@ class SyncEntitiesFactory:
         ))
         # Avalon entities
         self.dbcon.install()
-        self.dbcon.Session["QUADPYPE_PROJECT"] = ft_project_name
+        self.dbcon.Session["AVALON_PROJECT"] = ft_project_name
         avalon_project = get_project(ft_project_name)
         avalon_entities = get_assets(ft_project_name)
         self.avalon_project = avalon_project

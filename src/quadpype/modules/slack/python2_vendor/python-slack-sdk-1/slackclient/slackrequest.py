@@ -1,6 +1,7 @@
 import json
 import platform
 import requests
+import six
 import sys
 
 from .version import __version__
@@ -76,7 +77,7 @@ class SlackRequest(object):
 
         # Convert any params which are list-like to JSON strings
         # Example: `attachments` is a dict, and needs to be passed as JSON
-        for k, v in post_data.items():
+        for k, v in six.iteritems(post_data):
             if isinstance(v, (list, dict)):
                 post_data[k] = json.dumps(v)
 
