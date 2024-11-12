@@ -1,6 +1,5 @@
 import attr
-import abc
-import six
+from abc import ABC, abstractmethod
 
 STATUS = {
     0: 'In Progress',
@@ -14,8 +13,7 @@ STATUS = {
 DUMMY_PROJECT = "No project configured"
 
 
-@six.add_metaclass(abc.ABCMeta)
-class AbstractColumnFilter:
+class AbstractColumnFilter(ABC):
 
     def __init__(self, column_name, dbcon=None):
         self.column_name = column_name
@@ -28,14 +26,14 @@ class AbstractColumnFilter:
         """
         return self._search_variants
 
-    @abc.abstractmethod
+    @abstractmethod
     def values(self):
         """
             Returns dict of available values for filter {'label':'value'}
         """
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def prepare_match_part(self, values):
         """
             Prepares format valid for $match part from 'values
@@ -134,7 +132,7 @@ def convert_progress(value):
     return progress
 
 
-def translate_provider_for_icon(sync_server, project, site):
+def translate_provider_for_icon(sitesync, project, site):
     """
         Get provider for 'site'
 
@@ -142,9 +140,9 @@ def translate_provider_for_icon(sync_server, project, site):
         then local sites, even the provider 'local_drive' is same
 
     """
-    if site == sync_server.DEFAULT_SITE:
-        return sync_server.DEFAULT_SITE
-    return sync_server.get_provider_for_site(site=site)
+    if site == sitesync.DEFAULT_SITE:
+        return sitesync.DEFAULT_SITE
+    return sitesync.get_provider_for_site(site=site)
 
 
 def get_value_from_id_by_role(model, object_id, role):

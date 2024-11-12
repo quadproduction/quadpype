@@ -3,10 +3,8 @@ import json
 import copy
 import collections
 import datetime
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from copy import deepcopy
-
-import six
 
 import quadpype.version
 from quadpype.client.mongo import (
@@ -192,8 +190,7 @@ class SettingsStateInfo:
         )
 
 
-@six.add_metaclass(ABCMeta)
-class SettingsHandler(object):
+class SettingsHandler(ABC):
     core_keys = {
         "quadpype_path",
         "local_quadpype_path",
@@ -539,8 +536,7 @@ class SettingsHandler(object):
         pass
 
 
-@six.add_metaclass(ABCMeta)
-class UserHandler:
+class UserHandler(ABC):
     """Handler using to store and load user info & settings.
 
     User settings are specific modifications that modify how
@@ -985,7 +981,7 @@ class MongoSettingsHandler(SettingsHandler):
         # Create copy of data as they will be modified during save
         new_data = data_cache.data_copy()
 
-        # Prepare avalon project document
+        # Prepare database project document
         project_doc = get_project(project_name)
         if not project_doc:
             raise ValueError((
@@ -1013,7 +1009,7 @@ class MongoSettingsHandler(SettingsHandler):
         for application in _applications:
             if not application:
                 continue
-            if isinstance(application, six.string_types):
+            if isinstance(application, str):
                 applications.append({"name": application})
 
         new_data["apps"] = applications

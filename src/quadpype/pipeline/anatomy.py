@@ -4,8 +4,6 @@ import copy
 import platform
 import collections
 import numbers
-
-import six
 import time
 
 from quadpype.settings.lib import (
@@ -418,7 +416,7 @@ class CacheItem:
 
 
 class Anatomy(BaseAnatomy):
-    _sync_server_addon_cache = CacheItem()
+    _sitesync_addon_cache = CacheItem()
     _project_cache = collections.defaultdict(CacheItem)
     _default_site_id_cache = collections.defaultdict(CacheItem)
     _root_overrides_cache = collections.defaultdict(
@@ -427,7 +425,7 @@ class Anatomy(BaseAnatomy):
 
     def __init__(self, project_name=None, site_name=None):
         if not project_name:
-            project_name = os.environ.get("AVALON_PROJECT")
+            project_name = os.environ.get("QUADPYPE_PROJECT")
 
         if not project_name:
             raise ProjectNotSet((
@@ -448,13 +446,13 @@ class Anatomy(BaseAnatomy):
         return copy.deepcopy(project_cache.data)
 
     @classmethod
-    def get_sync_server_addon(cls):
-        if cls._sync_server_addon_cache.is_outdated:
+    def get_sitesync_addon(cls):
+        if cls._sitesync_addon_cache.is_outdated:
             manager = ModulesManager()
-            cls._sync_server_addon_cache.update_data(
-                manager.get_enabled_module("sync_server")
+            cls._sitesync_addon_cache.update_data(
+                manager.get_enabled_module("sitesync")
             )
-        return cls._sync_server_addon_cache.data
+        return cls._sitesync_addon_cache.data
 
     @classmethod
     def _get_studio_roots_overrides(cls, project_name, user_settings=None):
@@ -515,8 +513,8 @@ class Anatomy(BaseAnatomy):
         user_settings = None
 
         # First check if sync server is available and enabled
-        sync_server = cls.get_sync_server_addon()
-        if sync_server is None or not sync_server.enabled:
+        sitesync = cls.get_sitesync_addon()
+        if sitesync is None or not sitesync.enabled:
             # QUESTION is ok to force 'studio' when site sync is not enabled?
             site_name = "studio"
 
@@ -526,7 +524,7 @@ class Anatomy(BaseAnatomy):
             if project_cache.is_outdated:
                 user_settings = get_user_settings()
                 project_cache.update_data(
-                    sync_server.get_active_site_type(
+                    sitesync.get_active_site_type(
                         project_name, user_settings
                     )
                 )
@@ -542,7 +540,7 @@ class Anatomy(BaseAnatomy):
                 )
             else:
                 # Ask sync server to get roots overrides
-                roots_overrides = sync_server.get_site_root_overrides(
+                roots_overrides = sitesync.get_site_root_overrides(
                     project_name, site_name, user_settings
                 )
             site_cache.update_data(roots_overrides)
@@ -695,7 +693,7 @@ class AnatomyTemplates(TemplatesDict):
                     v_queue.append(value)
 
                 elif (
-                    isinstance(value, six.string_types)
+                    isinstance(value, str)
                     and "{task}" in value
                 ):
                     item[key] = value.replace("{task}", "{task[name]}")
@@ -760,7 +758,7 @@ class AnatomyTemplates(TemplatesDict):
 
                 if not (
                     isinstance(replace_value, numbers.Number)
-                    or isinstance(replace_value, six.string_types)
+                    or isinstance(replace_value, str)
                 ):
                     raise ValueError((
                         "Anatomy templates can't be filled."
@@ -788,7 +786,7 @@ class AnatomyTemplates(TemplatesDict):
             for key in tuple(keys_to_solve):
                 value = key_values[key]
 
-                if isinstance(value, six.string_types):
+                if isinstance(value, str):
                     matches = cls.inner_key_pattern.findall(value)
                     if not matches:
                         keys_to_solve.remove(key)
@@ -1498,7 +1496,7 @@ class Roots:
             parent_keys = []
         is_last = False
         for value in data.values():
-            if isinstance(value, six.string_types):
+            if isinstance(value, str):
                 is_last = True
                 break
 

@@ -1,15 +1,13 @@
 import os
 import logging
 import contextlib
-from abc import ABCMeta, abstractproperty
-import six
+from abc import ABC, abstractproperty
 
 # NOTE can't import 'typing' because of issues in Maya 2020
 #   - shiboken crashes on 'typing' module import
 
 
-@six.add_metaclass(ABCMeta)
-class HostBase(object):
+class HostBase(ABC):
     """Base of host implementation class.
 
     Host is pipeline implementation of DCC application. This class should help
@@ -49,7 +47,6 @@ class HostBase(object):
     Todo:
         - move content of 'install_host' as method of this class
             - register host object
-            - install legacy_io
             - install global plugin paths
         - store registered plugin paths to this object
         - handle current context (project, asset, task)
@@ -107,7 +104,7 @@ class HostBase(object):
             Union[str, None]: Current project name.
         """
 
-        return os.environ.get("AVALON_PROJECT")
+        return os.environ.get("QUADPYPE_PROJECT")
 
     def get_current_asset_name(self):
         """
@@ -115,7 +112,7 @@ class HostBase(object):
             Union[str, None]: Current asset name.
         """
 
-        return os.environ.get("AVALON_ASSET")
+        return os.environ.get("QUADPYPE_ASSET")
 
     def get_current_task_name(self):
         """
@@ -123,7 +120,7 @@ class HostBase(object):
             Union[str, None]: Current task name.
         """
 
-        return os.environ.get("AVALON_TASK")
+        return os.environ.get("QUADPYPE_TASK")
 
     def get_current_context(self):
         """Get current context information.
@@ -132,8 +129,6 @@ class HostBase(object):
         this method can be crucial for host implementations in DCCs where
         can be opened multiple workfiles at one moment and change of context
         can't be caught properly.
-
-        Default implementation returns values from 'legacy_io.Session'.
 
         Returns:
             Dict[str, Union[str, None]]: Context with 3 keys 'project_name',

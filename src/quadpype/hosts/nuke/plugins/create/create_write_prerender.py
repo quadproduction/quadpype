@@ -1,6 +1,4 @@
 import nuke
-import sys
-import six
 
 from quadpype.pipeline import (
     CreatedInstance
@@ -126,12 +124,8 @@ class CreateWritePrerender(napi.NukeWriteCreator):
 
             return instance
 
-        except Exception as er:
-            six.reraise(
-                napi.NukeCreatorError,
-                napi.NukeCreatorError("Creator error: {}".format(er)),
-                sys.exc_info()[2]
-            )
+        except Exception as e:
+            raise napi.NukeCreatorError("Creator error: {}".format(e))
 
     def _add_frame_range_limit(self, write_node):
         if "use_range_limit" not in self.instance_attributes:

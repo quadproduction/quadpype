@@ -14,7 +14,6 @@ import capture
 from contextlib import ExitStack
 from collections import OrderedDict, defaultdict
 from math import ceil
-from six import string_types
 
 from maya import cmds, mel
 from maya.api import OpenMaya
@@ -546,7 +545,6 @@ def float_round(num, places=0, direction=ceil):
 
 def pairwise(iterable):
     """s -> (s0,s1), (s2,s3), (s4, s5), ..."""
-    from six.moves import zip
 
     a = iter(iterable)
     return zip(a, a)
@@ -642,7 +640,7 @@ def imprint(node, data):
         if isinstance(value, bool):
             add_type = {"attributeType": "bool"}
             set_type = {"keyable": False, "channelBox": True}
-        elif isinstance(value, string_types):
+        elif isinstance(value, str):
             add_type = {"dataType": "string"}
             set_type = {"type": "string"}
         elif isinstance(value, int):
@@ -752,14 +750,14 @@ def attribute_values(attr_values):
     original = [(attr, cmds.getAttr(attr)) for attr in attr_values]
     try:
         for attr, value in attr_values.items():
-            if isinstance(value, string_types):
+            if isinstance(value, str):
                 cmds.setAttr(attr, value, type="string")
             else:
                 cmds.setAttr(attr, value)
         yield
     finally:
         for attr, value in original:
-            if isinstance(value, string_types):
+            if isinstance(value, str):
                 cmds.setAttr(attr, value, type="string")
             elif value is None and cmds.getAttr(attr, type=True) == "string":
                 # In some cases the maya.cmds.getAttr command returns None

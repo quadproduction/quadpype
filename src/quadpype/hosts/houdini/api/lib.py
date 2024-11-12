@@ -8,8 +8,6 @@ import logging
 from contextlib import contextmanager
 import json
 
-import six
-
 from quadpype.lib import StringTemplate
 from quadpype.client import get_project, get_asset_by_name
 from quadpype.settings import get_current_project_settings
@@ -489,7 +487,7 @@ def read(node):
     for parameter in node.spareParms():
         value = parameter.eval()
         # test if value is json encoded dict
-        if isinstance(value, six.string_types) and \
+        if isinstance(value, str) and \
                 value.startswith(JSON_PREFIX):
             try:
                 value = json.loads(value[len(JSON_PREFIX):])
@@ -582,7 +580,7 @@ def get_template_from_value(key, value):
                                    label=key,
                                    num_components=1,
                                    default_value=(value,))
-    elif isinstance(value, six.string_types):
+    elif isinstance(value, str):
         parm = hou.StringParmTemplate(name=key,
                                       label=key,
                                       num_components=1,
@@ -1040,7 +1038,7 @@ def self_publish():
 def add_self_publish_button(node):
     """Adds a self publish button to the rop node."""
 
-    label = os.environ.get("AVALON_LABEL") or "QuadPype"
+    label = os.environ.get("QUADPYPE_LABEL") or "QuadPype"
 
     button_parm = hou.ButtonParmTemplate(
         "quadpype_self_publish",

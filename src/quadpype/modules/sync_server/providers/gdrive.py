@@ -1,8 +1,6 @@
 from __future__ import print_function
 import os.path
 import time
-import sys
-import six
 import platform
 
 from quadpype.lib import Logger
@@ -17,9 +15,8 @@ try:
     import google.oauth2.service_account as service_account
     from googleapiclient import errors
     from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
-except (ImportError, SyntaxError):
-    if six.PY3:
-        six.reraise(*sys.exc_info())
+except (ImportError, SyntaxError) as e:
+    raise e
 
     # handle imports from Python 2 hosts - in those only basic methods are used
     log.warning("Import failed, imported from Python 2, operations will fail.")
@@ -181,7 +178,7 @@ class GDriveHandler(AbstractProvider):
                 'key': "credentials_url",
                 'label': "Credentials url",
                 'type': 'text',
-                'namespace': '{project_settings}/global/sync_server/sites/{site}/credentials_url/{platform}'  # noqa: E501
+                'namespace': '{project_settings}/global/sitesync/sites/{site}/credentials_url/{platform}'  # noqa: E501
             }
         ]
         return editable
@@ -637,7 +634,7 @@ class GDriveHandler(AbstractProvider):
         try:
             provider_presets = (
                 get_global_settings()[MODULES_SETTINGS_KEY]
-                ["sync_server"]
+                ["sitesync"]
                 ["providers"]
                 ["gdrive"]
             )

@@ -1,25 +1,23 @@
 import json
 import os
-from abc import ABCMeta
+from abc import ABC
 
 import qargparse
-import six
 from maya import cmds
 from maya.app.renderSetup.model import renderSetup
 
 from quadpype.lib import BoolDef, Logger
 from quadpype.settings import get_project_settings
 from quadpype.pipeline import (
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
     Anatomy,
 
     CreatedInstance,
-    Creator as NewCreator,
+    Creator,
     AutoCreator,
     HiddenCreator,
 
     CreatorError,
-    LegacyCreator,
     LoaderPlugin,
     get_representation_path,
 )
@@ -66,24 +64,7 @@ def get_reference_node_parents(*args, **kwargs):
     return lib.get_reference_node_parents(*args, **kwargs)
 
 
-class Creator(LegacyCreator):
-    defaults = ['Main']
-
-    def process(self):
-        nodes = list()
-
-        with lib.undo_chunk():
-            if (self.options or {}).get("useSelection"):
-                nodes = cmds.ls(selection=True)
-
-            instance = cmds.sets(nodes, name=self.name)
-            lib.imprint(instance, self.data)
-
-        return instance
-
-
-@six.add_metaclass(ABCMeta)
-class MayaCreatorBase(object):
+class MayaCreatorBase(ABC):
 
     @staticmethod
     def cache_subsets(shared_data):
@@ -269,8 +250,7 @@ class MayaCreatorBase(object):
             self._remove_instance_from_context(instance)
 
 
-@six.add_metaclass(ABCMeta)
-class MayaCreator(NewCreator, MayaCreatorBase):
+class MayaCreator(Creator, MayaCreatorBase):
 
     settings_name = None
 
@@ -395,7 +375,7 @@ def ensure_namespace(namespace):
         return cmds.namespace(add=namespace)
 
 
-class RenderlayerCreator(NewCreator, MayaCreatorBase):
+class RenderlayerCreator(Creator, MayaCreatorBase, ABC):
     """Creator which creates an instance per renderlayer in the workfile.
 
     Create and manages renderlayer subset per renderLayer in workfile.
@@ -1004,7 +984,7 @@ class ReferenceLoader(Loader):
             id_attr = "{}.id".format(node)
             if not cmds.attributeQuery("id", node=node, exists=True):
                 continue
-            if cmds.getAttr(id_attr) == AVALON_CONTAINER_ID:
+            if cmds.getAttr(id_attr) == QUADPYPE_CONTAINER_ID:
                 cmds.sets(node, forceElement=container)
 
 
@@ -1152,5 +1132,5 @@ class ActionBase(BuilderAction):
             id_attr = "{}.id".format(node)
             if not cmds.attributeQuery("id", node=node, exists=True):
                 continue
-            if cmds.getAttr(id_attr) == AVALON_CONTAINER_ID:
+            if cmds.getAttr(id_attr) == QUADPYPE_CONTAINER_ID:
                 cmds.sets(node, forceElement=container)

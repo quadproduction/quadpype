@@ -2,7 +2,6 @@ import os
 from pprint import pformat
 import re
 import json
-import six
 import functools
 import warnings
 import platform
@@ -60,10 +59,10 @@ from .utils import get_node_outputs
 
 log = Logger.get_logger(__name__)
 
-_NODE_TAB_NAME = "{}".format(os.getenv("AVALON_LABEL") or "Avalon")
-AVALON_LABEL = os.getenv("AVALON_LABEL") or "Avalon"
-AVALON_TAB = "{}".format(AVALON_LABEL)
-AVALON_DATA_GROUP = "{}DataGroup".format(AVALON_LABEL.capitalize())
+_NODE_TAB_NAME = "{}".format(os.getenv("QUADPYPE_LABEL") or "Avalon")
+QUADPYPE_LABEL = os.getenv("QUADPYPE_LABEL") or "Avalon"
+QUADPYPE_TAB = "{}".format(QUADPYPE_LABEL)
+QUADPYPE_DATA_GROUP = "{}DataGroup".format(QUADPYPE_LABEL.capitalize())
 EXCLUDED_KNOB_TYPE_ON_READ = (
     20,  # Tab Knob
     26,  # Text Knob (But for backward compatibility, still be read
@@ -122,7 +121,7 @@ def deprecated(new_destination):
 class Context:
     main_window = None
     context_action_item = None
-    project_name = os.getenv("AVALON_PROJECT")
+    project_name = os.getenv("QUADPYPE_PROJECT")
     # Workfile related code
     workfiles_launched = False
     workfiles_tool_timer = None
@@ -192,7 +191,7 @@ def get_node_data(node, knobname):
 
     rawdata = node[knobname].getValue()
     if (
-        isinstance(rawdata, six.string_types)
+        isinstance(rawdata, str)
         and rawdata.startswith(JSON_PREFIX)
     ):
         try:
@@ -260,7 +259,7 @@ def create_knobs(data, tab=None):
         int: nuke.Int_Knob
         float: nuke.Double_Knob
         list: nuke.Enumeration_Knob
-        six.string_types: nuke.String_Knob
+        str: nuke.String_Knob
 
         dict: If it's a nested dict (all values are dict), will turn into
             A tabs group. Or just a knobs group.
@@ -309,7 +308,7 @@ def create_knobs(data, tab=None):
             knob = nuke.Int_Knob(name, nice)
             knob.setValue(value)
 
-        elif isinstance(value, six.string_types):
+        elif isinstance(value, str):
             knob = nuke.String_Knob(name, nice)
             knob.setValue(value)
 
@@ -444,7 +443,7 @@ def set_avalon_knob_data(node, data=None, prefix="avalon:"):
     data = data or dict()
     create = OrderedDict()
 
-    tab_name = AVALON_TAB
+    tab_name = QUADPYPE_TAB
     editable = ["asset", "subset", "name", "namespace"]
 
     existed_knobs = node.knobs()
@@ -478,7 +477,7 @@ def set_avalon_knob_data(node, data=None, prefix="avalon:"):
             (("warn", ""), warn),
             (("divd", ""), divd),
         ]
-        tab[AVALON_DATA_GROUP] = OrderedDict(head + list(create.items()))
+        tab[QUADPYPE_DATA_GROUP] = OrderedDict(head + list(create.items()))
         create = tab
 
     imprint(node, create, tab=tab_name)
@@ -501,7 +500,7 @@ def get_avalon_knob_data(node, prefix="avalon:", create=True):
     """
 
     data = {}
-    if AVALON_TAB not in node.knobs():
+    if QUADPYPE_TAB not in node.knobs():
         return data
 
     # check if lists
@@ -513,7 +512,7 @@ def get_avalon_knob_data(node, prefix="avalon:", create=True):
         # check if the node is avalon tracked
         try:
             # check if data available on the node
-            test = node[AVALON_DATA_GROUP].value()
+            test = node[QUADPYPE_DATA_GROUP].value()
             log.debug("Only testing if data available: `{}`".format(test))
         except NameError as e:
             # if it doesn't then create it
@@ -536,7 +535,7 @@ def fix_data_for_node_create(data):
     """[DEPRECATED] Fixing data to be used for nuke knobs
     """
     for k, v in data.items():
-        if isinstance(v, six.text_type):
+        if isinstance(v, str):
             data[k] = str(v)
         if str(v).startswith("0x"):
             data[k] = int(v, 16)
@@ -1747,7 +1746,7 @@ def set_node_knobs_from_settings(node, knob_settings, **kwargs):
 def convert_knob_value_to_correct_type(knob_type, knob_value):
     # first convert string types to string
     # just to ditch unicode
-    if isinstance(knob_value, six.text_type):
+    if isinstance(knob_value, str):
         knob_value = str(knob_value)
 
     # set correctly knob types
@@ -2359,7 +2358,7 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
                 # write all knobs to node
                 for knob in nuke_imageio_writes["knobs"]:
                     value = knob["value"]
-                    if isinstance(value, six.text_type):
+                    if isinstance(value, str):
                         value = str(value)
                     if str(value).startswith("0x"):
                         value = int(value, 16)
@@ -2689,7 +2688,7 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
     def set_favorites(self):
         from .utils import set_context_favorites
 
-        work_dir = os.getenv("AVALON_WORKDIR")
+        work_dir = os.getenv("QUADPYPE_WORKDIR")
         asset = get_current_asset_name()
         favorite_items = OrderedDict()
 
@@ -3034,7 +3033,7 @@ def process_workfile_builder():
     create_fv_on = workfile_builder.get("create_first_version") or None
     builder_on = workfile_builder.get("builder_on_start") or None
 
-    last_workfile_path = os.environ.get("AVALON_LAST_WORKFILE")
+    last_workfile_path = os.environ.get("QUADPYPE_LAST_WORKFILE")
 
     # generate first version in file not existing and feature is enabled
     if create_fv_on and not os.path.exists(last_workfile_path):
@@ -3274,17 +3273,17 @@ class NukeDirmap(HostDirmap):
 
 
 class DirmapCache:
-    """Caching class to get settings and sync_module easily and only once."""
+    """Caching class to get settings and sitesync_addon easily and only once."""
     _project_name = None
     _project_settings = None
-    _sync_module_discovered = False
-    _sync_module = None
+    _sitesync_addon_discovered = False
+    _sitesync_addon = None
     _mapping = None
 
     @classmethod
     def project_name(cls):
         if cls._project_name is None:
-            cls._project_name = os.getenv("AVALON_PROJECT")
+            cls._project_name = os.getenv("QUADPYPE_PROJECT")
         return cls._project_name
 
     @classmethod
@@ -3294,12 +3293,12 @@ class DirmapCache:
         return cls._project_settings
 
     @classmethod
-    def sync_module(cls):
-        if not cls._sync_module_discovered:
-            cls._sync_module_discovered = True
-            cls._sync_module = ModulesManager().modules_by_name.get(
-                "sync_server")
-        return cls._sync_module
+    def sitesync_addon(cls):
+        if not cls._sitesync_addon_discovered:
+            cls._sitesync_addon_discovered = True
+            cls._sitesync_addon = ModulesManager().modules_by_name.get(
+                "sitesync")
+        return cls._sitesync_addon
 
     @classmethod
     def mapping(cls):
@@ -3321,7 +3320,7 @@ def dirmap_file_name_filter(file_name):
         "nuke",
         DirmapCache.project_name(),
         DirmapCache.project_settings(),
-        DirmapCache.sync_module(),
+        DirmapCache.sitesync_addon(),
     )
     if not DirmapCache.mapping():
         DirmapCache.set_mapping(dirmap_processor.get_mappings())

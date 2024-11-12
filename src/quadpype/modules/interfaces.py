@@ -1,7 +1,5 @@
 from abc import ABCMeta, abstractmethod
 
-import six
-
 from quadpype import resources
 
 
@@ -15,8 +13,7 @@ class _QuadPypeInterfaceMeta(ABCMeta):
         return str(self)
 
 
-@six.add_metaclass(_QuadPypeInterfaceMeta)
-class QuadPypeInterface:
+class QuadPypeInterface(object, metaclass=_QuadPypeInterfaceMeta):
     """Base class of Interface that can be used as Mixin with abstract parts.
 
     This is way how QuadPype module or addon can tell QuadPype that contains

@@ -7,9 +7,7 @@ import platform
 import collections
 import inspect
 import subprocess
-from abc import ABCMeta, abstractmethod
-
-import six
+from abc import ABC, abstractmethod
 
 from quadpype import PACKAGE_DIR
 from quadpype.settings import (
@@ -150,7 +148,7 @@ def parse_environments(env_data, env_group=None, platform_name=None):
             value = os.pathsep.join(value)
 
         # Set key to output if value is string
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             output[key] = value
     return output
 
@@ -778,10 +776,9 @@ class UndefinedApplicationExecutable(ApplicationExecutable):
         return True
 
 
-@six.add_metaclass(ABCMeta)
-class LaunchHook:
+class LaunchHook(ABC):
     """Abstract base class of launch hook."""
-    # Order of prelaunch hook, will be executed as last if set to None.
+    # Order of pre-launch hook, will be executed as last if set to None.
     order = None
     # List of host implementations, skipped if empty.
     hosts = set()
@@ -1099,7 +1096,7 @@ class ApplicationLaunchContext:
                 continue
 
             # Convert string to list
-            if isinstance(hook_paths, six.string_types):
+            if isinstance(hook_paths, str):
                 hook_paths = [hook_paths]
 
             # Skip invalid types
@@ -1741,15 +1738,15 @@ def prepare_context_environments(data, env_group=None, modules_manager=None):
 
     app = data["app"]
     context_env = {
-        "AVALON_PROJECT": project_doc["name"],
-        "AVALON_APP_NAME": app.full_name
+        "QUADPYPE_PROJECT": project_doc["name"],
+        "QUADPYPE_HOST_FULLNAME": app.full_name
     }
     if asset_doc:
         asset_name = asset_doc["name"]
-        context_env["AVALON_ASSET"] = asset_name
+        context_env["QUADPYPE_ASSET"] = asset_name
 
         if task_name:
-            context_env["AVALON_TASK"] = task_name
+            context_env["QUADPYPE_TASK"] = task_name
 
     log.debug(
         "Context environments set:\n{}".format(
@@ -1767,7 +1764,7 @@ def prepare_context_environments(data, env_group=None, modules_manager=None):
     if not app.is_host:
         return
 
-    data["env"]["AVALON_APP"] = app.host_name
+    data["env"]["QUADPYPE_HOST_NAME"] = app.host_name
 
     if not asset_doc or not task_name:
         # QUESTION replace with log.info and skip workfile discovery?
@@ -1813,7 +1810,7 @@ def prepare_context_environments(data, env_group=None, modules_manager=None):
                 "Couldn't create workdir because: {}".format(str(exc))
             )
 
-    data["env"]["AVALON_WORKDIR"] = workdir
+    data["env"]["QUADPYPE_WORKDIR"] = workdir
 
     _prepare_last_workfile(data, workdir, modules_manager)
 
@@ -1872,7 +1869,7 @@ def _prepare_last_workfile(data, workdir, modules_manager):
     data["workfile_startup"] = workfile_startup
 
     # Store boolean as "0"(False) or "1"(True)
-    data["env"]["AVALON_OPEN_LAST_WORKFILE"] = (
+    data["env"]["QUADPYPE_OPEN_LAST_WORKFILE"] = (
         str(int(bool(start_last_workfile)))
     )
     data["env"]["QUADPYPE_WORKFILE_TOOL_ON_START"] = (
@@ -1930,7 +1927,7 @@ def _prepare_last_workfile(data, workdir, modules_manager):
         "Setting last workfile path: {}".format(last_workfile_path)
     )
 
-    data["env"]["AVALON_LAST_WORKFILE"] = last_workfile_path
+    data["env"]["QUADPYPE_LAST_WORKFILE"] = last_workfile_path
     data["last_workfile_path"] = last_workfile_path
 
 
@@ -1940,7 +1937,7 @@ def should_start_last_workfile(
     """Define if host should start last version workfile if possible.
 
     Default output is `False`. Can be overridden with environment variable
-    `AVALON_OPEN_LAST_WORKFILE`, valid values without case sensitivity are
+    `QUADPYPE_OPEN_LAST_WORKFILE`, valid values without case sensitivity are
     `"0", "1", "true", "false", "yes", "no"`.
 
     Args:

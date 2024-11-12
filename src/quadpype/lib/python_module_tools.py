@@ -5,7 +5,6 @@ import importlib
 import inspect
 import logging
 
-import six
 
 log = logging.getLogger(__name__)
 
@@ -13,11 +12,9 @@ log = logging.getLogger(__name__)
 def import_filepath(filepath, module_name=None):
     """Import python file as python module.
 
-    Python 2 and Python 3 compatibility.
-
     Args:
         filepath(str): Path to python file.
-        module_name(str): Name of loaded module. Only for Python 3. By default
+        module_name(str): Name of loaded module. By default
             is filled with filename of filepath.
     """
     if module_name is None:
@@ -30,17 +27,11 @@ def import_filepath(filepath, module_name=None):
     module = types.ModuleType(module_name)
     module.__file__ = filepath
 
-    if six.PY3:
-        # Use loader so module has full specs
-        module_loader = importlib.machinery.SourceFileLoader(
-            module_name, filepath
-        )
-        module_loader.exec_module(module)
-    else:
-        # Execute module code and store content to module
-        with open(filepath) as _stream:
-            # Execute content and store it to module object
-            six.exec_(_stream.read(), module.__dict__)
+    # Use loader so module has full specs
+    module_loader = importlib.machinery.SourceFileLoader(
+        module_name, filepath
+    )
+    module_loader.exec_module(module)
 
     return module
 
@@ -139,29 +130,7 @@ def classes_from_module(superclass, module):
     return classes
 
 
-def _import_module_from_dirpath_py2(dirpath, module_name, dst_module_name):
-    """Import passed dirpath as python module using `imp`."""
-    if dst_module_name:
-        full_module_name = "{}.{}".format(dst_module_name, module_name)
-        dst_module = sys.modules[dst_module_name]
-    else:
-        full_module_name = module_name
-        dst_module = None
-
-    if full_module_name in sys.modules:
-        return sys.modules[full_module_name]
-
-    import imp
-
-    fp, pathname, description = imp.find_module(module_name, [dirpath])
-    module = imp.load_module(full_module_name, fp, pathname, description)
-    if dst_module is not None:
-        setattr(dst_module, module_name, module)
-
-    return module
-
-
-def _import_module_from_dirpath_py3(dirpath, module_name, dst_module_name):
+def _import_module_from_dirpath(dirpath, module_name, dst_module_name):
     """Import passed dirpath as python module using Python 3 modules."""
     if dst_module_name:
         full_module_name = "{}.{}".format(dst_module_name, module_name)
@@ -221,15 +190,9 @@ def import_module_from_dirpath(dirpath, folder_name, dst_module_name=None):
         dst_module_name(str): Parent module name under which can be loaded
             module added.
     """
-    if six.PY3:
-        module = _import_module_from_dirpath_py3(
+    return _import_module_from_dirpath(
             dirpath, folder_name, dst_module_name
         )
-    else:
-        module = _import_module_from_dirpath_py2(
-            dirpath, folder_name, dst_module_name
-        )
-    return module
 
 
 def is_func_signature_supported(func, *args, **kwargs):

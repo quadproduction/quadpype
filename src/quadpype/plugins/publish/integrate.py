@@ -1,11 +1,9 @@
 import os
 import logging
-import sys
 import copy
 import datetime
 
 import clique
-import six
 from bson.objectid import ObjectId
 import pyblish.api
 
@@ -188,15 +186,13 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
             # Raise DuplicateDestinationError as KnownPublishError
             # and rollback the transactions
             file_transactions.rollback()
-            six.reraise(KnownPublishError,
-                        KnownPublishError(exc),
-                        sys.exc_info()[2])
-        except Exception:
+            raise KnownPublishError(exc)
+        except Exception as e:
             # clean destination
             # todo: preferably we'd also rollback *any* changes to the database
             file_transactions.rollback()
             self.log.critical("Error when registering", exc_info=True)
-            six.reraise(*sys.exc_info())
+            raise e
 
         # Finalizing can't rollback safely so no use for moving it to
         # the try, except.
@@ -328,14 +324,14 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
 
         # Get the accessible sites for Site Sync
         modules_by_name = instance.context.data["quadpypeModules"]
-        sync_server_module = modules_by_name.get("sync_server")
-        if sync_server_module is None:
+        sitesitesync_addon = modules_by_name.get("sitesync")
+        if sitesitesync_addon is None:
             sites = [{
                 "name": "studio",
                 "created_dt": datetime.datetime.now()
             }]
         else:
-            sites = sync_server_module.compute_resource_sync_sites(
+            sites = sitesitesync_addon.compute_resource_sync_sites(
                 project_name=instance.data["projectEntity"]["name"]
             )
         self.log.debug("Sync Server Sites: {}".format(sites))

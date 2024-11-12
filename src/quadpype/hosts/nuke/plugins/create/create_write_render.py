@@ -1,6 +1,4 @@
 import nuke
-import sys
-import six
 
 from quadpype.pipeline import (
     CreatedInstance
@@ -120,9 +118,5 @@ class CreateWriteRender(napi.NukeWriteCreator):
 
             return instance
 
-        except Exception as er:
-            six.reraise(
-                napi.NukeCreatorError,
-                napi.NukeCreatorError("Creator error: {}".format(er)),
-                sys.exc_info()[2]
-            )
+        except Exception as e:
+            raise napi.NukeCreatorError("Creator error: {}".format(e))

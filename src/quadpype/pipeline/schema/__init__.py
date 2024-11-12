@@ -18,7 +18,6 @@ import json
 import logging
 
 import jsonschema
-import six
 
 log_ = logging.getLogger(__name__)
 
@@ -78,7 +77,7 @@ def validate(data, schema=None):
     #     "pype"
     # )
 
-    if isinstance(schema, six.string_types):
+    if isinstance(schema, str):
         schema = _cache[schema + ".json"]
 
     resolver = jsonschema.RefResolver(

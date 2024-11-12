@@ -2,7 +2,6 @@ import os
 import logging
 import sys
 import errno
-import six
 
 from quadpype.lib import create_hardlink, create_symlink
 
@@ -188,7 +187,7 @@ class FileTransaction(object):
             self.log.error(
                 "{} errors occurred during rollback.".format(errors),
                 exc_info=True)
-            six.reraise(*sys.exc_info())
+            raise RuntimeError("Rollback failed, check previous logs.")
 
     @property
     def transferred(self):
@@ -209,7 +208,7 @@ class FileTransaction(object):
                 pass
             else:
                 self.log.critical("An unexpected error occurred.")
-                six.reraise(*sys.exc_info())
+                raise e
 
     def _same_paths(self, src, dst):
         # handles same paths but with C:/project vs c:/project

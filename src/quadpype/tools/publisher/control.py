@@ -7,9 +7,8 @@ import uuid
 import tempfile
 import shutil
 import inspect
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 
-import six
 import arrow
 import pyblish.api
 
@@ -991,8 +990,7 @@ class CreatorItem:
         return cls(**data)
 
 
-@six.add_metaclass(ABCMeta)
-class AbstractPublisherController(object):
+class AbstractPublisherController(ABC):
     """Publisher tool controller.
 
     Define what must be implemented to be able use Publisher functionality.
@@ -1805,9 +1803,9 @@ class PublisherController(BasePublisherController):
             context_title = self._host.get_context_title()
 
         if context_title is None:
-            context_title = os.environ.get("AVALON_APP_NAME")
+            context_title = os.getenv("QUADPYPE_HOST_FULLNAME")
             if context_title is None:
-                context_title = os.environ.get("AVALON_APP")
+                context_title = os.getenv("QUADPYPE_HOST_NAME")
 
         return context_title
 

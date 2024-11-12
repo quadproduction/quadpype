@@ -1,6 +1,4 @@
 import requests
-import six
-import sys
 from pathlib import Path
 
 from quadpype.lib import requests_get, Logger
@@ -120,10 +118,7 @@ class DeadlineModule(QuadPypeModule, IPluginPaths):
         except requests.exceptions.ConnectionError as exc:
             msg = 'Cannot connect to DL web service {}'.format(webservice)
             log.error(msg)
-            six.reraise(
-                DeadlineWebserviceError,
-                DeadlineWebserviceError('{} - {}'.format(msg, exc)),
-                sys.exc_info()[2])
+            raise DeadlineWebserviceError('{} - {}'.format(msg, exc))
         if not response.ok:
             log.warning("No pools retrieved")
             return []
@@ -166,11 +161,7 @@ class DeadlineModule(QuadPypeModule, IPluginPaths):
         except requests.exceptions.ConnectionError as exc:
             msg = "Cannot connect to DL web service {}".format(webservice)
             log.error(msg)
-            six.reraise(
-                DeadlineWebserviceError,
-                DeadlineWebserviceError("{} - {}".format(msg, exc)),
-                sys.exc_info()[2]
-            )
+            raise DeadlineWebserviceError("{} - {}".format(msg, exc))
         if not response.ok:
             log.warning("The data requested could not be retrieved")
             return []

@@ -57,7 +57,8 @@ class LauncherAction(QuadPypeModule, ITrayAction):
         self._window = LauncherWindow()
 
     def _show_launcher(self):
-        if self._window:
-            self._window.show()
-            self._window.raise_()
-            self._window.activateWindow()
+        if self._window is None:
+            return
+        self._window.show()
+        self._window.raise_()
+        self._window.activateWindow()

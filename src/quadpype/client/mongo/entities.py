@@ -9,7 +9,6 @@ that has project name as a context (e.g. on 'ProjectEntity'?).
 import re
 import collections
 
-import six
 from bson.objectid import ObjectId
 
 from .mongo import get_project_database, get_project_connection
@@ -45,7 +44,7 @@ def convert_id(in_id):
         Union[ObjectId, Any]: Converted ids to ObjectId or in type.
     """
 
-    if isinstance(in_id, six.string_types):
+    if isinstance(in_id, str):
         return ObjectId(in_id)
     return in_id
 

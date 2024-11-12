@@ -1,13 +1,12 @@
 import json
 from collections import OrderedDict
-import six
 
 from quadpype.client import (
     get_version_by_id
 )
 
 from quadpype.pipeline import (
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
     load,
     get_representation_path,
     get_current_project_name
@@ -251,7 +250,7 @@ class LoadEffects(load.LoaderPlugin):
                     for key, value in input.items()}
         elif isinstance(input, list):
             return [self.byteify(element) for element in input]
-        elif isinstance(input, six.text_type):
+        elif isinstance(input, str):
             return str(input)
         else:
             return input
@@ -294,7 +293,7 @@ class LoadEffects(load.LoaderPlugin):
         data_imprint = {
             object_name: {
                 "schema": "quadpype:container-2.0",
-                "id": AVALON_CONTAINER_ID,
+                "id": QUADPYPE_CONTAINER_ID,
                 "name": str(name),
                 "namespace": str(namespace),
                 "loader": str(loader),

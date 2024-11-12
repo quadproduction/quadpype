@@ -7,15 +7,12 @@
     This one is used only as image describing content of published item and
     shows up only in Loader in right column section.
 """
-
 import os
-import sys
 import errno
 import shutil
 import copy
 import collections
 
-import six
 import pyblish.api
 
 from quadpype.client import get_versions
@@ -50,7 +47,7 @@ class IntegrateThumbnails(pyblish.api.ContextPlugin):
             return
 
         # Initial validation of available templated and required keys
-        env_key = "AVALON_THUMBNAIL_ROOT"
+        env_key = "QUADPYPE_THUMBNAIL_ROOT"
         thumbnail_root_format_key = "{thumbnail_root}"
         thumbnail_root = os.environ.get(env_key) or ""
 
@@ -287,8 +284,7 @@ class IntegrateThumbnails(pyblish.api.ContextPlugin):
                 os.makedirs(dirname)
             except OSError as e:
                 if e.errno != errno.EEXIST:
-                    tp, value, tb = sys.exc_info()
-                    six.reraise(tp, value, tb)
+                    raise e
 
             shutil.copy(thumbnail_path, dst_full_path)
 
