@@ -1385,7 +1385,8 @@ class MongoSettingsHandler(SettingsHandler):
 
         version = None
         if document:
-            version = document["version"]
+            if document["type"] == self._global_settings_key:
+                version = document["version"]
 
         return document, version
 
@@ -1426,7 +1427,8 @@ class MongoSettingsHandler(SettingsHandler):
 
         version = None
         if document:
-            version = document["version"]
+            if document["type"] == self._project_settings_key:
+                version = document["version"]
 
         return document, version
 
@@ -1507,7 +1509,8 @@ class MongoSettingsHandler(SettingsHandler):
 
                 version = None
                 if document:
-                    version = document["version"]
+                    if document["type"] == self._project_anatomy_key:
+                        version = document["version"]
 
                 self.project_anatomy_cache[project_name].update_from_document(
                     document, version

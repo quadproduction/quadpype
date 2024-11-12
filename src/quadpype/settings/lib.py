@@ -390,7 +390,7 @@ def get_project_settings_overrides(project_name, return_version=False):
 
 @require_handler
 def get_project_anatomy_overrides(project_name):
-    output = _SETTINGS_HANDLER.get_project_anatomy_overrides(project_name)
+    output = _SETTINGS_HANDLER.get_project_anatomy_overrides(project_name, return_version=False)
     _project_anatomy_backwards_compatible_conversion(output)
     return output
 
