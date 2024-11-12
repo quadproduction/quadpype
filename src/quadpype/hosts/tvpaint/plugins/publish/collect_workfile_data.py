@@ -86,8 +86,8 @@ class CollectWorkfileData(pyblish.api.ContextPlugin):
         if workfile_context:
             # Change current context with context from workfile
             key_map = (
-                ("AVALON_ASSET", "asset_name"),
-                ("AVALON_TASK", "task_name")
+                ("QUADPYPE_ASSET_NAME", "asset_name"),
+                ("QUADPYPE_TASK_NAME", "task_name")
             )
             for env_key, key in key_map:
                 legacy_io.Session[env_key] = workfile_context[key]

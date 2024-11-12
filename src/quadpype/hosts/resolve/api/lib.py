@@ -509,7 +509,7 @@ def set_timeline_item_pype_tag(timeline_item, data=None):
 
 def imprint(timeline_item, data=None):
     """
-    Adding `Avalon data` into a hiero track item tag.
+    Adding `QuadPype data` into a hiero track item tag.
 
     Also including publish attribute into tag.
 

@@ -4,7 +4,7 @@ import json
 from qtpy import QtWidgets, QtCore, QtGui
 
 from quadpype import style
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import QuadPypeMongoDB
 from quadpype.tools.utils.lib import center_window, get_quadpype_qt_app
 from quadpype.tools.utils.assets_widget import SingleSelectAssetsWidget
 from quadpype.tools.utils.constants import (
@@ -41,7 +41,7 @@ class ContextDialog(QtWidgets.QDialog):
         self.setWindowFlags(window_flags)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
-        dbcon = AvalonMongoDB()
+        dbcon = QuadPypeMongoDB()
 
         # UI initialization
         main_splitter = QtWidgets.QSplitter(self)
@@ -215,7 +215,7 @@ class ContextDialog(QtWidgets.QDialog):
         self._ignore_value_changes = True
 
         # Get current project name to be able set it afterwards
-        select_project_name = self._dbcon.Session.get("AVALON_PROJECT")
+        select_project_name = self._dbcon.Session.get("QUADPYPE_PROJECT_NAME")
         # Trigger project refresh
         self._project_model.refresh()
         # Sort projects
@@ -240,7 +240,7 @@ class ContextDialog(QtWidgets.QDialog):
         idx = self._project_combobox.findText(select_project_name)
         if idx >= 0:
             self._project_combobox.setCurrentIndex(idx)
-        self._dbcon.Session["AVALON_PROJECT"] = (
+        self._dbcon.Session["QUADPYPE_PROJECT_NAME"] = (
             self._project_combobox.currentText()
         )
 
@@ -266,7 +266,7 @@ class ContextDialog(QtWidgets.QDialog):
 
         self._ignore_value_changes = True
         if self._set_context_asset:
-            self._dbcon.Session["AVALON_ASSET"] = self._set_context_asset
+            self._dbcon.Session["QUADPYPE_ASSET_NAME"] = self._set_context_asset
             self._assets_widget.setEnabled(False)
             self._assets_widget.select_asset_by_name(self._set_context_asset)
             self._set_asset_to_tasks_widget()
@@ -286,10 +286,10 @@ class ContextDialog(QtWidgets.QDialog):
             return
         project_name = self._project_combobox.currentText()
 
-        if self._dbcon.Session.get("AVALON_PROJECT") == project_name:
+        if self._dbcon.Session.get("QUADPYPE_PROJECT_NAME") == project_name:
             return
 
-        self._dbcon.Session["AVALON_PROJECT"] = project_name
+        self._dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
 
         self._refresh_assets()
         self._validate_strict()

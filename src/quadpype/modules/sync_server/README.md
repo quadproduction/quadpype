@@ -1,6 +1,6 @@
 Synchronization server
 ---------------------
-This server is scheduled at start of Pype, it periodically checks avalon DB
+This server is scheduled at start of Pype, it periodically check the DB
 for 'representation' records which have in theirs files.sites record with
 name: 'gdrive' (or any other site name from 'gdrive.json') without
 field 'created_dt'.

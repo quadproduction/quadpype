@@ -52,10 +52,10 @@ class OpenRVWorkfileCreator(AutoCreator):
                 existing_instance = instance
                 break
 
-        project_name = legacy_io.Session["AVALON_PROJECT"]
-        asset_name = legacy_io.Session["AVALON_ASSET"]
-        task_name = legacy_io.Session["AVALON_TASK"]
-        host_name = legacy_io.Session["AVALON_APP"]
+        project_name = legacy_io.Session["QUADPYPE_PROJECT_NAME"]
+        asset_name = legacy_io.Session["QUADPYPE_ASSET_NAME"]
+        task_name = legacy_io.Session["QUADPYPE_TASK_NAME"]
+        host_name = legacy_io.Session["QUADPYPE_HOST_NAME"]
 
         if existing_instance is None:
             asset_doc = get_asset_by_name(project_name, asset_name)

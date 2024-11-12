@@ -27,7 +27,7 @@ from quadpype.settings import (
     PROJECTS_SETTINGS_KEY
 )
 from quadpype.lib import Logger, get_local_site_id
-from quadpype.pipeline import AvalonMongoDB, Anatomy
+from quadpype.pipeline import QuadPypeMongoDB, Anatomy
 from quadpype.settings.lib import (
     get_default_anatomy_settings,
     get_anatomy_settings,
@@ -1294,7 +1294,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Returns:
 
         """
-        self.connection.Session["AVALON_PROJECT"] = project_name
+        self.connection.Session["QUADPYPE_PROJECT_NAME"] = project_name
         query = [
             {"$match": {"parent": {"$in": version_ids},
                         "type": "representation",
@@ -1492,7 +1492,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
     @property
     def connection(self):
         if self._connection is None:
-            self._connection = AvalonMongoDB()
+            self._connection = QuadPypeMongoDB()
 
         return self._connection
 
@@ -1700,7 +1700,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             (list) of dictionaries
         """
         self.log.debug("Check representations for : {}".format(project_name))
-        self.connection.Session["AVALON_PROJECT"] = project_name
+        self.connection.Session["QUADPYPE_PROJECT_NAME"] = project_name
         # retry_cnt - number of attempts to sync specific file before giving up
         retries_arr = self._get_retries_arr(project_name)
         match = {

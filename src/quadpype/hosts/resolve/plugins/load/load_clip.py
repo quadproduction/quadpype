@@ -99,7 +99,7 @@ class LoadClip(plugin.TimelineItemLoader):
         colorspace = version_data.get("colorspace", None)
         object_name = "{}_{}".format(name, namespace)
 
-        # add additional metadata from the version to imprint Avalon knob
+        # add additional metadata from the version to imprint QuadPype knob
         # move all version data keys to tag data
         add_version_data_keys = [
             "frameStart", "frameEnd", "source", "author",

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Utility functions used for Avalon - Harmony integration."""
+"""Utility functions used for QuadPype - Harmony integration."""
 import subprocess
 import threading
 import os
@@ -102,49 +102,49 @@ def main(*subprocess_args):
 
 
 def setup_startup_scripts():
-    """Manages installation of avalon's TB_sceneOpened.js for Harmony launch.
+    """Manages installation of quadype's TB_sceneOpened.js for Harmony launch.
 
     If a studio already has defined "TOONBOOM_GLOBAL_SCRIPT_LOCATION", copies
     the TB_sceneOpened.js to that location if the file is different.
-    Otherwise, will set the env var to point to the avalon/harmony folder.
+    Otherwise, will set the env var to point to the quadype/harmony folder.
 
     Admins should be aware that this will overwrite TB_sceneOpened in the
     "TOONBOOM_GLOBAL_SCRIPT_LOCATION", and that if they want to have additional
     logic, they will need to one of the following:
         * Create a Harmony package to manage startup logic
         * Use TB_sceneOpenedUI.js instead to manage startup logic
-        * Add their startup logic to avalon/harmony/TB_sceneOpened.js
+        * Add their startup logic to quadype/harmony/TB_sceneOpened.js
     """
-    avalon_dcc_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+    quadype_dcc_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                   "api")
     startup_js = "TB_sceneOpened.js"
 
     if os.getenv("TOONBOOM_GLOBAL_SCRIPT_LOCATION"):
 
-        avalon_harmony_startup = os.path.join(avalon_dcc_dir, startup_js)
+        quadype_harmony_startup = os.path.join(quadype_dcc_dir, startup_js)
 
         env_harmony_startup = os.path.join(
             os.getenv("TOONBOOM_GLOBAL_SCRIPT_LOCATION"), startup_js)
 
-        if not filecmp.cmp(avalon_harmony_startup, env_harmony_startup):
+        if not filecmp.cmp(quadype_harmony_startup, env_harmony_startup):
             try:
-                shutil.copy(avalon_harmony_startup, env_harmony_startup)
+                shutil.copy(quadype_harmony_startup, env_harmony_startup)
             except Exception as e:
                 log.error(e)
                 log.warning(
                     "Failed to copy {0} to {1}! "
-                    "Defaulting to Avalon TOONBOOM_GLOBAL_SCRIPT_LOCATION."
-                    .format(avalon_harmony_startup, env_harmony_startup))
+                    "Defaulting to QuadPype TOONBOOM_GLOBAL_SCRIPT_LOCATION."
+                    .format(quadype_harmony_startup, env_harmony_startup))
 
-                os.environ["TOONBOOM_GLOBAL_SCRIPT_LOCATION"] = avalon_dcc_dir
+                os.environ["TOONBOOM_GLOBAL_SCRIPT_LOCATION"] = quadype_dcc_dir
     else:
-        os.environ["TOONBOOM_GLOBAL_SCRIPT_LOCATION"] = avalon_dcc_dir
+        os.environ["TOONBOOM_GLOBAL_SCRIPT_LOCATION"] = quadype_dcc_dir
 
 
 def check_libs():
     """Check if `OpenHarmony`_ is available.
 
-    Avalon expects either path in `LIB_OPENHARMONY_PATH` or `openHarmony.js`
+    QuadPype expects either path in `LIB_OPENHARMONY_PATH` or `openHarmony.js`
     present in `TOONBOOM_GLOBAL_SCRIPT_LOCATION`.
 
     Throws:
@@ -190,14 +190,14 @@ def launch(application_path, *args):
     install_host(harmony)
 
     ProcessContext.port = random.randrange(49152, 65535)
-    os.environ["AVALON_HARMONY_PORT"] = str(ProcessContext.port)
+    os.environ["QUADPYPE_HARMONY_PORT"] = str(ProcessContext.port)
     ProcessContext.application_path = application_path
 
     # Launch Harmony.
     setup_startup_scripts()
     check_libs()
 
-    if not os.getenv("AVALON_HARMONY_WORKFILES_ON_LAUNCH", False):
+    if not os.getenv("QUADPYPE_HARMONY_WORKFILES_ON_LAUNCH", False):
         open_empty_workfile()
         return
 
@@ -230,7 +230,7 @@ def open_empty_workfile():
 def get_local_harmony_path(filepath):
     """From the provided path get the equivalent local Harmony path."""
     basename = os.path.splitext(os.path.basename(filepath))[0]
-    harmony_path = os.path.join(os.path.expanduser("~"), ".avalon", "harmony")
+    harmony_path = os.path.join(os.path.expanduser("~"), ".quadype", "harmony")
     return os.path.join(harmony_path, basename)
 
 
@@ -281,7 +281,7 @@ def launch_zip_file(filepath):
     if ProcessContext.server:
         ProcessContext.server.stop()
 
-    # Launch Avalon server.
+    # Launch QuadPype server.
     ProcessContext.server = Server(ProcessContext.port)
     ProcessContext.server.start()
     # thread = threading.Thread(target=self.server.start)
@@ -402,7 +402,7 @@ def get_scene_data():
     try:
         return send(
             {
-                "function": "AvalonHarmony.getSceneData"
+                "function": "QuadPypeHarmony.getSceneData"
             })["result"]
     except json.decoder.JSONDecodeError:
         # Means no scene metadata has been made before.
@@ -422,7 +422,7 @@ def set_scene_data(data):
     # Write scene data.
     send(
         {
-            "function": "AvalonHarmony.setSceneData",
+            "function": "QuadPypeHarmony.setSceneData",
             "args": data
         })
 
@@ -459,7 +459,7 @@ def delete_node(node):
     """ Physically delete node from scene. """
     send(
         {
-            "function": "AvalonHarmony.deleteNode",
+            "function": "QuadPypeHarmony.deleteNode",
             "args": node
         }
     )
@@ -498,7 +498,7 @@ def maintained_selection():
 
     selected_nodes = send(
         {
-            "function": "AvalonHarmony.getSelectedNodes"
+            "function": "QuadPypeHarmony.getSelectedNodes"
         })["result"]
 
     try:
@@ -506,7 +506,7 @@ def maintained_selection():
     finally:
         selected_nodes = send(
             {
-                "function": "AvalonHarmony.selectNodes",
+                "function": "QuadPypeHarmony.selectNodes",
                 "args": selected_nodes
             }
         )
@@ -521,7 +521,7 @@ def select_nodes(nodes):
     """ Selects nodes in Node View """
     _ = send(
         {
-            "function": "AvalonHarmony.selectNodes",
+            "function": "QuadPypeHarmony.selectNodes",
             "args": nodes
         }
     )
@@ -533,13 +533,13 @@ def maintained_nodes_state(nodes):
     # Collect current state.
     states = send(
         {
-            "function": "AvalonHarmony.areEnabled", "args": nodes
+            "function": "QuadPypeHarmony.areEnabled", "args": nodes
         })["result"]
 
     # Disable all nodes.
     send(
         {
-            "function": "AvalonHarmony.disableNodes", "args": nodes
+            "function": "QuadPypeHarmony.disableNodes", "args": nodes
         })
 
     try:
@@ -547,7 +547,7 @@ def maintained_nodes_state(nodes):
     finally:
         send(
             {
-                "function": "AvalonHarmony.setState",
+                "function": "QuadPypeHarmony.setState",
                 "args": [nodes, states]
             })
 
@@ -555,7 +555,7 @@ def maintained_nodes_state(nodes):
 def save_scene():
     """Save the Harmony scene safely.
 
-    The built-in (to Avalon) background zip and moving of the Harmony scene
+    The built-in (to QuadPype) background zip and moving of the Harmony scene
     folder, interfers with server/client communication by sending two requests
     at the same time. This only happens when sending "scene.saveAll()". This
     method prevents this double request and safely saves the scene.
@@ -564,13 +564,13 @@ def save_scene():
     # Need to turn off the background watcher else the communication with
     # the server gets spammed with two requests at the same time.
     scene_path = send(
-        {"function": "AvalonHarmony.saveScene"})["result"]
+        {"function": "QuadPypeHarmony.saveScene"})["result"]
 
     # Manually update the remote file.
     on_file_changed(scene_path, threaded=False)
 
     # Re-enable the background watcher.
-    send({"function": "AvalonHarmony.enableFileWather"})
+    send({"function": "QuadPypeHarmony.enableFileWather"})
 
 
 def save_scene_as(filepath):
@@ -597,7 +597,7 @@ def save_scene_as(filepath):
     ProcessContext.workfile_path = destination
 
     send(
-        {"function": "AvalonHarmony.addPathToWatcher", "args": filepath}
+        {"function": "QuadPypeHarmony.addPathToWatcher", "args": filepath}
     )
 
 

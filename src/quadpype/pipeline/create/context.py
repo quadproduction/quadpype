@@ -936,7 +936,7 @@ class CreatedInstance:
         # QUESTION Does it make sense to have data stored as ordered dict?
         self._data = collections.OrderedDict()
         # QUESTION Do we need this "id" information on instance?
-        self._data["id"] = "pyblish.avalon.instance"
+        self._data["id"] = "pyblish.quadpype.instance"
         self._data["family"] = family
         self._data["subset"] = subset_name
         self._data["active"] = data.get("active", True)
@@ -1352,7 +1352,7 @@ class CreateContext:
     - those are mainly for Context publish plugins
 
     Todos:
-        Don't use 'AvalonMongoDB'. It's used only to keep track about current
+        Don't use 'QuadPypeMongoDB'. It's used only to keep track about current
             context which should be handled by host.
 
     Args:
@@ -1535,7 +1535,7 @@ class CreateContext:
     def host_name(self):
         if hasattr(self.host, "name"):
             return self.host.name
-        return os.environ["AVALON_APP"]
+        return os.environ["QUADPYPE_HOST_NAME"]
 
     def get_current_project_name(self):
         """Project name which was used as current context on context reset.
@@ -1685,11 +1685,11 @@ class CreateContext:
 
         # --- TODO remove these conditions ---
         if not project_name:
-            project_name = legacy_io.Session.get("AVALON_PROJECT")
+            project_name = legacy_io.Session.get("QUADPYPE_PROJECT_NAME")
         if not asset_name:
-            asset_name = legacy_io.Session.get("AVALON_ASSET")
+            asset_name = legacy_io.Session.get("QUADPYPE_ASSET_NAME")
         if not task_name:
-            task_name = legacy_io.Session.get("AVALON_TASK")
+            task_name = legacy_io.Session.get("QUADPYPE_TASK_NAME")
         # ---
         return project_name, asset_name, task_name, workfile_path
 

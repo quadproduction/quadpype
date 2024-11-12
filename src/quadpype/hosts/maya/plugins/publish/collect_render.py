@@ -13,7 +13,7 @@ Requires:
     context     -> workspaceDir
     context     -> user
 
-    session     -> AVALON_ASSET
+    session     -> QUADPYPE_ASSET_NAME
 
 Optional:
 

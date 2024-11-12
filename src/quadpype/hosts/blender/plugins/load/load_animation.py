@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 import bpy
 
 from quadpype.hosts.blender.api import plugin
-from quadpype.hosts.blender.api.pipeline import AVALON_PROPERTY
+from quadpype.hosts.blender.api.pipeline import QUADPYPE_PROPERTY
 
 
 class BlendAnimationLoader(plugin.BlenderLoader):
@@ -46,12 +46,12 @@ class BlendAnimationLoader(plugin.BlenderLoader):
 
         assert container, "No asset group found"
 
-        target_namespace = container.get(AVALON_PROPERTY).get('namespace')
+        target_namespace = container.get(QUADPYPE_PROPERTY).get('namespace')
 
         action = data_to.actions[0].make_local().copy()
 
         for obj in bpy.data.objects:
-            if obj.get(AVALON_PROPERTY) and obj.get(AVALON_PROPERTY).get(
+            if obj.get(QUADPYPE_PROPERTY) and obj.get(QUADPYPE_PROPERTY).get(
                     'namespace') == target_namespace:
                 if obj.children[0]:
                     if not obj.children[0].animation_data:

@@ -44,7 +44,7 @@ class PSItem(object):
 class PhotoshopServerStub:
     """
         Stub for calling function on client (Photoshop js) side.
-        Expects that client is already connected (started when avalon menu
+        Expects that client is already connected (started when quadpype menu
         is opened).
         'self.websocketserver.call' is used as async wrapper
     """
@@ -92,7 +92,7 @@ class PhotoshopServerStub:
 
         Example:
             {
-                'id': 'pyblish.avalon.container',
+                'id': 'pyblish.quadpype.container',
                 'loader': 'ImageLoader',
                 'members': ['64'],
                 'name': 'imageMainMiddle',
@@ -120,14 +120,14 @@ class PhotoshopServerStub:
             "active":true,
             "subset":"imageBG",
             "family":"image",
-            "id":"pyblish.avalon.instance",
+            "id":"pyblish.quadpype.instance",
             "asset":"Town",
             "uuid": "8"
         }] - for created instances
         OR
         [{
             "schema": "quadpype:container-2.0",
-            "id": "pyblish.avalon.instance",
+            "id": "pyblish.quadpype.instance",
             "name": "imageMG",
             "namespace": "Jungle_imageMG_001",
             "loader": "ImageLoader",
@@ -496,7 +496,7 @@ class PhotoshopServerStub:
             (list)
             example:
                 {"8":{"active":true,"subset":"imageBG",
-                      "family":"image","id":"pyblish.avalon.instance",
+                      "family":"image","id":"pyblish.quadpype.instance",
                       "asset":"Town"}}
                 8 is layer(group) id - used for deletion, update etc.
         """

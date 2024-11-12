@@ -20,7 +20,7 @@ The easiest way to get the server and Photoshop launch is with:
 python -c ^"import quadpype.hosts.photoshop;quadpype.hosts.photoshop.launch(""C:\Program Files\Adobe\Adobe Photoshop 2020\Photoshop.exe"")^"
 ```
 
-`avalon.photoshop.launch` launches the application and server, and also closes the server when Photoshop exists.
+`quadpype.photoshop.launch` launches the application and server, and also closes the server when Photoshop exists.
 
 ## Usage
 
@@ -38,7 +38,7 @@ When signing the extension you can use this [guide](https://github.com/Adobe-CEP
 
 ```
 ZXPSignCmd -selfSignedCert NA NA QuadPype QuadPype-Photoshop QuadPype extension.p12
-ZXPSignCmd -sign {path to avalon-core}\avalon\photoshop\extension {path to avalon-core}\avalon\photoshop\extension.zxp extension.p12 avalon
+ZXPSignCmd -sign {path to quadpype}\quadpype\photoshop\extension {path to quadpype}\quadpype\photoshop\extension.zxp extension.p12 quadpype
 ```
 
 ### Plugin Examples
@@ -47,7 +47,7 @@ These plugins were made with the [polly config](https://github.com/mindbender-st
 
 #### Creator Plugin
 ```python
-from avalon import photoshop
+from quadpype import photoshop
 
 
 class CreateImage(photoshop.Creator):
@@ -75,7 +75,7 @@ class CollectInstances(pyblish.api.ContextPlugin):
     an LayerSet and marked with a unique identifier;
 
     Identifier:
-        id (str): "pyblish.avalon.instance"
+        id (str): "pyblish.quadpype.instance"
     """
 
     label = "Instances"
@@ -194,7 +194,7 @@ class ExtractImage(publish.Extractor):
 
 #### Loader Plugin
 ```python
-from avalon import api, photoshop
+from quadpype import api, photoshop
 from quadpype.pipeline import load, get_representation_path
 
 stub = photoshop.stub()

@@ -15,7 +15,7 @@ from quadpype.pipeline import (
     legacy_io,
     register_loader_plugin_path,
     register_creator_plugin_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.pipeline.context_tools import get_global_context
 
@@ -27,7 +27,7 @@ from .lib import (
 log = logging.getLogger(__name__)
 
 
-METADATA_SECTION = "avalon"
+METADATA_SECTION = "quadpype"
 SECTION_NAME_CONTEXT = "context"
 SECTION_NAME_CREATE_CONTEXT = "create_context"
 SECTION_NAME_INSTANCES = "instances"
@@ -51,8 +51,8 @@ expected that there are also keys `["instances0", "instances1"]`.
 
 Workfile data looks like:
 ```
-[avalon]
-instances0=[{{__dq__}id{__dq__}: {__dq__}pyblish.avalon.instance{__dq__...
+[quadpype]
+instances0=[{{__dq__}id{__dq__}: {__dq__}pyblish.quadpype.instance{__dq__...
 instances1=...more data...
 instances=2
 ```
@@ -69,7 +69,7 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         legacy_io.install()
 
         # Create workdir folder if does not exist yet
-        workdir = legacy_io.Session["AVALON_WORKDIR"]
+        workdir = legacy_io.Session["QUADPYPE_WORKDIR_PATH"]
         if not os.path.exists(workdir):
             os.makedirs(workdir)
 
@@ -162,7 +162,7 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         return execute_george_through_file(george_script)
 
     def work_root(self, session):
-        return session["AVALON_WORKDIR"]
+        return session["QUADPYPE_WORKDIR_PATH"]
 
     def get_current_workfile(self):
         # tvPaint return a '\' character when no scene is currently
@@ -189,7 +189,7 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         # Setup project settings if its the template that's launched.
         # TODO also check for template creation when it's possible to define
         #   templates
-        last_workfile = os.getenv("AVALON_LAST_WORKFILE")
+        last_workfile = os.getenv("QUADPYPE_LAST_WORKFILE_PATH")
         if not last_workfile or os.path.exists(last_workfile):
             return
 
@@ -242,7 +242,7 @@ def containerise(
 
     container_data = {
         "schema": "quadpype:container-2.0",
-        "id": AVALON_CONTAINER_ID,
+        "id": QUADPYPE_CONTAINER_ID,
         "members": members,
         "name": name,
         "namespace": namespace,

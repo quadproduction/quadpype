@@ -269,7 +269,7 @@ class LoaderWindow(BaseToolDialog):
         self._families_filter_view.refresh()
         # Change to context asset on context change
         self._assets_widget.select_asset_by_name(
-            legacy_io.Session["AVALON_ASSET"]
+            legacy_io.Session["QUADPYPE_ASSET_NAME"]
         )
 
     def _refresh(self):
@@ -583,7 +583,7 @@ def show(debug=False, parent=None, use_context=False):
             project for project in get_projects(fields=["name"])
         )
 
-        legacy_io.Session["AVALON_PROJECT"] = any_project["name"]
+        legacy_io.Session["QUADPYPE_PROJECT_NAME"] = any_project["name"]
         module.project = any_project["name"]
 
     with lib.qt_app_context():
@@ -591,7 +591,7 @@ def show(debug=False, parent=None, use_context=False):
         window.show()
 
         if use_context:
-            context = {"asset": legacy_io.Session["AVALON_ASSET"]}
+            context = {"asset": legacy_io.Session["QUADPYPE_ASSET_NAME"]}
             window.set_context(context, refresh=True)
         else:
             window.refresh()
@@ -618,7 +618,7 @@ def cli(args):
     legacy_io.install()
 
     # Store settings
-    legacy_io.Session["AVALON_PROJECT"] = project
+    legacy_io.Session["QUADPYPE_PROJECT_NAME"] = project
 
     install_quadpype_plugins(project)
 

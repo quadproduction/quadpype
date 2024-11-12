@@ -14,28 +14,28 @@ from quadpype.client import (
     get_representations
 )
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
-from quadpype.pipeline import AvalonMongoDB, Anatomy
+from quadpype.pipeline import QuadPypeMongoDB, Anatomy
 
-from quadpype_modules.ftrack.lib.avalon_sync import CUST_ATTR_ID_KEY
+from quadpype_modules.ftrack.lib.database_sync import CUST_ATTR_ID_KEY
 
 
-class StoreThumbnailsToAvalon(BaseAction):
+class StoreThumbnailsToQuadPype(BaseAction):
     # Action identifier
-    identifier = "store.thumbnail.to.avalon"
+    identifier = "store.thumbnail.to.database"
     # Action label
     label = "QuadPype Admin"
     # Action variant
-    variant = "- Store Thumbnails to avalon"
+    variant = "- Store Thumbnails to database"
     # Action description
     description = 'Test action'
     # roles that are allowed to register this action
     icon = statics_icon("ftrack", "action_icons", "QuadPypeAdmin.svg")
-    settings_key = "store_thumbnail_to_avalon"
+    settings_key = "store_thumbnail_to_database"
 
-    thumbnail_key = "AVALON_THUMBNAIL_ROOT"
+    thumbnail_key = "QUADPYPE_THUMBNAIL_ROOT"
 
     def __init__(self, *args, **kwargs):
-        self.db_con = AvalonMongoDB()
+        self.db_con = QuadPypeMongoDB()
         super().__init__(*args, **kwargs)
 
     def discover(self, session, entities, event):
@@ -57,7 +57,7 @@ class StoreThumbnailsToAvalon(BaseAction):
             "user": user,
             "status": "running",
             "data": json.dumps({
-                "description": "Storing thumbnails to avalon."
+                "description": "Storing thumbnails to database."
             })
         })
         session.commit()
@@ -197,19 +197,19 @@ class StoreThumbnailsToAvalon(BaseAction):
                 ).format(entity["id"]))
                 continue
 
-            avalon_ents_result = self.get_avalon_entities_for_assetversion(
+            database_ents_result = self.get_database_entities_for_assetversion(
                 entity, self.db_con
             )
             version_full_path = (
                 "Asset: \"{project_name}/{asset_path}\""
                 " | Subset: \"{subset_name}\""
                 " | Version: \"{version_name}\""
-            ).format(**avalon_ents_result)
+            ).format(**database_ents_result)
 
-            version = avalon_ents_result["version"]
+            version = database_ents_result["version"]
             if not version:
                 self.log.warning((
-                    "AssetVersion does not have version in avalon. {}"
+                    "AssetVersion does not have version in database. {}"
                 ).format(version_full_path))
                 continue
 
@@ -225,10 +225,10 @@ class StoreThumbnailsToAvalon(BaseAction):
             if not file_ext.startswith("."):
                 file_ext = ".{}".format(file_ext)
 
-            avalon_project = avalon_ents_result["project"]
-            avalon_asset = avalon_ents_result["asset"]
+            database_project = database_ents_result["project"]
+            database_asset = database_ents_result["asset"]
             hierarchy = ""
-            parents = avalon_asset["data"].get("parents") or []
+            parents = database_asset["data"].get("parents") or []
             if parents:
                 hierarchy = "/".join(parents)
 
@@ -242,12 +242,12 @@ class StoreThumbnailsToAvalon(BaseAction):
                 "thumbnail_type": "thumbnail",
                 "ext": file_ext,
                 "project": {
-                    "name": avalon_project["name"],
-                    "code": avalon_project["data"].get("code")
+                    "name": database_project["name"],
+                    "code": database_project["data"].get("code")
                 },
-                "asset": avalon_ents_result["asset_name"],
-                "subset": avalon_ents_result["subset_name"],
-                "version": avalon_ents_result["version_name"],
+                "asset": database_ents_result["asset_name"],
+                "subset": database_ents_result["subset_name"],
+                "version": database_ents_result["version_name"],
                 "hierarchy": hierarchy
             }
 
@@ -302,7 +302,7 @@ class StoreThumbnailsToAvalon(BaseAction):
             )
 
             self.db_con.update_one(
-                {"_id": avalon_asset["_id"]},
+                {"_id": database_asset["_id"]},
                 {"$set": {"data.thumbnail_id": thumbnail_id}}
             )
 
@@ -356,7 +356,7 @@ class StoreThumbnailsToAvalon(BaseAction):
             file_open.close()
         return True
 
-    def get_avalon_entities_for_assetversion(self, asset_version, db_con):
+    def get_database_entities_for_assetversion(self, asset_version, db_con):
         output = {
             "success": True,
             "message": None,
@@ -390,15 +390,15 @@ class StoreThumbnailsToAvalon(BaseAction):
         output["subset_name"] = subset_name
         output["version_name"] = version
 
-        db_con.Session["AVALON_PROJECT"] = project_name
+        db_con.Session["QUADPYPE_PROJECT_NAME"] = project_name
 
-        avalon_project = get_project(project_name)
-        output["project"] = avalon_project
+        database_project = get_project(project_name)
+        output["project"] = database_project
 
-        if not avalon_project:
+        if not database_project:
             output["success"] = False
             output["message"] = (
-                "Project not synchronized to avalon `{}`".format(project_name)
+                "Project not synchronized to database `{}`".format(project_name)
             )
             return output
 
@@ -423,7 +423,7 @@ class StoreThumbnailsToAvalon(BaseAction):
         if not asset_ent:
             output["success"] = False
             output["message"] = (
-                "Not synchronized entity to avalon `{}`".format(ent_path)
+                "Not synchronized entity to database `{}`".format(ent_path)
             )
             return output
 
@@ -467,4 +467,4 @@ class StoreThumbnailsToAvalon(BaseAction):
 
 
 def register(session):
-    StoreThumbnailsToAvalon(session).register()
+    StoreThumbnailsToQuadPype(session).register()

@@ -28,7 +28,7 @@ The easiest way to get the server and After Effects launch is with:
 python -c ^"import quadpype.hosts.photoshop;quadpype.hosts..aftereffects.launch(""c:\Program Files\Adobe\Adobe After Effects 2020\Support Files\AfterFX.exe"")^"
 ```
 
-`avalon.aftereffects.launch` launches the application and server, and also closes the server when After Effects exists.
+`quadpype.aftereffects.launch` launches the application and server, and also closes the server when After Effects exists.
 
 ## Usage
 
@@ -45,7 +45,7 @@ When developing the extension you can load it [unsigned](https://github.com/Adob
 When signing the extension you can use this [guide](https://github.com/Adobe-CEP/Getting-Started-guides/tree/master/Package%20Distribute%20Install#package-distribute-install-guide).
 
 ```
-ZXPSignCmd -selfSignedCert NA NA QuadPype Avalon-After-Effects QuadPype extension.p12
+ZXPSignCmd -selfSignedCert NA NA QuadPype QuadPype-After-Effects QuadPype extension.p12
 ZXPSignCmd -sign {path to addon}/api/extension {path to addon}/api/extension.zxp extension.p12 QuadPype
 ```
 

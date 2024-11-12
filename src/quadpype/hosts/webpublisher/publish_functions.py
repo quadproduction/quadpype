@@ -56,8 +56,8 @@ def cli_publish(project_name, batch_path, user_email, targets):
     webpublisher_host = WebpublisherHost()
 
     os.environ["QUADPYPE_PUBLISH_DATA"] = batch_path
-    os.environ["AVALON_PROJECT"] = project_name
-    os.environ["AVALON_APP"] = webpublisher_host.name
+    os.environ["QUADPYPE_PROJECT_NAME"] = project_name
+    os.environ["QUADPYPE_HOST_NAME"] = webpublisher_host.name
     os.environ["USER_EMAIL"] = user_email
     os.environ["HEADLESS_PUBLISH"] = 'true'  # to use in app lib
 

@@ -40,7 +40,7 @@ class HoudiniCacheSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline
     Artist having to wait for the publish to finish on their local machine.
 
     Submission is done through the Deadline Web Service as
-    supplied via the environment variable AVALON_DEADLINE.
+    supplied via the environment variable QUADPYPE_DEADLINE.
 
     """
 
@@ -67,10 +67,10 @@ class HoudiniCacheSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline
         ), "Errors found, aborting integration.."
 
         # Deadline connection
-        AVALON_DEADLINE = legacy_io.Session.get(
-            "AVALON_DEADLINE", "http://localhost:8082"
+        QUADPYPE_DEADLINE = legacy_io.Session.get(
+            "QUADPYPE_DEADLINE", "http://localhost:8082"
         )
-        assert AVALON_DEADLINE, "Requires AVALON_DEADLINE"
+        assert QUADPYPE_DEADLINE, "Requires QUADPYPE_DEADLINE"
 
         project_name = instance.context.data["projectName"]
         filepath = context.data["currentFile"]
@@ -111,11 +111,11 @@ class HoudiniCacheSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline
             "FTRACK_API_USER",
             "FTRACK_SERVER",
             "QUADPYPE_SG_USER",
-            "AVALON_DB",
-            "AVALON_PROJECT",
-            "AVALON_ASSET",
-            "AVALON_TASK",
-            "AVALON_APP_NAME",
+            "QUADPYPE_PROJECTS_DB_NAME",
+            "QUADPYPE_PROJECT_NAME",
+            "QUADPYPE_ASSET_NAME",
+            "QUADPYPE_TASK_NAME",
+            "QUADPYPE_HOST_DISPLAY_NAME",
             "QUADPYPE_DEV",
             "QUADPYPE_LOG_NO_COLORS",
         ]

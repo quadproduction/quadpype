@@ -302,7 +302,7 @@ function cropDocumentToCoordinate(x1, y1, x2, y2) {
 function imprint(payload){
     /**
      *  Sets headline content of current document with metadata. Stores
-     *  information about assets created through Avalon.
+     *  information about assets created through QuadPype.
      *  Content accessible in PS through File > File Info
      *
      **/

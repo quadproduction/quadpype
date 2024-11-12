@@ -52,7 +52,7 @@
             },
             "example": {
                 "families" : [
-                    "avalon.camera"
+                    "quadpype.camera"
                 ],
                 "frameStart": 1000,
                 "frameEnd": 1201

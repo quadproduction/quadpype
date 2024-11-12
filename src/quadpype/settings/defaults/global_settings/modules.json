@@ -4,9 +4,9 @@
         "darwin": [],
         "linux": []
     },
-    "avalon": {
-        "AVALON_TIMEOUT": 1000,
-        "AVALON_THUMBNAIL_ROOT": {
+    "database": {
+        "QUADPYPE_DB_TIMEOUT": 1000,
+        "QUADPYPE_THUMBNAIL_ROOT": {
             "windows": "",
             "darwin": "",
             "linux": ""
@@ -37,7 +37,7 @@
         },
         "custom_attributes": {
             "show": {
-                "avalon_auto_sync": {
+                "database_auto_sync": {
                     "write_security_roles": [
                         "API",
                         "Administrator"
@@ -79,7 +79,7 @@
                         "Administrator"
                     ]
                 },
-                "avalon_mongo_id": {
+                "database_mongo_id": {
                     "write_security_roles": [
                         "API",
                         "Administrator"

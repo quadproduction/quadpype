@@ -11,7 +11,7 @@ class CollectNewInstances(pyblish.api.InstancePlugin):
     an objectSet and marked with a unique identifier;
 
     Identifier:
-        id (str): "pyblish.avalon.instance"
+        id (str): "pyblish.quadpype.instance"
 
     Limitations:
         - Does not take into account nodes connected to those

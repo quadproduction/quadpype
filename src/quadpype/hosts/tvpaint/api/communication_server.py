@@ -592,7 +592,7 @@ class BaseCommunicator:
         to_remove = []
         # Remove old plugin name
         deprecated_filepath = os.path.join(
-            host_plugins_path, "AvalonPlugin.dll"
+            host_plugins_path, "QuadPypePlugin.dll"
         )
         if os.path.exists(deprecated_filepath):
             to_remove.append(deprecated_filepath)
@@ -835,7 +835,7 @@ class BaseCommunicator:
 
 
 class QtCommunicator(BaseCommunicator):
-    label = os.getenv("AVALON_LABEL")
+    label = os.getenv("QUADPYPE_LABEL")
     if not label:
         label = "QuadPype"
     title = "{} Tools".format(label)

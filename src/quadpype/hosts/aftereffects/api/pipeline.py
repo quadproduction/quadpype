@@ -8,7 +8,7 @@ from quadpype.lib import Logger, register_event_callback
 from quadpype.pipeline import (
     register_loader_plugin_path,
     register_creator_plugin_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.hosts.aftereffects.api.workfile_template_builder import (
     AEPlaceholderLoadPlugin,
@@ -147,7 +147,7 @@ class AfterEffectsHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         layers_meta = stub.get_metadata()
 
         for instance in layers_meta:
-            if instance.get("id") == "pyblish.avalon.instance":
+            if instance.get("id") == "pyblish.quadpype.instance":
                 instances.append(instance)
         return instances
 
@@ -273,7 +273,7 @@ def containerise(name,
     """
     data = {
         "schema": "quadpype:container-2.0",
-        "id": AVALON_CONTAINER_ID,
+        "id": QUADPYPE_CONTAINER_ID,
         "name": name,
         "namespace": namespace,
         "loader": str(loader),

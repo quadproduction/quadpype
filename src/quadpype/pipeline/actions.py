@@ -26,7 +26,7 @@ class LauncherAction(object):
 
         Args:
             session (dict[str, Union[str, None]]): Session data with
-                AVALON_PROJECT, AVALON_ASSET and AVALON_TASK.
+                QUADPYPE_PROJECT_NAME, QUADPYPE_ASSET_NAME and QUADPYPE_TASK_NAME.
         """
 
         return True

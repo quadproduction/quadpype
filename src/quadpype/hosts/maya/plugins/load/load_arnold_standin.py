@@ -27,7 +27,7 @@ def is_sequence(files):
 
 
 def get_current_session_fps():
-    session_fps = float(legacy_io.Session.get('AVALON_FPS', 25))
+    session_fps = float(legacy_io.Session.get('QUADPYPE_FPS', 25))
     return convert_to_maya_fps(session_fps)
 
 

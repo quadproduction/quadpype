@@ -9,7 +9,7 @@ from quadpype.pipeline import (
     load,
     get_representation_path,
 )
-from quadpype.hosts.nuke.api.lib import get_avalon_knob_data
+from quadpype.hosts.nuke.api.lib import get_quadype_knob_data
 from quadpype.hosts.nuke.api import (
     containerise,
     update_container,
@@ -48,7 +48,7 @@ class LinkAsGroup(load.LoaderPlugin):
 
         self.log.info("versionData: {}\n".format(context["version"]["data"]))
 
-        # add additional metadata from the version to imprint to Avalon knob
+        # add additional metadata from the version to imprint to QuadPype knob
         add_keys = ["frameStart", "frameEnd", "handleStart", "handleEnd",
                     "source", "author", "fps"]
 
@@ -82,7 +82,7 @@ class LinkAsGroup(load.LoaderPlugin):
             # iterate through all nodes in group node and find pype writes
             writes = [n.name() for n in nuke.allNodes()
                       if n.Class() == "Group"
-                      if get_avalon_knob_data(n)]
+                      if get_quadype_knob_data(n)]
 
             if writes:
                 # create panel for selecting output

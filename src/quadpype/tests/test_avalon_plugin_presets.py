@@ -15,8 +15,8 @@ class MyTestCreator(LegacyCreator):
                                             options=None, data=None)
 
 
-# this is hack like no other - we need to inject our own avalon host
-# and bypass all its validation. Avalon hosts are modules that needs
+# this is hack like no other - we need to inject our own database host
+# and bypass all its validation. QuadPype hosts are modules that needs
 # `ls` callable as attribute. Voila:
 class Test:
     __name__ = "test"
@@ -27,7 +27,7 @@ class Test:
         register_creator_plugin(MyTestCreator)
 
 
-def test_avalon_plugin_presets(monkeypatch, printer):
+def test_database_plugin_presets(monkeypatch, printer):
     install_host(Test)
 
     plugins = discover_creator_plugins()

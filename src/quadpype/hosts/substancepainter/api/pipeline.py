@@ -21,7 +21,7 @@ from quadpype.pipeline.template_data import get_template_data_with_names
 from quadpype.pipeline import (
     register_creator_plugin_path,
     register_loader_plugin_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
     Anatomy
 )
 from quadpype.lib import (
@@ -170,7 +170,7 @@ class SubstanceHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
         parent = substance_painter.ui.get_main_window()
 
-        tab_menu_label = os.getenv("AVALON_LABEL") or "QuadPype"
+        tab_menu_label = os.getenv("QUADPYPE_LABEL") or "QuadPype"
         menu = QtWidgets.QMenu(tab_menu_label)
 
         action = menu.addAction("Create...")
@@ -333,7 +333,7 @@ def imprint_container(container,
 
     data = [
         ("schema", "quadpype:container-2.0"),
-        ("id", AVALON_CONTAINER_ID),
+        ("id", QUADPYPE_CONTAINER_ID),
         ("name", str(name)),
         ("namespace", str(namespace) if namespace else None),
         ("loader", str(loader.__class__.__name__)),

@@ -12,8 +12,8 @@ from quadpype.pipeline import (
 from quadpype.hosts.nuke.api.lib import (
     maintained_selection,
     create_backdrop,
-    get_avalon_knob_data,
-    set_avalon_knob_data,
+    get_quadype_knob_data,
+    set_quadype_knob_data,
     swap_node_with_dependency,
 )
 from quadpype.hosts.nuke.api import (
@@ -61,7 +61,7 @@ class LoadGizmoInputProcess(load.LoaderPlugin):
         object_name = "{}_{}".format(name, namespace)
 
         # prepare data for imprinting
-        # add additional metadata from the version to imprint to Avalon knob
+        # add additional metadata from the version to imprint to QuadPype knob
         add_keys = ["frameStart", "frameEnd", "handleStart", "handleEnd",
                     "source", "author", "fps"]
 
@@ -145,7 +145,7 @@ class LoadGizmoInputProcess(load.LoaderPlugin):
             data_imprint.update({k: version_data[k]})
 
         # capture pipeline metadata
-        avalon_data = get_avalon_knob_data(group_node)
+        quadype_data = get_quadype_knob_data(group_node)
 
         # adding nodes to node graph
         # just in case we are in group lets jump out of it
@@ -161,7 +161,7 @@ class LoadGizmoInputProcess(load.LoaderPlugin):
                     group_node, new_group_node) as node_name:
                 new_group_node["name"].setValue(node_name)
                 # set updated pipeline metadata
-                set_avalon_knob_data(new_group_node, avalon_data)
+                set_quadype_knob_data(new_group_node, quadype_data)
 
         last_version_doc = get_last_version_by_subset_id(
             project_name, version_doc["parent"], fields=["_id"]

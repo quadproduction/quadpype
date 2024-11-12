@@ -5,42 +5,39 @@ import json
 import ftrack_api
 
 from quadpype_modules.ftrack.lib import ServerAction
-from quadpype_modules.ftrack.lib.avalon_sync import SyncEntitiesFactory
+from quadpype_modules.ftrack.lib.database_sync import SyncEntitiesFactory
 
 
-class SyncToAvalonServer(ServerAction):
+class SyncToQuadPypeServer(ServerAction):
     """
-    Synchronizing data action - from Ftrack to Avalon DB
+    Synchronizing data action - from Ftrack to QuadPype DB
 
     Stores all information about entity.
     - Name(string) - Most important information = identifier of entity
-    - Parent(ObjectId) - Avalon Project Id, if entity is not project itself
+    - Parent(ObjectId) - QuadPype Project Id, if entity is not project itself
     - Data(dictionary):
-        - VisualParent(ObjectId) - Avalon Id of parent asset
+        - VisualParent(ObjectId) - QuadPype Id of parent asset
         - Parents(array of string) - All parent names except project
         - Tasks(dictionary of dictionaries) - Tasks on asset
         - FtrackId(string)
         - entityType(string) - entity's type on Ftrack
-        * All Custom attributes in group 'Avalon'
-            - custom attributes that start with 'avalon_' are skipped
+        * All Custom attributes in group 'QuadPype'
+            - custom attributes that start with 'quadpype_' are skipped
 
     * These information are stored for entities in whole project.
 
-    Avalon ID of asset is stored to Ftrack
-        - Custom attribute 'avalon_mongo_id'.
+    QuadPype ID of asset is stored to Ftrack
+        - Custom attribute 'database_mongo_id'.
     - action IS NOT creating this Custom attribute if doesn't exist
         - run 'Create Custom Attributes' action
         - or do it manually (Not recommended)
     """
-    #: Action identifier.
-    identifier = "sync.to.avalon.server"
-    #: Action label.
+    identifier = "sync.to.quadpype.database"
     label = "QuadPype Admin"
-    variant = "- Sync To Avalon (Server)"
-    #: Action description.
-    description = "Send data from Ftrack to Avalon"
-    role_list = {"Pypeclub", "Administrator", "Project Manager"}
-    settings_key = "sync_to_avalon"
+    variant = "- Sync To Database (Server)"
+    description = "Sync data between Ftrack and QuadPype database"
+    role_list = {"Administrator", "Project Manager"}
+    settings_key = "sync_to_database"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -70,7 +67,7 @@ class SyncToAvalonServer(ServerAction):
             "user": user_entity,
             "status": "running",
             "data": json.dumps({
-                "description": "Sync to avalon is running..."
+                "description": "Sync to database is running..."
             })
         })
         session.commit()
@@ -86,7 +83,7 @@ class SyncToAvalonServer(ServerAction):
                 "Synchronization failed due to code error", exc_info=True
             )
 
-            description = "Sync to avalon Crashed (Download traceback)"
+            description = "Sync to database Crashed (Download traceback)"
             self.add_traceback_to_job(
                 job_entity, session, sys.exc_info(), description
             )
@@ -122,7 +119,7 @@ class SyncToAvalonServer(ServerAction):
 
         job_entity["status"] = "done"
         job_entity["data"] = json.dumps({
-            "description": "Sync to avalon finished."
+            "description": "Sync to database finished."
         })
         session.commit()
 
@@ -144,7 +141,7 @@ class SyncToAvalonServer(ServerAction):
             time_2 = time.time()
 
             # This must happen before all filtering!!!
-            self.entities_factory.prepare_avalon_entities(project_name)
+            self.entities_factory.prepare_database_entities(project_name)
             time_3 = time.time()
 
             self.entities_factory.filter_by_ignore_sync()
@@ -169,7 +166,7 @@ class SyncToAvalonServer(ServerAction):
                 "set_cutom_attributes <{}>".format(time_2 - time_1)
             )
             self.log.debug(
-                "prepare_avalon_entities <{}>".format(time_3 - time_2)
+                "prepare_database_entities <{}>".format(time_3 - time_2)
             )
             self.log.debug(
                 "filter_by_ignore_sync <{}>".format(time_4 - time_3)
@@ -223,4 +220,4 @@ class SyncToAvalonServer(ServerAction):
 
 def register(session):
     '''Register plugin. Called when used as an plugin.'''
-    SyncToAvalonServer(session).register()
+    SyncToQuadPypeServer(session).register()

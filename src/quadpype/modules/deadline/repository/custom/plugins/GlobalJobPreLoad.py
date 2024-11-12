@@ -336,10 +336,10 @@ def inject_quadpype_environment(deadlinePlugin):
         ]
 
         add_kwargs = {
-            "project": job.GetJobEnvironmentKeyValue("AVALON_PROJECT"),
-            "asset": job.GetJobEnvironmentKeyValue("AVALON_ASSET"),
-            "task": job.GetJobEnvironmentKeyValue("AVALON_TASK"),
-            "app": job.GetJobEnvironmentKeyValue("AVALON_APP_NAME"),
+            "project": job.GetJobEnvironmentKeyValue("QUADPYPE_PROJECT_NAME"),
+            "asset": job.GetJobEnvironmentKeyValue("QUADPYPE_ASSET_NAME"),
+            "task": job.GetJobEnvironmentKeyValue("QUADPYPE_TASK_NAME"),
+            "app": job.GetJobEnvironmentKeyValue("QUADPYPE_HOST_DISPLAY_NAME"),
             "envgroup": "farm"
         }
 
@@ -351,8 +351,8 @@ def inject_quadpype_environment(deadlinePlugin):
                 args.extend(["--{}".format(key), value])
         else:
             raise RuntimeError((
-                "Missing required env vars: AVALON_PROJECT, AVALON_ASSET,"
-                " AVALON_TASK, AVALON_APP_NAME"
+                "Missing required env vars: QUADPYPE_PROJECT_NAME, QUADPYPE_ASSET_NAME,"
+                " QUADPYPE_TASK_NAME, QUADPYPE_HOST_DISPLAY_NAME"
             ))
 
         quadpype_mongo = job.GetJobEnvironmentKeyValue("QUADPYPE_MONGO")
@@ -365,7 +365,7 @@ def inject_quadpype_environment(deadlinePlugin):
         if not os.getenv("QUADPYPE_MONGO"):
             print(">>> Missing QUADPYPE_MONGO env var, process won't work")
 
-        os.environ["AVALON_TIMEOUT"] = "5000"
+        os.environ["QUADPYPE_DB_TIMEOUT"] = "5000"
 
         args_str = subprocess.list2cmdline(args)
         print(">>> Executing: {} {}".format(exe, args_str))

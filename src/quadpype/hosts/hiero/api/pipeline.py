@@ -1,5 +1,5 @@
 """
-Basic avalon integration
+Hiero QuadPype integration
 """
 from copy import deepcopy
 import os
@@ -14,7 +14,7 @@ from quadpype.pipeline import (
     register_loader_plugin_path,
     deregister_creator_plugin_path,
     deregister_loader_plugin_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.tools.utils import host_tools
 from . import lib, menu, events
@@ -30,7 +30,7 @@ PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish").replace("\\", "/")
 LOAD_PATH = os.path.join(PLUGINS_DIR, "load").replace("\\", "/")
 CREATE_PATH = os.path.join(PLUGINS_DIR, "create").replace("\\", "/")
 
-AVALON_CONTAINERS = ":AVALON_CONTAINERS"
+QUADPYPE_CONTAINERS = ":QUADPYPE_CONTAINERS"
 
 
 def install():
@@ -58,7 +58,7 @@ def install():
 
 def uninstall():
     """
-    Uninstalling Hiero integration for avalon
+    Uninstalling Hiero integration for quadype
 
     """
     log.info("Deregistering Hiero plug-ins..")
@@ -96,7 +96,7 @@ def containerise(track_item,
 
     data_imprint = OrderedDict({
         "schema": "quadpype:container-2.0",
-        "id": AVALON_CONTAINER_ID,
+        "id": QUADPYPE_CONTAINER_ID,
         "name": str(name),
         "namespace": str(namespace),
         "loader": str(loader),
@@ -121,7 +121,7 @@ def ls():
     a time.
 
     See the `container.json` schema for details on how it should look,
-    and the Maya equivalent, which is in `avalon.maya.pipeline`
+    and the Maya equivalent, which is in `quadype.maya.pipeline`
     """
 
     # get all track items from current timeline
@@ -149,7 +149,7 @@ def parse_container(item, validate=True):
     Args:
         item (hiero.core.TrackItem or hiero.core.VideoTrack):
             A containerised track item.
-        validate (bool)[optional]: validating with avalon scheme
+        validate (bool)[optional]: validating with quadype scheme
 
     Returns:
         dict: The container schema data for input containerized track item.
@@ -158,7 +158,7 @@ def parse_container(item, validate=True):
     def data_to_container(item, data):
         if (
             not data
-            or data.get("id") != "pyblish.avalon.container"
+            or data.get("id") != "pyblish.quadpype.container"
         ):
             return
 

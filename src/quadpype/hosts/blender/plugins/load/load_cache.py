@@ -9,12 +9,12 @@ import os
 
 from quadpype.pipeline import (
     get_representation_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
-    AVALON_PROPERTY,
+    QUADPYPE_CONTAINERS,
+    QUADPYPE_PROPERTY,
 )
 from quadpype.hosts.blender.api import plugin, lib
 
@@ -129,11 +129,11 @@ class CacheModelLoader(plugin.BlenderLoader):
                     name_mat = material_slot.material.name
                     material_slot.material.name = f"{group_name}:{name_mat}"
 
-            if not obj.get(AVALON_PROPERTY):
-                obj[AVALON_PROPERTY] = {}
+            if not obj.get(QUADPYPE_PROPERTY):
+                obj[QUADPYPE_PROPERTY] = {}
 
-            avalon_info = obj[AVALON_PROPERTY]
-            avalon_info.update({"container_name": group_name})
+            quadype_info = obj[QUADPYPE_PROPERTY]
+            quadype_info.update({"container_name": group_name})
 
         plugin.deselect_all()
 
@@ -141,7 +141,7 @@ class CacheModelLoader(plugin.BlenderLoader):
 
     def _link_objects(self, objects, collection, containers, asset_group):
         # Link the imported objects to any collection where the asset group is
-        # linked to, except the AVALON_CONTAINERS collection
+        # linked to, except the QUADPYPE_CONTAINERS collection
         group_collections = [
             collection
             for collection in asset_group.users_collection
@@ -174,9 +174,9 @@ class CacheModelLoader(plugin.BlenderLoader):
         )
         namespace = namespace or f"{folder_name}_{unique_number}"
 
-        containers = bpy.data.collections.get(AVALON_CONTAINERS)
+        containers = bpy.data.collections.get(QUADPYPE_CONTAINERS)
         if not containers:
-            containers = bpy.data.collections.new(name=AVALON_CONTAINERS)
+            containers = bpy.data.collections.new(name=QUADPYPE_CONTAINERS)
             bpy.context.scene.collection.children.link(containers)
 
         asset_group = bpy.data.objects.new(group_name, object_data=None)
@@ -191,9 +191,9 @@ class CacheModelLoader(plugin.BlenderLoader):
 
         self._link_objects(objects, asset_group, containers, asset_group)
 
-        asset_group[AVALON_PROPERTY] = {
+        asset_group[QUADPYPE_PROPERTY] = {
             "schema": "quadpype:container-2.0",
-            "id": AVALON_CONTAINER_ID,
+            "id": QUADPYPE_CONTAINER_ID,
             "name": name,
             "namespace": namespace or '',
             "loader": str(self.__class__.__name__),
@@ -245,7 +245,7 @@ class CacheModelLoader(plugin.BlenderLoader):
             f"Unsupported file: {libpath}"
         )
 
-        metadata = asset_group.get(AVALON_PROPERTY)
+        metadata = asset_group.get(QUADPYPE_PROPERTY)
         group_libpath = metadata["libpath"]
 
         normalized_group_libpath = (
@@ -270,7 +270,7 @@ class CacheModelLoader(plugin.BlenderLoader):
 
             objects = self._process(str(libpath), asset_group, object_name)
 
-            containers = bpy.data.collections.get(AVALON_CONTAINERS)
+            containers = bpy.data.collections.get(QUADPYPE_CONTAINERS)
             self._link_objects(objects, asset_group, containers, asset_group)
 
             asset_group.matrix_basis = mat

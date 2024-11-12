@@ -26,7 +26,7 @@ from quadpype.pipeline import (
     register_creator_plugin_path,
     deregister_loader_plugin_path,
     deregister_creator_plugin_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
     Anatomy,
     get_current_project_name
 )
@@ -58,9 +58,9 @@ CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 
 ORIGINAL_EXCEPTHOOK = sys.excepthook
 
-AVALON_INSTANCES = "AVALON_INSTANCES"
-AVALON_CONTAINERS = "AVALON_CONTAINERS"
-AVALON_PROPERTY = 'avalon'
+QUADPYPE_INSTANCES = "QUADPYPE_INSTANCES"
+QUADPYPE_CONTAINERS = "QUADPYPE_CONTAINERS"
+QUADPYPE_PROPERTY = 'quadpype'
 IS_HEADLESS = bpy.app.background
 
 log = Logger.get_logger(__name__)
@@ -144,7 +144,7 @@ class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost):
         Returns:
             dict: Context data stored using 'update_context_data'.
         """
-        property = bpy.context.scene.get(AVALON_PROPERTY)
+        property = bpy.context.scene.get(QUADPYPE_PROPERTY)
         if property:
             return property.to_dict()
         return {}
@@ -158,7 +158,7 @@ class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost):
             changes (dict): Only data that has been changed. Each value has
                 tuple with '(<old>, <new>)' value.
         """
-        bpy.context.scene[AVALON_PROPERTY] = data
+        bpy.context.scene[QUADPYPE_PROPERTY] = data
 
 
 def pype_excepthook_handler(*args):
@@ -166,7 +166,7 @@ def pype_excepthook_handler(*args):
 
 
 def install():
-    """Install Blender configuration for Avalon."""
+    """Install Blender configuration for QuadPype."""
     sys.excepthook = pype_excepthook_handler
 
     pyblish.api.register_host("blender")
@@ -189,7 +189,7 @@ def install():
 
 
 def uninstall():
-    """Uninstall Blender configuration for Avalon."""
+    """Uninstall Blender configuration for QuadPype."""
     sys.excepthook = ORIGINAL_EXCEPTHOOK
 
     pyblish.api.deregister_host("blender")
@@ -336,7 +336,7 @@ def set_unit_scale_from_settings(unit_scale_settings=None):
 
 
 def on_new():
-    project = os.getenv("AVALON_PROJECT")
+    project = os.getenv("QUADPYPE_PROJECT_NAME")
     settings = get_project_settings(project).get("blender")
 
     set_resolution_startup = settings.get("set_resolution_startup")
@@ -357,7 +357,7 @@ def on_new():
 
 
 def on_open():
-    project = os.getenv("AVALON_PROJECT")
+    project = os.getenv("QUADPYPE_PROJECT_NAME")
     settings = get_project_settings(project).get("blender")
 
     set_resolution_startup = settings.get("set_resolution_startup")
@@ -443,7 +443,7 @@ def _on_task_changed():
     # `directory` attribute, so it opens in that directory (does it?).
     # https://docs.blender.org/api/blender2.8/bpy.types.Operator.html#calling-a-file-selector
     # https://docs.blender.org/api/blender2.8/bpy.types.WindowManager.html#bpy.types.WindowManager.fileselect_add
-    workdir = os.getenv("AVALON_WORKDIR")
+    workdir = os.getenv("QUADPYPE_WORKDIR_PATH")
     log.info("New working directory: %s", workdir)
 
 
@@ -471,25 +471,25 @@ def _discover_gui() -> Optional[Callable]:
     return None
 
 
-def add_to_avalon_container(container: bpy.types.Collection):
-    """Add the container to the Avalon container."""
+def add_to_database_container(container: bpy.types.Collection):
+    """Add the container to the QuadPype container."""
 
-    avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
-    if not avalon_container:
-        avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
+    database_containers = bpy.data.collections.get(QUADPYPE_CONTAINERS)
+    if not database_containers:
+        database_containers = bpy.data.collections.new(name=QUADPYPE_CONTAINERS)
 
         # Link the container to the scene so it's easily visible to the artist
         # and can be managed easily. Otherwise it's only found in "Blender
         # File" view and it will be removed by Blenders garbage collection,
         # unless you set a 'fake user'.
-        bpy.context.scene.collection.children.link(avalon_container)
+        bpy.context.scene.collection.children.link(database_containers)
 
-    avalon_container.children.link(container)
+    database_containers.children.link(container)
 
-    # Disable Avalon containers for the view layers.
+    # Disable QuadPype containers for the view layers.
     for view_layer in bpy.context.scene.view_layers:
         for child in view_layer.layer_collection.children:
-            if child.collection == avalon_container:
+            if child.collection == database_containers:
                 child.exclude = True
 
 
@@ -499,12 +499,12 @@ def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict):
     Existing metadata will be updated.
     """
 
-    if not node.get(AVALON_PROPERTY):
-        node[AVALON_PROPERTY] = dict()
+    if not node.get(QUADPYPE_PROPERTY):
+        node[QUADPYPE_PROPERTY] = dict()
     for key, value in data.items():
         if value is None:
             continue
-        node[AVALON_PROPERTY][key] = value
+        node[QUADPYPE_PROPERTY][key] = value
 
 
 def containerise(name: str,
@@ -543,7 +543,7 @@ def containerise(name: str,
 
     data = {
         "schema": "quadpype:container-2.0",
-        "id": AVALON_CONTAINER_ID,
+        "id": QUADPYPE_CONTAINER_ID,
         "name": name,
         "namespace": namespace or '',
         "loader": str(loader),
@@ -551,7 +551,7 @@ def containerise(name: str,
     }
 
     metadata_update(container, data)
-    add_to_avalon_container(container)
+    add_to_database_container(container)
 
     return container
 
@@ -582,7 +582,7 @@ def containerise_existing(
     container.name = node_name
     data = {
         "schema": "quadpype:container-2.0",
-        "id": AVALON_CONTAINER_ID,
+        "id": QUADPYPE_CONTAINER_ID,
         "name": name,
         "namespace": namespace or '',
         "loader": str(loader),
@@ -590,7 +590,7 @@ def containerise_existing(
     }
 
     metadata_update(container, data)
-    add_to_avalon_container(container)
+    add_to_database_container(container)
 
     return container
 
@@ -630,20 +630,20 @@ def ls() -> Iterator:
     container_ids = {
         AYON_CONTAINER_ID,
         # Backwards compatibility
-        AVALON_CONTAINER_ID
+        QUADPYPE_CONTAINER_ID
     }
 
-    for container in lib.lsattr("id", AVALON_CONTAINER_ID):
+    for container in lib.lsattr("id", QUADPYPE_CONTAINER_ID):
         yield parse_container(container)
 
     # Compositor nodes are not in `bpy.data` that `lib.lsattr` looks in.
     node_tree = bpy.context.scene.node_tree
     if node_tree:
         for node in node_tree.nodes:
-            if not node.get(AVALON_PROPERTY):
+            if not node.get(QUADPYPE_PROPERTY):
                 continue
 
-            if node.get(AVALON_PROPERTY).get("id") not in container_ids:
+            if node.get(QUADPYPE_PROPERTY).get("id") not in container_ids:
                 continue
 
             yield parse_container(node)

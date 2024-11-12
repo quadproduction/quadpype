@@ -1,19 +1,19 @@
 from quadpype_modules.ftrack.lib import BaseEvent
-from quadpype_modules.ftrack.lib.avalon_sync import CUST_ATTR_ID_KEY
-from quadpype_modules.ftrack.event_handlers_server.event_sync_to_avalon import (
-    SyncToAvalonEvent
+from quadpype_modules.ftrack.lib.database_sync import CUST_ATTR_ID_KEY
+from quadpype_modules.ftrack.event_handlers_server.event_sync_to_database import (
+    SyncToQuadPypeEvent
 )
 
 
-class DelAvalonIdFromNew(BaseEvent):
+class DelQuadPypeIdFromNew(BaseEvent):
     '''
-    This event removes AvalonId from custom attributes of new entities
+    This event removes QuadPypeId from custom attributes of new entities
     Result:
-    - 'Copy->Pasted' entities won't have same AvalonID as source entity
+    - 'Copy->Pasted' entities won't have same QuadPypeID as source entity
 
-    Priority of this event must be less than SyncToAvalon event
+    Priority of this event must be less than SyncToQuadPype event
     '''
-    priority = SyncToAvalonEvent.priority - 1
+    priority = SyncToQuadPypeEvent.priority - 1
     ignore_me = True
 
     def launch(self, session, event):
@@ -51,4 +51,4 @@ class DelAvalonIdFromNew(BaseEvent):
 
 def register(session):
     '''Register plugin. Called when used as an plugin.'''
-    DelAvalonIdFromNew(session).register()
+    DelQuadPypeIdFromNew(session).register()

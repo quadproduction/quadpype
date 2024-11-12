@@ -2,7 +2,7 @@ import os
 import hiero.core.events
 from quadpype.lib import Logger, register_event_callback
 from .lib import (
-    sync_avalon_data_to_workfile,
+    apply_db_data_to_workfile,
     launch_workfiles_app,
     before_project_save,
     apply_colorspace_project
@@ -30,8 +30,8 @@ def beforeNewProjectCreated(event):
 
 def afterNewProjectCreated(event):
     log.info("after new project created event...")
-    # sync avalon data to project properties
-    sync_avalon_data_to_workfile()
+    # sync database data to project properties
+    apply_db_data_to_workfile()
 
     # add tags from preset
     add_tags_to_workfile()
@@ -52,8 +52,8 @@ def beforeProjectLoad(event):
 
 def afterProjectLoad(event):
     log.info("after project load event...")
-    # sync avalon data to project properties
-    sync_avalon_data_to_workfile()
+    # sync database data to project properties
+    apply_db_data_to_workfile()
 
     # add tags from preset
     add_tags_to_workfile()

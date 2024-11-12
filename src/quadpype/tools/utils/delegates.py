@@ -278,7 +278,7 @@ def pretty_timestamp(t, now=None):
         dt = datetime.fromtimestamp(t)
     else:
         # Parse the time format as if it is `str` result from
-        # `pyblish.lib.time()` which usually is stored in Avalon database.
+        # `pyblish.lib.time()` which usually is stored in QuadPype database.
         try:
             t = time.strptime(t, "%Y%m%dT%H%M%SZ")
         except ValueError as e:

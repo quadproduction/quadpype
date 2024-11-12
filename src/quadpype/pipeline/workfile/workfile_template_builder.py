@@ -109,7 +109,7 @@ class AbstractTemplateBuilder(ABC):
         if isinstance(host, HostBase):
             host_name = host.name
         else:
-            host_name = os.getenv("AVALON_APP")
+            host_name = os.getenv("QUADPYPE_HOST_NAME")
 
         self._host = host
         self._host_name = host_name
@@ -135,7 +135,7 @@ class AbstractTemplateBuilder(ABC):
         if isinstance(self._host, HostBase):
             self._project_name = self._host.get_current_project_name()
         else:
-            self._project_name = os.getenv("AVALON_PROJECT")
+            self._project_name = os.getenv("QUADPYPE_PROJECT_NAME")
 
     @property
     def project_name(self):
@@ -149,13 +149,13 @@ class AbstractTemplateBuilder(ABC):
     def current_asset_name(self):
         if isinstance(self._host, HostBase):
             return self._host.get_current_asset_name()
-        return os.getenv("AVALON_ASSET")
+        return os.getenv("QUADPYPE_ASSET_NAME")
 
     @property
     def current_task_name(self):
         if isinstance(self._host, HostBase):
             return self._host.get_current_task_name()
-        return os.getenv("AVALON_TASK")
+        return os.getenv("QUADPYPE_TASK_NAME")
 
     def get_current_context(self):
         if isinstance(self._host, HostBase):
@@ -2033,7 +2033,7 @@ def should_build_first_workfile(
 
 
 def get_last_workfile_path():
-    return os.getenv("AVALON_LAST_WORKFILE")
+    return os.getenv("QUADPYPE_LAST_WORKFILE_PATH")
 
 
 def is_last_workfile_exists():

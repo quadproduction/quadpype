@@ -10,7 +10,7 @@ from quadpype.client import (
     get_representation_by_name, get_project
 )
 from quadpype.lib import ApplicationManager
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import QuadPypeMongoDB
 
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 
@@ -217,27 +217,27 @@ class RVActionReview(BaseAction):
         session.commit()
 
         # launch app here
-        avalon_project_apps = event["data"].get("avalon_project_apps", None)
-        avalon_project_doc = event["data"].get("avalon_project_doc", None)
+        database_project_apps = event["data"].get("database_project_apps", None)
+        database_project_doc = event["data"].get("database_project_doc", None)
 
-        if avalon_project_apps is None:
-            if avalon_project_doc is None:
+        if database_project_apps is None:
+            if database_project_doc is None:
                 ft_project = self.get_project_from_entity(entities[0])
                 project_name = ft_project["full_name"]
-                avalon_project_doc = get_project(project_name) or False
-                event["data"]["avalon_project_doc"] = avalon_project_doc
+                database_project_doc = get_project(project_name) or False
+                event["data"]["database_project_doc"] = database_project_doc
 
-            if not avalon_project_doc:
+            if not database_project_doc:
                 return False
 
-            project_apps_config = avalon_project_doc["config"].get("apps", [])
-            avalon_project_apps = (
+            project_apps_config = database_project_doc["config"].get("apps", [])
+            database_project_apps = (
                 [app["name"] for app in project_apps_config] or False
             )
-            event["data"]["avalon_project_apps"] = avalon_project_apps
+            event["data"]["database_project_apps"] = database_project_apps
 
         # set app
-        for a in avalon_project_apps:
+        for a in database_project_apps:
             if "openrv" in a:
                 self.rv_app = a
 
@@ -260,8 +260,8 @@ class RVActionReview(BaseAction):
         ft_project = self.get_project_from_entity(entities[0])
         project_name = ft_project["full_name"]
 
-        dbcon = AvalonMongoDB()
-        dbcon.Session["AVALON_PROJECT"] = project_name
+        dbcon = QuadPypeMongoDB()
+        dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
 
         representations = []
 

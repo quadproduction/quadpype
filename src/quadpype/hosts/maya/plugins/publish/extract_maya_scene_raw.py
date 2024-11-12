@@ -6,7 +6,7 @@ from maya import cmds
 
 from quadpype.settings import PROJECT_SETTINGS_KEY
 from quadpype.hosts.maya.api.lib import maintained_selection
-from quadpype.pipeline import AVALON_CONTAINER_ID, publish
+from quadpype.pipeline import QUADPYPE_CONTAINER_ID, publish
 from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
 from quadpype.lib import BoolDef
 
@@ -135,7 +135,7 @@ class ExtractMayaSceneRaw(publish.Extractor, QuadPypePyblishPluginMixin):
                 continue
 
             id_attr = "{}.id".format(obj_set)
-            if cmds.getAttr(id_attr) != AVALON_CONTAINER_ID:
+            if cmds.getAttr(id_attr) != QUADPYPE_CONTAINER_ID:
                 continue
 
             set_content = set(cmds.sets(obj_set, query=True))

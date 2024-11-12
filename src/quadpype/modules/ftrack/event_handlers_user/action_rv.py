@@ -16,7 +16,7 @@ from quadpype.client import (
 )
 from quadpype.pipeline import (
     get_representation_path,
-    AvalonMongoDB,
+    QuadPypeMongoDB,
     Anatomy,
 )
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
@@ -268,8 +268,8 @@ class RVAction(BaseAction):
         )["version"]["asset"]["parent"]["link"][0]
         project = session.get(link["type"], link["id"])
         project_name = project["full_name"]
-        dbcon = AvalonMongoDB()
-        dbcon.Session["AVALON_PROJECT"] = project_name
+        dbcon = QuadPypeMongoDB()
+        dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
         anatomy = Anatomy(project_name)
 
         location = ftrack_api.Session().pick_location()

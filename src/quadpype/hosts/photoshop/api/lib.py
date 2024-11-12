@@ -44,7 +44,7 @@ def main(*subprocess_args):
             "ClosePS",
             is_in_tests()
         )
-    elif env_value_to_bool("AVALON_PHOTOSHOP_WORKFILES_ON_LAUNCH",
+    elif env_value_to_bool("QUADPYPE_PHOTOSHOP_WORKFILES_ON_LAUNCH",
                            default=True):
 
         launcher.execute_in_main_thread(

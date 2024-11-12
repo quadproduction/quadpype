@@ -12,8 +12,8 @@
             "children": [
                 {
                     "type": "dict",
-                    "key": "sync_to_avalon",
-                    "label": "Sync to avalon",
+                    "key": "sync_to_database",
+                    "label": "Sync to Database",
                     "children": [
                         {
                             "type": "label",
@@ -428,7 +428,7 @@
                 {
                     "type": "dict",
                     "key": "create_update_attributes",
-                    "label": "Create/Update Avalon Attributes",
+                    "label": "Create/Update QuadPype Attributes",
                     "children": [
                         {
                             "type": "list",
@@ -547,8 +547,8 @@
                 },
                 {
                     "type": "dict",
-                    "key": "store_thumbnail_to_avalon",
-                    "label": "Store Thumbnails to avalon",
+                    "key": "store_thumbnail_to_database",
+                    "label": "Store Thumbnails to Database",
                     "checkbox_key": "enabled",
                     "children": [
                         {
@@ -585,8 +585,8 @@
                 },
                 {
                     "type": "dict",
-                    "key": "sync_to_avalon_local",
-                    "label": "Sync to avalon (local) - For development",
+                    "key": "sync_to_database_local",
+                    "label": "Sync to Database (local) - For development",
                     "checkbox_key": "enabled",
                     "children": [
                         {

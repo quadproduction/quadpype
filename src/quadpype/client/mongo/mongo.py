@@ -61,7 +61,7 @@ def get_project_database_name():
         str: Name of database name where projects are.
     """
 
-    return os.getenv("AVALON_DB") or "avalon"
+    return os.getenv("QUADPYPE_PROJECTS_DB_NAME") or "quadpype_projects"
 
 
 def _decompose_url(url):
@@ -215,7 +215,7 @@ class QuadPypeMongoConnection:
             ))
 
         if timeout is None:
-            timeout = int(os.getenv("AVALON_TIMEOUT") or 1000)
+            timeout = int(os.getenv("QUADPYPE_DB_TIMEOUT") or 1000)
 
         kwargs = {
             "serverSelectionTimeoutMS": timeout

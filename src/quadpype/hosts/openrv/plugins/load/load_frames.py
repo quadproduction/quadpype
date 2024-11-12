@@ -39,9 +39,9 @@ class FramesLoader(load.LoaderPlugin):
         view_node = rv.commands.viewNodes()[-1]
         rv.commands.setViewNode(view_node)
         # Force new context
-        os.environ["AVALON_PROJECT"] = context["project"]["name"]
-        os.environ["AVALON_ASSET"] = context["asset"]["name"]
-        os.environ["AVALON_TASK"] = context["representation"]["context"]["task"]["name"]
+        os.environ["QUADPYPE_PROJECT_NAME"] = context["project"]["name"]
+        os.environ["QUADPYPE_ASSET_NAME"] = context["asset"]["name"]
+        os.environ["QUADPYPE_TASK_NAME"] = context["representation"]["context"]["task"]["name"]
 
     def update(self, container, representation):
         node = container["node"]

@@ -241,7 +241,7 @@ class PublishFilesModel(QtGui.QStandardItemModel):
 
     @property
     def project_name(self):
-        return self._dbcon.Session["AVALON_PROJECT"]
+        return self._dbcon.Session["QUADPYPE_PROJECT_NAME"]
 
     def _set_item_invalid(self, item):
         item.setFlags(QtCore.Qt.NoItemFlags)

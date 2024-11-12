@@ -110,7 +110,7 @@ def classes_from_module(superclass, module):
     Arguments:
         superclass (superclass): Superclass of subclasses to look for
         module (types.ModuleType): Imported module from which to
-            parse valid Avalon plug-ins.
+            parse valid QuadPype plug-ins.
 
     Returns:
         List of plug-ins, or empty list if none is found.

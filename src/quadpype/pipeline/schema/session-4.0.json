@@ -2,55 +2,55 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
 
     "title": "quadpype:session-4.0",
-    "description": "The Avalon environment",
+    "description": "The QuadPype environment",
 
     "type": "object",
 
     "additionalProperties": true,
 
     "required": [
-        "AVALON_PROJECT"
+        "QUADPYPE_PROJECT_NAME"
     ],
 
     "properties": {
-        "AVALON_PROJECT": {
+        "QUADPYPE_PROJECT_NAME": {
             "description": "Name of project",
             "type": "string",
             "pattern": "^\\w*$",
             "example": "Hulk"
         },
-        "AVALON_ASSET": {
+        "QUADPYPE_ASSET_NAME": {
             "description": "Name of asset",
             "type": "string",
             "pattern": "^[\\/\\w]*$",
             "example": "Bruce"
         },
-        "AVALON_TASK": {
+        "QUADPYPE_TASK_NAME": {
             "description": "Name of task",
             "type": "string",
             "pattern": "^\\w*$",
             "example": "modeling"
         },
-        "AVALON_APP": {
+        "QUADPYPE_HOST_NAME": {
             "description": "Name of host",
             "type": "string",
             "pattern": "^\\w*$",
             "example": "maya"
         },
-        "AVALON_DB": {
-            "description": "Name of database",
+        "QUADPYPE_PROJECTS_DB_NAME": {
+            "description": "Name of the projects database",
             "type": "string",
             "pattern": "^\\w*$",
-            "example": "avalon",
-            "default": "avalon"
+            "example": "quadpype_projects",
+            "default": "quadpype_projects"
         },
-        "AVALON_LABEL": {
-            "description": "Nice name of Avalon, used in e.g. graphical user interfaces",
+        "QUADPYPE_LABEL": {
+            "description": "Nice name for the program, used in e.g. graphical user interfaces",
             "type": "string",
-            "example": "MyLabel",
-            "default": "Avalon"
+            "example": "QuadPype",
+            "default": "QuadPype"
         },
-        "AVALON_TIMEOUT": {
+        "QUADPYPE_DB_TIMEOUT": {
             "description": "Wherever there is a need for a timeout, this is the default value.",
             "type": "string",
             "pattern": "^[0-9]*$",

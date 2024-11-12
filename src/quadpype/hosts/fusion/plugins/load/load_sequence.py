@@ -255,7 +255,7 @@ class FusionLoadSequence(load.LoaderPlugin):
                 )
 
             # Update the imprinted representation
-            tool.SetData("avalon.representation", str(representation["_id"]))
+            tool.SetData("quadpype.representation", str(representation["_id"]))
 
     def remove(self, container):
         tool = container["_tool"]

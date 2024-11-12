@@ -1,7 +1,7 @@
 from pymongo import UpdateOne
 from bson.objectid import ObjectId
 
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import QuadPypeMongoDB
 
 from quadpype_modules.ftrack.lib import (
     CUST_ATTR_ID_KEY,
@@ -11,13 +11,13 @@ from quadpype_modules.ftrack.lib import (
 )
 
 
-class SyncLinksToAvalon(BaseEvent):
-    """Synchronize inpug linkts to avalon documents."""
-    # Run after sync to avalon event handler
+class SyncLinksToDatabase(BaseEvent):
+    """Synchronize input links to database documents."""
+    # Run after sync to database event handler
     priority = 110
 
     def __init__(self, session):
-        self.dbcon = AvalonMongoDB()
+        self.dbcon = QuadPypeMongoDB()
 
         super().__init__(session)
 
@@ -144,4 +144,4 @@ class SyncLinksToAvalon(BaseEvent):
 
 def register(session):
     '''Register plugin. Called when used as an plugin.'''
-    SyncLinksToAvalon(session).register()
+    SyncLinksToQuadPype(session).register()

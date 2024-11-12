@@ -22,7 +22,7 @@ class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin, DeadlineDefaultJob
     Artist having to wait for the publish to finish on their local machine.
 
     Submission is done through the Deadline Web Service as
-    supplied via the environment variable AVALON_DEADLINE.
+    supplied via the environment variable QUADPYPE_DEADLINE.
 
     """
 
@@ -42,10 +42,10 @@ class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin, DeadlineDefaultJob
         ), "Errors found, aborting integration.."
 
         # Deadline connection
-        AVALON_DEADLINE = legacy_io.Session.get(
-            "AVALON_DEADLINE", "http://localhost:8082"
+        QUADPYPE_DEADLINE = legacy_io.Session.get(
+            "QUADPYPE_DEADLINE", "http://localhost:8082"
         )
-        assert AVALON_DEADLINE, "Requires AVALON_DEADLINE"
+        assert QUADPYPE_DEADLINE, "Requires QUADPYPE_DEADLINE"
 
         # Note that `publish` data member might change in the future.
         # See: https://github.com/pyblish/pyblish-base/issues/307
@@ -121,7 +121,7 @@ class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin, DeadlineDefaultJob
                     context,
                     payload,
                     instances=[instance],
-                    deadline=AVALON_DEADLINE
+                    deadline=QUADPYPE_DEADLINE
                 )
         else:
             # Submit a single job
@@ -129,7 +129,7 @@ class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin, DeadlineDefaultJob
                 context,
                 payload,
                 instances=instance_names,
-                deadline=AVALON_DEADLINE
+                deadline=QUADPYPE_DEADLINE
             )
 
     def submit_job(self, context, payload, instances, deadline):
@@ -139,10 +139,10 @@ class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin, DeadlineDefaultJob
 
         # Include critical environment variables with submission + api.Session
         keys = [
-            # Submit along the current Avalon tool setup that we launched
+            # Submit along the current QuadPype tool setup that we launched
             # this application with so the Render Slave can build its own
             # similar environment using it, e.g. "houdini17.5;pluginx2.3"
-            "AVALON_TOOLS"
+            "QUADPYPE_TOOLS"
         ]
 
         # Add QuadPype version if we are running from build.

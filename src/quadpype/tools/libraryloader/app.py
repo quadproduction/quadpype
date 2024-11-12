@@ -4,7 +4,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 
 from quadpype import style
 from quadpype.client import get_projects, get_project
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import QuadPypeMongoDB
 from quadpype.widgets import BaseToolDialog
 from quadpype.tools.utils import lib as tools_lib
 from quadpype.tools.loader.widgets import (
@@ -50,9 +50,9 @@ class LibraryLoaderWindow(BaseToolDialog):
         self._initial_refresh = False
         self._ignore_project_change = False
 
-        dbcon = AvalonMongoDB()
+        dbcon = QuadPypeMongoDB()
         dbcon.install()
-        dbcon.Session["AVALON_PROJECT"] = None
+        dbcon.Session["QUADPYPE_PROJECT_NAME"] = None
 
         self.dbcon = dbcon
 
@@ -259,7 +259,7 @@ class LibraryLoaderWindow(BaseToolDialog):
         index = self._projects_combobox.model().index(row, 0)
         self.project_name = index.data(QtCore.Qt.UserRole + 1)
 
-        self.dbcon.Session["AVALON_PROJECT"] = self.project_name
+        self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = self.project_name
 
         self._subsets_widget.on_project_change(self.project_name)
         if self._repres_widget:
@@ -356,7 +356,7 @@ class LibraryLoaderWindow(BaseToolDialog):
         subsets_model.clear()
         self.clear_assets_underlines()
 
-        if not self.dbcon.Session.get("AVALON_PROJECT"):
+        if not self.dbcon.Session.get("QUADPYPE_PROJECT_NAME"):
             self._subsets_widget.set_loading_state(
                 loading=False,
                 empty=True

@@ -14,7 +14,7 @@ from .widgets import (
 from .widgets.constants import HOST_NAME
 from quadpype import style
 from quadpype import resources
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import QuadPypeMongoDB
 from quadpype.modules import ModulesManager
 
 
@@ -33,7 +33,7 @@ class Window(QtWidgets.QDialog):
 
     def __init__(self, pyblish_paths, parent=None):
         super().__init__(parent=parent)
-        self._db = AvalonMongoDB()
+        self._db = QuadPypeMongoDB()
         self._db.install()
 
         try:
@@ -214,7 +214,7 @@ class Window(QtWidgets.QDialog):
 
 
 def main():
-    os.environ["AVALON_APP"] = HOST_NAME
+    os.environ["QUADPYPE_HOST_NAME"] = HOST_NAME
 
     # Allow to change icon of running process in windows taskbar
     if os.name == "nt":

@@ -389,8 +389,8 @@ class PublishableClip:
             "*", "noname{}".format(self.track_index))
 
         # adding tag.family into tag
-        if kwargs.get("avalon"):
-            self.marker_data.update(kwargs["avalon"])
+        if kwargs.get("quadype"):
+            self.marker_data.update(kwargs["quadype"])
 
         # add publish attribute to marker data
         self.marker_data.update({"publish": True})

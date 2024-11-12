@@ -94,8 +94,7 @@ def get_repres_contexts(representation_ids, dbcon=None):
 
     Args:
         representation_ids (list): The representation ids.
-        dbcon (AvalonMongoDB): Mongo connection object. `avalon.io` used when
-            not entered.
+        dbcon (QuadPypeMongoDB): Mongo connection object.
 
     Returns:
         dict: The full representation context by representation id.
@@ -195,8 +194,7 @@ def get_subset_contexts(subset_ids, dbcon=None):
         'get_repre_contexts'.
     Args:
         subset_ids (list): The subset ids.
-        dbcon (AvalonMongoDB): Mongo connection object. `avalon.io` used when
-            not entered.
+        dbcon (QuadPypeMongoDB): Mongo connection object.
     Returns:
         dict: The full representation context by representation id.
     """
@@ -557,7 +555,7 @@ def get_representation_path_from_context(context):
     representation = context['representation']
     project_doc = context.get("project")
     root = None
-    session_project = legacy_io.Session.get("AVALON_PROJECT")
+    session_project = legacy_io.Session.get("QUADPYPE_PROJECT_NAME")
     if project_doc and project_doc["name"] != session_project:
         anatomy = Anatomy(project_doc["name"])
         root = anatomy.roots
@@ -705,9 +703,9 @@ def get_representation_path(representation, root=None, dbcon=None):
             "version": version_["name"],
             "representation": representation["name"],
             "family": representation.get("context", {}).get("family"),
-            "user": dbcon.Session.get("AVALON_USER", getpass.getuser()),
-            "app": dbcon.Session.get("AVALON_APP", ""),
-            "task": dbcon.Session.get("AVALON_TASK", "")
+            "user": dbcon.Session.get("QUADPYPE_USER", getpass.getuser()),
+            "app": dbcon.Session.get("QUADPYPE_HOST_NAME", ""),
+            "task": dbcon.Session.get("QUADPYPE_TASK_NAME", "")
         }
 
         try:

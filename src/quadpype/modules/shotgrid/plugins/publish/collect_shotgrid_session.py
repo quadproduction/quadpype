@@ -42,9 +42,9 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
         set_shotgrid_certificate(certificate_path)
         self.log.info("Set Certificate: {}".format(certificate_path))
 
-        avalon_project = os.getenv("AVALON_PROJECT")
+        curr_project = os.getenv("QUADPYPE_PROJECT_NAME")
 
-        shotgrid_settings = get_shotgrid_project_settings(avalon_project)
+        shotgrid_settings = get_shotgrid_project_settings(curr_project)
         self.log.info("shotgrid settings: {}".format(shotgrid_settings))
         shotgrid_servers_settings = get_shotgrid_servers()
         self.log.info(

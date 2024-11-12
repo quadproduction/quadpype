@@ -256,7 +256,7 @@ def create_remote_publish_node(force=True):
     node = out.createNode("shell", node_name="REMOTE_PUBLISH")
     node.moveToGoodPosition()
 
-    # Set color make it stand out (avalon/pyblish color)
+    # Set color make it stand out (QuadPype color)
     node.setColor(hou.Color(0.439, 0.709, 0.933))
 
     # Set the pre-render script
@@ -1038,7 +1038,7 @@ def self_publish():
 def add_self_publish_button(node):
     """Adds a self publish button to the rop node."""
 
-    label = os.getenv("AVALON_LABEL") or "QuadPype"
+    label = os.getenv("QUADPYPE_LABEL") or "QuadPype"
 
     button_parm = hou.ButtonParmTemplate(
         "quadpype_self_publish",

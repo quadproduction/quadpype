@@ -234,10 +234,10 @@ class BaseAction(BaseHandler):
         if not settings_roles:
             return default
 
-        user_roles = {
+        user_roles = [
             role_name.lower()
             for role_name in user_roles
-        }
+        ]
         for role_name in settings_roles:
             if role_name.lower() in user_roles:
                 return True

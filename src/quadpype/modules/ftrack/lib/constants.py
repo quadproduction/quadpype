@@ -1,10 +1,10 @@
 # Group name of custom attributes
 CUST_ATTR_GROUP = "quadpype"
 
-# name of Custom attribute that stores mongo_id from avalon db
-CUST_ATTR_ID_KEY = "avalon_mongo_id"
+# Custom attribute that stores database mongo_id
+CUST_ATTR_ID_KEY = "database_mongo_id"
 # Auto sync of project
-CUST_ATTR_AUTO_SYNC = "avalon_auto_sync"
+CUST_ATTR_AUTO_SYNC = "database_auto_sync"
 
 # Applications custom attribute name
 CUST_ATTR_APPLICATIONS = "applications"

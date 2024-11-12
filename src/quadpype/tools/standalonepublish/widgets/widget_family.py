@@ -210,7 +210,7 @@ class FamilyWidget(QtWidgets.QWidget):
 
         if asset_doc and plugin:
             asset_id = asset_doc["_id"]
-            task_name = self.dbcon.Session["AVALON_TASK"]
+            task_name = self.dbcon.Session["QUADPYPE_TASK_NAME"]
 
             # Calculate subset name with Creator plugin
             try:
@@ -305,7 +305,7 @@ class FamilyWidget(QtWidgets.QWidget):
         version = get_versioning_start(
             project_name,
             "standalonepublisher",
-            task_name=self.dbcon.Session["AVALON_TASK"],
+            task_name=self.dbcon.Session["QUADPYPE_TASK_NAME"],
             family=family,
             subset=subset_name
         )
@@ -378,7 +378,7 @@ class FamilyWidget(QtWidgets.QWidget):
         self.list_families.clear()
 
         has_families = False
-        project_name = self.dbcon.Session.get("AVALON_PROJECT")
+        project_name = self.dbcon.Session.get("QUADPYPE_PROJECT_NAME")
         if not project_name:
             return
 

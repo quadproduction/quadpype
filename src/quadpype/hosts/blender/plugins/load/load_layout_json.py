@@ -13,12 +13,12 @@ from quadpype.pipeline import (
     load_container,
     get_representation_path,
     loaders_from_representation,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_INSTANCES,
-    AVALON_CONTAINERS,
-    AVALON_PROPERTY,
+    QUADPYPE_INSTANCES,
+    QUADPYPE_CONTAINERS,
+    QUADPYPE_PROPERTY,
 )
 from quadpype.hosts.blender.api import plugin
 
@@ -39,10 +39,10 @@ class JsonLayoutLoader(plugin.BlenderLoader):
         objects = list(asset_group.children)
 
         for obj in objects:
-            remove_container(obj.get(AVALON_PROPERTY))
+            remove_container(obj.get(QUADPYPE_PROPERTY))
 
     def _remove_animation_instances(self, asset_group):
-        instances = bpy.data.collections.get(AVALON_INSTANCES)
+        instances = bpy.data.collections.get(QUADPYPE_INSTANCES)
         if instances:
             for obj in list(asset_group.children):
                 anim_collection = instances.children.get(
@@ -154,22 +154,22 @@ class JsonLayoutLoader(plugin.BlenderLoader):
         group_name = plugin.prepare_scene_name(asset, subset, unique_number)
         namespace = namespace or f"{asset}_{unique_number}"
 
-        avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
-        if not avalon_container:
-            avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
-            bpy.context.scene.collection.children.link(avalon_container)
+        database_containers = bpy.data.collections.get(QUADPYPE_CONTAINERS)
+        if not database_containers:
+            database_containers = bpy.data.collections.new(name=QUADPYPE_CONTAINERS)
+            bpy.context.scene.collection.children.link(database_containers)
 
         asset_group = bpy.data.objects.new(group_name, object_data=None)
         asset_group.empty_display_type = 'SINGLE_ARROW'
-        avalon_container.objects.link(asset_group)
+        database_containers.objects.link(asset_group)
 
         self._process(libpath, asset, asset_group, None)
 
         bpy.context.scene.collection.objects.link(asset_group)
 
-        asset_group[AVALON_PROPERTY] = {
+        asset_group[QUADPYPE_PROPERTY] = {
             "schema": "quadpype:container-2.0",
-            "id": AVALON_CONTAINER_ID,
+            "id": QUADPYPE_CONTAINER_ID,
             "name": name,
             "namespace": namespace or '',
             "loader": str(self.__class__.__name__),
@@ -217,7 +217,7 @@ class JsonLayoutLoader(plugin.BlenderLoader):
             f"Unsupported file: {libpath}"
         )
 
-        metadata = asset_group.get(AVALON_PROPERTY)
+        metadata = asset_group.get(QUADPYPE_PROPERTY)
         group_libpath = metadata["libpath"]
 
         normalized_group_libpath = (
@@ -238,7 +238,7 @@ class JsonLayoutLoader(plugin.BlenderLoader):
         actions = {}
 
         for obj in asset_group.children:
-            obj_meta = obj.get(AVALON_PROPERTY)
+            obj_meta = obj.get(QUADPYPE_PROPERTY)
             if obj_meta.get('family') == 'rig':
                 rig = None
                 for child in obj.children:

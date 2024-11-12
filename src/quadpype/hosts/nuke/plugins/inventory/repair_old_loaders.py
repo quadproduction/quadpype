@@ -1,6 +1,6 @@
 from quadpype.lib import Logger
 from quadpype.pipeline import InventoryAction
-from quadpype.hosts.nuke.api.lib import set_avalon_knob_data
+from quadpype.hosts.nuke.api.lib import set_quadype_knob_data
 
 
 class RepairOldLoaders(InventoryAction):
@@ -32,5 +32,5 @@ class RepairOldLoaders(InventoryAction):
                 "objectName": new_name
             })
             node["name"].setValue(new_name)
-            # get data from avalon knob
-            set_avalon_knob_data(node, cdata)
+            # get data from quadype knob
+            set_quadype_knob_data(node, cdata)

@@ -15,8 +15,8 @@ from quadpype.hosts.nuke.api.lib import (
     maintained_selection,
     reset_selection,
     select_nodes,
-    get_avalon_knob_data,
-    set_avalon_knob_data
+    get_quadype_knob_data,
+    set_quadype_knob_data
 )
 from quadpype.hosts.nuke.api.command import viewer_update_and_undo_stop
 from quadpype.hosts.nuke.api import containerise, update_container
@@ -59,7 +59,7 @@ class LoadBackdropNodes(load.LoaderPlugin):
         object_name = "{}_{}".format(name, namespace)
 
         # prepare data for imprinting
-        # add additional metadata from the version to imprint to Avalon knob
+        # add additional metadata from the version to imprint to QuadPype knob
         add_keys = ["source", "author", "fps"]
 
         data_imprint = {
@@ -222,13 +222,13 @@ class LoadBackdropNodes(load.LoaderPlugin):
         with maintained_selection():
             xpos = GN.xpos()
             ypos = GN.ypos()
-            avalon_data = get_avalon_knob_data(GN)
+            quadype_data = get_quadype_knob_data(GN)
             nuke.delete(GN)
             # add group from nk
             nuke.nodePaste(file)
 
             GN = nuke.selectedNode()
-            set_avalon_knob_data(GN, avalon_data)
+            set_quadype_knob_data(GN, quadype_data)
             GN.setXYpos(xpos, ypos)
             GN["name"].setValue(object_name)
 

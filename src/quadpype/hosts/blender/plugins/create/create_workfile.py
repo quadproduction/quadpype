@@ -3,15 +3,15 @@ import bpy
 from quadpype.pipeline import CreatedInstance, AutoCreator
 from quadpype.client import get_asset_by_name
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_PROPERTY,
-    AVALON_CONTAINERS
+    QUADPYPE_PROPERTY,
+    QUADPYPE_CONTAINERS
 )
 
 
 class CreateWorkfile(BlenderCreator, AutoCreator):
     """Workfile auto-creator.
 
-    The workfile instance stores its data on the `AVALON_CONTAINERS` collection
+    The workfile instance stores its data on the `QUADPYPE_CONTAINERS` collection
     as custom attributes, because unlike other instances it doesn't have an
     instance node of its own.
 
@@ -81,18 +81,18 @@ class CreateWorkfile(BlenderCreator, AutoCreator):
             workfile_instance["task"] = task_name
             workfile_instance["subset"] = subset_name
 
-        instance_node = bpy.data.collections.get(AVALON_CONTAINERS)
+        instance_node = bpy.data.collections.get(QUADPYPE_CONTAINERS)
         if not instance_node:
-            instance_node = bpy.data.collections.new(name=AVALON_CONTAINERS)
+            instance_node = bpy.data.collections.new(name=QUADPYPE_CONTAINERS)
         workfile_instance.transient_data["instance_node"] = instance_node
 
     def collect_instances(self):
 
-        instance_node = bpy.data.collections.get(AVALON_CONTAINERS)
+        instance_node = bpy.data.collections.get(QUADPYPE_CONTAINERS)
         if not instance_node:
             return
 
-        property = instance_node.get(AVALON_PROPERTY)
+        property = instance_node.get(QUADPYPE_PROPERTY)
         if not property:
             return
 
@@ -109,6 +109,6 @@ class CreateWorkfile(BlenderCreator, AutoCreator):
     def remove_instances(self, instances):
         for instance in instances:
             node = instance.transient_data["instance_node"]
-            del node[AVALON_PROPERTY]
+            del node[QUADPYPE_PROPERTY]
 
             self._remove_instance_from_context(instance)

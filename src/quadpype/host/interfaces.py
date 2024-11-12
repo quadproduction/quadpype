@@ -232,7 +232,7 @@ class IWorkfileHost(ABC):
             str: Path to new workdir.
         """
 
-        return session["AVALON_WORKDIR"]
+        return session["QUADPYPE_WORKDIR_PATH"]
 
     # --- Deprecated method names ---
     def file_extensions(self):

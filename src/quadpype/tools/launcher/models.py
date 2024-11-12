@@ -364,9 +364,9 @@ class ActionModel(QtGui.QStandardItemModel):
         if action and action.label:
             compare_data = {
                 "app_label": action.label.lower(),
-                "project_name": self.dbcon.Session["AVALON_PROJECT"],
-                "asset": self.dbcon.Session["AVALON_ASSET"],
-                "task_name": self.dbcon.Session["AVALON_TASK"]
+                "project_name": self.dbcon.Session["QUADPYPE_PROJECT_NAME"],
+                "asset": self.dbcon.Session["QUADPYPE_ASSET_NAME"],
+                "task_name": self.dbcon.Session["QUADPYPE_TASK_NAME"]
             }
         return compare_data
 
@@ -529,7 +529,7 @@ class LauncherModel(QtCore.QObject):
         """Change project name and refresh asset documents."""
         if project_name == self.project_name:
             return
-        self._dbcon.Session["AVALON_PROJECT"] = project_name
+        self._dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
         self.project_changed.emit(project_name)
 
         self.refresh_assets(force=True)

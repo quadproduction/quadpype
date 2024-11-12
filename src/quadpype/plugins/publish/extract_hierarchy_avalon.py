@@ -8,16 +8,16 @@ from quadpype.client import (
 from quadpype.pipeline import legacy_io
 
 
-class ExtractHierarchyToAvalon(pyblish.api.ContextPlugin):
-    """Create entities in Avalon based on collected data."""
+class ExtractHierarchyToDatabase(pyblish.api.ContextPlugin):
+    """Create entities in Database based on collected data."""
 
     order = pyblish.api.ExtractorOrder - 0.01
-    label = "Extract Hierarchy To Avalon"
+    label = "Extract Hierarchy To QuadPype Database"
     families = ["clip", "shot"]
 
     def process(self, context):
         if "hierarchyContext" not in context.data:
-            self.log.debug("skipping ExtractHierarchyToAvalon")
+            self.log.debug("skipping ExtractHierarchyToDatabase")
             return
 
         if not legacy_io.Session:
@@ -66,8 +66,8 @@ class ExtractHierarchyToAvalon(pyblish.api.ContextPlugin):
                     asset_docs_by_name,
                     archived_asset_docs_by_name
                 )
-                # make sure all relative instances have correct avalon data
-                self._set_avalon_data_to_relative_instances(
+                # make sure all relative instances have correct db data
+                self._set_database_data_to_relative_instances(
                     context,
                     project_name,
                     new_parent
@@ -221,7 +221,7 @@ class ExtractHierarchyToAvalon(pyblish.api.ContextPlugin):
 
             # Create entity if doesn't exist
             if archived_asset_doc is None:
-                return self.create_avalon_asset(
+                return self.create_database_asset(
                     asset_name, data, project
                 )
 
@@ -268,7 +268,7 @@ class ExtractHierarchyToAvalon(pyblish.api.ContextPlugin):
 
         return asset_doc
 
-    def create_avalon_asset(self, name, data, project):
+    def create_database_asset(self, name, data, project):
         asset_doc = {
             "schema": "quadpype:asset-3.0",
             "name": name,
@@ -281,7 +281,7 @@ class ExtractHierarchyToAvalon(pyblish.api.ContextPlugin):
 
         return asset_doc
 
-    def _set_avalon_data_to_relative_instances(
+    def _set_database_data_to_relative_instances(
         self,
         context,
         project_name,

@@ -5,15 +5,15 @@ import bpy
 
 from quadpype.pipeline import (
     get_representation_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
     registered_host
 )
 from quadpype.pipeline.create import CreateContext
 from quadpype.hosts.blender.api import plugin
 from quadpype.hosts.blender.api.lib import imprint
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
-    AVALON_PROPERTY,
+    QUADPYPE_CONTAINERS,
+    QUADPYPE_PROPERTY,
 )
 
 
@@ -32,7 +32,7 @@ class BlendLoader(plugin.BlenderLoader):
         empties = [obj for obj in objects if obj.type == 'EMPTY']
 
         for empty in empties:
-            if empty.get(AVALON_PROPERTY) and empty.parent is None:
+            if empty.get(QUADPYPE_PROPERTY) and empty.parent is None:
                 return empty
 
         return None
@@ -42,7 +42,7 @@ class BlendLoader(plugin.BlenderLoader):
         parent_containers = []
         parent = asset_group.parent
         while parent:
-            if parent.get(AVALON_PROPERTY):
+            if parent.get(QUADPYPE_PROPERTY):
                 parent_containers.append(parent)
             parent = parent.parent
 
@@ -53,8 +53,8 @@ class BlendLoader(plugin.BlenderLoader):
             obj for obj in container.children_recursive
             if (
                 obj.type == 'EMPTY' and
-                obj.get(AVALON_PROPERTY) and
-                obj.get(AVALON_PROPERTY).get('family') == 'rig'
+                obj.get(QUADPYPE_PROPERTY) and
+                obj.get(QUADPYPE_PROPERTY).get('family') == 'rig'
             )
         ]
         if not rigs:
@@ -142,21 +142,21 @@ class BlendLoader(plugin.BlenderLoader):
         group_name = plugin.prepare_scene_name(asset, subset, unique_number)
         namespace = namespace or f"{asset}_{unique_number}"
 
-        avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
-        if not avalon_container:
-            avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
-            bpy.context.scene.collection.children.link(avalon_container)
+        database_containers = bpy.data.collections.get(QUADPYPE_CONTAINERS)
+        if not database_containers:
+            database_containers = bpy.data.collections.new(name=QUADPYPE_CONTAINERS)
+            bpy.context.scene.collection.children.link(database_containers)
 
         container, members = self._process_data(libpath, group_name)
 
         if family == "layout":
             self._post_process_layout(container, asset, representation)
 
-        avalon_container.objects.link(container)
+        database_containers.objects.link(container)
 
         data = {
             "schema": "quadpype:container-2.0",
-            "id": AVALON_CONTAINER_ID,
+            "id": QUADPYPE_CONTAINER_ID,
             "name": name,
             "namespace": namespace or '',
             "loader": str(self.__class__.__name__),
@@ -169,7 +169,7 @@ class BlendLoader(plugin.BlenderLoader):
             "members": members,
         }
 
-        container[AVALON_PROPERTY] = data
+        container[QUADPYPE_PROPERTY] = data
 
         objects = [
             obj for obj in bpy.data.objects
@@ -192,7 +192,7 @@ class BlendLoader(plugin.BlenderLoader):
         )
 
         transform = asset_group.matrix_basis.copy()
-        old_data = dict(asset_group.get(AVALON_PROPERTY))
+        old_data = dict(asset_group.get(QUADPYPE_PROPERTY))
         old_members = old_data.get("members", [])
         parent = asset_group.parent
 
@@ -211,8 +211,8 @@ class BlendLoader(plugin.BlenderLoader):
 
         asset_group, members = self._process_data(libpath, group_name)
 
-        avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
-        avalon_container.objects.link(asset_group)
+        database_containers = bpy.data.collections.get(QUADPYPE_CONTAINERS)
+        database_containers.objects.link(asset_group)
 
         asset_group.matrix_basis = transform
         asset_group.parent = parent
@@ -228,7 +228,7 @@ class BlendLoader(plugin.BlenderLoader):
         # This avoids a crash, because the memory addresses of those members
         # are not valid anymore
         old_data["members"] = []
-        asset_group[AVALON_PROPERTY] = old_data
+        asset_group[QUADPYPE_PROPERTY] = old_data
 
         new_data = {
             "libpath": libpath,
@@ -243,8 +243,8 @@ class BlendLoader(plugin.BlenderLoader):
         parent_containers = self.get_all_container_parents(asset_group)
 
         for parent_container in parent_containers:
-            parent_members = parent_container[AVALON_PROPERTY]["members"]
-            parent_container[AVALON_PROPERTY]["members"] = (
+            parent_members = parent_container[QUADPYPE_PROPERTY]["members"]
+            parent_container[QUADPYPE_PROPERTY]["members"] = (
                 parent_members + members)
 
     def exec_remove(self, container: Dict) -> bool:
@@ -262,15 +262,15 @@ class BlendLoader(plugin.BlenderLoader):
             )
         ]
 
-        members = asset_group.get(AVALON_PROPERTY).get("members", [])
+        members = asset_group.get(QUADPYPE_PROPERTY).get("members", [])
 
         # We need to update all the parent container members
         parent_containers = self.get_all_container_parents(asset_group)
 
         for parent in parent_containers:
-            parent.get(AVALON_PROPERTY)["members"] = list(filter(
+            parent.get(QUADPYPE_PROPERTY)["members"] = list(filter(
                 lambda i: i not in members,
-                parent.get(AVALON_PROPERTY).get("members", [])))
+                parent.get(QUADPYPE_PROPERTY).get("members", [])))
 
         for attr in attrs:
             for data in getattr(bpy.data, attr):

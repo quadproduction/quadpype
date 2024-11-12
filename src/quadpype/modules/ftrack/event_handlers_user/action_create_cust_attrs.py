@@ -24,7 +24,7 @@ from quadpype.lib import ApplicationManager
 """
 This action creates/updates custom attributes.
 ## First part take care about special attributes
-    - `avalon_mongo_id` for storing Avalon MongoID
+    - `database_mongo_id` for storing QuadPype MongoID
     - `applications` based on applications usages
     - `tools` based on tools usages
 
@@ -103,8 +103,8 @@ default
 Example:
 ```
 "show": {
-    "avalon_auto_sync": {
-      "label": "Avalon auto-sync",
+    "database_auto_sync": {
+      "label": "Database auto-sync",
       "type": "boolean",
       "write_security_roles": ["API", "Administrator"],
       "read_security_roles": ["API", "Administrator"]
@@ -185,7 +185,7 @@ class CustomAttributes(BaseAction):
 
         try:
             self.prepare_global_data(session)
-            self.avalon_mongo_id_attributes(session, event)
+            self.database_mongo_id_attributes(session, event)
             self.applications_attribute(event)
             self.tools_attribute(event)
             self.intent_attribute(event)
@@ -250,7 +250,7 @@ class CustomAttributes(BaseAction):
 
         return output
 
-    def avalon_mongo_id_attributes(self, session, event):
+    def database_mongo_id_attributes(self, session, event):
         self.create_hierarchical_mongo_attr(session, event)
 
         hierarchical_attr, object_type_attrs = (
@@ -268,10 +268,10 @@ class CustomAttributes(BaseAction):
             " where key = \"{}\""
         ).format(CUST_ATTR_ID_KEY)
 
-        mongo_id_avalon_attr = session.query(cust_attrs_query).all()
+        mongo_id_database_attr = session.query(cust_attrs_query).all()
         heirarchical_attr = None
         object_type_attrs = []
-        for cust_attr in mongo_id_avalon_attr:
+        for cust_attr in mongo_id_database_attr:
             if cust_attr["is_hierarchical"]:
                 heirarchical_attr = cust_attr
 
@@ -284,7 +284,7 @@ class CustomAttributes(BaseAction):
         # Set security roles for attribute
         data = {
             "key": CUST_ATTR_ID_KEY,
-            "label": "Avalon/Mongo ID",
+            "label": "QuadPype/Mongo ID",
             "type": "text",
             "default": "",
             "group": CUST_ATTR_GROUP,
@@ -327,7 +327,7 @@ class CustomAttributes(BaseAction):
                 continue
 
             self.log.debug((
-                "Converting Avalon MongoID attr for Entity type \"{}\"."
+                "Converting QuadPype MongoID attr for Entity type \"{}\"."
             ).format(entity_type_label))
             values = session.query(
                 cust_attr_query.format(attr_def["id"])
@@ -355,7 +355,7 @@ class CustomAttributes(BaseAction):
                 session.rollback()
                 self.log.warning(
                     (
-                        "Couldn't transfer Avalon Mongo ID"
+                        "Couldn't transfer QuadPype Mongo ID"
                         " attribute for entity type \"{}\"."
                     ).format(entity_type_label),
                     exc_info=True
@@ -369,7 +369,7 @@ class CustomAttributes(BaseAction):
                 session.rollback()
                 self.log.warning(
                     (
-                        "Couldn't delete Avalon Mongo ID"
+                        "Couldn't delete QuadPype Mongo ID"
                         " attribute for entity type \"{}\"."
                     ).format(entity_type_label),
                     exc_info=True

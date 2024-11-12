@@ -70,7 +70,7 @@ class BaseRepresentationModel(object):
         if not project_name:
             project_name = self.dbcon.active_project()
         else:
-            self.dbcon.Session["AVALON_PROJECT"] = project_name
+            self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
 
         if not project_name:
             self.repre_icons = repre_icons

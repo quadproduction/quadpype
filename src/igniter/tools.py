@@ -69,7 +69,7 @@ def validate_mongo_connection(cnx: str) -> (bool, str):
         return False, "Not mongodb schema"
 
     kwargs = {
-        "serverSelectionTimeoutMS": os.getenv("AVALON_TIMEOUT", 2000)
+        "serverSelectionTimeoutMS": os.getenv("QUADPYPE_DB_TIMEOUT", 2000)
     }
     # Add certificate path if should be required
     if should_add_certificate_path_to_mongo_url(cnx):

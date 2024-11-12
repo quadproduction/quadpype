@@ -29,7 +29,7 @@ from .lib import (
     INSTANCE_DATA_KNOB,
     Knobby,
     maintained_selection,
-    get_avalon_knob_data,
+    get_quadype_knob_data,
     set_node_knobs_from_settings,
     set_node_data,
     get_node_data,
@@ -1041,26 +1041,26 @@ def convert_to_valid_instances():
         if get_node_data(node, INSTANCE_DATA_KNOB):
             continue
 
-        # get data from avalon knob
-        avalon_knob_data = get_avalon_knob_data(
-            node, ["avalon:", "ak:"])
+        # get data from quadype knob
+        quadype_knob_data = get_quadype_knob_data(
+            node, ["quadype:", "ak:"])
 
-        if not avalon_knob_data:
+        if not quadype_knob_data:
             continue
 
-        if avalon_knob_data["id"] != "pyblish.avalon.instance":
+        if quadype_knob_data["id"] != "pyblish.quadpype.instance":
             continue
 
         transfer_data.update({
-            k: v for k, v in avalon_knob_data.items()
+            k: v for k, v in quadype_knob_data.items()
             if k not in ["families", "creator"]
         })
 
         transfer_data["task"] = task_name
 
-        family = avalon_knob_data["family"]
+        family = quadype_knob_data["family"]
         # establish families
-        families_ak = avalon_knob_data.get("families", [])
+        families_ak = quadype_knob_data.get("families", [])
 
         if "suspend_publish" in node.knobs():
             creator_attr["suspended_publish"] = (
@@ -1124,7 +1124,7 @@ def _remove_old_knobs(node):
         try:
             if knob.name() in remove_knobs:
                 node.removeKnob(knob)
-            elif "avalon" in knob.name():
+            elif "quadype" in knob.name():
                 node.removeKnob(knob)
         except ValueError:
             pass

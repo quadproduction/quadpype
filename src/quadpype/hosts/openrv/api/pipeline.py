@@ -12,7 +12,7 @@ from quadpype.pipeline import (
     register_loader_plugin_path,
     register_inventory_action_path,
     register_creator_plugin_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 
 PLUGINS_DIR = os.path.join(OPENRV_ROOT_DIR, "plugins")
@@ -47,8 +47,8 @@ class OpenRVHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         return rv.commands.saveSession(filepath)
 
     def work_root(self, session):
-        work_dir = session.get("AVALON_WORKDIR")
-        scene_dir = session.get("AVALON_SCENEDIR")
+        work_dir = session.get("QUADPYPE_WORKDIR_PATH")
+        scene_dir = session.get("QUADPYPE_SCENEDIR_PATH")
         if scene_dir:
             return os.path.join(work_dir, scene_dir)
         else:
@@ -175,7 +175,7 @@ def imprint_container(node, name, namespace, context, loader):
 
     data = [
         ("schema", "quadpype:container-2.0"),
-        ("id", str(AVALON_CONTAINER_ID)),
+        ("id", str(QUADPYPE_CONTAINER_ID)),
         ("name", str(name)),
         ("namespace", str(namespace)),
         ("loader", str(loader)),

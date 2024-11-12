@@ -25,7 +25,7 @@ class PrepareProjectServer(ServerAction):
 
     settings_key = "prepare_project"
 
-    role_list = ["Pypeclub", "Administrator", "Project Manager"]
+    role_list = ["Administrator", "Project Manager"]
 
     settings_key = "prepare_project"
 
@@ -103,7 +103,7 @@ class PrepareProjectServer(ServerAction):
             "name": CUST_ATTR_AUTO_SYNC,
             "type": "boolean",
             "value": auto_sync_value,
-            "label": "AutoSync to Avalon"
+            "label": "AutoSync to QuadPype"
         }
         # Add autosync attribute
         items.append(auto_sync_item)
@@ -178,7 +178,7 @@ class PrepareProjectServer(ServerAction):
 
         for attr in hier_cust_attrs:
             key = attr["key"]
-            if key.startswith("avalon_"):
+            if key.startswith("quadpype_"):
                 continue
             attributes_to_set[key] = {
                 "label": attr["label"],
@@ -190,7 +190,7 @@ class PrepareProjectServer(ServerAction):
             if attr["entity_type"].lower() != "show":
                 continue
             key = attr["key"]
-            if key.startswith("avalon_"):
+            if key.startswith("quadpype_"):
                 continue
             attributes_to_set[key] = {
                 "label": attr["label"],

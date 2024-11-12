@@ -15,9 +15,9 @@ from quadpype.pipeline.publish import Extractor
 from quadpype.lib import BoolDef
 
 from .pipeline import (
-    AVALON_CONTAINERS,
-    AVALON_INSTANCES,
-    AVALON_PROPERTY,
+    QUADPYPE_CONTAINERS,
+    QUADPYPE_INSTANCES,
+    QUADPYPE_PROPERTY,
 )
 from .ops import (
     MainThreadItem,
@@ -50,18 +50,18 @@ def get_unique_number(
     asset: str, subset: str
 ) -> str:
     """Return a unique number based on the asset name."""
-    avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
-    if not avalon_container:
+    database_containers = bpy.data.collections.get(QUADPYPE_CONTAINERS)
+    if not database_containers:
         return "01"
     # Check the names of both object and collection containers
-    obj_asset_groups = avalon_container.objects
+    obj_asset_groups = database_containers.objects
     obj_group_names = {
         c.name for c in obj_asset_groups
-        if c.type == 'EMPTY' and c.get(AVALON_PROPERTY)}
-    coll_asset_groups = avalon_container.children
+        if c.type == 'EMPTY' and c.get(QUADPYPE_PROPERTY)}
+    coll_asset_groups = database_containers.children
     coll_group_names = {
         c.name for c in coll_asset_groups
-        if c.get(AVALON_PROPERTY)}
+        if c.get(QUADPYPE_PROPERTY)}
     container_names = obj_group_names.union(coll_group_names)
     count = 1
     name = f"{asset}_{count:0>2}_{subset}"
@@ -200,28 +200,28 @@ class BlenderCreator(Creator):
             cache = {}
             cache_legacy = {}
 
-            avalon_instances = bpy.data.collections.get(AVALON_INSTANCES)
-            avalon_instance_objs = (
-                avalon_instances.objects if avalon_instances else []
+            database_instances = bpy.data.collections.get(QUADPYPE_INSTANCES)
+            database_instance_objs = (
+                database_instances.objects if database_instances else []
             )
 
             for obj_or_col in itertools.chain(
-                    avalon_instance_objs,
+                    database_instance_objs,
                     bpy.data.collections
             ):
-                avalon_prop = obj_or_col.get(AVALON_PROPERTY, {})
-                if not avalon_prop:
+                quadpype_prop = obj_or_col.get(QUADPYPE_PROPERTY, {})
+                if not quadpype_prop:
                     continue
 
-                if avalon_prop.get('id') != 'pyblish.avalon.instance':
+                if quadpype_prop.get('id') != 'pyblish.quadpype.instance':
                     continue
 
-                creator_id = avalon_prop.get('creator_identifier')
+                creator_id = quadpype_prop.get('creator_identifier')
                 if creator_id:
                     # Creator instance
                     cache.setdefault(creator_id, []).append(obj_or_col)
                 else:
-                    family = avalon_prop.get('family')
+                    family = quadpype_prop.get('family')
                     if family:
                         # Legacy creator instance
                         cache_legacy.setdefault(family, []).append(obj_or_col)
@@ -244,9 +244,9 @@ class BlenderCreator(Creator):
                 Those may affect how creator works.
         """
         # Get Instance Container or create it if it does not exist
-        instances = bpy.data.collections.get(AVALON_INSTANCES)
+        instances = bpy.data.collections.get(QUADPYPE_INSTANCES)
         if not instances:
-            instances = bpy.data.collections.new(name=AVALON_INSTANCES)
+            instances = bpy.data.collections.new(name=QUADPYPE_INSTANCES)
             bpy.context.scene.collection.children.link(instances)
 
         # Create asset group
@@ -291,7 +291,7 @@ class BlenderCreator(Creator):
 
         # Process only instances that were created by this creator
         for instance_node in cached_subsets.get(self.identifier, []):
-            property = instance_node.get(AVALON_PROPERTY)
+            property = instance_node.get(QUADPYPE_PROPERTY)
             # Create instance object from existing data
             instance = CreatedInstance.from_existing(
                 instance_data=property.to_dict(),
@@ -326,7 +326,7 @@ class BlenderCreator(Creator):
 
             # Rename the instance node in the scene if subset or asset changed.
             # Do not rename the instance if the family is workfile, as the
-            # workfile instance is included in the AVALON_CONTAINER collection.
+            # workfile instance is included in the QUADPYPE_CONTAINER collection.
             if (
                 "subset" in changes.changed_keys
                 or asset_name_key in changes.changed_keys
@@ -374,7 +374,7 @@ class BlenderCreator(Creator):
 
         instance_data.update(
             {
-                "id": "pyblish.avalon.instance",
+                "id": "pyblish.quadpype.instance",
                 "creator_identifier": self.identifier,
                 "subset": subset_name,
             }

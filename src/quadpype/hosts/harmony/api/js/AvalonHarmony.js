@@ -1,13 +1,13 @@
 // ***************************************************************************
-// *                        Avalon Harmony Host                                *
+// *                        QuadPype Harmony Host                                *
 // ***************************************************************************
 
 
 /**
  * @namespace
- * @classdesc AvalonHarmony encapsulate all Avalon related functions.
+ * @classdesc QuadPypeHarmony encapsulate all QuadPype related functions.
  */
-var AvalonHarmony = {};
+var QuadPypeHarmony = {};
 
 
 /**
@@ -15,8 +15,8 @@ var AvalonHarmony = {};
  * @function
  * @return {object} Scene metadata.
  */
-AvalonHarmony.getSceneData = function() {
-    var metadata = scene.metadata('avalon');
+QuadPypeHarmony.getSceneData = function() {
+    var metadata = scene.metadata('quadype');
     if (metadata){
         return JSON.parse(metadata.value);
     }else {
@@ -30,11 +30,11 @@ AvalonHarmony.getSceneData = function() {
  * @function
  * @param {object} metadata Object containing metadata.
  */
-AvalonHarmony.setSceneData = function(metadata) {
+QuadPypeHarmony.setSceneData = function(metadata) {
     scene.setMetadata({
-        'name'       : 'avalon',
+        'name'       : 'quadype',
         'type'       : 'string',
-        'creator'    : 'Avalon',
+        'creator'    : 'QuadPype',
         'version'    : '1.0',
         'value'      : JSON.stringify(metadata)
     });
@@ -46,7 +46,7 @@ AvalonHarmony.setSceneData = function(metadata) {
  * @function
  * @return {array} Selected nodes paths.
  */
-AvalonHarmony.getSelectedNodes = function () {
+QuadPypeHarmony.getSelectedNodes = function () {
     var selectionLength = selection.numberOfNodesSelected();
     var selectedNodes = [];
     for (var i = 0 ; i < selectionLength; i++) {
@@ -61,7 +61,7 @@ AvalonHarmony.getSelectedNodes = function () {
  * @function
  * @param {array} nodes Arrya containing node paths to add to selection.
  */
-AvalonHarmony.selectNodes = function(nodes) {
+QuadPypeHarmony.selectNodes = function(nodes) {
     selection.clearSelection();
     for (var i = 0 ; i < nodes.length; i++) {
         selection.addNodeToSelection(nodes[i]);
@@ -75,7 +75,7 @@ AvalonHarmony.selectNodes = function(nodes) {
  * @param {string} node Node path.
  * @return {boolean} state
  */
-AvalonHarmony.isEnabled = function(node) {
+QuadPypeHarmony.isEnabled = function(node) {
     return node.getEnable(node);
 };
 
@@ -86,7 +86,7 @@ AvalonHarmony.isEnabled = function(node) {
  * @param {array} nodes Array of node paths.
  * @return {array} array of boolean states.
  */
-AvalonHarmony.areEnabled = function(nodes) {
+QuadPypeHarmony.areEnabled = function(nodes) {
     var states = [];
     for (var i = 0 ; i < nodes.length; i++) {
         states.push(node.getEnable(nodes[i]));
@@ -100,7 +100,7 @@ AvalonHarmony.areEnabled = function(nodes) {
  * @function
  * @param {array} args Array of nodes array and states array.
  */
-AvalonHarmony.setState = function(args) {
+QuadPypeHarmony.setState = function(args) {
     var nodes = args[0];
     var states = args[1];
     // length of both arrays must be equal.
@@ -119,7 +119,7 @@ AvalonHarmony.setState = function(args) {
  * @function
  * @param {array} nodes Array of nodes.
  */
-AvalonHarmony.disableNodes = function(nodes) {
+QuadPypeHarmony.disableNodes = function(nodes) {
     for (var i = 0 ; i < nodes.length; i++)
     {
         node.setEnable(nodes[i], false);
@@ -132,9 +132,9 @@ AvalonHarmony.disableNodes = function(nodes) {
  * @function
  * @return {string} Scene path.
  */
-AvalonHarmony.saveScene = function() {
+QuadPypeHarmony.saveScene = function() {
     var app = QCoreApplication.instance();
-    app.avalon_on_file_changed = false;
+    app.quadype_on_file_changed = false;
     scene.saveAll();
     return (
         scene.currentProjectPath() + '/' +
@@ -147,9 +147,9 @@ AvalonHarmony.saveScene = function() {
  * Enable Harmony file-watcher.
  * @function
  */
-AvalonHarmony.enableFileWather = function() {
+QuadPypeHarmony.enableFileWather = function() {
     var app = QCoreApplication.instance();
-    app.avalon_on_file_changed = true;
+    app.quadype_on_file_changed = true;
 };
 
 
@@ -158,7 +158,7 @@ AvalonHarmony.enableFileWather = function() {
  * @function
  * @param {string} path Path to watch.
  */
-AvalonHarmony.addPathToWatcher = function(path) {
+QuadPypeHarmony.addPathToWatcher = function(path) {
     var app = QCoreApplication.instance();
     app.watcher.addPath(path);
 };
@@ -169,7 +169,7 @@ AvalonHarmony.addPathToWatcher = function(path) {
  * @function
  * @param {string} node Node path.
  */
-AvalonHarmony.setupNodeForCreator = function(node) {
+QuadPypeHarmony.setupNodeForCreator = function(node) {
     node.setTextAttr(node, 'COMPOSITE_MODE', 1, 'Pass Through');
 };
 
@@ -180,7 +180,7 @@ AvalonHarmony.setupNodeForCreator = function(node) {
  * @param {string} nodeType Node type.
  * @return {array} Node names.
  */
-AvalonHarmony.getNodesNamesByType = function(nodeType) {
+QuadPypeHarmony.getNodesNamesByType = function(nodeType) {
     var nodes = node.getNodes(nodeType);
     var nodeNames = [];
     for (var i = 0; i < nodes.length; ++i) {
@@ -204,7 +204,7 @@ AvalonHarmony.getNodesNamesByType = function(nodeType) {
  *  selection
  * ];
  */
-AvalonHarmony.createContainer = function(args) {
+QuadPypeHarmony.createContainer = function(args) {
     var resultNode = node.add('Top', args[0], args[1], 0, 0, 0);
     if (args.length > 2) {
         node.link(args[2], 0, resultNode, 0, false, true);
@@ -221,6 +221,6 @@ AvalonHarmony.createContainer = function(args) {
  * @function
  * @param {string} node Node path.
  */
-AvalonHarmony.deleteNode = function(_node) {
+QuadPypeHarmony.deleteNode = function(_node) {
     node.deleteNode(_node, true, true);
 };

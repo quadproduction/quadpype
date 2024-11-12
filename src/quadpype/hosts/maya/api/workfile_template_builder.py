@@ -82,7 +82,7 @@ class MayaTemplateBuilder(AbstractTemplateBuilder):
         for node in imported_sets:
             if not cmds.attributeQuery("id", node=node, exists=True):
                 continue
-            if cmds.getAttr("{}.id".format(node)) != "pyblish.avalon.instance":
+            if cmds.getAttr("{}.id".format(node)) != "pyblish.quadpype.instance":
                 continue
             if not cmds.attributeQuery("asset", node=node, exists=True):
                 continue
@@ -167,7 +167,7 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
         )
         if loaded_representation_ids is None:
             try:
-                containers = cmds.sets("AVALON_CONTAINERS", q=True)
+                containers = cmds.sets("QUADPYPE_CONTAINERS", q=True)
             except ValueError:
                 containers = []
 

@@ -10,7 +10,7 @@ from quadpype.pipeline import get_representation_path
 from quadpype.hosts.blender.api import plugin
 from quadpype.hosts.blender.api.pipeline import (
     containerise_existing,
-    AVALON_PROPERTY,
+    QUADPYPE_PROPERTY,
 )
 
 logger = logging.getLogger("quadpype").getChild("blender").getChild("load_action")
@@ -61,7 +61,7 @@ class BlendActionLoader(plugin.BlenderLoader):
             self.__class__.__name__,
         )
 
-        container_metadata = container.get(AVALON_PROPERTY)
+        container_metadata = container.get(QUADPYPE_PROPERTY)
 
         container_metadata["libpath"] = libpath
         container_metadata["lib_container"] = lib_container
@@ -93,16 +93,16 @@ class BlendActionLoader(plugin.BlenderLoader):
 
                 anim_data.action.make_local()
 
-            if not obj.get(AVALON_PROPERTY):
+            if not obj.get(QUADPYPE_PROPERTY):
 
-                obj[AVALON_PROPERTY] = dict()
+                obj[QUADPYPE_PROPERTY] = dict()
 
-            avalon_info = obj[AVALON_PROPERTY]
-            avalon_info.update({"container_name": container_name})
+            quadype_info = obj[QUADPYPE_PROPERTY]
+            quadype_info.update({"container_name": container_name})
 
             objects_list.append(obj)
 
-        animation_container.pop(AVALON_PROPERTY)
+        animation_container.pop(QUADPYPE_PROPERTY)
 
         # Save the list of objects in the metadata container
         container_metadata["objects"] = objects_list
@@ -156,7 +156,7 @@ class BlendActionLoader(plugin.BlenderLoader):
             f"Unsupported file: {libpath}"
         )
 
-        collection_metadata = collection.get(AVALON_PROPERTY)
+        collection_metadata = collection.get(QUADPYPE_PROPERTY)
 
         collection_libpath = collection_metadata["libpath"]
         normalized_collection_libpath = (
@@ -227,16 +227,16 @@ class BlendActionLoader(plugin.BlenderLoader):
                     strip.action = anim_data.action
                     strip.action_frame_end = anim_data.action.frame_range[1]
 
-            if not obj.get(AVALON_PROPERTY):
+            if not obj.get(QUADPYPE_PROPERTY):
 
-                obj[AVALON_PROPERTY] = dict()
+                obj[QUADPYPE_PROPERTY] = dict()
 
-            avalon_info = obj[AVALON_PROPERTY]
-            avalon_info.update({"container_name": collection.name})
+            quadype_info = obj[QUADPYPE_PROPERTY]
+            quadype_info.update({"container_name": collection.name})
 
             objects_list.append(obj)
 
-        anim_container.pop(AVALON_PROPERTY)
+        anim_container.pop(QUADPYPE_PROPERTY)
 
         # Save the list of objects in the metadata container
         collection_metadata["objects"] = objects_list
@@ -268,7 +268,7 @@ class BlendActionLoader(plugin.BlenderLoader):
             "Nested collections are not supported."
         )
 
-        collection_metadata = collection.get(AVALON_PROPERTY)
+        collection_metadata = collection.get(QUADPYPE_PROPERTY)
         objects = collection_metadata["objects"]
         lib_container = collection_metadata["lib_container"]
 

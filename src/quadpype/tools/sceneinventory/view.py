@@ -347,7 +347,7 @@ class SceneInventoryView(QtWidgets.QTreeView):
                 repre_ids (list)
                 side (str): 'active_site'|'remote_site'
         """
-        project_name = legacy_io.Session["AVALON_PROJECT"]
+        project_name = legacy_io.Session["QUADPYPE_PROJECT_NAME"]
         active_site = self.sync_server.get_active_site(project_name)
         remote_site = self.sync_server.get_remote_site(project_name)
 

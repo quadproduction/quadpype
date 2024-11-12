@@ -11,7 +11,7 @@ from quadpype.client import (
     get_representations
 )
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
-from quadpype_modules.ftrack.lib.avalon_sync import CUST_ATTR_ID_KEY
+from quadpype_modules.ftrack.lib.database_sync import CUST_ATTR_ID_KEY
 from quadpype_modules.ftrack.lib.custom_attributes import (
     query_custom_attributes
 )
@@ -30,7 +30,7 @@ class Delivery(BaseAction):
     identifier = "delivery.action"
     label = "Delivery"
     description = "Deliver data to client"
-    role_list = ["Pypeclub", "Administrator", "Project manager"]
+    role_list = ["Administrator", "Project manager"]
     icon = statics_icon("ftrack", "action_icons", "Delivery.svg")
     settings_key = "delivery_action"
 
@@ -61,7 +61,7 @@ class Delivery(BaseAction):
             return {
                 "success": False,
                 "message": (
-                    "Didn't find project \"{}\" in avalon."
+                    "Didn't find project \"{}\" in database."
                 ).format(project_name)
             }
 
@@ -415,11 +415,11 @@ class Delivery(BaseAction):
         if attr_def is None:
             return asset_docs_by_ftrack_id
 
-        avalon_mongo_id_values = query_custom_attributes(
+        database_mongo_id_values = query_custom_attributes(
             session, [attr_def["id"]], parent_ids, True
         )
         missing_ids = set(parent_ids)
-        for item in avalon_mongo_id_values:
+        for item in database_mongo_id_values:
             if not item["value"]:
                 continue
             asset_id = item["value"]

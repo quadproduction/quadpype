@@ -1895,7 +1895,7 @@ def get_related_sets(node):
     """Return objectSets that are relationships for a look for `node`.
 
     Filters out based on:
-    - id attribute is NOT `pyblish.avalon.container`
+    - id attribute is NOT `pyblish.quadpype.container`
     - shapes and deformer shapes (alembic creates meshShapeDeformed)
     - set name ends with any from a predefined list
     - set in not in viewport set (isolate selected for example)
@@ -1915,7 +1915,7 @@ def get_related_sets(node):
     defaults = {"defaultLightSet", "defaultObjectSet"}
 
     # Ids to ignore
-    ignored = {"pyblish.avalon.instance", "pyblish.avalon.container"}
+    ignored = {"pyblish.quadpype.instance", "pyblish.quadpype.container"}
 
     view_sets = get_isolate_view_sets()
 
@@ -1929,7 +1929,7 @@ def get_related_sets(node):
     # returned by `cmds.listSets(allSets=True)`
     sets = cmds.ls(sets)
 
-    # Ignore `avalon.container`
+    # Ignore `quadpype.container`
     sets = [s for s in sets if
             not cmds.attributeQuery("id", node=s, exists=True) or
             not cmds.getAttr("%s.id" % s) in ignored]
@@ -2949,7 +2949,7 @@ def update_content_on_context_change():
     new_data = asset_doc["data"]
     for s in scene_sets:
         try:
-            if cmds.getAttr("{}.id".format(s)) == "pyblish.avalon.instance":
+            if cmds.getAttr("{}.id".format(s)) == "pyblish.quadpype.instance":
                 attr = cmds.listAttr(s)
                 print(s)
                 if "asset" in attr:
@@ -2975,7 +2975,7 @@ def iter_publish_instances():
         recursive=True,
         objectsOnly=True
     ):
-        if cmds.getAttr("{}.id".format(node)) != "pyblish.avalon.instance":
+        if cmds.getAttr("{}.id".format(node)) != "pyblish.quadpype.instance":
             continue
         yield node
 

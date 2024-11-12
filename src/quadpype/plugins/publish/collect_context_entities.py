@@ -1,7 +1,7 @@
 """Collect Anatomy and global anatomy data.
 
 Requires:
-    session -> AVALON_ASSET
+    session -> QUADPYPE_ASSET_NAME
     context -> projectName
     context -> asset
     context -> task

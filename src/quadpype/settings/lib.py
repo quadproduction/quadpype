@@ -1083,15 +1083,15 @@ def _get_project_settings(
 def get_current_project_settings():
     """Project settings for current context project.
 
-    Project name should be stored in environment variable `AVALON_PROJECT`.
+    Project name should be stored in environment variable `QUADPYPE_PROJECT_NAME`.
     This function should be used only in host context where environment
     variable must be set and should not happen that any part of process will
     change the value of the environment variable.
     """
-    project_name = os.getenv("AVALON_PROJECT")
+    project_name = os.getenv("QUADPYPE_PROJECT_NAME")
     if not project_name:
         raise ValueError(
-            "Missing context project in environment variable `AVALON_PROJECT`."
+            "Missing context project in environment variable `QUADPYPE_PROJECT_NAME`."
         )
     return get_project_settings(project_name)
 

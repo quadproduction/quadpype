@@ -66,7 +66,7 @@ QuadPype modules should contain separated logic of specific kind of implementati
 - few interfaces are implemented for global usage
 
 ### IPluginPaths
-- module wants to add directory path/s to avalon or publish plugins
+- module wants to add directory path/s to database or publish plugins
 - module must implement `get_plugin_paths` which must return dictionary with possible keys `"publish"`, `"load"`, `"create"` or `"actions"`
  - each key may contain list or string with a path to directory with plugins
 

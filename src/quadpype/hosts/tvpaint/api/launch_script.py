@@ -61,7 +61,7 @@ def main(launch_args):
     qt_app.setQuitOnLastWindowClosed(False)
     qt_app.setStyleSheet(style.load_stylesheet())
 
-    # Load avalon icon
+    # Load QuadPype icon
     icon_path = style.app_icon_path()
     if icon_path:
         icon = QtGui.QIcon(icon_path)

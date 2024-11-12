@@ -62,7 +62,7 @@ class JsonApiResource:
 
 
 class RestApiResource(JsonApiResource):
-    """Resource carrying needed info and Avalon DB connection for publish."""
+    """Resource carrying needed info and QuadPype DB connection for publish."""
     def __init__(self, server_manager, executable, upload_dir,
                  studio_task_queue=None):
         self.server_manager = server_manager

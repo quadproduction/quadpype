@@ -1538,14 +1538,14 @@ def get_workfile_info(
     - quadpype/hosts/maya/plugins/publish/validate_model_name.py
 
 ## Global publish plugins
-- quadpype/plugins/publish/extract_hierarchy_avalon.py
+- quadpype/plugins/publish/extract_hierarchy_database.py
     Create:
     - asset
     Update:
     - asset
 
 ## Lib
-- quadpype/lib/avalon_context.py
+- quadpype/lib/database_context.py
     Update:
     - workfile data
 - quadpype/lib/project_backpack.py

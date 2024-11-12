@@ -15,7 +15,7 @@ class ExtractLayout(publish.Extractor):
     label = "Extract Layout"
     hosts = ["maya"]
     families = ["layout"]
-    project_container = "AVALON_CONTAINERS"
+    project_container = "QUADPYPE_CONTAINERS"
     optional = True
 
     def process(self, instance):

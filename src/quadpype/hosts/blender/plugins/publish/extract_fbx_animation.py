@@ -7,7 +7,7 @@ import bpy_extras.anim_utils
 
 from quadpype.pipeline import publish
 from quadpype.hosts.blender.api import plugin
-from quadpype.hosts.blender.api.pipeline import AVALON_PROPERTY
+from quadpype.hosts.blender.api.pipeline import QUADPYPE_PROPERTY
 
 
 def get_all_parents(obj):
@@ -114,7 +114,7 @@ class ExtractAnimationFBX(
             return
 
         asset_group_name = asset_group.name
-        asset_name = asset_group.get(AVALON_PROPERTY).get("asset_name")
+        asset_name = asset_group.get(QUADPYPE_PROPERTY).get("asset_name")
         if asset_name:
             # Rename for the export; this data is only present when loaded
             # from a JSON Layout (layout family)
@@ -188,18 +188,18 @@ class ExtractAnimationFBX(
         json_path = os.path.join(stagingdir, json_filename)
 
         json_dict = {
-            "instance_name": asset_group.get(AVALON_PROPERTY).get("objectName")
+            "instance_name": asset_group.get(QUADPYPE_PROPERTY).get("objectName")
         }
 
         # collection = instance.data.get("name")
         # container = None
         # for obj in bpy.data.collections[collection].objects:
         #     if obj.type == "ARMATURE":
-        #         container_name = obj.get("avalon").get("container_name")
+        #         container_name = obj.get("quadpype").get("container_name")
         #         container = bpy.data.collections[container_name]
         # if container:
         #     json_dict = {
-        #         "instance_name": container.get("avalon").get("instance_name")
+        #         "instance_name": container.get("quadpype").get("instance_name")
         #     }
 
         with open(json_path, "w+") as file:

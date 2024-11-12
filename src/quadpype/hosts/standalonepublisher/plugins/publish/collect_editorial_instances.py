@@ -58,7 +58,7 @@ class CollectInstances(pyblish.api.InstancePlugin):
             descended_from_type=otio.schema.Track
         )
 
-        # get data from avalon
+        # get data from asset entity
         asset_entity = instance.context.data["assetEntity"]
         asset_data = asset_entity["data"]
         asset_name = asset_entity["name"]

@@ -113,7 +113,7 @@ class PypeCommands:
         if not any(paths):
             raise RuntimeError("No publish paths specified")
 
-        app_full_name = os.getenv("AVALON_APP_NAME")
+        app_full_name = os.getenv("QUADPYPE_HOST_DISPLAY_NAME")
         if app_full_name:
             context = get_global_context()
             env = get_app_environments_for_context(

@@ -44,8 +44,8 @@ class ExtractUSDLayered(publish.Extractor):
     families = ["usdLayered", "usdShade"]
 
     # Force Output Processors so it will always save any file
-    # into our unique staging directory with processed Avalon paths
-    output_processors = ["avalon_uri_processor", "stagingdir_processor"]
+    # into our unique staging directory with processed QuadPype paths
+    output_processors = ["quadpype_uri_processor", "stagingdir_processor"]
 
     def process(self, instance):
 
@@ -86,9 +86,9 @@ class ExtractUSDLayered(publish.Extractor):
             # This sets staging directory on the processor to force our
             # output files to end up in the Staging Directory.
             "stagingdiroutputprocessor_stagingDir": staging_dir,
-            # Force the Avalon URI Output Processor to refactor paths for
+            # Force the QuadPype URI Output Processor to refactor paths for
             # references, payloads and layers to published paths.
-            "avalonurioutputprocessor_use_publish_paths": True,
+            "quadpypeurioutputprocessor_use_publish_paths": True,
             # Only write out specific USD files based on our outputs
             "savepattern": save_pattern,
         }

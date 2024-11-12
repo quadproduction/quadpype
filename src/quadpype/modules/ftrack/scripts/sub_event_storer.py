@@ -86,7 +86,7 @@ def trigger_sync(event):
         return
 
     if session is None:
-        log.warning("Session is not set. Can't trigger Sync to avalon action.")
+        log.warning("Session is not set. Can't trigger Sync to Database action.")
         return True
 
     projects = session.query("Project").all()
@@ -96,7 +96,7 @@ def trigger_sync(event):
     query = {
         "pype_data.is_processed": False,
         "topic": "ftrack.action.launch",
-        "data.actionIdentifier": "sync.to.avalon.server"
+        "data.actionIdentifier": "sync.to.quadpype.database"
     }
     set_dict = {
         "$set": {"pype_data.is_processed": True}
@@ -108,7 +108,7 @@ def trigger_sync(event):
         if project["status"] != "active":
             continue
 
-        auto_sync = project["custom_attributes"].get("avalon_auto_sync")
+        auto_sync = project["custom_attributes"].get("database_auto_sync")
         if not auto_sync:
             continue
 
@@ -130,7 +130,7 @@ def trigger_sync(event):
 
     for selection in selections:
         event_data = {
-            "actionIdentifier": "sync.to.avalon.server",
+            "actionIdentifier": "sync.to.quadpype.database",
             "selection": [selection]
         }
         session.event_hub.publish(

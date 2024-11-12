@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""3dsmax specific Avalon/Pyblish plugin definitions."""
+"""3dsmax specific QuadPype/Pyblish plugin definitions."""
 from pymxs import runtime as rt
 
 from quadpype.lib import BoolDef
@@ -159,7 +159,7 @@ class MaxCreatorBase(object):
             return shared_data
 
         shared_data["max_cached_subsets"] = {}
-        cached_instances = lsattr("id", "pyblish.avalon.instance")
+        cached_instances = lsattr("id", "pyblish.quadpype.instance")
         for i in cached_instances:
             creator_id = rt.GetUserProp(i, "creator_identifier")
             if creator_id not in shared_data["max_cached_subsets"]:

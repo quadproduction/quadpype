@@ -10,7 +10,7 @@ from quadpype.pipeline import (
     register_creator_plugin_path,
     deregister_loader_plugin_path,
     deregister_creator_plugin_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.pipeline.load import get_outdated_containers
 from quadpype.pipeline.context_tools import get_current_project_asset
@@ -140,7 +140,7 @@ def application_launch(event):
     # send scripts to Harmony
     harmony.send({"script": pype_harmony_js})
     harmony.send({"script": script})
-    inject_avalon_js()
+    inject_quadype_js()
 
     # ensure_scene_settings()
     check_inventory()
@@ -205,11 +205,11 @@ def on_pyblish_instance_toggled(instance, old_value, new_value):
         )
 
 
-def inject_avalon_js():
-    """Inject AvalonHarmony.js into Harmony."""
-    avalon_harmony_js = Path(__file__).parent.joinpath("js/AvalonHarmony.js")
-    script = avalon_harmony_js.read_text()
-    # send AvalonHarmony.js to Harmony
+def inject_quadype_js():
+    """Inject QuadPypeHarmony.js into Harmony."""
+    quadype_harmony_js = Path(__file__).parent.joinpath("js/QuadPypeHarmony.js")
+    script = quadype_harmony_js.read_text()
+    # send QuadPypeHarmony.js to Harmony
     harmony.send({"script": script})
 
 
@@ -332,7 +332,7 @@ def containerise(name,
 
     data = {
         "schema": "quadpype:container-2.0",
-        "id": AVALON_CONTAINER_ID,
+        "id": QUADPYPE_CONTAINER_ID,
         "name": name,
         "namespace": namespace,
         "loader": str(loader),

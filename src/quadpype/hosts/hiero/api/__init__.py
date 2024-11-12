@@ -66,7 +66,7 @@ from .plugin import (
 )
 
 __all__ = [
-    # avalon pipeline module
+    # QuadPype pipeline module
     "launch_workfiles_app",
     "ls",
     "install",

@@ -259,7 +259,7 @@ class CreateShotClip(phiero.Creator):
 
         kwargs = {
             "ui_inputs": widget.result,
-            "avalon": self.data
+            "quadype": self.data
         }
 
         for i, track_item in enumerate(sorted_selected_track_items):

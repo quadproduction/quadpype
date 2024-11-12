@@ -9,7 +9,7 @@ from maya.app.renderSetup.model import renderSetup
 from quadpype.lib import BoolDef, Logger
 from quadpype.settings import get_project_settings
 from quadpype.pipeline import (
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
     Anatomy,
 
     CreatedInstance,
@@ -91,7 +91,7 @@ class MayaCreatorBase(ABC):
 
             for node in cmds.ls(type="objectSet"):
 
-                if _get_attr(node, attr="id") != "pyblish.avalon.instance":
+                if _get_attr(node, attr="id") != "pyblish.quadpype.instance":
                     continue
 
                 creator_id = _get_attr(node, attr="creator_identifier")
@@ -862,7 +862,7 @@ class ReferenceLoader(Loader):
                             cmds.disconnectAttr(input, node_attr)
                         cmds.setAttr(node_attr, data["value"])
 
-        # Fix PLN-40 for older containers created with Avalon that had the
+        # Fix PLN-40 for older containers created with QuadPype that had the
         # `.verticesOnlySet` set to True.
         if cmds.getAttr("{}.verticesOnlySet".format(node)):
             self.log.info("Setting %s.verticesOnlySet to False", node)
@@ -984,7 +984,7 @@ class ReferenceLoader(Loader):
             id_attr = "{}.id".format(node)
             if not cmds.attributeQuery("id", node=node, exists=True):
                 continue
-            if cmds.getAttr(id_attr) == AVALON_CONTAINER_ID:
+            if cmds.getAttr(id_attr) == QUADPYPE_CONTAINER_ID:
                 cmds.sets(node, forceElement=container)
 
 
@@ -1132,5 +1132,5 @@ class ActionBase(BuilderAction):
             id_attr = "{}.id".format(node)
             if not cmds.attributeQuery("id", node=node, exists=True):
                 continue
-            if cmds.getAttr(id_attr) == AVALON_CONTAINER_ID:
+            if cmds.getAttr(id_attr) == QUADPYPE_CONTAINER_ID:
                 cmds.sets(node, forceElement=container)

@@ -5,13 +5,13 @@ import bpy
 
 from quadpype.pipeline import (
     get_representation_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.hosts.blender.api import plugin
 from quadpype.hosts.blender.api.lib import imprint
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
-    AVALON_PROPERTY,
+    QUADPYPE_CONTAINERS,
+    QUADPYPE_PROPERTY,
 )
 
 
@@ -29,7 +29,7 @@ class BlendSceneLoader(plugin.BlenderLoader):
     def _get_asset_container(collections):
         for coll in collections:
             parents = [c for c in collections if c.user_of_id(coll)]
-            if coll.get(AVALON_PROPERTY) and not parents:
+            if coll.get(QUADPYPE_PROPERTY) and not parents:
                 return coll
 
         return None
@@ -95,18 +95,18 @@ class BlendSceneLoader(plugin.BlenderLoader):
         group_name = plugin.prepare_scene_name(asset, subset, unique_number)
         namespace = namespace or f"{asset}_{unique_number}"
 
-        avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
-        if not avalon_container:
-            avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
-            bpy.context.scene.collection.children.link(avalon_container)
+        database_containers = bpy.data.collections.get(QUADPYPE_CONTAINERS)
+        if not database_containers:
+            database_containers = bpy.data.collections.new(name=QUADPYPE_CONTAINERS)
+            bpy.context.scene.collection.children.link(database_containers)
 
         container, members = self._process_data(libpath, group_name, family)
 
-        avalon_container.children.link(container)
+        database_containers.children.link(container)
 
         data = {
             "schema": "quadpype:container-2.0",
-            "id": AVALON_CONTAINER_ID,
+            "id": QUADPYPE_CONTAINER_ID,
             "name": name,
             "namespace": namespace or '',
             "loader": str(self.__class__.__name__),
@@ -119,7 +119,7 @@ class BlendSceneLoader(plugin.BlenderLoader):
             "members": members,
         }
 
-        container[AVALON_PROPERTY] = data
+        container[QUADPYPE_PROPERTY] = data
 
         objects = [
             obj for obj in bpy.data.objects
@@ -146,9 +146,9 @@ class BlendSceneLoader(plugin.BlenderLoader):
         # Also gets the transform for each object to reapply after the update.
         collection_parents = {}
         member_transforms = {}
-        members = asset_group.get(AVALON_PROPERTY).get("members", [])
+        members = asset_group.get(QUADPYPE_PROPERTY).get("members", [])
         loaded_collections = {c for c in bpy.data.collections if c in members}
-        loaded_collections.add(bpy.data.collections.get(AVALON_CONTAINERS))
+        loaded_collections.add(bpy.data.collections.get(QUADPYPE_CONTAINERS))
         for member in members:
             if isinstance(member, bpy.types.Object):
                 member_parents = set(member.users_collection)
@@ -163,7 +163,7 @@ class BlendSceneLoader(plugin.BlenderLoader):
             if member_parents:
                 collection_parents[member.name] = list(member_parents)
 
-        old_data = dict(asset_group.get(AVALON_PROPERTY))
+        old_data = dict(asset_group.get(QUADPYPE_PROPERTY))
 
         self.exec_remove(container)
 
@@ -182,14 +182,14 @@ class BlendSceneLoader(plugin.BlenderLoader):
             ):
                 member.matrix_basis = member_transforms[member.name]
 
-        avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
-        avalon_container.children.link(asset_group)
+        database_containers = bpy.data.collections.get(QUADPYPE_CONTAINERS)
+        database_containers.children.link(asset_group)
 
         # Restore the old data, but reset members, as they don't exist anymore
         # This avoids a crash, because the memory addresses of those members
         # are not valid anymore
         old_data["members"] = []
-        asset_group[AVALON_PROPERTY] = old_data
+        asset_group[QUADPYPE_PROPERTY] = old_data
 
         new_data = {
             "libpath": libpath,
@@ -207,7 +207,7 @@ class BlendSceneLoader(plugin.BlenderLoader):
         group_name = container["objectName"]
         asset_group = bpy.data.collections.get(group_name)
 
-        members = set(asset_group.get(AVALON_PROPERTY).get("members", []))
+        members = set(asset_group.get(QUADPYPE_PROPERTY).get("members", []))
 
         if members:
             for attr_name in dir(bpy.data):

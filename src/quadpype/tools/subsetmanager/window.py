@@ -177,7 +177,7 @@ class SubsetManagerWindow(BaseToolDialog):
         self._model.refresh()
 
         host = registered_host()
-        dev_mode = os.getenv("AVALON_DEVELOP_MODE") or ""
+        dev_mode = os.getenv("QUADPYPE_DEVELOP_MODE") or ""
         editable = False
         if dev_mode.lower() in ("1", "yes", "true", "on"):
             editable = hasattr(host, "save_instances")

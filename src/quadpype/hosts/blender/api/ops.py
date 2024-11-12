@@ -1,4 +1,4 @@
-"""Blender operators and menus for use with Avalon."""
+"""Blender operators and menus for use with QuadPype."""
 
 import os
 import sys
@@ -183,7 +183,7 @@ def _process_app_events() -> Optional[float]:
 
         # Refresh Manager
         if GlobalClass.app:
-            manager = BlenderApplication.get_window("WM_OT_avalon_manager")
+            manager = BlenderApplication.get_window("WM_OT_quadpype_manager")
             if manager:
                 manager.refresh()
 
@@ -296,9 +296,9 @@ class LaunchQtApp(bpy.types.Operator):
 
 
 class LaunchCreator(LaunchQtApp):
-    """Launch Avalon Creator."""
+    """Launch QuadPype Creator."""
 
-    bl_idname = "wm.avalon_creator"
+    bl_idname = "wm.quadpype_creator"
     bl_label = "Create..."
     _tool_name = "creator"
 
@@ -311,17 +311,17 @@ class LaunchCreator(LaunchQtApp):
 
 
 class LaunchLoader(LaunchQtApp):
-    """Launch Avalon Loader."""
+    """Launch QuadPype Loader."""
 
-    bl_idname = "wm.avalon_loader"
+    bl_idname = "wm.quadpype_loader"
     bl_label = "Load..."
     _tool_name = "loader"
 
 
 class LaunchPublisher(LaunchQtApp):
-    """Launch Avalon Publisher."""
+    """Launch QuadPype Publisher."""
 
-    bl_idname = "wm.avalon_publisher"
+    bl_idname = "wm.quadpype_publisher"
     bl_label = "Publish..."
 
     def execute(self, context):
@@ -330,9 +330,9 @@ class LaunchPublisher(LaunchQtApp):
 
 
 class LaunchManager(LaunchQtApp):
-    """Launch Avalon Manager."""
+    """Launch QuadPype Manager."""
 
-    bl_idname = "wm.avalon_manager"
+    bl_idname = "wm.quadpype_manager"
     bl_label = "Manage..."
     _tool_name = "sceneinventory"
 
@@ -346,9 +346,9 @@ class LaunchLibrary(LaunchQtApp):
 
 
 class LaunchWorkFiles(LaunchQtApp):
-    """Launch Avalon Work Files."""
+    """Launch QuadPype Work Files."""
 
-    bl_idname = "wm.avalon_workfiles"
+    bl_idname = "wm.quadpype_workfiles"
     bl_label = "Work Files..."
     _tool_name = "workfiles"
 
@@ -389,18 +389,18 @@ class SetUnitScale(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class TOPBAR_MT_avalon(bpy.types.Menu):
-    """Avalon menu."""
+class TOPBAR_MT_quadpype(bpy.types.Menu):
+    """QuadPype menu."""
 
-    bl_idname = "TOPBAR_MT_avalon"
-    bl_label = os.getenv("AVALON_LABEL")
+    bl_idname = "TOPBAR_MT_quadpype"
+    bl_label = os.getenv("QUADPYPE_LABEL")
 
     def draw(self, context):
         """Draw the menu in the UI."""
 
         layout = self.layout
 
-        pcoll = PREVIEW_COLLECTIONS.get("avalon")
+        pcoll = PREVIEW_COLLECTIONS.get("quadpype")
         if pcoll:
             pyblish_menu_icon = pcoll["pyblish_menu_icon"]
             pyblish_menu_icon_id = pyblish_menu_icon.icon_id
@@ -433,10 +433,10 @@ class TOPBAR_MT_avalon(bpy.types.Menu):
         layout.operator(LaunchWorkFiles.bl_idname, text="Work Files...")
 
 
-def draw_avalon_menu(self, context):
-    """Draw the Avalon menu in the top bar."""
+def draw_quadpype_menu(self, context):
+    """Draw the QuadPype menu in the top bar."""
 
-    self.layout.menu(TOPBAR_MT_avalon.bl_idname)
+    self.layout.menu(TOPBAR_MT_quadpype.bl_idname)
 
 
 classes = [
@@ -449,7 +449,7 @@ classes = [
     SetFrameRange,
     SetResolution,
     SetUnitScale,
-    TOPBAR_MT_avalon,
+    TOPBAR_MT_quadpype,
 ]
 
 
@@ -459,19 +459,19 @@ def register():
     pcoll = bpy.utils.previews.new()
     pyblish_icon_file = Path(__file__).parent / "icons" / "pyblish-32x32.png"
     pcoll.load("pyblish_menu_icon", str(pyblish_icon_file.absolute()), 'IMAGE')
-    PREVIEW_COLLECTIONS["avalon"] = pcoll
+    PREVIEW_COLLECTIONS["quadpype"] = pcoll
 
     BlenderApplication.get_app()
     for cls in classes:
         bpy.utils.register_class(cls)
-    bpy.types.TOPBAR_MT_editor_menus.append(draw_avalon_menu)
+    bpy.types.TOPBAR_MT_editor_menus.append(draw_quadpype_menu)
 
 
 def unregister():
     """Unregister the operators and menu."""
 
-    pcoll = PREVIEW_COLLECTIONS.pop("avalon")
+    pcoll = PREVIEW_COLLECTIONS.pop("quadpype")
     bpy.utils.previews.remove(pcoll)
-    bpy.types.TOPBAR_MT_editor_menus.remove(draw_avalon_menu)
+    bpy.types.TOPBAR_MT_editor_menus.remove(draw_quadpype_menu)
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

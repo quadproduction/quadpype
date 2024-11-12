@@ -19,22 +19,22 @@
         },
         {
             "type": "dict",
-            "key": "avalon",
-            "label": "Avalon",
+            "key": "database",
+            "label": "Database",
             "collapsible": true,
             "require_restart": true,
             "children": [
                 {
                     "type": "number",
-                    "key": "AVALON_TIMEOUT",
+                    "key": "QUADPYPE_DB_TIMEOUT",
                     "minimum": 0,
-                    "label": "Avalon Mongo Timeout (ms)",
+                    "label": "Mongo Database Timeout (ms)",
                     "steps": 100
                 },
                 {
                     "type": "path",
                     "label": "Thumbnail Storage Location",
-                    "key": "AVALON_THUMBNAIL_ROOT",
+                    "key": "QUADPYPE_THUMBNAIL_ROOT",
                     "multiplatform": true,
                     "multipath": false
                 }

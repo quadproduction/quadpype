@@ -60,7 +60,7 @@ class FusionLoadAlembicMesh(load.LoaderPlugin):
             tool["Filename"] = path
 
             # Update the imprinted representation
-            tool.SetData("avalon.representation", str(representation["_id"]))
+            tool.SetData("quadpype.representation", str(representation["_id"]))
 
     def remove(self, container):
         tool = container["_tool"]

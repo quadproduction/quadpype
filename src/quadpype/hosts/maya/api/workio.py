@@ -35,7 +35,7 @@ def current_file():
 
 
 def work_root(session):
-    work_dir = session["AVALON_WORKDIR"]
+    work_dir = session["QUADPYPE_WORKDIR_PATH"]
     scene_dir = None
 
     # Query scene file rule from workspace.mel if it exists in WORKDIR
@@ -58,7 +58,7 @@ def work_root(session):
     else:
         # We can't query a workspace that does not exist
         # so we return similar to what we do in other hosts.
-        scene_dir = session.get("AVALON_SCENEDIR")
+        scene_dir = session.get("QUADPYPE_SCENEDIR_PATH")
 
     if scene_dir:
         return os.path.join(work_dir, scene_dir)

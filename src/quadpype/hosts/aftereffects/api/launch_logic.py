@@ -63,7 +63,7 @@ def main(*subprocess_args):
             )
         )
 
-    elif os.getenv("AVALON_PHOTOSHOP_WORKFILES_ON_LAUNCH", True):
+    elif os.getenv("QUADPYPE_PHOTOSHOP_WORKFILES_ON_LAUNCH", True):
         save = False
         if os.getenv("WORKFILES_SAVE_AS"):
             save = True
@@ -299,14 +299,14 @@ class AfterEffectsRoute(WebSocketRoute):
         log.info("Setting context change")
         log.info("project {} asset {} ".format(project, asset))
         if project:
-            legacy_io.Session["AVALON_PROJECT"] = project
-            os.environ["AVALON_PROJECT"] = project
+            legacy_io.Session["QUADPYPE_PROJECT_NAME"] = project
+            os.environ["QUADPYPE_PROJECT_NAME"] = project
         if asset:
-            legacy_io.Session["AVALON_ASSET"] = asset
-            os.environ["AVALON_ASSET"] = asset
+            legacy_io.Session["QUADPYPE_ASSET_NAME"] = asset
+            os.environ["QUADPYPE_ASSET_NAME"] = asset
         if task:
-            legacy_io.Session["AVALON_TASK"] = task
-            os.environ["AVALON_TASK"] = task
+            legacy_io.Session["QUADPYPE_TASK_NAME"] = task
+            os.environ["QUADPYPE_TASK_NAME"] = task
 
     async def read(self):
         log.debug("aftereffects.read client calls server server calls "

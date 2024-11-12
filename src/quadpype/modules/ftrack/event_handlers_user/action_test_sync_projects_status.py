@@ -2,11 +2,11 @@ from pymongo import UpdateOne
 
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 from quadpype.client import get_projects, get_project
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import QuadPypeMongoDB
 
 
 class TestActionSyncProjectsStatus(BaseAction):
-    """Action currently not used but meant to sync status of projects from ftrack to Avalon."""
+    """Action currently not used but meant to sync status of projects from ftrack to QuadPype."""
 
     ignore_me = True  # Remove/comment this line to see the action in the ftrack menu
 
@@ -17,7 +17,7 @@ class TestActionSyncProjectsStatus(BaseAction):
     icon = statics_icon("ftrack", "action_icons", "TestAction.svg")
 
     def __init__(self, session):
-        self.dbcon = AvalonMongoDB()
+        self.dbcon = QuadPypeMongoDB()
         super().__init__(session)
 
     def discover(self, session, entities, event):
@@ -43,7 +43,7 @@ class TestActionSyncProjectsStatus(BaseAction):
         for project in projects_to_be_deactived:
             filter = {"_id": project["_id"]}
             change_data = {"$set": {'data.active': False}}
-            self.dbcon.Session["AVALON_PROJECT"] = project['name']
+            self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = project['name']
             self.dbcon.bulk_write([UpdateOne(filter, change_data)])
             # mongo_changes_bulk.append(UpdateOne(filter, change_data))
 

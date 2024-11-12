@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Houdini specific Avalon/Pyblish plugin definitions."""
+"""Houdini specific QuadPype/Pyblish plugin definitions."""
 import uuid
 
 import hou
@@ -41,7 +41,7 @@ class HoudiniCreatorBase(object):
             cache_legacy = dict()
             instance_id_list = []
 
-            for node in lsattr("id", "pyblish.avalon.instance"):
+            for node in lsattr("id", "pyblish.quadpype.instance"):
 
                 creator_identifier_parm = node.parm("creator_identifier")
                 instance_id_parm = node.parm("instance_id")

@@ -22,13 +22,13 @@ log = logging.getLogger(__name__)
 
 
 def build_workfile_data(session):
-    """Get the data required for workfile formatting from avalon `session`"""
+    """Get the data required for workfile formatting from database `session`"""
 
     # Set work file data for template formatting
-    project_name = session["AVALON_PROJECT"]
-    asset_name = session["AVALON_ASSET"]
-    task_name = session["AVALON_TASK"]
-    host_name = session["AVALON_APP"]
+    project_name = session["QUADPYPE_PROJECT_NAME"]
+    asset_name = session["QUADPYPE_ASSET_NAME"]
+    task_name = session["QUADPYPE_TASK_NAME"]
+    host_name = session["QUADPYPE_HOST_NAME"]
 
     data = get_template_data_with_names(
         project_name, asset_name, task_name, host_name

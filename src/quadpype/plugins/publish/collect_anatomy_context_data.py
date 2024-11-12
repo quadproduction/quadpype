@@ -6,7 +6,7 @@ Requires:
     context -> assetEntity
     context -> username
     context -> datetimeData
-    session -> AVALON_TASK
+    session -> QUADPYPE_TASK_NAME
 
 Provides:
     context -> anatomyData
