@@ -16,7 +16,8 @@ import bpy
 import bpy.utils.previews
 
 from quadpype import style
-from quadpype.pipeline import get_current_asset_name, get_current_task_name
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import get_current_asset_name, get_current_task_name, get_current_project_name
 from quadpype.tools.utils import host_tools
 
 from .workio import OpenFileCacher

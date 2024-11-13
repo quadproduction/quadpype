@@ -19,6 +19,7 @@ from quadpype.host import (
     ILoadHost
 )
 from quadpype.client import get_asset_by_name
+from quadpype.lib import filter_profiles
 from quadpype.pipeline import (
     schema,
     get_current_asset_name,
@@ -233,6 +234,7 @@ def get_asset_data():
     asset_doc = get_asset_by_name(project_name, asset_name)
     return asset_doc.get("data")
 
+
 def get_frame_range(task_entity=None) -> Union[Dict[str, int], None]:
     """Get the task entity's frame range and handles
 
@@ -245,8 +247,6 @@ def get_frame_range(task_entity=None) -> Union[Dict[str, int], None]:
             frame start, frame end, handle start, handle end.
     """
     # Set frame start/end
-    if task_entity is None:
-        task_entity = get_current_task_entity(fields={"attrib"})
     task_attributes = task_entity["attrib"]
     frame_start = int(task_attributes["frameStart"])
     frame_end = int(task_attributes["frameEnd"])
@@ -285,21 +285,21 @@ def set_frame_range(data):
 
     # Should handles be included, defined by settings
     settings = get_project_settings(get_current_project_name())
-    task_type = entity.get("taskType")
+    task_type = data.get("taskType")
     include_handles_settings = settings["blender"]["include_handles"]
     include_handles = include_handles_settings["include_handles_default"]
     profile = filter_profiles(
         include_handles_settings["profiles"],
         key_values={
             "task_types": task_type,
-            "task_names": entity["name"]
+            "task_names": data["name"]
         }
     )
     if profile:
         include_handles = profile["include_handles"]
     if include_handles:
-        frame_start -= int(attrib.get("handleStart", 0))
-        frame_end += int(attrib.get("handleEnd", 0))
+        frame_start -= int(data.get("handleStart", 0))
+        frame_end += int(data.get("handleEnd", 0))
 
     scene.frame_start = frame_start
     scene.frame_end = frame_end
