@@ -574,7 +574,7 @@ def get_trackitem_quadpype_data(track_item):
 
 def imprint(track_item, data=None):
     """
-    Adding `Avalon data` into a hiero track item tag.
+    Adding `QuadPype data` into a hiero track item tag.
 
     Also including publish attribute into tag.
 
@@ -623,7 +623,7 @@ def get_publish_attribute(tag):
     return ast.literal_eval(value)
 
 
-def sync_avalon_data_to_workfile():
+def apply_db_data_to_workfile():
     # import session to get project dir
     project_name = get_current_project_name()
 
@@ -639,7 +639,7 @@ def sync_avalon_data_to_workfile():
     if "Tag Presets" in project.name():
         return
 
-    log.debug("Synchronizing Pype metadata to project: {}".format(
+    log.debug("Synchronizing QuadPype DB metadata to project: {}".format(
         project.name()))
 
     # set project root with backward compatibility
@@ -649,13 +649,13 @@ def sync_avalon_data_to_workfile():
         # old way of setting it
         project.setProjectRoot(active_project_root)
 
-    # get project data from avalon db
+    # get project data from db
     project_doc = get_project(project_name)
     project_data = project_doc["data"]
 
     log.debug("project_data: {}".format(project_data))
 
-    # get format and fps property from avalon db on project
+    # get format and fps property from db on project
     width = project_data["resolutionWidth"]
     height = project_data["resolutionHeight"]
     pixel_aspect = project_data["pixelAspect"]
@@ -670,7 +670,7 @@ def sync_avalon_data_to_workfile():
     project.setFramerate(fps)
 
     # TODO: add auto colorspace set from project drop
-    log.info("Project property has been synchronised with Avalon db")
+    log.info("Project property has been synchronised with QuadPype db")
 
 
 def launch_workfiles_app(event):
@@ -1274,7 +1274,7 @@ def sync_clip_name_to_data_asset(track_items_list):
         # ignore if no data on the clip or not publish instance
         if not data:
             continue
-        if data.get("id") != "pyblish.avalon.instance":
+        if data.get("id") != "pyblish.quadpype.instance":
             continue
 
         # fix data if wrong name

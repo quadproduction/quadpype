@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 # This script will detect Python installation and run QuadPype to create
-# zip. It needs mongodb running. I will create zip from current source code
-# version and copy it top `~/.local/share/pype` if `--path` or `-p`
-# argument is not used.
+# zip. I will create zip from current source code version and copy it to
+# `~/.local/share/pype` if `--path` or `-p` argument is not used.
 
 # Colors for terminal
 

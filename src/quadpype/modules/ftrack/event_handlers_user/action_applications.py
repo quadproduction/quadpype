@@ -105,34 +105,34 @@ class AppplicationsAction(BaseAction):
         if entity["parent"].entity_type.lower() == "project":
             return False
 
-        avalon_project_apps = event["data"].get("avalon_project_apps", None)
-        avalon_project_doc = event["data"].get("avalon_project_doc", None)
-        if avalon_project_apps is None:
-            if avalon_project_doc is None:
+        database_project_apps = event["data"].get("database_project_apps", None)
+        database_project_doc = event["data"].get("database_project_doc", None)
+        if database_project_apps is None:
+            if database_project_doc is None:
                 ft_project = self.get_project_from_entity(entity)
                 project_name = ft_project["full_name"]
-                avalon_project_doc = get_project(project_name) or False
-                event["data"]["avalon_project_doc"] = avalon_project_doc
+                database_project_doc = get_project(project_name) or False
+                event["data"]["database_project_doc"] = database_project_doc
 
-            if not avalon_project_doc:
+            if not database_project_doc:
                 return False
 
-            project_apps_config = avalon_project_doc["config"].get("apps", [])
-            avalon_project_apps = [
+            project_apps_config = database_project_doc["config"].get("apps", [])
+            database_project_apps = [
                 app["name"] for app in project_apps_config
             ] or False
-            event["data"]["avalon_project_apps"] = avalon_project_apps
+            event["data"]["database_project_apps"] = database_project_apps
 
-        if not avalon_project_apps:
+        if not database_project_apps:
             return False
 
         settings = self.get_project_settings_from_event(
-            event, avalon_project_doc["name"])
+            event, database_project_doc["name"])
 
         only_available = settings[APPS_SETTINGS_KEY]["only_available"]
 
         items = []
-        for app_name in avalon_project_apps:
+        for app_name in database_project_apps:
             app = self.application_manager.applications.get(app_name)
             if not app or not app.enabled:
                 continue

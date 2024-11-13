@@ -120,7 +120,7 @@ from .user_settings import (
     QuadPypeSettingsRegistry,
     get_local_site_id,
     get_user_id,
-    change_quadpype_mongo_url,
+    change_quadpype_database_uri,
     get_quadpype_username
 )
 
@@ -243,7 +243,7 @@ __all__ = [
     "QuadPypeSettingsRegistry",
     "get_local_site_id",
     "get_user_id",
-    "change_quadpype_mongo_url",
+    "change_quadpype_database_uri",
     "get_quadpype_username",
 
     "ApplicationLaunchFailed",

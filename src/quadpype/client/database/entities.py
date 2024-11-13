@@ -11,7 +11,7 @@ import collections
 
 from bson.objectid import ObjectId
 
-from .mongo import get_project_database, get_project_connection
+from .database import get_project_database, get_project_connection
 
 PatternType = type(re.compile(""))
 
@@ -81,8 +81,8 @@ def get_projects(active=True, inactive=False, fields=None):
         dict: Project entity data which can be reduced to specified 'fields'.
             None is returned if project with specified filters was not found.
     """
-    mongodb = get_project_database()
-    for project_name in mongodb.collection_names():
+    database_handler = get_project_database()
+    for project_name in database_handler.collection_names():
         if project_name in ("system.indexes",):
             continue
         project_doc = get_project(
@@ -1538,14 +1538,14 @@ def get_workfile_info(
     - quadpype/hosts/maya/plugins/publish/validate_model_name.py
 
 ## Global publish plugins
-- quadpype/plugins/publish/extract_hierarchy_avalon.py
+- quadpype/plugins/publish/extract_hierarchy_database.py
     Create:
     - asset
     Update:
     - asset
 
 ## Lib
-- quadpype/lib/avalon_context.py
+- quadpype/lib/database_context.py
     Update:
     - workfile data
 - quadpype/lib/project_backpack.py

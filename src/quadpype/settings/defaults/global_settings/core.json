@@ -5,7 +5,7 @@
     "access_restricted": false,
     "windows_can_stay_on_top": true,
     "environment": {},
-    "log_to_server": true,
+    "log_to_database": true,
     "disk_mapping": {
         "windows": [],
         "linux": [],

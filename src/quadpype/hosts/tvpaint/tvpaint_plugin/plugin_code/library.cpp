@@ -300,7 +300,7 @@ class Communicator {
 private:
     // URL to websocket server
     std::string websocket_url;
-    // Should be avalon plugin available?
+    // Should be database plugin available?
     // - this may change during processing if websocketet url is not set or server is down
     bool server_available;
 public:
@@ -319,7 +319,7 @@ public:
 Communicator::Communicator(std::string url) {
     // URL to websocket server
     websocket_url = url;
-    // Should be avalon plugin available?
+    // Should be database plugin available?
     // - this may change during processing if websocketet url is not set or server is down
     if (url == "") {
         server_available = false;
@@ -488,9 +488,9 @@ static char* GetLocalString( PIFilter* iFilter, int iNum, char* iDefault )
 std::string label_from_evn()
 {
     std::string _plugin_label = "QuadPype";
-    if (std::getenv("AVALON_LABEL") && std::getenv("AVALON_LABEL") != "")
+    if (std::getenv("QUADPYPE_LABEL") && std::getenv("QUADPYPE_LABEL") != "")
     {
-        _plugin_label = std::getenv("AVALON_LABEL");
+        _plugin_label = std::getenv("QUADPYPE_LABEL");
     }
     return _plugin_label;
 }

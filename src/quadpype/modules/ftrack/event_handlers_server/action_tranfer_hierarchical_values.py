@@ -8,7 +8,7 @@ from quadpype_modules.ftrack.lib import (
     ServerAction,
     statics_icon,
 )
-from quadpype_modules.ftrack.lib.avalon_sync import create_chunks
+from quadpype_modules.ftrack.lib.database_sync import create_chunks
 
 
 class TransferHierarchicalValues(ServerAction):

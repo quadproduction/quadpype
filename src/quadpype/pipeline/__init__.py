@@ -1,10 +1,10 @@
 from .constants import (
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
     HOST_WORKFILE_EXTENSIONS,
 )
 
-from .mongodb import (
-    AvalonMongoDB,
+from .database import (
+    QuadPypeDBHandler,
 )
 from .anatomy import Anatomy
 
@@ -114,11 +114,11 @@ uninstall = uninstall_host
 
 
 __all__ = (
-    "AVALON_CONTAINER_ID",
+    "QUADPYPE_CONTAINER_ID",
     "HOST_WORKFILE_EXTENSIONS",
 
-    # --- MongoDB ---
-    "AvalonMongoDB",
+    # --- Database ---
+    "QuadPypeDBHandler",
 
     # --- Anatomy ---
     "Anatomy",

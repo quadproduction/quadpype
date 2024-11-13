@@ -21,8 +21,8 @@ def get_pype_attr(session, split_hierarchical=True):
         # Kept `pype` for Backwards Compatibility
         " where group.name in (\"pype\", \"{}\")"
     ).format(CUST_ATTR_GROUP)
-    all_avalon_attr = session.query(cust_attrs_query).all()
-    for cust_attr in all_avalon_attr:
+    all_db_attr = session.query(cust_attrs_query).all()
+    for cust_attr in all_db_attr:
         if split_hierarchical and cust_attr["is_hierarchical"]:
             hier_custom_attributes.append(cust_attr)
             continue

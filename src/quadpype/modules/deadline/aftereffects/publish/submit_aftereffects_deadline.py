@@ -94,11 +94,11 @@ class AfterEffectsSubmitDeadline(
             "FTRACK_API_KEY",
             "FTRACK_API_USER",
             "FTRACK_SERVER",
-            "AVALON_DB",
-            "AVALON_PROJECT",
-            "AVALON_ASSET",
-            "AVALON_TASK",
-            "AVALON_APP_NAME",
+            "QUADPYPE_PROJECTS_DB_NAME",
+            "QUADPYPE_PROJECT_NAME",
+            "QUADPYPE_ASSET_NAME",
+            "QUADPYPE_TASK_NAME",
+            "QUADPYPE_HOST_DISPLAY_NAME",
             "QUADPYPE_DEV",
             "QUADPYPE_LOG_NO_COLORS",
             "IS_TEST"
@@ -108,9 +108,9 @@ class AfterEffectsSubmitDeadline(
         if is_running_from_build():
             keys.append("QUADPYPE_VERSION")
 
-        # Add mongo url if it's enabled
-        if self._instance.context.data.get("deadlinePassMongoUrl"):
-            keys.append("QUADPYPE_MONGO")
+        # Add database URI if it's enabled
+        if self._instance.context.data.get("deadlineAddDatabaseURI"):
+            keys.append("QUADPYPE_DB_URI")
 
         environment = dict({key: os.environ[key] for key in keys
                             if key in os.environ}, **legacy_io.Session)

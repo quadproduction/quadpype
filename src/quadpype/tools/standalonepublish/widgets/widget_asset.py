@@ -317,7 +317,7 @@ class AssetWidget(QtWidgets.QWidget):
         index = sorted_project_names.index(last_project)
         self.combo_projects.setCurrentIndex(index)
 
-        self.dbcon.Session["AVALON_PROJECT"] = last_project
+        self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = last_project
 
     def on_project_change(self):
         projects = list()
@@ -326,7 +326,7 @@ class AssetWidget(QtWidgets.QWidget):
             projects.append(project['name'])
         project_name = self.combo_projects.currentText()
         if project_name in projects:
-            self.dbcon.Session["AVALON_PROJECT"] = project_name
+            self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
             self._add_last_project(project_name)
 
         self.project_changed.emit(project_name)
@@ -354,11 +354,11 @@ class AssetWidget(QtWidgets.QWidget):
         except Exception:
             task_name = None
 
-        self.dbcon.Session["AVALON_TASK"] = task_name
+        self.dbcon.Session["QUADPYPE_TASK_NAME"] = task_name
         self.task_changed.emit()
 
     def _refresh_tasks(self):
-        self.dbcon.Session["AVALON_TASK"] = None
+        self.dbcon.Session["QUADPYPE_TASK_NAME"] = None
         tasks = []
         selected = self.get_selected_assets()
         if len(selected) == 1:

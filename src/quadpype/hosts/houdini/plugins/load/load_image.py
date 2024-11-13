@@ -3,37 +3,37 @@ import os
 from quadpype.pipeline import (
     load,
     get_representation_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.hosts.houdini.api import lib, pipeline
 
 import hou
 
 
-def get_image_avalon_container():
+def get_image_database_containers():
     """The COP2 files must be in a COP2 network.
 
-    So we maintain a single entry point within AVALON_CONTAINERS,
+    So we maintain a single entry point within QUADPYPE_CONTAINERS,
     just for ease of use.
 
     """
 
-    path = pipeline.AVALON_CONTAINERS
-    avalon_container = hou.node(path)
-    if not avalon_container:
-        # Let's create avalon container secretly
+    path = pipeline.QUADPYPE_CONTAINERS
+    database_containers = hou.node(path)
+    if not database_containers:
+        # Let's create quadype container secretly
         # but make sure the pipeline still is built the
         # way we anticipate it was built, asserting it.
-        assert path == "/obj/AVALON_CONTAINERS"
+        assert path == "/obj/QUADPYPE_CONTAINERS"
 
         parent = hou.node("/obj")
-        avalon_container = parent.createNode(
-            "subnet", node_name="AVALON_CONTAINERS"
+        database_containers = parent.createNode(
+            "subnet", node_name="QUADPYPE_CONTAINERS"
         )
 
     image_container = hou.node(path + "/IMAGES")
     if not image_container:
-        image_container = avalon_container.createNode(
+        image_container = database_containers.createNode(
             "cop2net", node_name="IMAGES"
         )
         image_container.moveToGoodPosition()
@@ -61,7 +61,7 @@ class ImageLoader(load.LoaderPlugin):
         file_path = self._get_file_sequence(file_path)
 
         # Get the root node
-        parent = get_image_avalon_container()
+        parent = get_image_database_containers()
 
         # Define node name
         namespace = namespace if namespace else context["asset"]["name"]
@@ -75,14 +75,14 @@ class ImageLoader(load.LoaderPlugin):
         # Imprint it manually
         data = {
             "schema": "quadpype:container-2.0",
-            "id": AVALON_CONTAINER_ID,
+            "id": QUADPYPE_CONTAINER_ID,
             "name": node_name,
             "namespace": namespace,
             "loader": str(self.__class__.__name__),
             "representation": str(context["representation"]["_id"]),
         }
 
-        # todo: add folder="Avalon"
+        # todo: add folder="QuadPype"
         lib.imprint(node, data)
 
         return node

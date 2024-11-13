@@ -42,10 +42,10 @@ class CollectBatchData(pyblish.api.ContextPlugin):
         assert os.path.exists(batch_dir), \
             "Folder {} doesn't exist".format(batch_dir)
 
-        project_name = os.getenv("AVALON_PROJECT")
+        project_name = os.getenv("QUADPYPE_PROJECT_NAME")
         if project_name is None:
             raise AssertionError(
-                "Environment `AVALON_PROJECT` was not found."
+                "Environment `QUADPYPE_PROJECT_NAME` was not found."
                 "Could not set project `root` which may cause issues."
             )
 
@@ -58,10 +58,10 @@ class CollectBatchData(pyblish.api.ContextPlugin):
             batch_data["context"]
         )
 
-        os.environ["AVALON_ASSET"] = asset_name
-        legacy_io.Session["AVALON_ASSET"] = asset_name
-        os.environ["AVALON_TASK"] = task_name
-        legacy_io.Session["AVALON_TASK"] = task_name
+        os.environ["QUADPYPE_ASSET_NAME"] = asset_name
+        legacy_io.Session["QUADPYPE_ASSET_NAME"] = asset_name
+        os.environ["QUADPYPE_TASK_NAME"] = task_name
+        legacy_io.Session["QUADPYPE_TASK_NAME"] = task_name
 
         context.data["asset"] = asset_name
         context.data["task"] = task_name

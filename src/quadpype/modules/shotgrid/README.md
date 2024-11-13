@@ -16,4 +16,4 @@ The goal of this tutorial is to synchronize an already existing shotgrid project
 
 - Use the batch interface (Tray > shotgrid > Launch batch), select your project and click "batch"
 
-- You can now access your shotgrid entities within the **avalon launcher** and publish informations to shotgrid with **pyblish**
+- You can now access your shotgrid entities within the **Loader** and publish informations to shotgrid with the **QuadPype** menu.

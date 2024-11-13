@@ -11,7 +11,7 @@ from quadpype.lib import ApplicationManager
 
 
 class CollectHostName(pyblish.api.ContextPlugin):
-    """Collect avalon host name to context."""
+    """Collect host name to context."""
 
     label = "Collect Host Name"
     order = pyblish.api.CollectorOrder - 0.5
@@ -24,13 +24,13 @@ class CollectHostName(pyblish.api.ContextPlugin):
         if host_name and app_name and app_label:
             return
 
-        # Use AVALON_APP to get host name if available
+        # Use QUADPYPE_HOST_NAME to get host name if available
         if not host_name:
-            host_name = os.getenv("AVALON_APP")
+            host_name = os.getenv("QUADPYPE_HOST_NAME")
 
-        # Use AVALON_APP_NAME to get full app name
+        # Use QUADPYPE_HOST_DISPLAY_NAME to get full app name
         if not app_name:
-            app_name = os.getenv("AVALON_APP_NAME")
+            app_name = os.getenv("QUADPYPE_HOST_DISPLAY_NAME")
 
         # Fill missing values based on app full name
         if (not host_name or not app_label) and app_name:

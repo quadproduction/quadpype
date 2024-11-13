@@ -132,7 +132,7 @@ class LoadImage(load.LoaderPlugin):
             r["origlast"].setValue(last)
             r["last"].setValue(last)
 
-            # add additional metadata from the version to imprint Avalon knob
+            # add additional metadata from the version to imprint QuadPype knob
             add_keys = ["source", "colorspace", "author", "fps", "version"]
 
             data_imprint = {

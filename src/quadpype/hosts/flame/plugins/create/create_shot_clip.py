@@ -61,7 +61,7 @@ class CreateShotClip(opfapi.Creator):
         kwargs = {
             "log": self.log,
             "ui_inputs": results_back,
-            "avalon": self.data,
+            "quadpype": self.data,
             "family": self.data["family"]
         }
 

@@ -42,7 +42,7 @@
             "description": "Where on the planet this version can be found.",
             "type": "array",
             "items": {"type": "string"},
-            "example": ["data.avalon.com"]
+            "example": ["data.your-server.com"]
         },
         "data": {
             "description": "Document metadata",
@@ -83,7 +83,7 @@
                 "source" : "{root}/f02_prod/assets/BubbleWitch/work/modeling/marcus/maya/scenes/model_v001.ma",
                 "author" : "marcus",
                 "families" : [
-                    "avalon.model"
+                    "quadpype.model"
                 ],
                 "time" : "20170510T090203Z"
             }

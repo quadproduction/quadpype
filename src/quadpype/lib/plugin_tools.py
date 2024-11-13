@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Avalon/Pyblish plugin tools."""
+"""QuadPype/Pyblish plugin tools."""
 import os
 import logging
 import re

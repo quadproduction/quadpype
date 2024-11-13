@@ -1,7 +1,7 @@
 {
     "show": {
-        "avalon_auto_sync": {
-          "label": "Avalon auto-sync",
+        "database_auto_sync": {
+          "label": "Database auto-sync",
           "type": "boolean"
         },
         "library_project": {

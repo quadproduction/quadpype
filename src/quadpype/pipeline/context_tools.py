@@ -109,8 +109,8 @@ def install_host(host):
     """Install `host` into the running Python session.
 
     Args:
-        host (module): A Python module containing the Avalon
-            avalon host-interface.
+        host (module): A Python module containing the QuadPype
+            host-interface.
     """
     global _is_installed
 
@@ -120,7 +120,7 @@ def install_host(host):
     modules_manager = _get_modules_manager()
 
     missing = list()
-    for key in ("AVALON_PROJECT", "AVALON_ASSET"):
+    for key in ("QUADPYPE_PROJECT_NAME", "QUADPYPE_ASSET_NAME"):
         if key not in legacy_io.Session:
             missing.append(key)
 
@@ -130,7 +130,7 @@ def install_host(host):
             json.dumps(legacy_io.Session, indent=4, sort_keys=True)
         ))
 
-    project_name = legacy_io.Session["AVALON_PROJECT"]
+    project_name = legacy_io.Session["QUADPYPE_PROJECT_NAME"]
     log.info("Activating %s.." % project_name)
 
     # Optional host install function
@@ -158,8 +158,8 @@ def install_host(host):
         print("Registering pyblish target: automated")
         pyblish.api.register_target("automated")
 
-    project_name = os.getenv("AVALON_PROJECT")
-    host_name = os.getenv("AVALON_APP")
+    project_name = os.getenv("QUADPYPE_PROJECT_NAME")
+    host_name = os.getenv("QUADPYPE_HOST_NAME")
 
     # Give option to handle host installation
     for module in modules_manager.get_enabled_modules():
@@ -179,7 +179,7 @@ def install_quadpype_plugins(project_name=None, host_name=None):
     register_inventory_action_path(INVENTORY_PATH)
 
     if host_name is None:
-        host_name = os.getenv("AVALON_APP")
+        host_name = os.getenv("QUADPYPE_HOST_NAME")
 
     modules_manager = _get_modules_manager()
     publish_plugin_dirs = modules_manager.collect_publish_plugin_paths(
@@ -207,7 +207,7 @@ def install_quadpype_plugins(project_name=None, host_name=None):
         register_builder_action_path(path)
 
     if project_name is None:
-        project_name = os.getenv("AVALON_PROJECT")
+        project_name = os.getenv("QUADPYPE_PROJECT_NAME")
 
     # Register studio specific plugins
     if project_name:
@@ -259,7 +259,7 @@ def uninstall_host():
 
     legacy_io.uninstall()
 
-    log.info("Successfully uninstalled Avalon!")
+    log.info("Successfully uninstalled QuadPype!")
 
 
 def is_installed():
@@ -341,7 +341,7 @@ def get_current_host_name():
     """Current host name.
 
     Function is based on currently registered host integration or environment
-    variable 'AVALON_APP'.
+    variable 'QUADPYPE_HOST_NAME'.
 
     Returns:
         Union[str, None]: Name of host integration in current process or None.
@@ -350,7 +350,7 @@ def get_current_host_name():
     host = registered_host()
     if isinstance(host, HostBase):
         return host.name
-    return os.getenv("AVALON_APP")
+    return os.getenv("QUADPYPE_HOST_NAME")
 
 
 def get_global_context():
@@ -375,9 +375,9 @@ def get_global_context():
     """
 
     return {
-        "project_name": os.getenv("AVALON_PROJECT"),
-        "asset_name": os.getenv("AVALON_ASSET"),
-        "task_name": os.getenv("AVALON_TASK"),
+        "project_name": os.getenv("QUADPYPE_PROJECT_NAME"),
+        "asset_name": os.getenv("QUADPYPE_ASSET_NAME"),
+        "task_name": os.getenv("QUADPYPE_TASK_NAME"),
     }
 
 
@@ -486,10 +486,10 @@ def get_template_data_from_session(session=None, global_settings=None):
     if session is None:
         session = legacy_io.Session
 
-    project_name = session["AVALON_PROJECT"]
-    asset_name = session["AVALON_ASSET"]
-    task_name = session["AVALON_TASK"]
-    host_name = session["AVALON_APP"]
+    project_name = session["QUADPYPE_PROJECT_NAME"]
+    asset_name = session["QUADPYPE_ASSET_NAME"]
+    task_name = session["QUADPYPE_TASK_NAME"]
+    host_name = session["QUADPYPE_HOST_NAME"]
 
     return get_template_data_with_names(
         project_name, asset_name, task_name, host_name, global_settings
@@ -532,8 +532,8 @@ def get_workdir_from_session(session=None, template_key=None):
 
     if session is None:
         session = legacy_io.Session
-    project_name = session["AVALON_PROJECT"]
-    host_name = session["AVALON_APP"]
+    project_name = session["QUADPYPE_PROJECT_NAME"]
+    host_name = session["QUADPYPE_HOST_NAME"]
     template_data = get_template_data_from_session(session)
 
     if not template_key:
@@ -574,10 +574,10 @@ def get_custom_workfile_template_from_session(
         session = legacy_io.Session
 
     return get_custom_workfile_template_by_string_context(
-        session["AVALON_PROJECT"],
-        session["AVALON_ASSET"],
-        session["AVALON_TASK"],
-        session["AVALON_APP"],
+        session["QUADPYPE_PROJECT_NAME"],
+        session["QUADPYPE_ASSET_NAME"],
+        session["QUADPYPE_TASK_NAME"],
+        session["QUADPYPE_HOST_NAME"],
         project_settings=project_settings
     )
 
@@ -611,8 +611,8 @@ def compute_session_changes(
 
     # Detect any changes compared session
     mapping = {
-        "AVALON_ASSET": asset_name,
-        "AVALON_TASK": task_name,
+        "QUADPYPE_ASSET_NAME": asset_name,
+        "QUADPYPE_TASK_NAME": task_name,
     }
     changes = {
         key: value
@@ -632,7 +632,7 @@ def compute_session_changes(
             changed_session, template_key
         )
 
-    changes["AVALON_WORKDIR"] = workdir
+    changes["QUADPYPE_WORKDIR_PATH"] = workdir
 
     return changes
 
@@ -670,9 +670,9 @@ def change_current_context(asset_doc, task_name, template_key=None):
 
     data = changes.copy()
     # Convert env keys to human readable keys
-    data["project_name"] = legacy_io.Session["AVALON_PROJECT"]
-    data["asset_name"] = legacy_io.Session["AVALON_ASSET"]
-    data["task_name"] = legacy_io.Session["AVALON_TASK"]
+    data["project_name"] = legacy_io.Session["QUADPYPE_PROJECT_NAME"]
+    data["asset_name"] = legacy_io.Session["QUADPYPE_ASSET_NAME"]
+    data["task_name"] = legacy_io.Session["QUADPYPE_TASK_NAME"]
 
     # Emit session change
     emit_event("taskChanged", data)

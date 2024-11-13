@@ -332,7 +332,7 @@ class QuadPypeVersion(semver.VersionInfo):
         if cls._local_quadpype_path:
             return cls._local_quadpype_path
 
-        settings = get_quadpype_global_settings(os.environ["QUADPYPE_MONGO"])
+        settings = get_quadpype_global_settings(os.environ["QUADPYPE_DB_URI"])
         data_dir = get_local_quadpype_path_from_settings(settings)
         if not data_dir:
             data_dir = Path(user_data_dir("quadpype", "quad"))
@@ -594,7 +594,7 @@ class BootstrapRepos:
         self._step_text_signal = step_text_signal
         self.data_dir = None
         self.set_data_dir(None)
-        self.secure_registry = QuadPypeSecureRegistry("mongodb")
+        self.secure_registry = QuadPypeSecureRegistry("Database")
         self.registry = QuadPypeSettingsRegistry()
         self.zip_filter = [".pyc", "__pycache__"]
         self.quadpype_filter = [
@@ -1228,9 +1228,9 @@ class BootstrapRepos:
     def process_entered_location(self, location: str) -> Union[Path, None]:
         """Process user entered location string.
 
-        It decides if location string is mongodb url or path.
-        If it is mongodb url, it will connect and load ``QUADPYPE_PATH`` from
-        there and use it as path to QuadPype. In it is _not_ mongodb url, it
+        It decides if location string is database URI or path.
+        If it is a database URI, it will connect and load ``QUADPYPE_PATH`` from
+        there and use it as path to QuadPype. In it is _not_ a database URI, it
         is assumed we have a path, this is tested and zip file is
         produced and installed using :meth:`create_version_from_live_code`.
 
@@ -1243,7 +1243,7 @@ class BootstrapRepos:
 
         """
         quadpype_path = None
-        # try to get QuadPype path from mongo.
+        # try to get QuadPype path from database.
         if location.startswith("mongodb"):
             global_settings = get_quadpype_global_settings(location)
             quadpype_path = get_quadpype_path_from_settings(global_settings)

@@ -1,8 +1,7 @@
 {
     "events": {
-        "sync_to_avalon": {
+        "sync_to_database": {
             "role_list": [
-                "Pypeclub",
                 "Administrator",
                 "Project manager"
             ]
@@ -10,7 +9,6 @@
         "prepare_project": {
             "enabled": true,
             "role_list": [
-                "Pypeclub",
                 "Administrator",
                 "Project manager"
             ]
@@ -27,7 +25,6 @@
             ],
             "action_enabled": true,
             "role_list": [
-                "Pypeclub",
                 "Administrator",
                 "Project Manager"
             ]
@@ -35,7 +32,6 @@
         "clone_review_session": {
             "enabled": true,
             "role_list": [
-                "Pypeclub",
                 "Administrator",
                 "Project Manager"
             ]
@@ -116,14 +112,12 @@
     "user_handlers": {
         "create_update_attributes": {
             "role_list": [
-                "Pypeclub",
                 "Administrator"
             ]
         },
         "prepare_project": {
             "enabled": true,
             "role_list": [
-                "Pypeclub",
                 "Administrator",
                 "Project manager"
             ],
@@ -132,7 +126,6 @@
         "clean_hierarchical_attr": {
             "enabled": true,
             "role_list": [
-                "Pypeclub",
                 "Administrator",
                 "Project manager"
             ]
@@ -140,7 +133,6 @@
         "delete_asset_subset": {
             "enabled": true,
             "role_list": [
-                "Pypeclub",
                 "Administrator",
                 "Project Manager"
             ]
@@ -148,7 +140,6 @@
         "delete_old_versions": {
             "enabled": true,
             "role_list": [
-                "Pypeclub",
                 "Project Manager",
                 "Administrator"
             ]
@@ -156,15 +147,13 @@
         "delivery_action": {
             "enabled": true,
             "role_list": [
-                "Pypeclub",
                 "Project Manager",
                 "Administrator"
             ]
         },
-        "store_thumbnail_to_avalon": {
+        "store_thumbnail_to_database": {
             "enabled": true,
             "role_list": [
-                "Pypeclub",
                 "Project Manager",
                 "Administrator"
             ]
@@ -172,14 +161,12 @@
         "job_killer": {
             "enabled": true,
             "role_list": [
-                "Pypeclub",
                 "Administrator"
             ]
         },
-        "sync_to_avalon_local": {
+        "sync_to_database_local": {
             "enabled": true,
             "role_list": [
-                "Pypeclub",
                 "Administrator"
             ]
         },
@@ -191,7 +178,7 @@
         "seed_project": {
             "enabled": true,
             "role_list": [
-                "Pypeclub"
+                "Administrator"
             ]
         }
     },

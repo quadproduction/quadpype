@@ -1,7 +1,7 @@
 from pymongo import UpdateOne
 
 from quadpype.client import get_projects
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 
 
@@ -18,7 +18,7 @@ class HideObsoleteProjects(BaseAction):
     icon = statics_icon("ftrack", "action_icons", "HideProjects.svg")
 
     def __init__(self, session):
-        self.dbcon = AvalonMongoDB()
+        self.dbcon = QuadPypeDBHandler()
         super().__init__(session)
 
     def _discover(self, _event):
@@ -56,10 +56,10 @@ class HideObsoleteProjects(BaseAction):
     def hide_obsolete_projects(self, event):
         ftrack_projects = self.session.query("Project").all()
         ftrack_projects_ids = [project["id"] for project in ftrack_projects]
-        mongo_projects = get_projects()
+        database_projects = get_projects()
 
         projects_to_hide = []
-        for project in mongo_projects:
+        for project in database_projects:
             if "ftrackId" not in project["data"].keys():
                 projects_to_hide.append(project)
             elif project["data"]["ftrackId"] not in ftrack_projects_ids:
@@ -68,7 +68,7 @@ class HideObsoleteProjects(BaseAction):
         for project in projects_to_hide:
             filter_dict = {"_id": project["_id"]}
             change_data = {"$set": {"data.active": False}}
-            self.dbcon.Session["AVALON_PROJECT"] = project["name"]
+            self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = project["name"]
             self.dbcon.bulk_write([UpdateOne(filter_dict, change_data)])
             self.log.debug(f"No FtrackId for project {project['name']}"
                            " or project deleted from Ftrack."

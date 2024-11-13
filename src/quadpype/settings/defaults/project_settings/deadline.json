@@ -14,7 +14,7 @@
     },
     "publish": {
         "CollectDefaultDeadlineServer": {
-            "pass_mongo_url": true
+            "add_database_uri": true
         },
         "ValidateExpectedFiles": {
             "enabled": true,

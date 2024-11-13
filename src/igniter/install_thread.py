@@ -17,7 +17,7 @@ from .bootstrap_repos import (
 from .tools import (
     get_quadpype_global_settings,
     get_local_quadpype_path_from_settings,
-    validate_mongo_connection
+    validate_database_connection
 )
 
 
@@ -36,7 +36,7 @@ class InstallThread(QtCore.QThread):
     message = QtCore.Signal((str, bool))
 
     def __init__(self, parent=None,):
-        self._mongo = None
+        self._database_uri = None
         self._result = None
 
         super().__init__(parent)
@@ -65,31 +65,31 @@ class InstallThread(QtCore.QThread):
             progress_callback=self.set_progress, log_signal=self.message)
         local_version = QuadPypeVersion.get_installed_version_str()
 
-        # user did not entered url
-        if self._mongo:
-            self.message.emit("Saving mongo connection string ...", False)
-            bs.secure_registry.set_item("quadpypeMongo", self._mongo)
+        # user did not entered URI
+        if self._database_uri:
+            self.message.emit("Saving database connection string ...", False)
+            bs.secure_registry.set_item("DatabaseUri", self._database_uri)
 
-        elif os.getenv("QUADPYPE_MONGO"):
-            self._mongo = os.getenv("QUADPYPE_MONGO")
+        elif os.getenv("QUADPYPE_DB_URI"):
+            self._database_uri = os.getenv("QUADPYPE_DB_URI")
         else:
             # try to get it from settings registry
             try:
-                self._mongo = bs.secure_registry.get_item(
-                    "quadpypeMongo")
+                self._database_uri = bs.secure_registry.get_item(
+                    "DatabaseUri")
             except ValueError:
                 self.message.emit(
-                    "!!! We need MongoDB URL to proceed.", True)
+                    "!!! We need a database URI to proceed.", True)
                 self._set_result(-1)
                 return
-        os.environ["QUADPYPE_MONGO"] = self._mongo
+        os.environ["QUADPYPE_DB_URI"] = self._database_uri
 
-        if not validate_mongo_connection(self._mongo):
-            self.message.emit(f"Cannot connect to {self._mongo}", True)
+        if not validate_database_connection(self._database_uri):
+            self.message.emit(f"Cannot connect to {self._database_uri}", True)
             self._set_result(-1)
             return
 
-        global_settings = get_quadpype_global_settings(self._mongo)
+        global_settings = get_quadpype_global_settings(self._database_uri)
         data_dir = get_local_quadpype_path_from_settings(global_settings)
         bs.set_data_dir(data_dir)
 
@@ -194,14 +194,14 @@ class InstallThread(QtCore.QThread):
         """
         self._path = path
 
-    def set_mongo(self, mongo: str) -> None:
-        """Helper to set mongo url.
+    def set_database_uri(self, database_uri: str) -> None:
+        """Helper to set the database URI.
 
         Args:
-            mongo (str): Mongodb url.
+            database_uri (str): Database URI.
 
         """
-        self._mongo = mongo
+        self._database_uri = database_uri
 
     def set_progress(self, progress: int) -> None:
         """Helper to set progress bar.

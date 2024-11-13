@@ -1,5 +1,5 @@
 """
-Basic avalon integration
+Fusion QuadPype integration
 """
 import os
 import sys
@@ -18,7 +18,7 @@ from quadpype.pipeline import (
     register_loader_plugin_path,
     register_creator_plugin_path,
     register_inventory_action_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.pipeline.load import any_outdated_containers
 from quadpype.hosts.fusion import FUSION_HOST_DIR
@@ -134,8 +134,8 @@ class FusionHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         return current_filepath
 
     def work_root(self, session):
-        work_dir = session["AVALON_WORKDIR"]
-        scene_dir = session.get("AVALON_SCENEDIR")
+        work_dir = session["QUADPYPE_WORKDIR_PATH"]
+        scene_dir = session.get("QUADPYPE_SCENEDIR_PATH")
         if scene_dir:
             return os.path.join(work_dir, scene_dir)
         else:
@@ -247,7 +247,7 @@ def imprint_container(tool,
 
     data = [
         ("schema", "quadpype:container-2.0"),
-        ("id", AVALON_CONTAINER_ID),
+        ("id", QUADPYPE_CONTAINER_ID),
         ("name", str(name)),
         ("namespace", str(namespace)),
         ("loader", str(loader)),
@@ -255,7 +255,7 @@ def imprint_container(tool,
     ]
 
     for key, value in data:
-        tool.SetData("avalon.{}".format(key), value)
+        tool.SetData("quadype.{}".format(key), value)
 
 
 def parse_container(tool):
@@ -265,7 +265,7 @@ def parse_container(tool):
 
     """
 
-    data = tool.GetData('avalon')
+    data = tool.GetData("quadype")
     if not isinstance(data, dict):
         return
 

@@ -430,11 +430,11 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         keys = [
             "PYTHONPATH",
             "PATH",
-            "AVALON_DB",
-            "AVALON_PROJECT",
-            "AVALON_ASSET",
-            "AVALON_TASK",
-            "AVALON_APP_NAME",
+            "QUADPYPE_PROJECTS_DB_NAME",
+            "QUADPYPE_PROJECT_NAME",
+            "QUADPYPE_ASSET_NAME",
+            "QUADPYPE_TASK_NAME",
+            "QUADPYPE_HOST_DISPLAY_NAME",
             "FTRACK_API_KEY",
             "FTRACK_API_USER",
             "FTRACK_SERVER",
@@ -449,9 +449,9 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         if is_running_from_build():
             keys.append("QUADPYPE_VERSION")
 
-        # Add mongo url if it's enabled
-        if instance.context.data.get("deadlinePassMongoUrl"):
-            keys.append("QUADPYPE_MONGO")
+        # Add the database URI to the env variables if needed
+        if instance.context.data.get("deadlineAddDatabaseURI"):
+            keys.append("QUADPYPE_DB_URI")
 
         # add allowed keys from preset if any
         if self.env_allowed_keys:

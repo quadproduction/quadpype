@@ -289,7 +289,7 @@ class ProjectModel(QtGui.QStandardItemModel):
             self.refresh()
 
     def set_dbcon(self, dbcon):
-        """Change mongo connection."""
+        """Change database connection."""
         self.dbcon = dbcon
         # Trigger refresh if was already refreshed
         if self._refreshed:

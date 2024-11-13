@@ -66,8 +66,8 @@
         },
         {
             "type": "boolean",
-            "key": "log_to_server",
-            "label": "Log to mongo"
+            "key": "log_to_database",
+            "label": "Log to database"
         },
         {
             "type": "dict",

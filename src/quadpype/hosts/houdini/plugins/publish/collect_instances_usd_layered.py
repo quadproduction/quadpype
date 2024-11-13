@@ -11,14 +11,14 @@ class CollectInstancesUsdLayered(pyblish.api.ContextPlugin):
     The output nodes of the ROP node will only be published when *any* of the
     layers remain set to 'publish' by the user.
 
-    This works differently from most of our Avalon instances in the pipeline.
-    As opposed to storing `pyblish.avalon.instance` as id on the node we store
-    `pyblish.avalon.usdlayered`.
+    This works differently from most of our QuadPype instances in the pipeline.
+    As opposed to storing `pyblish.quadpype.instance` as id on the node we store
+    `pyblish.quadype.usdlayered`.
 
     Additionally this instance has no need for storing family, asset, subset
     or name on the nodes. Instead all information is retrieved solely from
-    the output filepath, which is an Avalon URI:
-        avalon://{asset}/{subset}.{representation}
+    the output filepath, which is an QuadPype URI:
+        quadype://{asset}/{subset}.{representation}
 
     Each final ROP node is considered a dependency for any of the Configured
     Save Path layers it sets along the way. As such, the instances shown in
@@ -47,7 +47,7 @@ class CollectInstancesUsdLayered(pyblish.api.ContextPlugin):
             if not node.parm("id"):
                 continue
 
-            if node.evalParm("id") != "pyblish.avalon.usdlayered":
+            if node.evalParm("id") != "pyblish.quadype.usdlayered":
                 continue
 
             has_family = node.evalParm("family")
@@ -131,10 +131,10 @@ class CollectInstancesUsdLayered(pyblish.api.ContextPlugin):
 
     def get_save_data(self, save_path):
 
-        # Resolve Avalon URI
-        uri_data = usdlib.parse_avalon_uri(save_path)
+        # Resolve QuadPype URI
+        uri_data = usdlib.parse_quadype_uri(save_path)
         if not uri_data:
-            self.log.warning("Non Avalon URI Layer Path: %s" % save_path)
+            self.log.warning("Non QuadPype URI Layer Path: %s" % save_path)
             return {}
 
         # Collect asset + subset from URI

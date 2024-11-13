@@ -5,7 +5,7 @@ import bpy
 
 from quadpype.lib.transcoding import VIDEO_EXTENSIONS
 from quadpype.hosts.blender.api import plugin, lib
-from quadpype.hosts.blender.api.pipeline import AVALON_CONTAINER_ID
+from quadpype.hosts.blender.api.pipeline import QUADPYPE_CONTAINER_ID
 
 
 class LoadImageCompositor(plugin.BlenderLoader):
@@ -49,7 +49,7 @@ class LoadImageCompositor(plugin.BlenderLoader):
 
         data = {
             "schema": "quadpype:container-2.0",
-            "id": AVALON_CONTAINER_ID,
+            "id": QUADPYPE_CONTAINER_ID,
             "name": name,
             "namespace": namespace or '',
             "loader": str(self.__class__.__name__),

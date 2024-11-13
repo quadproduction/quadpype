@@ -5,7 +5,7 @@ WARNING:
         dependent on functionality here.
 
 Goal is to be able to create package of current state of project with related
-documents from mongo and files from disk to zip file and then be able
+documents from the database and files from disk to zip file and then be able
 to recreate the project based on the zip.
 
 This gives ability to create project where a changes and tests can be done.
@@ -22,7 +22,7 @@ import shutil
 import datetime
 
 import zipfile
-from quadpype.client.mongo import (
+from quadpype.client.database import (
     load_json_file,
     get_project_connection,
     replace_project_documents,
@@ -50,7 +50,7 @@ def get_project_document(project_name, database_name=None):
 
     Args:
         project_name (str): Name of project.
-        database_name (Optional[str]): Name of mongo database where to look for
+        database_name (Optional[str]): Name of the database where to look for
             project.
 
     Returns:
@@ -88,7 +88,7 @@ def pack_project(
     only_documents=False,
     database_name=None
 ):
-    """Make a package of a project with mongo documents and files.
+    """Make a package of a project with database documents and files.
 
     This function has few restrictions:
     - project must have only one root
@@ -99,7 +99,7 @@ def pack_project(
         project_name (str): Project that should be packaged.
         destination_dir (Optional[str]): Optional path where zip will be
             stored. Project's root is used if not passed.
-        only_documents (Optional[bool]): Pack only Mongo documents and skip
+        only_documents (Optional[bool]): Pack only DB documents and skip
             files.
         database_name (Optional[str]): Custom database name from which is
             project queried.

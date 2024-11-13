@@ -93,8 +93,6 @@ main.set_alias("module", "addon")
               help="Ftrack api user")
 @click.option("--ftrack-api-key", envvar="FTRACK_API_KEY",
               help="Ftrack api key")
-@click.option("--legacy", is_flag=True,
-              help="run event server without mongo storing")
 @click.option("--clockify-api-key", envvar="CLOCKIFY_API_KEY",
               help="Clockify API key.")
 @click.option("--clockify-workspace", envvar="CLOCKIFY_WORKSPACE",
@@ -102,7 +100,6 @@ main.set_alias("module", "addon")
 def eventserver(ftrack_url,
                 ftrack_user,
                 ftrack_api_key,
-                legacy,
                 clockify_api_key,
                 clockify_workspace):
     """Launch ftrack event server.
@@ -114,7 +111,6 @@ def eventserver(ftrack_url,
         ftrack_url,
         ftrack_user,
         ftrack_api_key,
-        legacy,
         clockify_api_key,
         clockify_workspace
     )
@@ -128,7 +124,7 @@ def eventserver(ftrack_url,
 def webpublisherwebserver(executable, upload_dir, host=None, port=None):
     """Starts webserver for communication with Webpublish FR via command line
 
-        QuadPype must be congigured on a machine, eg. QUADPYPE_MONGO filled AND
+        QuadPype must be congigured on a machine, eg. QUADPYPE_DB_URI filled AND
         FTRACK_BOT_API_KEY provided with api key from Ftrack.
 
         Expect "pype.club" user created on Ftrack.
@@ -276,18 +272,18 @@ def run(script):
               "--setup_only",
               help="Only create dbs, do not run tests",
               default=None)
-@click.option("--mongo_url",
-              help="MongoDB for testing.",
+@click.option("--database_uri",
+              help="database for testing.",
               default=None)
 @click.option("--dump_databases",
               help="Dump all databases to data folder.",
               default=None)
 def runtests(folder, mark, pyargs, test_data_folder, persist, app_variant,
-             timeout, setup_only, mongo_url, app_group, dump_databases):
+             timeout, setup_only, database_uri, app_group, dump_databases):
     """Run all automatic tests after proper initialization via start.py"""
     PypeCommands().run_tests(folder, mark, pyargs, test_data_folder,
                              persist, app_variant, timeout, setup_only,
-                             mongo_url, app_group, dump_databases)
+                             database_uri, app_group, dump_databases)
 
 
 @main.command(help="DEPRECATED - run sync server")

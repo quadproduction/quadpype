@@ -165,10 +165,10 @@ class CollectRenderedFiles(pyblish.api.ContextPlugin):
                 if not session_is_set:
                     session_data = data["session"]
                     remapped = anatomy.roots_obj.path_remapper(
-                        session_data["AVALON_WORKDIR"]
+                        session_data["QUADPYPE_WORKDIR_PATH"]
                     )
                     if remapped:
-                        session_data["AVALON_WORKDIR"] = remapped
+                        session_data["QUADPYPE_WORKDIR_PATH"] = remapped
 
                     self.log.debug("Setting session using data from file")
                     legacy_io.Session.update(session_data)

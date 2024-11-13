@@ -1172,7 +1172,7 @@ class SwitchAssetDialog(QtWidgets.QDialog):
 
     def _on_current_asset(self):
         # Set initial asset as current.
-        asset_name = legacy_io.Session["AVALON_ASSET"]
+        asset_name = legacy_io.Session["QUADPYPE_ASSET_NAME"]
         index = self._assets_box.findText(
             asset_name, QtCore.Qt.MatchFixedString
         )

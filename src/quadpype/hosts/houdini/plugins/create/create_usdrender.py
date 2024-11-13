@@ -36,6 +36,6 @@ class CreateUSDRender(plugin.HoudiniCreator):
             parms["loppath"] = self.selected_nodes[0].path()
         instance_node.setParms(parms)
 
-        # Lock some Avalon attributes
+        # Lock some QuadPype attributes
         to_lock = ["family", "id"]
         self.lock_parameters(instance_node, to_lock)

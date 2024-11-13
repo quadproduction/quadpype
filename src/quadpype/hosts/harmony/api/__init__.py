@@ -17,7 +17,7 @@ from .pipeline import (
     application_launch,
     export_template,
     on_pyblish_instance_toggled,
-    inject_avalon_js,
+    inject_quadype_js,
 )
 
 from .lib import (
@@ -61,7 +61,7 @@ __all__ = [
     "application_launch",
     "export_template",
     "on_pyblish_instance_toggled",
-    "inject_avalon_js",
+    "inject_quadype_js",
 
     # lib
     "launch",

@@ -8,7 +8,7 @@ The current supported hosts are:
 - Houdini
 - Fusion
 
-The app is available inside hosts via. the ```Avalon > Work Files``` menu.
+The app is available inside hosts via. the ```QuadPype > Work Files``` menu.
 
 ## Enabling Workfiles on launch
 
@@ -122,22 +122,22 @@ def work_root():
     pass
 ```
 
-#### Work Files Scenes root (AVALON_SCENEDIR)
+#### Work Files Scenes root (QUADPYPE_SCENEDIR_PATH)
 
 Whenever the host application has no built-in implementation that defines
 where scene files should be saved to then the Work Files API for that host
-should fall back to the `AVALON_SCENEDIR` variable in `api.Session`.
+should fall back to the `QUADPYPE_SCENEDIR_PATH` variable in `api.Session`.
 
-When `AVALON_SCENEDIR` is set the  directory is the relative folder inside the
-`AVALON_WORKDIR`. Otherwise, when it is not set or empty it should fall back
-to the Work Directory's root, `AVALON_WORKDIR`
+When `QUADPYPE_SCENEDIR_PATH` is set the  directory is the relative folder inside the
+`QUADPYPE_WORKDIR_PATH`. Otherwise, when it is not set or empty it should fall back
+to the Work Directory's root, `QUADPYPE_WORKDIR_PATH`
 
 ```python
-AVALON_WORKDIR="/path/to/work"
-AVALON_SCENEDIR="scenes"
+QUADPYPE_WORKDIR_PATH="/path/to/work"
+QUADPYPE_SCENEDIR_PATH="scenes"
 # Result: /path/to/work/scenes
 
-AVALON_WORKDIR="/path/to/work"
-AVALON_SCENEDIR=None
+QUADPYPE_WORKDIR_PATH="/path/to/work"
+QUADPYPE_SCENEDIR_PATH=None
 # Result: /path/to/work
 ```

@@ -7,8 +7,8 @@ from abc import ABC, abstractmethod
 from copy import deepcopy
 
 import quadpype.version
-from quadpype.client.mongo import (
-    QuadPypeMongoConnection,
+from quadpype.client.database import (
+    QuadPypeDBConnection,
     get_project_connection,
 )
 from quadpype.client import get_project
@@ -194,7 +194,7 @@ class SettingsHandler(ABC):
     core_keys = {
         "quadpype_path",
         "local_quadpype_path",
-        "log_to_server",
+        "log_to_database",
         "disk_mapping",
         "production_version",
         "staging_version"
@@ -631,8 +631,8 @@ class CacheValues:
         self.create_time = None
 
 
-class MongoSettingsHandler(SettingsHandler):
-    """Settings handler that use mongo for storing and loading of settings."""
+class DatabaseSettingsHandler(SettingsHandler):
+    """Settings handler that use the database to store and load settings."""
     key_suffix = "_versioned"
     _version_order_key = "versions_order"
     _all_versions_keys = "all_versions"
@@ -651,13 +651,13 @@ class MongoSettingsHandler(SettingsHandler):
         database_name = os.environ["QUADPYPE_DATABASE_NAME"]
         collection_name = "settings"
 
-        # Get mongo connection
-        self.mongo_client = QuadPypeMongoConnection.get_mongo_client()
+        # Get database connection
+        self.database_client = QuadPypeDBConnection.get_database_client()
 
         self.database_name = database_name
         self.collection_name = collection_name
 
-        self.collection = self.mongo_client[database_name][collection_name]
+        self.collection = self.database_client[database_name][collection_name]
 
         self.core_settings_cache = CacheValues()
         self.global_settings_cache = CacheValues()
@@ -749,8 +749,8 @@ class MongoSettingsHandler(SettingsHandler):
 
         Args:
             global_settings_document (dict): Global settings document from
-                MongoDB.
-            core_document (dict): Core settings document from MongoDB.
+                the database.
+            core_document (dict): Core settings document from the database.
 
         Returns:
             Merged document which has applied global settings data.
@@ -938,14 +938,14 @@ class MongoSettingsHandler(SettingsHandler):
             )
 
     @classmethod
-    def prepare_mongo_update_dict(cls, in_data):
+    def prepare_database_update_dict(cls, in_data):
         data = {}
         for key, value in in_data.items():
             if not isinstance(value, dict):
                 data[key] = value
                 continue
 
-            new_value = cls.prepare_mongo_update_dict(value)
+            new_value = cls.prepare_database_update_dict(value)
             for _key, _value in new_value.items():
                 new_key = ".".join((key, _key))
                 data[new_key] = _value
@@ -974,7 +974,7 @@ class MongoSettingsHandler(SettingsHandler):
             "changes": changes
         }
         collection_name = "settings_log"
-        collection = self.mongo_client[self.database_name][collection_name]
+        collection = self.database_client[self.database_name][collection_name]
         collection.insert_one(document)
 
     def _save_project_anatomy_data(self, project_name, data_cache):
@@ -1023,9 +1023,9 @@ class MongoSettingsHandler(SettingsHandler):
         if not update_dict_data and not update_dict_config:
             return
 
-        data_changes = self.prepare_mongo_update_dict(update_dict_data)
+        data_changes = self.prepare_database_update_dict(update_dict_data)
 
-        # Update dictionary of changes that will be changed in mongo
+        # Update dictionary of changes that will be changed in database
         update_dict = {}
         for key, value in data_changes.items():
             new_key = "data.{}".format(key)
@@ -1084,7 +1084,7 @@ class MongoSettingsHandler(SettingsHandler):
     def _check_version_order(self):
         """This method will work only in QuadPype process.
 
-        Will create/update mongo document where QuadPype versions are stored
+        Will create/update database document where QuadPype versions are stored
         in semantic version order.
 
         This document can be then used to find closes version of settings in
@@ -1773,15 +1773,15 @@ class MongoSettingsHandler(SettingsHandler):
             )
 
 
-class MongoUserHandler(UserHandler):
-    """Settings handler that use mongo for store and load user info & settings.
+class DatabaseUserHandler(UserHandler):
+    """Settings handler that use the database to store and load user info & settings.
 
     The Data query criteria is the key "user_id" which can be obtained
     with the `get_user_id` function.
     """
 
     def __init__(self, user_id=None):
-        # Get mongo connection
+        # Get database connection
         from quadpype.lib import get_user_id
 
         if user_id is None:
@@ -1790,12 +1790,12 @@ class MongoUserHandler(UserHandler):
         database_name = os.environ["QUADPYPE_DATABASE_NAME"]
         collection_name = "users"
 
-        self.mongo_client = QuadPypeMongoConnection.get_mongo_client()
+        self.database_client = QuadPypeDBConnection.get_database_client()
 
         self.database_name = database_name
         self.collection_name = collection_name
 
-        self.collection = self.mongo_client[database_name][collection_name]
+        self.collection = self.database_client[database_name][collection_name]
 
         self.user_id = user_id
 

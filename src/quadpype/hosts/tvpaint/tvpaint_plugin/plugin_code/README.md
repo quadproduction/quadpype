@@ -1,8 +1,8 @@
-README for TVPaint Avalon plugin
+README for TVPaint QuadPype plugin
 ================================
 Introduction
 ------------
-This project is dedicated to integrate Avalon functionality to TVPaint.
+This project is dedicated to integrate QuadPype functionality to TVPaint.
 This implementation is using TVPaint plugin (C/C++) which can communicate with python process. The communication should allow to trigger tools or pipeline functions from TVPaint and accept requests from python process at the same time.
 
 Current implementation is based on websocket protocol, using json-rpc communication (specification 2.0). Project is in beta stage, tested only on Windows.

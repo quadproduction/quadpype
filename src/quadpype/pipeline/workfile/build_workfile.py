@@ -230,7 +230,7 @@ class BuildWorkfile:
         """ Returns presets to build workfile for task name.
 
         Presets are loaded for current project set in
-        io.Session["AVALON_PROJECT"], filtered by registered host
+        io.Session["QUADPYPE_PROJECT_NAME"], filtered by registered host
         and entered task name.
 
         Args:

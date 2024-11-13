@@ -1314,7 +1314,7 @@
         "icon": "{}/app_icons/harmony.png",
         "host_name": "harmony",
         "environment": {
-            "AVALON_HARMONY_WORKFILES_ON_LAUNCH": "1"
+            "QUADPYPE_HARMONY_WORKFILES_ON_LAUNCH": "1"
         },
         "variants": {
             "21": {
@@ -1419,7 +1419,7 @@
         "icon": "{}/app_icons/photoshop.png",
         "host_name": "photoshop",
         "environment": {
-            "AVALON_PHOTOSHOP_WORKFILES_ON_LAUNCH": "1",
+            "QUADPYPE_PHOTOSHOP_WORKFILES_ON_LAUNCH": "1",
             "WORKFILES_SAVE_AS": "Yes"
         },
         "variants": {
@@ -1476,7 +1476,7 @@
         "icon": "{}/app_icons/aftereffects.png",
         "host_name": "aftereffects",
         "environment": {
-            "AVALON_AFTEREFFECTS_WORKFILES_ON_LAUNCH": "1",
+            "QUADPYPE_AFTEREFFECTS_WORKFILES_ON_LAUNCH": "1",
             "WORKFILES_SAVE_AS": "Yes"
         },
         "variants": {

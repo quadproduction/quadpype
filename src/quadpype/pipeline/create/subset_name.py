@@ -129,13 +129,13 @@ def get_subset_name(
         return ""
 
     if not host_name:
-        host_name = os.getenv("AVALON_APP")
+        host_name = os.getenv("QUADPYPE_HOST_NAME")
 
     # Use only last part of class family value split by dot (`.`)
     family = family.rsplit(".", 1)[-1]
 
     if project_name is None:
-        project_name = legacy_io.Session["AVALON_PROJECT"]
+        project_name = legacy_io.Session["QUADPYPE_PROJECT_NAME"]
 
     asset_tasks = asset_doc.get("data", {}).get("tasks") or {}
     task_info = asset_tasks.get(task_name) or {}

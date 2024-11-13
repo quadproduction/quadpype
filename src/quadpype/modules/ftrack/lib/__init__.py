@@ -8,7 +8,7 @@ from .constants import (
     FPS_KEYS
 )
 from .settings import (
-    get_ftrack_event_mongo_info
+    get_ftrack_event_database_info
 )
 from .custom_attributes import (
     default_custom_attributes_definition,
@@ -18,7 +18,7 @@ from .custom_attributes import (
     query_custom_attributes
 )
 
-from . import avalon_sync
+from . import database_sync
 from . import credentials
 from .ftrack_base_handler import BaseHandler
 from .ftrack_event_handler import BaseEvent
@@ -34,7 +34,7 @@ __all__ = (
     "CUST_ATTR_INTENT",
     "FPS_KEYS",
 
-    "get_ftrack_event_mongo_info",
+    "get_ftrack_event_database_info",
 
     "default_custom_attributes_definition",
     "app_definitions_from_app_manager",
@@ -42,7 +42,7 @@ __all__ = (
     "get_quadpype_attr",
     "query_custom_attributes",
 
-    "avalon_sync",
+    "database_sync",
 
     "credentials",
 

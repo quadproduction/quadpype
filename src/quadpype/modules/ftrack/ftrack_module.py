@@ -337,7 +337,7 @@ class FtrackModule(
 
             raise SaveWarningExc((
                 "Saving of attributes to ftrack wasn't successful,"
-                " try running Create/Update Avalon Attributes in ftrack."
+                " try running Create/Update QuadPype Attributes in ftrack."
             ))
 
         from .lib import (
@@ -405,7 +405,7 @@ class FtrackModule(
         if missing_attributes:
             raise SaveWarningExc((
                 "Couldn't find custom attribute/s ({}) to update."
-                " Try running Create/Update Avalon Attributes in ftrack."
+                " Try running Create/Update QuadPype Attributes in ftrack."
             ).format(", ".join(missing_attributes)))
 
         if url_change_msg:
@@ -462,7 +462,7 @@ class FtrackModule(
             self.log.warning("Couldn't create ftrack session.", exc_info=True)
             raise SaveWarningExc((
                 "Saving of attributes to ftrack wasn't successful,"
-                " try running Create/Update Avalon Attributes in ftrack."
+                " try running Create/Update QuadPype Attributes in ftrack."
             ))
 
         project_entity = session.query(
@@ -545,7 +545,7 @@ class FtrackModule(
 
         error_msg = (
             "Values were not updated on Ftrack which may cause issues."
-            " try running Create/Update Avalon Attributes in ftrack "
+            " try running Create/Update QuadPype Attributes in ftrack "
             " and resave project settings."
         )
         if missing:
@@ -715,8 +715,6 @@ def cli_main():
               help="Ftrack api user")
 @click_wrap.option("--ftrack-api-key", envvar="FTRACK_API_KEY",
               help="Ftrack api key")
-@click_wrap.option("--legacy", is_flag=True,
-              help="run event server without mongo storing")
 @click_wrap.option("--clockify-api-key", envvar="CLOCKIFY_API_KEY",
               help="Clockify API key.")
 @click_wrap.option("--clockify-workspace", envvar="CLOCKIFY_WORKSPACE",
@@ -726,7 +724,6 @@ def eventserver(
     ftrack_url,
     ftrack_user,
     ftrack_api_key,
-    legacy,
     clockify_api_key,
     clockify_workspace
 ):
@@ -744,7 +741,6 @@ def eventserver(
         ftrack_url,
         ftrack_user,
         ftrack_api_key,
-        legacy,
         clockify_api_key,
         clockify_workspace
     )

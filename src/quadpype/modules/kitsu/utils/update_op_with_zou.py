@@ -13,7 +13,7 @@ from quadpype.client import (
     get_asset_by_name,
     create_project,
 )
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 from quadpype.modules.kitsu.utils.credentials import validate_credentials
 
 from quadpype.lib import Logger
@@ -56,19 +56,19 @@ def get_kitsu_project_name(project_id: str) -> str:
     return project["name"]
 
 
-def set_op_project(dbcon: AvalonMongoDB, project_id: str):
+def set_op_project(dbcon: QuadPypeDBHandler, project_id: str):
     """Set project context.
 
     Args:
-        dbcon (AvalonMongoDB): Connection to DB
+        dbcon (QuadPypeDBHandler): Connection to DB
         project_id (str): Project zou ID
     """
 
-    dbcon.Session["AVALON_PROJECT"] = get_kitsu_project_name(project_id)
+    dbcon.Session["QUADPYPE_PROJECT_NAME"] = get_kitsu_project_name(project_id)
 
 
 def update_op_assets(
-    dbcon: AvalonMongoDB,
+    dbcon: QuadPypeDBHandler,
     gazu_project: dict,
     project_doc: dict,
     entities_list: List[dict],
@@ -78,7 +78,7 @@ def update_op_assets(
     Set 'data' and 'parent' fields.
 
     Args:
-        dbcon (AvalonMongoDB): Connection to DB
+        dbcon (QuadPypeDBHandler): Connection to DB
         gazu_project (dict): Dict of gazu,
         project_doc (dict): Dict of project,
         entities_list (List[dict]): List of zou entities to update
@@ -298,13 +298,13 @@ def update_op_assets(
     return assets_with_update
 
 
-def write_project_to_op(project: dict, dbcon: AvalonMongoDB) -> UpdateOne:
+def write_project_to_op(project: dict, dbcon: QuadPypeDBHandler) -> UpdateOne:
     """Write gazu project to QuadPype database.
     Create project if doesn't exist.
 
     Args:
         project (dict): Gazu project
-        dbcon (AvalonMongoDB): DB to create project in
+        dbcon (QuadPypeDBHandler): DB to create project in
 
     Returns:
         UpdateOne: Update instance for the project
@@ -387,7 +387,7 @@ def sync_all_projects(
         )
 
     # Iterate projects
-    dbcon = AvalonMongoDB()
+    dbcon = QuadPypeDBHandler()
     dbcon.install()
     all_projects = gazu.project.all_projects()
 
@@ -407,7 +407,7 @@ def sync_all_projects(
         # all project
         project_to_sync = all_projects
 
-    # Iterate over MongoDB projects and if it's not present in Kitsu project, deactivate it on MongoDB
+    # Iterate over database projects and if it's not present in Kitsu project, deactivate it on the DB
     for project in dbcon.projects():
         if project['name'] in all_kitsu_projects:
             # Project exists on Kitsu, skip
@@ -420,10 +420,10 @@ def sync_all_projects(
         sync_project_from_kitsu(dbcon, project)
 
 
-def update_project_state_in_db(dbcon: AvalonMongoDB, project: dict, active: bool):
+def update_project_state_in_db(dbcon: QuadPypeDBHandler, project: dict, active: bool):
     bulk_writes = []
     project['data']['active'] = active
-    dbcon.Session["AVALON_PROJECT"] = project["name"]
+    dbcon.Session["QUADPYPE_PROJECT_NAME"] = project["name"]
     bulk_writes.append(
             UpdateOne(
             {"_id": project["_id"]},
@@ -437,7 +437,7 @@ def update_project_state_in_db(dbcon: AvalonMongoDB, project: dict, active: bool
     dbcon.bulk_write(bulk_writes)
 
 
-def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict):
+def sync_project_from_kitsu(dbcon: QuadPypeDBHandler, project: dict):
     """Update QuadPype project in DB with Zou data.
 
     `root_of` is meant to sort entities by type for a better readability in
@@ -446,7 +446,7 @@ def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict):
     settings.
 
     Args:
-        dbcon (AvalonMongoDB): MongoDB connection
+        dbcon (QuadPypeDBHandler): Database connection
         project (dict): Project dict got using gazu.
     """
     bulk_writes = []
@@ -511,7 +511,7 @@ def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict):
         # Try to find the newly created project document on QuadPype DB
         project_dict = get_project(project_name)
 
-    dbcon.Session["AVALON_PROJECT"] = project_name
+    dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
 
     # Query all assets of the local project
     zou_ids_and_asset_docs = {

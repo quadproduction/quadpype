@@ -29,8 +29,8 @@ def show(root=None, debug=False, parent=None, use_context=True, save=True):
     IWorkfileHost.validate_workfile_methods(host)
 
     if debug:
-        legacy_io.Session["AVALON_ASSET"] = "Mock"
-        legacy_io.Session["AVALON_TASK"] = "Testing"
+        legacy_io.Session["QUADPYPE_ASSET_NAME"] = "Mock"
+        legacy_io.Session["QUADPYPE_TASK_NAME"] = "Testing"
 
     with qt_app_context():
         window = Window(parent=parent)
@@ -38,8 +38,8 @@ def show(root=None, debug=False, parent=None, use_context=True, save=True):
 
         if use_context:
             context = {
-                "asset": legacy_io.Session["AVALON_ASSET"],
-                "task": legacy_io.Session["AVALON_TASK"]
+                "asset": legacy_io.Session["QUADPYPE_ASSET_NAME"],
+                "task": legacy_io.Session["QUADPYPE_TASK_NAME"]
             }
             window.set_context(context)
 

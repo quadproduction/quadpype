@@ -201,11 +201,11 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
             "FTRACK_API_USER",
             "FTRACK_SERVER",
             "QUADPYPE_SG_USER",
-            "AVALON_DB",
-            "AVALON_PROJECT",
-            "AVALON_ASSET",
-            "AVALON_TASK",
-            "AVALON_APP_NAME",
+            "QUADPYPE_PROJECTS_DB_NAME",
+            "QUADPYPE_PROJECT_NAME",
+            "QUADPYPE_ASSET_NAME",
+            "QUADPYPE_TASK_NAME",
+            "QUADPYPE_HOST_DISPLAY_NAME",
             "QUADPYPE_DEV"
             "IS_TEST"
         ]
@@ -214,9 +214,9 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         if is_running_from_build():
             keys.append("QUADPYPE_VERSION")
 
-        # Add mongo url if it's enabled
-        if self._instance.context.data.get("deadlinePassMongoUrl"):
-            keys.append("QUADPYPE_MONGO")
+        # Add the database URI to the env variables if needed
+        if self._instance.context.data.get("deadlineAddDatabaseURI"):
+            keys.append("QUADPYPE_DB_URI")
 
         environment = dict({key: os.environ[key] for key in keys
                             if key in os.environ}, **legacy_io.Session)

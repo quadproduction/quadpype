@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 """Editor for shader definitions.
 
-Shader names are stored as simple text file over GridFS in mongodb.
+Shader names are stored as simple text file over GridFS in database.
 
 """
 import os
 from qtpy import QtWidgets, QtCore, QtGui
-from quadpype.client.mongo import QuadPypeMongoConnection
+from quadpype.client.database import QuadPypeDBConnection
 from quadpype import resources
 import gridfs
 
 
 DEFINITION_FILENAME = "{}/maya/shader_definition.txt".format(
-    os.getenv("AVALON_PROJECT"))
+    os.getenv("QUADPYPE_PROJECT_NAME"))
 
 
 class ShaderDefinitionsEditor(QtWidgets.QWidget):
@@ -22,9 +22,9 @@ class ShaderDefinitionsEditor(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._mongo = QuadPypeMongoConnection.get_mongo_client()
+        self._database_client = QuadPypeDBConnection.get_database_client()
         self._gridfs = gridfs.GridFS(
-            self._mongo[os.getenv("QUADPYPE_DATABASE_NAME")])
+            self._database_client[os.getenv("QUADPYPE_DATABASE_NAME")])
         self._editor = None
 
         self._original_content = self._read_definition_file()

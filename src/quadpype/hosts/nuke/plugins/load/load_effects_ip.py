@@ -58,7 +58,7 @@ class LoadEffectsInputProcess(load.LoaderPlugin):
         object_name = "{}_{}".format(name, namespace)
 
         # prepare data for imprinting
-        # add additional metadata from the version to imprint to Avalon knob
+        # add additional metadata from the version to imprint to QuadPype knob
         add_keys = ["frameStart", "frameEnd", "handleStart", "handleEnd",
                     "source", "author", "fps"]
 

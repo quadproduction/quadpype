@@ -94,7 +94,7 @@ def stub():
         Convenience function to get server RPC stub to call methods directed
         for host (Photoshop).
         It expects already created connection, started from client.
-        Currently created when panel is opened (PS: Window>Extensions>Avalon)
+        Currently created when panel is opened (PS: Window>Extensions>QuadPype)
     :return: <PhotoshopClientStub> where functions could be called from
     """
     ps_stub = PhotoshopServerStub()

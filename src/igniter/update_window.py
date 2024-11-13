@@ -98,7 +98,7 @@ class UpdateWindow(QtWidgets.QDialog):
     def _run_update(self):
         """Start install process.
 
-        This will once again validate entered path and mongo if ok, start
+        This will once again validate entered path and database if ok, start
         working thread that will do actual job.
         """
         # Check if install thread is not already running

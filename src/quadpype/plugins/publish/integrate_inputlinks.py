@@ -102,7 +102,7 @@ class IntegrateInputLinks(pyblish.api.ContextPlugin):
         """
         # NOTE:
         # using OrderedDict() here is just for ensuring field order between
-        # python versions, if we ever need to use mongodb operation '$addToSet'
+        # python versions, if we ever need to use database operation '$addToSet'
         # to update and avoid duplicating elements in 'inputLinks' array in the
         # future.
         link = OrderedDict()

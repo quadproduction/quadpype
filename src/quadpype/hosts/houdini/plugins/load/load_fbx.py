@@ -35,7 +35,7 @@ class FbxLoader(load.LoaderPlugin):
         self[:] = nodes
 
         # Call containerise function which does some automations for you
-        #  like moving created nodes to the AVALON_CONTAINERS subnetwork
+        #  like moving created nodes to the QUADPYPE_CONTAINERS subnetwork
         containerised_nodes = pipeline.containerise(
             node_name,
             namespace,
@@ -95,7 +95,7 @@ class FbxLoader(load.LoaderPlugin):
         it'll be much easier to build it in the root obj level.
 
         Afterwards, your tree will be automatically moved to
-        '/obj/AVALON_CONTAINERS' subnetwork.
+        '/obj/QUADPYPE_CONTAINERS' subnetwork.
         """
         import hou
 

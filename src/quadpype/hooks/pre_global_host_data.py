@@ -49,7 +49,7 @@ class GlobalHostDataHook(PreLaunchHook):
 
     def prepare_global_data(self):
         """Prepare global objects to `data` that will be used for sure."""
-        # Mongo documents
+        # Database documents
         project_name = self.data.get("project_name")
         if not project_name:
             self.log.info(

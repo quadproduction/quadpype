@@ -36,7 +36,7 @@ from quadpype.pipeline import (
     deregister_inventory_action_path,
     deregister_creator_plugin_path,
     deregister_builder_action_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.pipeline.load import any_outdated_containers
 from quadpype.pipeline.workfile.workfile_template_builder import (
@@ -76,7 +76,7 @@ CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 INVENTORY_PATH = os.path.join(PLUGINS_DIR, "inventory")
 BUILDER_PATH = os.path.join(PLUGINS_DIR, "builder")
 
-AVALON_CONTAINERS = ":AVALON_CONTAINERS"
+QUADPYPE_CONTAINERS = ":QUADPYPE_CONTAINERS"
 
 
 class MayaHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
@@ -260,7 +260,7 @@ def _set_project():
         None
 
     """
-    workdir = legacy_io.Session["AVALON_WORKDIR"]
+    workdir = legacy_io.Session["QUADPYPE_WORKDIR_PATH"]
 
     try:
         os.makedirs(workdir)
@@ -375,13 +375,13 @@ def parse_container(container):
 
 
 def _ls():
-    """Yields Avalon container node names.
+    """Yields QuadPype container node names.
 
     Used by `ls()` to retrieve the nodes and then query the full container's
     data.
 
     Yields:
-        str: Avalon container node name (objectSet)
+        str: QuadPype container node name (objectSet)
 
     """
 
@@ -391,12 +391,12 @@ def _ls():
             yield iterator.thisNode()
             iterator.next()
 
-    ids = {AVALON_CONTAINER_ID,
+    ids = {QUADPYPE_CONTAINER_ID,
            # Backwards compatibility
            "pyblish.mindbender.container"}
 
     # Iterate over all 'set' nodes in the scene to detect whether
-    # they have the avalon container ".id" attribute.
+    # they have the quadpype container ".id" attribute.
     fn_dep = om.MFnDependencyNode()
     iterator = om.MItDependencyNodes(om.MFn.kSet)
     for mobject in _maya_iterate(iterator):
@@ -457,7 +457,7 @@ def containerise(name,
 
     data = [
         ("schema", "quadpype:container-2.0"),
-        ("id", AVALON_CONTAINER_ID),
+        ("id", QUADPYPE_CONTAINER_ID),
         ("name", name),
         ("namespace", namespace),
         ("loader", loader),
@@ -468,11 +468,11 @@ def containerise(name,
         cmds.addAttr(container, longName=key, dataType="string")
         cmds.setAttr(container + "." + key, str(value), type="string")
 
-    main_container = cmds.ls(AVALON_CONTAINERS, type="objectSet")
+    main_container = cmds.ls(QUADPYPE_CONTAINERS, type="objectSet")
     if not main_container:
-        main_container = cmds.sets(empty=True, name=AVALON_CONTAINERS)
+        main_container = cmds.sets(empty=True, name=QUADPYPE_CONTAINERS)
 
-        # Implement #399: Maya 2019+ hide AVALON_CONTAINERS on creation..
+        # Implement #399: Maya 2019+ hide QUADPYPE_CONTAINERS on creation..
         if cmds.attributeQuery("hiddenInOutliner",
                                node=main_container,
                                exists=True):
@@ -650,7 +650,7 @@ def on_task_changed():
     # Run
     menu.update_menu_task_label()
 
-    workdir = legacy_io.Session["AVALON_WORKDIR"]
+    workdir = legacy_io.Session["QUADPYPE_WORKDIR_PATH"]
     if os.path.exists(workdir):
         log.info("Updating Maya workspace for task change to %s", workdir)
         _set_project()
@@ -700,7 +700,7 @@ def workfile_save_before_xgen(event):
 
     import xgenm
 
-    current_work_dir = legacy_io.Session["AVALON_WORKDIR"].replace("\\", "/")
+    current_work_dir = legacy_io.Session["QUADPYPE_WORKDIR_PATH"].replace("\\", "/")
     expected_work_dir = event.data["workdir_path"].replace("\\", "/")
     if current_work_dir == expected_work_dir:
         return

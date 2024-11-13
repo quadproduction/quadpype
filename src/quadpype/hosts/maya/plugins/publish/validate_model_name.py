@@ -9,7 +9,7 @@ import pyblish.api
 from maya import cmds
 
 import quadpype.hosts.maya.api.action
-from quadpype.client.mongo import QuadPypeMongoConnection
+from quadpype.client.database import QuadPypeDBConnection
 from quadpype.hosts.maya.api.shader_definition_editor import DEFINITION_FILENAME
 from quadpype.pipeline.publish import (
     OptionalPyblishPluginMixin, PublishValidationError, ValidateContentsOrder)
@@ -108,7 +108,7 @@ class ValidateModelName(pyblish.api.InstancePlugin,
                 cls.log.error("Missing shader name definition file.")
                 return True
         else:
-            client = QuadPypeMongoConnection.get_mongo_client()
+            client = QuadPypeDBConnection.get_database_client()
             fs = gridfs.GridFS(client[os.getenv("QUADPYPE_DATABASE_NAME")])
             shader_file = fs.find_one({"filename": cls.database_file})
             if not shader_file:

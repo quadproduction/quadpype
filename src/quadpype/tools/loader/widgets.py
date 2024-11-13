@@ -433,7 +433,7 @@ class SubsetWidget(QtWidgets.QWidget):
         """Shows menu with loader actions on Right-click.
 
         Registered actions are filtered by selection and help of
-        `loaders_from_representation` from avalon api. Intersection of actions
+        `loaders_from_representation` from database api. Intersection of actions
         is shown when more subset is selected. When there are not available
         actions for selected subsets then special action is shown (works as
         info message to user): "*No compatible loaders for your selection"
@@ -1346,7 +1346,7 @@ class RepresentationWidget(QtWidgets.QWidget):
         """Shows menu with loader actions on Right-click.
 
         Registered actions are filtered by selection and help of
-        `loaders_from_representation` from avalon api. Intersection of actions
+        `loaders_from_representation` from database api. Intersection of actions
         is shown when more subset is selected. When there are not available
         actions for selected subsets then special action is shown (works as
         info message to user): "*No compatible loaders for your selection"

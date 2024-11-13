@@ -19,7 +19,7 @@ from quadpype.pipeline import (
     register_loader_plugin_path,
     register_creator_plugin_path,
     register_inventory_action_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
     get_current_asset_name,
     get_current_task_name,
 )
@@ -37,8 +37,8 @@ from .lib import (
     start_workfile_template_builder,
     launch_workfiles_app,
     check_inventory_versions,
-    set_avalon_knob_data,
-    read_avalon_data,
+    set_quadype_knob_data,
+    read_quadype_data,
     on_script_load,
     dirmap_file_name_filter,
     add_scripts_menu,
@@ -73,7 +73,7 @@ LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
 CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 INVENTORY_PATH = os.path.join(PLUGINS_DIR, "inventory")
 
-MENU_LABEL = os.environ["AVALON_LABEL"]
+MENU_LABEL = os.environ["QUADPYPE_LABEL"]
 
 # registering pyblish gui regarding settings in presets
 if os.getenv("PYBLISH_GUI", None):
@@ -124,7 +124,7 @@ class NukeHost(
         register_creator_plugin_path(CREATE_PATH)
         register_inventory_action_path(INVENTORY_PATH)
 
-        # Register Avalon event for workfiles loading.
+        # Register QuadPype event for workfiles loading.
         register_event_callback("workio.open_file", check_inventory_versions)
         register_event_callback("taskChanged", change_context_label)
 
@@ -233,9 +233,9 @@ def get_context_label():
 
 
 def _install_menu():
-    """Install Avalon menu into Nuke's main menu bar."""
+    """Install QuadPype menu into Nuke's main menu bar."""
 
-    # uninstall original avalon menu
+    # uninstall original quadype menu
     main_window = get_main_window()
     menubar = nuke.menu("Nuke")
     menu = menubar.addMenu(MENU_LABEL)
@@ -487,7 +487,7 @@ def containerise(node,
     data = OrderedDict(
         [
             ("schema", "quadpype:container-2.0"),
-            ("id", AVALON_CONTAINER_ID),
+            ("id", QUADPYPE_CONTAINER_ID),
             ("name", name),
             ("namespace", namespace),
             ("loader", str(loader)),
@@ -497,7 +497,7 @@ def containerise(node,
         **data or dict()
     )
 
-    set_avalon_knob_data(node, data)
+    set_quadype_knob_data(node, data)
 
     # set tab to first native
     node.setTab(0)
@@ -517,7 +517,7 @@ def parse_container(node):
         dict: The container schema data for this container node.
 
     """
-    data = read_avalon_data(node)
+    data = read_quadype_data(node)
 
     # If not all required data return the empty container
     required = ["schema", "id", "name",
@@ -555,7 +555,7 @@ def update_container(node, keys=None):
         raise TypeError("Not a valid container node.")
 
     container.update(keys)
-    node = set_avalon_knob_data(node, container)
+    node = set_quadype_knob_data(node, container)
 
     return node
 
@@ -568,7 +568,7 @@ def ls():
     a time.
 
     See the `container.json` schema for details on how it should look,
-    and the Maya equivalent, which is in `avalon.maya.pipeline`
+    and the Maya equivalent, which is in `quadype.maya.pipeline`
     """
     all_nodes = nuke.allNodes(recurseGroups=False)
 
@@ -607,14 +607,14 @@ def list_instances(creator_id=None):
             # pass if disable knob doesn't exist
             pass
 
-        # get data from avalon knob
+        # get data from quadype knob
         instance_data = get_node_data(
             node, INSTANCE_DATA_KNOB)
 
         if not instance_data:
             continue
 
-        if instance_data["id"] != "pyblish.avalon.instance":
+        if instance_data["id"] != "pyblish.quadpype.instance":
             continue
 
         if creator_id and instance_data["creator_identifier"] != creator_id:

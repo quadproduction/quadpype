@@ -2,8 +2,8 @@ from quadpype.pipeline.create.creator_plugins import SubsetConvertorPlugin
 from quadpype.hosts.nuke.api.lib import (
     INSTANCE_DATA_KNOB,
     get_node_data,
-    get_avalon_knob_data,
-    AVALON_TAB,
+    get_quadype_knob_data,
+    QUADPYPE_TAB,
 )
 from quadpype.hosts.nuke.api.plugin import convert_to_valid_instaces
 
@@ -24,17 +24,17 @@ class LegacyConverted(SubsetConvertorPlugin):
             if get_node_data(node, INSTANCE_DATA_KNOB):
                 continue
 
-            if AVALON_TAB not in node.knobs():
+            if QUADPYPE_TAB not in node.knobs():
                 continue
 
-            # get data from avalon knob
-            avalon_knob_data = get_avalon_knob_data(
-                node, ["avalon:", "ak:"], create=False)
+            # get data from quadype knob
+            quadype_knob_data = get_quadype_knob_data(
+                node, ["quadype:", "ak:"], create=False)
 
-            if not avalon_knob_data:
+            if not quadype_knob_data:
                 continue
 
-            if avalon_knob_data["id"] != "pyblish.avalon.instance":
+            if quadype_knob_data["id"] != "pyblish.quadpype.instance":
                 continue
 
             # catch and break

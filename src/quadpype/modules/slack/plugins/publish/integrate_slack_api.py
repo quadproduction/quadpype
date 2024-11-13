@@ -6,7 +6,7 @@ from datetime import datetime
 from abc import ABC, abstractmethod
 import time
 
-from quadpype.client import QuadPypeMongoConnection
+from quadpype.client import QuadPypeDBConnection
 from quadpype.pipeline.publish import get_publish_repre_path
 from quadpype.lib.plugin_tools import prepare_template_data
 
@@ -84,9 +84,9 @@ class IntegrateSlackAPI(pyblish.api.InstancePlugin):
                     "project": project,
                     "created_dt": datetime.now()
                 }
-                mongo_client = QuadPypeMongoConnection.get_mongo_client()
+                database_client = QuadPypeDBConnection.get_database_client()
                 database_name = os.environ["QUADPYPE_DATABASE_NAME"]
-                dbcon = mongo_client[database_name]["notification_messages"]
+                dbcon = database_client[database_name]["notification_messages"]
                 dbcon.insert_one(msg)
 
     def _handle_review_upload(self, message, message_profile, publish_files,

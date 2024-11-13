@@ -11,7 +11,7 @@ import pyblish.api
 from quadpype.pipeline import (
     register_creator_plugin_path,
     register_loader_plugin_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.hosts.max.api.menu import QuadPypeMenu
 from quadpype.hosts.max.api import lib
@@ -150,7 +150,7 @@ def ls() -> list:
     objs = rt.objects
     containers = [
         obj for obj in objs
-        if rt.getUserProp(obj, "id") == AVALON_CONTAINER_ID
+        if rt.getUserProp(obj, "id") == QUADPYPE_CONTAINER_ID
     ]
 
     for container in sorted(containers, key=attrgetter("name")):
@@ -161,7 +161,7 @@ def containerise(name: str, nodes: list, context,
                  namespace=None, loader=None, suffix="_CON"):
     data = {
         "schema": "quadpype:container-2.0",
-        "id": AVALON_CONTAINER_ID,
+        "id": QUADPYPE_CONTAINER_ID,
         "name": name,
         "namespace": namespace or "",
         "loader": loader,

@@ -71,7 +71,7 @@ class TasksModel(QtGui.QStandardItemModel):
         return super(TasksModel, self).headerData(section, orientation, role)
 
     def _get_current_project(self):
-        return self.dbcon.Session.get("AVALON_PROJECT")
+        return self.dbcon.Session.get("QUADPYPE_PROJECT_NAME")
 
     def set_asset_id(self, asset_id):
         asset_doc = None
@@ -94,7 +94,7 @@ class TasksModel(QtGui.QStandardItemModel):
         """Set assets to track by their database id
 
         Arguments:
-            asset_doc (dict): Asset document from MongoDB.
+            asset_doc (dict): Asset document from the database.
         """
         if self._loaded_project_name != self._get_current_project():
             self._refresh_project_doc()

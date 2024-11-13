@@ -47,7 +47,7 @@ class CollectTimelineInstances(pyblish.api.ContextPlugin):
             if not marker_data:
                 continue
 
-            if marker_data.get("id") != "pyblish.avalon.instance":
+            if marker_data.get("id") != "pyblish.quadpype.instance":
                 continue
 
             self.log.debug("__ segment.name: {}".format(

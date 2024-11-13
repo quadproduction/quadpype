@@ -635,8 +635,8 @@ class PublishClip:
         self.track_index = int(timeline_item_data["track"]["index"])
 
         # adding tag.family into tag
-        if kwargs.get("avalon"):
-            self.tag_data.update(kwargs["avalon"])
+        if kwargs.get("quadpype"):
+            self.tag_data.update(kwargs["quadpype"])
 
         # adding ui inputs if any
         self.ui_inputs = kwargs.get("ui_inputs", {})

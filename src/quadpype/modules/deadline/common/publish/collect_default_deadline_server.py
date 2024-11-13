@@ -23,7 +23,7 @@ class CollectDefaultDeadlineServer(pyblish.api.ContextPlugin):
     order = pyblish.api.CollectorOrder + 0.0025
     label = "Default Deadline Webservice"
 
-    pass_mongo_url = False
+    add_database_uri = False
 
     def process(self, context):
         try:
@@ -38,7 +38,7 @@ class CollectDefaultDeadlineServer(pyblish.api.ContextPlugin):
         if deadline_servers:
             deadline_server_name = deadline_servers[0]
 
-        context.data["deadlinePassMongoUrl"] = self.pass_mongo_url
+        context.data["deadlineAddDatabaseURI"] = self.add_database_uri
 
         deadline_webservice = None
         if deadline_server_name:

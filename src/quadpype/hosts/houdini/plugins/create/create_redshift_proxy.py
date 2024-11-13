@@ -45,7 +45,7 @@ class CreateRedshiftProxy(plugin.HoudiniCreator):
 
         instance_node.setParms(parms)
 
-        # Lock some Avalon attributes
+        # Lock some QuadPype attributes
         to_lock = ["family", "id", "prim_to_detail_pattern"]
         self.lock_parameters(instance_node, to_lock)
 

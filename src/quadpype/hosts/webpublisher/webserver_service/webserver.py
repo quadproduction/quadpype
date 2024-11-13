@@ -6,7 +6,7 @@ import requests
 import json
 import subprocess
 
-from quadpype.client import QuadPypeMongoConnection
+from quadpype.client import QuadPypeDBConnection
 from quadpype.modules import ModulesManager
 from quadpype.lib import Logger
 
@@ -126,9 +126,9 @@ def run_webserver(executable, upload_dir, host=None, port=None):
 
 def reprocess_failed(upload_dir, webserver_url):
     # log.info("check_reprocesable_records")
-    mongo_client = QuadPypeMongoConnection.get_mongo_client()
+    database_client = QuadPypeDBConnection.get_database_client()
     database_name = os.environ["QUADPYPE_DATABASE_NAME"]
-    dbcon = mongo_client[database_name]["webpublishes"]
+    dbcon = database_client[database_name]["webpublishes"]
 
     results = dbcon.find({"status": REPROCESS_STATUS})
     reprocessed_batches = set()

@@ -13,7 +13,7 @@ from quadpype.pipeline import (
     register_creator_plugin_path,
     register_loader_plugin_path,
     register_inventory_action_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.pipeline.load import any_outdated_containers
 from quadpype.hosts.houdini import HOUDINI_HOST_DIR
@@ -27,7 +27,7 @@ from quadpype.lib import (
 
 log = logging.getLogger("quadpype.hosts.houdini")
 
-AVALON_CONTAINERS = "/obj/AVALON_CONTAINERS"
+QUADPYPE_CONTAINERS = "/obj/QUADPYPE_CONTAINERS"
 CONTEXT_CONTAINER = "/obj/QuadPypeContext"
 IS_HEADLESS = not hasattr(hou, "ui")
 
@@ -216,12 +216,12 @@ def containerise(name,
 
     """
 
-    # Ensure AVALON_CONTAINERS subnet exists
-    subnet = hou.node(AVALON_CONTAINERS)
+    # Ensure QUADPYPE_CONTAINERS subnet exists
+    subnet = hou.node(QUADPYPE_CONTAINERS)
     if subnet is None:
         obj_network = hou.node("/obj")
         subnet = obj_network.createNode("subnet",
-                                        node_name="AVALON_CONTAINERS")
+                                        node_name="QUADPYPE_CONTAINERS")
 
     # Create proper container name
     container_name = "{}_{}".format(name, suffix or "CON")
@@ -230,7 +230,7 @@ def containerise(name,
 
     data = {
         "schema": "quadpype:container-2.0",
-        "id": AVALON_CONTAINER_ID,
+        "id": QUADPYPE_CONTAINER_ID,
         "name": name,
         "namespace": namespace,
         "loader": str(loader),
@@ -271,7 +271,7 @@ def parse_container(container):
 
 def ls():
     containers = []
-    for identifier in (AVALON_CONTAINER_ID,
+    for identifier in (QUADPYPE_CONTAINER_ID,
                        "pyblish.mindbender.container"):
         containers += lib.lsattr("id", identifier)
 

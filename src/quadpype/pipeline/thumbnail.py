@@ -84,7 +84,7 @@ class TemplateResolver(ThumbnailResolver):
             return
 
         thumbnail_root_format_key = "{thumbnail_root}"
-        thumbnail_root = os.getenv("AVALON_THUMBNAIL_ROOT") or ""
+        thumbnail_root = os.getenv("QUADPYPE_THUMBNAIL_ROOT") or ""
         # Check if template require thumbnail root and if is avaiable
         if thumbnail_root_format_key in template and not thumbnail_root:
             return

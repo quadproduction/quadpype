@@ -32,7 +32,7 @@ function dump_projects($HOST_NAME, $PORT_NUM) {
     } else {
         Remove-Item "${TMP_FOLDER_PATH}\*" -Recurse -Force
     }
-    $RET_VAL = mongodump --uri="${HOST_NAME}":"${PORT_NUM}" --db=avalon --out $TMP_FOLDER_PATH --quiet | mongorestore --uri="${HOST_NAME}":"${PORT_NUM}" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
+    $RET_VAL = mongodump --uri="${HOST_NAME}":"${PORT_NUM}" --db=quadpype-projects --out $TMP_FOLDER_PATH --quiet | mongorestore --uri="${HOST_NAME}":"${PORT_NUM}" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
     return $RET_VAL
 }
 
@@ -108,7 +108,7 @@ function main {
 
     # Get the MongoDB to fetch and put in the localhost DB
     if (!$MONGO_URI) {
-        $MONGO_URI = [System.Environment]::GetEnvironmentVariable("QUADPYPE_MONGO", [System.EnvironmentVariableTarget]::User)
+        $MONGO_URI = [System.Environment]::GetEnvironmentVariable("QUADPYPE_DB_URI", [System.EnvironmentVariableTarget]::User)
 
         # In case YES_TO_ALL we skip asking and assume we can use the registered URI
         if (!$YES_TO_ALL -And $MONGO_URI) {

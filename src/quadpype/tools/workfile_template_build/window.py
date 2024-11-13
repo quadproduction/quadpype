@@ -27,7 +27,7 @@ class WorkfileBuildPlaceholderDialog(QtWidgets.QDialog):
 
         host_name = getattr(self._host, "name", None)
         if not host_name:
-            host_name = legacy_io.Session.get("AVALON_APP") or "NA"
+            host_name = legacy_io.Session.get("QUADPYPE_HOST_NAME") or "NA"
         self._host_name = host_name
 
         plugins_combo = QtWidgets.QComboBox(self)

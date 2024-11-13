@@ -341,7 +341,7 @@ class _SyncRepresentationModel(QtCore.QAbstractTableModel):
 
     def set_column_filtering(self, checked_values):
         """
-            Sets dictionary used in '$match' part of MongoDB aggregate
+            Sets dictionary used in '$match' part of the database aggregate
 
             Args:
                 checked_values(dict): key:values ({'status':{1:"Foo",3:"Bar"}}
@@ -368,7 +368,7 @@ class _SyncRepresentationModel(QtCore.QAbstractTableModel):
 
             Returns:
                 (dict) of value: label shown in filtering menu
-                'value' is used in MongoDB query, 'label' is human readable for
+                'value' is used in the database query, 'label' is human readable for
                 menu
                 for some columns ('subset') might be 'value' and 'label' same
         """
@@ -402,7 +402,7 @@ class _SyncRepresentationModel(QtCore.QAbstractTableModel):
             Used for keeping selection after refresh.
 
             Args:
-                id (str): MongoDB _id
+                id (str): Database _id
             Returns:
                 (QModelIndex)
         """
@@ -561,7 +561,7 @@ class SyncRepresentationSummaryModel(_SyncRepresentationModel):
             Args:
                 local_site (str): name of local site (mine)
                 remote_site (str): name of cloud provider (theirs)
-                representations (Mongo Cursor) - mimics result set, 1 object
+                representations (Database Cursor) - mimics result set, 1 object
                     with paginatedResults array and totalCount array
         """
         result = representations.next()
@@ -941,7 +941,7 @@ class SyncRepresentationDetailModel(_SyncRepresentationModel):
             sync_server (SyncServer) - object to call server operations (update
                 db status, set site status...)
             header (list) - names of visible columns
-            _id (string) - MongoDB _id of representation
+            _id (string) - Database _id of representation
             project (string) - collection name, all queries must be called on
                 a specific collection
     """
@@ -1035,7 +1035,7 @@ class SyncRepresentationDetailModel(_SyncRepresentationModel):
             Args:
                 local_site (str): name of local site (mine)
                 remote_site (str): name of cloud provider (theirs)
-                representations (Mongo Cursor) - mimics result set, 1 object
+                representations (Database Cursor) - mimics result set, 1 object
                     with paginatedResults array and totalCount array
         """
         # representations is a Cursor, get first
@@ -1110,7 +1110,7 @@ class SyncRepresentationDetailModel(_SyncRepresentationModel):
 
             Returns:
                 [(dict)] - list with single dict - appropriate for aggregate
-                    function for MongoDB
+                    function for the database
         """
         if limit == 0:
             limit = SyncRepresentationSummaryModel.PAGE_SIZE

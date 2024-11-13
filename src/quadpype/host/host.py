@@ -12,49 +12,6 @@ class HostBase(ABC):
 
     Host is pipeline implementation of DCC application. This class should help
     to identify what must/should/can be implemented for specific functionality.
-
-    Compared to 'avalon' concept:
-    What was before considered as functions in host implementation folder. The
-    host implementation should primarily care about adding ability of creation
-    (mark subsets to be published) and optionally about referencing published
-    representations as containers.
-
-    Host may need extend some functionality like working with workfiles
-    or loading. Not all host implementations may allow that for those purposes
-    can be logic extended with implementing functions for the purpose. There
-    are prepared interfaces to be able identify what must be implemented to
-    be able use that functionality.
-    - current statement is that it is not required to inherit from interfaces
-        but all of the methods are validated (only their existence!)
-
-    # Installation of host before (avalon concept):
-    ```python
-    from quadpype.pipeline import install_host
-    import quadpype.hosts.maya.api as host
-
-    install_host(host)
-    ```
-
-    # Installation of host now:
-    ```python
-    from quadpype.pipeline import install_host
-    from quadpype.hosts.maya.api import MayaHost
-
-    host = MayaHost()
-    install_host(host)
-    ```
-
-    Todo:
-        - move content of 'install_host' as method of this class
-            - register host object
-            - install global plugin paths
-        - store registered plugin paths to this object
-        - handle current context (project, asset, task)
-            - this must be done in many separated steps
-        - have it's object of host tools instead of using globals
-
-    This implementation will probably change over time when more
-        functionality and responsibility will be added.
     """
 
     _log = None
@@ -63,7 +20,6 @@ class HostBase(ABC):
         """Initialization of host.
 
         Register DCC callbacks, host specific plugin paths, targets etc.
-        (Part of what 'install' did in 'avalon' concept.)
 
         Note:
             At this moment global "installation" must happen before host
@@ -104,7 +60,7 @@ class HostBase(ABC):
             Union[str, None]: Current project name.
         """
 
-        return os.getenv("AVALON_PROJECT")
+        return os.getenv("QUADPYPE_PROJECT_NAME")
 
     def get_current_asset_name(self):
         """
@@ -112,7 +68,7 @@ class HostBase(ABC):
             Union[str, None]: Current asset name.
         """
 
-        return os.getenv("AVALON_ASSET")
+        return os.getenv("QUADPYPE_ASSET_NAME")
 
     def get_current_task_name(self):
         """
@@ -120,7 +76,7 @@ class HostBase(ABC):
             Union[str, None]: Current task name.
         """
 
-        return os.getenv("AVALON_TASK")
+        return os.getenv("QUADPYPE_TASK_NAME")
 
     def get_current_context(self):
         """Get current context information.

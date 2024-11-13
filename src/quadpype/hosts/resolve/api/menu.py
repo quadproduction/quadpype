@@ -7,7 +7,7 @@ from quadpype.tools.utils import host_tools
 from quadpype.pipeline import registered_host
 
 
-MENU_LABEL = os.environ["AVALON_LABEL"]
+MENU_LABEL = os.environ["QUADPYPE_LABEL"]
 
 
 def load_stylesheet():
