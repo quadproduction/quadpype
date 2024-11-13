@@ -7,62 +7,91 @@ function transferSettings(sourceDbName, targetDbName) {
 
     // Find all documents in source.settings except "local_settings" and "versions_order"
     settingsDocuments = sourceSettings.find({
-        type: { $nin: ["local_settings", "versions_order"] }
+        type: { $nin: ["local_settings", "versions_order", "last_opened_settings_ui"] }
     }).toArray();
 
     latestVersionedSettings = {};
+    latestVersionedAnatomy = null;
+    latestVersionedSystemSettings = null;
 
     // Insert each document into the target.settings collection
     settingsDocuments.forEach(function(document) {
+        if (document.last_saved_info) {
+            document.last_saved_info.quadpype_version = "4.0.0";
+            document.last_saved_info.workstation_name = document.last_saved_info.hostname;
+            document.last_saved_info.host_ip = document.last_saved_info.hostip;
+            document.last_saved_info.user_id = document.last_saved_info.local_id;
+            delete document.last_saved_info.hostname;
+            delete document.last_saved_info.hostip;
+            delete document.last_saved_info.local_id;
+            delete document.last_saved_info.openpype_version;
+        }
+
+        if (document.version) {
+            document.version = "4.0.0";
+        }
+
         if (document.type === "global_settings") {
             document.production_version = "4.0.0";
             document.staging_version = "4.0.0";
             document.data.quadpype_path = document.data.openpype_path;
             delete document.data.openpype_path;
+            return
         }
 
-        if (document.type === "project_settings_versioned") {
-            if (!(document.last_saved_info && document.last_saved_info.timestamp && document.project_name)) {
-                return;
-            }
-            projectName = document.project_name;
-            timestamp = new Date(document.last_saved_info.timestamp);
-
-            if (!latestVersionedSettings[projectName]) {
-                latestVersionedSettings[projectName] = document;
-            } else {
-                existingTimestamp = new Date(latestVersionedSettings[projectName].last_saved_info.timestamp);
-                if (timestamp > existingTimestamp) {
-                    latestVersionedSettings[projectName] = document;
+        if (document.type === "project_anatomy_versioned") {
+            if (document.last_saved_info && document.last_saved_info.timestamp) {
+                const timestamp = new Date(document.last_saved_info.timestamp);
+                if (!latestVersionedAnatomy || timestamp > new Date(latestVersionedAnatomy.last_saved_info.timestamp)) {
+                    latestVersionedAnatomy = document;
                 }
             }
-        } else {
-            if (document.last_saved_info) {
-                document.last_saved_info.quadpype_version = "4.0.0";
-                document.last_saved_info.workstation_name = document.last_saved_info.hostname;
-                document.last_saved_info.host_ip = document.last_saved_info.hostip;
-                document.last_saved_info.user_id = document.last_saved_info.local_id;
-                delete document.last_saved_info.hostname;
-                delete document.last_saved_info.hostip;
-                delete document.last_saved_info.local_id;
-                delete document.last_saved_info.openpype_version;
-            }
-            targetSettings.insert(document);
+            return;
         }
+
+        if (document.type === "system_settings_versioned") {
+            if (document.last_saved_info && document.last_saved_info.timestamp) {
+                const timestamp = new Date(document.last_saved_info.timestamp);
+                if (!latestVersionedSystemSettings || timestamp > new Date(latestVersionedSystemSettings.last_saved_info.timestamp)) {
+                    latestVersionedSystemSettings = document;
+                }
+            }
+            return;
+        }
+
+
+        if (document.type === "project_settings_versioned") {
+            if (document.last_saved_info && document.last_saved_info.timestamp && document.project_name) {
+                const projectName = document.project_name;
+                const timestamp = new Date(document.last_saved_info.timestamp);
+
+                if (!latestVersionedSettings[projectName]) {
+                    latestVersionedSettings[projectName] = document;
+                } else {
+                    const existingTimestamp = new Date(latestVersionedSettings[projectName].last_saved_info.timestamp);
+                    if (timestamp > existingTimestamp) {
+                        latestVersionedSettings[projectName] = document;
+                    }
+                }
+            }
+            return;
+        }
+
+        targetSettings.insert(document);
     });
 
+    // Insert Latest Versioned Anatomy Settings
+    if (latestVersionedAnatomy) {
+        targetSettings.insert(latestVersionedAnatomy);
+    }
+
+    // Insert Latest Versioned System Settings
+    if (latestVersionedSystemSettings) {
+        targetSettings.insert(latestVersionedSystemSettings);
+    }
+
+    // Insert Latest Versioned Settings for each Project
     Object.values(latestVersionedSettings).forEach(function(latestDocument) {
-        latestDocument.version = "4.0.0";
-        if (latestDocument.last_saved_info) {
-            latestDocument.last_saved_info.quadpype_version = "4.0.0";
-            latestDocument.last_saved_info.workstation_name = latestDocument.last_saved_info.hostname;
-            latestDocument.last_saved_info.host_ip = latestDocument.last_saved_info.hostip;
-            latestDocument.last_saved_info.user_id = latestDocument.last_saved_info.local_id;
-            delete latestDocument.last_saved_info.openpype_version;
-            delete latestDocument.last_saved_info.hostname;
-            delete latestDocument.last_saved_info.hostip;
-            delete latestDocument.last_saved_info.local_id;
-        }
         targetSettings.insert(latestDocument);
     });
 
