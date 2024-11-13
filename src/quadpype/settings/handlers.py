@@ -1380,8 +1380,7 @@ class MongoSettingsHandler(SettingsHandler):
             document = self._find_closest_global_settings()
 
         version = None
-        if document:
-            if document["type"] == self._global_settings_key:
+        if document and document["type"] == self._global_settings_key:
                 version = document["version"]
 
         return document, version
@@ -1422,8 +1421,7 @@ class MongoSettingsHandler(SettingsHandler):
             document = self._find_closest_project_settings(project_name)
 
         version = None
-        if document:
-            if document["type"] == self._project_settings_key:
+        if document and document["type"] == self._project_settings_key:
                 version = document["version"]
 
         return document, version
@@ -1504,9 +1502,8 @@ class MongoSettingsHandler(SettingsHandler):
                     document = self._find_closest_project_anatomy()
 
                 version = None
-                if document:
-                    if document["type"] == self._project_anatomy_key:
-                        version = document["version"]
+                if document and document["type"] == self._project_anatomy_key:
+                    version = document["version"]
 
                 self.project_anatomy_cache[project_name].update_from_document(
                     document, version

@@ -14,7 +14,7 @@ function main
 
         # In case YES_TO_ALL we skip asking and assume we can use the registered URI
         if (!$YES_TO_ALL -And $MONGO_URI) {
-            $USER_CHOICE = (Read-Host -Prompt "Fetch from: ${MONGO_URI} ? (y/n) : ").ToLower()
+            $USER_CHOICE = (Read-Host -Prompt "Fetch from: ${MONGO_URI} ? (y/n) ").ToLower()
             if (($USER_CHOICE -eq "n") -Or ($USER_CHOICE -eq "no")) {
                 $MONGO_URI = ""
             } elseif (!($USER_CHOICE -eq "y") -And !($USER_CHOICE -eq "yes")) {
@@ -39,7 +39,7 @@ function main
     # Remove prefix if present
     $HOST_NAME = ($HOST_NAME -split "mongodb://")[-1]
 
-    write-output "Transfer Settings : ${HOST_NAME}:${PORT_NUM} ... "
+    write-output "Transfer Settings & Projects: ${HOST_NAME}:${PORT_NUM} ... "
     if (migrate_settings) {
         write-output "OK"
     } else {
