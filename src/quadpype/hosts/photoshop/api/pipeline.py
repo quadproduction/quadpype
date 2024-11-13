@@ -8,7 +8,7 @@ from quadpype.lib import register_event_callback, Logger
 from quadpype.pipeline import (
     register_loader_plugin_path,
     register_creator_plugin_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 
 from quadpype.host import (
@@ -67,7 +67,7 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         return None
 
     def work_root(self, session):
-        return os.path.normpath(session["AVALON_WORKDIR"]).replace("\\", "/")
+        return os.path.normpath(session["QUADPYPE_WORKDIR_PATH"]).replace("\\", "/")
 
     def open_workfile(self, filepath):
         lib.stub().open(filepath)
@@ -126,7 +126,7 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         layers_meta = stub.get_layers_metadata()
         if layers_meta:
             for instance in layers_meta:
-                if instance.get("id") == "pyblish.avalon.instance":
+                if instance.get("id") == "pyblish.quadpype.instance":
                     instances.append(instance)
 
         return instances
@@ -262,7 +262,7 @@ def containerise(
 
     data = {
         "schema": "quadpype:container-2.0",
-        "id": AVALON_CONTAINER_ID,
+        "id": QUADPYPE_CONTAINER_ID,
         "name": name,
         "namespace": namespace,
         "loader": str(loader),

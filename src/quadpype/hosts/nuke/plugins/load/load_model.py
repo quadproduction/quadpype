@@ -43,7 +43,7 @@ class AlembicModelLoader(load.LoaderPlugin):
         object_name = "{}_{}".format(name, namespace)
 
         # prepare data for imprinting
-        # add additional metadata from the version to imprint to Avalon knob
+        # add additional metadata from the version to imprint to QuadPype knob
         add_keys = ["source", "author", "fps"]
 
         data_imprint = {
@@ -127,7 +127,7 @@ class AlembicModelLoader(load.LoaderPlugin):
         fps = version_data.get("fps") or nuke.root()["fps"].getValue()
 
         # prepare data for imprinting
-        # add additional metadata from the version to imprint to Avalon knob
+        # add additional metadata from the version to imprint to QuadPype knob
         add_keys = ["source", "author", "fps"]
 
         data_imprint = {

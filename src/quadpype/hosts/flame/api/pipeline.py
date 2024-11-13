@@ -1,5 +1,5 @@
 """
-Basic avalon integration
+Flame QuadPype integration
 """
 import os
 import contextlib
@@ -11,7 +11,7 @@ from quadpype.pipeline import (
     register_creator_plugin_path,
     deregister_loader_plugin_path,
     deregister_creator_plugin_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from .lib import (
     set_segment_data_marker,
@@ -28,7 +28,7 @@ PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
 LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
 CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 
-AVALON_CONTAINERS = "AVALON_CONTAINERS"
+QUADPYPE_CONTAINERS = "QUADPYPE_CONTAINERS"
 
 log = Logger.get_logger(__name__)
 
@@ -69,7 +69,7 @@ def containerise(flame_clip_segment,
 
     data_imprint = {
         "schema": "quadpype:container-2.0",
-        "id": AVALON_CONTAINER_ID,
+        "id": QUADPYPE_CONTAINER_ID,
         "name": str(name),
         "namespace": str(namespace),
         "loader": str(loader),

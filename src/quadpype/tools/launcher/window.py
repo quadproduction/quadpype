@@ -5,7 +5,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 
 from quadpype import style
 from quadpype import resources
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import QuadPypeMongoDB
 
 import qtawesome
 from .models import (
@@ -211,8 +211,8 @@ class AssetsPanel(QtWidgets.QWidget):
         asset_id = self.assets_widget.get_selected_asset_id()
         asset_name = self.assets_widget.get_selected_asset_name()
 
-        self.dbcon.Session["AVALON_TASK"] = None
-        self.dbcon.Session["AVALON_ASSET"] = asset_name
+        self.dbcon.Session["QUADPYPE_TASK_NAME"] = None
+        self.dbcon.Session["QUADPYPE_ASSET_NAME"] = asset_name
 
         self.session_changed.emit()
 
@@ -220,7 +220,7 @@ class AssetsPanel(QtWidgets.QWidget):
 
     def _on_task_change(self):
         task_name = self._tasks_widget.get_selected_task_name()
-        self.dbcon.Session["AVALON_TASK"] = task_name
+        self.dbcon.Session["QUADPYPE_TASK_NAME"] = task_name
         self.session_changed.emit()
 
 
@@ -234,7 +234,7 @@ class LauncherWindow(QtWidgets.QDialog):
         self.log = logging.getLogger(
             ".".join([__name__, self.__class__.__name__])
         )
-        self.dbcon = AvalonMongoDB()
+        self.dbcon = QuadPypeMongoDB()
 
         self.setWindowTitle("Launcher")
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -414,9 +414,9 @@ class LauncherWindow(QtWidgets.QDialog):
             self.echo("Failed: {}".format(str(exc)))
 
     def set_session(self, session):
-        project_name = session.get("AVALON_PROJECT")
-        asset_name = session.get("AVALON_ASSET")
-        task_name = session.get("AVALON_TASK")
+        project_name = session.get("QUADPYPE_PROJECT_NAME")
+        asset_name = session.get("QUADPYPE_ASSET_NAME")
+        task_name = session.get("QUADPYPE_TASK_NAME")
 
         if project_name:
             # Force the "in project" view.

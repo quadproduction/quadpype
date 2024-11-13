@@ -5,41 +5,41 @@ import json
 import ftrack_api
 
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
-from quadpype_modules.ftrack.lib.avalon_sync import SyncEntitiesFactory
+from quadpype_modules.ftrack.lib.database_sync import SyncEntitiesFactory
 
 
-class SyncToAvalonLocal(BaseAction):
+class SyncToDatabaseLocal(BaseAction):
     """
-    Synchronizing data action - from Ftrack to Avalon DB
+    Synchronizing data action - from Ftrack to QuadPype DB
 
     Stores all information about entity.
     - Name(string) - Most important information = identifier of entity
-    - Parent(ObjectId) - Avalon Project Id, if entity is not project itself
+    - Parent(ObjectId) - QuadPype Project Id, if entity is not project itself
     - Data(dictionary):
-        - VisualParent(ObjectId) - Avalon Id of parent asset
+        - VisualParent(ObjectId) - QuadPype Id of parent asset
         - Parents(array of string) - All parent names except project
         - Tasks(array of string) - Tasks on asset
         - FtrackId(string)
         - entityType(string) - entity's type on Ftrack
-        * All Custom attributes in group 'Avalon'
-            - custom attributes that start with 'avalon_' are skipped
+        * All Custom attributes in group 'QuadPype'
+            - custom attributes that start with 'quadpype_' are skipped
 
     * These information are stored for entities in whole project.
 
-    Avalon ID of asset is stored to Ftrack
-        - Custom attribute 'avalon_mongo_id'.
+    QuadPype ID of asset is stored to Ftrack
+        - Custom attribute 'database_mongo_id'.
     - action IS NOT creating this Custom attribute if doesn't exist
         - run 'Create Custom Attributes' action
         - or do it manually (Not recommended)
     """
-
-    identifier = "sync.to.avalon.local"
+    identifier = "sync.to.quadpype.local.database"
     label = "QuadPype Admin"
-    variant = "- Sync To Avalon (Local)"
+    variant = "- Sync To Database (Local)"
+    description = "Sync data between Ftrack and QuadPype database"
     priority = 200
     icon = statics_icon("ftrack", "action_icons", "QuadPypeAdmin.svg")
 
-    settings_key = "sync_to_avalon_local"
+    settings_key = "sync_to_database_local"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -68,7 +68,7 @@ class SyncToAvalonLocal(BaseAction):
             "user": user_entity,
             "status": "running",
             "data": json.dumps({
-                "description": "Sync to avalon is running..."
+                "description": "Sync to database is running..."
             })
         })
         session.commit()
@@ -84,7 +84,7 @@ class SyncToAvalonLocal(BaseAction):
                 "Synchronization failed due to code error", exc_info=True
             )
 
-            description = "Sync to avalon Crashed (Download traceback)"
+            description = "Sync to database Crashed (Download traceback)"
             self.add_traceback_to_job(
                 job_entity, session, sys.exc_info(), description
             )
@@ -120,7 +120,7 @@ class SyncToAvalonLocal(BaseAction):
 
         job_entity["status"] = "done"
         job_entity["data"] = json.dumps({
-            "description": "Sync to avalon finished."
+            "description": "Sync to database finished."
         })
         session.commit()
 
@@ -142,7 +142,7 @@ class SyncToAvalonLocal(BaseAction):
             time_2 = time.time()
 
             # This must happen before all filtering!!!
-            self.entities_factory.prepare_avalon_entities(project_name)
+            self.entities_factory.prepare_database_entities(project_name)
             time_3 = time.time()
 
             self.entities_factory.filter_by_ignore_sync()
@@ -167,7 +167,7 @@ class SyncToAvalonLocal(BaseAction):
                 "set_cutom_attributes <{}>".format(time_2 - time_1)
             )
             self.log.debug(
-                "prepare_avalon_entities <{}>".format(time_3 - time_2)
+                "prepare_database_entities <{}>".format(time_3 - time_2)
             )
             self.log.debug(
                 "filter_by_ignore_sync <{}>".format(time_4 - time_3)
@@ -222,4 +222,4 @@ class SyncToAvalonLocal(BaseAction):
 def register(session):
     '''Register plugin. Called when used as an plugin.'''
 
-    SyncToAvalonLocal(session).register()
+    SyncToQuadPypeLocal(session).register()

@@ -3,26 +3,26 @@ import os
 from quadpype.modules import QuadPypeModule, ITrayModule
 
 
-class AvalonModule(QuadPypeModule, ITrayModule):
-    name = "avalon"
+class DatabaseModule(QuadPypeModule, ITrayModule):
+    name = "database"
 
     def initialize(self, modules_settings):
         # This module is always enabled
         self.enabled = True
 
-        avalon_settings = modules_settings[self.name]
+        database_settings = modules_settings[self.name]
 
-        thumbnail_root = os.getenv("AVALON_THUMBNAIL_ROOT")
+        thumbnail_root = os.getenv("QUADPYPE_THUMBNAIL_ROOT")
         if not thumbnail_root:
-            thumbnail_root = avalon_settings["AVALON_THUMBNAIL_ROOT"]
+            thumbnail_root = database_settings["QUADPYPE_THUMBNAIL_ROOT"]
 
-        # Mongo timeout
-        avalon_mongo_timeout = os.getenv("AVALON_TIMEOUT")
-        if not avalon_mongo_timeout:
-            avalon_mongo_timeout = avalon_settings["AVALON_TIMEOUT"]
+        # Mongo DB timeout
+        quadpype_db_timeout = os.getenv("QUADPYPE_DB_TIMEOUT")
+        if not quadpype_db_timeout:
+            quadpype_db_timeout = database_settings["QUADPYPE_DB_TIMEOUT"]
 
         self.thumbnail_root = thumbnail_root
-        self.avalon_mongo_timeout = avalon_mongo_timeout
+        self.quadpype_db_timeout = quadpype_db_timeout
 
         # Tray attributes
         self._library_loader_imported = None
@@ -30,13 +30,13 @@ class AvalonModule(QuadPypeModule, ITrayModule):
         self.rest_api_obj = None
 
     def get_global_environments(self):
-        """Avalon global environments for pype implementation."""
+        """QuadPype global environments for pype implementation."""
         return {
             # TODO thumbnails root should be multiplafrom
             # - thumbnails root
-            "AVALON_THUMBNAIL_ROOT": self.thumbnail_root,
+            "QUADPYPE_THUMBNAIL_ROOT": self.thumbnail_root,
             # - mongo timeout in ms
-            "AVALON_TIMEOUT": str(self.avalon_mongo_timeout),
+            "QUADPYPE_DB_TIMEOUT": str(self.quadpype_db_timeout),
         }
 
     def tray_init(self):
@@ -92,8 +92,8 @@ class AvalonModule(QuadPypeModule, ITrayModule):
     def webserver_initialization(self, server_manager):
         """Add routes for webserver."""
         if self.tray_initialized:
-            from .rest_api import AvalonRestApiResource
-            self.rest_api_obj = AvalonRestApiResource(self, server_manager)
+            from .rest_api import QuadPypeRestApiResource
+            self.rest_api_obj = QuadPypeRestApiResource(self, server_manager)
 
     def _init_library_loader(self):
         from qtpy import QtCore

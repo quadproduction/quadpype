@@ -5,9 +5,9 @@ from datetime import datetime
 from bson.objectid import ObjectId
 
 from quadpype.client import get_assets, get_subsets
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import QuadPypeMongoDB
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
-from quadpype_modules.ftrack.lib.avalon_sync import create_chunks
+from quadpype_modules.ftrack.lib.database_sync import create_chunks
 
 
 class DeleteAssetSubset(BaseAction):
@@ -18,7 +18,7 @@ class DeleteAssetSubset(BaseAction):
     # Action label.
     label = "Delete Asset/Subsets"
     # Action description.
-    description = "Removes from Avalon with all children and asset from Ftrack"
+    description = "Removes from QuadPype with all children and asset from Ftrack"
     icon = statics_icon("ftrack", "action_icons", "DeleteAsset.svg")
 
     settings_key = "delete_asset_subset"
@@ -31,7 +31,7 @@ class DeleteAssetSubset(BaseAction):
     subset_prefix = "subset:"
 
     def __init__(self, *args, **kwargs):
-        self.dbcon = AvalonMongoDB()
+        self.dbcon = QuadPypeMongoDB()
 
         super().__init__(*args, **kwargs)
 
@@ -100,7 +100,7 @@ class DeleteAssetSubset(BaseAction):
             self.show_message(event, msg, True)
 
         # Filter event even more (skip task entities)
-        # - task entities are not relevant for avalon
+        # - task entities are not relevant for database
         entity_mapping = {}
         for entity in entities:
             ftrack_id = entity["id"]
@@ -121,7 +121,7 @@ class DeleteAssetSubset(BaseAction):
 
         project = self.get_project_from_entity(entities[0], session)
         project_name = project["full_name"]
-        self.dbcon.Session["AVALON_PROJECT"] = project_name
+        self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
 
         asset_docs = list(get_assets(
             project_name,
@@ -153,7 +153,7 @@ class DeleteAssetSubset(BaseAction):
             end_index = len(ent_path_items) - 1
             parents = ent_path_items[1:end_index:]
             # TODO we should say to user that
-            # few of them are missing in avalon
+            # few of them are missing in the database
             for av_ent in av_ents_by_name:
                 if av_ent["data"]["parents"] != parents:
                     continue
@@ -169,7 +169,7 @@ class DeleteAssetSubset(BaseAction):
             return {
                 "success": True,
                 "message": (
-                    "Didn't find entities in avalon."
+                    "Didn't find entities in the database."
                     " You can use Ftrack's Delete button for the selection."
                 )
             }
@@ -222,7 +222,7 @@ class DeleteAssetSubset(BaseAction):
             "type": "label",
             "value": (
                 "<p><i>NOTE: Action will delete checked entities"
-                " in Ftrack and Avalon with all children entities and"
+                " in Ftrack and QuadPype with all children entities and"
                 " published content.</i></p>"
             )
         }
@@ -437,7 +437,7 @@ class DeleteAssetSubset(BaseAction):
 
         project_name = spec_data["project_name"]
         to_delete = spec_data["to_delete"]
-        self.dbcon.Session["AVALON_PROJECT"] = project_name
+        self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
 
         assets_to_delete = to_delete.get("assets") or []
         subsets_to_delete = to_delete.get("subsets") or []
@@ -457,16 +457,16 @@ class DeleteAssetSubset(BaseAction):
         ftrack_ids_to_delete = []
         if len(assets_to_delete) > 0:
             map_av_ftrack_id = spec_data["without_ftrack_id"]
-            # Prepare data when deleting whole avalon asset
-            avalon_assets = get_assets(
+            # Prepare data when deleting whole database asset
+            database_assets = get_assets(
                 project_name,
                 fields=["_id", "data.visualParent", "data.ftrackId"]
             )
-            avalon_assets_by_parent = collections.defaultdict(list)
-            for asset in avalon_assets:
+            database_assets_by_parent = collections.defaultdict(list)
+            for asset in database_assets:
                 asset_id = asset["_id"]
                 parent_id = asset["data"]["visualParent"]
-                avalon_assets_by_parent[parent_id].append(asset)
+                database_assets_by_parent[parent_id].append(asset)
                 if asset_id in assets_to_delete:
                     ftrack_id = map_av_ftrack_id.get(str(asset_id))
                     if not ftrack_id:
@@ -489,7 +489,7 @@ class DeleteAssetSubset(BaseAction):
                     if subset_id not in subset_ids_to_archive:
                         subset_ids_to_archive.append(subset_id)
 
-                children = avalon_assets_by_parent.get(mongo_id)
+                children = database_assets_by_parent.get(mongo_id)
                 if not children:
                     continue
 

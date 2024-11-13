@@ -12,7 +12,7 @@ class CollectInstances(pyblish.api.ContextPlugin):
     an specific node and marked with a unique identifier;
 
     Identifier:
-        id (str): "pyblish.avalon.instance
+        id (str): "pyblish.quadpype.instance
 
     Specific node:
         The specific node is important because it dictates in which way the
@@ -44,7 +44,7 @@ class CollectInstances(pyblish.api.ContextPlugin):
             if not node.parm("id"):
                 continue
 
-            if node.evalParm("id") != "pyblish.avalon.instance":
+            if node.evalParm("id") != "pyblish.quadpype.instance":
                 continue
 
             # instance was created by new creator code, skip it as

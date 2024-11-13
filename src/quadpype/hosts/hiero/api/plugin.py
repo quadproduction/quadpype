@@ -383,7 +383,7 @@ class ClipLoader:
         """ Initialize object
 
         Arguments:
-            cls (avalon.api.Loader): plugin object
+            cls (quadype.api.Loader): plugin object
             context (dict): loader plugin context
             options (dict)[optional]: possible keys:
                 projectBinPath: "path/to/binItem"
@@ -686,8 +686,8 @@ class PublishClip:
         self.track_index = int(track_item.parent().trackIndex())
 
         # adding tag.family into tag
-        if kwargs.get("avalon"):
-            self.tag_data.update(kwargs["avalon"])
+        if kwargs.get("quadype"):
+            self.tag_data.update(kwargs["quadype"])
 
         # add publish attribute to tag data
         self.tag_data.update({"publish": True})

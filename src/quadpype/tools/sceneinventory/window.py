@@ -201,15 +201,15 @@ def show(root=None, debug=False, parent=None, items=None):
     if debug is True:
         legacy_io.install()
 
-        if not os.getenv("AVALON_PROJECT"):
+        if not os.getenv("QUADPYPE_PROJECT_NAME"):
             any_project = next(
                 project for project in get_projects()
             )
 
             project_name = any_project["name"]
         else:
-            project_name = os.getenv("AVALON_PROJECT")
-        legacy_io.Session["AVALON_PROJECT"] = project_name
+            project_name = os.getenv("QUADPYPE_PROJECT_NAME")
+        legacy_io.Session["QUADPYPE_PROJECT_NAME"] = project_name
 
     with qt_app_context():
         window = SceneInventoryWindow(parent)

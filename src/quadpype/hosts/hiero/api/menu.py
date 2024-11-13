@@ -31,7 +31,7 @@ def get_context_label():
 
 
 def update_menu_task_label():
-    """Update the task label in Avalon menu to current session"""
+    """Update the task label in QuadPype menu to current session"""
 
     object_name = self._change_context_menu
     found_menu = findMenuAction(object_name)
@@ -63,7 +63,7 @@ def menu_install():
 
     # here is the best place to add menu
 
-    menu_name = os.environ['AVALON_LABEL']
+    menu_name = os.environ['QUADPYPE_LABEL']
 
     context_label = get_context_label()
 

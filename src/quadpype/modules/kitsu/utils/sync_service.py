@@ -16,7 +16,7 @@ import threading
 import gazu
 
 from quadpype.client import get_project, get_assets, get_asset_by_name
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import QuadPypeMongoDB
 from quadpype.lib import Logger
 from .credentials import validate_credentials
 from .update_op_with_zou import (
@@ -45,7 +45,7 @@ class Listener:
         Raises:
             AuthFailedException: Wrong user login and/or password
         """
-        self.dbcon = AvalonMongoDB()
+        self.dbcon = QuadPypeMongoDB()
         self.dbcon.install()
 
         gazu.client.set_host(os.environ["KITSU_SERVER"])
@@ -147,7 +147,7 @@ class Listener:
 
         # Write into DB
         if update_project:
-            self.dbcon.Session["AVALON_PROJECT"] = get_kitsu_project_name(
+            self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = get_kitsu_project_name(
                 data["project_id"]
             )
             self.dbcon.bulk_write([update_project])

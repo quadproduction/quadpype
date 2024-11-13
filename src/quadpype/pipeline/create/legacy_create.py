@@ -1,4 +1,4 @@
-"""Create workflow moved from avalon-core repository.
+"""Create workflow for QuadPype
 
 Renamed classes and functions
 - 'Creator' -> 'LegacyCreator'
@@ -33,7 +33,7 @@ class LegacyCreator(object):
 
         # Default data
         self.data = collections.OrderedDict()
-        self.data["id"] = "pyblish.avalon.instance"
+        self.data["id"] = "pyblish.quadpype.instance"
         self.data["family"] = self.family
         self.data["asset"] = asset
         self.data["subset"] = name
@@ -45,7 +45,7 @@ class LegacyCreator(object):
     def apply_settings(cls, project_settings, global_settings):
         """Apply QuadPype settings to a plugin class."""
 
-        host_name = os.getenv("AVALON_APP")
+        host_name = os.getenv("QUADPYPE_HOST_NAME")
         plugin_type = "create"
         plugin_type_settings = (
             project_settings

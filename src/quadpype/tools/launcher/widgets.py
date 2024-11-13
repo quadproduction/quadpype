@@ -435,9 +435,9 @@ class ActionHistory(QtWidgets.QPushButton):
         action_session_role = QtCore.Qt.UserRole + 1
 
         for action, session in reversed(self._history):
-            project = session.get("AVALON_PROJECT")
-            asset = session.get("AVALON_ASSET")
-            task = session.get("AVALON_TASK")
+            project = session.get("QUADPYPE_PROJECT_NAME")
+            asset = session.get("QUADPYPE_ASSET_NAME")
+            task = session.get("QUADPYPE_TASK_NAME")
             breadcrumb = " > ".join(x for x in [project, asset, task] if x)
 
             m = "{{action:{0}}} | {{breadcrumb}}".format(largest_action_label)

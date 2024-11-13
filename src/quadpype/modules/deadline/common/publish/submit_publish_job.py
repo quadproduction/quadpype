@@ -116,7 +116,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
         "FTRACK_API_USER",
         "FTRACK_API_KEY",
         "FTRACK_SERVER",
-        "AVALON_APP_NAME",
+        "QUADPYPE_HOST_DISPLAY_NAME",
         "QUADPYPE_USERNAME",
         "QUADPYPE_SG_USER",
         "KITSU_LOGIN",
@@ -186,15 +186,15 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             create_metadata_path(instance, anatomy)
 
         environment = {
-            "AVALON_PROJECT": instance.context.data["projectName"],
-            "AVALON_ASSET": instance.context.data["asset"],
-            "AVALON_TASK": instance.context.data["task"],
+            "QUADPYPE_PROJECT_NAME": instance.context.data["projectName"],
+            "QUADPYPE_ASSET_NAME": instance.context.data["asset"],
+            "QUADPYPE_TASK_NAME": instance.context.data["task"],
             "QUADPYPE_USERNAME": instance.context.data["user"],
             "QUADPYPE_LOG_NO_COLORS": "1",
             "IS_TEST": str(int(is_in_tests()))
         }
 
-        environment["AVALON_DB"] = os.environ["AVALON_DB"]
+        environment["QUADPYPE_PROJECTS_DB_NAME"] = os.environ["QUADPYPE_PROJECTS_DB_NAME"]
         environment["QUADPYPE_PUBLISH_JOB"] = "1"
         environment["QUADPYPE_RENDER_JOB"] = "0"
         environment["QUADPYPE_REMOTE_PUBLISH"] = "0"

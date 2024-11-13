@@ -11,7 +11,7 @@ from quadpype.client import (
     get_project,
     get_assets,
 )
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import QuadPypeMongoDB
 from quadpype.settings import get_project_settings
 from quadpype.modules.kitsu.utils.credentials import validate_credentials
 
@@ -38,7 +38,7 @@ def sync_zou(login: str, password: str):
         )
 
     # Iterate projects
-    dbcon = AvalonMongoDB()
+    dbcon = QuadPypeMongoDB()
     dbcon.install()
 
     op_projects = list(get_projects())
@@ -47,13 +47,13 @@ def sync_zou(login: str, password: str):
 
 
 def sync_zou_from_op_project(
-    project_name: str, dbcon: AvalonMongoDB, project_doc: dict = None
+    project_name: str, dbcon: QuadPypeMongoDB, project_doc: dict = None
 ) -> List[UpdateOne]:
     """Update QuadPype project in DB with Zou data.
 
     Args:
         project_name (str): Name of project to sync
-        dbcon (AvalonMongoDB): MongoDB connection
+        dbcon (QuadPypeMongoDB): MongoDB connection
         project_doc (str, optional): Project doc to sync
     """
     # Get project doc if not provided
@@ -98,7 +98,7 @@ def sync_zou_from_op_project(
 
     # Query all assets of the local project
     project_module_settings = get_project_settings(project_name)["kitsu"]
-    dbcon.Session["AVALON_PROJECT"] = project_name
+    dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
     asset_docs = {
         asset_doc["_id"]: asset_doc for asset_doc in get_assets(project_name)
     }

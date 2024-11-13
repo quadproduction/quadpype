@@ -27,7 +27,7 @@ class CollectColorCodedInstances(pyblish.api.ContextPlugin):
         only separate subsets per marked layer.
 
     Identifier:
-        id (str): "pyblish.avalon.instance"
+        id (str): "pyblish.quadpype.instance"
     """
     order = pyblish.api.CollectorOrder + 0.100
 

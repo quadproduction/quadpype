@@ -177,7 +177,7 @@ def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict):
         ...   "computedValue": lambda: compute()
         ... })
         ...
-        >>> cube['avalon']['computedValue']
+        >>> cube['quadpype']['computedValue']
         6
     """
 
@@ -246,11 +246,11 @@ def lsattrs(attrs: Dict) -> List:
             continue
         for node in getattr(bpy.data, coll):
             for attr, value in attrs.items():
-                avalon_prop = node.get(pipeline.AVALON_PROPERTY)
-                if not avalon_prop:
+                database_prop = node.get(pipeline.QUADPYPE_PROPERTY)
+                if not database_prop:
                     continue
-                if (avalon_prop.get(attr)
-                        and (value is None or avalon_prop.get(attr) == value)):
+                if (database_prop.get(attr)
+                        and (value is None or database_prop.get(attr) == value)):
                     matches.add(node)
     return list(matches)
 
@@ -258,7 +258,7 @@ def lsattrs(attrs: Dict) -> List:
 def read(node: bpy.types.bpy_struct_meta_idprop):
     """Return user-defined attributes from `node`"""
 
-    data = dict(node.get(pipeline.AVALON_PROPERTY, {}))
+    data = dict(node.get(pipeline.QUADPYPE_PROPERTY, {}))
 
     # Ignore hidden/internal data
     data = {

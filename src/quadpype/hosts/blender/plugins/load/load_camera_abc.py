@@ -9,12 +9,12 @@ import bpy
 
 from quadpype.pipeline import (
     get_representation_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
-    AVALON_PROPERTY,
+    QUADPYPE_CONTAINERS,
+    QUADPYPE_PROPERTY,
 )
 
 
@@ -61,11 +61,11 @@ class AbcCameraLoader(plugin.BlenderLoader):
                 name_data = obj.data.name
                 obj.data.name = f"{group_name}:{name_data}"
 
-            if not obj.get(AVALON_PROPERTY):
-                obj[AVALON_PROPERTY] = dict()
+            if not obj.get(QUADPYPE_PROPERTY):
+                obj[QUADPYPE_PROPERTY] = dict()
 
-            avalon_info = obj[AVALON_PROPERTY]
-            avalon_info.update({"container_name": group_name})
+            quadype_info = obj[QUADPYPE_PROPERTY]
+            quadype_info.update({"container_name": group_name})
 
         plugin.deselect_all()
 
@@ -96,13 +96,13 @@ class AbcCameraLoader(plugin.BlenderLoader):
         group_name = plugin.prepare_scene_name(asset, subset, unique_number)
         namespace = namespace or f"{asset}_{unique_number}"
 
-        avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
-        if not avalon_container:
-            avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
-            bpy.context.scene.collection.children.link(avalon_container)
+        database_containers = bpy.data.collections.get(QUADPYPE_CONTAINERS)
+        if not database_containers:
+            database_containers = bpy.data.collections.new(name=QUADPYPE_CONTAINERS)
+            bpy.context.scene.collection.children.link(database_containers)
 
         asset_group = bpy.data.objects.new(group_name, object_data=None)
-        avalon_container.objects.link(asset_group)
+        database_containers.objects.link(asset_group)
 
         self._process(libpath, asset_group, group_name)
 
@@ -128,9 +128,9 @@ class AbcCameraLoader(plugin.BlenderLoader):
 
         bpy.context.scene.collection.objects.link(asset_group)
 
-        asset_group[AVALON_PROPERTY] = {
+        asset_group[QUADPYPE_PROPERTY] = {
             "schema": "quadpype:container-2.0",
-            "id": AVALON_CONTAINER_ID,
+            "id": QUADPYPE_CONTAINER_ID,
             "name": name,
             "namespace": namespace or "",
             "loader": str(self.__class__.__name__),
@@ -160,7 +160,7 @@ class AbcCameraLoader(plugin.BlenderLoader):
         object_name = container["objectName"]
         asset_group = bpy.data.objects.get(object_name)
         libpath = Path(get_representation_path(representation))
-        prev_filename = os.path.basename(container["libpath"])        
+        prev_filename = os.path.basename(container["libpath"])
         extension = libpath.suffix.lower()
 
         self.log.info(
@@ -177,7 +177,7 @@ class AbcCameraLoader(plugin.BlenderLoader):
         assert extension in plugin.VALID_EXTENSIONS, (
             f"Unsupported file: {libpath}")
 
-        metadata = asset_group.get(AVALON_PROPERTY)
+        metadata = asset_group.get(QUADPYPE_PROPERTY)
         group_libpath = metadata["libpath"]
 
         normalized_group_libpath = str(

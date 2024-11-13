@@ -2,138 +2,138 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
 
     "title": "quadpype:session-1.0",
-    "description": "The Avalon environment",
+    "description": "The QuadPype environment",
 
     "type": "object",
 
     "additionalProperties": true,
 
     "required": [
-        "AVALON_PROJECTS",
-        "AVALON_PROJECT",
-        "AVALON_ASSET",
-        "AVALON_SILO",
-        "AVALON_CONFIG"
+        "QUADPYPE_PROJECT_NAMES",
+        "QUADPYPE_PROJECT_NAME",
+        "QUADPYPE_ASSET_NAME",
+        "QUADPYPE_SILO",
+        "QUADPYPE_CONFIG"
     ],
 
     "properties": {
-        "AVALON_PROJECTS": {
+        "QUADPYPE_PROJECT_NAMES": {
             "description": "Absolute path to root of project directories",
             "type": "string",
             "example": "/nas/projects"
         },
-        "AVALON_PROJECT": {
+        "QUADPYPE_PROJECT_NAME": {
             "description": "Name of project",
             "type": "string",
             "pattern": "^\\w*$",
             "example": "Hulk"
         },
-        "AVALON_ASSET": {
+        "QUADPYPE_ASSET_NAME": {
             "description": "Name of asset",
             "type": "string",
             "pattern": "^\\w*$",
             "example": "Bruce"
         },
-        "AVALON_SILO": {
+        "QUADPYPE_SILO": {
             "description": "Name of asset group or container",
             "type": "string",
             "pattern": "^\\w*$",
             "example": "assets"
         },
-        "AVALON_TASK": {
+        "QUADPYPE_TASK_NAME": {
             "description": "Name of task",
             "type": "string",
             "pattern": "^\\w*$",
             "example": "modeling"
         },
-        "AVALON_CONFIG": {
-            "description": "Name of Avalon configuration",
+        "QUADPYPE_CONFIG": {
+            "description": "Name of QuadPype configuration",
             "type": "string",
             "pattern": "^\\w*$",
             "example": "polly"
         },
-        "AVALON_APP": {
+        "QUADPYPE_HOST_NAME": {
             "description": "Name of application",
             "type": "string",
             "pattern": "^\\w*$",
             "example": "maya2016"
         },
-        "AVALON_MONGO": {
+        "QUADPYPE_MONGO": {
             "description": "Address to the asset database",
             "type": "string",
             "pattern": "^mongodb://[\\w/@:.]*$",
             "example": "mongodb://localhost:27017",
             "default": "mongodb://localhost:27017"
         },
-        "AVALON_DB": {
-            "description": "Name of database",
+        "QUADPYPE_PROJECTS_DB_NAME": {
+            "description": "Name of the projects database",
             "type": "string",
             "pattern": "^\\w*$",
-            "example": "avalon",
-            "default": "avalon"
+            "example": "quadpype_projects",
+            "default": "quadpype_projects"
         },
-        "AVALON_LABEL": {
-            "description": "Nice name of Avalon, used in e.g. graphical user interfaces",
+        "QUADPYPE_LABEL": {
+            "description": "Nice name for the program, used in e.g. graphical user interfaces",
             "type": "string",
-            "example": "Mindbender",
-            "default": "Avalon"
+            "example": "QuadPype",
+            "default": "QuadPype"
         },
-        "AVALON_SENTRY": {
+        "QUADPYPE_SENTRY": {
             "description": "Address to Sentry",
             "type": "string",
             "pattern": "^http[\\w/@:.]*$",
             "example": "https://5b872b280de742919b115bdc8da076a5:8d278266fe764361b8fa6024af004a9c@logs.mindbender.com/2",
             "default": null
         },
-        "AVALON_DEADLINE": {
+        "QUADPYPE_DEADLINE": {
             "description": "Address to Deadline",
             "type": "string",
             "pattern": "^http[\\w/@:.]*$",
             "example": "http://192.168.99.101",
             "default": null
         },
-        "AVALON_TIMEOUT": {
+        "QUADPYPE_DB_TIMEOUT": {
             "description": "Wherever there is a need for a timeout, this is the default value.",
             "type": "string",
             "pattern": "^[0-9]*$",
             "default": "1000",
             "example": "1000"
         },
-        "AVALON_UPLOAD": {
+        "QUADPYPE_UPLOAD": {
             "description": "Boolean of whether to upload published material to central asset repository",
             "type": "string",
             "default": null,
             "example": "True"
         },
-        "AVALON_USERNAME": {
+        "QUADPYPE_USERNAME": {
             "description": "Generic username",
             "type": "string",
             "pattern": "^\\w*$",
-            "default": "avalon",
-            "example": "myself"
+            "default": "jdoe",
+            "example": "jdoe"
         },
-        "AVALON_PASSWORD": {
+        "QUADPYPE_PASSWORD": {
             "description": "Generic password",
             "type": "string",
             "pattern": "^\\w*$",
             "default": "secret",
             "example": "abc123"
         },
-        "AVALON_INSTANCE_ID": {
+        "QUADPYPE_INSTANCE_ID": {
             "description": "Unique identifier for instances in a working file",
             "type": "string",
             "pattern": "^[\\w.]*$",
-            "default": "avalon.instance",
-            "example": "avalon.instance"
+            "default": "quadpype.instance",
+            "example": "quadpype.instance"
         },
-        "AVALON_CONTAINER_ID": {
+        "QUADPYPE_CONTAINER_ID": {
             "description": "Unique identifier for a loaded representation in a working file",
             "type": "string",
             "pattern": "^[\\w.]*$",
-            "default": "avalon.container",
-            "example": "avalon.container"
+            "default": "quadpype.container",
+            "example": "quadpype.container"
         },
-        "AVALON_DEBUG": {
+        "QUADPYPE_DEBUG": {
             "description": "Enable debugging mode. Some applications may use this for e.g. extended verbosity or mock plug-ins.",
             "type": "string",
             "default": null,

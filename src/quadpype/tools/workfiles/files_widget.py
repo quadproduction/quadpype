@@ -110,7 +110,7 @@ class FilesWidget(QtWidgets.QWidget):
         self._workfiles_root = None
         self._workdir_path = None
         self.host = registered_host()
-        self.host_name = os.environ["AVALON_APP"]
+        self.host_name = os.environ["QUADPYPE_HOST_NAME"]
 
         # Whether to automatically select the latest modified
         # file on a refresh of the files model.
@@ -371,7 +371,7 @@ class FilesWidget(QtWidgets.QWidget):
             # This way we can browse it even before we enter it.
             if self._asset_id and self._task_name and self._task_type:
                 session = self._get_session()
-                self._workdir_path = session["AVALON_WORKDIR"]
+                self._workdir_path = session["QUADPYPE_WORKDIR_PATH"]
                 self._workfiles_root = self.host.work_root(session)
                 self._workarea_files_model.set_root(self._workfiles_root)
 

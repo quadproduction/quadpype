@@ -17,16 +17,16 @@ class ShowInKitsu(LauncherAction):
         return ModulesManager().modules_by_name.get("kitsu")
 
     def is_compatible(self, session):
-        if not session.get("AVALON_PROJECT"):
+        if not session.get("QUADPYPE_PROJECT_NAME"):
             return False
 
         return True
 
     def process(self, session, **kwargs):
         # Context inputs
-        project_name = session["AVALON_PROJECT"]
-        asset_name = session.get("AVALON_ASSET", None)
-        task_name = session.get("AVALON_TASK", None)
+        project_name = session["QUADPYPE_PROJECT_NAME"]
+        asset_name = session.get("QUADPYPE_ASSET_NAME", None)
+        task_name = session.get("QUADPYPE_TASK_NAME", None)
 
         project = get_project(
             project_name=project_name, fields=["data.zou_id"]

@@ -38,7 +38,7 @@ if explicit_plugins_loading["enabled"]:
 key = "QUADPYPE_OPEN_WORKFILE_POST_INITIALIZATION"
 if bool(int(os.getenv(key, "0"))):
     def _log_and_open():
-        path = os.environ["AVALON_LAST_WORKFILE"]
+        path = os.environ["QUADPYPE_LAST_WORKFILE_PATH"]
         print("Opening \"{}\"".format(path))
         cmds.file(path, open=True, force=True)
     cmds.evalDeferred(

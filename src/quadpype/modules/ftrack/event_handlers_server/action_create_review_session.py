@@ -34,7 +34,7 @@ class CreateDailyReviewSessionServerAction(ServerAction):
     variant = "- Create Daily Review Session (Server)"
     #: Action description.
     description = "Manually create daily review session"
-    role_list = {"Pypeclub", "Administrator", "Project Manager"}
+    role_list = {"Administrator", "Project Manager"}
 
     settings_key = "create_daily_review_session"
     default_template = "{yy}{mm}{dd}"

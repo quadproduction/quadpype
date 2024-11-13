@@ -296,7 +296,7 @@ def server_activity_validate_user(event):
     if not user_ent:
         return False
 
-    role_list = {"quad", "administrator"}
+    role_list = ["quad", "administrator"]
     for role in user_ent["user_security_roles"]:
         if role["security_role"]["name"].lower() in role_list:
             return True
@@ -379,7 +379,7 @@ def on_start(event):
         return
 
     if session is None:
-        log.warning("Session is not set. Can't trigger Sync to avalon action.")
+        log.warning("Session is not set. Can't trigger Sync to Database action.")
         return True
     trigger_info_get()
 

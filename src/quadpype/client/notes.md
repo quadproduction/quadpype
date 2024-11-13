@@ -22,9 +22,9 @@ Delete operation need entity id. Entity will be deleted from mongo.
 
 ## What (probably) won't be replaced
 Some parts of code are still using direct mongo calls. In most of cases it is for very specific calls that are module specific or their usage will completely change in future.
-- Mongo calls that are not project specific (out of `avalon` collection) will be removed or will have to use different mechanism how the data are stored. At this moment it is related to QuadPype settings and logs, ftrack server events, some other data.
+- Mongo calls that are not project specific (out of `quadpype_projects` collection) will be removed or will have to use different mechanism how the data are stored. At this moment it is related to QuadPype settings and logs, ftrack server events, some other data.
 - Sync server queries. They're complex and very specific for sync server module. Their replacement will require specific calls to QuadPype server in v4 thus their abstraction with wrapper is irrelevant and would complicate production in v3.
-- Project managers (ftrack, kitsu, shotgrid, embedded Project Manager, etc.). Project managers are creating, updating or removing assets in v3, but in v4 will create folders with different structure. Wrapping creation of assets would not help to prepare for v4 because of new data structures. The same can be said about editorial Extract Hierarchy Avalon plugin which create project structure.
+- Project managers (ftrack, kitsu, shotgrid, embedded Project Manager, etc.). Project managers are creating, updating or removing assets in v3, but in v4 will create folders with different structure. Wrapping creation of assets would not help to prepare for v4 because of new data structures. The same can be said about editorial Extract Hierarchy QuadPype plugin which create project structure.
 - Code parts that is marked as deprecated in v3 or will be deprecated in v4.
     - integrate asset legacy publish plugin - already is legacy kept for safety
     - integrate thumbnail - thumbnails will be stored in different way in v4

@@ -75,7 +75,7 @@ def get_representation_path_from_context(context):
     representation = context['representation']
     project_doc = context.get("project")
     root = None
-    session_project = legacy_io.Session.get("AVALON_PROJECT")
+    session_project = legacy_io.Session.get("QUADPYPE_PROJECT_NAME")
     if project_doc and project_doc["name"] != session_project:
         anatomy = Anatomy(project_doc["name"])
         root = anatomy.roots
@@ -173,9 +173,9 @@ def get_representation_path(representation, root=None, dbcon=None):
             "version": version_["name"],
             "representation": representation["name"],
             "family": representation.get("context", {}).get("family"),
-            "user": dbcon.Session.get("AVALON_USER", getpass.getuser()),
-            "app": dbcon.Session.get("AVALON_APP", ""),
-            "task": dbcon.Session.get("AVALON_TASK", "")
+            "user": dbcon.Session.get("QUADPYPE_USER", getpass.getuser()),
+            "app": dbcon.Session.get("QUADPYPE_HOST_NAME", ""),
+            "task": dbcon.Session.get("QUADPYPE_TASK_NAME", "")
         }
 
         try:

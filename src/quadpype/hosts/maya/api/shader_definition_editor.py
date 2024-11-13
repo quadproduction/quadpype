@@ -12,7 +12,7 @@ import gridfs
 
 
 DEFINITION_FILENAME = "{}/maya/shader_definition.txt".format(
-    os.getenv("AVALON_PROJECT"))
+    os.getenv("QUADPYPE_PROJECT_NAME"))
 
 
 class ShaderDefinitionsEditor(QtWidgets.QWidget):

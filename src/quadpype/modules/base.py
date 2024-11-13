@@ -1101,7 +1101,7 @@ class TrayModulesManager(ModulesManager):
         "kitsu",                   # Kitsu
         "muster",                  # Muster
         "launcher_tool",           # Launcher
-        "avalon",                  # Loader
+        "loader",                  # Loader
         "tray_publisher",          # Publisher
         "standalone_publisher",    # Publisher (legacy)
         "clockify",                # Clockify

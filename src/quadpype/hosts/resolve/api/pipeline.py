@@ -1,5 +1,5 @@
 """
-Basic avalon integration
+Resolve QuadPype integration
 """
 import os
 import contextlib
@@ -12,7 +12,7 @@ from quadpype.pipeline import (
     schema,
     register_loader_plugin_path,
     register_creator_plugin_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.host import (
     HostBase,
@@ -39,14 +39,14 @@ PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
 LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
 CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 
-AVALON_CONTAINERS = ":AVALON_CONTAINERS"
+QUADPYPE_CONTAINERS = ":QUADPYPE_CONTAINERS"
 
 
 class ResolveHost(HostBase, IWorkfileHost, ILoadHost):
     name = "resolve"
 
     def install(self):
-        """Install resolve-specific functionality of avalon-core.
+        """Install resolve-specific functionality.
 
         This is where you install menus and register families, data
         and loaders into resolve.
@@ -119,7 +119,7 @@ def containerise(timeline_item,
 
     data_imprint = OrderedDict({
         "schema": "quadpype:container-2.0",
-        "id": AVALON_CONTAINER_ID,
+        "id": QUADPYPE_CONTAINER_ID,
         "name": str(name),
         "namespace": str(namespace),
         "loader": str(loader),
@@ -142,7 +142,7 @@ def ls():
     a time.
 
     See the `container.json` schema for details on how it should look,
-    and the Maya equivalent, which is in `avalon.maya.pipeline`
+    and the Maya equivalent, which is in `quadpype.maya.pipeline`
     """
 
     # get all track items from current timeline
@@ -160,7 +160,7 @@ def parse_container(timeline_item, validate=True):
 
     Args:
         timeline_item (hiero.core.TrackItem): A containerised track item.
-        validate (bool)[optional]: validating with avalon scheme
+        validate (bool)[optional]: validating with database scheme
 
     Returns:
         dict: The container schema data for input containerized track item.

@@ -55,7 +55,7 @@ def install(project_settings):
         parent_widget = get_main_window()
         cmds.menu(
             MENU_NAME,
-            label=os.getenv("AVALON_LABEL") or "QuadPype",
+            label=os.getenv("QUADPYPE_LABEL") or "QuadPype",
             tearOff=True,
             parent="MayaWindow"
         )
@@ -247,7 +247,7 @@ def popup():
 
 
 def update_menu_task_label():
-    """Update the task label in Avalon menu to current session"""
+    """Update the task label in QuadPype menu to current session"""
 
     if IS_HEADLESS:
         return

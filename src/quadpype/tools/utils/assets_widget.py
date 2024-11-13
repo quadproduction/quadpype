@@ -284,7 +284,7 @@ class AssetModel(QtGui.QStandardItemModel):
     'refreshed' signal.
 
     Args:
-        dbcon (AvalonMongoDB): Ready to use connection to mongo with.
+        dbcon (QuadPypeMongoDB): Ready to use connection to mongo with.
         parent (QObject): Parent Qt object.
     """
 
@@ -370,7 +370,7 @@ class AssetModel(QtGui.QStandardItemModel):
                 return
             self.stop_refresh()
 
-        project_name = self.dbcon.Session.get("AVALON_PROJECT")
+        project_name = self.dbcon.Session.get("QUADPYPE_PROJECT_NAME")
         clear_model = False
         if project_name != self._last_project_name:
             clear_model = True
@@ -565,7 +565,7 @@ class AssetsWidget(QtWidgets.QWidget):
     inheritance changes.
 
     Args:
-        dbcon (AvalonMongoDB): Connection to avalon mongo db.
+        dbcon (QuadPypeMongoDB): Connection to QuadPype mongo db.
         parent (QWidget): Parent Qt widget.
     """
 
@@ -683,7 +683,7 @@ class AssetsWidget(QtWidgets.QWidget):
         self._model.stop_refresh()
 
     def _get_current_session_asset(self):
-        return self.dbcon.Session.get("AVALON_ASSET")
+        return self.dbcon.Session.get("QUADPYPE_ASSET_NAME")
 
     def _on_current_asset_click(self):
         """Trigger change of asset to current context asset.

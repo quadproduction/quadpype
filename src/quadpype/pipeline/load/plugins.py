@@ -20,7 +20,7 @@ class LoaderPlugin(list):
     """Load representation into host application
 
     Arguments:
-        context (dict): avalon-core:context-1.0
+        context (dict): quadpype-core:context-1.0
 
     .. versionadded:: 4.0
        This class was introduced
@@ -41,7 +41,7 @@ class LoaderPlugin(list):
 
     @classmethod
     def apply_settings(cls, project_settings, global_settings):
-        host_name = os.getenv("AVALON_APP")
+        host_name = os.getenv("QUADPYPE_HOST_NAME")
         plugin_type = "load"
         plugin_type_settings = (
             project_settings
@@ -199,7 +199,7 @@ class LoaderPlugin(list):
         """Update `container` to `representation`
 
         Arguments:
-            container (avalon-core:container-1.0): Container to update,
+            container (quadpype-core:container-1.0): Container to update,
                 from `host.ls()`.
             representation (dict): Update the container to this representation.
 
@@ -211,7 +211,7 @@ class LoaderPlugin(list):
         """Remove a container
 
         Arguments:
-            container (avalon-core:container-1.0): Container to remove,
+            container (quadpype-core:container-1.0): Container to remove,
                 from `host.ls()`.
 
         Returns:
@@ -251,7 +251,7 @@ class LoaderPlugin(list):
 class SubsetLoaderPlugin(LoaderPlugin):
     """Load subset into host application
     Arguments:
-        context (dict): avalon-core:context-1.0
+        context (dict): quadpype-core:context-1.0
         name (str, optional): Use pre-defined name
         namespace (str, optional): Use pre-defined namespace
     """

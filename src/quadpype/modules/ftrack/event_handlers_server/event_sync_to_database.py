@@ -20,7 +20,7 @@ from quadpype.client import (
 )
 from quadpype.settings import APPS_SETTINGS_KEY
 from quadpype.client.operations import CURRENT_ASSET_DOC_SCHEMA
-from quadpype.pipeline import AvalonMongoDB, schema
+from quadpype.pipeline import QuadPypeMongoDB, schema
 
 from quadpype_modules.ftrack.lib import (
     get_quadpype_attr,
@@ -29,17 +29,17 @@ from quadpype_modules.ftrack.lib import (
     CUST_ATTR_AUTO_SYNC,
     FPS_KEYS,
 
-    avalon_sync,
+    database_sync,
 
     BaseEvent
 )
-from quadpype_modules.ftrack.lib.avalon_sync import (
+from quadpype_modules.ftrack.lib.database_sync import (
     convert_to_fps,
     InvalidFpsValue
 )
 
 
-class SyncToAvalonEvent(BaseEvent):
+class SyncToDatabaseEvent(BaseEvent):
     interest_entTypes = ["show", "task"]
     ignore_ent_types = ["Milestone"]
     ignore_keys = ["statusid", "thumbid"]
@@ -90,7 +90,7 @@ class SyncToAvalonEvent(BaseEvent):
         #   only entityTypes in interest instead of filtering by ignored
         self.debug_sync_types = collections.defaultdict(list)
 
-        self.dbcon = AvalonMongoDB()
+        self.dbcon = QuadPypeMongoDB()
         # Set processing session to not use global
         self.set_process_session(session)
         super().__init__(session)
@@ -134,12 +134,12 @@ class SyncToAvalonEvent(BaseEvent):
         return self._cur_project
 
     @property
-    def avalon_cust_attrs(self):
-        if self._avalon_cust_attrs is None:
-            self._avalon_cust_attrs = get_quadpype_attr(
+    def database_cust_attrs(self):
+        if self._database_cust_attrs is None:
+            self._database_cust_attrs = get_quadpype_attr(
                 self.process_session, query_keys=self.cust_attr_query_keys
             )
-        return self._avalon_cust_attrs
+        return self._database_cust_attrs
 
     @property
     def cust_attr_types_by_id(self):
@@ -154,67 +154,67 @@ class SyncToAvalonEvent(BaseEvent):
         return self._cust_attr_types_by_id
 
     @property
-    def avalon_entities(self):
-        if self._avalon_ents is None:
+    def database_entities(self):
+        if self._database_ents is None:
             project_name = self.cur_project["full_name"]
             self.dbcon.install()
-            self.dbcon.Session["AVALON_PROJECT"] = project_name
-            avalon_project = get_project(project_name)
-            avalon_entities = list(get_assets(project_name))
-            self._avalon_ents = (avalon_project, avalon_entities)
-        return self._avalon_ents
+            self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
+            database_project = get_project(project_name)
+            database_entities = list(get_assets(project_name))
+            self._database_ents = (database_project, database_entities)
+        return self._database_ents
 
     @property
-    def avalon_ents_by_name(self):
-        if self._avalon_ents_by_name is None:
-            self._avalon_ents_by_name = {}
-            proj, ents = self.avalon_entities
+    def database_ents_by_name(self):
+        if self._database_ents_by_name is None:
+            self._database_ents_by_name = {}
+            proj, ents = self.database_entities
             for ent in ents:
-                self._avalon_ents_by_name[ent["name"]] = ent
-        return self._avalon_ents_by_name
+                self._database_ents_by_name[ent["name"]] = ent
+        return self._database_ents_by_name
 
     @property
-    def avalon_ents_by_id(self):
-        if self._avalon_ents_by_id is None:
-            self._avalon_ents_by_id = {}
-            proj, ents = self.avalon_entities
+    def database_ents_by_id(self):
+        if self._database_ents_by_id is None:
+            self._database_ents_by_id = {}
+            proj, ents = self.database_entities
             if proj:
-                self._avalon_ents_by_id[proj["_id"]] = proj
+                self._database_ents_by_id[proj["_id"]] = proj
                 for ent in ents:
-                    self._avalon_ents_by_id[ent["_id"]] = ent
-        return self._avalon_ents_by_id
+                    self._database_ents_by_id[ent["_id"]] = ent
+        return self._database_ents_by_id
 
     @property
-    def avalon_ents_by_parent_id(self):
-        if self._avalon_ents_by_parent_id is None:
-            self._avalon_ents_by_parent_id = collections.defaultdict(list)
-            proj, ents = self.avalon_entities
+    def database_ents_by_parent_id(self):
+        if self._database_ents_by_parent_id is None:
+            self._database_ents_by_parent_id = collections.defaultdict(list)
+            proj, ents = self.database_entities
             for ent in ents:
                 vis_par = ent["data"]["visualParent"]
                 if vis_par is None:
                     vis_par = proj["_id"]
-                self._avalon_ents_by_parent_id[vis_par].append(ent)
-        return self._avalon_ents_by_parent_id
+                self._database_ents_by_parent_id[vis_par].append(ent)
+        return self._database_ents_by_parent_id
 
     @property
-    def avalon_ents_by_ftrack_id(self):
-        if self._avalon_ents_by_ftrack_id is None:
-            self._avalon_ents_by_ftrack_id = {}
-            proj, ents = self.avalon_entities
+    def database_ents_by_ftrack_id(self):
+        if self._database_ents_by_ftrack_id is None:
+            self._database_ents_by_ftrack_id = {}
+            proj, ents = self.database_entities
             if proj:
                 ftrack_id = proj["data"].get("ftrackId")
                 if ftrack_id is None:
                     self.handle_missing_ftrack_id(proj)
                     ftrack_id = proj["data"]["ftrackId"]
-                self._avalon_ents_by_ftrack_id[ftrack_id] = proj
+                self._database_ents_by_ftrack_id[ftrack_id] = proj
 
-                self._avalon_ents_by_ftrack_id[ftrack_id] = proj
+                self._database_ents_by_ftrack_id[ftrack_id] = proj
                 for ent in ents:
                     ftrack_id = ent["data"].get("ftrackId")
                     if ftrack_id is None:
                         continue
-                    self._avalon_ents_by_ftrack_id[ftrack_id] = ent
-        return self._avalon_ents_by_ftrack_id
+                    self._database_ents_by_ftrack_id[ftrack_id] = ent
+        return self._database_ents_by_ftrack_id
 
     def handle_missing_ftrack_id(self, doc):
         # TODO handling of missing ftrack id is primarily issue of editorial
@@ -287,34 +287,34 @@ class SyncToAvalonEvent(BaseEvent):
         self.log.info("Updated ftrack id of entity \"{}\"".format(
             "/".join(entity_path_items)
         ))
-        self._avalon_ents_by_ftrack_id[ftrack_id] = doc
+        self._database_ents_by_ftrack_id[ftrack_id] = doc
 
     @property
-    def avalon_asset_ids_with_subsets(self):
-        if self._avalon_asset_ids_with_subsets is None:
+    def database_asset_ids_with_subsets(self):
+        if self._database_asset_ids_with_subsets is None:
             project_name = self.cur_project["full_name"]
-            self._avalon_asset_ids_with_subsets = get_asset_ids_with_subsets(
+            self._database_asset_ids_with_subsets = get_asset_ids_with_subsets(
                 project_name
             )
 
-        return self._avalon_asset_ids_with_subsets
+        return self._database_asset_ids_with_subsets
 
     @property
-    def avalon_archived_by_id(self):
-        if self._avalon_archived_by_id is None:
-            self._avalon_archived_by_id = {}
+    def database_archived_by_id(self):
+        if self._database_archived_by_id is None:
+            self._database_archived_by_id = {}
             project_name = self.cur_project["full_name"]
             for asset in get_archived_assets(project_name):
-                self._avalon_archived_by_id[asset["_id"]] = asset
-        return self._avalon_archived_by_id
+                self._database_archived_by_id[asset["_id"]] = asset
+        return self._database_archived_by_id
 
     @property
-    def avalon_archived_by_name(self):
-        if self._avalon_archived_by_name is None:
-            self._avalon_archived_by_name = {}
-            for asset in self.avalon_archived_by_id.values():
-                self._avalon_archived_by_name[asset["name"]] = asset
-        return self._avalon_archived_by_name
+    def database_archived_by_name(self):
+        if self._database_archived_by_name is None:
+            self._database_archived_by_name = {}
+            for asset in self.database_archived_by_id.values():
+                self._database_archived_by_name[asset["name"]] = asset
+        return self._database_archived_by_name
 
     @property
     def changeability_by_mongo_id(self):
@@ -323,16 +323,16 @@ class SyncToAvalonEvent(BaseEvent):
             self._changeability_by_mongo_id = collections.defaultdict(
                 lambda: True
             )
-            avalon_project, avalon_entities = self.avalon_entities
-            self._changeability_by_mongo_id[avalon_project["_id"]] = False
+            database_project, database_entities = self.database_entities
+            self._changeability_by_mongo_id[database_project["_id"]] = False
             self._bubble_changeability(
-                list(self.avalon_asset_ids_with_subsets)
+                list(self.database_asset_ids_with_subsets)
             )
 
         return self._changeability_by_mongo_id
 
     def remove_cached_by_key(self, key, values):
-        if self._avalon_ents is None:
+        if self._database_ents is None:
             return
 
         if not isinstance(values, (list, tuple)):
@@ -355,21 +355,21 @@ class SyncToAvalonEvent(BaseEvent):
             key = "data.ftrackId"
 
         found_data = {}
-        project, entities = self._avalon_ents
+        project, entities = self._database_ents
         key_items = key.split(".")
         for value in values:
             ent = None
             if key == "_id":
-                if self._avalon_ents_by_id is not None:
-                    ent = self._avalon_ents_by_id.get(value)
+                if self._database_ents_by_id is not None:
+                    ent = self._database_ents_by_id.get(value)
 
             elif key == "name":
-                if self._avalon_ents_by_name is not None:
-                    ent = self._avalon_ents_by_name.get(value)
+                if self._database_ents_by_name is not None:
+                    ent = self._database_ents_by_name.get(value)
 
             elif key == "data.ftrackId":
-                if self._avalon_ents_by_ftrack_id is not None:
-                    ent = self._avalon_ents_by_ftrack_id.get(value)
+                if self._database_ents_by_ftrack_id is not None:
+                    ent = self._database_ents_by_ftrack_id.get(value)
 
             if ent is None:
                 for _ent in entities:
@@ -400,24 +400,24 @@ class SyncToAvalonEvent(BaseEvent):
             name = data["name"]
             entity = data["entity"]
 
-            project, ents = self._avalon_ents
+            project, ents = self._database_ents
             ents.remove(entity)
-            self._avalon_ents = project, ents
+            self._database_ents = project, ents
 
-            if self._avalon_ents_by_ftrack_id is not None:
-                self._avalon_ents_by_ftrack_id.pop(ftrack_id, None)
+            if self._database_ents_by_ftrack_id is not None:
+                self._database_ents_by_ftrack_id.pop(ftrack_id, None)
 
-            if self._avalon_ents_by_parent_id is not None:
-                self._avalon_ents_by_parent_id[parent_id].remove(entity)
+            if self._database_ents_by_parent_id is not None:
+                self._database_ents_by_parent_id[parent_id].remove(entity)
 
-            if self._avalon_ents_by_id is not None:
-                self._avalon_ents_by_id.pop(mongo_id, None)
+            if self._database_ents_by_id is not None:
+                self._database_ents_by_id.pop(mongo_id, None)
 
-            if self._avalon_ents_by_name is not None:
-                self._avalon_ents_by_name.pop(name, None)
+            if self._database_ents_by_name is not None:
+                self._database_ents_by_name.pop(name, None)
 
-            if self._avalon_archived_by_id is not None:
-                self._avalon_archived_by_id[mongo_id] = entity
+            if self._database_archived_by_id is not None:
+                self._database_archived_by_id[mongo_id] = entity
 
     def _bubble_changeability(self, unchangeable_ids):
         unchangeable_queue = collections.deque()
@@ -431,7 +431,7 @@ class SyncToAvalonEvent(BaseEvent):
             if entity_id in processed_parents_ids:
                 continue
 
-            entity = self.avalon_ents_by_id.get(entity_id)
+            entity = self.database_ents_by_id.get(entity_id)
             # if entity is not archived but unchageable child was then skip
             # - archived entities should not affect not archived?
             if entity and child_is_archived:
@@ -442,7 +442,7 @@ class SyncToAvalonEvent(BaseEvent):
             processed_parents_ids.append(entity_id)
             # if not entity then is probably archived
             if not entity:
-                entity = self.avalon_archived_by_id.get(entity_id)
+                entity = self.database_archived_by_id.get(entity_id)
                 child_is_archived = True
 
             if not entity:
@@ -453,7 +453,7 @@ class SyncToAvalonEvent(BaseEvent):
                     ).format(str(entity_id)))
                 else:
                     self.log.warning((
-                        "In avalon are entities without valid parents that"
+                        "In database are entities without valid parents that"
                         " lead to Project (should not cause errors)"
                         " - MongoId <{}>"
                     ).format(str(entity_id)))
@@ -469,18 +469,18 @@ class SyncToAvalonEvent(BaseEvent):
         """Reset variables so each event callback has clear env."""
         self._cur_project = None
 
-        self._avalon_cust_attrs = None
+        self._database_cust_attrs = None
         self._cust_attr_types_by_id = None
 
-        self._avalon_ents = None
-        self._avalon_ents_by_id = None
-        self._avalon_ents_by_parent_id = None
-        self._avalon_ents_by_ftrack_id = None
-        self._avalon_ents_by_name = None
-        self._avalon_asset_ids_with_subsets = None
+        self._database_ents = None
+        self._database_ents_by_id = None
+        self._database_ents_by_parent_id = None
+        self._database_ents_by_ftrack_id = None
+        self._database_ents_by_name = None
+        self._database_asset_ids_with_subsets = None
         self._changeability_by_mongo_id = None
-        self._avalon_archived_by_id = None
-        self._avalon_archived_by_name = None
+        self._database_archived_by_id = None
+        self._database_archived_by_name = None
 
         self._ent_types_by_name = None
 
@@ -498,8 +498,8 @@ class SyncToAvalonEvent(BaseEvent):
         # handled separately by full wipeout and replace from FTrack
         self.modified_tasks_ftrackids = set()
 
-        self.moved_in_avalon = []
-        self.renamed_in_avalon = []
+        self.moved_in_database = []
+        self.renamed_in_database = []
         self.hier_cust_attrs_changes = collections.defaultdict(list)
 
         self.duplicated = []
@@ -551,14 +551,14 @@ class SyncToAvalonEvent(BaseEvent):
             if not changed_keys:
                 continue
 
-            # Remove custom attributes starting with `avalon_` from changes
+            # Remove custom attributes starting with `database_` from changes
             # - these custom attributes are not synchronized
-            avalon_keys = []
+            database_keys = []
             for key in changes:
-                if key.startswith("avalon_"):
-                    avalon_keys.append(key)
+                if key.startswith("database_"):
+                    database_keys.append(key)
 
-            for _key in avalon_keys:
+            for _key in database_keys:
                 changed_keys.remove(_key)
                 changes.pop(_key, None)
 
@@ -713,17 +713,17 @@ class SyncToAvalonEvent(BaseEvent):
                 username
             )
             if turned_on:
-                message += " Triggering syncToAvalon action."
+                message += " Triggering syncToQuadPype action."
             self.log.debug(message)
 
             if turned_on:
-                # Trigger sync to avalon action if auto sync was turned on
+                # Trigger sync to database action if auto sync was turned on
                 selection = [{
                     "entityId": ft_project["id"],
                     "entityType": "show"
                 }]
                 self.trigger_action(
-                    action_name="sync.to.avalon.server",
+                    action_name="sync.to.quadpype.database",
                     event=event,
                     selection=selection
                 )
@@ -733,7 +733,7 @@ class SyncToAvalonEvent(BaseEvent):
         # Filter updated data by changed keys
         updated = self.filter_updated(updated)
 
-        # skip most of events where nothing has changed for avalon
+        # skip most of events where nothing has changed for database
         if (
             len(found_actions) == 1
             and found_actions[0] == "update"
@@ -905,15 +905,15 @@ class SyncToAvalonEvent(BaseEvent):
 
             removed_name = removed["changes"]["name"]["old"]
 
-            avalon_ent = self.avalon_ents_by_ftrack_id.get(ftrack_id)
-            if not avalon_ent:
+            database_ent = self.database_ents_by_ftrack_id.get(ftrack_id)
+            if not database_ent:
                 continue
-            mongo_id = avalon_ent["_id"]
+            mongo_id = database_ent["_id"]
             if self.changeability_by_mongo_id[mongo_id]:
                 removable_ids.append(mongo_id)
                 removed_names.append(removed_name)
             else:
-                recreate_ents.append(avalon_ent)
+                recreate_ents.append(database_ent)
 
         if removable_ids:
             # TODO logging
@@ -941,13 +941,13 @@ class SyncToAvalonEvent(BaseEvent):
                 "Deleted entity was recreated||Entity was recreated because"
                 " it or its children contain published data"
             )
-            proj, ents = self.avalon_entities
-            for avalon_entity in recreate_ents:
-                old_ftrack_id = avalon_entity["data"]["ftrackId"]
-                vis_par = avalon_entity["data"]["visualParent"]
+            proj, ents = self.database_entities
+            for database_entity in recreate_ents:
+                old_ftrack_id = database_entity["data"]["ftrackId"]
+                vis_par = database_entity["data"]["visualParent"]
                 if vis_par is None:
                     vis_par = proj["_id"]
-                parent_ent = self.avalon_ents_by_id[vis_par]
+                parent_ent = self.database_ents_by_id[vis_par]
 
                 parent_ftrack_id = parent_ent["data"].get("ftrackId")
                 if parent_ftrack_id is None:
@@ -968,9 +968,9 @@ class SyncToAvalonEvent(BaseEvent):
                                 self.cur_project["id"], parent_ftrack_id
                             )
                         ).one()
-                entity_type = avalon_entity["data"]["entityType"]
+                entity_type = database_entity["data"]["entityType"]
                 new_entity = self.process_session.create(entity_type, {
-                    "name": avalon_entity["name"],
+                    "name": database_entity["name"],
                     "parent": parent_ftrack_ent
                 })
                 try:
@@ -981,9 +981,9 @@ class SyncToAvalonEvent(BaseEvent):
                     self.process_session.rollback()
                     ent_path_items = [self.cur_project["full_name"]]
                     ent_path_items.extend([
-                        par for par in avalon_entity["data"]["parents"]
+                        par for par in database_entity["data"]["parents"]
                     ])
-                    ent_path_items.append(avalon_entity["name"])
+                    ent_path_items.append(database_entity["name"])
                     ent_path = "/".join(ent_path_items)
 
                     error_msg = "Couldn't recreate entity in Ftrack"
@@ -1001,9 +1001,9 @@ class SyncToAvalonEvent(BaseEvent):
                     continue
 
                 new_entity_id = new_entity["id"]
-                avalon_entity["data"]["ftrackId"] = new_entity_id
+                database_entity["data"]["ftrackId"] = new_entity_id
 
-                for key, val in avalon_entity["data"].items():
+                for key, val in database_entity["data"].items():
                     if not val:
                         continue
                     if key not in new_entity["custom_attributes"]:
@@ -1012,7 +1012,7 @@ class SyncToAvalonEvent(BaseEvent):
                     new_entity["custom_attributes"][key] = val
 
                 new_entity["custom_attributes"][CUST_ATTR_ID_KEY] = (
-                    str(avalon_entity["_id"])
+                    str(database_entity["_id"])
                 )
                 ent_path = self.get_ent_path(new_entity_id)
 
@@ -1045,9 +1045,9 @@ class SyncToAvalonEvent(BaseEvent):
                 self.process_session.commit()
 
                 found_idx = None
-                proj_doc, asset_docs = self._avalon_ents
+                proj_doc, asset_docs = self._database_ents
                 for idx, asset_doc in enumerate(asset_docs):
-                    if asset_doc["_id"] == avalon_entity["_id"]:
+                    if asset_doc["_id"] == database_entity["_id"]:
                         found_idx = idx
                         break
 
@@ -1055,40 +1055,40 @@ class SyncToAvalonEvent(BaseEvent):
                     continue
 
                 # Prepare updates dict for mongo update
-                if "data" not in self.updates[avalon_entity["_id"]]:
-                    self.updates[avalon_entity["_id"]]["data"] = {}
+                if "data" not in self.updates[database_entity["_id"]]:
+                    self.updates[database_entity["_id"]]["data"] = {}
 
-                self.updates[avalon_entity["_id"]]["data"]["ftrackId"] = (
+                self.updates[database_entity["_id"]]["data"]["ftrackId"] = (
                     new_entity_id
                 )
                 # Update cached entities
-                asset_docs[found_idx] = avalon_entity
-                self._avalon_ents = proj_doc, asset_docs
+                asset_docs[found_idx] = database_entity
+                self._database_ents = proj_doc, asset_docs
 
-                if self._avalon_ents_by_id is not None:
-                    mongo_id = avalon_entity["_id"]
-                    self._avalon_ents_by_id[mongo_id] = avalon_entity
+                if self._database_ents_by_id is not None:
+                    mongo_id = database_entity["_id"]
+                    self._database_ents_by_id[mongo_id] = database_entity
 
-                if self._avalon_ents_by_parent_id is not None:
-                    vis_par = avalon_entity["data"]["visualParent"]
-                    children = self._avalon_ents_by_parent_id[vis_par]
+                if self._database_ents_by_parent_id is not None:
+                    vis_par = database_entity["data"]["visualParent"]
+                    children = self._database_ents_by_parent_id[vis_par]
                     found_idx = None
                     for idx, _entity in enumerate(children):
-                        if _entity["_id"] == avalon_entity["_id"]:
+                        if _entity["_id"] == database_entity["_id"]:
                             found_idx = idx
                             break
-                    children[found_idx] = avalon_entity
-                    self._avalon_ents_by_parent_id[vis_par] = children
+                    children[found_idx] = database_entity
+                    self._database_ents_by_parent_id[vis_par] = children
 
-                if self._avalon_ents_by_ftrack_id is not None:
-                    self._avalon_ents_by_ftrack_id.pop(old_ftrack_id)
-                    self._avalon_ents_by_ftrack_id[new_entity_id] = (
-                        avalon_entity
+                if self._database_ents_by_ftrack_id is not None:
+                    self._database_ents_by_ftrack_id.pop(old_ftrack_id)
+                    self._database_ents_by_ftrack_id[new_entity_id] = (
+                        database_entity
                     )
 
-                if self._avalon_ents_by_name is not None:
-                    name = avalon_entity["name"]
-                    self._avalon_ents_by_name[name] = avalon_entity
+                if self._database_ents_by_name is not None:
+                    name = database_entity["name"]
+                    self._database_ents_by_name[name] = database_entity
 
         # Check if entities with same name can be synchronized
         if not removed_names:
@@ -1141,7 +1141,7 @@ class SyncToAvalonEvent(BaseEvent):
             )
             # skip if already synchronized
             ftrack_id = entity["id"]
-            if ftrack_id in self.avalon_ents_by_ftrack_id:
+            if ftrack_id in self.database_ents_by_ftrack_id:
                 # TODO logging
                 self.log.debug(
                     "- Entity is already synchronized (skipping) <{}>".format(
@@ -1151,7 +1151,7 @@ class SyncToAvalonEvent(BaseEvent):
                 continue
 
             parent_id = entity["parent_id"]
-            if parent_id not in self.avalon_ents_by_ftrack_id:
+            if parent_id not in self.database_ents_by_ftrack_id:
                 # TODO logging
                 self.log.debug((
                     "- Entity's parent entity doesn't seems to"
@@ -1171,10 +1171,10 @@ class SyncToAvalonEvent(BaseEvent):
 
         children_queue = collections.deque()
         for entity in synchronizable_ents:
-            parent_avalon_ent = self.avalon_ents_by_ftrack_id[
+            parent_database_ent = self.database_ents_by_ftrack_id[
                 entity["parent_id"]
             ]
-            self.create_entity_in_avalon(entity, parent_avalon_ent)
+            self.create_entity_in_database(entity, parent_database_ent)
 
             for child in entity["children"]:
                 if child.entity_type.lower() != "task":
@@ -1184,37 +1184,37 @@ class SyncToAvalonEvent(BaseEvent):
             entity = children_queue.popleft()
             ftrack_id = entity["id"]
             name = entity["name"]
-            ent_by_ftrack_id = self.avalon_ents_by_ftrack_id.get(ftrack_id)
+            ent_by_ftrack_id = self.database_ents_by_ftrack_id.get(ftrack_id)
             if ent_by_ftrack_id:
                 raise Exception((
-                    "This is bug, parent was just synchronized to avalon"
+                    "This is bug, parent was just synchronized to database"
                     " but entity is already in database {}"
                 ).format(dict(entity)))
 
             # Entity has duplicated name with another entity
             # - may be renamed: in that case renaming method will handle that
-            duplicate_ent = self.avalon_ents_by_name.get(name)
+            duplicate_ent = self.database_ents_by_name.get(name)
             if duplicate_ent:
                 continue
 
-            passed_regex = avalon_sync.check_regex(
+            passed_regex = database_sync.check_regex(
                 name, "asset", schema_patterns=self.regex_schemas
             )
             if not passed_regex:
                 continue
 
             parent_id = entity["parent_id"]
-            parent_avalon_ent = self.avalon_ents_by_ftrack_id[parent_id]
+            parent_database_ent = self.database_ents_by_ftrack_id[parent_id]
 
-            self.create_entity_in_avalon(entity, parent_avalon_ent)
+            self.create_entity_in_database(entity, parent_database_ent)
 
             for child in entity["children"]:
                 if child.entity_type.lower() == "task":
                     continue
                 children_queue.append(child)
 
-    def create_entity_in_avalon(self, ftrack_ent, parent_avalon):
-        proj, ents = self.avalon_entities
+    def create_entity_in_database(self, ftrack_ent, parent_database):
+        proj, ents = self.database_entities
 
         # Parents, Hierarchy
         ent_path_items = [ent["name"] for ent in ftrack_ent["link"]]
@@ -1232,8 +1232,8 @@ class SyncToAvalonEvent(BaseEvent):
 
         # Visual Parent
         vis_par = None
-        if parent_avalon["type"].lower() != "project":
-            vis_par = parent_avalon["_id"]
+        if parent_database["type"].lower() != "project":
+            vis_par = parent_database["_id"]
 
         mongo_id = ObjectId()
         name = ftrack_ent["name"]
@@ -1255,7 +1255,7 @@ class SyncToAvalonEvent(BaseEvent):
         invalid_fps_items = []
         cust_attrs = self.get_cust_attr_values(ftrack_ent)
         for key, val in cust_attrs.items():
-            if key.startswith("avalon_"):
+            if key.startswith("database_"):
                 continue
 
             if key in FPS_KEYS:
@@ -1281,7 +1281,7 @@ class SyncToAvalonEvent(BaseEvent):
         if _mongo_id_str:
             try:
                 _mongo_id = ObjectId(_mongo_id_str)
-                if _mongo_id not in self.avalon_ents_by_id:
+                if _mongo_id not in self.database_ents_by_id:
                     mongo_id = _mongo_id
                     final_entity["_id"] = mongo_id
 
@@ -1314,7 +1314,7 @@ class SyncToAvalonEvent(BaseEvent):
             return None
 
         replaced = False
-        archived = self.avalon_archived_by_name.get(name)
+        archived = self.database_archived_by_name.get(name)
         if archived:
             archived_id = archived["_id"]
             if (
@@ -1350,7 +1350,7 @@ class SyncToAvalonEvent(BaseEvent):
                     "Failed to store MongoID to entity's custom attribute"
                 )
                 report_msg = (
-                    "{}||SyncToAvalon action may solve this issue"
+                    "{}||SyncToQuadPype action may solve this issue"
                 ).format(error_msg)
 
                 self.report_items["warning"][report_msg].append(ent_path)
@@ -1360,32 +1360,32 @@ class SyncToAvalonEvent(BaseEvent):
                 )
 
         # modify cached data
-        # Skip if self._avalon_ents is not set(maybe never happen)
-        if self._avalon_ents is None:
+        # Skip if self._database_ents is not set(maybe never happen)
+        if self._database_ents is None:
             return final_entity
 
-        if self._avalon_ents is not None:
-            proj, ents = self._avalon_ents
+        if self._database_ents is not None:
+            proj, ents = self._database_ents
             ents.append(final_entity)
-            self._avalon_ents = (proj, ents)
+            self._database_ents = (proj, ents)
 
-        if self._avalon_ents_by_id is not None:
-            self._avalon_ents_by_id[mongo_id] = final_entity
+        if self._database_ents_by_id is not None:
+            self._database_ents_by_id[mongo_id] = final_entity
 
-        if self._avalon_ents_by_parent_id is not None:
-            self._avalon_ents_by_parent_id[vis_par].append(final_entity)
+        if self._database_ents_by_parent_id is not None:
+            self._database_ents_by_parent_id[vis_par].append(final_entity)
 
-        if self._avalon_ents_by_ftrack_id is not None:
-            self._avalon_ents_by_ftrack_id[ftrack_ent["id"]] = final_entity
+        if self._database_ents_by_ftrack_id is not None:
+            self._database_ents_by_ftrack_id[ftrack_ent["id"]] = final_entity
 
-        if self._avalon_ents_by_name is not None:
-            self._avalon_ents_by_name[ftrack_ent["name"]] = final_entity
+        if self._database_ents_by_name is not None:
+            self._database_ents_by_name[ftrack_ent["name"]] = final_entity
 
         return final_entity
 
     def get_cust_attr_values(self, entity):
         output = {}
-        custom_attrs, hier_attrs = self.avalon_cust_attrs
+        custom_attrs, hier_attrs = self.database_cust_attrs
 
         # Notmal custom attributes
         for attr in custom_attrs:
@@ -1393,7 +1393,7 @@ class SyncToAvalonEvent(BaseEvent):
             if key in entity["custom_attributes"]:
                 output[key] = entity["custom_attributes"][key]
 
-        hier_values = avalon_sync.get_hierarchical_attributes_values(
+        hier_values = database_sync.get_hierarchical_attributes_values(
             self.process_session,
             entity,
             hier_attrs,
@@ -1426,28 +1426,28 @@ class SyncToAvalonEvent(BaseEvent):
             old_name = ent_info["changes"]["name"]["old"]
 
             ent_path = self.get_ent_path(ftrack_id)
-            avalon_ent = self.avalon_ents_by_ftrack_id.get(ftrack_id)
-            if not avalon_ent:
+            database_ent = self.database_ents_by_ftrack_id.get(ftrack_id)
+            if not database_ent:
                 # TODO logging
                 self.log.debug((
-                    "Entity is not is avalon. Moving to \"add\" process. <{}>"
+                    "Entity is not is database. Moving to \"add\" process. <{}>"
                 ).format(ent_path))
                 self.ftrack_added[ftrack_id] = ent_info
                 continue
 
-            if new_name == avalon_ent["name"]:
+            if new_name == database_ent["name"]:
                 # TODO logging
                 self.log.debug((
-                    "Avalon entity already has the same name <{}>"
+                    "QuadPype entity already has the same name <{}>"
                 ).format(ent_path))
                 continue
 
-            mongo_id = avalon_ent["_id"]
+            mongo_id = database_ent["_id"]
             if self.changeability_by_mongo_id[mongo_id]:
-                changeable_queue.append((ftrack_id, avalon_ent, new_name))
+                changeable_queue.append((ftrack_id, database_ent, new_name))
             else:
                 ftrack_ent = self.ftrack_ents_by_id[ftrack_id]
-                ftrack_ent["name"] = avalon_ent["name"]
+                ftrack_ent["name"] = database_ent["name"]
                 try:
                     self.process_session.commit()
                     # TODO logging
@@ -1485,31 +1485,31 @@ class SyncToAvalonEvent(BaseEvent):
                     )
 
         old_names = []
-        # Process renaming in Avalon DB
+        # Process renaming in QuadPype DB
         while changeable_queue:
-            ftrack_id, avalon_ent, new_name = changeable_queue.popleft()
-            mongo_id = avalon_ent["_id"]
-            old_name = avalon_ent["name"]
+            ftrack_id, database_ent, new_name = changeable_queue.popleft()
+            mongo_id = database_ent["_id"]
+            old_name = database_ent["name"]
 
             _entity_type = "asset"
             if entity_type == "Project":
                 _entity_type = "project"
 
-            passed_regex = avalon_sync.check_regex(
+            passed_regex = database_sync.check_regex(
                 new_name, _entity_type, schema_patterns=self.regex_schemas
             )
             if not passed_regex:
                 self.regex_failed.append(ftrack_id)
                 continue
 
-            # if avalon does not have same name then can be changed
-            same_name_avalon_ent = self.avalon_ents_by_name.get(new_name)
-            if not same_name_avalon_ent:
-                old_val = self._avalon_ents_by_name.pop(old_name)
+            # if database does not have same name then can be changed
+            same_name_database_ent = self.database_ents_by_name.get(new_name)
+            if not same_name_database_ent:
+                old_val = self._database_ents_by_name.pop(old_name)
                 old_val["name"] = new_name
-                self._avalon_ents_by_name[new_name] = old_val
+                self._database_ents_by_name[new_name] = old_val
                 self.updates[mongo_id] = {"name": new_name}
-                self.renamed_in_avalon.append(mongo_id)
+                self.renamed_in_database.append(mongo_id)
 
                 old_names.append(old_name)
                 if new_name in old_names:
@@ -1526,7 +1526,7 @@ class SyncToAvalonEvent(BaseEvent):
 
             # Check if same name is in changable_queue
             # - it's name may be changed in next iteration
-            same_name_ftrack_id = same_name_avalon_ent["data"]["ftrackId"]
+            same_name_ftrack_id = same_name_database_ent["data"]["ftrackId"]
             same_is_unprocessed = False
             for item in changeable_queue:
                 if same_name_ftrack_id == item[0]:
@@ -1534,7 +1534,7 @@ class SyncToAvalonEvent(BaseEvent):
                     break
 
             if same_is_unprocessed:
-                changeable_queue.append((ftrack_id, avalon_ent, new_name))
+                changeable_queue.append((ftrack_id, database_ent, new_name))
                 continue
 
             self.duplicated.append(ftrack_id)
@@ -1554,13 +1554,13 @@ class SyncToAvalonEvent(BaseEvent):
             "Processing added entities: {}".format(str(ent_infos))
         )
 
-        cust_attrs, hier_attrs = self.avalon_cust_attrs
+        cust_attrs, hier_attrs = self.database_cust_attrs
         entity_type_conf_ids = {}
-        # Skip if already exit in avalon db or tasks entities
+        # Skip if already exit in database db or tasks entities
         # - happen when was created by any sync event/action
         pop_out_ents = []
         for ftrack_id, ent_info in ent_infos.items():
-            if self.avalon_ents_by_ftrack_id.get(ftrack_id):
+            if self.database_ents_by_ftrack_id.get(ftrack_id):
                 pop_out_ents.append(ftrack_id)
                 self.log.warning(
                     "Added entity is already synchronized <{}>".format(
@@ -1579,13 +1579,13 @@ class SyncToAvalonEvent(BaseEvent):
                 .get("name", {})
                 .get("new")
             )
-            avalon_ent_by_name = self.avalon_ents_by_name.get(name) or {}
-            avalon_ent_by_name_ftrack_id = (
-                avalon_ent_by_name
+            database_ent_by_name = self.database_ents_by_name.get(name) or {}
+            database_ent_by_name_ftrack_id = (
+                database_ent_by_name
                 .get("data", {})
                 .get("ftrackId")
             )
-            if avalon_ent_by_name and avalon_ent_by_name_ftrack_id is None:
+            if database_ent_by_name and database_ent_by_name_ftrack_id is None:
                 ftrack_ent = self.ftrack_ents_by_id.get(ftrack_id)
                 if not ftrack_ent:
                     ftrack_ent = self.process_session.query(
@@ -1598,12 +1598,12 @@ class SyncToAvalonEvent(BaseEvent):
                 ent_path_items = [ent["name"] for ent in ftrack_ent["link"]]
                 parents = ent_path_items[1:len(ent_path_items)-1:]
 
-                avalon_ent_parents = (
-                    avalon_ent_by_name.get("data", {}).get("parents")
+                database_ent_parents = (
+                    database_ent_by_name.get("data", {}).get("parents")
                 )
-                if parents == avalon_ent_parents:
+                if parents == database_ent_parents:
                     self.dbcon.update_one({
-                        "_id": avalon_ent_by_name["_id"]
+                        "_id": database_ent_by_name["_id"]
                     }, {
                         "$set": {
                             "data.ftrackId": ftrack_id,
@@ -1611,19 +1611,19 @@ class SyncToAvalonEvent(BaseEvent):
                         }
                     })
 
-                    avalon_ent_by_name["data"]["ftrackId"] = ftrack_id
-                    avalon_ent_by_name["data"]["entityType"] = entity_type
+                    database_ent_by_name["data"]["ftrackId"] = ftrack_id
+                    database_ent_by_name["data"]["entityType"] = entity_type
 
-                    self._avalon_ents_by_ftrack_id[ftrack_id] = (
-                        avalon_ent_by_name
+                    self._database_ents_by_ftrack_id[ftrack_id] = (
+                        database_ent_by_name
                     )
-                    if self._avalon_ents_by_parent_id:
+                    if self._database_ents_by_parent_id:
                         found = None
                         for _parent_id_, _entities_ in (
-                            self._avalon_ents_by_parent_id.items()
+                            self._database_ents_by_parent_id.items()
                         ):
                             for _idx_, entity in enumerate(_entities_):
-                                if entity["_id"] == avalon_ent_by_name["_id"]:
+                                if entity["_id"] == database_ent_by_name["_id"]:
                                     found = (_parent_id_, _idx_)
                                     break
 
@@ -1632,29 +1632,29 @@ class SyncToAvalonEvent(BaseEvent):
 
                         if found:
                             _parent_id_, _idx_ = found
-                            self._avalon_ents_by_parent_id[_parent_id_][
-                                _idx_] = avalon_ent_by_name
+                            self._database_ents_by_parent_id[_parent_id_][
+                                _idx_] = database_ent_by_name
 
-                    if self._avalon_ents_by_id:
-                        self._avalon_ents_by_id[avalon_ent_by_name["_id"]] = (
-                            avalon_ent_by_name
+                    if self._database_ents_by_id:
+                        self._database_ents_by_id[database_ent_by_name["_id"]] = (
+                            database_ent_by_name
                         )
 
-                    if self._avalon_ents_by_name:
-                        self._avalon_ents_by_name[name] = avalon_ent_by_name
+                    if self._database_ents_by_name:
+                        self._database_ents_by_name[name] = database_ent_by_name
 
-                    if self._avalon_ents:
+                    if self._database_ents:
                         found = None
-                        project, entities = self._avalon_ents
+                        project, entities = self._database_ents
                         for _idx_, _ent_ in enumerate(entities):
-                            if _ent_["_id"] != avalon_ent_by_name["_id"]:
+                            if _ent_["_id"] != database_ent_by_name["_id"]:
                                 continue
                             found = _idx_
                             break
 
                         if found is not None:
-                            entities[found] = avalon_ent_by_name
-                            self._avalon_ents = project, entities
+                            entities[found] = database_ent_by_name
+                            self._database_ents = project, entities
 
                     pop_out_ents.append(ftrack_id)
                     continue
@@ -1719,32 +1719,32 @@ class SyncToAvalonEvent(BaseEvent):
                     "This is a bug"
                 ))
             parent_id = entity["parent_id"]
-            parent_avalon = self.avalon_ents_by_ftrack_id.get(parent_id)
-            if not parent_avalon:
+            parent_database = self.database_ents_by_ftrack_id.get(parent_id)
+            if not parent_database:
                 # TODO logging
                 self.log.debug((
                     "Skipping synchronization of entity"
-                    " because parent was not found in Avalon DB <{}>"
+                    " because parent was not found in QuadPype DB <{}>"
                 ).format(self.get_ent_path(ftrack_id)))
                 continue
 
             is_synchonizable = True
             name = entity["name"]
-            passed_regex = avalon_sync.check_regex(
+            passed_regex = database_sync.check_regex(
                 name, "asset", schema_patterns=self.regex_schemas
             )
             if not passed_regex:
                 self.regex_failed.append(ftrack_id)
                 is_synchonizable = False
 
-            if name in self.avalon_ents_by_name:
+            if name in self.database_ents_by_name:
                 self.duplicated.append(ftrack_id)
                 is_synchonizable = False
 
             if not is_synchonizable:
                 continue
 
-            self.create_entity_in_avalon(entity, parent_avalon)
+            self.create_entity_in_database(entity, parent_database)
 
     def process_moved(self):
         """
@@ -1766,29 +1766,29 @@ class SyncToAvalonEvent(BaseEvent):
         )}
 
         for ftrack_id, ent_info in ftrack_moved.items():
-            avalon_ent = self.avalon_ents_by_ftrack_id.get(ftrack_id)
-            if not avalon_ent:
+            database_ent = self.database_ents_by_ftrack_id.get(ftrack_id)
+            if not database_ent:
                 continue
 
             new_parent_id = ent_info["changes"]["parent_id"]["new"]
             old_parent_id = ent_info["changes"]["parent_id"]["old"]
 
-            mongo_id = avalon_ent["_id"]
+            mongo_id = database_ent["_id"]
             if self.changeability_by_mongo_id[mongo_id]:
-                par_av_ent = self.avalon_ents_by_ftrack_id.get(new_parent_id)
+                par_av_ent = self.database_ents_by_ftrack_id.get(new_parent_id)
                 if not par_av_ent:
                     # TODO logging
                     # TODO report
                     ent_path_items = [self.cur_project["full_name"]]
-                    ent_path_items.extend(avalon_ent["data"]["parents"])
-                    ent_path_items.append(avalon_ent["name"])
+                    ent_path_items.extend(database_ent["data"]["parents"])
+                    ent_path_items.append(database_ent["name"])
                     ent_path = "/".join(ent_path_items)
 
                     error_msg = (
-                        "New parent of entity is not synchronized to avalon"
+                        "New parent of entity is not synchronized to database"
                     )
                     report_msg = (
-                        "{}||Parent in Avalon can't be changed. That"
+                        "{}||Parent in QuadPype can't be changed. That"
                         " may cause issues. Please fix parent or move entity"
                         " under valid entity."
                     ).format(error_msg)
@@ -1810,23 +1810,23 @@ class SyncToAvalonEvent(BaseEvent):
                     ent_path_items.append(par_av_ent["name"])
 
                 self.updates[mongo_id]["data"]["visualParent"] = vis_par_id
-                self.moved_in_avalon.append(mongo_id)
+                self.moved_in_database.append(mongo_id)
 
-                ent_path_items.append(avalon_ent["name"])
+                ent_path_items.append(database_ent["name"])
                 ent_path = "/".join(ent_path_items)
                 self.log.debug((
-                    "Parent of entity ({}) was changed in avalon <{}>"
+                    "Parent of entity ({}) was changed in database <{}>"
                     ).format(str(mongo_id), ent_path)
                 )
 
             else:
-                avalon_ent = self.avalon_ents_by_id[mongo_id]
-                avalon_parent_id = avalon_ent["data"]["visualParent"]
-                if avalon_parent_id is None:
-                    avalon_parent_id = avalon_ent["parent"]
+                database_ent = self.database_ents_by_id[mongo_id]
+                database_parent_id = database_ent["data"]["visualParent"]
+                if database_parent_id is None:
+                    database_parent_id = database_ent["parent"]
 
-                avalon_parent = self.avalon_ents_by_id[avalon_parent_id]
-                parent_id = avalon_parent["data"]["ftrackId"]
+                database_parent = self.database_ents_by_id[database_parent_id]
+                parent_id = database_parent["data"]["ftrackId"]
 
                 # For cases when parent was deleted at the same time
                 if parent_id in self.ftrack_recreated_mapping:
@@ -1900,12 +1900,12 @@ class SyncToAvalonEvent(BaseEvent):
         for ftrack_id, ent_info in ent_infos.items():
             if ent_info["entity_type"] == "Task":
                 ftrack_id = ent_info["parentId"]
-            avalon_ent = self.avalon_ents_by_ftrack_id.get(ftrack_id)
-            if not avalon_ent:
+            database_ent = self.database_ents_by_ftrack_id.get(ftrack_id)
+            if not database_ent:
                 not_found_ids.append(ftrack_id)
                 continue
 
-            ftrack_mongo_mapping[ftrack_id] = avalon_ent["_id"]
+            ftrack_mongo_mapping[ftrack_id] = database_ent["_id"]
 
         for ftrack_id in not_found_ids:
             ent_infos.pop(ftrack_id)
@@ -1913,7 +1913,7 @@ class SyncToAvalonEvent(BaseEvent):
         if not ent_infos:
             return
 
-        cust_attrs, hier_attrs = self.avalon_cust_attrs
+        cust_attrs, hier_attrs = self.database_cust_attrs
         hier_attrs_by_key = {
             attr["key"]: attr
             for attr in hier_attrs
@@ -1921,7 +1921,7 @@ class SyncToAvalonEvent(BaseEvent):
         cust_attrs_by_obj_id = collections.defaultdict(dict)
         for cust_attr in cust_attrs:
             key = cust_attr["key"]
-            if key.startswith("avalon_"):
+            if key.startswith("database_"):
                 continue
 
             ca_ent_type = cust_attr["entity_type"]
@@ -1970,7 +1970,7 @@ class SyncToAvalonEvent(BaseEvent):
 
                 value = values["new"]
                 # Rename the key because the "status" in ftrack
-                # is called "active" in avalon and is a boolean
+                # is called "active" in database and is a boolean
                 if key == "status":
                     key = "active"
                     new_value = True if value == "active" else False
@@ -1983,7 +1983,7 @@ class SyncToAvalonEvent(BaseEvent):
                 if entType == "show" and key == APPS_SETTINGS_KEY:
                     # Store apps to project't config
                     proj_apps, warnings = (
-                        avalon_sync.get_project_apps(new_value)
+                        database_sync.get_project_apps(new_value)
                     )
                     if "config" not in self.updates[mongo_id]:
                         self.updates[mongo_id]["config"] = {}
@@ -2041,8 +2041,8 @@ class SyncToAvalonEvent(BaseEvent):
 
     def process_hier_cleanup(self):
         if (
-            not self.moved_in_avalon and
-            not self.renamed_in_avalon and
+            not self.moved_in_database and
+            not self.renamed_in_database and
             not self.hier_cust_attrs_changes
         ):
             return
@@ -2051,21 +2051,21 @@ class SyncToAvalonEvent(BaseEvent):
         hier_cust_attrs_ids = []
         hier_cust_attrs_keys = []
         all_keys = False
-        for mongo_id in self.moved_in_avalon:
+        for mongo_id in self.moved_in_database:
             parent_changes.append(mongo_id)
             hier_cust_attrs_ids.append(mongo_id)
             all_keys = True
 
-        for mongo_id in self.renamed_in_avalon:
+        for mongo_id in self.renamed_in_database:
             if mongo_id not in parent_changes:
                 parent_changes.append(mongo_id)
 
         for key, ftrack_ids in self.hier_cust_attrs_changes.items():
-            if key.startswith("avalon_"):
+            if key.startswith("database_"):
                 continue
             for ftrack_id in ftrack_ids:
-                avalon_ent = self.avalon_ents_by_ftrack_id[ftrack_id]
-                mongo_id = avalon_ent["_id"]
+                database_ent = self.database_ents_by_ftrack_id[ftrack_id]
+                mongo_id = database_ent["_id"]
                 if mongo_id in hier_cust_attrs_ids:
                     continue
                 hier_cust_attrs_ids.append(mongo_id)
@@ -2076,8 +2076,8 @@ class SyncToAvalonEvent(BaseEvent):
         mongo_to_ftrack_parents = {}
         missing_ftrack_ents = {}
         for mongo_id in parent_changes:
-            avalon_ent = self.avalon_ents_by_id[mongo_id]
-            ftrack_id = avalon_ent["data"]["ftrackId"]
+            database_ent = self.database_ents_by_id[mongo_id]
+            ftrack_id = database_ent["data"]["ftrackId"]
             if ftrack_id not in self.ftrack_ents_by_id:
                 missing_ftrack_ents[ftrack_id] = mongo_id
                 continue
@@ -2109,25 +2109,25 @@ class SyncToAvalonEvent(BaseEvent):
             "Updating parents and hieararchy because of name/parenting changes"
         )
         for mongo_id in mongo_to_ftrack_parents:
-            avalon_ent = self.avalon_ents_by_id[mongo_id]
-            vis_par = avalon_ent["data"]["visualParent"]
+            database_ent = self.database_ents_by_id[mongo_id]
+            vis_par = database_ent["data"]["visualParent"]
             if vis_par in stored_parents_by_mongo:
                 parents = [par for par in stored_parents_by_mongo[vis_par]]
                 if vis_par is not None:
-                    parent_ent = self.avalon_ents_by_id[vis_par]
+                    parent_ent = self.database_ents_by_id[vis_par]
                     parents.append(parent_ent["name"])
                 stored_parents_by_mongo[mongo_id] = parents
                 continue
 
-            ftrack_id = avalon_ent["data"]["ftrackId"]
+            ftrack_id = database_ent["data"]["ftrackId"]
             ftrack_ent = self.ftrack_ents_by_id[ftrack_id]
             ent_path_items = [ent["name"] for ent in ftrack_ent["link"]]
             parents = ent_path_items[1:len(ent_path_items)-1:]
             stored_parents_by_mongo[mongo_id] = parents
 
         for mongo_id, parents in stored_parents_by_mongo.items():
-            avalon_ent = self.avalon_ents_by_id[mongo_id]
-            cur_par = avalon_ent["data"]["parents"]
+            database_ent = self.database_ents_by_id[mongo_id]
+            cur_par = database_ent["data"]["parents"]
             if cur_par == parents:
                 continue
 
@@ -2144,7 +2144,7 @@ class SyncToAvalonEvent(BaseEvent):
             self.update_entities()
             return
 
-        _, hier_attrs = self.avalon_cust_attrs
+        _, hier_attrs = self.database_cust_attrs
 
         # Hierarchical custom attributes preparation ***
         hier_attr_key_by_id = {
@@ -2160,7 +2160,7 @@ class SyncToAvalonEvent(BaseEvent):
             hier_cust_attrs_keys = [
                 key
                 for key in hier_attr_id_by_key.keys()
-                if not key.startswith("avalon_")
+                if not key.startswith("database_")
             ]
 
         mongo_ftrack_mapping = {}
@@ -2172,9 +2172,9 @@ class SyncToAvalonEvent(BaseEvent):
         parent_queue = collections.deque()
 
         for mongo_id in hier_cust_attrs_ids:
-            avalon_ent = self.avalon_ents_by_id[mongo_id]
-            parent_queue.append(avalon_ent)
-            ftrack_id = avalon_ent["data"]["ftrackId"]
+            database_ent = self.database_ents_by_id[mongo_id]
+            parent_queue.append(database_ent)
+            ftrack_id = database_ent["data"]["ftrackId"]
             if ftrack_id not in entities_dict:
                 entities_dict[ftrack_id] = {
                     "children": [],
@@ -2184,7 +2184,7 @@ class SyncToAvalonEvent(BaseEvent):
 
             mongo_ftrack_mapping[mongo_id] = ftrack_id
             cust_attrs_ftrack_ids.append(ftrack_id)
-            children_ents = self.avalon_ents_by_parent_id.get(mongo_id) or []
+            children_ents = self.database_ents_by_parent_id.get(mongo_id) or []
             for children_ent in children_ents:
                 _ftrack_id = children_ent["data"]["ftrackId"]
                 if _ftrack_id in entities_dict:
@@ -2203,16 +2203,16 @@ class SyncToAvalonEvent(BaseEvent):
                 children_queue.append(children_ent)
 
         while children_queue:
-            avalon_ent = children_queue.popleft()
-            mongo_id = avalon_ent["_id"]
-            ftrack_id = avalon_ent["data"]["ftrackId"]
+            database_ent = children_queue.popleft()
+            mongo_id = database_ent["_id"]
+            ftrack_id = database_ent["data"]["ftrackId"]
             if ftrack_id in cust_attrs_ftrack_ids:
                 continue
 
             mongo_ftrack_mapping[mongo_id] = ftrack_id
             cust_attrs_ftrack_ids.append(ftrack_id)
 
-            children_ents = self.avalon_ents_by_parent_id.get(mongo_id) or []
+            children_ents = self.database_ents_by_parent_id.get(mongo_id) or []
             for children_ent in children_ents:
                 _ftrack_id = children_ent["data"]["ftrackId"]
                 if _ftrack_id in entities_dict:
@@ -2229,17 +2229,17 @@ class SyncToAvalonEvent(BaseEvent):
                 children_queue.append(children_ent)
 
         while parent_queue:
-            avalon_ent = parent_queue.popleft()
-            if avalon_ent["type"].lower() == "project":
+            database_ent = parent_queue.popleft()
+            if database_ent["type"].lower() == "project":
                 continue
 
-            ftrack_id = avalon_ent["data"]["ftrackId"]
+            ftrack_id = database_ent["data"]["ftrackId"]
 
-            vis_par = avalon_ent["data"]["visualParent"]
+            vis_par = database_ent["data"]["visualParent"]
             if vis_par is None:
-                vis_par = avalon_ent["parent"]
+                vis_par = database_ent["parent"]
 
-            parent_ent = self.avalon_ents_by_id[vis_par]
+            parent_ent = self.database_ents_by_id[vis_par]
             parent_ftrack_id = parent_ent["data"].get("ftrackId")
             if parent_ftrack_id is None:
                 self.handle_missing_ftrack_id(parent_ent)
@@ -2292,7 +2292,7 @@ class SyncToAvalonEvent(BaseEvent):
             type_id = attr["type_id"]
             attr_id = attr["id"]
             cust_attr_type_name = attr_types_by_id[type_id]["name"]
-            convert_type = avalon_sync.get_python_type_for_custom_attribute(
+            convert_type = database_sync.get_python_type_for_custom_attribute(
                 attr, cust_attr_type_name
             )
 
@@ -2310,7 +2310,7 @@ class SyncToAvalonEvent(BaseEvent):
 
         # PREPARE DATA BEFORE THIS
         invalid_fps_items = []
-        avalon_hier = []
+        database_hier = []
         for item in values:
             value = item["value"]
             if value is None:
@@ -2350,8 +2350,8 @@ class SyncToAvalonEvent(BaseEvent):
             if value is not None:
                 project_values[key] = value
 
-        for key in avalon_hier:
-            value = entities_dict[ftrack_project_id]["avalon_attrs"][key]
+        for key in database_hier:
+            value = entities_dict[ftrack_project_id]["database_attrs"][key]
             if value is not None:
                 project_values[key] = value
 
@@ -2378,7 +2378,7 @@ class SyncToAvalonEvent(BaseEvent):
 
         for ftrack_id, data in entities_dict.items():
             mongo_id = ftrack_mongo_mapping[ftrack_id]
-            avalon_ent = self.avalon_ents_by_id[mongo_id]
+            database_ent = self.database_ents_by_id[mongo_id]
             ent_path = self.get_ent_path(ftrack_id)
             # TODO logging
             self.log.debug(
@@ -2386,8 +2386,8 @@ class SyncToAvalonEvent(BaseEvent):
             )
             for key, value in data["hier_attrs"].items():
                 if (
-                    key in avalon_ent["data"] and
-                    avalon_ent["data"][key] == value
+                    key in database_ent["data"] and
+                    database_ent["data"][key] == value
                 ):
                     continue
 
@@ -2402,7 +2402,7 @@ class SyncToAvalonEvent(BaseEvent):
     def process_task_updates(self):
         """
             Pull task information for selected ftrack ids to replace stored
-            existing in Avalon.
+            existing in QuadPype.
             Solves problem of changing type (even Status in the future) of
             task without storing ftrack id for task in the DB. (Which doesn't
             bring much advantage currently and it could be troublesome for
@@ -2443,14 +2443,14 @@ class SyncToAvalonEvent(BaseEvent):
             for task_type in task_types
         }
 
-        # prepare all tasks per parentId, eg. Avalon asset record
+        # prepare all tasks per parentId, eg. QuadPype asset record
         for task_entity in task_entities:
             task_type = task_types_by_id[task_entity["type_id"]]
             ftrack_id = task_entity["parent_id"]
             if ftrack_id not in tasks_per_ftrack_id:
                 tasks_per_ftrack_id[ftrack_id] = {}
 
-            passed_regex = avalon_sync.check_regex(
+            passed_regex = database_sync.check_regex(
                 task_entity["name"], "task",
                 schema_patterns=self.regex_schemas
             )
@@ -2463,32 +2463,32 @@ class SyncToAvalonEvent(BaseEvent):
                 "custom_attributes": dict(task_entity["custom_attributes"])
             }
 
-        # find avalon entity by parentId
+        # find database entity by parentId
         # should be there as create was run first
         for ftrack_id in tasks_per_ftrack_id.keys():
-            avalon_entity = self.avalon_ents_by_ftrack_id.get(ftrack_id)
-            if not avalon_entity:
+            database_entity = self.database_ents_by_ftrack_id.get(ftrack_id)
+            if not database_entity:
                 not_found_ids.append(ftrack_id)
                 continue
-            ftrack_mongo_mapping_found[ftrack_id] = avalon_entity["_id"]
+            ftrack_mongo_mapping_found[ftrack_id] = database_entity["_id"]
 
-        self._update_avalon_tasks(
+        self._update_database_tasks(
             ftrack_mongo_mapping_found,
             tasks_per_ftrack_id
         )
 
     def update_entities(self):
         """
-            Update Avalon entities by mongo bulk changes.
+            Update QuadPype entities by mongo bulk changes.
             Expects self.updates which are transferred to $set part of update
             command.
             Resets self.updates afterwards.
         """
         mongo_changes_bulk = []
         for mongo_id, changes in self.updates.items():
-            avalon_ent = self.avalon_ents_by_id[mongo_id]
-            is_project = avalon_ent["type"] == "project"
-            change_data = avalon_sync.from_dict_to_set(changes, is_project)
+            database_ent = self.database_ents_by_id[mongo_id]
+            is_project = database_ent["type"] == "project"
+            change_data = database_sync.from_dict_to_set(changes, is_project)
             mongo_changes_bulk.append(
                 UpdateOne({"_id": mongo_id}, change_data)
             )
@@ -2560,13 +2560,13 @@ class SyncToAvalonEvent(BaseEvent):
             for ent in ents:
                 ftrack_id = ent["id"]
                 ent_path = "/".join([_ent["name"] for _ent in ent["link"]])
-                avalon_ent = self.avalon_ents_by_id.get(ftrack_id)
+                database_ent = self.database_ents_by_id.get(ftrack_id)
 
-                if avalon_ent:
+                if database_ent:
                     additional = " (synchronized)"
-                    if avalon_ent["name"] != name:
+                    if database_ent["name"] != name:
                         additional = " (synchronized as {})".format(
-                            avalon_ent["name"]
+                            database_ent["name"]
                         )
                     ent_path += additional
                 paths.append(ent_path)
@@ -2675,14 +2675,14 @@ class SyncToAvalonEvent(BaseEvent):
         )
         return True
 
-    def _update_avalon_tasks(
+    def _update_database_tasks(
         self, ftrack_mongo_mapping_found, tasks_per_ftrack_id
     ):
         """
-            Prepare new "tasks" content for existing records in Avalon.
+            Prepare new "tasks" content for existing records in QuadPype.
         Args:
             ftrack_mongo_mapping_found (dictionary): ftrack parentId to
-                Avalon _id mapping
+                QuadPype _id mapping
             tasks_per_ftrack_id (dictionary): task dictionaries per ftrack
                 parentId
 
@@ -2749,4 +2749,4 @@ class SyncToAvalonEvent(BaseEvent):
 
 def register(session):
     '''Register plugin. Called when used as an plugin.'''
-    SyncToAvalonEvent(session).register()
+    SyncToQuadPypeEvent(session).register()

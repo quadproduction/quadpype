@@ -5,13 +5,13 @@ import logging
 import functools
 
 from . import schema
-from .mongodb import AvalonMongoDB, session_data_from_environment
+from .mongodb import QuadPypeMongoDB, session_data_from_environment
 
 module = sys.modules[__name__]
 
 Session = {}
 _is_installed = False
-_connection_object = AvalonMongoDB(Session)
+_connection_object = QuadPypeMongoDB(Session)
 _mongo_client = None
 _database = database = None
 
@@ -156,4 +156,4 @@ def active_project(*args, **kwargs):
 
 
 def current_project(*args, **kwargs):
-    return Session.get("AVALON_PROJECT")
+    return Session.get("QUADPYPE_PROJECT_NAME")

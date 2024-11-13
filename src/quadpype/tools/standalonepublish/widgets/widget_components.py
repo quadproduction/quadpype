@@ -154,19 +154,19 @@ def set_context(project, asset, task):
     :param asset: Name of `Asset` where instance should be published
     :type asset: str
     '''
-    os.environ["AVALON_PROJECT"] = project
-    legacy_io.Session["AVALON_PROJECT"] = project
-    os.environ["AVALON_ASSET"] = asset
-    legacy_io.Session["AVALON_ASSET"] = asset
+    os.environ["QUADPYPE_PROJECT_NAME"] = project
+    legacy_io.Session["QUADPYPE_PROJECT_NAME"] = project
+    os.environ["QUADPYPE_ASSET_NAME"] = asset
+    legacy_io.Session["QUADPYPE_ASSET_NAME"] = asset
     if not task:
         task = ''
-    os.environ["AVALON_TASK"] = task
-    legacy_io.Session["AVALON_TASK"] = task
+    os.environ["QUADPYPE_TASK_NAME"] = task
+    legacy_io.Session["QUADPYPE_TASK_NAME"] = task
 
     legacy_io.Session["current_dir"] = os.path.normpath(os.getcwd())
 
-    os.environ["AVALON_APP"] = HOST_NAME
-    legacy_io.Session["AVALON_APP"] = HOST_NAME
+    os.environ["QUADPYPE_HOST_NAME"] = HOST_NAME
+    legacy_io.Session["QUADPYPE_HOST_NAME"] = HOST_NAME
 
 
 def cli_publish(data, publish_paths, gui=True):
@@ -193,7 +193,7 @@ def cli_publish(data, publish_paths, gui=True):
     if data.get("family", "").lower() == "editorial":
         envcopy["PYBLISH_SUSPEND_LOGS"] = "1"
 
-    project_name = os.environ["AVALON_PROJECT"]
+    project_name = os.environ["QUADPYPE_PROJECT_NAME"]
     apply_project_environments_value(project_name, envcopy)
 
     args = get_quadpype_execute_args("run", PUBLISH_SCRIPT_PATH)

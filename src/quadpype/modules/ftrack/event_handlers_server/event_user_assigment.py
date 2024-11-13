@@ -5,7 +5,7 @@ from quadpype.client import get_asset_by_id, get_asset_by_name
 from quadpype.settings import get_project_settings
 from quadpype.pipeline import Anatomy
 from quadpype_modules.ftrack.lib import BaseEvent
-from quadpype_modules.ftrack.lib.avalon_sync import CUST_ATTR_ID_KEY
+from quadpype_modules.ftrack.lib.database_sync import CUST_ATTR_ID_KEY
 
 
 class UserAssigmentEvent(BaseEvent):
@@ -98,16 +98,16 @@ class UserAssigmentEvent(BaseEvent):
         """
         parent = task['parent']
         project_name = task["project"]["full_name"]
-        avalon_entity = None
+        database_entity = None
         parent_id = parent['custom_attributes'].get(CUST_ATTR_ID_KEY)
         if parent_id:
-            avalon_entity = get_asset_by_id(project_name, parent_id)
+            database_entity = get_asset_by_id(project_name, parent_id)
 
-        if not avalon_entity:
-            avalon_entity = get_asset_by_name(project_name, parent["name"])
+        if not database_entity:
+            database_entity = get_asset_by_name(project_name, parent["name"])
 
-        if not avalon_entity:
-            msg = 'Entity "{}" not found in avalon database'.format(
+        if not database_entity:
+            msg = 'Entity "{}" not found in QuadPype database'.format(
                 parent['name']
             )
             self.error(msg)
@@ -115,7 +115,7 @@ class UserAssigmentEvent(BaseEvent):
                 'success': False,
                 'message': msg
             }
-        return avalon_entity
+        return database_entity
 
     def _get_hierarchy(self, asset):
         """

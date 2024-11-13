@@ -10,20 +10,20 @@ class CollectShotgridEntities(pyblish.api.ContextPlugin):
 
     def process(self, context):
 
-        avalon_project = context.data.get("projectEntity")
-        avalon_asset = context.data.get("assetEntity")
-        avalon_task_name = context.data.get("task")
+        database_project = context.data.get("projectEntity")
+        database_asset = context.data.get("assetEntity")
+        database_task_name = context.data.get("task")
 
-        self.log.info(avalon_project)
-        self.log.info(avalon_asset)
+        self.log.info(database_project)
+        self.log.info(database_asset)
 
         sg_project = _get_shotgrid_project(context)
         sg_task = _get_shotgrid_task(
-            avalon_project,
-            avalon_asset,
-            avalon_task_name
+            database_project,
+            database_asset,
+            database_task_name
         )
-        sg_entity = _get_shotgrid_entity(avalon_project, avalon_asset)
+        sg_entity = _get_shotgrid_entity(database_project, database_asset)
 
         if sg_project:
             context.data["shotgridProject"] = sg_project
@@ -71,13 +71,13 @@ def _get_shotgrid_project(context):
     return {}
 
 
-def _get_shotgrid_task(avalon_project, avalon_asset, avalon_task):
-    sg_col = _get_shotgrid_collection(avalon_project["name"])
+def _get_shotgrid_task(database_project, database_asset, database_task):
+    sg_col = _get_shotgrid_collection(database_project["name"])
     shotgrid_task_hierarchy_row = sg_col.find_one(
         {
             "type": "Task",
-            "_id": {"$regex": "^" + avalon_task + "_[0-9]*"},
-            "parent": {"$regex": ".*," + avalon_asset["name"] + ","},
+            "_id": {"$regex": "^" + database_task + "_[0-9]*"},
+            "parent": {"$regex": ".*," + database_asset["name"] + ","},
         }
     )
     if shotgrid_task_hierarchy_row:
@@ -85,10 +85,10 @@ def _get_shotgrid_task(avalon_project, avalon_asset, avalon_task):
     return {}
 
 
-def _get_shotgrid_entity(avalon_project, avalon_asset):
-    sg_col = _get_shotgrid_collection(avalon_project["name"])
+def _get_shotgrid_entity(database_project, database_asset):
+    sg_col = _get_shotgrid_collection(database_project["name"])
     shotgrid_entity_hierarchy_row = sg_col.find_one(
-        {"_id": avalon_asset["name"]}
+        {"_id": database_asset["name"]}
     )
     if shotgrid_entity_hierarchy_row:
         return {

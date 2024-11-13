@@ -11,7 +11,7 @@ from quadpype import style
 from quadpype.client import get_versions, get_representations
 from quadpype.modules import ModulesManager
 from quadpype.lib import format_file_size
-from quadpype.pipeline import load, AvalonMongoDB, Anatomy
+from quadpype.pipeline import load, QuadPypeMongoDB, Anatomy
 from quadpype.pipeline.load import (
     get_representation_path_with_anatomy,
     InvalidRepresentationContext,
@@ -356,8 +356,8 @@ class DeleteOldVersions(load.SubsetLoaderPlugin):
             ))
 
         if mongo_changes_bulk:
-            dbcon = AvalonMongoDB()
-            dbcon.Session["AVALON_PROJECT"] = project_name
+            dbcon = QuadPypeMongoDB()
+            dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
             dbcon.install()
             dbcon.bulk_write(mongo_changes_bulk)
             dbcon.uninstall()

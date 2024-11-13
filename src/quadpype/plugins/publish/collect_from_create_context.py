@@ -56,9 +56,9 @@ class CollectFromCreateContext(pyblish.api.ContextPlugin):
         asset_name = create_context.get_current_asset_name()
         task_name = create_context.get_current_task_name()
         for key, value in (
-            ("AVALON_PROJECT", project_name),
-            ("AVALON_ASSET", asset_name),
-            ("AVALON_TASK", task_name)
+            ("QUADPYPE_PROJECT_NAME", project_name),
+            ("QUADPYPE_ASSET_NAME", asset_name),
+            ("QUADPYPE_TASK_NAME", task_name)
         ):
             legacy_io.Session[key] = value
             os.environ[key] = value

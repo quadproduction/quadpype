@@ -1733,7 +1733,7 @@ class PublisherController(BasePublisherController):
         self._resetting_plugins = False
         self._resetting_instances = False
 
-        # Cacher of avalon documents
+        # Cacher of database documents
         self._asset_docs_cache = AssetDocsCache(self)
 
     @property
@@ -1803,9 +1803,9 @@ class PublisherController(BasePublisherController):
             context_title = self._host.get_context_title()
 
         if context_title is None:
-            context_title = os.getenv("AVALON_APP_NAME")
+            context_title = os.getenv("QUADPYPE_HOST_DISPLAY_NAME")
             if context_title is None:
-                context_title = os.getenv("AVALON_APP")
+                context_title = os.getenv("QUADPYPE_HOST_NAME")
 
         return context_title
 
@@ -1851,7 +1851,7 @@ class PublisherController(BasePublisherController):
 
         self._create_context.reset_preparation()
 
-        # Reset avalon context
+        # Reset database context
         self._create_context.reset_current_context()
 
         self._asset_docs_cache.reset()

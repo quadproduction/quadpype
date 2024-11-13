@@ -125,7 +125,7 @@ class CollectFarmRender(publish.AbstractCollectRender):
             # TODO: handle pixel aspect and frame step
             # TODO: set Deadline stuff (pools, priority, etc. by presets)
             # because of using 'renderFarm' as a family, replace 'Farm' with
-            # capitalized task name - issue of avalon-core Creator app
+            # capitalized task name
             subset_name = node.split("/")[1]
             task_name = context.data["anatomyData"]["task"][
                 "name"].capitalize()

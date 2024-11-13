@@ -3,7 +3,7 @@ Logging to console and to mongo. For mongo logging, you need to set either
 ``QUADPYPE_LOG_MONGO_URL`` to something like:
 
 .. example::
-   mongo://user:password@hostname:port/database/collection?authSource=avalon
+   mongo://user:password@hostname:port/database/collection?authSource=quadpype
 
 or set ``QUADPYPE_LOG_MONGO_HOST`` and other variables.
 See :func:`_mongo_settings`
@@ -424,7 +424,7 @@ class Logger:
             return cls._process_name
 
         # Get process name
-        process_name = os.getenv("AVALON_APP_NAME")
+        process_name = os.getenv("QUADPYPE_HOST_DISPLAY_NAME")
         if not process_name:
             try:
                 import psutil

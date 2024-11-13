@@ -18,7 +18,7 @@ from .custom_attributes import (
     query_custom_attributes
 )
 
-from . import avalon_sync
+from . import database_sync
 from . import credentials
 from .ftrack_base_handler import BaseHandler
 from .ftrack_event_handler import BaseEvent
@@ -42,7 +42,7 @@ __all__ = (
     "get_quadpype_attr",
     "query_custom_attributes",
 
-    "avalon_sync",
+    "database_sync",
 
     "credentials",
 

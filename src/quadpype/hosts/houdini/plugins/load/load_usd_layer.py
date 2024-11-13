@@ -1,7 +1,7 @@
 from quadpype.pipeline import (
     load,
     get_representation_path,
-    AVALON_CONTAINER_ID,
+    QUADPYPE_CONTAINER_ID,
 )
 from quadpype.hosts.houdini.api import lib
 
@@ -45,14 +45,14 @@ class USDSublayerLoader(load.LoaderPlugin):
         # Imprint it manually
         data = {
             "schema": "quadpype:container-2.0",
-            "id": AVALON_CONTAINER_ID,
+            "id": QUADPYPE_CONTAINER_ID,
             "name": node_name,
             "namespace": namespace,
             "loader": str(self.__class__.__name__),
             "representation": str(context["representation"]["_id"]),
         }
 
-        # todo: add folder="Avalon"
+        # todo: add folder="QuadPype"
         lib.imprint(container, data)
 
         return container

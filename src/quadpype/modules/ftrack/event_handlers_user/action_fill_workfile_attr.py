@@ -17,7 +17,7 @@ from quadpype.pipeline import Anatomy
 from quadpype.pipeline.template_data import get_template_data
 from quadpype.pipeline.workfile import get_workfile_template_key
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
-from quadpype_modules.ftrack.lib.avalon_sync import create_chunks
+from quadpype_modules.ftrack.lib.database_sync import create_chunks
 
 NOT_SYNCHRONIZED_TITLE = "Not synchronized"
 

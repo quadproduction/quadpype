@@ -57,7 +57,7 @@ class HoudiniSubmitDeadline(
     """Submit Render ROPs to Deadline.
 
     Renders are submitted to a Deadline Web Service as
-    supplied via the environment variable AVALON_DEADLINE.
+    supplied via the environment variable QUADPYPE_DEADLINE.
 
     Target "local":
         Even though this does *not* render locally this is seen as
@@ -222,11 +222,11 @@ class HoudiniSubmitDeadline(
             "FTRACK_API_USER",
             "FTRACK_SERVER",
             "QUADPYPE_SG_USER",
-            "AVALON_DB",
-            "AVALON_PROJECT",
-            "AVALON_ASSET",
-            "AVALON_TASK",
-            "AVALON_APP_NAME",
+            "QUADPYPE_PROJECTS_DB_NAME",
+            "QUADPYPE_PROJECT_NAME",
+            "QUADPYPE_ASSET_NAME",
+            "QUADPYPE_TASK_NAME",
+            "QUADPYPE_HOST_DISPLAY_NAME",
             "QUADPYPE_DEV",
             "QUADPYPE_LOG_NO_COLORS",
         ]

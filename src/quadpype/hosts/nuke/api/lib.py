@@ -59,10 +59,10 @@ from .utils import get_node_outputs
 
 log = Logger.get_logger(__name__)
 
-_NODE_TAB_NAME = "{}".format(os.getenv("AVALON_LABEL") or "Avalon")
-AVALON_LABEL = os.getenv("AVALON_LABEL") or "Avalon"
-AVALON_TAB = "{}".format(AVALON_LABEL)
-AVALON_DATA_GROUP = "{}DataGroup".format(AVALON_LABEL.capitalize())
+_NODE_TAB_NAME = "{}".format(os.getenv("QUADPYPE_LABEL") or "QuadPype")
+QUADPYPE_LABEL = os.getenv("QUADPYPE_LABEL") or "QuadPype"
+QUADPYPE_TAB = "{}".format(QUADPYPE_LABEL)
+QUADPYPE_DATA_GROUP = "{}DataGroup".format(QUADPYPE_LABEL.capitalize())
 EXCLUDED_KNOB_TYPE_ON_READ = (
     20,  # Tab Knob
     26,  # Text Knob (But for backward compatibility, still be read
@@ -121,7 +121,7 @@ def deprecated(new_destination):
 class Context:
     main_window = None
     context_action_item = None
-    project_name = os.getenv("AVALON_PROJECT")
+    project_name = os.getenv("QUADPYPE_PROJECT_NAME")
     # Workfile related code
     workfiles_launched = False
     workfiles_tool_timer = None
@@ -419,15 +419,15 @@ def add_publish_knob(node):
 
 
 @deprecated("quadpype.hosts.nuke.api.lib.set_node_data")
-def set_avalon_knob_data(node, data=None, prefix="avalon:"):
-    """[DEPRECATED] Sets data into nodes's avalon knob
+def set_quadype_knob_data(node, data=None, prefix="quadype:"):
+    """[DEPRECATED] Sets data into nodes's quadype knob
 
     This function is still used but soon will be deprecated.
     Use `set_node_data` instead.
 
     Arguments:
         node (nuke.Node): Nuke node to imprint with data,
-        data (dict, optional): Data to be imprinted into AvalonTab
+        data (dict, optional): Data to be imprinted into QuadPypeTab
         prefix (str, optional): filtering prefix
 
     Returns:
@@ -443,7 +443,7 @@ def set_avalon_knob_data(node, data=None, prefix="avalon:"):
     data = data or dict()
     create = OrderedDict()
 
-    tab_name = AVALON_TAB
+    tab_name = QUADPYPE_TAB
     editable = ["asset", "subset", "name", "namespace"]
 
     existed_knobs = node.knobs()
@@ -477,7 +477,7 @@ def set_avalon_knob_data(node, data=None, prefix="avalon:"):
             (("warn", ""), warn),
             (("divd", ""), divd),
         ]
-        tab[AVALON_DATA_GROUP] = OrderedDict(head + list(create.items()))
+        tab[QUADPYPE_DATA_GROUP] = OrderedDict(head + list(create.items()))
         create = tab
 
     imprint(node, create, tab=tab_name)
@@ -485,8 +485,8 @@ def set_avalon_knob_data(node, data=None, prefix="avalon:"):
 
 
 @deprecated("quadpype.hosts.nuke.api.lib.get_node_data")
-def get_avalon_knob_data(node, prefix="avalon:", create=True):
-    """[DEPRECATED]  Gets a data from nodes's avalon knob
+def get_quadype_knob_data(node, prefix="quadype:", create=True):
+    """[DEPRECATED]  Gets a data from nodes's quadype knob
 
     This function is still used but soon will be deprecated.
     Use `get_node_data` instead.
@@ -500,7 +500,7 @@ def get_avalon_knob_data(node, prefix="avalon:", create=True):
     """
 
     data = {}
-    if AVALON_TAB not in node.knobs():
+    if QUADPYPE_TAB not in node.knobs():
         return data
 
     # check if lists
@@ -509,17 +509,16 @@ def get_avalon_knob_data(node, prefix="avalon:", create=True):
 
     # loop prefix
     for p in prefix:
-        # check if the node is avalon tracked
         try:
             # check if data available on the node
-            test = node[AVALON_DATA_GROUP].value()
+            test = node[QUADPYPE_DATA_GROUP].value()
             log.debug("Only testing if data available: `{}`".format(test))
         except NameError as e:
             # if it doesn't then create it
-            log.debug("Creating avalon knob: `{}`".format(e))
+            log.debug("Creating quadype knob: `{}`".format(e))
             if create:
-                node = set_avalon_knob_data(node)
-                return get_avalon_knob_data(node)
+                node = set_quadype_knob_data(node)
+                return get_quadype_knob_data(node)
             return {}
 
         # get data from filtered knobs
@@ -610,7 +609,7 @@ def add_write_node(name, file_path, knobs, **kwarg):
     return w
 
 
-def read_avalon_data(node):
+def read_quadype_data(node):
     """Return user-defined knobs from given `node`
 
     Args:
@@ -621,8 +620,8 @@ def read_avalon_data(node):
 
     """
     def compat_prefixed(knob_name):
-        if knob_name.startswith("avalon:"):
-            return knob_name[len("avalon:"):]
+        if knob_name.startswith("quadype:"):
+            return knob_name[len("quadype:"):]
         elif knob_name.startswith("ak:"):
             return knob_name[len("ak:"):]
 
@@ -953,7 +952,7 @@ def check_inventory_versions():
     """
     from .pipeline import parse_container
 
-    # get all Loader nodes by avalon attribute metadata
+    # get all Loader nodes by quadype attribute metadata
     node_with_repre_id = []
     repre_ids = set()
     # Find all containers and collect it's node and representation ids
@@ -962,8 +961,8 @@ def check_inventory_versions():
 
         if container:
             node = nuke.toNode(container["objectName"])
-            avalon_knob_data = read_avalon_data(node)
-            repre_id = avalon_knob_data["representation"]
+            quadype_knob_data = read_quadype_data(node)
+            repre_id = quadype_knob_data["representation"]
 
             repre_ids.add(repre_id)
             node_with_repre_id.append((node, repre_id))
@@ -1048,15 +1047,15 @@ def writes_version_sync():
         return
 
     for each in nuke.allNodes(filter="Write"):
-        # check if the node is avalon tracked
+        # check if the node is quadype tracked
         if _NODE_TAB_NAME not in each.knobs():
             continue
 
-        avalon_knob_data = read_avalon_data(each)
+        quadype_knob_data = read_quadype_data(each)
 
         try:
-            if avalon_knob_data["families"] not in ["render"]:
-                log.debug(avalon_knob_data["families"])
+            if quadype_knob_data["families"] not in ["render"]:
+                log.debug(quadype_knob_data["families"])
                 continue
 
             node_file = each["file"].value()
@@ -1094,7 +1093,7 @@ def check_subsetname_exists(nodes, subset_name):
         bool: True of False
     """
     return next((True for n in nodes
-                 if subset_name in read_avalon_data(n).get("subset", "")),
+                 if subset_name in read_quadype_data(n).get("subset", "")),
                 False)
 
 
@@ -1267,7 +1266,7 @@ def create_write_node(
 
 
     Return:
-        node (obj): group node with avalon data as Knobs
+        node (obj): group node with quadype data as Knobs
     '''
     prenodes = prenodes or {}
 
@@ -1442,7 +1441,7 @@ def create_write_node_legacy(
         ]
 
     Return:
-        node (obj): group node with avalon data as Knobs
+        node (obj): group node with quadype data as Knobs
     '''
     knob_overrides = data.get("knobs", [])
     nodeclass = data["nodeclass"]
@@ -1597,7 +1596,7 @@ def create_write_node_legacy(
         now_node.setInput(0, prev_node)
 
     # imprinting group node
-    set_avalon_knob_data(GN, data["avalon"])
+    set_quadype_knob_data(GN, data["quadype"])
     add_publish_knob(GN)
     add_rendering_knobs(GN, farm)
 
@@ -2292,28 +2291,28 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
         for node in nuke.allNodes(filter="Group", group=self._root_node):
             log.info("Setting colorspace to `{}`".format(node.name()))
 
-            # get data from avalon knob
-            avalon_knob_data = read_avalon_data(node)
+            # get data from quadype knob
+            quadype_knob_data = read_quadype_data(node)
             node_data = get_node_data(node, INSTANCE_DATA_KNOB)
 
             if (
                 # backward compatibility
-                # TODO: remove this once old avalon data api will be removed
-                avalon_knob_data
-                and avalon_knob_data.get("id") != "pyblish.avalon.instance"
+                # TODO: remove this once old quadype data api will be removed
+                quadype_knob_data
+                and quadype_knob_data.get("id") != "pyblish.quadpype.instance"
             ):
                 continue
             elif (
                 node_data
-                and node_data.get("id") != "pyblish.avalon.instance"
+                and node_data.get("id") != "pyblish.quadpype.instance"
             ):
                 continue
 
             if (
                 # backward compatibility
-                # TODO: remove this once old avalon data api will be removed
-                avalon_knob_data
-                and "creator" not in avalon_knob_data
+                # TODO: remove this once old quadype data api will be removed
+                quadype_knob_data
+                and "creator" not in quadype_knob_data
             ):
                 continue
             elif (
@@ -2323,16 +2322,16 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
                 continue
 
             nuke_imageio_writes = None
-            if avalon_knob_data:
+            if quadype_knob_data:
                 # establish families
-                families = [avalon_knob_data["family"]]
-                if avalon_knob_data.get("families"):
-                    families.append(avalon_knob_data.get("families"))
+                families = [quadype_knob_data["family"]]
+                if quadype_knob_data.get("families"):
+                    families.append(quadype_knob_data.get("families"))
 
                 nuke_imageio_writes = get_imageio_node_setting(
-                    node_class=avalon_knob_data["families"],
-                    plugin_name=avalon_knob_data["creator"],
-                    subset=avalon_knob_data["subset"]
+                    node_class=quadype_knob_data["families"],
+                    plugin_name=quadype_knob_data["creator"],
+                    subset=quadype_knob_data["subset"]
                 )
             elif node_data:
                 nuke_imageio_writes = get_write_node_template_attr(node)
@@ -2598,10 +2597,10 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
 
     def set_context_settings(self):
         os.environ["QUADPYPE_NUKE_SKIP_SAVE_EVENT"] = "True"
-        # replace reset resolution from avalon core to pype's
+        # replace reset resolution from quadype core to pype's
         if self._get_set_resolution_startup():
             self.reset_resolution()
-        # replace reset resolution from avalon core to pype's
+        # replace reset resolution from quadype core to pype's
         self.reset_frame_range_handles()
         # add colorspace menu item
         self.set_colorspace()
@@ -2688,7 +2687,7 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
     def set_favorites(self):
         from .utils import set_context_favorites
 
-        work_dir = os.getenv("AVALON_WORKDIR")
+        work_dir = os.getenv("QUADPYPE_WORKDIR_PATH")
         asset = get_current_asset_name()
         favorite_items = OrderedDict()
 
@@ -2726,7 +2725,7 @@ def get_write_node_template_attr(node):
         "create_write_prerender": "CreateWritePrerender",
         "create_write_render": "CreateWriteRender"
     }
-    # get avalon data from node
+    # get quadype data from node
     node_data = get_node_data(node, INSTANCE_DATA_KNOB)
     identifier = node_data["creator_identifier"]
 
@@ -3033,7 +3032,7 @@ def process_workfile_builder():
     create_fv_on = workfile_builder.get("create_first_version") or None
     builder_on = workfile_builder.get("builder_on_start") or None
 
-    last_workfile_path = os.getenv("AVALON_LAST_WORKFILE")
+    last_workfile_path = os.getenv("QUADPYPE_LAST_WORKFILE_PATH")
 
     # generate first version in file not existing and feature is enabled
     if create_fv_on and not os.path.exists(last_workfile_path):
@@ -3087,25 +3086,25 @@ def start_workfile_template_builder():
 
 
 @deprecated
-def recreate_instance(origin_node, avalon_data=None):
+def recreate_instance(origin_node, quadype_data=None):
     """Recreate input instance to different data
 
     Args:
         origin_node (nuke.Node): Nuke node to be recreating from
-        avalon_data (dict, optional): data to be used in new node avalon_data
+        quadype_data (dict, optional): data to be used in new node quadype_data
 
     Returns:
         nuke.Node: newly created node
     """
     knobs_wl = ["render", "publish", "review", "ypos",
                 "use_limit", "first", "last"]
-    # get data from avalon knobs
-    data = get_avalon_knob_data(
+    # get data from quadype knobs
+    data = get_quadype_knob_data(
         origin_node)
 
-    # add input data to avalon data
-    if avalon_data:
-        data.update(avalon_data)
+    # add input data to quadype data
+    if quadype_data:
+        data.update(quadype_data)
 
     # capture all node knobs allowed in op_knobs
     knobs_data = {k: origin_node[k].value()
@@ -3283,7 +3282,7 @@ class DirmapCache:
     @classmethod
     def project_name(cls):
         if cls._project_name is None:
-            cls._project_name = os.getenv("AVALON_PROJECT")
+            cls._project_name = os.getenv("QUADPYPE_PROJECT_NAME")
         return cls._project_name
 
     @classmethod

@@ -161,7 +161,7 @@ class LoadClip(plugin.NukeLoader):
 
             self._set_range_to_node(read_node, first, last, start_at_workfile)
 
-            # add additional metadata from the version to imprint Avalon knob
+            # add additional metadata from the version to imprint QuadPype knob
             add_keys = ["frameStart", "frameEnd",
                         "source", "colorspace", "author", "fps", "version",
                         "handleStart", "handleEnd"]

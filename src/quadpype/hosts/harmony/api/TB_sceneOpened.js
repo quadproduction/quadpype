@@ -1,10 +1,10 @@
 /* global QTcpSocket, QByteArray, QDataStream, QTimer, QTextCodec, QIODevice, QApplication, include */
 /* global QTcpSocket, QByteArray, QDataStream, QTimer, QTextCodec, QIODevice, QApplication, include */
 /*
-Avalon Harmony Integration - Client
+QuadPype Harmony Integration - Client
 -----------------------------------
 
-This script implements client communication with Avalon server to bridge
+This script implements client communication with QuadPype server to bridge
 gap between Python and QtScript.
 
 */
@@ -274,7 +274,7 @@ function Client() {
         self.socket.readyRead.connect(self.onReadyRead);
         var app = QCoreApplication.instance();
 
-        app.avalonClient.send(
+        app.quadypeClient.send(
             {
                 'module': 'quadpype.lib',
                 'method': 'emit_event',
@@ -342,21 +342,21 @@ function Client() {
 }
 
 /**
- * Entry point, creating Avalon Client.
+ * Entry point, creating QuadPype Client.
  */
 function start() {
     var self = this;
     /** hostname or ip of server - should be localhost */
     var host = '127.0.0.1';
     /** port of the server */
-    var port = parseInt(System.getenv('AVALON_HARMONY_PORT'));
+    var port = parseInt(System.getenv('QUADPYPE_HARMONY_PORT'));
 
     // Attach the client to the QApplication to preserve.
     var app = QCoreApplication.instance();
 
-    if (app.avalonClient == null) {
-        app.avalonClient = new Client();
-        app.avalonClient.socket.connectToHost(host, port);
+    if (app.quadypeClient == null) {
+        app.quadypeClient = new Client();
+        app.quadypeClient.socket.connectToHost(host, port);
     }
     var mainWindow = null;
     var widgets = QApplication.topLevelWidgets();
@@ -367,26 +367,26 @@ function start() {
     }
     var menuBar = mainWindow.menuBar();
     var actions = menuBar.actions();
-    app.avalonMenu = null;
+    app.quadypeMenu = null;
 
     for (var i = 0 ; i < actions.length; i++) {
-        label = System.getenv('AVALON_LABEL');
+        label = System.getenv('QUADPYPE_LABEL');
         if (actions[i].text == label) {
-            app.avalonMenu = true;
+            app.quadypeMenu = true;
         }
     }
 
     var menu = null;
-    if (app.avalonMenu == null) {
-        menu = menuBar.addMenu(System.getenv('AVALON_LABEL'));
+    if (app.quadypeMenu == null) {
+        menu = menuBar.addMenu(System.getenv('QUADPYPE_LABEL'));
     }
-    // menu = menuBar.addMenu('Avalon');
+    // menu = menuBar.addMenu('QuadPype');
 
     /**
      * Show creator
      */
     self.onCreator = function() {
-        app.avalonClient.send({
+        app.quadypeClient.send({
             'module': 'quadpype.hosts.harmony.api.lib',
             'method': 'show',
             'args': ['creator']
@@ -401,13 +401,13 @@ function start() {
      * Show Workfiles
      */
     self.onWorkfiles = function() {
-        app.avalonClient.send({
+        app.quadypeClient.send({
             'module': 'quadpype.hosts.harmony.api.lib',
             'method': 'show',
             'args': ['workfiles']
         }, false);
     };
-    if (app.avalonMenu == null) {
+    if (app.quadypeMenu == null) {
         action = menu.addAction('Workfiles...');
         action.triggered.connect(self.onWorkfiles);
     }
@@ -416,14 +416,14 @@ function start() {
      * Show Loader
      */
     self.onLoad = function() {
-        app.avalonClient.send({
+        app.quadypeClient.send({
             'module': 'quadpype.hosts.harmony.api.lib',
             'method': 'show',
             'args': ['loader']
         }, false);
     };
     // add Loader item to menu
-    if (app.avalonMenu == null) {
+    if (app.quadypeMenu == null) {
         action = menu.addAction('Load...');
         action.triggered.connect(self.onLoad);
     }
@@ -432,14 +432,14 @@ function start() {
      * Show Publisher
      */
     self.onPublish = function() {
-        app.avalonClient.send({
+        app.quadypeClient.send({
             'module': 'quadpype.hosts.harmony.api.lib',
             'method': 'show',
             'args': ['publish']
         }, false);
     };
     // add Publisher item to menu
-    if (app.avalonMenu == null) {
+    if (app.quadypeMenu == null) {
         action = menu.addAction('Publish...');
         action.triggered.connect(self.onPublish);
     }
@@ -448,14 +448,14 @@ function start() {
      * Show Scene Manager
      */
     self.onManage = function() {
-        app.avalonClient.send({
+        app.quadypeClient.send({
             'module': 'quadpype.hosts.harmony.api.lib',
             'method': 'show',
             'args': ['sceneinventory']
         }, false);
     };
     // add Scene Manager item to menu
-    if (app.avalonMenu == null) {
+    if (app.quadypeMenu == null) {
         action = menu.addAction('Manage...');
         action.triggered.connect(self.onManage);
     }
@@ -464,14 +464,14 @@ function start() {
       * Show Subset Manager
       */
     self.onSubsetManage = function() {
-        app.avalonClient.send({
+        app.quadypeClient.send({
             'module': 'quadpype.hosts.harmony.api.lib',
             'method': 'show',
             'args': ['subsetmanager']
         }, false);
     };
     // add Subset Manager item to menu
-    if (app.avalonMenu == null) {
+    if (app.quadypeMenu == null) {
         action = menu.addAction('Subset Manager...');
         action.triggered.connect(self.onSubsetManage);
     }
@@ -480,7 +480,7 @@ function start() {
       * Set scene settings from DB to the scene
       */
     self.onSetSceneSettings = function() {
-          app.avalonClient.send(
+          app.quadypeClient.send(
             {
               "module": "quadpype.hosts.harmony.api",
               "method": "ensure_scene_settings",
@@ -490,7 +490,7 @@ function start() {
           );
     };
     // add Set Scene Settings
-    if (app.avalonMenu == null) {
+    if (app.quadypeMenu == null) {
         action = menu.addAction('Set Scene Settings...');
         action.triggered.connect(self.onSetSceneSettings);
     }
@@ -499,14 +499,14 @@ function start() {
       * Show Experimental dialog
       */
     self.onExperimentalTools = function() {
-        app.avalonClient.send({
+        app.quadypeClient.send({
             'module': 'quadpype.hosts.harmony.api.lib',
             'method': 'show',
             'args': ['experimental_tools']
         }, false);
     };
     // add Subset Manager item to menu
-    if (app.avalonMenu == null) {
+    if (app.quadypeMenu == null) {
         action = menu.addAction('Experimental Tools...');
         action.triggered.connect(self.onExperimentalTools);
     }
@@ -519,10 +519,10 @@ function start() {
     app.onFileChanged = function(path)
     {
       var app = QCoreApplication.instance();
-      if (app.avalonOnFileChanged){
-        app.avalonClient.send(
+      if (app.quadypeOnFileChanged){
+        app.quadypeClient.send(
           {
-            'module': 'avalon.harmony.lib',
+            'module': 'quadype.harmony.lib',
             'method': 'on_file_changed',
             'args': [path]
           },
@@ -538,7 +538,7 @@ function start() {
 	scene_path = scene.currentProjectPath() +"/" + scene.currentVersionName() + ".xstage";
 	app.watcher.addPath(scenePath);
 	app.watcher.fileChanged.connect(app.onFileChanged);
-  app.avalonOnFileChanged = true;
+  app.quadypeOnFileChanged = true;
   */
     app.onFileChanged = function(path) {
         // empty stub
@@ -548,7 +548,7 @@ function start() {
 
 function ensureSceneSettings() {
   var app = QCoreApplication.instance();
-  app.avalonClient.send(
+  app.quadypeClient.send(
     {
       "module": "quadpype.hosts.harmony.api",
       "method": "ensure_scene_settings",

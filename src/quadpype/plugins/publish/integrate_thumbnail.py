@@ -47,7 +47,7 @@ class IntegrateThumbnails(pyblish.api.ContextPlugin):
             return
 
         # Initial validation of available templated and required keys
-        env_key = "AVALON_THUMBNAIL_ROOT"
+        env_key = "QUADPYPE_THUMBNAIL_ROOT"
         thumbnail_root_format_key = "{thumbnail_root}"
         thumbnail_root = os.getenv(env_key) or ""
 

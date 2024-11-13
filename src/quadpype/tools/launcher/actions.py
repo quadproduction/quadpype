@@ -46,9 +46,9 @@ def register_config_actions():
 
 
 def register_environment_actions():
-    """Register actions from AVALON_ACTIONS for Launcher."""
+    """Register actions from QUADPYPE_ACTIONS for Launcher."""
 
-    paths_str = os.getenv("AVALON_ACTIONS") or ""
+    paths_str = os.getenv("QUADPYPE_ACTIONS") or ""
     register_actions_from_paths(paths_str.split(os.pathsep))
 
 
@@ -74,9 +74,9 @@ class ApplicationAction(LauncherAction):
 
     _log = None
     required_session_keys = (
-        "AVALON_PROJECT",
-        "AVALON_ASSET",
-        "AVALON_TASK"
+        "QUADPYPE_PROJECT_NAME",
+        "QUADPYPE_ASSET_NAME",
+        "QUADPYPE_TASK_NAME"
     )
 
     @property
@@ -105,9 +105,9 @@ class ApplicationAction(LauncherAction):
     def process(self, session, **kwargs):
         """Process the full Application action"""
 
-        project_name = session["AVALON_PROJECT"]
-        asset_name = session["AVALON_ASSET"]
-        task_name = session["AVALON_TASK"]
+        project_name = session["QUADPYPE_PROJECT_NAME"]
+        asset_name = session["QUADPYPE_ASSET_NAME"]
+        task_name = session["QUADPYPE_TASK_NAME"]
         try:
             self.application.launch(
                 project_name=project_name,

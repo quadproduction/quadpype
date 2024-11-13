@@ -136,7 +136,7 @@ class GenericCreateSaver(Creator):
         ext = data["creator_attributes"]["image_format"]
 
         # Subset change detected
-        workdir = os.path.normpath(legacy_io.Session["AVALON_WORKDIR"])
+        workdir = os.path.normpath(legacy_io.Session["QUADPYPE_WORKDIR_PATH"])
         formatting_data.update({
             "workdir": workdir,
             "frame": "0" * frame_padding,
@@ -165,7 +165,7 @@ class GenericCreateSaver(Creator):
             return
 
         required = {
-            "id": "pyblish.avalon.instance",
+            "id": "pyblish.quadpype.instance",
             "creator_identifier": self.identifier,
         }
         for key, value in required.items():

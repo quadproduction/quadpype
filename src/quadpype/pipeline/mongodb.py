@@ -62,17 +62,17 @@ def auto_reconnect(func):
 
 SESSION_CONTEXT_KEYS = (
     # Name of current Project
-    "AVALON_PROJECT",
+    "QUADPYPE_PROJECT_NAME",
     # Name of current Asset
-    "AVALON_ASSET",
+    "QUADPYPE_ASSET_NAME",
     # Name of current task
-    "AVALON_TASK",
+    "QUADPYPE_TASK_NAME",
     # Name of current app
-    "AVALON_APP",
+    "QUADPYPE_HOST_NAME",
     # Path to working directory
-    "AVALON_WORKDIR",
+    "QUADPYPE_WORKDIR_PATH",
     # Optional path to scenes directory (see Work Files API)
-    "AVALON_SCENEDIR"
+    "QUADPYPE_SCENEDIR_PATH"
 )
 
 
@@ -87,16 +87,16 @@ def session_data_from_environment(context_keys=False):
             session_data[key] = None
 
     for key, default_value in (
-        # Name of Avalon in graphical user interfaces
-        # Use this to customise the visual appearance of Avalon
+        # Name of QuadPype in graphical user interfaces
+        # Use this to customise the visual appearance of Quadpype
         # to better integrate with your surrounding pipeline
-        ("AVALON_LABEL", "Avalon"),
+        ("QUADPYPE_LABEL", "QuadPype"),
 
         # Used during any connections to the outside world
-        ("AVALON_TIMEOUT", "1000"),
+        ("QUADPYPE_DB_TIMEOUT", "1000"),
 
         # Name of database used in MongoDB
-        ("AVALON_DB", "avalon"),
+        ("QUADPYPE_PROJECTS_DB_NAME", "quadpype_projects"),
     ):
         value = os.getenv(key) or default_value
         if value is not None:
@@ -105,7 +105,7 @@ def session_data_from_environment(context_keys=False):
     return session_data
 
 
-class AvalonMongoDB:
+class QuadPypeMongoDB:
     def __init__(self, session=None, auto_install=True):
         self._id = uuid4()
         self._database = None
@@ -133,7 +133,7 @@ class AvalonMongoDB:
         project_name = self.active_project()
         if project_name is None:
             raise ValueError(
-                "Value of 'Session[\"AVALON_PROJECT\"]' is not set."
+                "Value of 'Session[\"QUADPYPE_PROJECT_NAME\"]' is not set."
             )
 
         collection = self._database[project_name]
@@ -184,7 +184,7 @@ class AvalonMongoDB:
             return
 
         self._installed = True
-        self._database = self.mongo_client[str(os.environ["AVALON_DB"])]
+        self._database = self.mongo_client[str(os.environ["QUADPYPE_PROJECTS_DB_NAME"])]
 
     def uninstall(self):
         """Close any connection to the database"""
@@ -194,11 +194,11 @@ class AvalonMongoDB:
     @requires_install
     def active_project(self):
         """Return the name of the active project"""
-        return self.Session["AVALON_PROJECT"]
+        return self.Session["QUADPYPE_PROJECT_NAME"]
 
     def current_project(self):
         """Currently set project in Session without triggering installation."""
-        return self.Session.get("AVALON_PROJECT")
+        return self.Session.get("QUADPYPE_PROJECT_NAME")
 
     @requires_install
     @auto_reconnect

@@ -136,9 +136,9 @@ class TextureCopy:
 @click.option('--path', required=True)
 def texture_copy(asset, project, path):
     t.echo("*** Running Texture tool ***")
-    t.echo(">>> Initializing avalon session ...")
-    os.environ["AVALON_PROJECT"] = project
-    os.environ["AVALON_ASSET"] = asset
+    t.echo(">>> Initializing database session ...")
+    os.environ["QUADPYPE_PROJECT_NAME"] = project
+    os.environ["QUADPYPE_ASSET_NAME"] = asset
     TextureCopy().process(asset, project, path)
 
 

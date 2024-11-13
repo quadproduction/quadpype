@@ -349,7 +349,7 @@ class AssetReporterWindow(QtWidgets.QDialog):
         ]
 
         client = QuadPypeMongoConnection.get_mongo_client()
-        db = client["avalon"]
+        db = client["quadpype_projects"]
 
         result = db[project].aggregate(pipeline)
 

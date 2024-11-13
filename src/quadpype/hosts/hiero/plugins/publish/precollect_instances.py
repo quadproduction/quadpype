@@ -56,7 +56,7 @@ class PrecollectInstances(pyblish.api.ContextPlugin):
             if not tag_data:
                 continue
 
-            if tag_data.get("id") != "pyblish.avalon.instance":
+            if tag_data.get("id") != "pyblish.quadpype.instance":
                 continue
 
             # get clips subtracks and anotations

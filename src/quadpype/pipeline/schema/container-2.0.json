@@ -27,8 +27,8 @@
           "id": {
             "description": "Identifier for finding object in host",
             "type": "string",
-            "enum": ["pyblish.avalon.container"],
-            "example": "pyblish.avalon.container"
+            "enum": ["pyblish.quadpype.container"],
+            "example": "pyblish.quadpype.container"
         },
         "objectName": {
             "description": "Name of internal object, such as the objectSet in Maya.",

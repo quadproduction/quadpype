@@ -44,7 +44,7 @@ class ProjectModel(QtGui.QStandardItemModel):
 
     def refresh(self):
         """Reload projects."""
-        self.dbcon.Session["AVALON_PROJECT"] = None
+        self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = None
 
         new_project_items = []
 
@@ -138,7 +138,7 @@ class HierarchyModel(QtCore.QAbstractItemModel):
     data.
 
     Args:
-        dbcon (AvalonMongoDB): Connection to MongoDB with set AVALON_PROJECT in
+        dbcon (QuadPypeMongoDB): Connection to MongoDB with set QUADPYPE_PROJECT_NAME in
             its Session to current project.
     """
 

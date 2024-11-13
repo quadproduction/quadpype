@@ -48,11 +48,11 @@ The integration creates an `QuadPype` menu entry where all related tools are loc
 
 ### Work files
 
-Because Harmony projects are directories, this integration uses `.zip` as work file extension. Internally the project directories are stored under `[User]/.avalon/harmony`. Whenever the user saves the `.xstage` file, the integration zips up the project directory and moves it to the Avalon project path. Zipping and moving happens in the background.
+Because Harmony projects are directories, this integration uses `.zip` as work file extension. Internally the project directories are stored under `[User]/.quadype/harmony`. Whenever the user saves the `.xstage` file, the integration zips up the project directory and moves it to the QuadPype project path. Zipping and moving happens in the background.
 
 ### Show Workfiles on launch
 
-You can show the Workfiles app when Harmony launches by setting environment variable `AVALON_HARMONY_WORKFILES_ON_LAUNCH=1`.
+You can show the Workfiles app when Harmony launches by setting environment variable `QUADPYPE_HARMONY_WORKFILES_ON_LAUNCH=1`.
 
 ## Developing
 
@@ -251,7 +251,7 @@ class CollectInstances(pyblish.api.ContextPlugin):
     a composite node and marked with a unique identifier;
 
     Identifier:
-        id (str): "pyblish.avalon.instance"
+        id (str): "pyblish.quadpype.instance"
     """
 
     label = "Instances"

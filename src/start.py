@@ -437,20 +437,20 @@ def run_disk_mapping_commands(settings):
             raise
 
 
-def set_avalon_environments():
-    """Set avalon specific environments.
+def set_database_environments():
+    """Set database specific environments.
 
-    These are non-modifiable environments for avalon workflow that must be set
-    before avalon module is imported because avalon works with globals set with
+    These are non-modifiable environments for database workflow that must be set
+    before database module is imported because database works with globals set with
     environment variables.
     """
 
-    avalon_db = os.getenv("AVALON_DB") or "avalon"  # for tests
+    projects_db_name = os.getenv("QUADPYPE_PROJECTS_DB_NAME") or "quadpype_projects"
     os.environ.update({
-        # Mongo DB name where avalon docs are stored
-        "AVALON_DB": avalon_db,
+        # Mongo DB name where projects docs are stored
+        "QUADPYPE_PROJECTS_DB_NAME": projects_db_name,
         # Name of config
-        "AVALON_LABEL": "QuadPype"
+        "QUADPYPE_LABEL": "QuadPype"
     })
 
 
@@ -1085,9 +1085,9 @@ def boot():
         # change source DBs to predefined ones set for automatic testing
         if "_tests" not in os.environ["QUADPYPE_DATABASE_NAME"]:
             os.environ["QUADPYPE_DATABASE_NAME"] += "_tests"
-        avalon_db = os.getenv("AVALON_DB") or "avalon"
-        if "_tests" not in avalon_db:
-            os.environ["AVALON_DB"] = avalon_db + "_tests"
+        projects_db_name = os.getenv("QUADPYPE_PROJECTS_DB_NAME") or "quadpype_projects"
+        if "_tests" not in projects_db_name:
+            os.environ["QUADPYPE_PROJECTS_DB_NAME"] = projects_db_name + "_tests"
 
     global_settings = get_quadpype_global_settings(quadpype_mongo)
 
@@ -1224,9 +1224,9 @@ def boot():
     _print(">>> Loading user profile ...")
     user_profile = update_user_profile_on_startup()
     _print(">>> Loading environments ...")
-    # Avalon environments must be set before avalon module is imported
-    _print("  - for Avalon ...")
-    set_avalon_environments()
+    # QuadPype environments must be set before database module is imported
+    _print("  - for the database ...")
+    set_database_environments()
     _print("  - global QuadPype ...")
     set_quadpype_global_environments()
     _print("  - for modules ...")

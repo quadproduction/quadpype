@@ -20,7 +20,7 @@ class _RestApiEndpoint(RestApiEndpoint):
         super().__init__()
 
 
-class AvalonProjectsEndpoint(_RestApiEndpoint):
+class DatabaseProjectsEndpoint(_RestApiEndpoint):
     async def get(self) -> Response:
         output = [
             project_doc
@@ -33,7 +33,7 @@ class AvalonProjectsEndpoint(_RestApiEndpoint):
         )
 
 
-class AvalonProjectEndpoint(_RestApiEndpoint):
+class DatabaseProjectEndpoint(_RestApiEndpoint):
     async def get(self, project_name) -> Response:
         project_doc = get_project(project_name)
         if project_doc:
@@ -48,7 +48,7 @@ class AvalonProjectEndpoint(_RestApiEndpoint):
         )
 
 
-class AvalonAssetsEndpoint(_RestApiEndpoint):
+class DatabaseAssetsEndpoint(_RestApiEndpoint):
     async def get(self, project_name) -> Response:
         asset_docs = list(get_assets(project_name))
         return Response(
@@ -58,7 +58,7 @@ class AvalonAssetsEndpoint(_RestApiEndpoint):
         )
 
 
-class AvalonAssetEndpoint(_RestApiEndpoint):
+class DatabaseAssetEndpoint(_RestApiEndpoint):
     async def get(self, project_name, asset_name) -> Response:
         asset_doc = get_asset_by_name(project_name, asset_name)
         if asset_doc:
@@ -75,33 +75,33 @@ class AvalonAssetEndpoint(_RestApiEndpoint):
         )
 
 
-class AvalonRestApiResource:
-    def __init__(self, avalon_module, server_manager):
-        self.module = avalon_module
+class DatabaseRestApiResource:
+    def __init__(self, database_module, server_manager):
+        self.module = database_module
         self.server_manager = server_manager
 
-        self.prefix = "/avalon"
+        self.prefix = "/data"
 
         self.endpoint_defs = (
             (
                 "GET",
                 "/projects",
-                AvalonProjectsEndpoint(self)
+                DatabaseProjectsEndpoint(self)
             ),
             (
                 "GET",
                 "/projects/{project_name}",
-                AvalonProjectEndpoint(self)
+                DatabaseProjectEndpoint(self)
             ),
             (
                 "GET",
                 "/projects/{project_name}/assets",
-                AvalonAssetsEndpoint(self)
+                DatabaseAssetsEndpoint(self)
             ),
             (
                 "GET",
                 "/projects/{project_name}/assets/{asset_name}",
-                AvalonAssetEndpoint(self)
+                DatabaseAssetEndpoint(self)
             )
         )
 

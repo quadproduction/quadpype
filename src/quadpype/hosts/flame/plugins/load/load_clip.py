@@ -70,7 +70,7 @@ class LoadClip(opfapi.ClipLoader):
         self.log.info("Loading with colorspace: `{}`".format(colorspace))
 
         # create workfile path
-        workfile_dir = os.environ["AVALON_WORKDIR"]
+        workfile_dir = os.environ["QUADPYPE_WORKDIR_PATH"]
         openclip_dir = os.path.join(
             workfile_dir, clip_name
         )
@@ -105,7 +105,7 @@ class LoadClip(opfapi.ClipLoader):
             openclip_path
         )
 
-        # add additional metadata from the version to imprint Avalon knob
+        # add additional metadata from the version to imprint QuadPype knob
         add_keys = [
             "frameStart", "frameEnd", "source", "author",
             "fps", "handleStart", "handleEnd"
@@ -210,7 +210,7 @@ class LoadClip(opfapi.ClipLoader):
     #     if colorspace:
     #         clip.setSourceMediaColourTransform(colorspace)
 
-    #     # add additional metadata from the version to imprint Avalon knob
+    #     # add additional metadata from the version to imprint QuadPype knob
     #     add_keys = [
     #         "frameStart", "frameEnd", "source", "author",
     #         "fps", "handleStart", "handleEnd"

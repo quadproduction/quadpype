@@ -531,8 +531,8 @@ class FamilyConfigCache:
 
         {"config": {
             "families": [
-                {"name": "avalon.camera", label: "Camera", "icon": "photo"},
-                {"name": "avalon.anim", label: "Animation", "icon": "male"},
+                {"name": "quadpype.camera", label: "Camera", "icon": "photo"},
+                {"name": "quadpype.anim", label: "Animation", "icon": "male"},
             ]
         }}
 
@@ -635,7 +635,7 @@ class GroupsConfig:
         self.groups.clear()
 
         group_configs = []
-        project_name = self.dbcon.Session.get("AVALON_PROJECT")
+        project_name = self.dbcon.Session.get("QUADPYPE_PROJECT_NAME")
         if project_name:
             # Get pre-defined group name and appearance from project config
             project_doc = get_project(project_name, fields=["config.groups"])

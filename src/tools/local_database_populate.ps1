@@ -32,7 +32,7 @@ function dump_projects($HOST_NAME, $PORT_NUM) {
     } else {
         Remove-Item "${TMP_FOLDER_PATH}\*" -Recurse -Force
     }
-    $RET_VAL = mongodump --uri="${HOST_NAME}":"${PORT_NUM}" --db=avalon --out $TMP_FOLDER_PATH --quiet | mongorestore --uri="${HOST_NAME}":"${PORT_NUM}" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
+    $RET_VAL = mongodump --uri="${HOST_NAME}":"${PORT_NUM}" --db=quadpype-projects --out $TMP_FOLDER_PATH --quiet | mongorestore --uri="${HOST_NAME}":"${PORT_NUM}" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
     return $RET_VAL
 }
 

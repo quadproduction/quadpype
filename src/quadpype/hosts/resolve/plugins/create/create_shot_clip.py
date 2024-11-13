@@ -257,7 +257,7 @@ class CreateShotClip(plugin.Creator):
 
         kwargs = {
             "ui_inputs": widget.result,
-            "avalon": self.data,
+            "quadpype": self.data,
             "mp_folder": mp_folder,
             "sq_frame_start": sq_frame_start,
             "sq_markers": sq_markers

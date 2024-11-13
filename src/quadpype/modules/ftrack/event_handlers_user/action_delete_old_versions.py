@@ -16,7 +16,7 @@ from quadpype.lib import (
     TemplateUnsolved,
     format_file_size,
 )
-from quadpype.pipeline import AvalonMongoDB, Anatomy
+from quadpype.pipeline import QuadPypeMongoDB, Anatomy
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 
 
@@ -33,7 +33,7 @@ class DeleteOldVersions(BaseAction):
 
     settings_key = "delete_old_versions"
 
-    dbcon = AvalonMongoDB()
+    dbcon = QuadPypeMongoDB()
 
     inteface_title = "Choose your preferences"
     splitter_item = {"type": "label", "value": "---"}
@@ -163,7 +163,7 @@ class DeleteOldVersions(BaseAction):
         self.dbcon.install()
 
         project = None
-        avalon_asset_names = []
+        database_asset_names = []
         asset_versions_by_parent_id = collections.defaultdict(list)
         subset_names_by_asset_name = collections.defaultdict(list)
 
@@ -175,8 +175,8 @@ class DeleteOldVersions(BaseAction):
             parent_ftrack_id = parent_ent["id"]
             parent_name = parent_ent["name"]
 
-            if parent_name not in avalon_asset_names:
-                avalon_asset_names.append(parent_name)
+            if parent_name not in database_asset_names:
+                database_asset_names.append(parent_name)
 
             # Group asset versions by parent entity
             asset_versions_by_parent_id[parent_ftrack_id].append(entity)
@@ -195,12 +195,12 @@ class DeleteOldVersions(BaseAction):
         # Set Mongo collection
         project_name = project["full_name"]
         anatomy = Anatomy(project_name)
-        self.dbcon.Session["AVALON_PROJECT"] = project_name
+        self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
         self.log.debug("Project is set to {}".format(project_name))
 
-        # Get Assets from avalon database
+        # Get Assets from database database
         assets = list(
-            get_assets(project_name, asset_names=avalon_asset_names)
+            get_assets(project_name, asset_names=database_asset_names)
         )
         asset_id_to_name_map = {
             asset["_id"]: asset["name"] for asset in assets

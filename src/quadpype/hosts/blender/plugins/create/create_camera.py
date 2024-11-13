@@ -3,7 +3,7 @@
 import bpy
 
 from quadpype.hosts.blender.api import plugin, lib
-from quadpype.hosts.blender.api.pipeline import AVALON_INSTANCES
+from quadpype.hosts.blender.api.pipeline import QUADPYPE_INSTANCES
 
 
 class CreateCamera(plugin.BlenderCreator):
@@ -33,7 +33,7 @@ class CreateCamera(plugin.BlenderCreator):
             camera = bpy.data.cameras.new(subset_name)
             camera_obj = bpy.data.objects.new(subset_name, camera)
 
-            instances = bpy.data.collections.get(AVALON_INSTANCES)
+            instances = bpy.data.collections.get(QUADPYPE_INSTANCES)
             instances.objects.link(camera_obj)
 
             bpy.context.view_layer.objects.active = asset_group
