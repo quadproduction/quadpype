@@ -715,8 +715,6 @@ def cli_main():
               help="Ftrack api user")
 @click_wrap.option("--ftrack-api-key", envvar="FTRACK_API_KEY",
               help="Ftrack api key")
-@click_wrap.option("--legacy", is_flag=True,
-              help="run event server without mongo storing")
 @click_wrap.option("--clockify-api-key", envvar="CLOCKIFY_API_KEY",
               help="Clockify API key.")
 @click_wrap.option("--clockify-workspace", envvar="CLOCKIFY_WORKSPACE",
@@ -726,7 +724,6 @@ def eventserver(
     ftrack_url,
     ftrack_user,
     ftrack_api_key,
-    legacy,
     clockify_api_key,
     clockify_workspace
 ):
@@ -744,7 +741,6 @@ def eventserver(
         ftrack_url,
         ftrack_user,
         ftrack_api_key,
-        legacy,
         clockify_api_key,
         clockify_workspace
     )

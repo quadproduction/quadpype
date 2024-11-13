@@ -12,7 +12,7 @@ from quadpype.client.operations import (
     OperationsSession,
 )
 from quadpype.style import load_stylesheet
-from quadpype.pipeline import QuadPypeMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 from quadpype.tools.utils import (
     PlaceholderLineEdit,
     get_warning_pixmap,
@@ -132,7 +132,7 @@ class CreateProjectDialog(QtWidgets.QDialog):
         self.allowed_regex = "[^{}]+".format(PROJECT_NAME_ALLOWED_SYMBOLS)
 
         if dbcon is None:
-            dbcon = QuadPypeMongoDB()
+            dbcon = QuadPypeDBHandler()
 
         self.dbcon = dbcon
         self._ignore_code_change = False

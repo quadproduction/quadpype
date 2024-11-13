@@ -1,5 +1,5 @@
 import pyblish.api
-from quadpype.client.mongo import QuadPypeMongoConnection
+from quadpype.client.database import QuadPypeDBConnection
 from quadpype.settings import PROJECT_SETTINGS_KEY
 
 class CollectShotgridEntities(pyblish.api.ContextPlugin):
@@ -59,7 +59,7 @@ class CollectShotgridEntities(pyblish.api.ContextPlugin):
 
 
 def _get_shotgrid_collection(project):
-    client = QuadPypeMongoConnection.get_mongo_client()
+    client = QuadPypeDBConnection.get_database_client()
     return client.get_database("shotgrid_quadpype").get_collection(project)
 
 

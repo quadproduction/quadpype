@@ -5,14 +5,14 @@ import logging
 import functools
 
 from . import schema
-from .mongodb import QuadPypeMongoDB, session_data_from_environment
+from .database import QuadPypeDBHandler, session_data_from_environment
 
 module = sys.modules[__name__]
 
 Session = {}
 _is_installed = False
-_connection_object = QuadPypeMongoDB(Session)
-_mongo_client = None
+_connection_object = QuadPypeDBHandler(Session)
+_database_client = None
 _database = database = None
 
 log = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ def install():
     _connection_object.Session.update(session)
     _connection_object.install()
 
-    module._mongo_client = _connection_object.mongo_client
+    module._database_client = _connection_object.database_client
     module._database = module.database = _connection_object.database
 
     module._is_installed = True
@@ -47,7 +47,7 @@ def install():
 
 def uninstall():
     """Close any connection to the database"""
-    module._mongo_client = None
+    module._database_client = None
     module._database = module.database = None
     module._is_installed = False
     try:

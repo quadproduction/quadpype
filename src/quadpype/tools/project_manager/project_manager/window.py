@@ -3,7 +3,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 from quadpype import resources
 from quadpype.style import load_stylesheet
 from quadpype.lib import Logger
-from quadpype.pipeline import QuadPypeMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 from quadpype.pipeline.project_folders import create_project_folders
 
 from . import (
@@ -40,7 +40,7 @@ class ProjectManagerWindow(QtWidgets.QWidget):
         # Project selection
         project_widget = QtWidgets.QWidget(top_part_widget)
 
-        dbcon = QuadPypeMongoDB()
+        dbcon = QuadPypeDBHandler()
 
         project_model = ProjectModel(dbcon)
         project_proxy = ProjectProxyFilter()

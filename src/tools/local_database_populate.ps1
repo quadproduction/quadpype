@@ -108,7 +108,7 @@ function main {
 
     # Get the MongoDB to fetch and put in the localhost DB
     if (!$MONGO_URI) {
-        $MONGO_URI = [System.Environment]::GetEnvironmentVariable("QUADPYPE_MONGO", [System.EnvironmentVariableTarget]::User)
+        $MONGO_URI = [System.Environment]::GetEnvironmentVariable("QUADPYPE_DB_URI", [System.EnvironmentVariableTarget]::User)
 
         # In case YES_TO_ALL we skip asking and assume we can use the registered URI
         if (!$YES_TO_ALL -And $MONGO_URI) {

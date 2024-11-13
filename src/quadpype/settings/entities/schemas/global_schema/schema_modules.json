@@ -28,7 +28,7 @@
                     "type": "number",
                     "key": "QUADPYPE_DB_TIMEOUT",
                     "minimum": 0,
-                    "label": "Mongo Database Timeout (ms)",
+                    "label": "Database Timeout (ms)",
                     "steps": 100
                 },
                 {

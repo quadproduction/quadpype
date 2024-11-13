@@ -213,11 +213,11 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             if job_environ.get(env_j_key):
                 environment[env_j_key] = job_environ[env_j_key]
 
-        # Add mongo url if it's enabled
-        if instance.context.data.get("deadlinePassMongoUrl"):
-            mongo_url = os.getenv("QUADPYPE_MONGO")
-            if mongo_url:
-                environment["QUADPYPE_MONGO"] = mongo_url
+        # Add the database URI to the env variables if needed
+        if instance.context.data.get("deadlineAddDatabaseURI"):
+            database_uri = os.getenv("QUADPYPE_DB_URI")
+            if database_uri:
+                environment["QUADPYPE_DB_URI"] = database_uri
 
         instance_settings = self.get_attr_values_from_data(instance.data)
         initial_status = instance_settings.get("publishJobState", "Active")

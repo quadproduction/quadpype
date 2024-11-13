@@ -19,7 +19,7 @@ from quadpype.client.operations import (
 )
 from quadpype.settings import get_anatomy_settings, APPS_SETTINGS_KEY
 from quadpype.lib import ApplicationManager, Logger
-from quadpype.pipeline import QuadPypeMongoDB, schema
+from quadpype.pipeline import QuadPypeDBHandler, schema
 
 from .constants import CUST_ATTR_ID_KEY, FPS_KEYS
 from .custom_attributes import get_quadpype_attr, query_custom_attributes
@@ -231,7 +231,7 @@ def get_python_type_for_custom_attribute(cust_attr, cust_attr_type_name=None):
 
 def from_dict_to_set(data, is_project):
     """
-        Converts 'data' into $set part of MongoDB update command.
+        Converts 'data' into $set part of the database update command.
         Sets new or modified keys.
         Tasks are updated completely, not per task. (Eg. change in any of the
         tasks results in full update of "tasks" from Ftrack.
@@ -380,7 +380,7 @@ def get_hierarchical_attributes_values(
 
 
 class SyncEntitiesFactory:
-    dbcon = QuadPypeMongoDB()
+    dbcon = QuadPypeDBHandler()
 
     cust_attr_query_keys = [
         "id",
@@ -453,7 +453,7 @@ class SyncEntitiesFactory:
         self._database_archived_by_name = None
 
         self._subsets_by_parent_id = None
-        self._changeability_by_mongo_id = None
+        self._changeability_by_database_id = None
 
         self._object_types_by_name = None
 
@@ -490,7 +490,7 @@ class SyncEntitiesFactory:
         self.log.debug((
             "*** Synchronization initialization started <{}>."
         ).format(project_full_name))
-        # Check if `database_mongo_id` custom attribute exist or is accessible
+        # Check if `database_id` custom attribute exist or is accessible
         if CUST_ATTR_ID_KEY not in ft_project["custom_attributes"]:
             items = []
             items.append({
@@ -585,8 +585,8 @@ class SyncEntitiesFactory:
     def database_ents_by_id(self):
         """
             Returns dictionary of database tracked entities (assets stored in
-            MongoDB) accessible by its '_id'
-            (mongo intenal ID - example ObjectId("5f48de5830a9467b34b69798"))
+            the database) accessible by its '_id'
+            (database internal ID - example ObjectId("5f48de5830a9467b34b69798"))
         Returns:
             (dictionary) - {"(_id)": whole entity asset}
         """
@@ -600,8 +600,8 @@ class SyncEntitiesFactory:
     @property
     def database_ents_by_ftrack_id(self):
         """
-            Returns dictionary of Mongo ids of database tracked entities
-            (assets stored in MongoDB) accessible by its 'ftrackId'
+            Returns dictionary of database ids of database tracked entities
+            (assets stored in the database) accessible by its 'ftrackId'
             (id from ftrack)
             (example '431ee3f2-e91a-11ea-bfa4-92591a5b5e3e')
             Returns:
@@ -620,8 +620,8 @@ class SyncEntitiesFactory:
     @property
     def database_ents_by_name(self):
         """
-            Returns dictionary of Mongo ids of database tracked entities
-            (assets stored in MongoDB) accessible by its 'name'
+            Returns dictionary of database ids of database tracked entities
+            (assets stored in the database) accessible by its 'name'
             (example 'Hero')
             Returns:
                 (dictionary) - {"(name)": "_id"}
@@ -637,7 +637,7 @@ class SyncEntitiesFactory:
     def database_ents_by_parent_id(self):
         """
             Returns dictionary of database tracked entities
-            (assets stored in MongoDB) accessible by its 'visualParent'
+            (assets stored in the database) accessible by its 'visualParent'
             (example ObjectId("5f48de5830a9467b34b69798"))
 
             Fills 'self._database_archived_ents' for performance
@@ -694,7 +694,7 @@ class SyncEntitiesFactory:
 
             Fills 'self._database_archived_by_id' for performance
         Returns:
-            (dictionary) of assets accessible by asset mongo _id
+            (dictionary) of assets accessible by asset database _id
         """
         if self._database_archived_by_id is None:
             self._database_archived_by_id = {
@@ -711,7 +711,7 @@ class SyncEntitiesFactory:
             Fills 'self._database_archived_by_parent_id' for performance
         Returns:
             (dictionary of lists) of assets accessible by asset parent
-                                     mongo _id
+                                     database _id
         """
         if self._database_archived_by_parent_id is None:
             self._database_archived_by_parent_id = collections.defaultdict(list)
@@ -726,7 +726,7 @@ class SyncEntitiesFactory:
     @property
     def subsets_by_parent_id(self):
         """
-            Returns dictionary of subsets from Mongo ("type": "subset")
+            Returns dictionary of subsets from the database ("type": "subset")
             grouped by their parent.
 
             Fills 'self._subsets_by_parent_id' for performance
@@ -743,14 +743,14 @@ class SyncEntitiesFactory:
         return self._subsets_by_parent_id
 
     @property
-    def changeability_by_mongo_id(self):
-        if self._changeability_by_mongo_id is None:
-            self._changeability_by_mongo_id = collections.defaultdict(
+    def changeability_by_database_id(self):
+        if self._changeability_by_database_id is None:
+            self._changeability_by_database_id = collections.defaultdict(
                 lambda: True
             )
-            self._changeability_by_mongo_id[self.database_project_id] = False
+            self._changeability_by_database_id[self.database_project_id] = False
             self._bubble_changeability(list(self.subsets_by_parent_id.keys()))
-        return self._changeability_by_mongo_id
+        return self._changeability_by_database_id
 
     @property
     def object_types_by_name(self):
@@ -1262,8 +1262,8 @@ class SyncEntitiesFactory:
                 self.entities_dict[child_id]["hier_attrs"].update(_hier_values)
                 hier_down_queue.append((_hier_values, child_id))
 
-    def remove_from_archived(self, mongo_id):
-        entity = self.database_archived_by_id.pop(mongo_id, None)
+    def remove_from_archived(self, database_id):
+        entity = self.database_archived_by_id.pop(database_id, None)
         if not entity:
             return
 
@@ -1436,22 +1436,22 @@ class SyncEntitiesFactory:
         create_ftrack_ids = []
         update_ftrack_ids = []
 
-        same_mongo_id = []
-        all_mongo_ids = {}
+        same_database_id = []
+        all_database_ids = {}
         for ftrack_id, entity_dict in self.entities_dict.items():
-            mongo_id = entity_dict["database_entity_attrs"].get(CUST_ATTR_ID_KEY)
-            if not mongo_id:
+            database_id = entity_dict["database_entity_attrs"].get(CUST_ATTR_ID_KEY)
+            if not database_id:
                 continue
-            if mongo_id in all_mongo_ids:
-                same_mongo_id.append(mongo_id)
+            if database_id in all_database_ids:
+                same_database_id.append(database_id)
             else:
-                all_mongo_ids[mongo_id] = []
-            all_mongo_ids[mongo_id].append(ftrack_id)
+                all_database_ids[database_id] = []
+            all_database_ids[database_id].append(ftrack_id)
 
         if database_project:
-            mongo_id = str(database_project["_id"])
-            ftrack_database_mapper[self.ft_project_id] = mongo_id
-            database_ftrack_mapper[mongo_id] = self.ft_project_id
+            database_id = str(database_project["_id"])
+            ftrack_database_mapper[self.ft_project_id] = database_id
+            database_ftrack_mapper[database_id] = self.ft_project_id
             update_ftrack_ids.append(self.ft_project_id)
         else:
             create_ftrack_ids.append(self.ft_project_id)
@@ -1470,10 +1470,10 @@ class SyncEntitiesFactory:
             entity_dict = self.entities_dict[ftrack_id]
             ent_path = self.get_ent_path(ftrack_id)
 
-            mongo_id = entity_dict["database_entity_attrs"].get(CUST_ATTR_ID_KEY)
-            av_ent_by_mongo_id = self.database_ents_by_id.get(mongo_id)
-            if av_ent_by_mongo_id:
-                av_ent_ftrack_id = av_ent_by_mongo_id.get("data", {}).get(
+            database_id = entity_dict["database_entity_attrs"].get(CUST_ATTR_ID_KEY)
+            av_ent_by_database_id = self.database_ents_by_id.get(database_id)
+            if av_ent_by_database_id:
+                av_ent_ftrack_id = av_ent_by_database_id.get("data", {}).get(
                     "ftrackId"
                 )
                 is_right = False
@@ -1481,23 +1481,23 @@ class SyncEntitiesFactory:
                 if av_ent_ftrack_id and av_ent_ftrack_id == ftrack_id:
                     is_right = True
 
-                elif mongo_id not in same_mongo_id:
+                elif database_id not in same_database_id:
                     is_right = True
 
                 else:
-                    ftrack_ids_with_same_mongo = all_mongo_ids[mongo_id]
-                    for _ftrack_id in ftrack_ids_with_same_mongo:
+                    ftrack_ids_with_same_database = all_database_ids[database_id]
+                    for _ftrack_id in ftrack_ids_with_same_database:
                         if _ftrack_id == av_ent_ftrack_id:
                             continue
 
                         _entity_dict = self.entities_dict[_ftrack_id]
-                        _mongo_id = (
+                        _database_id = (
                             _entity_dict["database_entity_attrs"][CUST_ATTR_ID_KEY]
                         )
-                        _av_ent_by_mongo_id = self.database_ents_by_id.get(
-                            _mongo_id
+                        _av_ent_by_database_id = self.database_ents_by_id.get(
+                            _database_id
                         )
-                        _av_ent_ftrack_id = _av_ent_by_mongo_id.get(
+                        _av_ent_ftrack_id = _av_ent_by_database_id.get(
                             "data", {}
                         ).get("ftrackId")
                         if _av_ent_ftrack_id == ftrack_id:
@@ -1508,39 +1508,39 @@ class SyncEntitiesFactory:
                     entity = entity_dict["entity"]
                     ent_path_items = [ent["name"] for ent in entity["link"]]
                     parents = ent_path_items[1:len(ent_path_items) - 1:]
-                    av_parents = av_ent_by_mongo_id["data"]["parents"]
+                    av_parents = av_ent_by_database_id["data"]["parents"]
                     if av_parents == parents:
                         is_right = True
                     else:
                         name = entity_dict["name"]
-                        av_name = av_ent_by_mongo_id["name"]
+                        av_name = av_ent_by_database_id["name"]
                         if name == av_name:
                             is_right = True
 
                 if is_right:
                     self.log.debug(
-                        "Existing (by MongoID) <{}>".format(ent_path)
+                        "Existing (by database ID) <{}>".format(ent_path)
                     )
-                    ftrack_database_mapper[ftrack_id] = mongo_id
-                    database_ftrack_mapper[mongo_id] = ftrack_id
+                    ftrack_database_mapper[ftrack_id] = database_id
+                    database_ftrack_mapper[database_id] = ftrack_id
                     update_ftrack_ids.append(ftrack_id)
                     continue
 
-            mongo_id = self.database_ents_by_ftrack_id.get(ftrack_id)
-            if not mongo_id:
-                mongo_id = self.database_ents_by_name.get(entity_dict["name"])
-                if mongo_id:
+            database_id = self.database_ents_by_ftrack_id.get(ftrack_id)
+            if not database_id:
+                database_id = self.database_ents_by_name.get(entity_dict["name"])
+                if database_id:
                     self.log.debug(
                         "Existing (by matching name) <{}>".format(ent_path)
                     )
             else:
                 self.log.debug(
-                    "Existing (by FtrackID in mongo) <{}>".format(ent_path)
+                    "Existing (by FtrackID in database) <{}>".format(ent_path)
                 )
 
-            if mongo_id:
-                ftrack_database_mapper[ftrack_id] = mongo_id
-                database_ftrack_mapper[mongo_id] = ftrack_id
+            if database_id:
+                ftrack_database_mapper[ftrack_id] = database_id
+                database_ftrack_mapper[database_id] = ftrack_id
                 update_ftrack_ids.append(ftrack_id)
                 continue
 
@@ -1548,12 +1548,12 @@ class SyncEntitiesFactory:
             create_ftrack_ids.append(ftrack_id)
 
         deleted_entities = []
-        for mongo_id in self.database_ents_by_id:
-            if mongo_id in database_ftrack_mapper:
+        for database_id in self.database_ents_by_id:
+            if database_id in database_ftrack_mapper:
                 continue
-            deleted_entities.append(mongo_id)
+            deleted_entities.append(database_id)
 
-            av_ent = self.database_ents_by_id[mongo_id]
+            av_ent = self.database_ents_by_id[database_id]
             av_ent_path_items = list(av_ent["data"]["parents"])
             av_ent_path_items.append(av_ent["name"])
             self.log.debug("Deleted <{}>".format("/".join(av_ent_path_items)))
@@ -1602,10 +1602,10 @@ class SyncEntitiesFactory:
                 continue
 
             for ftrack_link_id in link_ids:
-                mongo_id = self.ftrack_database_mapper.get(ftrack_link_id)
-                if mongo_id is not None:
+                database_id = self.ftrack_database_mapper.get(ftrack_link_id)
+                if database_id is not None:
                     input_links.append({
-                        "id": ObjectId(mongo_id),
+                        "id": ObjectId(database_id),
                         "linkedBy": "ftrack",
                         "type": "breakdown"
                     })
@@ -1639,12 +1639,12 @@ class SyncEntitiesFactory:
             if database_parent_id is not None:
                 database_parent_id = str(database_parent_id)
 
-            ftrack_parent_mongo_id = self.ftrack_database_mapper[
+            ftrack_parent_database_id = self.ftrack_database_mapper[
                 ftrack_parent_id
             ]
 
             # if parent is project
-            if (ftrack_parent_mongo_id == database_parent_id) or (
+            if (ftrack_parent_database_id == database_parent_id) or (
                 ftrack_parent_id == self.ft_project_id and
                 database_parent_id is None
             ):
@@ -1660,27 +1660,27 @@ class SyncEntitiesFactory:
                 continue
 
             # If entity is changeable then change values of parent or name
-            if self.changeability_by_mongo_id[database_entity_id]:
+            if self.changeability_by_database_id[database_entity_id]:
                 # TODO logging
                 if not parent_check:
-                    if ftrack_parent_mongo_id == str(self.database_project_id):
+                    if ftrack_parent_database_id == str(self.database_project_id):
                         new_parent_name = self.entities_dict[
                             self.ft_project_id]["name"]
                         new_parent_id = None
                     else:
                         new_parent_name = self.database_ents_by_id[
-                            ftrack_parent_mongo_id]["name"]
-                        new_parent_id = ObjectId(ftrack_parent_mongo_id)
+                            ftrack_parent_database_id]["name"]
+                        new_parent_id = ObjectId(ftrack_parent_database_id)
 
                     if database_parent_id == str(self.database_project_id):
                         old_parent_name = self.entities_dict[
                             self.ft_project_id]["name"]
                     else:
                         old_parent_name = "N/A"
-                        if ftrack_parent_mongo_id in self.database_ents_by_id:
+                        if ftrack_parent_database_id in self.database_ents_by_id:
                             old_parent_name = (
                                 self.database_ents_by_id
-                                [ftrack_parent_mongo_id]
+                                [ftrack_parent_database_id]
                                 ["name"]
                             )
 
@@ -1740,7 +1740,7 @@ class SyncEntitiesFactory:
                 database_parent_id
             )
 
-            # If last ftrack parent id from mongo entity exist then just
+            # If last ftrack parent id from database entity exist then just
             # remap paren_id on entity
             if old_ftrack_parent_id:
                 # TODO report
@@ -1990,9 +1990,9 @@ class SyncEntitiesFactory:
 
         unarchive_writes = []
         for item in self.unarchive_list:
-            mongo_id = item["_id"]
+            database_id = item["_id"]
             unarchive_writes.append(ReplaceOne(
-                {"_id": mongo_id},
+                {"_id": database_id},
                 item
             ))
             av_ent_path_items = list(item["data"]["parents"])
@@ -2001,7 +2001,7 @@ class SyncEntitiesFactory:
             self.log.debug(
                 "Entity was unarchived <{}>".format(av_ent_path)
             )
-            self.remove_from_archived(mongo_id)
+            self.remove_from_archived(database_id)
 
         if unarchive_writes:
             self.dbcon.bulk_write(unarchive_writes)
@@ -2035,20 +2035,20 @@ class SyncEntitiesFactory:
         current_id = (
             entity_dict["database_entity_attrs"].get(CUST_ATTR_ID_KEY) or ""
         ).strip()
-        mongo_id = current_id
+        database_id = current_id
         name = entity_dict["name"]
 
-        # Check if exist archived asset in mongo - by ID
+        # Check if exist archived asset in database - by ID
         unarchive = False
-        unarchive_id = self.check_unarchivation(ftrack_id, mongo_id, name)
+        unarchive_id = self.check_unarchivation(ftrack_id, database_id, name)
         if unarchive_id is not None:
             unarchive = True
-            mongo_id = unarchive_id
+            database_id = unarchive_id
 
         item = entity_dict["final_entity"]
         try:
-            new_id = ObjectId(mongo_id)
-            if mongo_id in self.database_ftrack_mapper:
+            new_id = ObjectId(database_id)
+            if database_id in self.database_ftrack_mapper:
                 new_id = ObjectId()
         except InvalidId:
             new_id = ObjectId()
@@ -2067,7 +2067,7 @@ class SyncEntitiesFactory:
         self._database_ents_by_name[item["name"]] = new_id_str
 
         if current_id != new_id_str:
-            # store mongo id to ftrack entity
+            # store database id to ftrack entity
             configuration_id = self.hier_cust_attr_ids_by_key.get(
                 CUST_ATTR_ID_KEY
             )
@@ -2098,8 +2098,8 @@ class SyncEntitiesFactory:
         else:
             self.unarchive_list.append(item)
 
-    def check_unarchivation(self, ftrack_id, mongo_id, name):
-        archived_by_id = self.database_archived_by_id.get(mongo_id)
+    def check_unarchivation(self, ftrack_id, database_id, name):
+        archived_by_id = self.database_archived_by_id.get(database_id)
         archived_by_name = self.database_archived_by_name.get(name)
 
         # if not found in archived then skip
@@ -2111,8 +2111,8 @@ class SyncEntitiesFactory:
         final_parents = entity_dict["final_entity"]["data"]["parents"]
         if archived_by_id:
             # if is changeable then unarchive (nothing to check here)
-            if self.changeability_by_mongo_id[mongo_id]:
-                return mongo_id
+            if self.changeability_by_database_id[database_id]:
+                return database_id
 
             # TODO replace `__NOTSET__` with custom None constant
             archived_parent_id = archived_by_id["data"].get(
@@ -2127,24 +2127,24 @@ class SyncEntitiesFactory:
             ):
                 return None
 
-            return mongo_id
+            return database_id
 
         # First check if there is any that have same parents
         for archived in archived_by_name:
-            mongo_id = str(archived["_id"])
+            database_id = str(archived["_id"])
             archived_parents = archived.get("data", {}).get("parents")
             if archived_parents == final_parents:
-                return mongo_id
+                return database_id
 
         # Secondly try to find more close to current ftrack entity
         first_changeable = None
         for archived in archived_by_name:
-            mongo_id = str(archived["_id"])
-            if not self.changeability_by_mongo_id[mongo_id]:
+            database_id = str(archived["_id"])
+            if not self.changeability_by_database_id[database_id]:
                 continue
 
             if first_changeable is None:
-                first_changeable = mongo_id
+                first_changeable = database_id
 
             ftrack_parent_id = entity_dict["parent_id"]
             map_ftrack_parent_id = self.ftrack_database_mapper.get(
@@ -2166,20 +2166,20 @@ class SyncEntitiesFactory:
                     map_ftrack_parent_id == str(parent_entity["_id"])
                 )
             ):
-                return mongo_id
+                return database_id
         # Last return first changeable with same name (or None)
         return first_changeable
 
     def create_database_project(self):
         project_item = self.entities_dict[self.ft_project_id]["final_entity"]
-        mongo_id = (
+        database_id = (
             self.entities_dict[self.ft_project_id]["database_entity_attrs"].get(
                 CUST_ATTR_ID_KEY
             ) or ""
         ).strip()
 
         try:
-            new_id = ObjectId(mongo_id)
+            new_id = ObjectId(database_id)
         except InvalidId:
             new_id = ObjectId()
 
@@ -2204,7 +2204,7 @@ class SyncEntitiesFactory:
         self.create_list.append(project_item)
         self.project_created = True
 
-        # store mongo id to ftrack entity
+        # store database id to ftrack entity
         entity = self.entities_dict[self.ft_project_id]["entity"]
         entity["custom_attributes"][CUST_ATTR_ID_KEY] = str(new_id)
 
@@ -2228,7 +2228,7 @@ class SyncEntitiesFactory:
                 continue
 
             # set changeability of current entity to False
-            self._changeability_by_mongo_id[entity_id] = False
+            self._changeability_by_database_id[entity_id] = False
             processed_parents_ids.append(entity_id)
             # if not entity then is probably archived
             if not entity:
@@ -2244,7 +2244,7 @@ class SyncEntitiesFactory:
                     self.log.warning((
                         "QuadPype contains entities without valid parents that"
                         " lead to Project (should not cause errors)"
-                        " - MongoId <{}>"
+                        " - database ID <{}>"
                     ).format(str(entity_id)))
                 continue
 
@@ -2293,38 +2293,38 @@ class SyncEntitiesFactory:
     # Probably deprecated
     def _check_changeability(self, parent_id=None):
         for entity in self.database_ents_by_parent_id[parent_id]:
-            mongo_id = str(entity["_id"])
-            is_changeable = self._changeability_by_mongo_id.get(mongo_id)
+            database_id = str(entity["_id"])
+            is_changeable = self._changeability_by_database_id.get(database_id)
             if is_changeable is not None:
                 continue
 
-            self._check_changeability(mongo_id)
+            self._check_changeability(database_id)
             is_changeable = True
             for child in self.database_ents_by_parent_id[parent_id]:
-                if not self._changeability_by_mongo_id[str(child["_id"])]:
+                if not self._changeability_by_database_id[str(child["_id"])]:
                     is_changeable = False
                     break
 
             if is_changeable is True:
-                is_changeable = (mongo_id in self.subsets_by_parent_id)
-            self._changeability_by_mongo_id[mongo_id] = is_changeable
+                is_changeable = (database_id in self.subsets_by_parent_id)
+            self._changeability_by_database_id[database_id] = is_changeable
 
     def update_entities(self):
         """
             Runs changes converted to "$set" queries in bulk.
         """
-        mongo_changes_bulk = []
-        for mongo_id, changes in self.updates.items():
-            mongo_id = ObjectId(mongo_id)
-            is_project = mongo_id == self.database_project_id
+        database_changes_bulk = []
+        for database_id, changes in self.updates.items():
+            database_id = ObjectId(database_id)
+            is_project = database_id == self.database_project_id
             change_data = from_dict_to_set(changes, is_project)
 
-            filter = {"_id": mongo_id}
-            mongo_changes_bulk.append(UpdateOne(filter, change_data))
-        if not mongo_changes_bulk:
+            filter = {"_id": database_id}
+            database_changes_bulk.append(UpdateOne(filter, change_data))
+        if not database_changes_bulk:
             # TODO LOG
             return
-        self.dbcon.bulk_write(mongo_changes_bulk)
+        self.dbcon.bulk_write(database_changes_bulk)
 
     def reload_parents(self, hierarchy_changing_ids):
         parents_queue = collections.deque()
@@ -2353,10 +2353,10 @@ class SyncEntitiesFactory:
                 )
 
             if ftrack_id in self.create_ftrack_ids:
-                mongo_id = self.ftrack_database_mapper[ftrack_id]
-                if "data" not in self.updates[mongo_id]:
-                    self.updates[mongo_id]["data"] = {}
-                self.updates[mongo_id]["data"]["parents"] = parents
+                database_id = self.ftrack_database_mapper[ftrack_id]
+                if "data" not in self.updates[database_id]:
+                    self.updates[database_id]["data"] = {}
+                self.updates[database_id]["data"]["parents"] = parents
 
     def prepare_project_changes(self):
         ftrack_ent_dict = self.entities_dict[self.ft_project_id]
@@ -2512,30 +2512,30 @@ class SyncEntitiesFactory:
             if not _deleted_entities:
                 break
             _ready = []
-            for mongo_id in _deleted_entities:
-                ent = self.database_ents_by_id[mongo_id]
+            for database_id in _deleted_entities:
+                ent = self.database_ents_by_id[database_id]
                 vis_par = ent["data"]["visualParent"]
                 if (
                     vis_par is not None and
                     str(vis_par) in _deleted_entities
                 ):
                     continue
-                _ready.append(mongo_id)
+                _ready.append(database_id)
 
             for id in _ready:
                 deleted_entities.append(id)
                 _deleted_entities.remove(id)
 
         delete_ids = []
-        for mongo_id in deleted_entities:
+        for database_id in deleted_entities:
             # delete if they are deletable
-            if self.changeability_by_mongo_id[mongo_id]:
-                delete_ids.append(ObjectId(mongo_id))
+            if self.changeability_by_database_id[database_id]:
+                delete_ids.append(ObjectId(database_id))
                 continue
 
             # check if any new created entity match same entity
             # - name and parents must match
-            deleted_entity = self.database_ents_by_id[mongo_id]
+            deleted_entity = self.database_ents_by_id[database_id]
             name = deleted_entity["name"]
             parents = deleted_entity["data"]["parents"]
             similar_ent_id = None
@@ -2556,8 +2556,8 @@ class SyncEntitiesFactory:
             if similar_ent_id is not None:
                 self.create_ftrack_ids.remove(similar_ent_id)
                 self.update_ftrack_ids.append(similar_ent_id)
-                self.database_ftrack_mapper[mongo_id] = similar_ent_id
-                self.ftrack_database_mapper[similar_ent_id] = mongo_id
+                self.database_ftrack_mapper[database_id] = similar_ent_id
+                self.ftrack_database_mapper[similar_ent_id] = database_id
                 continue
 
             found_by_name_id = None
@@ -2577,7 +2577,7 @@ class SyncEntitiesFactory:
                 #     pass
                 #
                 # elif found_by_name_id in self.update_ftrack_ids:
-                #     found_mongo_id = self.ftrack_database_mapper[found_by_name_id]
+                #     found_database_id = self.ftrack_database_mapper[found_by_name_id]
                 #
                 # ent_dict = self.entities_dict[found_by_name_id]
 

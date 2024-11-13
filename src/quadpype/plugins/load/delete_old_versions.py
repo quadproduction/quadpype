@@ -11,7 +11,7 @@ from quadpype import style
 from quadpype.client import get_versions, get_representations
 from quadpype.modules import ModulesManager
 from quadpype.lib import format_file_size
-from quadpype.pipeline import load, QuadPypeMongoDB, Anatomy
+from quadpype.pipeline import load, QuadPypeDBHandler, Anatomy
 from quadpype.pipeline.load import (
     get_representation_path_with_anatomy,
     InvalidRepresentationContext,
@@ -332,7 +332,7 @@ class DeleteOldVersions(load.SubsetLoaderPlugin):
                 data["dir_paths"], data["file_paths_by_dir"]
             )
 
-        mongo_changes_bulk = []
+        database_changes_bulk = []
         for version in data["versions"]:
             orig_version_tags = version["data"].get("tags") or []
             version_tags = [tag for tag in orig_version_tags]
@@ -344,10 +344,10 @@ class DeleteOldVersions(load.SubsetLoaderPlugin):
 
             update_query = {"_id": version["_id"]}
             update_data = {"$set": {"data.tags": version_tags}}
-            mongo_changes_bulk.append(UpdateOne(update_query, update_data))
+            database_changes_bulk.append(UpdateOne(update_query, update_data))
 
         if data["archive_subset"]:
-            mongo_changes_bulk.append(UpdateOne(
+            database_changes_bulk.append(UpdateOne(
                 {
                     "_id": data["subset"]["_id"],
                     "type": "subset"
@@ -355,11 +355,11 @@ class DeleteOldVersions(load.SubsetLoaderPlugin):
                 {"$set": {"type": "archived_subset"}}
             ))
 
-        if mongo_changes_bulk:
-            dbcon = QuadPypeMongoDB()
+        if database_changes_bulk:
+            dbcon = QuadPypeDBHandler()
             dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
             dbcon.install()
-            dbcon.bulk_write(mongo_changes_bulk)
+            dbcon.bulk_write(database_changes_bulk)
             dbcon.uninstall()
 
         self._ftrack_delete_versions(data)

@@ -11,7 +11,7 @@ from quadpype.client import (
     get_project,
     get_assets,
 )
-from quadpype.pipeline import QuadPypeMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 from quadpype.settings import get_project_settings
 from quadpype.modules.kitsu.utils.credentials import validate_credentials
 
@@ -38,7 +38,7 @@ def sync_zou(login: str, password: str):
         )
 
     # Iterate projects
-    dbcon = QuadPypeMongoDB()
+    dbcon = QuadPypeDBHandler()
     dbcon.install()
 
     op_projects = list(get_projects())
@@ -47,13 +47,13 @@ def sync_zou(login: str, password: str):
 
 
 def sync_zou_from_op_project(
-    project_name: str, dbcon: QuadPypeMongoDB, project_doc: dict = None
+    project_name: str, dbcon: QuadPypeDBHandler, project_doc: dict = None
 ) -> List[UpdateOne]:
     """Update QuadPype project in DB with Zou data.
 
     Args:
         project_name (str): Name of project to sync
-        dbcon (QuadPypeMongoDB): MongoDB connection
+        dbcon (QuadPypeDBHandler): Database connection
         project_doc (str, optional): Project doc to sync
     """
     # Get project doc if not provided

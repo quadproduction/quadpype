@@ -10,7 +10,7 @@ from qtpy import QtCore, QtGui, QtWidgets
 
 from .install_thread import InstallThread
 from .tools import (
-    validate_mongo_connection,
+    validate_database_connection,
     get_app_icon_path,
     get_fonts_dir_path
 )
@@ -142,21 +142,21 @@ class ConsoleWidget(QtWidgets.QWidget):
         self.console_output.appendPlainText(msg)
 
 
-class MongoUrlInput(QtWidgets.QLineEdit):
-    """Widget to input mongodb URL."""
+class DatabaseUriInput(QtWidgets.QLineEdit):
+    """Widget to input database URI."""
 
     def set_valid(self):
-        """Set valid state on mongo url input."""
+        """Set valid state on database URI input."""
         self.setProperty("state", "valid")
         self.style().polish(self)
 
     def remove_state(self):
-        """Set invalid state on mongo url input."""
+        """Set invalid state on database URI input."""
         self.setProperty("state", "")
         self.style().polish(self)
 
     def set_invalid(self):
-        """Set invalid state on mongo url input."""
+        """Set invalid state on database URI input."""
         self.setProperty("state", "invalid")
         self.style().polish(self)
 
@@ -164,7 +164,7 @@ class MongoUrlInput(QtWidgets.QLineEdit):
 class InstallDialog(QtWidgets.QDialog):
     """Main Igniter dialog window."""
 
-    mongo_url_regex = re.compile(r"^mongodb(\+srv)?://[\w.-]+:\d{1,5}$")
+    database_uri_regex = re.compile(r"^mongodb(\+srv)?://[\w.-]+:\d{1,5}$")
 
     _width = 500
     _height = 200
@@ -200,17 +200,17 @@ class InstallDialog(QtWidgets.QDialog):
         # Set logo as icon of the window
         self.setWindowIcon(QtGui.QIcon(pixmap_app_logo))
 
-        secure_registry = QuadPypeSecureRegistry("mongodb")
-        mongo_url = ""
+        secure_registry = QuadPypeSecureRegistry("Database")
+        database_uri = ""
         try:
-            mongo_url = (
-                os.getenv("QUADPYPE_MONGO", "")
-                or secure_registry.get_item("quadpypeMongo")
+            database_uri = (
+                os.getenv("QUADPYPE_DB_URI", "")
+                or secure_registry.get_item("DatabaseUri")
             )
         except ValueError:
             pass
 
-        self.mongo_url = mongo_url
+        self.database_uri = database_uri
         self._pixmap_app_logo = pixmap_app_logo
 
         self._secure_registry = secure_registry
@@ -223,8 +223,8 @@ class InstallDialog(QtWidgets.QDialog):
         # Set stylesheet
         self.setStyleSheet(load_stylesheet())
 
-        # Trigger Mongo URL validation
-        self._mongo_input.setText(self.mongo_url)
+        # Trigger Database URI validation
+        self._database_input.setText(self.database_uri)
 
     def _init_ui(self):
         # Main info
@@ -233,24 +233,24 @@ class InstallDialog(QtWidgets.QDialog):
         main_label.setWordWrap(True)
         main_label.setObjectName("MainLabel")
 
-        # Mongo box | OK button
+        # Database box | OK button
         # --------------------------------------------------------------------
-        mongo_input = MongoUrlInput(self)
-        mongo_input.setPlaceholderText(
+        database_input = DatabaseUriInput(self)
+        database_input.setPlaceholderText(
             "Enter your database Address. Example: mongodb://192.168.1.10:27017"
         )
 
-        mongo_messages_widget = QtWidgets.QWidget(self)
+        database_messages_widget = QtWidgets.QWidget(self)
 
-        mongo_connection_msg = QtWidgets.QLabel(mongo_messages_widget)
-        mongo_connection_msg.setVisible(True)
-        mongo_connection_msg.setTextInteractionFlags(
+        database_connection_msg = QtWidgets.QLabel(database_messages_widget)
+        database_connection_msg.setVisible(True)
+        database_connection_msg.setTextInteractionFlags(
             QtCore.Qt.TextSelectableByMouse
         )
 
-        mongo_messages_layout = QtWidgets.QVBoxLayout(mongo_messages_widget)
-        mongo_messages_layout.setContentsMargins(0, 0, 0, 0)
-        mongo_messages_layout.addWidget(mongo_connection_msg)
+        database_messages_layout = QtWidgets.QVBoxLayout(database_messages_widget)
+        database_messages_layout.setContentsMargins(0, 0, 0, 0)
+        database_messages_layout.addWidget(database_connection_msg)
 
         # Progress bar
         # --------------------------------------------------------------------
@@ -301,8 +301,8 @@ class InstallDialog(QtWidgets.QDialog):
         main.addSpacing(15)
         main.addWidget(main_label, 0)
         main.addSpacing(15)
-        main.addWidget(mongo_input, 0)
-        main.addWidget(mongo_messages_widget, 0)
+        main.addWidget(database_input, 0)
+        main.addWidget(database_messages_widget, 0)
 
         main.addWidget(progress_bar, 0)
         main.addSpacing(15)
@@ -313,15 +313,15 @@ class InstallDialog(QtWidgets.QDialog):
 
         run_button.option_clicked.connect(self._on_run_btn_click)
         exit_button.clicked.connect(self._on_exit_clicked)
-        mongo_input.textChanged.connect(self._on_mongo_url_change)
+        database_input.textChanged.connect(self._on_database_uri_change)
 
         self._console_widget = console_widget
 
         self.main_label = main_label
 
-        self._mongo_input = mongo_input
+        self._database_input = database_input
 
-        self._mongo_connection_msg = mongo_connection_msg
+        self._database_connection_msg = database_connection_msg
 
         self._run_button = run_button
         self._exit_button = exit_button
@@ -333,17 +333,17 @@ class InstallDialog(QtWidgets.QDialog):
         # Set progress to any value
         self._update_progress(1)
         self._progress_bar.repaint()
-        # Add label to show that is connecting to mongo
-        self.set_invalid_mongo_connection(self.mongo_url, True)
+        # Add label to show that is connecting to database
+        self.set_invalid_database_connection(self.database_uri, True)
 
         # Process events to repaint changes
         QtWidgets.QApplication.processEvents()
 
-        if not self.validate_url():
+        if not self.validate_uri():
             self._enable_buttons()
             self._update_progress(0)
             # Update any messages
-            self._mongo_input.setText(self.mongo_url)
+            self._database_input.setText(self.database_uri)
             return
 
         if option == "run":
@@ -354,31 +354,31 @@ class InstallDialog(QtWidgets.QDialog):
             raise AssertionError("BUG: Unknown variant \"{}\"".format(option))
 
     def _run_quadpype_from_code(self):
-        os.environ["QUADPYPE_MONGO"] = self.mongo_url
+        os.environ["QUADPYPE_DB_URI"] = self.database_uri
         try:
-            self._secure_registry.set_item("quadpypeMongo", self.mongo_url)
+            self._secure_registry.set_item("DatabaseUri", self.database_uri)
         except ValueError:
-            print("Couldn't save Mongo URL to keyring")
+            print("Couldn't save Database URI to keyring")
 
         self.done(2)
 
     def _run_quadpype(self):
         """Start install process.
 
-        This will once again validate entered path and mongo if ok, start
+        This will once again validate entered path and database if ok, start
         working thread that will do actual job.
         """
         # Check if install thread is not already running
         if self._install_thread and self._install_thread.isRunning():
             return
 
-        self._mongo_input.set_valid()
+        self._database_input.set_valid()
 
         install_thread = InstallThread(self)
         install_thread.message.connect(self.update_console)
         install_thread.progress.connect(self._update_progress)
         install_thread.finished.connect(self._installation_finished)
-        install_thread.set_mongo(self.mongo_url)
+        install_thread.set_database(self.database_uri)
 
         self._install_thread = install_thread
 
@@ -409,65 +409,65 @@ class InstallDialog(QtWidgets.QDialog):
     def _on_exit_clicked(self):
         self.reject()
 
-    def _on_mongo_url_change(self, new_value):
+    def _on_database_uri_change(self, new_value):
         # Strip the value
         new_value = new_value.strip()
-        # Store new mongo url to variable
-        self.mongo_url = new_value
+        # Store new database URI to variable
+        self.database_uri = new_value
 
         msg = None
         # Change style of input
         if not new_value:
-            self._mongo_input.remove_state()
-        elif not self.mongo_url_regex.match(new_value):
-            self._mongo_input.set_invalid()
+            self._database_input.remove_state()
+        elif not self.database_uri_regex.match(new_value):
+            self._database_input.set_invalid()
             msg = (
-                "Mongo URL should start with"
+                "Database URI should start with"
                 " <b>\"mongodb://\"</b> or <b>\"mongodb+srv://\"</b>"
             )
         else:
-            self._mongo_input.set_valid()
+            self._database_input.set_valid()
 
-        self.set_invalid_mongo_url(msg)
+        self.set_invalid_database_uri(msg)
 
-    def validate_url(self):
-        """Validate if entered url is ok.
+    def validate_uri(self):
+        """Validate if entered uri is ok.
 
         Returns:
-            True if url is valid monogo string.
+            True if uri is valid monogo string.
 
         """
-        if self.mongo_url == "":
+        if self.database_uri == "":
             return False
 
-        is_valid, reason_str = validate_mongo_connection(self.mongo_url)
+        is_valid, reason_str = validate_database_connection(self.database_uri)
         if not is_valid:
-            self.set_invalid_mongo_connection(self.mongo_url)
-            self._mongo_input.set_invalid()
+            self.set_invalid_database_connection(self.database_uri)
+            self._database_input.set_invalid()
             self.update_console(f"!!! {reason_str}", True)
             return False
 
-        self.set_invalid_mongo_connection(None)
-        self._mongo_input.set_valid()
+        self.set_invalid_database_connection(None)
+        self._database_input.set_valid()
         return True
 
-    def set_invalid_mongo_url(self, reason):
+    def set_invalid_database_uri(self, reason):
         if reason is None:
-            self._mongo_connection_msg.setText("")
+            self._database_connection_msg.setText("")
         else:
-            self._mongo_connection_msg.setText("- {}".format(reason))
+            self._database_connection_msg.setText("- {}".format(reason))
 
-    def set_invalid_mongo_connection(self, mongo_url, connecting=False):
-        if mongo_url is None:
-            self.set_invalid_mongo_url(mongo_url)
+    def set_invalid_database_connection(self, database_uri, connecting=False):
+        if database_uri is None:
+            self.set_invalid_database_uri(database_uri)
             return
 
         if connecting:
-            msg = "Connecting to: <b>{}</b>".format(mongo_url)
+            msg = "Connecting to: <b>{}</b>".format(database_uri)
         else:
-            msg = "Can't connect to: <b>{}</b>".format(mongo_url)
+            msg = "Can't connect to: <b>{}</b>".format(database_uri)
 
-        self.set_invalid_mongo_url(msg)
+        self.set_invalid_database_uri(msg)
 
     def update_console(self, msg: str, error: bool = False) -> None:
         """Display message in console.

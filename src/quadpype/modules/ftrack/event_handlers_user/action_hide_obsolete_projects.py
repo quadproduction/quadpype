@@ -1,7 +1,7 @@
 from pymongo import UpdateOne
 
 from quadpype.client import get_projects
-from quadpype.pipeline import QuadPypeMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 
 
@@ -18,7 +18,7 @@ class HideObsoleteProjects(BaseAction):
     icon = statics_icon("ftrack", "action_icons", "HideProjects.svg")
 
     def __init__(self, session):
-        self.dbcon = QuadPypeMongoDB()
+        self.dbcon = QuadPypeDBHandler()
         super().__init__(session)
 
     def _discover(self, _event):
@@ -56,10 +56,10 @@ class HideObsoleteProjects(BaseAction):
     def hide_obsolete_projects(self, event):
         ftrack_projects = self.session.query("Project").all()
         ftrack_projects_ids = [project["id"] for project in ftrack_projects]
-        mongo_projects = get_projects()
+        database_projects = get_projects()
 
         projects_to_hide = []
-        for project in mongo_projects:
+        for project in database_projects:
             if "ftrackId" not in project["data"].keys():
                 projects_to_hide.append(project)
             elif project["data"]["ftrackId"] not in ftrack_projects_ids:

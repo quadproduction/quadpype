@@ -17,7 +17,7 @@ else:
     from urllib.parse import urlparse, parse_qs
 
 
-class MongoEnvNotSet(Exception):
+class DatabaseEnvNotSet(Exception):
     pass
 
 
@@ -29,14 +29,14 @@ def documents_to_json(docs):
             json string.
 
     Returns:
-        str: Json string with mongo documents.
+        str: Json string with database documents.
     """
 
     return dumps(docs, json_options=CANONICAL_JSON_OPTIONS)
 
 
 def load_json_file(filepath):
-    """Load mongo documents from a json file.
+    """Load database documents from a json file.
 
     Args:
         filepath (str): Path to a json file.
@@ -64,10 +64,10 @@ def get_project_database_name():
     return os.getenv("QUADPYPE_PROJECTS_DB_NAME") or "quadpype_projects"
 
 
-def _decompose_url(url):
-    """Decompose mongo url to basic components.
+def _decompose_uri(database_uri):
+    """Decompose database URI to basic components.
 
-    Used for creation of MongoHandler which expect mongo url components as
+    Used for creation of MongoHandler which expect database URI components as
     separated kwargs. Components are at the end not used as we're setting
     connection directly this is just a dumb components for MongoHandler
     validation pass.
@@ -77,7 +77,7 @@ def _decompose_url(url):
     #   - this is because it is possible to pass multiple urls for multiple
     #       replica sets which would crash on urlparse otherwise
     #   - please don't use comma in username of password
-    url = url.split(",")[0]
+    database_uri = database_uri.split(",")[0]
     components = {
         "scheme": None,
         "host": None,
@@ -87,10 +87,10 @@ def _decompose_url(url):
         "auth_db": None
     }
 
-    result = urlparse(url)
+    result = urlparse(database_uri)
     if result.scheme is None:
-        _url = "mongodb://{}".format(url)
-        result = urlparse(_url)
+        _uri = "mongodb://{}".format(database_uri)
+        result = urlparse(_uri)
 
     components["scheme"] = result.scheme
     components["host"] = result.hostname
@@ -104,23 +104,23 @@ def _decompose_url(url):
     try:
         components["auth_db"] = parse_qs(result.query)['authSource'][0]
     except KeyError:
-        # no auth db provided, mongo will use the one we are connecting to
+        # no auth db provided, database will use the one we are connecting to
         pass
 
     return components
 
 
-def get_default_components():
-    mongo_url = os.getenv("QUADPYPE_MONGO")
-    if mongo_url is None:
-        raise MongoEnvNotSet(
-            "URL for Mongo logging connection is not set."
+def get_database_uri_components():
+    database_uri = os.getenv("QUADPYPE_DB_URI")
+    if database_uri is None:
+        raise DatabaseEnvNotSet(
+            "URI of Database is not set."
         )
-    return _decompose_url(mongo_url)
+    return _decompose_uri(database_uri)
 
 
-def should_add_certificate_path_to_mongo_url(mongo_url):
-    """Check if should add ca certificate to mongo url.
+def should_add_certificate_path_to_database_uri(database_uri):
+    """Check if should add ca certificate to database URI.
 
     Since 30.9.2021 cloud mongo requires newer certificates that are not
     available on most of workstation. This adds path to certifi certificate
@@ -128,7 +128,7 @@ def should_add_certificate_path_to_mongo_url(mongo_url):
     'mongodb+srv' or has 'ssl=true' or 'tls=true' in url query.
     """
 
-    parsed = urlparse(mongo_url)
+    parsed = urlparse(database_uri)
     query = parse_qs(parsed.query)
     lowered_query_keys = set(key.lower() for key in query.keys())
     add_certificate = False
@@ -149,45 +149,45 @@ def should_add_certificate_path_to_mongo_url(mongo_url):
     return add_certificate
 
 
-def validate_mongo_connection(mongo_uri):
-    """Check if provided mongodb URL is valid.
+def validate_database_connection(database_uri):
+    """Check if the provided database URI is valid.
 
     Args:
-        mongo_uri (str): URL to validate.
+        database_uri (str): URL to validate.
 
     Raises:
-        ValueError: When port in mongo uri is not valid.
-        pymongo.errors.InvalidURI: If passed mongo is invalid.
+        ValueError: When the port in database uri is not valid.
+        pymongo.errors.InvalidURI: If the passed database URI is invalid.
         pymongo.errors.ServerSelectionTimeoutError: If connection timeout
-            passed so probably couldn't connect to mongo server.
+            passed so probably couldn't connect to the database.
 
     """
 
-    client = QuadPypeMongoConnection.create_connection(
-        mongo_uri, retry_attempts=1
+    client = QuadPypeDBConnection.create_connection(
+        database_uri, retry_attempts=1
     )
     client.close()
 
 
-class QuadPypeMongoConnection:
-    """Singleton MongoDB connection.
+class QuadPypeDBConnection:
+    """Singleton Database connection.
 
-    Keeps MongoDB connections by url.
+    Keeps database connections by URI.
     """
 
-    mongo_clients = {}
-    log = logging.getLogger("QuadPypeMongoConnection")
+    database_clients = {}
+    log = logging.getLogger("QuadPypeDBConnection")
 
     @staticmethod
-    def get_default_mongo_url():
-        return os.environ["QUADPYPE_MONGO"]
+    def get_default_database_uri():
+        return os.environ["QUADPYPE_DB_URI"]
 
     @classmethod
-    def get_mongo_client(cls, mongo_url=None):
-        if mongo_url is None:
-            mongo_url = cls.get_default_mongo_url()
+    def get_database_client(cls, database_uri=None):
+        if database_uri is None:
+            database_uri = cls.get_default_database_uri()
 
-        connection = cls.mongo_clients.get(mongo_url)
+        connection = cls.database_clients.get(database_uri)
         if connection:
             # Naive validation of existing connection
             try:
@@ -198,15 +198,15 @@ class QuadPypeMongoConnection:
                 connection = None
 
         if not connection:
-            cls.log.debug("Creating mongo connection to {}".format(mongo_url))
-            connection = cls.create_connection(mongo_url)
-            cls.mongo_clients[mongo_url] = connection
+            cls.log.debug("Creating database connection to {}".format(database_uri))
+            connection = cls.create_connection(database_uri)
+            cls.database_clients[database_uri] = connection
 
         return connection
 
     @classmethod
-    def create_connection(cls, mongo_url, timeout=None, retry_attempts=None):
-        parsed = urlparse(mongo_url)
+    def create_connection(cls, database_uri, timeout=None, retry_attempts=None):
+        parsed = urlparse(database_uri)
         # Force validation of scheme
         if parsed.scheme not in ["mongodb", "mongodb+srv"]:
             raise pymongo.errors.InvalidURI((
@@ -220,10 +220,10 @@ class QuadPypeMongoConnection:
         kwargs = {
             "serverSelectionTimeoutMS": timeout
         }
-        if should_add_certificate_path_to_mongo_url(mongo_url):
+        if should_add_certificate_path_to_database_uri(database_uri):
             kwargs["tlsCAFile"] = certifi.where()
 
-        mongo_client = pymongo.MongoClient(mongo_url, **kwargs)
+        database_client = pymongo.MongoClient(database_uri, **kwargs)
 
         if retry_attempts is None:
             retry_attempts = 3
@@ -236,8 +236,8 @@ class QuadPypeMongoConnection:
         t1 = time.time()
         for attempt in range(1, retry_attempts + 1):
             try:
-                mongo_client.server_info()
-                with mongo_client.start_session():
+                database_client.server_info()
+                with database_client.start_session():
                     pass
                 valid = True
                 break
@@ -254,13 +254,13 @@ class QuadPypeMongoConnection:
             raise last_exc
 
         cls.log.info("Connected to {}, delay {:.3f}s".format(
-            mongo_url, time.time() - t1
+            database_uri, time.time() - t1
         ))
-        return mongo_client
+        return database_client
 
 
-# ------ Helper Mongo functions ------
-# Functions can be helpful with custom tools to backup/restore mongo state.
+# ------ Helper Database functions ------
+# Functions can be helpful with custom tools to backup/restore database state.
 # Not meant as API functionality that should be used in production codebase!
 def get_collection_documents(database_name, collection_name, as_json=False):
     """Query all documents from a collection.
@@ -275,7 +275,7 @@ def get_collection_documents(database_name, collection_name, as_json=False):
         Union[list[dict[str, Any]], str]: Queried documents.
     """
 
-    client = QuadPypeMongoConnection.get_mongo_client()
+    client = QuadPypeDBConnection.get_database_client()
     output = list(client[database_name][collection_name].find({}))
     if as_json:
         output = documents_to_json(output)
@@ -314,7 +314,7 @@ def replace_collection_documents(docs, database_name, collection_name):
             uploaded.
     """
 
-    client = QuadPypeMongoConnection.get_mongo_client()
+    client = QuadPypeDBConnection.get_database_client()
     database = client[database_name]
     if collection_name in database.list_collection_names():
         database.drop_collection(collection_name)
@@ -351,13 +351,13 @@ def get_project_database(database_name=None):
 
     if not database_name:
         database_name = get_project_database_name()
-    return QuadPypeMongoConnection.get_mongo_client()[database_name]
+    return QuadPypeDBConnection.get_database_client()[database_name]
 
 
 def get_project_connection(project_name, database_name=None):
-    """Direct access to mongo collection.
+    """Direct access to database collection.
 
-    We're trying to avoid using direct access to mongo. This should be used
+    We're trying to avoid using direct access to the database. This should be used
     only for Create, Update and Remove operations until there are implemented
     api calls for that.
 
@@ -380,7 +380,7 @@ def get_project_documents(project_name, database_name=None):
 
     Args:
         project_name (str): Name of project.
-        database_name (Optional[str]): Name of mongo database where to look for
+        database_name (Optional[str]): Name of database where to look for
             project.
 
     Returns:
@@ -398,7 +398,7 @@ def store_project_documents(project_name, filepath, database_name=None):
     Args:
         project_name (str): Name of project to store.
         filepath (str): Path to a json file where output will be stored.
-        database_name (Optional[str]): Name of mongo database where to look for
+        database_name (Optional[str]): Name of database where to look for
             project.
     """
 
@@ -409,15 +409,15 @@ def store_project_documents(project_name, filepath, database_name=None):
 
 
 def replace_project_documents(project_name, docs, database_name=None):
-    """Replace documents in mongo with passed documents.
+    """Replace documents in the database with passed documents.
 
     Warnings:
-        Existing project collection is removed if exists in mongo.
+        Existing project collection is removed if exists in the database collection.
 
     Args:
         project_name (str): Name of project.
         docs (list[dict[str, Any]]): Documents to restore.
-        database_name (Optional[str]): Name of mongo database where project
+        database_name (Optional[str]): Name of database where project
             collection will be created.
     """
 
@@ -427,15 +427,15 @@ def replace_project_documents(project_name, docs, database_name=None):
 
 
 def restore_project_documents(project_name, filepath, database_name=None):
-    """Replace documents in mongo with passed documents.
+    """Restore documents in the database with passed documents.
 
     Warnings:
-        Existing project collection is removed if exists in mongo.
+        Existing project collection is removed if exists in the database collection.
 
     Args:
         project_name (str): Name of project.
         filepath (str): File to json file with project documents.
-        database_name (Optional[str]): Name of mongo database where project
+        database_name (Optional[str]): Name of database where project
             collection will be created.
     """
 

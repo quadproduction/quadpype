@@ -415,11 +415,11 @@ class Delivery(BaseAction):
         if attr_def is None:
             return asset_docs_by_ftrack_id
 
-        database_mongo_id_values = query_custom_attributes(
+        database_id_values = query_custom_attributes(
             session, [attr_def["id"]], parent_ids, True
         )
         missing_ids = set(parent_ids)
-        for item in database_mongo_id_values:
+        for item in database_id_values:
             if not item["value"]:
                 continue
             asset_id = item["value"]

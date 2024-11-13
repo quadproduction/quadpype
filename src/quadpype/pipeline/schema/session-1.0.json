@@ -58,7 +58,7 @@
             "pattern": "^\\w*$",
             "example": "maya2016"
         },
-        "QUADPYPE_MONGO": {
+        "QUADPYPE_DB_URI": {
             "description": "Address to the asset database",
             "type": "string",
             "pattern": "^mongodb://[\\w/@:.]*$",

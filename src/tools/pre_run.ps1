@@ -12,14 +12,14 @@ while ((Split-Path $PATH_QUADPYPE_ROOT -Leaf) -ne "src") {
 }
 
 if ($DEV) {
-    $QUADPYPE_MONGO = "mongodb://localhost:27017"
+    $QUADPYPE_DB_URI = "mongodb://localhost:27017"
 } elseif ($MONGO_URI) {
-    $QUADPYPE_MONGO = $MONGO_URI
+    $QUADPYPE_DB_URI = $MONGO_URI
 } else {
-    $QUADPYPE_MONGO = [System.Environment]::GetEnvironmentVariable("QUADPYPE_MONGO", [System.EnvironmentVariableTarget]::User)
+    $QUADPYPE_DB_URI = [System.Environment]::GetEnvironmentVariable("QUADPYPE_DB_URI", [System.EnvironmentVariableTarget]::User)
 }
 
-if (($QUADPYPE_MONGO -eq "")) {
+if (($QUADPYPE_DB_URI -eq "")) {
 	write-output "The MongoDB Connection String isn't set in the user environment variables or passed with --mongo-uri (-m) check usage."
     exit 1
 } elseIf (!(Test-Path -Path "$PATH_QUADPYPE_ROOT")) {
@@ -27,7 +27,7 @@ if (($QUADPYPE_MONGO -eq "")) {
     exit 1
 }
 
-[System.Environment]::SetEnvironmentVariable("QUADPYPE_MONGO", $QUADPYPE_MONGO, [System.EnvironmentVariableTarget]::User)
+[System.Environment]::SetEnvironmentVariable("QUADPYPE_DB_URI", $QUADPYPE_DB_URI, [System.EnvironmentVariableTarget]::User)
 [System.Environment]::SetEnvironmentVariable("QUADPYPE_ROOT", $PATH_QUADPYPE_ROOT, [System.EnvironmentVariableTarget]::User)
 [System.Environment]::SetEnvironmentVariable("PYENV_ROOT", (Resolve-Path -Path "~\.pyenv"), [System.EnvironmentVariableTarget]::User)
 
@@ -39,7 +39,7 @@ if (Test-Path -Path $PATH_ADDITIONAL_ENV_FILE) {
     Remove-Item $PATH_ADDITIONAL_ENV_FILE -Force -ErrorAction SilentlyContinue | Out-Null
 }
 
-New-Item "$($PATH_ADDITIONAL_ENV_FILE)" -ItemType File -Value "QUADPYPE_MONGO=$QUADPYPE_MONGO$([Environment]::NewLine)QUADPYPE_ROOT=$PATH_QUADPYPE_ROOT" | Out-Null
+New-Item "$($PATH_ADDITIONAL_ENV_FILE)" -ItemType File -Value "QUADPYPE_DB_URI=$QUADPYPE_DB_URI$([Environment]::NewLine)QUADPYPE_ROOT=$PATH_QUADPYPE_ROOT" | Out-Null
 
 
 # Launch the activate script

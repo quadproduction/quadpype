@@ -94,7 +94,7 @@ class TasksModel(QtGui.QStandardItemModel):
         """Set assets to track by their database id
 
         Arguments:
-            asset_doc (dict): Asset document from MongoDB.
+            asset_doc (dict): Asset document from the database.
         """
         if self._loaded_project_name != self._get_current_project():
             self._refresh_project_doc()

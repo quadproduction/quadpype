@@ -149,9 +149,9 @@ class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin, DeadlineDefaultJob
         if is_running_from_build():
             keys.append("QUADPYPE_VERSION")
 
-        # Add mongo url if it's enabled
-        if context.data.get("deadlinePassMongoUrl"):
-            keys.append("QUADPYPE_MONGO")
+        # Add the database URI to the env variables if needed
+        if context.data.get("deadlineAddDatabaseURI"):
+            keys.append("QUADPYPE_DB_URI")
 
         environment = dict(
             {key: os.environ[key] for key in keys if key in os.environ},

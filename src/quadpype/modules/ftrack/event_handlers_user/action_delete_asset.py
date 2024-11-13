@@ -5,7 +5,7 @@ from datetime import datetime
 from bson.objectid import ObjectId
 
 from quadpype.client import get_assets, get_subsets
-from quadpype.pipeline import QuadPypeMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 from quadpype_modules.ftrack.lib.database_sync import create_chunks
 
@@ -31,7 +31,7 @@ class DeleteAssetSubset(BaseAction):
     subset_prefix = "subset:"
 
     def __init__(self, *args, **kwargs):
-        self.dbcon = QuadPypeMongoDB()
+        self.dbcon = QuadPypeDBHandler()
 
         super().__init__(*args, **kwargs)
 
@@ -476,20 +476,20 @@ class DeleteAssetSubset(BaseAction):
                         ftrack_ids_to_delete.append(ftrack_id)
 
             children_queue = collections.deque()
-            for mongo_id in assets_to_delete:
-                children_queue.append(mongo_id)
+            for database_id in assets_to_delete:
+                children_queue.append(database_id)
 
             while children_queue:
-                mongo_id = children_queue.popleft()
-                if mongo_id in asset_ids_to_archive:
+                database_id = children_queue.popleft()
+                if database_id in asset_ids_to_archive:
                     continue
 
-                asset_ids_to_archive.append(mongo_id)
-                for subset_id in subset_ids_by_parent.get(mongo_id, []):
+                asset_ids_to_archive.append(database_id)
+                for subset_id in subset_ids_by_parent.get(database_id, []):
                     if subset_id not in subset_ids_to_archive:
                         subset_ids_to_archive.append(subset_id)
 
-                children = database_assets_by_parent.get(mongo_id)
+                children = database_assets_by_parent.get(database_id)
                 if not children:
                     continue
 
@@ -498,7 +498,7 @@ class DeleteAssetSubset(BaseAction):
                     if child_id not in asset_ids_to_archive:
                         children_queue.append(child_id)
 
-        # Prepare names of assets in ftrack and ids of subsets in mongo
+        # Prepare names of assets in ftrack and ids of subsets in the database
         asset_names_to_delete = []
         if len(subsets_to_delete) > 0:
             for name in subsets_to_delete:
@@ -518,11 +518,11 @@ class DeleteAssetSubset(BaseAction):
                 if ftrack_id not in ftrack_ids_to_delete:
                     not_deleted_entities_id.append(ftrack_id)
 
-        mongo_proc_txt = "MongoProcessing: "
+        database_proc_txt = "Database Processing: "
         ftrack_proc_txt = "Ftrack processing: "
         if asset_ids_to_archive:
             self.log.debug("{}Archivation of assets <{}>".format(
-                mongo_proc_txt,
+                database_proc_txt,
                 ", ".join([str(id) for id in asset_ids_to_archive])
             ))
             self.dbcon.update_many(
@@ -535,7 +535,7 @@ class DeleteAssetSubset(BaseAction):
 
         if subset_ids_to_archive:
             self.log.debug("{}Archivation of subsets <{}>".format(
-                mongo_proc_txt,
+                database_proc_txt,
                 ", ".join([str(id) for id in subset_ids_to_archive])
             ))
             self.dbcon.update_many(

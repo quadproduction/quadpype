@@ -29,7 +29,7 @@ def get_quadpype_info():
         "version_type": version_type,
         "executable": executable_args[-1],
         "pype_root": os.environ["QUADPYPE_REPOS_ROOT"],
-        "mongo_url": os.environ["QUADPYPE_MONGO"]
+        "database_uri": os.environ["QUADPYPE_DB_URI"]
     }
 
 

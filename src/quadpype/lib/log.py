@@ -1,14 +1,6 @@
 """
-Logging to console and to mongo. For mongo logging, you need to set either
-``QUADPYPE_LOG_MONGO_URL`` to something like:
-
-.. example::
-   mongo://user:password@hostname:port/database/collection?authSource=quadpype
-
-or set ``QUADPYPE_LOG_MONGO_HOST`` and other variables.
-See :func:`_mongo_settings`
-
-Best place for it is in ``repos/pype-config/environments/global.json``
+Logging to console and to database. For database logging, you need to set either
+`QUADPYPE_LOG_TO_SERVER` to True as en environment variable.
 """
 
 
@@ -24,10 +16,10 @@ import traceback
 import threading
 import copy
 
-from quadpype.client.mongo import (
-    MongoEnvNotSet,
-    get_default_components,
-    QuadPypeMongoConnection,
+from quadpype.client.database import (
+    DatabaseEnvNotSet,
+    get_database_uri_components,
+    QuadPypeDBConnection,
 )
 from . import Terminal
 
@@ -147,7 +139,7 @@ class LogFormatter(logging.Formatter):
         return out
 
 
-class MongoFormatter(logging.Formatter):
+class DatabaseFormatter(logging.Formatter):
 
     DEFAULT_PROPERTIES = logging.LogRecord(
         '', '', '', '', '', '', '', '').__dict__.keys()
@@ -208,14 +200,9 @@ class Logger:
     initialized = False
     _init_lock = threading.Lock()
 
-    # Defines if mongo logging should be used
-    use_mongo_logging = None
-    mongo_process_id = None
-
-    # Backwards compatibility - was used in start.py
-    # TODO remove when all old builds are replaced with new one
-    #   not using 'log_mongo_url_components'
-    log_mongo_url_components = None
+    # Defines if database logging should be used
+    use_database_logging = None
+    database_process_id = None
 
     # Database name in Mongo
     log_database_name = os.getenv("QUADPYPE_DATABASE_NAME")
@@ -239,27 +226,27 @@ class Logger:
 
         logger.setLevel(cls.log_level)
 
-        add_mongo_handler = cls.use_mongo_logging
+        add_database_handler = cls.use_database_logging
         add_console_handler = True
 
         for handler in logger.handlers:
             if isinstance(handler, MongoHandler):
-                add_mongo_handler = False
+                add_database_handler = False
             elif isinstance(handler, LogStreamHandler):
                 add_console_handler = False
 
         if add_console_handler:
             logger.addHandler(cls._get_console_handler())
 
-        if add_mongo_handler:
+        if add_database_handler:
             try:
-                handler = cls._get_mongo_handler()
+                handler = cls._get_database_handler()
                 if handler:
                     logger.addHandler(handler)
 
-            except MongoEnvNotSet:
-                # Skip if mongo environments are not set yet
-                cls.use_mongo_logging = False
+            except DatabaseEnvNotSet:
+                # Skip if database environments are not set yet
+                cls.use_database_logging = False
 
             except Exception:
                 lines = traceback.format_exception(*sys.exc_info())
@@ -267,20 +254,20 @@ class Logger:
                     if line.endswith("\n"):
                         line = line[:-1]
                     Terminal.echo(line)
-                cls.use_mongo_logging = False
+                cls.use_database_logging = False
 
         # Do not propagate logs to root logger
         logger.propagate = False
         return logger
 
     @classmethod
-    def _get_mongo_handler(cls):
-        cls.bootstrap_mongo_log()
+    def _get_database_handler(cls):
+        cls.bootstrap_database_log()
 
-        if not cls.use_mongo_logging:
+        if not cls.use_database_logging:
             return
 
-        components = get_default_components()
+        components = get_database_uri_components()
         kwargs = {
             "host": components["host"],
             "database_name": cls.log_database_name,
@@ -288,7 +275,7 @@ class Logger:
             "username": components["username"],
             "password": components["password"],
             "capped": True,
-            "formatter": MongoFormatter()
+            "formatter": DatabaseFormatter()
         }
         if components["port"] is not None:
             kwargs["port"] = int(components["port"])
@@ -322,37 +309,36 @@ class Logger:
         # Change initialization state to prevent runtime changes
         # if is executed during runtime
         cls.initialized = False
-        cls.log_mongo_url_components = get_default_components()
 
-        # Define if should logging to mongo be used
-        use_mongo_logging = (
+        # Define if should logging to database be used
+        use_database_logging = (
             log4mongo is not None
             and os.getenv("QUADPYPE_LOG_TO_SERVER") == "1"
         )
 
-        # Set mongo id for process (ONLY ONCE)
-        if use_mongo_logging and cls.mongo_process_id is None:
+        # Set database id for process (ONLY ONCE)
+        if use_database_logging and cls.database_process_id is None:
             try:
                 from bson.objectid import ObjectId
             except Exception:
-                use_mongo_logging = False
+                use_database_logging = False
 
-            # Check if mongo id was passed with environments and pop it
+            # Check if database id was passed with environments and pop it
             # - This is for subprocesses that are part of another process
             #   like Ftrack event server has 3 other subprocesses that should
-            #   use same mongo id
-            if use_mongo_logging:
-                mongo_id = os.environ.pop("QUADPYPE_PROCESS_MONGO_ID", None)
-                if not mongo_id:
+            #   use same database id
+            if use_database_logging:
+                database_id = os.environ.pop("QUADPYPE_PROCESS_DB_ID", None)
+                if not database_id:
                     # Create new object id
-                    mongo_id = ObjectId()
+                    database_id = ObjectId()
                 else:
                     # Convert string to ObjectId object
-                    mongo_id = ObjectId(mongo_id)
-                cls.mongo_process_id = mongo_id
+                    database_id = ObjectId(database_id)
+                cls.database_process_id = database_id
 
         # Store result to class definition
-        cls.use_mongo_logging = use_mongo_logging
+        cls.use_database_logging = use_database_logging
 
         # Define what is logging level
         log_level = os.getenv("QUADPYPE_LOG_LEVEL")
@@ -367,8 +353,8 @@ class Logger:
 
         logging.basicConfig(level=cls.log_level)
 
-        if not os.getenv("QUADPYPE_MONGO"):
-            cls.use_mongo_logging = False
+        if not os.getenv("QUADPYPE_DB_URI"):
+            cls.use_database_logging = False
 
         # Mark as initialized
         cls.initialized = True
@@ -377,7 +363,7 @@ class Logger:
     def get_process_data(cls):
         """Data about current process which should be same for all records.
 
-        Process data are used for each record sent to mongo database.
+        Process data are used for each record sent to database.
         """
         if cls.process_data is not None:
             return copy.deepcopy(cls.process_data)
@@ -394,7 +380,7 @@ class Logger:
         process_name = cls.get_process_name()
 
         cls.process_data = {
-            "process_id": cls.mongo_process_id,
+            "process_id": cls.database_process_id,
             "workstation_name": host_name,
             "host_ip": host_ip,
             "username": getpass.getuser(),
@@ -405,7 +391,7 @@ class Logger:
 
     @classmethod
     def set_process_name(cls, process_name):
-        """Set process name for mongo logs."""
+        """Set process name for database logs."""
         # Just change the attribute
         cls._process_name = process_name
         # Update process data if are already set
@@ -441,15 +427,15 @@ class Logger:
         return cls._process_name
 
     @classmethod
-    def bootstrap_mongo_log(cls):
-        """Prepare mongo logging."""
+    def bootstrap_database_log(cls):
+        """Prepare database logging."""
         if cls.bootstraped:
             return
 
         if not cls.initialized:
             cls.initialize()
 
-        if not cls.use_mongo_logging:
+        if not cls.use_database_logging:
             return
 
         if not cls.log_database_name:
@@ -457,9 +443,9 @@ class Logger:
 
         client = log4mongo.handlers._connection
         if not client:
-            client = cls.get_log_mongo_connection()
+            client = cls.get_log_database_connection()
             # Set the client inside log4mongo handlers to not create another
-            # mongo db connection.
+            # database connection.
             log4mongo.handlers._connection = client
 
         logdb = client[cls.log_database_name]
@@ -475,13 +461,13 @@ class Logger:
         cls.bootstraped = True
 
     @classmethod
-    def get_log_mongo_connection(cls):
-        """Mongo connection that allows to get to log collection.
+    def get_log_database_connection(cls):
+        """Database connection that allows to get to log collection.
 
-        This is implemented to prevent multiple connections to mongo from same
+        This is implemented to prevent multiple connections to database from same
         process.
         """
         if not cls.initialized:
             cls.initialize()
 
-        return QuadPypeMongoConnection.get_mongo_client()
+        return QuadPypeDBConnection.get_database_client()

@@ -136,7 +136,7 @@ class LegacyCreator(object):
         Args:
             variant (str): What is entered by user in creator tool.
             task_name (str): Context's task name.
-            asset_id (ObjectId): Mongo ID of context's asset.
+            asset_id (ObjectId): Database ID of context's asset.
             project_name (str): Context's project name.
             host_name (str): Name of host.
 

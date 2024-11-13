@@ -24,7 +24,7 @@ from quadpype.lib import ApplicationManager
 """
 This action creates/updates custom attributes.
 ## First part take care about special attributes
-    - `database_mongo_id` for storing QuadPype MongoID
+    - `database_id` for storing QuadPype database ID
     - `applications` based on applications usages
     - `tools` based on tools usages
 
@@ -185,7 +185,7 @@ class CustomAttributes(BaseAction):
 
         try:
             self.prepare_global_data(session)
-            self.database_mongo_id_attributes(session, event)
+            self.database_id_attributes(session, event)
             self.applications_attribute(event)
             self.tools_attribute(event)
             self.intent_attribute(event)
@@ -250,28 +250,28 @@ class CustomAttributes(BaseAction):
 
         return output
 
-    def database_mongo_id_attributes(self, session, event):
-        self.create_hierarchical_mongo_attr(session, event)
+    def database_id_attributes(self, session, event):
+        self.create_hierarchical_database_attr(session, event)
 
         hierarchical_attr, object_type_attrs = (
-            self.mongo_id_custom_attributes(session)
+            self.database_id_custom_attributes(session)
         )
         if object_type_attrs:
-            self.convert_mongo_id_to_hierarchical(
+            self.convert_database_id_to_hierarchical(
                 hierarchical_attr, object_type_attrs, session, event
             )
 
-    def mongo_id_custom_attributes(self, session):
+    def database_id_custom_attributes(self, session):
         cust_attrs_query = (
             "select id, entity_type, object_type_id, is_hierarchical, default"
             " from CustomAttributeConfiguration"
             " where key = \"{}\""
         ).format(CUST_ATTR_ID_KEY)
 
-        mongo_id_database_attr = session.query(cust_attrs_query).all()
+        database_id_database_attr = session.query(cust_attrs_query).all()
         heirarchical_attr = None
         object_type_attrs = []
-        for cust_attr in mongo_id_database_attr:
+        for cust_attr in database_id_database_attr:
             if cust_attr["is_hierarchical"]:
                 heirarchical_attr = cust_attr
 
@@ -280,11 +280,11 @@ class CustomAttributes(BaseAction):
 
         return heirarchical_attr, object_type_attrs
 
-    def create_hierarchical_mongo_attr(self, session, event):
+    def create_hierarchical_database_attr(self, session, event):
         # Set security roles for attribute
         data = {
             "key": CUST_ATTR_ID_KEY,
-            "label": "QuadPype/Mongo ID",
+            "label": "QuadPype/Database ID",
             "type": "text",
             "default": "",
             "group": CUST_ATTR_GROUP,
@@ -294,7 +294,7 @@ class CustomAttributes(BaseAction):
 
         self.process_attr_data(data, event)
 
-    def convert_mongo_id_to_hierarchical(
+    def convert_database_id_to_hierarchical(
         self, hierarchical_attr, object_type_attrs, session, event
     ):
         user_msg = "Converting old custom attributes. This may take some time."
@@ -327,7 +327,7 @@ class CustomAttributes(BaseAction):
                 continue
 
             self.log.debug((
-                "Converting QuadPype MongoID attr for Entity type \"{}\"."
+                "Converting QuadPype database ID attr for Entity type \"{}\"."
             ).format(entity_type_label))
             values = session.query(
                 cust_attr_query.format(attr_def["id"])
@@ -355,7 +355,7 @@ class CustomAttributes(BaseAction):
                 session.rollback()
                 self.log.warning(
                     (
-                        "Couldn't transfer QuadPype Mongo ID"
+                        "Couldn't transfer QuadPype database ID"
                         " attribute for entity type \"{}\"."
                     ).format(entity_type_label),
                     exc_info=True
@@ -369,7 +369,7 @@ class CustomAttributes(BaseAction):
                 session.rollback()
                 self.log.warning(
                     (
-                        "Couldn't delete QuadPype Mongo ID"
+                        "Couldn't delete QuadPype database ID"
                         " attribute for entity type \"{}\"."
                     ).format(entity_type_label),
                     exc_info=True

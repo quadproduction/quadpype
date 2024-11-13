@@ -1,4 +1,4 @@
-from .mongo import get_project_connection
+from .database import get_project_connection
 from .entities import (
     get_assets,
     get_asset_by_id,

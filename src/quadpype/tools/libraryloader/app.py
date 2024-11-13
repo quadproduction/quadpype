@@ -4,7 +4,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 
 from quadpype import style
 from quadpype.client import get_projects, get_project
-from quadpype.pipeline import QuadPypeMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 from quadpype.widgets import BaseToolDialog
 from quadpype.tools.utils import lib as tools_lib
 from quadpype.tools.loader.widgets import (
@@ -50,7 +50,7 @@ class LibraryLoaderWindow(BaseToolDialog):
         self._initial_refresh = False
         self._ignore_project_change = False
 
-        dbcon = QuadPypeMongoDB()
+        dbcon = QuadPypeDBHandler()
         dbcon.install()
         dbcon.Session["QUADPYPE_PROJECT_NAME"] = None
 
@@ -281,19 +281,19 @@ class LibraryLoaderWindow(BaseToolDialog):
 
     def refresh(self):
         self.echo("Fetching results..")
-        tools_lib.schedule(self._refresh, 50, channel="mongo")
+        tools_lib.schedule(self._refresh, 50, channel="database")
 
     def on_assetschanged(self, *args):
         self.echo("Fetching asset..")
-        tools_lib.schedule(self._assetschanged, 50, channel="mongo")
+        tools_lib.schedule(self._assetschanged, 50, channel="database")
 
     def on_subsetschanged(self, *args):
         self.echo("Fetching subset..")
-        tools_lib.schedule(self._subsetschanged, 50, channel="mongo")
+        tools_lib.schedule(self._subsetschanged, 50, channel="database")
 
     def on_versionschanged(self, *args):
         self.echo("Fetching version..")
-        tools_lib.schedule(self._versionschanged, 150, channel="mongo")
+        tools_lib.schedule(self._versionschanged, 150, channel="database")
 
     def _on_subset_refresh(self, has_item):
         self._subsets_widget.set_loading_state(

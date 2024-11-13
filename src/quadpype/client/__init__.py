@@ -1,8 +1,8 @@
-from .mongo import (
-    QuadPypeMongoConnection,
+from .database import (
+    QuadPypeDBConnection,
 )
 
-from .mongo.entities import (
+from .database.entities import (
     get_projects,
     get_project,
     get_whole_project,
@@ -45,7 +45,7 @@ from .mongo.entities import (
     get_workfile_info
 )
 
-from .mongo.entity_links import (
+from .database.entity_links import (
     get_linked_asset_ids,
     get_linked_assets,
     get_linked_representation_id,
@@ -57,7 +57,7 @@ from .operations import (
 
 
 __all__ = (
-    "QuadPypeMongoConnection",
+    "QuadPypeDBConnection",
 
     "get_projects",
     "get_project",

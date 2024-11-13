@@ -1,7 +1,6 @@
 import os
 import signal
 import datetime
-import subprocess
 import socket
 import json
 import getpass
@@ -11,9 +10,9 @@ import uuid
 
 import ftrack_api
 import pymongo
-from quadpype.client.mongo import (
-    QuadPypeMongoConnection,
-    validate_mongo_connection,
+from quadpype.client.database import (
+    QuadPypeDBConnection,
+    validate_database_connection,
 )
 from quadpype.lib import (
     get_quadpype_execute_args,
@@ -29,30 +28,30 @@ from quadpype_modules.ftrack.ftrack_server import socket_thread
 from quadpype_modules.ftrack.ftrack_server.lib import get_host_ip
 
 
-class MongoPermissionsError(Exception):
+class DatabasePermissionsError(Exception):
     """Is used when is created multiple objects of same RestApi class."""
     def __init__(self, message=None):
         if not message:
-            message = "Exiting because have issue with access to MongoDB"
+            message = "Exiting because have issue with access to the database"
         super().__init__(message)
 
 
-def check_mongo_url(mongo_uri, log_error=False):
-    """Checks if mongo server is responding"""
+def check_database_uri(database_uri, log_error=False):
+    """Checks if database is responding"""
     try:
-        validate_mongo_connection(mongo_uri)
+        validate_database_connection(database_uri)
 
     except pymongo.errors.InvalidURI as err:
         if log_error:
-            print("Can't connect to MongoDB at {} because: {}".format(
-                mongo_uri, err
+            print("Can't connect to the database at {} because: {}".format(
+                database_uri, err
             ))
         return False
 
     except pymongo.errors.ServerSelectionTimeoutError as err:
         if log_error:
-            print("Can't connect to MongoDB at {} because: {}".format(
-                mongo_uri, err
+            print("Can't connect to the database at {} because: {}".format(
+                database_uri, err
             ))
         return False
 
@@ -99,91 +98,20 @@ def validate_credentials(url, user, api):
     return True
 
 
-def legacy_server(ftrack_url):
-    # Current file
-    scripts_dir = os.path.join(FTRACK_MODULE_DIR, "scripts")
-
-    min_fail_seconds = 5
-    max_fail_count = 3
-    wait_time_after_max_fail = 10
-
-    subproc = None
-    subproc_path = "{}/sub_legacy_server.py".format(scripts_dir)
-    subproc_last_failed = datetime.datetime.now()
-    subproc_failed_count = 0
-
-    ftrack_accessible = False
-    printed_ftrack_error = False
-
-    while True:
-        if not ftrack_accessible:
-            ftrack_accessible = resolve_ftrack_url(ftrack_url)
-
-        # Run threads only if Ftrack is accessible
-        if not ftrack_accessible and not printed_ftrack_error:
-            print("Can't access Ftrack {} <{}>".format(
-                ftrack_url, str(datetime.datetime.now())
-            ))
-            if subproc is not None:
-                if subproc.poll() is None:
-                    subproc.terminate()
-
-                subproc = None
-
-            printed_ftrack_error = True
-
-            time.sleep(1)
-            continue
-
-        printed_ftrack_error = False
-
-        if subproc is None:
-            if subproc_failed_count < max_fail_count:
-                args = get_quadpype_execute_args("run", subproc_path)
-                subproc = subprocess.Popen(
-                    args,
-                    stdout=subprocess.PIPE
-                )
-            elif subproc_failed_count == max_fail_count:
-                print((
-                    "Storer failed {}times I'll try to run again {}s later"
-                ).format(str(max_fail_count), str(wait_time_after_max_fail)))
-                subproc_failed_count += 1
-            elif ((
-                datetime.datetime.now() - subproc_last_failed
-            ).seconds > wait_time_after_max_fail):
-                subproc_failed_count = 0
-
-        # If thread failed test Ftrack and Mongo connection
-        elif subproc.poll() is not None:
-            subproc = None
-            ftrack_accessible = False
-
-            _subproc_last_failed = datetime.datetime.now()
-            delta_time = (_subproc_last_failed - subproc_last_failed).seconds
-            if delta_time < min_fail_seconds:
-                subproc_failed_count += 1
-            else:
-                subproc_failed_count = 0
-            subproc_last_failed = _subproc_last_failed
-
-        time.sleep(1)
-
-
 def main_loop(ftrack_url):
     """ This is main loop of event handling.
 
     Loop is handling threads which handles subprocesses of event storer and
     processor. When one of threads is stopped it is tested to connect to
-    ftrack and mongo server. Threads are not started when ftrack or mongo
-    server is not accessible. When threads are started it is checked for socket
+    ftrack and the database. Threads are not started when ftrack or the db
+    is not accessible. When threads are started it is checked for socket
     signals as heartbeat. Heartbeat must become at least once per 30sec
     otherwise thread will be killed.
     """
 
     os.environ["FTRACK_EVENT_SUB_ID"] = str(uuid.uuid1())
 
-    mongo_uri = QuadPypeMongoConnection.get_default_mongo_url()
+    database_uri = QuadPypeDBConnection.get_default_database_uri()
 
     # Current file
     scripts_dir = os.path.join(FTRACK_MODULE_DIR, "scripts")
@@ -215,10 +143,10 @@ def main_loop(ftrack_url):
     statuser_failed_count = 0
 
     ftrack_accessible = False
-    mongo_accessible = False
+    database_accessible = False
 
     printed_ftrack_error = False
-    printed_mongo_error = False
+    printed_database_error = False
 
     # stop threads on exit
     # TODO check if works and args have thread objects!
@@ -260,20 +188,20 @@ def main_loop(ftrack_url):
     main_info_str = json.dumps(main_info)
     # Main loop
     while True:
-        # Check if accessible Ftrack and Mongo url
+        # Check if accessible Ftrack URL and database URI
         if not ftrack_accessible:
             ftrack_accessible = resolve_ftrack_url(ftrack_url)
 
-        if not mongo_accessible:
-            mongo_accessible = check_mongo_url(mongo_uri)
+        if not database_accessible:
+            database_accessible = check_database_uri(database_uri)
 
         # Run threads only if Ftrack is accessible
-        if not ftrack_accessible or not mongo_accessible:
-            if not mongo_accessible and not printed_mongo_error:
-                print("Can't access Mongo {}".format(mongo_uri))
+        if not ftrack_accessible or not database_accessible:
+            if not database_accessible and not printed_database_error:
+                print("Can't access the database : {}".format(database_uri))
 
             if not ftrack_accessible and not printed_ftrack_error:
-                print("Can't access Ftrack {}".format(ftrack_url))
+                print("Can't access Ftrack : {}".format(ftrack_url))
 
             if storer_thread is not None:
                 storer_thread.stop()
@@ -286,13 +214,13 @@ def main_loop(ftrack_url):
                 processor_thread = None
 
             printed_ftrack_error = True
-            printed_mongo_error = True
+            printed_database_error = True
 
             time.sleep(1)
             continue
 
         printed_ftrack_error = False
-        printed_mongo_error = False
+        printed_database_error = False
 
         # ====== STATUSER =======
         if statuser_thread is None:
@@ -315,12 +243,12 @@ def main_loop(ftrack_url):
             ).seconds > wait_time_after_max_fail):
                 statuser_failed_count = 0
 
-        # If thread failed test Ftrack and Mongo connection
+        # If thread failed test Ftrack and database connection
         elif not statuser_thread.is_alive():
             statuser_thread.join()
             statuser_thread = None
             ftrack_accessible = False
-            mongo_accessible = False
+            database_accessible = False
 
             _processor_last_failed = datetime.datetime.now()
             delta_time = (
@@ -340,7 +268,7 @@ def main_loop(ftrack_url):
             return 1
 
         # ====== STORER =======
-        # Run backup thread which does not require mongo to work
+        # Run backup thread which does not require the database to work
         if storer_thread is None:
             if storer_failed_count < max_fail_count:
                 storer_thread = socket_thread.SocketThread(
@@ -358,14 +286,14 @@ def main_loop(ftrack_url):
             ).seconds > wait_time_after_max_fail):
                 storer_failed_count = 0
 
-        # If thread failed test Ftrack and Mongo connection
+        # If thread failed test Ftrack and database connection
         elif not storer_thread.is_alive():
-            if storer_thread.mongo_error:
-                raise MongoPermissionsError()
+            if storer_thread.database_error:
+                raise DatabasePermissionsError()
             storer_thread.join()
             storer_thread = None
             ftrack_accessible = False
-            mongo_accessible = False
+            database_accessible = False
 
             _storer_last_failed = datetime.datetime.now()
             delta_time = (_storer_last_failed - storer_last_failed).seconds
@@ -395,16 +323,16 @@ def main_loop(ftrack_url):
             ).seconds > wait_time_after_max_fail):
                 processor_failed_count = 0
 
-        # If thread failed test Ftrack and Mongo connection
+        # If thread failed test Ftrack and database connection
         elif not processor_thread.is_alive():
-            if processor_thread.mongo_error:
+            if processor_thread.database_error:
                 raise Exception(
-                    "Exiting because have issue with access to MongoDB"
+                    "Exiting because have issue with access to the database"
                 )
             processor_thread.join()
             processor_thread = None
             ftrack_accessible = False
-            mongo_accessible = False
+            database_accessible = False
 
             _processor_last_failed = datetime.datetime.now()
             delta_time = (
@@ -428,7 +356,6 @@ def run_event_server(
     ftrack_url,
     ftrack_user,
     ftrack_api_key,
-    legacy,
     clockify_api_key,
     clockify_workspace
 ):
@@ -460,8 +387,5 @@ def run_event_server(
     os.environ["FTRACK_SERVER"] = ftrack_url
     os.environ["FTRACK_API_USER"] = ftrack_user
     os.environ["FTRACK_API_KEY"] = ftrack_api_key
-
-    if legacy:
-        return legacy_server(ftrack_url)
 
     return main_loop(ftrack_url)

@@ -44,9 +44,9 @@ class LogModel(QtGui.QStandardItemModel):
         if not Logger.initialized:
             Logger.initialize()
 
-        connection = Logger.get_log_mongo_connection()
+        connection = Logger.get_log_database_connection()
         if connection:
-            Logger.bootstrap_mongo_log()
+            Logger.bootstrap_database_log()
             database = connection[Logger.log_database_name]
             self.dbcon = database[Logger.log_collection_name]
 

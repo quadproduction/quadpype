@@ -4,7 +4,7 @@ import json
 from qtpy import QtWidgets, QtCore, QtGui
 
 from quadpype import style
-from quadpype.pipeline import QuadPypeMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 from quadpype.tools.utils.lib import center_window, get_quadpype_qt_app
 from quadpype.tools.utils.assets_widget import SingleSelectAssetsWidget
 from quadpype.tools.utils.constants import (
@@ -41,7 +41,7 @@ class ContextDialog(QtWidgets.QDialog):
         self.setWindowFlags(window_flags)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
-        dbcon = QuadPypeMongoDB()
+        dbcon = QuadPypeDBHandler()
 
         # UI initialization
         main_splitter = QtWidgets.QSplitter(self)

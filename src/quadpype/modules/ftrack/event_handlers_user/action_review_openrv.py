@@ -10,7 +10,7 @@ from quadpype.client import (
     get_representation_by_name, get_project
 )
 from quadpype.lib import ApplicationManager
-from quadpype.pipeline import QuadPypeMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 
@@ -260,7 +260,7 @@ class RVActionReview(BaseAction):
         ft_project = self.get_project_from_entity(entities[0])
         project_name = ft_project["full_name"]
 
-        dbcon = QuadPypeMongoDB()
+        dbcon = QuadPypeDBHandler()
         dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
 
         representations = []

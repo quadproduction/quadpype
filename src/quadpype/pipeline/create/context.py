@@ -1352,7 +1352,7 @@ class CreateContext:
     - those are mainly for Context publish plugins
 
     Todos:
-        Don't use 'QuadPypeMongoDB'. It's used only to keep track about current
+        Don't use 'QuadPypeDBHandler'. It's used only to keep track about current
             context which should be handled by host.
 
     Args:

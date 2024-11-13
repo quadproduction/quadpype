@@ -29,7 +29,7 @@ class SocketThread(threading.Thread):
         self._is_running = False
         self.finished = False
 
-        self.mongo_error = False
+        self.database_error = False
 
         self._temp_data = {}
 
@@ -57,7 +57,7 @@ class SocketThread(threading.Thread):
         )
 
         env = os.environ.copy()
-        env["QUADPYPE_PROCESS_MONGO_ID"] = str(Logger.mongo_process_id)
+        env["QUADPYPE_PROCESS_DB_ID"] = str(Logger.database_process_id)
         # QuadPype executable (with path to start script if not build)
         args = get_quadpype_execute_args(
             # Add `run` command
@@ -145,8 +145,8 @@ class SocketThread(threading.Thread):
         if not data:
             return
 
-        if data == b"MongoError":
-            self.mongo_error = True
+        if data == b"DatabaseError":
+            self.database_error = True
         connection.sendall(data)
 
 

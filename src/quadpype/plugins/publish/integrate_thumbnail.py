@@ -257,7 +257,7 @@ class IntegrateThumbnails(pyblish.api.ContextPlugin):
                 continue
 
             filename, file_extension = os.path.splitext(thumbnail_path)
-            # Create id for mongo entity now to fill anatomy template
+            # Create id for database entity now to fill anatomy template
             thumbnail_doc = new_thumbnail_doc()
             thumbnail_id = thumbnail_doc["_id"]
 

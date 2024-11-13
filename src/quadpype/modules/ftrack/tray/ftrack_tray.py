@@ -148,7 +148,7 @@ class FtrackTrayWrapper:
                 self.log.debug("Action server was pushed to stop.")
                 break
 
-            # Check if accessible Ftrack and Mongo url
+            # Check if Ftrack is accessible Ftrack
             if not ftrack_accessible:
                 ftrack_accessible = resolve_ftrack_url(ftrack_url)
 
@@ -173,7 +173,7 @@ class FtrackTrayWrapper:
 
             printed_ftrack_error = False
 
-            # Run backup thread which does not require mongo to work
+            # Run backup thread which does not require database to work
             if self.thread_socket_server is None:
                 if failed_count < max_fail_count:
                     self.thread_socket_server = socket_thread.SocketThread(
@@ -197,7 +197,7 @@ class FtrackTrayWrapper:
                 ).seconds > wait_time_after_max_fail):
                     failed_count = 0
 
-            # If thread failed test Ftrack and Mongo connection
+            # If thread failed test Ftrack connection
             elif not self.thread_socket_server.is_alive():
                 self.thread_socket_server.join()
                 self.thread_socket_server = None

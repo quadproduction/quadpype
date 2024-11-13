@@ -449,9 +449,9 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         if is_running_from_build():
             keys.append("QUADPYPE_VERSION")
 
-        # Add mongo url if it's enabled
-        if instance.context.data.get("deadlinePassMongoUrl"):
-            keys.append("QUADPYPE_MONGO")
+        # Add the database URI to the env variables if needed
+        if instance.context.data.get("deadlineAddDatabaseURI"):
+            keys.append("QUADPYPE_DB_URI")
 
         # add allowed keys from preset if any
         if self.env_allowed_keys:

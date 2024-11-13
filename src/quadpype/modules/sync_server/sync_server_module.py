@@ -27,7 +27,7 @@ from quadpype.settings import (
     PROJECTS_SETTINGS_KEY
 )
 from quadpype.lib import Logger, get_local_site_id
-from quadpype.pipeline import QuadPypeMongoDB, Anatomy
+from quadpype.pipeline import QuadPypeDBHandler, Anatomy
 from quadpype.settings.lib import (
     get_default_anatomy_settings,
     get_anatomy_settings,
@@ -184,7 +184,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
         Args:
             project_name (string): project name (must match DB)
-            representation_id (string): MongoDB _id value
+            representation_id (string): Database _id value
             site_name (string): name of configured and active site
             force (bool): reset site if exists
             priority (int): set priority
@@ -219,7 +219,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
             Args:
                 project_name (string): project name (must match DB)
-                representation_id (string): MongoDB _id value
+                representation_id (string): Database _id value
                 site_name (string): name of configured and active site
                 remove_local_files (bool): remove only files for 'local_id'
                     site
@@ -558,7 +558,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
             Args:
                 project_name (string): project name
-                representation_id (string): MongoDB objectId value
+                representation_id (string): Database objectId value
                 site_name (string): 'gdrive', 'studio' etc.
         """
         self.log.info("Pausing SyncServer for {}".format(representation_id))
@@ -574,7 +574,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
             Args:
                 project_name (string): project name
-                representation_id (string): MongoDB objectId value
+                representation_id (string): Database objectId value
                 site_name (string): 'gdrive', 'studio' etc.
         """
         self.log.info("Unpausing SyncServer for {}".format(representation_id))
@@ -588,7 +588,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
             Args:
                 project_name (str): project to check if paused
-                representation_id (str): MongoDB objectId value
+                representation_id (str): Database objectId value
                 site (str): site to check representation is paused for
                 check_parents (bool): check if parent project or server itself
                     are not paused
@@ -1492,7 +1492,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
     @property
     def connection(self):
         if self._connection is None:
-            self._connection = QuadPypeMongoDB()
+            self._connection = QuadPypeDBHandler()
 
         return self._connection
 
@@ -1686,7 +1686,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             a provider (GDrive, S3) and value is empty document or document
             without 'created_dt' field. (Don't put null to 'created_dt'!).
 
-            Querying of 'to-be-synched' files is offloaded to Mongod for
+            Querying of 'to-be-synched' files is offloaded to the DB for
             better performance. Goal is to get as few representations as
             possible.
         Args:
@@ -1807,7 +1807,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             case only user has the data and must U/D.
 
         Args:
-            file (dictionary):  of file from representation in Mongo
+            file (dictionary):  file from representation in the database
             local_site (string):  - local side of compare (usually 'studio')
             remote_site (string):  - gdrive etc.
             config_preset (dict): config about active site, retries
@@ -2208,7 +2208,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
             Args:
                 project_name (string): project name (must match DB)
-                representation_id (string): MongoDB _id value
+                representation_id (string): Database _id value
                 site_name (string): name of configured and active site
 
             Returns:

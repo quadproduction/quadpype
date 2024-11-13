@@ -24,7 +24,7 @@ async def upload(module, project_name, file, representation, provider_name,
         is replaced by 'representation.Context.root'
         Provider could be one of implemented in provider.py.
 
-        Updates MongoDB, fills in id of file from provider (ie. file_id
+        Updates database, fills in id of file from provider (ie. file_id
         from GDrive), 'created_dt' - time of upload
 
         'provider_name' doesn't have to match to 'site_name', single
@@ -34,7 +34,7 @@ async def upload(module, project_name, file, representation, provider_name,
     Args:
         module(SyncServerModule): object to run SyncServerModule API
         project_name (str): source db
-        file (dictionary): of file from representation in Mongo
+        file (dictionary): file from representation in database
         representation (dictionary): of representation
         provider_name (string): gdrive, gdc etc.
         site_name (string): site on provider, single provider(gdrive) could

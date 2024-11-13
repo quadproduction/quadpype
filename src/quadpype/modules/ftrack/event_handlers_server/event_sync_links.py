@@ -1,7 +1,7 @@
 from pymongo import UpdateOne
 from bson.objectid import ObjectId
 
-from quadpype.pipeline import QuadPypeMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 
 from quadpype_modules.ftrack.lib import (
     CUST_ATTR_ID_KEY,
@@ -17,7 +17,7 @@ class SyncLinksToDatabase(BaseEvent):
     priority = 110
 
     def __init__(self, session):
-        self.dbcon = QuadPypeMongoDB()
+        self.dbcon = QuadPypeDBHandler()
 
         super().__init__(session)
 
@@ -77,11 +77,11 @@ class SyncLinksToDatabase(BaseEvent):
             return
 
         project_name = project_entity["full_name"]
-        mongo_id_by_ftrack_id = self._get_mongo_ids_by_ftrack_ids(
+        database_id_by_ftrack_id = self._get_database_ids_by_ftrack_ids(
             session, attr_def["id"], ftrack_ids
         )
 
-        filtered_ftrack_ids = tuple(mongo_id_by_ftrack_id.keys())
+        filtered_ftrack_ids = tuple(database_id_by_ftrack_id.keys())
         context_links = session.query((
             "select from_id, to_id from TypedContextLink where to_id in ({})"
         ).format(self.join_query_keys(filtered_ftrack_ids))).all()
@@ -99,47 +99,47 @@ class SyncLinksToDatabase(BaseEvent):
             all_from_ids.add(from_id)
             mapping_by_to_id[to_id].add(from_id)
 
-        mongo_id_by_ftrack_id.update(self._get_mongo_ids_by_ftrack_ids(
+        database_id_by_ftrack_id.update(self._get_database_ids_by_ftrack_ids(
             session, attr_def["id"], all_from_ids
         ))
-        self.log.info(mongo_id_by_ftrack_id)
+        self.log.info(database_id_by_ftrack_id)
         bulk_writes = []
         for to_id, from_ids in mapping_by_to_id.items():
-            dst_mongo_id = mongo_id_by_ftrack_id[to_id]
+            dst_database_id = database_id_by_ftrack_id[to_id]
             links = []
             for ftrack_id in from_ids:
-                link_mongo_id = mongo_id_by_ftrack_id.get(ftrack_id)
-                if link_mongo_id is None:
+                link_database_id = database_id_by_ftrack_id.get(ftrack_id)
+                if link_database_id is None:
                     continue
 
                 links.append({
-                    "id": ObjectId(link_mongo_id),
+                    "id": ObjectId(link_database_id),
                     "linkedBy": "ftrack",
                     "type": "breakdown"
                 })
 
             bulk_writes.append(UpdateOne(
-                {"_id": ObjectId(dst_mongo_id)},
+                {"_id": ObjectId(dst_database_id)},
                 {"$set": {"data.inputLinks": links}}
             ))
 
         if bulk_writes:
             self.dbcon.database[project_name].bulk_write(bulk_writes)
 
-    def _get_mongo_ids_by_ftrack_ids(self, session, attr_id, ftrack_ids):
+    def _get_database_ids_by_ftrack_ids(self, session, attr_id, ftrack_ids):
         output = query_custom_attributes(
             session, [attr_id], ftrack_ids, True
         )
-        mongo_id_by_ftrack_id = {}
+        database_id_by_ftrack_id = {}
         for item in output:
-            mongo_id = item["value"]
-            if not mongo_id:
+            database_id = item["value"]
+            if not database_id:
                 continue
 
             ftrack_id = item["entity_id"]
 
-            mongo_id_by_ftrack_id[ftrack_id] = mongo_id
-        return mongo_id_by_ftrack_id
+            database_id_by_ftrack_id[ftrack_id] = database_id
+        return database_id_by_ftrack_id
 
 
 def register(session):

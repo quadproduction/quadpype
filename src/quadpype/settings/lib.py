@@ -81,15 +81,15 @@ def calculate_changes(old_value, new_value):
 
 
 def create_settings_handler():
-    from .handlers import MongoSettingsHandler
+    from .handlers import DatabaseSettingsHandler
     # Handler can't be created in global space on initialization but only when
     # needed. Plus here may be logic: Which handler is used (in future).
-    return MongoSettingsHandler()
+    return DatabaseSettingsHandler()
 
 
 def create_user_handler():
-    from .handlers import MongoUserHandler
-    return MongoUserHandler()
+    from .handlers import DatabaseUserHandler
+    return DatabaseUserHandler()
 
 
 def require_handler(func):

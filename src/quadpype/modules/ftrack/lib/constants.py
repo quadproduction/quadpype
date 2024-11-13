@@ -1,8 +1,8 @@
 # Group name of custom attributes
 CUST_ATTR_GROUP = "quadpype"
 
-# Custom attribute that stores database mongo_id
-CUST_ATTR_ID_KEY = "database_mongo_id"
+# Custom attribute that stores database id for the entity
+CUST_ATTR_ID_KEY = "database_id"
 # Auto sync of project
 CUST_ATTR_AUTO_SYNC = "database_auto_sync"
 

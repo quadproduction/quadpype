@@ -14,7 +14,7 @@ from .widgets import (
 from .widgets.constants import HOST_NAME
 from quadpype import style
 from quadpype import resources
-from quadpype.pipeline import QuadPypeMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 from quadpype.modules import ModulesManager
 
 
@@ -33,7 +33,7 @@ class Window(QtWidgets.QDialog):
 
     def __init__(self, pyblish_paths, parent=None):
         super().__init__(parent=parent)
-        self._db = QuadPypeMongoDB()
+        self._db = QuadPypeDBHandler()
         self._db.install()
 
         try:
@@ -96,7 +96,7 @@ class Window(QtWidgets.QDialog):
 
     @property
     def db(self):
-        ''' Returns DB object for MongoDB I/O
+        ''' Returns DB object for database I/O
         '''
         return self._db
 

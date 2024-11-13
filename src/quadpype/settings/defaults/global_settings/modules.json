@@ -79,7 +79,7 @@
                         "Administrator"
                     ]
                 },
-                "database_mongo_id": {
+                "database_id": {
                     "write_security_roles": [
                         "API",
                         "Administrator"

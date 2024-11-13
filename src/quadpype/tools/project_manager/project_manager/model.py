@@ -29,9 +29,9 @@ from .style import ResourceCache
 
 
 class ProjectModel(QtGui.QStandardItemModel):
-    """Load possible projects to modify from MongoDB.
+    """Load possible projects to modify from the database.
 
-    Mongo collection must contain project document with "type" "project" and
+    Database collection must contain project document with "type" "project" and
     matching "name" value with name of collection.
     """
 
@@ -138,7 +138,7 @@ class HierarchyModel(QtCore.QAbstractItemModel):
     data.
 
     Args:
-        dbcon (QuadPypeMongoDB): Connection to MongoDB with set QUADPYPE_PROJECT_NAME in
+        dbcon (QuadPypeDBHandler): Connection to the database with set QUADPYPE_PROJECT_NAME in
             its Session to current project.
     """
 
@@ -1339,8 +1339,8 @@ class HierarchyModel(QtCore.QAbstractItemModel):
         """Save all changes from current project manager session.
 
         Will create new asset documents, update existing and asset documents
-        marked for deletion are removed from mongo if has published content or
-        their type is changed to `archived_asset` to not loose their data.
+        marked for deletion are removed from the database if has published content
+        or their type is changed to `archived_asset` to not loose their data.
         """
         # Check if all items are valid before save
         all_valid = True
@@ -1412,9 +1412,9 @@ class HierarchyModel(QtCore.QAbstractItemModel):
                     new_docs.append(item.to_doc())
 
                 result = project_col.insert_many(new_docs)
-                for idx, mongo_id in enumerate(result.inserted_ids):
+                for idx, database_id in enumerate(result.inserted_ids):
                     created_count += 1
-                    insert_list[idx].mongo_id = mongo_id
+                    insert_list[idx].database_id = database_id
 
         if sum([created_count, updated_count, removed_count]) == 0:
             self.log.info("Nothing has changed")
@@ -1719,7 +1719,7 @@ class RootItem(BaseItem):
 
 
 class ProjectItem(BaseItem):
-    """Item representing project document in Mongo.
+    """Item representing project document in the database.
 
     Item is used only to read it's data. It is not possible to modify them.
     """
@@ -1759,15 +1759,15 @@ class ProjectItem(BaseItem):
     }
 
     def __init__(self, project_doc):
-        self._mongo_id = project_doc["_id"]
+        self._database_id = project_doc["_id"]
 
         data = self.data_from_doc(project_doc)
         super().__init__(data)
 
     @property
     def project_id(self):
-        """Project Mongo ID."""
-        return self._mongo_id
+        """Project Database ID."""
+        return self._database_id
 
     @property
     def asset_id(self):
@@ -1876,7 +1876,7 @@ class AssetItem(BaseItem):
     def __init__(self, asset_doc):
         if not asset_doc:
             asset_doc = {}
-        self.mongo_id = asset_doc.get("_id")
+        self.database_id = asset_doc.get("_id")
         self._project_id = None
         self._edited_columns = {
             column_name: False
@@ -1910,8 +1910,8 @@ class AssetItem(BaseItem):
 
     @property
     def asset_id(self):
-        """Property access to mongo id."""
-        return self.mongo_id
+        """Property access to database id."""
+        return self.database_id
 
     @property
     def is_new(self):
@@ -1946,7 +1946,7 @@ class AssetItem(BaseItem):
         return parents
 
     def to_doc(self):
-        """Convert item to Mongo document matching asset schema.
+        """Convert item to database document matching asset schema.
 
         Method does no validate if item is valid or children are valid.
 
@@ -1976,8 +1976,8 @@ class AssetItem(BaseItem):
             "data": doc_data,
             "parent": self.project_id
         }
-        if self.mongo_id:
-            doc["_id"] = self.mongo_id
+        if self.database_id:
+            doc["_id"] = self.database_id
 
         for key in self._data.keys():
             if key in doc:
@@ -1988,7 +1988,7 @@ class AssetItem(BaseItem):
         return doc
 
     def update_data(self):
-        """Changes dictionary ready for Mongo's update.
+        """Changes dictionary ready for database's update.
 
         Method should be used on save. There is not other usage of this method.
 
@@ -2004,7 +2004,7 @@ class AssetItem(BaseItem):
         Returns:
             dict: May be empty if item was not changed.
         """
-        if not self.mongo_id:
+        if not self.database_id:
             return {}
 
         document = self.to_doc()
@@ -2040,7 +2040,7 @@ class AssetItem(BaseItem):
 
     @classmethod
     def data_from_doc(cls, asset_doc):
-        """Convert asset document from Mongo to item data."""
+        """Convert asset document from the database to item data."""
         # Minimum required data for cases that it is new AssetItem without doc
         data = {
             "name": None,

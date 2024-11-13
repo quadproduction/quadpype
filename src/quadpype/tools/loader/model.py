@@ -209,7 +209,7 @@ class SubsetsModel(BaseRepresentationModel, TreeModel):
 
         self.dbcon = dbcon
 
-        # Projections for Mongo queries
+        # Projections for database queries
         # - let ability to modify them if used in tools that require more than
         #   defaults
         if asset_doc_projection:
@@ -550,7 +550,7 @@ class SubsetsModel(BaseRepresentationModel, TreeModel):
     def fetch_subset_and_version(self):
         """Query all subsets and latest versions from aggregation
         (NOTE) The returned version documents are NOT the real version
-            document, it's generated from the MongoDB's aggregation so
+            document, it's generated from the DB's aggregation so
             some of the first level field may not be presented.
         """
         self._doc_payload = {}

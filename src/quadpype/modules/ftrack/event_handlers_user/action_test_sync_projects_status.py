@@ -2,7 +2,7 @@ from pymongo import UpdateOne
 
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 from quadpype.client import get_projects, get_project
-from quadpype.pipeline import QuadPypeMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 
 
 class TestActionSyncProjectsStatus(BaseAction):
@@ -17,7 +17,7 @@ class TestActionSyncProjectsStatus(BaseAction):
     icon = statics_icon("ftrack", "action_icons", "TestAction.svg")
 
     def __init__(self, session):
-        self.dbcon = QuadPypeMongoDB()
+        self.dbcon = QuadPypeDBHandler()
         super().__init__(session)
 
     def discover(self, session, entities, event):
@@ -32,23 +32,23 @@ class TestActionSyncProjectsStatus(BaseAction):
         disabled_ftrack_projects_id = [
             project['id'] for project in disabled_ftrack_projects
         ]
-        mongo_projects = get_projects()
+        database_projects = get_projects()
 
-        for project in mongo_projects:
+        for project in database_projects:
             if project['data'].get('ftrackId') in disabled_ftrack_projects_id:
                 projects_to_be_deactived.append(project)
                 self.log.debug(project['name'])
 
-        # mongo_changes_bulk = []
+        # database_changes_bulk = []
         for project in projects_to_be_deactived:
             filter = {"_id": project["_id"]}
             change_data = {"$set": {'data.active': False}}
             self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = project['name']
             self.dbcon.bulk_write([UpdateOne(filter, change_data)])
-            # mongo_changes_bulk.append(UpdateOne(filter, change_data))
+            # database_changes_bulk.append(UpdateOne(filter, change_data))
 
-        # if mongo_changes_bulk:
-        #     self.dbcon.bulk_write(mongo_changes_bulk)
+        # if database_changes_bulk:
+        #     self.dbcon.bulk_write(database_changes_bulk)
 
         return True
 

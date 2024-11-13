@@ -24,7 +24,7 @@ from quadpype.modules import ModulesManager
 from .widgets import (
     ExpandingWidget
 )
-from .mongo_widget import QuadPypeMongoWidget
+from .database_widget import QuadPypeDatabaseWidget
 from .general_widget import LocalGeneralWidgets
 from .experimental_widget import (
     LocalExperimentalToolsWidgets,
@@ -48,7 +48,7 @@ class UserSettingsWidget(QtWidgets.QWidget):
 
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
-        self.pype_mongo_widget = None
+        self.database_widget = None
         self.general_widget = None
         self.experimental_widget = None
         self.envs_widget = None
@@ -56,7 +56,7 @@ class UserSettingsWidget(QtWidgets.QWidget):
         self.modules_widget = None
         self.projects_widget = None
 
-        self._create_mongo_url_ui()
+        self._create_database_uri_ui()
         self._create_general_ui()
         self._create_experimental_ui()
         self._create_environments_ui()
@@ -66,19 +66,19 @@ class UserSettingsWidget(QtWidgets.QWidget):
 
         self.main_layout.addStretch(1)
 
-    def _create_mongo_url_ui(self):
-        pype_mongo_expand_widget = ExpandingWidget("QuadPype Mongo URL", self)
-        pype_mongo_content = QtWidgets.QWidget(self)
-        pype_mongo_layout = QtWidgets.QVBoxLayout(pype_mongo_content)
-        pype_mongo_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 0)
-        pype_mongo_expand_widget.set_content_widget(pype_mongo_content)
+    def _create_database_uri_ui(self):
+        database_expand_widget = ExpandingWidget("QuadPype Database URI", self)
+        database_content = QtWidgets.QWidget(self)
+        database_layout = QtWidgets.QVBoxLayout(database_content)
+        database_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 0)
+        database_expand_widget.set_content_widget(database_content)
 
-        pype_mongo_widget = QuadPypeMongoWidget(self)
-        pype_mongo_layout.addWidget(pype_mongo_widget)
+        database_widget = QuadPypeDatabaseWidget(self)
+        database_layout.addWidget(database_widget)
 
-        self.main_layout.addWidget(pype_mongo_expand_widget)
+        self.main_layout.addWidget(database_expand_widget)
 
-        self.pype_mongo_widget = pype_mongo_widget
+        self.database_widget = database_widget
 
     def _create_general_ui(self):
         # General

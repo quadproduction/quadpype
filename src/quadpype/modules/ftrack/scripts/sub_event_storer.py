@@ -7,7 +7,7 @@ import pymongo
 
 import ftrack_api
 
-from quadpype.client import QuadPypeMongoConnection
+from quadpype.client import QuadPypeDBConnection
 from quadpype_modules.ftrack.ftrack_server.ftrack_server import FtrackServer
 from quadpype_modules.ftrack.ftrack_server.lib import (
     SocketSession,
@@ -15,7 +15,7 @@ from quadpype_modules.ftrack.ftrack_server.lib import (
     TOPIC_STATUS_SERVER,
     TOPIC_STATUS_SERVER_RESULT
 )
-from quadpype_modules.ftrack.lib import get_ftrack_event_mongo_info
+from quadpype_modules.ftrack.lib import get_ftrack_event_database_info
 from quadpype.lib import (
     Logger,
     get_quadpype_version,
@@ -30,7 +30,7 @@ class SessionFactory:
     session = None
 
 
-database_name, collection_name = get_ftrack_event_mongo_info()
+database_name, collection_name = get_ftrack_event_database_info()
 dbcon = None
 
 # ignore_topics = ["ftrack.meta.connected"]
@@ -40,11 +40,11 @@ ignore_topics = []
 def install_db():
     global dbcon
     try:
-        mongo_client = QuadPypeMongoConnection.get_mongo_client()
-        dbcon = mongo_client[database_name][collection_name]
+        database_client = QuadPypeDBConnection.get_database_client()
+        dbcon = database_client[database_name][collection_name]
     except pymongo.errors.AutoReconnect:
-        log.error("Mongo server \"{}\" is not responding, exiting.".format(
-            QuadPypeMongoConnection.get_default_mongo_url()
+        log.error("Database \"{}\" is not responding, exiting.".format(
+            QuadPypeDBConnection.get_default_database_uri()
         ))
         sys.exit(0)
 
@@ -67,8 +67,8 @@ def launch(event):
         log.debug("Event: {} stored".format(event_id))
 
     except pymongo.errors.AutoReconnect:
-        log.error("Mongo server \"{}\" is not responding, exiting.".format(
-            os.environ["QUADPYPE_MONGO"]
+        log.error("Database \"{}\" is not responding, exiting.".format(
+            os.environ["QUADPYPE_DB_URI"]
         ))
         sys.exit(0)
 
@@ -207,11 +207,11 @@ def main(args):
 
     except pymongo.errors.OperationFailure:
         log.error((
-            "Error with Mongo access, probably permissions."
+            "Error with database access, probably permissions."
             "Check if exist database with name \"{}\""
             " and collection \"{}\" inside."
         ).format(database_name, collection_name))
-        sock.sendall(b"MongoError")
+        sock.sendall(b"DatabaseError")
 
     finally:
         log.debug("First closing socket")

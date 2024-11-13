@@ -152,8 +152,8 @@ def get_workdir(
     """Fill workdir path from entered data and project's anatomy.
 
     Args:
-        project_doc (Dict[str, Any]): Mongo document of project from MongoDB.
-        asset_doc (Dict[str, Any]): Mongo document of asset from MongoDB.
+        project_doc (Dict[str, Any]): DB document of project from the database.
+        asset_doc (Dict[str, Any]): DB document of asset from the database.
         task_name (str): Task name for which are workdir data preapred.
         host_name (str): Host which is used to workdir. This is required
             because workdir template may contain `{app}` key. In `Session`
@@ -360,8 +360,8 @@ def get_custom_workfile_template(
     project and asset as parents of processing task name.
 
     Args:
-        project_doc (Dict[str, Any]): Project document from MongoDB.
-        asset_doc (Dict[str, Any]): Asset document from MongoDB.
+        project_doc (Dict[str, Any]): Project document from the database.
+        asset_doc (Dict[str, Any]): Asset document from the database.
         task_name (str): Name of task for which templates are filtered.
         host_name (str): Name of host.
         anatomy (Anatomy): Optionally passed anatomy object for passed project

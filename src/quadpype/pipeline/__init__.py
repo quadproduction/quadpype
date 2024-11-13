@@ -3,8 +3,8 @@ from .constants import (
     HOST_WORKFILE_EXTENSIONS,
 )
 
-from .mongodb import (
-    QuadPypeMongoDB,
+from .database import (
+    QuadPypeDBHandler,
 )
 from .anatomy import Anatomy
 
@@ -117,8 +117,8 @@ __all__ = (
     "QUADPYPE_CONTAINER_ID",
     "HOST_WORKFILE_EXTENSIONS",
 
-    # --- MongoDB ---
-    "QuadPypeMongoDB",
+    # --- Database ---
+    "QuadPypeDBHandler",
 
     # --- Anatomy ---
     "Anatomy",

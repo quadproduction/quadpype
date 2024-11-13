@@ -27,7 +27,7 @@ class SyncToQuadPypeServer(ServerAction):
     * These information are stored for entities in whole project.
 
     QuadPype ID of asset is stored to Ftrack
-        - Custom attribute 'database_mongo_id'.
+        - Custom attribute 'database_id'.
     - action IS NOT creating this Custom attribute if doesn't exist
         - run 'Create Custom Attributes' action
         - or do it manually (Not recommended)

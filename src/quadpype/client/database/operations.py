@@ -13,7 +13,7 @@ from quadpype.client.operations_base import (
     DeleteOperation,
     BaseOperationsSession
 )
-from .mongo import get_project_connection
+from .database import get_project_connection
 from .entities import get_project
 
 
@@ -33,10 +33,10 @@ CURRENT_WORKFILE_INFO_SCHEMA = "quadpype:workfile-1.0"
 CURRENT_THUMBNAIL_SCHEMA = "quadpype:thumbnail-1.0"
 
 
-def _create_or_convert_to_mongo_id(mongo_id):
-    if mongo_id is None:
+def _create_or_convert_to_database_id(database_id):
+    if database_id is None:
         return ObjectId()
-    return ObjectId(mongo_id)
+    return ObjectId(database_id)
 
 
 def new_project_document(
@@ -66,7 +66,7 @@ def new_project_document(
     data["code"] = project_code
 
     return {
-        "_id": _create_or_convert_to_mongo_id(entity_id),
+        "_id": _create_or_convert_to_database_id(entity_id),
         "name": project_name,
         "type": CURRENT_PROJECT_SCHEMA,
         "entity_data": data,
@@ -101,7 +101,7 @@ def new_asset_document(
     data["parents"] = parents
 
     return {
-        "_id": _create_or_convert_to_mongo_id(entity_id),
+        "_id": _create_or_convert_to_database_id(entity_id),
         "type": "asset",
         "name": name,
         "parent": ObjectId(project_id),
@@ -130,7 +130,7 @@ def new_subset_document(name, family, asset_id, data=None, entity_id=None):
         data = {}
     data["family"] = family
     return {
-        "_id": _create_or_convert_to_mongo_id(entity_id),
+        "_id": _create_or_convert_to_database_id(entity_id),
         "schema": CURRENT_SUBSET_SCHEMA,
         "type": "subset",
         "name": name,
@@ -158,7 +158,7 @@ def new_version_doc(version, subset_id, data=None, entity_id=None):
         data = {}
 
     return {
-        "_id": _create_or_convert_to_mongo_id(entity_id),
+        "_id": _create_or_convert_to_database_id(entity_id),
         "schema": CURRENT_VERSION_SCHEMA,
         "type": "version",
         "name": int(version),
@@ -186,7 +186,7 @@ def new_hero_version_doc(version_id, subset_id, data=None, entity_id=None):
         data = {}
 
     return {
-        "_id": _create_or_convert_to_mongo_id(entity_id),
+        "_id": _create_or_convert_to_database_id(entity_id),
         "schema": CURRENT_HERO_VERSION_SCHEMA,
         "type": "hero_version",
         "version_id": version_id,
@@ -218,7 +218,7 @@ def new_representation_doc(
         data = {}
 
     return {
-        "_id": _create_or_convert_to_mongo_id(entity_id),
+        "_id": _create_or_convert_to_database_id(entity_id),
         "schema": CURRENT_REPRESENTATION_SCHEMA,
         "type": "representation",
         "parent": version_id,
@@ -246,7 +246,7 @@ def new_thumbnail_doc(data=None, entity_id=None):
         data = {}
 
     return {
-        "_id": _create_or_convert_to_mongo_id(entity_id),
+        "_id": _create_or_convert_to_database_id(entity_id),
         "type": "thumbnail",
         "schema": CURRENT_THUMBNAIL_SCHEMA,
         "data": data
@@ -275,7 +275,7 @@ def new_workfile_info_doc(
         data = {}
 
     return {
-        "_id": _create_or_convert_to_mongo_id(entity_id),
+        "_id": _create_or_convert_to_database_id(entity_id),
         "type": "workfile",
         "parent": ObjectId(asset_id),
         "task_name": task_name,
@@ -302,7 +302,7 @@ def prepare_subset_update_data(old_doc, new_doc, replace=True):
     """Compare two subset documents and prepare update data.
 
     Based on compared values will create update data for
-    'MongoUpdateOperation'.
+    'DatabaseUpdateOperation'.
 
     Empty output means that documents are identical.
 
@@ -317,7 +317,7 @@ def prepare_version_update_data(old_doc, new_doc, replace=True):
     """Compare two version documents and prepare update data.
 
     Based on compared values will create update data for
-    'MongoUpdateOperation'.
+    'DatabaseUpdateOperation'.
 
     Empty output means that documents are identical.
 
@@ -346,7 +346,7 @@ def prepare_representation_update_data(old_doc, new_doc, replace=True):
     """Compare two representation documents and prepare update data.
 
     Based on compared values will create update data for
-    'MongoUpdateOperation'.
+    'DatabaseUpdateOperation'.
 
     Empty output means that documents are identical.
 
@@ -361,7 +361,7 @@ def prepare_workfile_info_update_data(old_doc, new_doc, replace=True):
     """Compare two workfile info documents and prepare update data.
 
     Based on compared values will create update data for
-    'MongoUpdateOperation'.
+    'DatabaseUpdateOperation'.
 
     Empty output means that documents are identical.
 
@@ -372,7 +372,7 @@ def prepare_workfile_info_update_data(old_doc, new_doc, replace=True):
     return _prepare_update_data(old_doc, new_doc, replace)
 
 
-class MongoCreateOperation(CreateOperation):
+class DatabaseCreateOperation(CreateOperation):
     """Operation to create an entity.
 
     Args:
@@ -398,11 +398,11 @@ class MongoCreateOperation(CreateOperation):
     def entity_id(self):
         return self._data["_id"]
 
-    def to_mongo_operation(self):
+    def to_database_operation(self):
         return InsertOne(copy.deepcopy(self._data))
 
 
-class MongoUpdateOperation(UpdateOperation):
+class DatabaseUpdateOperation(UpdateOperation):
     """Operation to update an entity.
 
     Args:
@@ -424,7 +424,7 @@ class MongoUpdateOperation(UpdateOperation):
 
         self._entity_id = ObjectId(self._entity_id)
 
-    def to_mongo_operation(self):
+    def to_database_operation(self):
         unset_data = {}
         set_data = {}
         for key, value in self._update_data.items():
@@ -448,7 +448,7 @@ class MongoUpdateOperation(UpdateOperation):
         )
 
 
-class MongoDeleteOperation(DeleteOperation):
+class DatabaseDeleteOperation(DeleteOperation):
     """Operation to delete an entity.
 
     Args:
@@ -467,11 +467,11 @@ class MongoDeleteOperation(DeleteOperation):
 
         self._entity_id = ObjectId(self._entity_id)
 
-    def to_mongo_operation(self):
+    def to_database_operation(self):
         return DeleteOne({"_id": self.entity_id})
 
 
-class MongoOperationsSession(BaseOperationsSession):
+class DatabaseOperationsSession(BaseOperationsSession):
     """Session storing operations that should happen in an order.
 
     At this moment does not handle anything special can be sonsidered as
@@ -499,46 +499,46 @@ class MongoOperationsSession(BaseOperationsSession):
         for project_name, operations in operations_by_project.items():
             bulk_writes = []
             for operation in operations:
-                mongo_op = operation.to_mongo_operation()
-                if mongo_op is not None:
-                    bulk_writes.append(mongo_op)
+                database_op = operation.to_database_operation()
+                if database_op is not None:
+                    bulk_writes.append(database_op)
 
             if bulk_writes:
                 collection = get_project_connection(project_name)
                 collection.bulk_write(bulk_writes)
 
     def create_entity(self, project_name, entity_type, data):
-        """Fast access to 'MongoCreateOperation'.
+        """Fast access to 'DatabaseCreateOperation'.
 
         Returns:
-            MongoCreateOperation: Object of update operation.
+            DatabaseCreateOperation: Object of update operation.
         """
 
-        operation = MongoCreateOperation(project_name, entity_type, data)
+        operation = DatabaseCreateOperation(project_name, entity_type, data)
         self.add(operation)
         return operation
 
     def update_entity(self, project_name, entity_type, entity_id, update_data):
-        """Fast access to 'MongoUpdateOperation'.
+        """Fast access to 'DatabaseUpdateOperation'.
 
         Returns:
-            MongoUpdateOperation: Object of update operation.
+            DatabaseUpdateOperation: Object of update operation.
         """
 
-        operation = MongoUpdateOperation(
+        operation = DatabaseUpdateOperation(
             project_name, entity_type, entity_id, update_data
         )
         self.add(operation)
         return operation
 
     def delete_entity(self, project_name, entity_type, entity_id):
-        """Fast access to 'MongoDeleteOperation'.
+        """Fast access to 'DatabaseDeleteOperation'.
 
         Returns:
-            MongoDeleteOperation: Object of delete operation.
+            DatabaseDeleteOperation: Object of delete operation.
         """
 
-        operation = MongoDeleteOperation(project_name, entity_type, entity_id)
+        operation = DatabaseDeleteOperation(project_name, entity_type, entity_id)
         self.add(operation)
         return operation
 
@@ -567,7 +567,7 @@ def create_project(
         library_project(bool): Project is library project.
 
     Raises:
-        ValueError: When project name already exists in MongoDB.
+        ValueError: When project name already exists in the database.
 
     Returns:
         dict: Created project document.
@@ -596,7 +596,7 @@ def create_project(
         "schema": CURRENT_PROJECT_SCHEMA
     }
 
-    op_session = MongoOperationsSession()
+    op_session = DatabaseOperationsSession()
     # Insert document with basic data
     create_op = op_session.create_entity(
         project_name, project_doc["type"], project_doc

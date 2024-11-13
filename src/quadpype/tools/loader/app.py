@@ -221,24 +221,24 @@ class LoaderWindow(BaseToolDialog):
 
     def refresh(self):
         self.echo("Fetching results..")
-        lib.schedule(self._refresh, 50, channel="mongo")
+        lib.schedule(self._refresh, 50, channel="database")
 
     def on_assetschanged(self, *args):
         self.echo("Fetching hierarchy..")
-        lib.schedule(self._assetschanged, 50, channel="mongo")
+        lib.schedule(self._assetschanged, 50, channel="database")
 
     def on_subsetschanged(self, *args):
         self.echo("Fetching subset..")
-        lib.schedule(self._subsetschanged, 50, channel="mongo")
+        lib.schedule(self._subsetschanged, 50, channel="database")
 
     def on_versionschanged(self, *args):
         self.echo("Fetching version..")
-        lib.schedule(self._versionschanged, 150, channel="mongo")
+        lib.schedule(self._versionschanged, 150, channel="database")
 
     def set_context(self, context, refresh=True):
         self.echo("Setting context: {}".format(context))
         lib.schedule(lambda: self._set_context(context, refresh=refresh),
-                     50, channel="mongo")
+                     50, channel="database")
 
     def _on_load_start(self):
         # Show overlay and process events so it's repainted

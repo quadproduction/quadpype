@@ -16,7 +16,7 @@ class DatabaseModule(QuadPypeModule, ITrayModule):
         if not thumbnail_root:
             thumbnail_root = database_settings["QUADPYPE_THUMBNAIL_ROOT"]
 
-        # Mongo DB timeout
+        # Database DB timeout
         quadpype_db_timeout = os.getenv("QUADPYPE_DB_TIMEOUT")
         if not quadpype_db_timeout:
             quadpype_db_timeout = database_settings["QUADPYPE_DB_TIMEOUT"]
@@ -35,7 +35,7 @@ class DatabaseModule(QuadPypeModule, ITrayModule):
             # TODO thumbnails root should be multiplafrom
             # - thumbnails root
             "QUADPYPE_THUMBNAIL_ROOT": self.thumbnail_root,
-            # - mongo timeout in ms
+            # - Database timeout in ms
             "QUADPYPE_DB_TIMEOUT": str(self.quadpype_db_timeout),
         }
 

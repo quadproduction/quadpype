@@ -16,7 +16,7 @@ from quadpype.lib import (
     TemplateUnsolved,
     format_file_size,
 )
-from quadpype.pipeline import QuadPypeMongoDB, Anatomy
+from quadpype.pipeline import QuadPypeDBHandler, Anatomy
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
 
 
@@ -33,7 +33,7 @@ class DeleteOldVersions(BaseAction):
 
     settings_key = "delete_old_versions"
 
-    dbcon = QuadPypeMongoDB()
+    dbcon = QuadPypeDBHandler()
 
     inteface_title = "Choose your preferences"
     splitter_item = {"type": "label", "value": "---"}
@@ -192,7 +192,7 @@ class DeleteOldVersions(BaseAction):
             if subset_name not in ftrack_assets_by_name:
                 ftrack_assets_by_name[subset_name] = ftrack_asset
 
-        # Set Mongo collection
+        # Set database collection
         project_name = project["full_name"]
         anatomy = Anatomy(project_name)
         self.dbcon.Session["QUADPYPE_PROJECT_NAME"] = project_name
@@ -367,7 +367,7 @@ class DeleteOldVersions(BaseAction):
         else:
             size = self.delete_only_repre_files(dir_paths, file_paths_by_dir)
 
-        mongo_changes_bulk = []
+        database_changes_bulk = []
         for version in versions:
             orig_version_tags = version["data"].get("tags") or []
             version_tags = [tag for tag in orig_version_tags]
@@ -379,10 +379,10 @@ class DeleteOldVersions(BaseAction):
 
             update_query = {"_id": version["_id"]}
             update_data = {"$set": {"data.tags": version_tags}}
-            mongo_changes_bulk.append(UpdateOne(update_query, update_data))
+            database_changes_bulk.append(UpdateOne(update_query, update_data))
 
-        if mongo_changes_bulk:
-            self.dbcon.bulk_write(mongo_changes_bulk)
+        if database_changes_bulk:
+            self.dbcon.bulk_write(database_changes_bulk)
 
         self.dbcon.uninstall()
 

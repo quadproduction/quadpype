@@ -16,7 +16,7 @@ import threading
 import gazu
 
 from quadpype.client import get_project, get_assets, get_asset_by_name
-from quadpype.pipeline import QuadPypeMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 from quadpype.lib import Logger
 from .credentials import validate_credentials
 from .update_op_with_zou import (
@@ -45,7 +45,7 @@ class Listener:
         Raises:
             AuthFailedException: Wrong user login and/or password
         """
-        self.dbcon = QuadPypeMongoDB()
+        self.dbcon = QuadPypeDBHandler()
         self.dbcon.install()
 
         gazu.client.set_host(os.environ["KITSU_SERVER"])

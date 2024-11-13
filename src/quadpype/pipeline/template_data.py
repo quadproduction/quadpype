@@ -171,8 +171,8 @@ def get_template_data(
         Asset: 'name', 'data.parents', 'data.tasks'
 
     Args:
-        project_doc (Dict[str, Any]): Mongo document of project from MongoDB.
-        asset_doc (Dict[str, Any]): Mongo document of asset from MongoDB.
+        project_doc (Dict[str, Any]): DB document of project from the database.
+        asset_doc (Dict[str, Any]): DB document of asset from the database.
         task_name (Union[str, None]): Task name under passed asset.
         host_name (Union[str, None]): Used to fill '{app}' key.
         global_settings (Union[Dict, None]): Prepared global settings.

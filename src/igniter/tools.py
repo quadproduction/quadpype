@@ -26,15 +26,15 @@ class QuadPypeVersionIncompatible(Exception):
     pass
 
 
-def should_add_certificate_path_to_mongo_url(mongo_url):
-    """Check if should add ca certificate to mongo url.
+def should_add_certificate_path_to_database_uri(database_uri):
+    """Check if should add ca certificate to database uri.
 
     Since 30.9.2021 cloud mongo requires newer certificates that are not
-    available on most of workstation. This adds path to certifi certificate
+    available on most of workstation. This adds path to certificate
     which is valid for it. To add the certificate path url must have scheme
     'mongodb+srv' or has 'ssl=true' or 'tls=true' in url query.
     """
-    parsed = urlparse(mongo_url)
+    parsed = urlparse(database_uri)
     query = parse_qs(parsed.query)
     lowered_query_keys = set(key.lower() for key in query.keys())
     add_certificate = False
@@ -54,17 +54,17 @@ def should_add_certificate_path_to_mongo_url(mongo_url):
     return add_certificate
 
 
-def validate_mongo_connection(cnx: str) -> (bool, str):
-    """Check if provided mongodb URL is valid.
+def validate_database_connection(database_uri: str) -> tuple[bool, str]:
+    """Check if provided database URI is valid.
 
     Args:
-        cnx (str): URL to validate.
+        database_uri (str): URL to validate.
 
     Returns:
         (bool, str): True if ok, False if not and reason in str.
 
     """
-    parsed = urlparse(cnx)
+    parsed = urlparse(database_uri)
     if parsed.scheme not in ["mongodb", "mongodb+srv"]:
         return False, "Not mongodb schema"
 
@@ -72,17 +72,17 @@ def validate_mongo_connection(cnx: str) -> (bool, str):
         "serverSelectionTimeoutMS": os.getenv("QUADPYPE_DB_TIMEOUT", 2000)
     }
     # Add certificate path if should be required
-    if should_add_certificate_path_to_mongo_url(cnx):
+    if should_add_certificate_path_to_database_uri(database_uri):
         kwargs["tlsCAFile"] = certifi.where()
 
     try:
-        client = MongoClient(cnx, **kwargs)
+        client = MongoClient(database_uri, **kwargs)
         client.server_info()
         with client.start_session():
             pass
         client.close()
     except ServerSelectionTimeoutError as e:
-        return False, f"Cannot connect to server {cnx} - {e}"
+        return False, f"Cannot connect to server {database_uri} - {e}"
     except ValueError:
         return False, f"Invalid port specified {parsed.port}"
     except (ConfigurationError, OperationFailure, InvalidURI) as exc:
@@ -91,11 +91,11 @@ def validate_mongo_connection(cnx: str) -> (bool, str):
         return True, "Connection is successful"
 
 
-def validate_mongo_string(mongo: str) -> (bool, str):
-    """Validate string if it is mongo url acceptable by **Igniter**..
+def validate_database_uri(database_uri: str) -> tuple[bool, str]:
+    """Validate string if it is database uri acceptable by **Igniter**..
 
     Args:
-        mongo (str): String to validate.
+        database_uri (str): String to validate.
 
     Returns:
         (bool, str):
@@ -103,12 +103,12 @@ def validate_mongo_string(mongo: str) -> (bool, str):
             the reason why it failed.
 
     """
-    if not mongo:
+    if not database_uri:
         return True, "empty string"
-    return validate_mongo_connection(mongo)
+    return validate_database_connection(database_uri)
 
 
-def validate_path_string(path: str) -> (bool, str):
+def validate_path_string(path: str) -> tuple[bool, str]:
     """Validate string if it is path to QuadPype repository.
 
     Args:
@@ -133,31 +133,31 @@ def validate_path_string(path: str) -> (bool, str):
     return True, "valid path"
 
 
-def get_quadpype_global_settings(url: str) -> dict:
-    """Load global settings from Mongo database.
+def get_quadpype_global_settings(database_uri: str) -> dict:
+    """Load global settings from database URI.
 
     We are loading data from database `quadpype` and collection `settings`.
     There we expect document type `global_settings`.
 
     Args:
-        url (str): MongoDB url.
+        database_uri (str): Database URI.
 
     Returns:
         dict: With settings data. Empty dictionary is returned if not found.
     """
     kwargs = {}
-    if should_add_certificate_path_to_mongo_url(url):
+    if should_add_certificate_path_to_database_uri(database_uri):
         kwargs["tlsCAFile"] = certifi.where()
 
     try:
-        # Create mongo connection
-        client = MongoClient(url, **kwargs)
+        # Create database connection
+        client = MongoClient(database_uri, **kwargs)
         # Access settings collection
         quadpype_db = os.getenv("QUADPYPE_DATABASE_NAME") or "quadpype"
         col = client[quadpype_db]["settings"]
         # Query global settings
         global_settings = col.find_one({"type": "global_settings"}) or {}
-        # Close Mongo connection
+        # Close database connection
         client.close()
 
     except Exception:
@@ -171,7 +171,7 @@ def get_quadpype_path_from_settings(settings: dict) -> Union[str, None]:
     """Get QuadPype path from global settings.
 
     Args:
-        settings (dict): mongodb url.
+        settings (dict): settings from DB.
 
     Returns:
         path to QuadPype or None if not found
@@ -220,9 +220,9 @@ def get_expected_studio_version_str(
     Returns:
         str: QuadPype version which should be used. Empty string means latest.
     """
-    mongo_url = os.getenv("QUADPYPE_MONGO")
+    database_uri = os.getenv("QUADPYPE_DB_URI")
     if global_settings is None:
-        global_settings = get_quadpype_global_settings(mongo_url)
+        global_settings = get_quadpype_global_settings(database_uri)
     key = "staging_version" if staging else "production_version"
     return global_settings.get(key) or ""
 

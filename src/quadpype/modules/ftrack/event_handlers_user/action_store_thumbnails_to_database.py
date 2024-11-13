@@ -14,7 +14,7 @@ from quadpype.client import (
     get_representations
 )
 from quadpype_modules.ftrack.lib import BaseAction, statics_icon
-from quadpype.pipeline import QuadPypeMongoDB, Anatomy
+from quadpype.pipeline import QuadPypeDBHandler, Anatomy
 
 from quadpype_modules.ftrack.lib.database_sync import CUST_ATTR_ID_KEY
 
@@ -35,7 +35,7 @@ class StoreThumbnailsToQuadPype(BaseAction):
     thumbnail_key = "QUADPYPE_THUMBNAIL_ROOT"
 
     def __init__(self, *args, **kwargs):
-        self.db_con = QuadPypeMongoDB()
+        self.db_con = QuadPypeDBHandler()
         super().__init__(*args, **kwargs)
 
     def discover(self, session, entities, event):
@@ -403,10 +403,10 @@ class StoreThumbnailsToQuadPype(BaseAction):
             return output
 
         asset_ent = None
-        asset_mongo_id = parent["custom_attributes"].get(CUST_ATTR_ID_KEY)
-        if asset_mongo_id:
+        asset_database_id = parent["custom_attributes"].get(CUST_ATTR_ID_KEY)
+        if asset_database_id:
             try:
-                asset_ent = get_asset_by_id(project_name, asset_mongo_id)
+                asset_ent = get_asset_by_id(project_name, asset_database_id)
             except Exception:
                 pass
 

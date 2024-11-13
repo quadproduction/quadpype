@@ -24,9 +24,9 @@ try:
     from weakref import WeakMethod
 except ImportError:
     from ftrack_api._weakref import WeakMethod
-from quadpype_modules.ftrack.lib import get_ftrack_event_mongo_info
+from quadpype_modules.ftrack.lib import get_ftrack_event_database_info
 
-from quadpype.client import QuadPypeMongoConnection
+from quadpype.client import QuadPypeDBConnection
 from quadpype.lib import Logger
 
 TOPIC_STATUS_SERVER = "quadpype.event.server.status"
@@ -118,37 +118,37 @@ class ProcessEventHub(SocketBaseEventHub):
     pypelog = Logger.get_logger("Session Processor")
 
     def __init__(self, *args, **kwargs):
-        self.mongo_url = None
+        self.database_uri = None
         self.dbcon = None
 
         super().__init__(*args, **kwargs)
 
     def prepare_dbcon(self):
         try:
-            database_name, collection_name = get_ftrack_event_mongo_info()
-            mongo_client = QuadPypeMongoConnection.get_mongo_client()
-            self.dbcon = mongo_client[database_name][collection_name]
-            self.mongo_client = mongo_client
+            database_name, collection_name = get_ftrack_event_database_info()
+            database_client = QuadPypeDBConnection.get_database_client()
+            self.dbcon = database_client[database_name][collection_name]
+            self.database_client = database_client
 
         except pymongo.errors.AutoReconnect:
             self.pypelog.error((
-                "Mongo server \"{}\" is not responding, exiting."
-            ).format(QuadPypeMongoConnection.get_default_mongo_url()))
+                "Database \"{}\" is not responding, exiting."
+            ).format(QuadPypeDBConnection.get_default_database_uri()))
             sys.exit(0)
 
         except pymongo.errors.OperationFailure:
             self.pypelog.error((
-                "Error with Mongo access, probably permissions."
+                "Error with the database access, probably permissions."
                 "Check if exist database with name \"{}\""
                 " and collection \"{}\" inside."
             ).format(self.database, self.collection_name))
-            self.sock.sendall(b"MongoError")
+            self.sock.sendall(b"DatabaseError")
             sys.exit(0)
 
     def wait(self, duration=None):
         """Overridden wait
-        Event are loaded from Mongo DB when queue is empty. Handled event is
-        set as processed in Mongo DB.
+        Event are loaded from the database when queue is empty. Handled event is
+        set as processed in the database.
         """
         started = time.time()
         self.prepare_dbcon()
@@ -162,19 +162,19 @@ class ProcessEventHub(SocketBaseEventHub):
                 try:
                     self._handle(event)
 
-                    mongo_id = event["data"].get("_event_mongo_id")
-                    if mongo_id is None:
+                    database_id = event["data"].get("_event_database_id")
+                    if database_id is None:
                         continue
 
                     self.dbcon.update_one(
-                        {"_id": mongo_id},
+                        {"_id": database_id},
                         {"$set": {"pype_data.is_processed": True}}
                     )
 
                 except pymongo.errors.AutoReconnect:
                     self.pypelog.error((
-                        "Mongo server \"{}\" is not responding, exiting."
-                    ).format(os.environ["QUADPYPE_MONGO"]))
+                        "Database \"{}\" is not responding, exiting."
+                    ).format(os.environ["QUADPYPE_DB_URI"]))
                     sys.exit(0)
                 # Additional special processing of events.
                 if event['topic'] == 'ftrack.meta.disconnected':
@@ -206,7 +206,7 @@ class ProcessEventHub(SocketBaseEventHub):
             }
             try:
                 event = ftrack_api.event.base.Event(**new_event_data)
-                event["data"]["_event_mongo_id"] = event_data["_id"]
+                event["data"]["_event_database_id"] = event_data["_id"]
             except Exception:
                 self.logger.exception(L(
                     'Failed to convert payload into event: {0}',

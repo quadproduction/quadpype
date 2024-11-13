@@ -355,15 +355,15 @@ def inject_quadpype_environment(deadlinePlugin):
                 " QUADPYPE_TASK_NAME, QUADPYPE_HOST_DISPLAY_NAME"
             ))
 
-        quadpype_mongo = job.GetJobEnvironmentKeyValue("QUADPYPE_MONGO")
-        if quadpype_mongo:
+        database_uri = job.GetJobEnvironmentKeyValue("QUADPYPE_DB_URI")
+        if database_uri:
             # inject env var for QuadPype extractenvironments
             # SetEnvironmentVariable is important, not SetProcessEnv...
-            deadlinePlugin.SetEnvironmentVariable("QUADPYPE_MONGO",
-                                                  quadpype_mongo)
+            deadlinePlugin.SetEnvironmentVariable("QUADPYPE_DB_URI",
+                                                  database_uri)
 
-        if not os.getenv("QUADPYPE_MONGO"):
-            print(">>> Missing QUADPYPE_MONGO env var, process won't work")
+        if not os.getenv("QUADPYPE_DB_URI"):
+            print(">>> Missing QUADPYPE_DB_URI env var, process won't work")
 
         os.environ["QUADPYPE_DB_TIMEOUT"] = "5000"
 

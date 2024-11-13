@@ -16,7 +16,7 @@ from qtpy import QtCore, QtWidgets
 from qtpy.QtGui import QClipboard
 
 from quadpype import style
-from quadpype.client import QuadPypeMongoConnection
+from quadpype.client import QuadPypeDBConnection
 from quadpype.lib import JSONSettingRegistry
 from quadpype.tools.utils import PlaceholderLineEdit, get_quadpype_qt_app
 from quadpype.tools.utils.constants import PROJECT_NAME_ROLE
@@ -317,7 +317,7 @@ class AssetReporterWindow(QtWidgets.QDialog):
     def process(self):
         """Generate asset usage report data.
 
-        This is the main method of the tool. It is using MongoDB
+        This is the main method of the tool. It is using DB
         aggregation pipeline to find all published versions that
         are used as input for other published versions. Then it
         generates a map of assets and their usage.
@@ -348,7 +348,7 @@ class AssetReporterWindow(QtWidgets.QDialog):
             }
         ]
 
-        client = QuadPypeMongoConnection.get_mongo_client()
+        client = QuadPypeDBConnection.get_database_client()
         db = client["quadpype_projects"]
 
         result = db[project].aggregate(pipeline)

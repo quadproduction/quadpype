@@ -1,2 +1,2 @@
-from .mongo.operations import *
-OperationsSession = MongoOperationsSession
+from .database.operations import *
+OperationsSession = DatabaseOperationsSession

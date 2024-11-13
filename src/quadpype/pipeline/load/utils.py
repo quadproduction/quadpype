@@ -94,7 +94,7 @@ def get_repres_contexts(representation_ids, dbcon=None):
 
     Args:
         representation_ids (list): The representation ids.
-        dbcon (QuadPypeMongoDB): Mongo connection object.
+        dbcon (QuadPypeDBHandler): Database connection object.
 
     Returns:
         dict: The full representation context by representation id.
@@ -194,7 +194,7 @@ def get_subset_contexts(subset_ids, dbcon=None):
         'get_repre_contexts'.
     Args:
         subset_ids (list): The subset ids.
-        dbcon (QuadPypeMongoDB): Mongo connection object.
+        dbcon (QuadPypeDBHandler): Database connection object.
     Returns:
         dict: The full representation context by representation id.
     """

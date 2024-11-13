@@ -5,7 +5,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 
 from quadpype import style
 from quadpype import resources
-from quadpype.pipeline import QuadPypeMongoDB
+from quadpype.pipeline import QuadPypeDBHandler
 
 import qtawesome
 from .models import (
@@ -234,7 +234,7 @@ class LauncherWindow(QtWidgets.QDialog):
         self.log = logging.getLogger(
             ".".join([__name__, self.__class__.__name__])
         )
-        self.dbcon = QuadPypeMongoDB()
+        self.dbcon = QuadPypeDBHandler()
 
         self.setWindowTitle("Launcher")
         self.setFocusPolicy(QtCore.Qt.StrongFocus)

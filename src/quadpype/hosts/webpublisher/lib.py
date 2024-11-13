@@ -8,7 +8,7 @@ from bson.objectid import ObjectId
 import pyblish.util
 import pyblish.api
 
-from quadpype.client.mongo import QuadPypeMongoConnection
+from quadpype.client.database import QuadPypeDBConnection
 from quadpype.settings import get_project_settings
 from quadpype.lib import Logger
 from quadpype.lib.profiles_filtering import filter_profiles
@@ -108,16 +108,16 @@ def publish_in_test(log, close_plugin_name=None):
 
 def get_webpublish_conn():
     """Get connection to QuadPype 'webpublishes' collection."""
-    mongo_client = QuadPypeMongoConnection.get_mongo_client()
+    database_client = QuadPypeDBConnection.get_database_client()
     database_name = os.environ["QUADPYPE_DATABASE_NAME"]
-    return mongo_client[database_name]["webpublishes"]
+    return database_client[database_name]["webpublishes"]
 
 
 def start_webpublish_log(dbcon, batch_id, user):
     """Start new log record for 'batch_id'
 
         Args:
-            dbcon (QuadPypeMongoConnection)
+            dbcon (QuadPypeDBConnection)
             batch_id (str)
             user (str)
         Returns
@@ -136,7 +136,7 @@ def publish_and_log(dbcon, _id, log, close_plugin_name=None, batch_id=None):
     """Loops through all plugins, logs ok and fails into QuadPype DB.
 
         Args:
-            dbcon (QuadPypeMongoConnection)
+            dbcon (QuadPypeDBConnection)
             _id (str) - id of current job in DB
             log (quadpype.lib.Logger)
             batch_id (str) - id sent from frontend

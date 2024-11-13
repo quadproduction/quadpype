@@ -8,7 +8,7 @@ from .constants import (
     FPS_KEYS
 )
 from .settings import (
-    get_ftrack_event_mongo_info
+    get_ftrack_event_database_info
 )
 from .custom_attributes import (
     default_custom_attributes_definition,
@@ -34,7 +34,7 @@ __all__ = (
     "CUST_ATTR_INTENT",
     "FPS_KEYS",
 
-    "get_ftrack_event_mongo_info",
+    "get_ftrack_event_database_info",
 
     "default_custom_attributes_definition",
     "app_definitions_from_app_manager",

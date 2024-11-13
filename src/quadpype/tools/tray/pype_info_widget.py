@@ -441,7 +441,7 @@ class PypeInfoSubWidget(QtWidgets.QWidget):
             "build_version": "Build version:",
             "executable": "QuadPype executable:",
             "pype_root": "QuadPype location:",
-            "mongo_url": "QuadPype Mongo URI:"
+            "database_uri": "QuadPype Database URI:"
         }
         # Prepare keys order
         keys_order = [
@@ -449,7 +449,7 @@ class PypeInfoSubWidget(QtWidgets.QWidget):
             "build_version",
             "executable",
             "pype_root",
-            "mongo_url"
+            "database_uri"
         ]
 
         for key in info_values.keys():

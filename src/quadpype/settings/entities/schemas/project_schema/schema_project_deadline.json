@@ -130,8 +130,8 @@
                     "children": [
                         {
                             "type": "boolean",
-                            "key": "pass_mongo_url",
-                            "label": "Pass Mongo url to job"
+                            "key": "add_database_uri",
+                            "label": "Pass database URI to job"
                         }
                     ]
                 },

@@ -211,7 +211,7 @@ class PypeCommands:
 
     def run_tests(self, folder, mark, pyargs,
                   test_data_folder, persist, app_variant, timeout, setup_only,
-                  mongo_url, app_group, dump_databases):
+                  database_uri, app_group, dump_databases):
         """
             Runs tests from 'folder'
 
@@ -227,7 +227,7 @@ class PypeCommands:
                 timeout (int): explicit timeout for single test
                 setup_only (bool): if only preparation steps should be
                     triggered, no tests (useful for debugging/development)
-                mongo_url (str): url to the QuadPype Mongo database
+                database_uri (str): url to the QuadPype database
         """
         print("run_tests")
         if folder:
@@ -269,8 +269,8 @@ class PypeCommands:
         if setup_only:
             args.extend(["--setup_only", setup_only])
 
-        if mongo_url:
-            args.extend(["--mongo_url", mongo_url])
+        if database_uri:
+            args.extend(["--database_uri", database_uri])
 
         if dump_databases:
             msg = "dump_databases format is not recognized: {}".format(

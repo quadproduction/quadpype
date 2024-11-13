@@ -284,7 +284,7 @@ class AssetModel(QtGui.QStandardItemModel):
     'refreshed' signal.
 
     Args:
-        dbcon (QuadPypeMongoDB): Ready to use connection to mongo with.
+        dbcon (QuadPypeDBHandler): Ready to use connection to the database.
         parent (QObject): Parent Qt object.
     """
 
@@ -379,7 +379,7 @@ class AssetModel(QtGui.QStandardItemModel):
         if clear_model:
             self._clear_items()
 
-        # Fetch documents from mongo
+        # Fetch documents from database
         # Restart payload
         self._refreshing = True
         self._doc_payload = []
@@ -565,7 +565,7 @@ class AssetsWidget(QtWidgets.QWidget):
     inheritance changes.
 
     Args:
-        dbcon (QuadPypeMongoDB): Connection to QuadPype mongo db.
+        dbcon (QuadPypeDBHandler): Connection to QuadPype database.
         parent (QWidget): Parent Qt widget.
     """
 

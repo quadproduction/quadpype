@@ -33,7 +33,7 @@ import appdirs
 
 from quadpype.settings import get_user_settings
 import quadpype.settings.lib as sett_lib
-from quadpype.client.mongo import validate_mongo_connection
+from quadpype.client.database import validate_database_connection
 
 _PLACEHOLDER = object()
 
@@ -546,20 +546,20 @@ def get_local_site_id():
     return get_user_id()
 
 
-def change_quadpype_mongo_url(new_mongo_url):
-    """Change mongo url in pype registry.
+def change_quadpype_database_uri(new_database_uri):
+    """Change database URI in QuadPype registry.
 
-    Change of QuadPype mongo URL require restart of running pype processes or
+    Change of QuadPype database URI require restart of running pype processes or
     processes using pype.
     """
 
-    validate_mongo_connection(new_mongo_url)
-    key = "quadpypeMongo"
-    registry = QuadPypeSecureRegistry("mongodb")
+    validate_database_connection(new_database_uri)
+    key = "DatabaseUri"
+    registry = QuadPypeSecureRegistry("Database")
     existing_value = registry.get_item(key, None)
     if existing_value is not None:
         registry.delete_item(key)
-    registry.set_item(key, new_mongo_url)
+    registry.set_item(key, new_database_uri)
 
 
 def get_quadpype_username():

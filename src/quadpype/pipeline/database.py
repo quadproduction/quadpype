@@ -5,7 +5,7 @@ import logging
 import pymongo
 from uuid import uuid4
 
-from quadpype.client import QuadPypeMongoConnection
+from quadpype.client import QuadPypeDBConnection
 
 from . import schema
 
@@ -95,7 +95,7 @@ def session_data_from_environment(context_keys=False):
         # Used during any connections to the outside world
         ("QUADPYPE_DB_TIMEOUT", "1000"),
 
-        # Name of database used in MongoDB
+        # Name of database to store projects
         ("QUADPYPE_PROJECTS_DB_NAME", "quadpype_projects"),
     ):
         value = os.getenv(key) or default_value
@@ -105,7 +105,7 @@ def session_data_from_environment(context_keys=False):
     return session_data
 
 
-class QuadPypeMongoDB:
+class QuadPypeDBHandler:
     def __init__(self, session=None, auto_install=True):
         self._id = uuid4()
         self._database = None
@@ -154,8 +154,8 @@ class QuadPypeMongoDB:
         return attr
 
     @property
-    def mongo_client(self):
-        return QuadPypeMongoConnection.get_mongo_client()
+    def database_client(self):
+        return QuadPypeDBConnection.get_database_client()
 
     @property
     def id(self):
@@ -184,7 +184,7 @@ class QuadPypeMongoDB:
             return
 
         self._installed = True
-        self._database = self.mongo_client[str(os.environ["QUADPYPE_PROJECTS_DB_NAME"])]
+        self._database = self.database_client[str(os.environ["QUADPYPE_PROJECTS_DB_NAME"])]
 
     def uninstall(self):
         """Close any connection to the database"""
@@ -206,7 +206,7 @@ class QuadPypeMongoDB:
         """Iter project documents
 
         Args:
-            projection (optional): MongoDB query projection operation
+            projection (optional): Database query projection operation
             only_active (optional): Skip inactive projects, default True.
 
         Returns:

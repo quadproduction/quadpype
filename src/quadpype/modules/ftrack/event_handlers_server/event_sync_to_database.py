@@ -20,7 +20,7 @@ from quadpype.client import (
 )
 from quadpype.settings import APPS_SETTINGS_KEY
 from quadpype.client.operations import CURRENT_ASSET_DOC_SCHEMA
-from quadpype.pipeline import QuadPypeMongoDB, schema
+from quadpype.pipeline import QuadPypeDBHandler, schema
 
 from quadpype_modules.ftrack.lib import (
     get_quadpype_attr,
@@ -90,7 +90,7 @@ class SyncToDatabaseEvent(BaseEvent):
         #   only entityTypes in interest instead of filtering by ignored
         self.debug_sync_types = collections.defaultdict(list)
 
-        self.dbcon = QuadPypeMongoDB()
+        self.dbcon = QuadPypeDBHandler()
         # Set processing session to not use global
         self.set_process_session(session)
         super().__init__(session)
@@ -317,19 +317,19 @@ class SyncToDatabaseEvent(BaseEvent):
         return self._database_archived_by_name
 
     @property
-    def changeability_by_mongo_id(self):
+    def changeability_by_database_id(self):
         """Return info about changeability of entity and it's parents."""
-        if self._changeability_by_mongo_id is None:
-            self._changeability_by_mongo_id = collections.defaultdict(
+        if self._changeability_by_database_id is None:
+            self._changeability_by_database_id = collections.defaultdict(
                 lambda: True
             )
             database_project, database_entities = self.database_entities
-            self._changeability_by_mongo_id[database_project["_id"]] = False
+            self._changeability_by_database_id[database_project["_id"]] = False
             self._bubble_changeability(
                 list(self.database_asset_ids_with_subsets)
             )
 
-        return self._changeability_by_mongo_id
+        return self._changeability_by_database_id
 
     def remove_cached_by_key(self, key, values):
         if self._database_ents is None:
@@ -396,7 +396,7 @@ class SyncToDatabaseEvent(BaseEvent):
 
             ftrack_id = data["ftrack_id"]
             parent_id = data["parent_id"]
-            mongo_id = data["_id"]
+            database_id = data["_id"]
             name = data["name"]
             entity = data["entity"]
 
@@ -411,13 +411,13 @@ class SyncToDatabaseEvent(BaseEvent):
                 self._database_ents_by_parent_id[parent_id].remove(entity)
 
             if self._database_ents_by_id is not None:
-                self._database_ents_by_id.pop(mongo_id, None)
+                self._database_ents_by_id.pop(database_id, None)
 
             if self._database_ents_by_name is not None:
                 self._database_ents_by_name.pop(name, None)
 
             if self._database_archived_by_id is not None:
-                self._database_archived_by_id[mongo_id] = entity
+                self._database_archived_by_id[database_id] = entity
 
     def _bubble_changeability(self, unchangeable_ids):
         unchangeable_queue = collections.deque()
@@ -438,7 +438,7 @@ class SyncToDatabaseEvent(BaseEvent):
                 continue
 
             # set changeability of current entity to False
-            self._changeability_by_mongo_id[entity_id] = False
+            self._changeability_by_database_id[entity_id] = False
             processed_parents_ids.append(entity_id)
             # if not entity then is probably archived
             if not entity:
@@ -455,7 +455,7 @@ class SyncToDatabaseEvent(BaseEvent):
                     self.log.warning((
                         "In database are entities without valid parents that"
                         " lead to Project (should not cause errors)"
-                        " - MongoId <{}>"
+                        " - database ID <{}>"
                     ).format(str(entity_id)))
                 continue
 
@@ -478,7 +478,7 @@ class SyncToDatabaseEvent(BaseEvent):
         self._database_ents_by_ftrack_id = None
         self._database_ents_by_name = None
         self._database_asset_ids_with_subsets = None
-        self._changeability_by_mongo_id = None
+        self._changeability_by_database_id = None
         self._database_archived_by_id = None
         self._database_archived_by_name = None
 
@@ -908,9 +908,9 @@ class SyncToDatabaseEvent(BaseEvent):
             database_ent = self.database_ents_by_ftrack_id.get(ftrack_id)
             if not database_ent:
                 continue
-            mongo_id = database_ent["_id"]
-            if self.changeability_by_mongo_id[mongo_id]:
-                removable_ids.append(mongo_id)
+            database_id = database_ent["_id"]
+            if self.changeability_by_database_id[database_id]:
+                removable_ids.append(database_id)
                 removed_names.append(removed_name)
             else:
                 recreate_ents.append(database_ent)
@@ -1054,7 +1054,7 @@ class SyncToDatabaseEvent(BaseEvent):
                 if found_idx is None:
                     continue
 
-                # Prepare updates dict for mongo update
+                # Prepare updates dict for database update
                 if "data" not in self.updates[database_entity["_id"]]:
                     self.updates[database_entity["_id"]]["data"] = {}
 
@@ -1066,8 +1066,8 @@ class SyncToDatabaseEvent(BaseEvent):
                 self._database_ents = proj_doc, asset_docs
 
                 if self._database_ents_by_id is not None:
-                    mongo_id = database_entity["_id"]
-                    self._database_ents_by_id[mongo_id] = database_entity
+                    database_id = database_entity["_id"]
+                    self._database_ents_by_id[database_id] = database_entity
 
                 if self._database_ents_by_parent_id is not None:
                     vis_par = database_entity["data"]["visualParent"]
@@ -1235,10 +1235,10 @@ class SyncToDatabaseEvent(BaseEvent):
         if parent_database["type"].lower() != "project":
             vis_par = parent_database["_id"]
 
-        mongo_id = ObjectId()
+        database_id = ObjectId()
         name = ftrack_ent["name"]
         final_entity = {
-            "_id": mongo_id,
+            "_id": database_id,
             "name": name,
             "type": "asset",
             "schema": CURRENT_ASSET_DOC_SCHEMA,
@@ -1277,13 +1277,13 @@ class SyncToDatabaseEvent(BaseEvent):
                 items.append("{} - \"{}\"".format(ent_path, value))
             self.report_items["error"][fps_msg] = items
 
-        _mongo_id_str = cust_attrs.get(CUST_ATTR_ID_KEY)
-        if _mongo_id_str:
+        _database_id_str = cust_attrs.get(CUST_ATTR_ID_KEY)
+        if _database_id_str:
             try:
-                _mongo_id = ObjectId(_mongo_id_str)
-                if _mongo_id not in self.database_ents_by_id:
-                    mongo_id = _mongo_id
-                    final_entity["_id"] = mongo_id
+                _database_id = ObjectId(_database_id_str)
+                if _database_id not in self.database_ents_by_id:
+                    database_id = _database_id
+                    final_entity["_id"] = database_id
 
             except Exception:
                 pass
@@ -1319,7 +1319,7 @@ class SyncToDatabaseEvent(BaseEvent):
             archived_id = archived["_id"]
             if (
                 archived["data"]["parents"] == parents or
-                self.changeability_by_mongo_id[archived_id]
+                self.changeability_by_database_id[archived_id]
             ):
                 # TODO logging
                 self.log.debug(
@@ -1327,9 +1327,9 @@ class SyncToDatabaseEvent(BaseEvent):
                         ent_path
                     )
                 )
-                mongo_id = archived_id
-                final_entity["_id"] = mongo_id
-                self.dbcon.replace_one({"_id": mongo_id}, final_entity)
+                database_id = archived_id
+                final_entity["_id"] = database_id
+                self.dbcon.replace_one({"_id": database_id}, final_entity)
                 replaced = True
 
         if not replaced:
@@ -1337,9 +1337,9 @@ class SyncToDatabaseEvent(BaseEvent):
             # TODO logging
             self.log.debug("Entity was synchronized <{}>".format(ent_path))
 
-        mongo_id_str = str(mongo_id)
-        if mongo_id_str != ftrack_ent["custom_attributes"][CUST_ATTR_ID_KEY]:
-            ftrack_ent["custom_attributes"][CUST_ATTR_ID_KEY] = mongo_id_str
+        database_id_str = str(database_id)
+        if database_id_str != ftrack_ent["custom_attributes"][CUST_ATTR_ID_KEY]:
+            ftrack_ent["custom_attributes"][CUST_ATTR_ID_KEY] = database_id_str
             try:
                 self.process_session.commit()
             except Exception:
@@ -1347,7 +1347,7 @@ class SyncToDatabaseEvent(BaseEvent):
                 # TODO logging
                 # TODO report
                 error_msg = (
-                    "Failed to store MongoID to entity's custom attribute"
+                    "Failed to store database ID to entity's custom attribute"
                 )
                 report_msg = (
                     "{}||SyncToQuadPype action may solve this issue"
@@ -1370,7 +1370,7 @@ class SyncToDatabaseEvent(BaseEvent):
             self._database_ents = (proj, ents)
 
         if self._database_ents_by_id is not None:
-            self._database_ents_by_id[mongo_id] = final_entity
+            self._database_ents_by_id[database_id] = final_entity
 
         if self._database_ents_by_parent_id is not None:
             self._database_ents_by_parent_id[vis_par].append(final_entity)
@@ -1402,7 +1402,7 @@ class SyncToDatabaseEvent(BaseEvent):
         for key, val in hier_values.items():
             output[key] = val
 
-        # Make sure mongo id is not set
+        # Make sure database id is not set
         output.pop(CUST_ATTR_ID_KEY, None)
 
         return output
@@ -1442,8 +1442,8 @@ class SyncToDatabaseEvent(BaseEvent):
                 ).format(ent_path))
                 continue
 
-            mongo_id = database_ent["_id"]
-            if self.changeability_by_mongo_id[mongo_id]:
+            database_id = database_ent["_id"]
+            if self.changeability_by_database_id[database_id]:
                 changeable_queue.append((ftrack_id, database_ent, new_name))
             else:
                 ftrack_ent = self.ftrack_ents_by_id[ftrack_id]
@@ -1488,7 +1488,7 @@ class SyncToDatabaseEvent(BaseEvent):
         # Process renaming in QuadPype DB
         while changeable_queue:
             ftrack_id, database_ent, new_name = changeable_queue.popleft()
-            mongo_id = database_ent["_id"]
+            database_id = database_ent["_id"]
             old_name = database_ent["name"]
 
             _entity_type = "asset"
@@ -1508,8 +1508,8 @@ class SyncToDatabaseEvent(BaseEvent):
                 old_val = self._database_ents_by_name.pop(old_name)
                 old_val["name"] = new_name
                 self._database_ents_by_name[new_name] = old_val
-                self.updates[mongo_id] = {"name": new_name}
-                self.renamed_in_database.append(mongo_id)
+                self.updates[database_id] = {"name": new_name}
+                self.renamed_in_database.append(database_id)
 
                 old_names.append(old_name)
                 if new_name in old_names:
@@ -1659,20 +1659,20 @@ class SyncToDatabaseEvent(BaseEvent):
                     pop_out_ents.append(ftrack_id)
                     continue
 
-            mongo_id_configuration_id = self._mongo_id_configuration(
+            database_id_configuration_id = self._database_id_configuration(
                 ent_info,
                 cust_attrs,
                 hier_attrs,
                 entity_type_conf_ids
             )
-            if not mongo_id_configuration_id:
+            if not database_id_configuration_id:
                 self.log.warning((
-                    "BUG REPORT: Missing MongoID configuration for `{} < {} >`"
+                    "BUG REPORT: Missing database id configuration for `{} < {} >`"
                 ).format(entity_type, ent_info["entityType"]))
                 continue
 
             _entity_key = collections.OrderedDict()
-            _entity_key["configuration_id"] = mongo_id_configuration_id
+            _entity_key["configuration_id"] = database_id_configuration_id
             _entity_key["entity_id"] = ftrack_id
 
             self.process_session.recorded_operations.push(
@@ -1686,14 +1686,14 @@ class SyncToDatabaseEvent(BaseEvent):
             )
 
         try:
-            # Commit changes of mongo_id to empty string
+            # Commit changes of database_id to empty string
             self.process_session.commit()
             self.log.debug("Committing unsetting")
         except Exception:
             self.process_session.rollback()
             # TODO logging
             msg = (
-                "Could not set value of Custom attribute, where mongo id"
+                "Could not set value of Custom attribute, where database id"
                 " is stored, to empty string. Ftrack ids: \"{}\""
             ).format(", ".join(ent_infos.keys()))
             self.log.warning(msg, exc_info=True)
@@ -1773,8 +1773,8 @@ class SyncToDatabaseEvent(BaseEvent):
             new_parent_id = ent_info["changes"]["parent_id"]["new"]
             old_parent_id = ent_info["changes"]["parent_id"]["old"]
 
-            mongo_id = database_ent["_id"]
-            if self.changeability_by_mongo_id[mongo_id]:
+            database_id = database_ent["_id"]
+            if self.changeability_by_database_id[database_id]:
                 par_av_ent = self.database_ents_by_ftrack_id.get(new_parent_id)
                 if not par_av_ent:
                     # TODO logging
@@ -1799,8 +1799,8 @@ class SyncToDatabaseEvent(BaseEvent):
 
                 # THIS MUST HAPPEN AFTER CREATING NEW ENTITIES !!!!
                 # - because may be moved to new created entity
-                if "data" not in self.updates[mongo_id]:
-                    self.updates[mongo_id]["data"] = {}
+                if "data" not in self.updates[database_id]:
+                    self.updates[database_id]["data"] = {}
 
                 vis_par_id = None
                 ent_path_items = [self.cur_project["full_name"]]
@@ -1809,18 +1809,18 @@ class SyncToDatabaseEvent(BaseEvent):
                     ent_path_items.extend(par_av_ent["data"]["parents"])
                     ent_path_items.append(par_av_ent["name"])
 
-                self.updates[mongo_id]["data"]["visualParent"] = vis_par_id
-                self.moved_in_database.append(mongo_id)
+                self.updates[database_id]["data"]["visualParent"] = vis_par_id
+                self.moved_in_database.append(database_id)
 
                 ent_path_items.append(database_ent["name"])
                 ent_path = "/".join(ent_path_items)
                 self.log.debug((
                     "Parent of entity ({}) was changed in database <{}>"
-                    ).format(str(mongo_id), ent_path)
+                    ).format(str(database_id), ent_path)
                 )
 
             else:
-                database_ent = self.database_ents_by_id[mongo_id]
+                database_ent = self.database_ents_by_id[database_id]
                 database_parent_id = database_ent["data"]["visualParent"]
                 if database_parent_id is None:
                     database_parent_id = database_ent["parent"]
@@ -1895,7 +1895,7 @@ class SyncToDatabaseEvent(BaseEvent):
         )
 
         ent_infos = self.ftrack_updated
-        ftrack_mongo_mapping = {}
+        ftrack_database_mapping = {}
         not_found_ids = []
         for ftrack_id, ent_info in ent_infos.items():
             if ent_info["entity_type"] == "Task":
@@ -1905,7 +1905,7 @@ class SyncToDatabaseEvent(BaseEvent):
                 not_found_ids.append(ftrack_id)
                 continue
 
-            ftrack_mongo_mapping[ftrack_id] = database_ent["_id"]
+            ftrack_database_mapping[ftrack_id] = database_ent["_id"]
 
         for ftrack_id in not_found_ids:
             ent_infos.pop(ftrack_id)
@@ -1936,7 +1936,7 @@ class SyncToDatabaseEvent(BaseEvent):
         for ftrack_id, ent_info in ent_infos.items():
             if ent_info["entity_type"] == "Task":
                 ftrack_id = ent_info["parentId"]
-            mongo_id = ftrack_mongo_mapping[ftrack_id]
+            database_id = ftrack_database_mapping[ftrack_id]
             entType = ent_info["entityType"]
             ent_path = self.get_ent_path(ftrack_id)
             if entType == "show":
@@ -1951,9 +1951,9 @@ class SyncToDatabaseEvent(BaseEvent):
 
             ent_changes = ent_info["changes"]
             if "description" in ent_changes:
-                if "data" not in self.updates[mongo_id]:
-                    self.updates[mongo_id]["data"] = {}
-                self.updates[mongo_id]["data"]["description"] = (
+                if "data" not in self.updates[database_id]:
+                    self.updates[database_id]["data"] = {}
+                self.updates[database_id]["data"]["description"] = (
                     ent_changes["description"]["new"] or ""
                 )
 
@@ -1985,9 +1985,9 @@ class SyncToDatabaseEvent(BaseEvent):
                     proj_apps, warnings = (
                         database_sync.get_project_apps(new_value)
                     )
-                    if "config" not in self.updates[mongo_id]:
-                        self.updates[mongo_id]["config"] = {}
-                    self.updates[mongo_id]["config"]["apps"] = proj_apps
+                    if "config" not in self.updates[database_id]:
+                        self.updates[database_id]["config"] = {}
+                    self.updates[database_id]["config"]["apps"] = proj_apps
 
                     for msg, items in warnings.items():
                         if not msg or not items:
@@ -1995,9 +1995,9 @@ class SyncToDatabaseEvent(BaseEvent):
                         self.report_items["warning"][msg] = items
                     continue
 
-                if "data" not in self.updates[mongo_id]:
-                    self.updates[mongo_id]["data"] = {}
-                self.updates[mongo_id]["data"][key] = new_value
+                if "data" not in self.updates[database_id]:
+                    self.updates[database_id]["data"] = {}
+                self.updates[database_id]["data"][key] = new_value
                 self.log.debug(
                     "Setting data value of \"{}\" to \"{}\" <{}>".format(
                         key, new_value, ent_path
@@ -2051,38 +2051,38 @@ class SyncToDatabaseEvent(BaseEvent):
         hier_cust_attrs_ids = []
         hier_cust_attrs_keys = []
         all_keys = False
-        for mongo_id in self.moved_in_database:
-            parent_changes.append(mongo_id)
-            hier_cust_attrs_ids.append(mongo_id)
+        for database_id in self.moved_in_database:
+            parent_changes.append(database_id)
+            hier_cust_attrs_ids.append(database_id)
             all_keys = True
 
-        for mongo_id in self.renamed_in_database:
-            if mongo_id not in parent_changes:
-                parent_changes.append(mongo_id)
+        for database_id in self.renamed_in_database:
+            if database_id not in parent_changes:
+                parent_changes.append(database_id)
 
         for key, ftrack_ids in self.hier_cust_attrs_changes.items():
             if key.startswith("database_"):
                 continue
             for ftrack_id in ftrack_ids:
                 database_ent = self.database_ents_by_ftrack_id[ftrack_id]
-                mongo_id = database_ent["_id"]
-                if mongo_id in hier_cust_attrs_ids:
+                database_id = database_ent["_id"]
+                if database_id in hier_cust_attrs_ids:
                     continue
-                hier_cust_attrs_ids.append(mongo_id)
+                hier_cust_attrs_ids.append(database_id)
                 if not all_keys and key not in hier_cust_attrs_keys:
                     hier_cust_attrs_keys.append(key)
 
         # Parents preparation ***
-        mongo_to_ftrack_parents = {}
+        database_to_ftrack_parents = {}
         missing_ftrack_ents = {}
-        for mongo_id in parent_changes:
-            database_ent = self.database_ents_by_id[mongo_id]
+        for database_id in parent_changes:
+            database_ent = self.database_ents_by_id[database_id]
             ftrack_id = database_ent["data"]["ftrackId"]
             if ftrack_id not in self.ftrack_ents_by_id:
-                missing_ftrack_ents[ftrack_id] = mongo_id
+                missing_ftrack_ents[ftrack_id] = database_id
                 continue
             ftrack_ent = self.ftrack_ents_by_id[ftrack_id]
-            mongo_to_ftrack_parents[mongo_id] = len(ftrack_ent["link"])
+            database_to_ftrack_parents[database_id] = len(ftrack_ent["link"])
 
         if missing_ftrack_ents:
             joine_ids = ", ".join(
@@ -2096,44 +2096,44 @@ class SyncToDatabaseEvent(BaseEvent):
             for entity in entities:
                 ftrack_id = entity["id"]
                 self.ftrack_ents_by_id[ftrack_id] = entity
-                mongo_id = missing_ftrack_ents[ftrack_id]
-                mongo_to_ftrack_parents[mongo_id] = len(entity["link"])
+                database_id = missing_ftrack_ents[ftrack_id]
+                database_to_ftrack_parents[database_id] = len(entity["link"])
 
-        stored_parents_by_mongo = {}
+        stored_parents_by_database = {}
         # sort by hierarchy level
-        mongo_to_ftrack_parents = [k for k, v in sorted(
-            mongo_to_ftrack_parents.items(),
+        database_to_ftrack_parents = [k for k, v in sorted(
+            database_to_ftrack_parents.items(),
             key=(lambda item: item[1])
         )]
         self.log.debug(
             "Updating parents and hieararchy because of name/parenting changes"
         )
-        for mongo_id in mongo_to_ftrack_parents:
-            database_ent = self.database_ents_by_id[mongo_id]
+        for database_id in database_to_ftrack_parents:
+            database_ent = self.database_ents_by_id[database_id]
             vis_par = database_ent["data"]["visualParent"]
-            if vis_par in stored_parents_by_mongo:
-                parents = [par for par in stored_parents_by_mongo[vis_par]]
+            if vis_par in stored_parents_by_database:
+                parents = [par for par in stored_parents_by_database[vis_par]]
                 if vis_par is not None:
                     parent_ent = self.database_ents_by_id[vis_par]
                     parents.append(parent_ent["name"])
-                stored_parents_by_mongo[mongo_id] = parents
+                stored_parents_by_database[database_id] = parents
                 continue
 
             ftrack_id = database_ent["data"]["ftrackId"]
             ftrack_ent = self.ftrack_ents_by_id[ftrack_id]
             ent_path_items = [ent["name"] for ent in ftrack_ent["link"]]
             parents = ent_path_items[1:len(ent_path_items)-1:]
-            stored_parents_by_mongo[mongo_id] = parents
+            stored_parents_by_database[database_id] = parents
 
-        for mongo_id, parents in stored_parents_by_mongo.items():
-            database_ent = self.database_ents_by_id[mongo_id]
+        for database_id, parents in stored_parents_by_database.items():
+            database_ent = self.database_ents_by_id[database_id]
             cur_par = database_ent["data"]["parents"]
             if cur_par == parents:
                 continue
 
-            if "data" not in self.updates[mongo_id]:
-                self.updates[mongo_id]["data"] = {}
-            self.updates[mongo_id]["data"]["parents"] = parents
+            if "data" not in self.updates[database_id]:
+                self.updates[database_id]["data"] = {}
+            self.updates[database_id]["data"]["parents"] = parents
 
         # Skip custom attributes if didn't change
         if not hier_cust_attrs_ids:
@@ -2163,7 +2163,7 @@ class SyncToDatabaseEvent(BaseEvent):
                 if not key.startswith("database_")
             ]
 
-        mongo_ftrack_mapping = {}
+        database_ftrack_mapping = {}
         cust_attrs_ftrack_ids = []
         # ftrack_parenting = collections.defaultdict(list)
         entities_dict = collections.defaultdict(dict)
@@ -2171,8 +2171,8 @@ class SyncToDatabaseEvent(BaseEvent):
         children_queue = collections.deque()
         parent_queue = collections.deque()
 
-        for mongo_id in hier_cust_attrs_ids:
-            database_ent = self.database_ents_by_id[mongo_id]
+        for database_id in hier_cust_attrs_ids:
+            database_ent = self.database_ents_by_id[database_id]
             parent_queue.append(database_ent)
             ftrack_id = database_ent["data"]["ftrackId"]
             if ftrack_id not in entities_dict:
@@ -2182,9 +2182,9 @@ class SyncToDatabaseEvent(BaseEvent):
                     "hier_attrs": {}
                 }
 
-            mongo_ftrack_mapping[mongo_id] = ftrack_id
+            database_ftrack_mapping[database_id] = ftrack_id
             cust_attrs_ftrack_ids.append(ftrack_id)
-            children_ents = self.database_ents_by_parent_id.get(mongo_id) or []
+            children_ents = self.database_ents_by_parent_id.get(database_id) or []
             for children_ent in children_ents:
                 _ftrack_id = children_ent["data"]["ftrackId"]
                 if _ftrack_id in entities_dict:
@@ -2204,15 +2204,15 @@ class SyncToDatabaseEvent(BaseEvent):
 
         while children_queue:
             database_ent = children_queue.popleft()
-            mongo_id = database_ent["_id"]
+            database_id = database_ent["_id"]
             ftrack_id = database_ent["data"]["ftrackId"]
             if ftrack_id in cust_attrs_ftrack_ids:
                 continue
 
-            mongo_ftrack_mapping[mongo_id] = ftrack_id
+            database_ftrack_mapping[database_id] = ftrack_id
             cust_attrs_ftrack_ids.append(ftrack_id)
 
-            children_ents = self.database_ents_by_parent_id.get(mongo_id) or []
+            children_ents = self.database_ents_by_parent_id.get(database_id) or []
             for children_ent in children_ents:
                 _ftrack_id = children_ent["data"]["ftrackId"]
                 if _ftrack_id in entities_dict:
@@ -2261,7 +2261,7 @@ class SyncToDatabaseEvent(BaseEvent):
 
             if parent_ftrack_id in cust_attrs_ftrack_ids:
                 continue
-            mongo_ftrack_mapping[vis_par] = parent_ftrack_id
+            database_ftrack_mapping[vis_par] = parent_ftrack_id
             cust_attrs_ftrack_ids.append(parent_ftrack_id)
             # if ftrack_id not in ftrack_parenting[parent_ftrack_id]:
             #     ftrack_parenting[parent_ftrack_id].append(ftrack_id)
@@ -2372,13 +2372,13 @@ class SyncToDatabaseEvent(BaseEvent):
                 entities_dict[child_id]["hier_attrs"].update(_hier_values)
                 hier_down_queue.append((_hier_values, child_id))
 
-        ftrack_mongo_mapping = {}
-        for mongo_id, ftrack_id in mongo_ftrack_mapping.items():
-            ftrack_mongo_mapping[ftrack_id] = mongo_id
+        ftrack_database_mapping = {}
+        for database_id, ftrack_id in database_ftrack_mapping.items():
+            ftrack_database_mapping[ftrack_id] = database_id
 
         for ftrack_id, data in entities_dict.items():
-            mongo_id = ftrack_mongo_mapping[ftrack_id]
-            database_ent = self.database_ents_by_id[mongo_id]
+            database_id = ftrack_database_mapping[ftrack_id]
+            database_ent = self.database_ents_by_id[database_id]
             ent_path = self.get_ent_path(ftrack_id)
             # TODO logging
             self.log.debug(
@@ -2392,10 +2392,10 @@ class SyncToDatabaseEvent(BaseEvent):
                     continue
 
                 self.log.debug("- {}: {}".format(key, value))
-                if "data" not in self.updates[mongo_id]:
-                    self.updates[mongo_id]["data"] = {}
+                if "data" not in self.updates[database_id]:
+                    self.updates[database_id]["data"] = {}
 
-                self.updates[mongo_id]["data"][key] = value
+                self.updates[database_id]["data"][key] = value
 
         self.update_entities()
 
@@ -2428,7 +2428,7 @@ class SyncToDatabaseEvent(BaseEvent):
             )
         ).all()
 
-        ftrack_mongo_mapping_found = {}
+        ftrack_database_mapping_found = {}
         not_found_ids = []
         # Make sure all parents have updated tasks, as they may not have any
         tasks_per_ftrack_id = {
@@ -2470,33 +2470,33 @@ class SyncToDatabaseEvent(BaseEvent):
             if not database_entity:
                 not_found_ids.append(ftrack_id)
                 continue
-            ftrack_mongo_mapping_found[ftrack_id] = database_entity["_id"]
+            ftrack_database_mapping_found[ftrack_id] = database_entity["_id"]
 
         self._update_database_tasks(
-            ftrack_mongo_mapping_found,
+            ftrack_database_mapping_found,
             tasks_per_ftrack_id
         )
 
     def update_entities(self):
         """
-            Update QuadPype entities by mongo bulk changes.
+            Update QuadPype entities by database bulk changes.
             Expects self.updates which are transferred to $set part of update
             command.
             Resets self.updates afterwards.
         """
-        mongo_changes_bulk = []
-        for mongo_id, changes in self.updates.items():
-            database_ent = self.database_ents_by_id[mongo_id]
+        database_changes_bulk = []
+        for database_id, changes in self.updates.items():
+            database_ent = self.database_ents_by_id[database_id]
             is_project = database_ent["type"] == "project"
             change_data = database_sync.from_dict_to_set(changes, is_project)
-            mongo_changes_bulk.append(
-                UpdateOne({"_id": mongo_id}, change_data)
+            database_changes_bulk.append(
+                UpdateOne({"_id": database_id}, change_data)
             )
 
-        if not mongo_changes_bulk:
+        if not database_changes_bulk:
             return
 
-        self.dbcon.bulk_write(mongo_changes_bulk)
+        self.dbcon.bulk_write(database_changes_bulk)
         self.updates = collections.defaultdict(dict)
 
     @property
@@ -2676,12 +2676,12 @@ class SyncToDatabaseEvent(BaseEvent):
         return True
 
     def _update_database_tasks(
-        self, ftrack_mongo_mapping_found, tasks_per_ftrack_id
+        self, ftrack_database_mapping_found, tasks_per_ftrack_id
     ):
         """
             Prepare new "tasks" content for existing records in QuadPype.
         Args:
-            ftrack_mongo_mapping_found (dictionary): ftrack parentId to
+            ftrack_database_mapping_found (dictionary): ftrack parentId to
                 QuadPype _id mapping
             tasks_per_ftrack_id (dictionary): task dictionaries per ftrack
                 parentId
@@ -2689,41 +2689,41 @@ class SyncToDatabaseEvent(BaseEvent):
         Returns:
             None
         """
-        mongo_changes_bulk = []
-        for ftrack_id, mongo_id in ftrack_mongo_mapping_found.items():
-            filter = {"_id": mongo_id}
+        database_changes_bulk = []
+        for ftrack_id, database_id in ftrack_database_mapping_found.items():
+            filter = {"_id": database_id}
             change_data = {"$set": {}}
             change_data["$set"]["data.tasks"] = tasks_per_ftrack_id[ftrack_id]
-            mongo_changes_bulk.append(UpdateOne(filter, change_data))
+            database_changes_bulk.append(UpdateOne(filter, change_data))
 
-        if mongo_changes_bulk:
-            self.dbcon.bulk_write(mongo_changes_bulk)
+        if database_changes_bulk:
+            self.dbcon.bulk_write(database_changes_bulk)
 
-    def _mongo_id_configuration(
+    def _database_id_configuration(
         self,
         ent_info,
         cust_attrs,
         hier_attrs,
         temp_dict
     ):
-        # Use hierarchical mongo id attribute if possible.
+        # Use hierarchical database id attribute if possible.
         if "_hierarchical" not in temp_dict:
-            hier_mongo_id_configuration_id = None
+            hier_database_id_configuration_id = None
             for attr in hier_attrs:
                 if attr["key"] == CUST_ATTR_ID_KEY:
-                    hier_mongo_id_configuration_id = attr["id"]
+                    hier_database_id_configuration_id = attr["id"]
                     break
-            temp_dict["_hierarchical"] = hier_mongo_id_configuration_id
+            temp_dict["_hierarchical"] = hier_database_id_configuration_id
 
-        hier_mongo_id_configuration_id = temp_dict.get("_hierarchical")
-        if hier_mongo_id_configuration_id is not None:
-            return hier_mongo_id_configuration_id
+        hier_database_id_configuration_id = temp_dict.get("_hierarchical")
+        if hier_database_id_configuration_id is not None:
+            return hier_database_id_configuration_id
 
-        # Legacy part for cases that MongoID attribute is per entity type.
+        # Legacy part for cases that database_id attribute is per entity type.
         entity_type = ent_info["entity_type"]
-        mongo_id_configuration_id = temp_dict.get(entity_type)
-        if mongo_id_configuration_id is not None:
-            return mongo_id_configuration_id
+        database_id_configuration_id = temp_dict.get(entity_type)
+        if database_id_configuration_id is not None:
+            return database_id_configuration_id
 
         for attr in cust_attrs:
             key = attr["key"]
@@ -2739,14 +2739,14 @@ class SyncToDatabaseEvent(BaseEvent):
             ):
                 continue
 
-            mongo_id_configuration_id = attr["id"]
+            database_id_configuration_id = attr["id"]
             break
 
-        temp_dict[entity_type] = mongo_id_configuration_id
+        temp_dict[entity_type] = database_id_configuration_id
 
-        return mongo_id_configuration_id
+        return database_id_configuration_id
 
 
 def register(session):
     '''Register plugin. Called when used as an plugin.'''
-    SyncToQuadPypeEvent(session).register()
+    SyncToDatabaseEvent(session).register()

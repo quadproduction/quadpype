@@ -31,8 +31,8 @@ If QuadPype is live (not frozen) then current version of QuadPype module
 will be used. All directories under `repos` will be added to `sys.path` and
 `PYTHONPATH`.
 
-QuadPype depends on connection to `MongoDB`_. You can specify MongoDB
-connection string via `QUADPYPE_MONGO` set in environment or it can be set
+QuadPype depends on connection to `MongoDB`_. You can specify database
+connection string via `QUADPYPE_DB_URI` set in environment or it can be set
 in user settings or via **Igniter** GUI.
 
 So, bootstrapping QuadPype looks like this::
@@ -41,7 +41,7 @@ So, bootstrapping QuadPype looks like this::
 
 ┌───────────────────────────────────────────────────────┐
 │ Determine MongoDB connection:                         │
-│ Use `QUADPYPE_MONGO`, system keyring `quadpypeMongo`  │
+│ Use `QUADPYPE_DB_URI`, system keyring `DatabaseUri`  │
 └──────────────────────────┬────────────────────────────┘
                   ┌───- Found? -─┐
                  YES             NO
@@ -88,9 +88,6 @@ Todo:
 Attributes:
     silent_commands (set): list of commands for which we won't print QuadPype
         info header.
-
-.. _MongoDB:
-   https://www.mongodb.com/
 
 """
 import os
@@ -309,7 +306,7 @@ from igniter.tools import (
     get_quadpype_global_settings,
     get_quadpype_path_from_settings,
     get_local_quadpype_path_from_settings,
-    validate_mongo_connection,
+    validate_database_connection,
     QuadPypeVersionNotFound,
     QuadPypeVersionIncompatible
 )  # noqa
@@ -447,7 +444,7 @@ def set_database_environments():
 
     projects_db_name = os.getenv("QUADPYPE_PROJECTS_DB_NAME") or "quadpype_projects"
     os.environ.update({
-        # Mongo DB name where projects docs are stored
+        # Database name where projects docs are stored
         "QUADPYPE_PROJECTS_DB_NAME": projects_db_name,
         # Name of config
         "QUADPYPE_LABEL": "QuadPype"
@@ -655,58 +652,58 @@ def _process_arguments() -> tuple:
     return use_version, commands
 
 
-def _determine_mongodb() -> str:
-    """Determine mongodb connection string.
+def _determine_database_uri() -> str:
+    """Determine database connection string.
 
-    First use ``QUADPYPE_MONGO`` environment variable, then system keyring.
+    First use ``QUADPYPE_DB_URI`` environment variable, then system keyring.
     Then try to run **Igniter UI** to let user specify it.
 
     Returns:
-        str: mongodb connection URL
+        str: database connection URI
 
     Raises:
-        RuntimeError: if mongodb connection url cannot by determined.
+        RuntimeError: if database connection URI cannot by determined.
 
     """
 
-    quadpype_mongo = os.getenv("QUADPYPE_MONGO", None)
-    if not quadpype_mongo:
+    database_uri = os.getenv("QUADPYPE_DB_URI", None)
+    if not database_uri:
         # try system keyring
         try:
-            quadpype_mongo = bootstrap.secure_registry.get_item(
-                "quadpypeMongo"
+            database_uri = bootstrap.secure_registry.get_item(
+                "DatabaseUri"
             )
         except ValueError:
             pass
 
-    if quadpype_mongo:
-        result, msg = validate_mongo_connection(quadpype_mongo)
+    if database_uri:
+        result, msg = validate__connection(database_uri)
         if not result:
             _print(msg)
-            quadpype_mongo = None
+            database_uri = None
 
-    if not quadpype_mongo:
+    if not database_uri:
         _print("*** No DB connection string specified.")
         if os.getenv("QUADPYPE_HEADLESS_MODE") == "1":
             _print("!!! Cannot open Igniter dialog in headless mode.", True)
-            _print(("!!! Please use `QUADPYPE_MONGO` to specify "
+            _print(("!!! Please use `QUADPYPE_DB_URI` to specify "
                     "server address."), True)
             sys.exit(1)
         _print("--- launching setup UI ...")
 
         result = igniter.open_dialog()
         if result == 0:
-            raise RuntimeError("MongoDB URL was not defined")
+            raise RuntimeError("Database URI was not defined")
 
-        quadpype_mongo = os.getenv("QUADPYPE_MONGO")
-        if not quadpype_mongo:
+        database_uri = os.getenv("QUADPYPE_DB_URI")
+        if not database_uri:
             try:
-                quadpype_mongo = bootstrap.secure_registry.get_item(
-                    "quadpypeMongo")
+                database_uri = bootstrap.secure_registry.get_item(
+                    "DatabaseUri")
             except ValueError as e:
-                raise RuntimeError("Missing MongoDB url") from e
+                raise RuntimeError("Missing database URI") from e
 
-    return quadpype_mongo
+    return database_uri
 
 
 def _initialize_environment(quadpype_version: QuadPypeVersion) -> None:
@@ -1066,17 +1063,17 @@ def boot():
             use_version = os.getenv("QUADPYPE_VERSION")
 
     # ------------------------------------------------------------------------
-    # Determine mongodb connection
+    # Determine database connection
     # ------------------------------------------------------------------------
 
     try:
-        quadpype_mongo = _determine_mongodb()
+        database_uri = _determine_database_uri()
     except RuntimeError as e:
-        # without mongodb url we are done for.
+        # without database URI we are done.
         _print(f"!!! {e}", True)
         sys.exit(1)
 
-    os.environ["QUADPYPE_MONGO"] = quadpype_mongo
+    os.environ["QUADPYPE_DB_URI"] = database_uri
     # name of Pype database
     os.environ["QUADPYPE_DATABASE_NAME"] = \
         os.getenv("QUADPYPE_DATABASE_NAME") or "quadpype"
@@ -1089,20 +1086,20 @@ def boot():
         if "_tests" not in projects_db_name:
             os.environ["QUADPYPE_PROJECTS_DB_NAME"] = projects_db_name + "_tests"
 
-    global_settings = get_quadpype_global_settings(quadpype_mongo)
+    global_settings = get_quadpype_global_settings(database_uri)
 
     _print(">>> Run disk mapping command ...")
     run_disk_mapping_commands(global_settings)
 
     # Logging to server enabled/disabled
-    log_to_server = global_settings.get("log_to_server", True)
-    if log_to_server:
+    log_to_database = global_settings.get("log_to_database", True)
+    if log_to_database:
         os.environ["QUADPYPE_LOG_TO_SERVER"] = "1"
-        log_to_server_msg = "ON"
+        log_to_database_msg = "ON"
     else:
         os.environ.pop("QUADPYPE_LOG_TO_SERVER", None)
-        log_to_server_msg = "OFF"
-    _print(f">>> Logging to server is turned {log_to_server_msg}")
+        log_to_database_msg = "OFF"
+    _print(f">>> Logging to server is turned {log_to_database_msg}")
 
     # Get path to the folder containing QuadPype patch versions, then set it to
     # environment so quadpype can find its versions there and bootstrap them.
@@ -1271,14 +1268,14 @@ def boot():
 
 def get_info(use_staging=None) -> list:
     """Print additional information to console."""
-    from quadpype.client.mongo import get_default_components
+    from quadpype.client.database import get_database_uri_components
     try:
         from quadpype.lib.log import Logger
     except ImportError:
         # Backwards compatibility for 'PypeLogger'
         from quadpype.lib.log import PypeLogger as Logger
 
-    components = get_default_components()
+    components = get_database_uri_components()
 
     inf = []
     if use_staging:
@@ -1287,7 +1284,7 @@ def get_info(use_staging=None) -> list:
         inf.append(("QuadPype variant", "production"))
     inf.extend([
         ("Running QuadPype from", os.getenv('QUADPYPE_REPOS_ROOT')),
-        ("Using mongodb", components["host"])]
+        ("Using database URI", components["host"])]
     )
 
     if os.getenv("FTRACK_SERVER"):
@@ -1305,17 +1302,17 @@ def get_info(use_staging=None) -> list:
     # Reinitialize
     Logger.initialize()
 
-    mongo_components = get_default_components()
-    if mongo_components["host"]:
+    database_uri_components = get_database_uri_components()
+    if database_uri_components["host"]:
         inf.extend([
-            ("Logging to MongoDB", mongo_components["host"]),
-            ("  - port", mongo_components["port"] or "<N/A>"),
+            ("Logging to database", database_uri_components["host"]),
+            ("  - port", database_uri_components["port"] or "<N/A>"),
             ("  - database", Logger.log_database_name),
             ("  - collection", Logger.log_collection_name),
-            ("  - user", mongo_components["username"] or "<N/A>")
+            ("  - user", database_uri_components["username"] or "<N/A>")
         ])
-        if mongo_components["auth_db"]:
-            inf.append(("  - auth source", mongo_components["auth_db"]))
+        if database_uri_components["auth_db"]:
+            inf.append(("  - auth source", database_uri_components["auth_db"]))
 
     maximum = max(len(i[0]) for i in inf)
     formatted = []
