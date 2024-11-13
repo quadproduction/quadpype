@@ -5,6 +5,19 @@ import uuid
 import json
 import copy
 from abc import ABCMeta, abstractmethod
+from typing import (
+    Any,
+    Optional,
+    List,
+    Set,
+    Dict,
+    Union,
+    Tuple,
+    Pattern,
+    Iterable,
+    TypeVar,
+    TypedDict
+)
 
 import clique
 
@@ -12,66 +25,29 @@ import clique
 #   - default types are registered on import
 _attr_defs_by_type = {}
 
-
-def register_attr_def_class(cls):
-    """Register attribute definition.
-
-    Currently, these are registered definitions used to deserialize data to objects.
-
-    Attrs:
-        cls (AbstractAttrDef): Non-abstract class to be registered with unique
-            'type' attribute.
-
-    Raises:
-        KeyError: When a type was already registered.
-    """
-
-    if cls.type in _attr_defs_by_type:
-        raise KeyError("Type \"{}\" was already registered".format(cls.type))
-    _attr_defs_by_type[cls.type] = cls
+# Type hint helpers
+IntFloatType = Union[int, float]
 
 
-def get_attributes_keys(attribute_definitions):
-    """Collect keys from the list of attribute definitions.
-
-    Args:
-        attribute_definitions (List[AbstractAttrDef]): Objects of attribute
-            definitions.
-
-    Returns:
-        Set[str]: Keys that will be created using passed attribute definitions.
-    """
-
-    keys = set()
-    if not attribute_definitions:
-        return keys
-
-    for attribute_def in attribute_definitions:
-        if not isinstance(attribute_def, UIDef):
-            keys.add(attribute_def.key)
-    return keys
+class EnumItemDict(TypedDict):
+    label: str
+    value: Any
 
 
-def get_default_values(attribute_definitions):
-    """Receive default values for attribute definitions.
+EnumItemsInputType = Union[
+    Dict[Any, str],
+    List[Tuple[Any, str]],
+    List[Any],
+    List[EnumItemDict]
+]
 
-    Args:
-        attribute_definitions (List[AbstractAttrDef]): Attribute definitions
-            for which default values should be collected.
 
-    Returns:
-        Dict[str, Any]: Default values for passed attribute definitions.
-    """
-
-    output = {}
-    if not attribute_definitions:
-        return output
-
-    for attr_def in attribute_definitions:
-        # Skip UI definitions
-        if not isinstance(attr_def, UIDef):
-            output[attr_def.key] = attr_def.default
-    return output
+class FileDefItemDict(TypedDict):
+    directory: str
+    filenames: List[str]
+    frames: Optional[List[int]]
+    template: Optional[str]
+    is_sequence: Optional[bool]
 
 
 class AbstractAttrDefMeta(ABCMeta):
@@ -108,61 +84,105 @@ class AbstractAttrDef(object, metaclass=AbstractAttrDefMeta):
         default (Any): Default value of an attribute.
         label (str): Attribute label.
         tooltip (str): Attribute tooltip.
-        is_label_horizontal (bool): UI specific argument.
-        Specify if the label is
+        is_label_horizontal (bool): UI specific argument. Specify if the label is
             next to value input or ahead.
-        hidden (bool): Will be item hidden (for UI purposes).
-        disabled (bool): Item will be visible but disabled (for UI purposes).
+        visible (Optional[bool]): Item is shown to user (for UI purposes).
+        enabled (Optional[bool]): Item is enabled (for UI purposes).
     """
 
-    type = "invalid"
     type_attributes = []
 
     is_value_def = True
 
     def __init__(
         self,
-        key,
-        default,
-        label=None,
-        tooltip=None,
-        is_label_horizontal=None,
-        hidden=False,
-        disabled=False
+        key: str,
+        default: Any,
+        label: Optional[str] = None,
+        tooltip: Optional[str] = None,
+        is_label_horizontal: Optional[bool] = None,
+        visible: Optional[bool] = False,
+        enabled: Optional[bool] = False
     ):
         if is_label_horizontal is None:
             is_label_horizontal = True
 
-        if hidden is None:
-            hidden = False
+        if visible is None:
+            visible = False
 
-        self.key = key
-        self.label = label
-        self.tooltip = tooltip
-        self.default = default
-        self.is_label_horizontal = is_label_horizontal
-        self.hidden = hidden
-        self.disabled = disabled
-        self._id = uuid.uuid4().hex
+        if enabled is None:
+            enabled = True
+
+        self.key: str  = key
+        self.label: Optional[str] = label
+        self.tooltip: Optional[str]  = tooltip
+        self.default: Any = default
+        self.is_label_horizontal: bool = is_label_horizontal
+        self.visible: bool = visible
+        self.enabled: bool = enabled
+        self._id: str = uuid.uuid4().hex
 
         self.__init__class__ = AbstractAttrDef
 
     @property
-    def id(self):
+    def id(self) -> str:
         return self._id
 
-    def __eq__(self, other):
-        if not isinstance(other, self.__class__):
+    def clone(self):
+        data = self.serialize()
+        data.pop("type")
+        return self.deserialize(data)
+
+    def __eq__(self, other: Any) -> bool:
+        return self.compare_to_def(other)
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.compare_to_def(other)
+
+    def compare_to_def(
+            self,
+            other: Any,
+            ignore_default: Optional[bool] = False,
+            ignore_enabled: Optional[bool] = False,
+            ignore_visible: Optional[bool] = False,
+            ignore_def_type_compare: Optional[bool] = False,
+    ) -> bool:
+        if not isinstance(other, self.__class__) or self.key != other.key:
+            return False
+        if not ignore_def_type_compare and not self._def_type_compare(other):
             return False
         return (
-            self.key == other.key
-            and self.hidden == other.hidden
-            and self.default == other.default
-            and self.disabled == other.disabled
+                (ignore_default or self.default == other.default)
+                and (ignore_visible or self.visible == other.visible)
+                and (ignore_enabled or self.enabled == other.enabled)
         )
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
+    @abstractmethod
+    def is_value_valid(self, value: Any) -> bool:
+        """Check if value is valid.
+
+        This should return False if value is not valid based
+            on definition type.
+
+        Args:
+            value (Any): Value to validate based on definition type.
+
+        Returns:
+            bool: True if value is valid.
+
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def type(self) -> str:
+        """Attribute definition type also used as identifier of class.
+
+        Returns:
+            str: Type of attribute definition.
+
+        """
+        pass
 
     @abstractmethod
     def convert_value(self, value):
@@ -174,7 +194,7 @@ class AbstractAttrDef(object, metaclass=AbstractAttrDefMeta):
 
         pass
 
-    def serialize(self):
+    def serialize(self) -> Dict[str, Any]:
         """Serialize the object to data, so it's possible to recreate it.
 
         Returns:
@@ -189,8 +209,8 @@ class AbstractAttrDef(object, metaclass=AbstractAttrDefMeta):
             "tooltip": self.tooltip,
             "default": self.default,
             "is_label_horizontal": self.is_label_horizontal,
-            "hidden": self.hidden,
-            "disabled": self.disabled
+            "visible": self.visible,
+            "enabled": self.enabled
         }
         for attr in self.type_attributes:
             data[attr] = getattr(self, attr)
@@ -202,21 +222,39 @@ class AbstractAttrDef(object, metaclass=AbstractAttrDefMeta):
 
         Data can be received using 'serialize' method.
         """
+        if "type" in data:
+            data = dict(data)
+            data.pop("type")
 
         return cls(**data)
 
+    def _def_type_compare(self, other) -> bool:
+        return True
+
+
+AttrDefType = TypeVar("AttrDefType", bound=AbstractAttrDef)
 
 # -----------------------------------------
 # UI attribute definitions won't hold value
 # -----------------------------------------
 
 class UIDef(AbstractAttrDef):
+    type = "unknown"
     is_value_def = False
 
-    def __init__(self, key=None, default=None, *args, **kwargs):
+    def __init__(
+            self,
+            key: Optional[str] = None,
+            default: Optional[Any] =None,
+            *args,
+            **kwargs
+    ):
         super().__init__(key, default, *args, **kwargs)
 
-    def convert_value(self, value):
+    def is_value_valid(self, value: Any) -> bool:
+        return True
+
+    def convert_value(self, value: Any) -> Any:
         return value
 
 
@@ -227,12 +265,16 @@ class UISeparatorDef(UIDef):
 class UILabelDef(UIDef):
     type = "label"
 
-    def __init__(self, label, key=None):
-        super().__init__(label=label, key=key)
+    def __init__(
+            self,
+            label: str,
+            key: Optional[str] = None,
+            *args,
+            **kwargs
+    ):
+        super().__init__(label=label, key=key, *args, **kwargs)
 
-    def __eq__(self, other):
-        if not super(UILabelDef, self).__eq__(other):
-            return False
+    def _def_type_compare(self, other) -> bool:
         return self.label == other.label
 
 
@@ -246,12 +288,14 @@ class UnknownDef(AbstractAttrDef):
     This attribute can be used to keep existing data unchanged but does not
     have a known definition of the type.
     """
-
     type = "unknown"
 
     def __init__(self, key, default=None, **kwargs):
         kwargs["default"] = default
         super().__init__(key, **kwargs)
+
+    def is_value_valid(self, value: Any) -> bool:
+        return True
 
     def convert_value(self, value):
         return value
@@ -265,13 +309,20 @@ class HiddenDef(AbstractAttrDef):
 
     Keep in mind the value should be possible to parse by JSON parser.
     """
-
     type = "hidden"
 
-    def __init__(self, key, default=None, **kwargs):
+    def __init__(
+        self,
+        key: str,
+        default: Optional[Any] = None,
+        **kwargs
+    ):
         kwargs["default"] = default
-        kwargs["hidden"] = True
+        kwargs["visible"] = False
         super().__init__(key, **kwargs)
+
+    def is_value_valid(self, value: Any) -> bool:
+        return True
 
     def convert_value(self, value):
         return value
@@ -298,7 +349,12 @@ class NumberDef(AbstractAttrDef):
     ]
 
     def __init__(
-        self, key, minimum=None, maximum=None, decimals=None, default=None,
+        self,
+        key: str,
+        minimum: Optional[IntFloatType] = None,
+        maximum: Optional[IntFloatType] = None,
+        decimals: Optional[int] = None,
+        default: Optional[IntFloatType] = None,
         **kwargs
     ):
         minimum = 0 if minimum is None else minimum
@@ -324,25 +380,25 @@ class NumberDef(AbstractAttrDef):
 
         super().__init__(key, default=default, **kwargs)
 
-        self.minimum = minimum
-        self.maximum = maximum
-        self.decimals = 0 if decimals is None else decimals
+        self.minimum: IntFloatType = minimum
+        self.maximum: IntFloatType = maximum
+        self.decimals: int = 0 if decimals is None else decimals
 
-    def __eq__(self, other):
-        if not super(NumberDef, self).__eq__(other):
+    def is_value_valid(self, value: Any) -> bool:
+        if self.decimals == 0:
+            if not isinstance(value, int):
+                return False
+        elif not isinstance(value, float):
             return False
+        if self.minimum > value > self.maximum:
+            return False
+        return True
 
-        return (
-            self.decimals == other.decimals
-            and self.maximum == other.maximum
-            and self.maximum == other.maximum
-        )
-
-    def convert_value(self, value):
+    def convert_value(self, value: Any) -> IntFloatType:
         if isinstance(value, str):
             try:
                 value = float(value)
-            except Exception:
+            except Exception:  # noqa
                 pass
 
         if not isinstance(value, (int, float)):
@@ -351,6 +407,13 @@ class NumberDef(AbstractAttrDef):
         if self.decimals == 0:
             return int(value)
         return round(float(value), self.decimals)
+
+    def _def_type_compare(self, other) -> bool:
+        return (
+                self.decimals == other.decimals
+                and self.maximum == other.maximum
+                and self.maximum == other.maximum
+        )
 
 
 class TextDef(AbstractAttrDef):
@@ -375,7 +438,12 @@ class TextDef(AbstractAttrDef):
     ]
 
     def __init__(
-        self, key, multiline=None, regex=None, placeholder=None, default=None,
+        self,
+        key: str,
+        multiline: Optional[bool] = None,
+        regex: Optional[Pattern] = None,
+        placeholder: Optional[str] = None,
+        default: Optional[str] = None,
         **kwargs
     ):
         if default is None:
@@ -394,28 +462,37 @@ class TextDef(AbstractAttrDef):
         if isinstance(regex, str):
             regex = re.compile(regex)
 
-        self.multiline = multiline
-        self.placeholder = placeholder
-        self.regex = regex
+        self.multiline: bool = multiline
+        self.placeholder: Optional[str] = placeholder
+        self.regex: Optional[Pattern] = regex
 
-    def __eq__(self, other):
-        if not super(TextDef, self).__eq__(other):
+    def is_value_valid(self, value: Any) -> bool:
+        if not isinstance(value, str):
             return False
+        if self.regex and not self.regex.match(value):
+            return False
+        return True
 
-        return (
-            self.multiline == other.multiline
-            and self.regex == other.regex
-        )
-
-    def convert_value(self, value):
+    def convert_value(self, value: Any) -> str:
         if isinstance(value, str):
             return value
         return self.default
 
-    def serialize(self):
-        data = super(TextDef, self).serialize()
-        data["regex"] = self.regex.pattern
+    def serialize(self) -> Dict[str, Any]:
+        data = super().serialize()
+        regex = None
+        if self.regex is not None:
+            regex = self.regex.pattern
+        data["regex"] = regex
+        data["multiline"] = self.multiline
+        data["placeholder"] = self.placeholder
         return data
+
+    def _def_type_compare(self, other) -> bool:
+        return (
+            self.multiline == other.multiline
+            and self.regex == other.regex
+        )
 
 
 class EnumDef(AbstractAttrDef):
@@ -432,11 +509,15 @@ class EnumDef(AbstractAttrDef):
         multiselection (Optional[bool]): If True, multiselection is allowed.
             Output is list of selected items.
     """
-
     type = "enum"
 
     def __init__(
-        self, key, items, default=None, multiselection=False, **kwargs
+        self,
+        key: str,
+        items: EnumItemsInputType,
+        default: Union[str, List[Any]] = None,
+        multiselection: Optional[bool] = False,
+        **kwargs
     ):
         if not items:
             raise ValueError((
@@ -447,28 +528,21 @@ class EnumDef(AbstractAttrDef):
         items = self.prepare_enum_items(items)
         item_values = [item["value"] for item in items]
         item_values_set = set(item_values)
+        if multiselection is None:
+            multiselection = False
+
         if multiselection:
             if default is None:
                 default = []
             default = list(item_values_set.intersection(default))
-
         elif default not in item_values:
             default = next(iter(item_values), None)
 
         super().__init__(key, default=default, **kwargs)
 
-        self.items = items
-        self._item_values = item_values_set
-        self.multiselection = multiselection
-
-    def __eq__(self, other):
-        if not super(EnumDef, self).__eq__(other):
-            return False
-
-        return (
-            self.items == other.items
-            and self.multiselection == other.multiselection
-        )
+        self.items: List[EnumItemDict] = items
+        self._item_values: Set[Any] = item_values_set
+        self.multiselection: bool = multiselection
 
     def convert_value(self, value):
         if not self.multiselection:
@@ -480,14 +554,25 @@ class EnumDef(AbstractAttrDef):
             return copy.deepcopy(self.default)
         return list(self._item_values.intersection(value))
 
+    def is_value_valid(self, value: Any) -> bool:
+        """Check if item is available in possible values."""
+        if isinstance(value, list):
+            if not self.multiselection:
+                return False
+            return all(value in self._item_values for value in value)
+
+        if self.multiselection:
+            return False
+        return value in self._item_values
+
     def serialize(self):
-        data = super(EnumDef, self).serialize()
+        data = super().serialize()
         data["items"] = copy.deepcopy(self.items)
         data["multiselection"] = self.multiselection
         return data
 
     @staticmethod
-    def prepare_enum_items(items):
+    def prepare_enum_items(items: EnumItemsInputType) -> List[EnumItemDict]:
         """Convert items to unified structure.
 
         Output is a list where each item is dictionary with 'value'
@@ -503,13 +588,12 @@ class EnumDef(AbstractAttrDef):
         ```
 
         Args:
-            items (Union[Dict[str, Any], List[Any], List[Dict[str, Any]]): The
-                items to convert.
+            items (EnumItemsInputType): The items to convert.
 
         Returns:
-            List[Dict[str, Any]]: Unified structure of items.
-        """
+            List[EnumItemDict]: Unified structure of items.
 
+        """
         output = []
         if isinstance(items, dict):
             for value, label in items.items():
@@ -540,13 +624,17 @@ class EnumDef(AbstractAttrDef):
                 else:
                     item = {"label": str(item), "value": item}
                 output.append(item)
-
         else:
             raise TypeError(
                 "Unknown type for enum items '{}'".format(type(items))
             )
 
         return output
+    def _def_type_compare(self, other) -> bool:
+        return (
+            self.items == other.items
+            and self.multiselection == other.multiselection
+        )
 
 
 class BoolDef(AbstractAttrDef):
@@ -558,12 +646,20 @@ class BoolDef(AbstractAttrDef):
 
     type = "bool"
 
-    def __init__(self, key, default=None, **kwargs):
+    def __init__(
+        self,
+        key: str,
+        default: Optional[bool] = None,
+        **kwargs
+    ):
         if default is None:
             default = False
         super().__init__(key, default=default, **kwargs)
 
-    def convert_value(self, value):
+    def is_value_valid(self, value: Any) -> bool:
+        return isinstance(value, bool)
+
+    def convert_value(self, value: Any) -> bool:
         if isinstance(value, bool):
             return value
         return self.default
@@ -571,9 +667,13 @@ class BoolDef(AbstractAttrDef):
 
 class FileDefItem(object):
     def __init__(
-        self, directory, filenames, frames=None, template=None
+        self,
+        directory: str,
+        filenames: List[str],
+        frames: Optional[List[int]] = None,
+        template: Optional[str] = None,
     ):
-        self.directory = directory
+        self.directory: str = directory
 
         self.filenames = []
         self.is_sequence = False
@@ -600,7 +700,7 @@ class FileDefItem(object):
         )
 
     @property
-    def label(self):
+    def label(self) -> Optional[str]:
         if self.is_empty:
             return None
 
@@ -643,7 +743,7 @@ class FileDefItem(object):
             filename_template, ",".join(ranges)
         )
 
-    def split_sequence(self):
+    def split_sequence(self) -> List:
         if not self.is_sequence:
             raise ValueError("Cannot split single file item")
 
@@ -654,7 +754,7 @@ class FileDefItem(object):
         return self.from_paths(paths, False)
 
     @property
-    def ext(self):
+    def ext(self) -> Optional[str]:
         if self.is_empty:
             return None
         _, ext = os.path.splitext(self.filenames[0])
@@ -663,14 +763,14 @@ class FileDefItem(object):
         return None
 
     @property
-    def lower_ext(self):
+    def lower_ext(self) -> Optional[str]:
         ext = self.ext
         if ext is not None:
             return ext.lower()
         return ext
 
     @property
-    def is_dir(self):
+    def is_dir(self) -> bool:
         if self.is_empty:
             return False
 
@@ -679,10 +779,15 @@ class FileDefItem(object):
             return False
         return True
 
-    def set_directory(self, directory):
+    def set_directory(self, directory: str):
         self.directory = directory
 
-    def set_filenames(self, filenames, frames=None, template=None):
+    def set_filenames(
+        self,
+        filenames: List[str],
+        frames: Optional[List[int]] = None,
+        template: Optional[str] = None,
+    ):
         if frames is None:
             frames = []
         is_sequence = False
@@ -700,10 +805,14 @@ class FileDefItem(object):
 
     @classmethod
     def create_empty_item(cls):
-        return cls("", "")
+        return cls("", [])
 
     @classmethod
-    def from_value(cls, value, allow_sequences):
+    def from_value(
+        cls,
+        value: Union[List[FileDefItemDict], FileDefItemDict],
+        allow_sequences: bool
+    ) -> List:
         """Convert passed value to FileDefItem objects.
 
         Returns:
@@ -741,7 +850,7 @@ class FileDefItem(object):
         return output
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: FileDefItemDict):
         return cls(
             data["directory"],
             data["filenames"],
@@ -750,7 +859,11 @@ class FileDefItem(object):
         )
 
     @classmethod
-    def from_paths(cls, paths, allow_sequences=False):
+    def from_paths(
+        cls,
+        paths: List[str],
+        allow_sequences: bool = False
+    ) -> List:
         filenames_by_dir = collections.defaultdict(list)
         for path in paths:
             normalized = os.path.normpath(path)
@@ -779,7 +892,7 @@ class FileDefItem(object):
 
         return output
 
-    def to_dict(self):
+    def to_dict(self) -> FileDefItemDict:
         output = {
             "is_sequence": self.is_sequence,
             "directory": self.directory,
@@ -817,8 +930,15 @@ class FileDef(AbstractAttrDef):
     ]
 
     def __init__(
-        self, key, single_item=True, folders=None, extensions=None,
-        allow_sequences=True, extensions_label=None, default=None, **kwargs
+        self,
+        key: str,
+        single_item: Optional[bool] = True,
+        folders: Optional[bool] = None,
+        extensions: Optional[Iterable[str]] = None,
+        allow_sequences: Optional[bool] = True,
+        extensions_label: Optional[str] = None,
+        default: Optional[Union[FileDefItemDict, List[str]]] = None,
+        **kwargs
     ):
         if folders is None and extensions is None:
             folders = True
@@ -854,11 +974,11 @@ class FileDef(AbstractAttrDef):
         if is_label_horizontal is None:
             kwargs["is_label_horizontal"] = False
 
-        self.single_item = single_item
-        self.folders = folders
-        self.extensions = set(extensions)
-        self.allow_sequences = allow_sequences
-        self.extensions_label = extensions_label
+        self.single_item: bool = single_item
+        self.folders: bool = folders
+        self.extensions: Set[str] = set(extensions)
+        self.allow_sequences: bool = allow_sequences
+        self.extensions_label: Optional[str] = extensions_label
         super().__init__(key, default=default, **kwargs)
 
     def __eq__(self, other):
@@ -872,8 +992,33 @@ class FileDef(AbstractAttrDef):
             and self.allow_sequences == other.allow_sequences
         )
 
-    def convert_value(self, value):
-        if isinstance(value, str) or isinstance(value, dict):
+    def is_value_valid(self, value: Any) -> bool:
+        if self.single_item:
+            if not isinstance(value, dict):
+                return False
+            try:
+                FileDefItem.from_dict(value)
+                return True
+            except (ValueError, KeyError):
+                return False
+
+        if not isinstance(value, list):
+            return False
+
+        for item in value:
+            if not isinstance(item, dict):
+                return False
+
+            try:
+                FileDefItem.from_dict(item)
+            except (ValueError, KeyError):
+                return False
+        return True
+
+    def convert_value(
+        self, value: Any
+    ) -> Union[FileDefItemDict, List[FileDefItemDict]]:
+        if isinstance(value, (str, dict)):
             value = [value]
 
         if isinstance(value, (tuple, list, set)):
@@ -890,7 +1035,9 @@ class FileDef(AbstractAttrDef):
                         pass
 
             if string_paths:
-                file_items = FileDefItem.from_paths(string_paths)
+                file_items = FileDefItem.from_paths(
+                    string_paths, self.allow_sequences
+                )
                 dict_items.extend([
                     file_item.to_dict()
                     for file_item in file_items
@@ -907,55 +1054,124 @@ class FileDef(AbstractAttrDef):
             return FileDefItem.create_empty_item().to_dict()
         return []
 
+def register_attr_def_class(cls):
+    """Register attribute definition.
 
-def serialize_attr_def(attr_def):
+    Currently registered definitions are used to deserialize data to objects.
+
+    Attrs:
+        cls (AttrDefType): Non-abstract class to be registered with unique
+            'type' attribute.
+
+    Raises:
+        KeyError: When type was already registered.
+
+    """
+    if cls.type in _attr_defs_by_type:
+        raise KeyError("Type \"{}\" was already registered".format(cls.type))
+    _attr_defs_by_type[cls.type] = cls
+
+
+def get_attributes_keys(
+    attribute_definitions: List[AttrDefType]
+) -> Set[str]:
+    """Collect keys from list of attribute definitions.
+
+    Args:
+        attribute_definitions (List[AttrDefType]): Objects of attribute
+            definitions.
+
+    Returns:
+        Set[str]: Keys that will be created using passed attribute definitions.
+
+    """
+    keys = set()
+    if not attribute_definitions:
+        return keys
+
+    for attribute_def in attribute_definitions:
+        if not isinstance(attribute_def, UIDef):
+            keys.add(attribute_def.key)
+    return keys
+
+
+def get_default_values(
+    attribute_definitions: List[AttrDefType]
+) -> Dict[str, Any]:
+    """Receive default values for attribute definitions.
+
+    Args:
+        attribute_definitions (List[AttrDefType]): Attribute definitions
+            for which default values should be collected.
+
+    Returns:
+        Dict[str, Any]: Default values for passed attribute definitions.
+
+    """
+    output = {}
+    if not attribute_definitions:
+        return output
+
+    for attr_def in attribute_definitions:
+        # Skip UI definitions
+        if not isinstance(attr_def, UIDef):
+            output[attr_def.key] = attr_def.default
+    return output
+
+
+def serialize_attr_def(attr_def: AttrDefType) -> Dict[str, Any]:
     """Serialize attribute definition to data.
 
     Args:
-        attr_def (AbstractAttrDef): Attribute definition to serialize.
+        attr_def (AttrDefType): Attribute definition to serialize.
 
     Returns:
         Dict[str, Any]: Serialized data.
-    """
 
+    """
     return attr_def.serialize()
 
 
-def serialize_attr_defs(attr_defs):
+def serialize_attr_defs(
+    attr_defs: List[AttrDefType]
+) -> List[Dict[str, Any]]:
     """Serialize attribute definitions to data.
 
     Args:
-        attr_defs (List[AbstractAttrDef]): Attribute definitions to serialize.
+        attr_defs (List[AttrDefType]): Attribute definitions to serialize.
 
     Returns:
         List[Dict[str, Any]]: Serialized data.
-    """
 
+    """
     return [
         serialize_attr_def(attr_def)
         for attr_def in attr_defs
     ]
 
 
-def deserialize_attr_def(attr_def_data):
+def deserialize_attr_def(attr_def_data: Dict[str, Any]) -> AttrDefType:
     """Deserialize attribute definition from data.
 
     Args:
-        attr_def_data (Dict[str, Any]): Attribute definition data to deserialize.
-    """
+        attr_def_data (Dict[str, Any]): Attribute definition data to
+            deserialize.
 
+    """
     attr_type = attr_def_data.pop("type")
     cls = _attr_defs_by_type[attr_type]
     return cls.deserialize(attr_def_data)
 
 
-def deserialize_attr_defs(attr_defs_data):
+def deserialize_attr_defs(
+    attr_defs_data: List[Dict[str, Any]]
+) -> List[AttrDefType]:
     """Deserialize attribute definitions.
 
     Args:
         List[Dict[str, Any]]: List of attribute definitions.
-    """
 
+    """
     return [
         deserialize_attr_def(attr_def_data)
         for attr_def_data in attr_defs_data

@@ -22,7 +22,7 @@ class DuplicateDestinationError(ValueError):
     """
 
 
-class FileTransaction(object):
+class FileTransaction:
     """File transaction with rollback options.
 
     The file transaction is a three-step process.
@@ -162,11 +162,13 @@ class FileTransaction(object):
 
     def rollback(self):
         errors = 0
+        last_exc = None
         # Rollback any transferred files
         for path in self._transferred:
             try:
                 os.remove(path)
-            except OSError:
+            except OSError as exc:
+                last_exc = exc
                 errors += 1
                 self.log.error(
                     "Failed to rollback created file: {}".format(path),
@@ -176,7 +178,8 @@ class FileTransaction(object):
         for backup, original in self._backup_to_original.items():
             try:
                 os.rename(backup, original)
-            except OSError:
+            except OSError as exc:
+                last_exc = exc
                 errors += 1
                 self.log.error(
                     "Failed to restore original file: {} -> {}".format(
@@ -187,7 +190,7 @@ class FileTransaction(object):
             self.log.error(
                 "{} errors occurred during rollback.".format(errors),
                 exc_info=True)
-            raise RuntimeError("Rollback failed, check previous logs.")
+            raise last_exc
 
     @property
     def transferred(self):
@@ -204,9 +207,7 @@ class FileTransaction(object):
         try:
             os.makedirs(dirname)
         except OSError as e:
-            if e.errno == errno.EEXIST:
-                pass
-            else:
+            if e.errno != errno.EEXIST:
                 self.log.critical("An unexpected error occurred.")
                 raise e
 
