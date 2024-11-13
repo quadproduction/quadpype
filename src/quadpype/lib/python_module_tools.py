@@ -14,7 +14,7 @@ def import_filepath(filepath, module_name=None):
 
     Args:
         filepath(str): Path to python file.
-        module_name(str): Name of loaded module. By default
+        module_name(str): Name of loaded module.
             is filled with filename of filepath.
     """
     if module_name is None:
@@ -109,8 +109,8 @@ def classes_from_module(superclass, module):
 
     Arguments:
         superclass (superclass): Superclass of subclasses to look for
-        module (types.ModuleType): Imported module from which to
-            parse valid Avalon plug-ins.
+        module (types.ModuleType): Imported module where to look for
+            'superclass' subclasses.
 
     Returns:
         List of plug-ins, or empty list if none is found.
@@ -130,13 +130,31 @@ def classes_from_module(superclass, module):
     return classes
 
 
-def _import_module_from_dirpath(dirpath, module_name, dst_module_name):
-    """Import passed dirpath as python module using Python 3 modules."""
+def import_module_from_dirpath(dirpath, folder_name, dst_module_name=None):
+    """Import passed directory as a python module.
+
+    Imported module can be assigned as a child attribute of already loaded
+    module from `sys.modules` if has support of `setattr`. That is not default
+    behavior of python modules so parent module must be a custom module with
+    that ability.
+
+    It is not possible to reimport already cached module. If you need to
+    reimport module you have to remove it from caches manually.
+
+    Args:
+        dirpath (str): Parent directory path of loaded folder.
+        folder_name (str): Folder name which should be imported inside passed
+            directory.
+        dst_module_name (str): Parent module name under which can be loaded
+            module added.
+
+    """
+    # Import passed dirpath as python module
     if dst_module_name:
-        full_module_name = "{}.{}".format(dst_module_name, module_name)
+        full_module_name = "{}.{}".format(dst_module_name, folder_name)
         dst_module = sys.modules[dst_module_name]
     else:
-        full_module_name = module_name
+        full_module_name = folder_name
         dst_module = None
 
     # Skip import if is already imported
@@ -160,7 +178,7 @@ def _import_module_from_dirpath(dirpath, module_name, dst_module_name):
     # Store module to destination module and `sys.modules`
     # WARNING this mus be done before module execution
     if dst_module is not None:
-        setattr(dst_module, module_name, module)
+        setattr(dst_module, folder_name, module)
 
     sys.modules[full_module_name] = module
 
@@ -168,31 +186,6 @@ def _import_module_from_dirpath(dirpath, module_name, dst_module_name):
     loader.exec_module(module)
 
     return module
-
-
-def import_module_from_dirpath(dirpath, folder_name, dst_module_name=None):
-    """Import passed directory as a python module.
-
-    Python 2 and 3 compatible.
-
-    Imported module can be assigned as a child attribute of already loaded
-    module from `sys.modules` if has support of `setattr`. That is not default
-    behavior of python modules so parent module must be a custom module with
-    that ability.
-
-    It is not possible to reimport already cached module. If you need to
-    reimport module you have to remove it from caches manually.
-
-    Args:
-        dirpath(str): Parent directory path of loaded folder.
-        folder_name(str): Folder name which should be imported inside passed
-            directory.
-        dst_module_name(str): Parent module name under which can be loaded
-            module added.
-    """
-    return _import_module_from_dirpath(
-            dirpath, folder_name, dst_module_name
-        )
 
 
 def is_func_signature_supported(func, *args, **kwargs):
@@ -238,25 +231,12 @@ def is_func_signature_supported(func, *args, **kwargs):
 
     Returns:
         bool: Function can pass in arguments.
+
     """
-
-    if hasattr(inspect, "signature"):
-        # Python 3 using 'Signature' object where we try to bind arg
-        #   or kwarg. Using signature is recommended approach based on
-        #   documentation.
-        sig = inspect.signature(func)
-        try:
-            sig.bind(*args, **kwargs)
-            return True
-        except TypeError:
-            pass
-
-    else:
-        # In Python 2 'signature' is not available so 'getcallargs' is used
-        # - 'getcallargs' is marked as deprecated since Python 3.0
-        try:
-            inspect.getcallargs(func, *args, **kwargs)
-            return True
-        except TypeError:
-            pass
+    sig = inspect.signature(func)
+    try:
+        sig.bind(*args, **kwargs)
+        return True
+    except TypeError:
+        pass
     return False

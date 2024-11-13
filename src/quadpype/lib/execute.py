@@ -39,10 +39,9 @@ def execute(args,
         int: return code of process
 
     """
+    log_levels = ["DEBUG:", "INFO:", "ERROR:", "WARNING:", "CRITICAL:"]
 
-    log_levels = ['DEBUG:', 'INFO:', 'ERROR:', 'WARNING:', 'CRITICAL:']
-
-    log = Logger.get_logger('execute')
+    log = Logger.get_logger("execute")
     log.info("Executing ({})".format(" ".join(args)))
     popen = subprocess.Popen(
         args,
@@ -58,7 +57,7 @@ def execute(args,
     # Blocks until finished
     while True:
         line = popen.stdout.readline()
-        if line == '':
+        if line == "":
             break
         if silent:
             continue
@@ -98,8 +97,8 @@ def run_subprocess(*args, **kwargs):
     Raises:
         RuntimeError: Exception is raised if process finished with nonzero
             return code.
-    """
 
+    """
     # Modify creation flags on windows to hide console window if in UI mode
     if (
         platform.system().lower() == "windows"
@@ -115,7 +114,21 @@ def run_subprocess(*args, **kwargs):
             | getattr(subprocess, "CREATE_NO_WINDOW", 0)
         )
 
-    # Get environents from kwarg or use current process environments if were
+    # Escape parentheses for bash
+    if (
+        kwargs.get("shell") is True
+        and len(args) == 1
+        and isinstance(args[0], str)
+        and os.getenv("SHELL") in ("/bin/bash", "/bin/sh")
+    ):
+        new_arg = (
+            args[0]
+            .replace("(", "\\(")
+            .replace(")", "\\)")
+        )
+        args = (new_arg, )
+
+    # Get environments from kwarg or use current process environments if were
     # not passed.
     env = kwargs.get("env") or os.environ
     # Make sure environment contains only strings
@@ -167,8 +180,14 @@ def clean_envs_for_quadpype_process(env=None):
 
     Main reason to implement this function is to pop PYTHONPATH which may be
     affected by in-host environments.
-    """
 
+    Args:
+        env (Optional[dict[str, str]]): Environment variables to modify.
+
+    Returns:
+        dict[str, str]: Environment variables for ayon process.
+
+    """
     if env is None:
         env = os.environ
 
@@ -291,6 +310,12 @@ def path_to_subprocess_arg(path):
     """Prepare path for subprocess arguments.
 
     Returned path can be wrapped with quotes or kept as is.
+
+    Args:
+        path (str): Path to be converted.
+
+    Returns:
+        str: Converted path.
     """
     return subprocess.list2cmdline([path])
 
@@ -373,13 +398,13 @@ def open_in_explorer(filepath):
     Args:
         filepath (str): The path to the file to be opened.
     """
-    if 'win' in sys.platform:  # windows
+    if "win" in sys.platform:  # windows
         result = subprocess.call(f'explorer "{filepath}"', shell=True)
-    elif sys.platform == 'darwin':  # macOS
-        result = subprocess.call(['open', f'{filepath}'])
+    elif sys.platform == "darwin":  # macOS
+        result = subprocess.call(["open", "-R", f'"{filepath}"'])
     else:  # linux
         try:
-            result = subprocess.call(['xdg-open', f'{filepath}'])
+            result = subprocess.call(["xdg-open", f'"{filepath}"'])
         except OSError:
-            raise OSError('unsupported xdg-open call')
+            raise OSError("unsupported xdg-open call")
     return result

@@ -248,6 +248,9 @@ def create_skeleton_instance(
         "colorspace": data.get("colorspace")
     }
 
+    if data.get("renderlayer"):
+        instance_skeleton_data["renderlayer"] = data["renderlayer"]
+
     # skip locking version if we are creating v01
     instance_version = data.get("version")  # take this if exists
     if instance_version != 1:
@@ -462,7 +465,9 @@ def create_instances_for_aov(instance, skeleton, aov_filter,
     Args:
         instance (pyblish.api.Instance): Original instance.
         skeleton (dict): Skeleton instance data.
+        aov_filter (dict): AOV filter.
         skip_integration_repre_list (list): skip
+        do_not_add_review (bool): Explicitly disable reviews
 
     Returns:
         list of pyblish.api.Instance: Instances created from
@@ -527,7 +532,7 @@ def _create_instances_for_aov(instance, skeleton, aov_filter, additional_data,
         additional_data (dict): ..
         skip_integration_repre_list (list): list of extensions that shouldn't
             be published
-        do_not_addbe _review (bool): explicitly disable review
+        do_not_add_review (bool): explicitly disable review
 
 
     Returns:

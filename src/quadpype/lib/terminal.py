@@ -1,15 +1,5 @@
 # -*- coding: utf-8 -*-
 """Package helping with colorizing and formatting terminal output."""
-# ::
-#   //.  ...   ..      ///.     //.
-#  ///\\\ \\\   \\    ///\\\   ///
-# ///  \\  \\\   \\  ///  \\  /// //
-# \\\  //   \\\  //  \\\  //  \\\//  ./
-#  \\\//     \\\//    \\\//    \\\' //
-#   \\\         \\\    \\\      \\\//
-#    '''         '''    '''      '''
-#   ..---===[[ PyP3 Setup ]]===---...
-#
 import re
 import time
 import threading
@@ -77,7 +67,7 @@ class Terminal:
             Terminal.use_colors = False
             print(
                 "Module `blessed` failed on import or terminal creation."
-                " Pype terminal won't use colors."
+                " QuadPype terminal won't use colors."
             )
             Terminal._initialized = True
             return

@@ -38,9 +38,6 @@ except ImportError:
     log4mongo = None
     MongoHandler = type("NOT_SET", (), {})
 
-# Check for `unicode` in builtins
-USE_UNICODE = hasattr(__builtins__, "unicode")
-
 
 class LogStreamHandler(logging.StreamHandler):
     """ StreamHandler class designed to handle utf errors in python 2.x hosts.
@@ -61,40 +58,18 @@ class LogStreamHandler(logging.StreamHandler):
     def disable(self):
         """ Disable StreamHandler
 
-            Make StreamHandler output again
+        Used to silence output
         """
         self.enabled = False
 
     def emit(self, record):
-        if not self.enable:
+        if not self.enabled or self.stream is None:
             return
         try:
             msg = self.format(record)
             msg = Terminal.log(msg)
             stream = self.stream
-            if stream is None:
-                return
-            fs = "%s\n"
-            # if no unicode support...
-            if not USE_UNICODE:
-                stream.write(fs % msg)
-            else:
-                try:
-                    if (isinstance(msg, unicode) and  # noqa: F821
-                            getattr(stream, 'encoding', None)):
-                        ufs = u'%s\n'
-                        try:
-                            stream.write(ufs % msg)
-                        except UnicodeEncodeError:
-                            stream.write((ufs % msg).encode(stream.encoding))
-                    else:
-                        if (getattr(stream, 'encoding', 'utf-8')):
-                            ufs = u'%s\n'
-                            stream.write(ufs % unicode(msg))  # noqa: F821
-                        else:
-                            stream.write(fs % msg)
-                except UnicodeError:
-                    stream.write(fs % msg.encode("UTF-8"))
+            stream.write(f"{msg}\n")
             self.flush()
         except (KeyboardInterrupt, SystemExit):
             raise

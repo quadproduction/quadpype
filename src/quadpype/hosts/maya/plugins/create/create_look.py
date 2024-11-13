@@ -25,7 +25,7 @@ class CreateLook(plugin.MayaCreator):
             # TODO: This value should actually get set on create!
             TextDef("renderLayer",
                     # TODO: Bug: Hidden attribute's label is still shown in UI?
-                    hidden=True,
+                    visible=False,
                     default=lib.get_current_renderlayer(),
                     label="Renderlayer",
                     tooltip="Renderlayer to extract the look from"),

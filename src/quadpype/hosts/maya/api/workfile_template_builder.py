@@ -204,13 +204,13 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
         cmds.addAttr(
             placeholder,
             longName="parent",
-            hidden=True,
+            visible=False,
             dataType="string"
         )
         cmds.addAttr(
             placeholder,
             longName="index",
-            hidden=True,
+            visible=False,
             attributeType="short",
             defaultValue=-1
         )
@@ -422,13 +422,13 @@ class MayaPlaceholderCreatePlugin(PlaceholderPlugin, PlaceholderCreateMixin):
         cmds.addAttr(
             placeholder,
             longName="parent",
-            hidden=True,
+            visible=False,
             dataType="string"
         )
         cmds.addAttr(
             placeholder,
             longName="index",
-            hidden=True,
+            visible=False,
             attributeType="short",
             defaultValue=-1
         )

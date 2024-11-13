@@ -46,7 +46,7 @@ ARRAY_TYPE_REGEX = re.compile(r"^(int|float|string)\[\d+\]$")
 
 IMAGE_EXTENSIONS = {
     ".ani", ".anim", ".apng", ".art", ".bmp", ".bpg", ".bsave",
-    ".cal", ".cin", ".cpc", ".cpt", ".dds", ".dpx", ".ecw", ".exr",
+    ".cal", ".cin", ".cpc", ".cpt", ".dds", ".dng", ".dpx", ".ecw", ".exr",
     ".fits", ".flic", ".flif", ".fpx", ".gif", ".hdri", ".hevc",
     ".icer", ".icns", ".ico", ".cur", ".ics", ".ilbm", ".jbig", ".jbig2",
     ".jng", ".jpeg", ".jpeg-ls", ".jpeg-hdr", ".2000", ".jpg",
@@ -266,7 +266,7 @@ def parse_oiio_xml_output(xml_string, logger=None):
     #   e.g. "&#01;"
     # WARNING: this will affect even valid character entities. If you need
     #   those values correctly, this must take care of valid character ranges.
-    #   See https://github.com/quadproduction/quadpype/pull/2729
+    #   See https://github.com/pypeclub/OpenPype/pull/2729
     matches = XML_CHAR_REF_REGEX_HEX.findall(xml_string)
     for match in matches:
         new_value = match.replace("&", "&amp;")
@@ -1451,9 +1451,12 @@ def _get_image_dimensions(application, input_path, log):
 
 def convert_color_values(application, color_value):
     """Get color mapping for ffmpeg and oiiotool.
+
     Args:
         application (str): Application for which command should be created.
-        color_value (list[int]): List of 8bit int values for RGBA.
+        color_value (tuple[int, int, int, float]): List of 8bit int values
+            for RGBA.
+
     Returns:
         str: ffmpeg returns hex string, oiiotool is string with floats.
     """
@@ -1518,3 +1521,87 @@ def get_oiio_input_and_channel_args(oiio_input_info, alpha_default=None):
         input_arg += ":ch={}".format(input_channels_str)
 
     return input_arg, channels_arg
+
+
+def _get_media_mime_type_from_ftyp(content):
+    if content[8:10] == b"qt":
+        return "video/quicktime"
+
+    if content[8:12] == b"isom":
+        return "video/mp4"
+    if content[8:12] in (b"M4V\x20", b"mp42"):
+        return "video/mp4v"
+    # (
+    #     b"avc1", b"iso2", b"isom", b"mmp4", b"mp41", b"mp71",
+    #     b"msnv", b"ndas", b"ndsc", b"ndsh", b"ndsm", b"ndsp", b"ndss",
+    #     b"ndxc", b"ndxh", b"ndxm", b"ndxp", b"ndxs"
+    # )
+    return None
+
+
+def get_media_mime_type(filepath: str):
+    """Determine Mime-Type of a file.
+
+    Args:
+        filepath (str): Path to file.
+
+    Returns:
+        Optional[str]: Mime type or None if is unknown mime type.
+
+    """
+    if not filepath or not os.path.exists(filepath):
+        return None
+
+    with open(filepath, "rb") as stream:
+        content = stream.read()
+
+    content_len = len(content)
+    # Pre-validation (largest definition check)
+    # - hopefully there cannot be media defined in less than 12 bytes
+    if content_len < 12:
+        return None
+
+    # FTYP
+    if content[4:8] == b"ftyp":
+        return _get_media_mime_type_from_ftyp(content)
+
+    # BMP
+    if content[0:2] == b"BM":
+        return "image/bmp"
+
+    # Tiff
+    if content[0:2] in (b"MM", b"II"):
+        return "tiff"
+
+    # PNG
+    if content[0:4] == b"\211PNG":
+        return "image/png"
+
+    # SVG
+    if b'xmlns="http://www.w3.org/2000/svg"' in content:
+        return "image/svg+xml"
+
+    # JPEG, JFIF or Exif
+    if (
+        content[0:4] == b"\xff\xd8\xff\xdb"
+        or content[6:10] in (b"JFIF", b"Exif")
+    ):
+        return "image/jpeg"
+
+    # Webp
+    if content[0:4] == b"RIFF" and content[8:12] == b"WEBP":
+        return "image/webp"
+
+    # Gif
+    if content[0:6] in (b"GIF87a", b"GIF89a"):
+        return "gif"
+
+    # Adobe PhotoShop file (8B > Adobe, PS > PhotoShop)
+    if content[0:4] == b"8BPS":
+        return "image/vnd.adobe.photoshop"
+
+    # Windows ICO > this might be wild guess as multiple files can start
+    #   with this header
+    if content[0:4] == b"\x00\x00\x01\x00":
+        return "image/x-icon"
+    return None
