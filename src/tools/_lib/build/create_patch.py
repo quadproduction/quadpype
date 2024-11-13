@@ -19,7 +19,11 @@ def main(path):
     progress_bar = enlighten.Counter(
         total=100, desc="QuadPype Patch Creation", units="Files", color="green")
 
-    bs = bootstrap_repos.BootstrapRepos(progress_bar=progress_bar)
+    def update_progress(value):
+        progress_bar.update(incr=value)
+
+    bs = bootstrap_repos.BootstrapRepos(progress_callback=update_progress)
+
     if path:
         out_path = Path(path)
         bs.data_dir = out_path
@@ -28,6 +32,8 @@ def main(path):
 
     _print(f"Creating the patch zip archive in {bs.data_dir} ...")
     version = bs.create_version_from_live_code()
+
+    progress_bar.close(clear=True)
     if not version:
         _print("Error while creating the patch zip archive.", 1)
         exit(1)
@@ -43,7 +49,9 @@ def _print(msg: str, message_type: int = 0) -> None:
         message_type (int): type of message (0 info, 1 error, 2 note)
 
     """
-    if message_type == 0:
+    if not bootstrap_repos.term:
+        header = ""
+    elif message_type == 0:
         header = bootstrap_repos.term.aquamarine3(">>> ")
     elif message_type == 1:
         header = bootstrap_repos.term.orangered2("!!! ")

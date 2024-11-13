@@ -9,7 +9,7 @@ import sys
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Union, List, Tuple
+from typing import Union, Callable, List, Tuple
 import hashlib
 import platform
 
@@ -32,7 +32,7 @@ from .tools import (
 )
 
 
-term = blessed.Terminal()
+term = blessed.Terminal() if sys.__stdout__ else None
 
 
 def sanitize_long_path(path):
@@ -581,11 +581,11 @@ class BootstrapRepos:
 
     """
 
-    def __init__(self, progress_bar=None, log_signal=None, step_text_signal=None):
+    def __init__(self, progress_callback: Callable = None, log_signal=None, step_text_signal=None):
         """Constructor.
 
         Args:
-            progress_bar: Optional instance of a progress bar.
+            progress_callback (callable): Optional callback method to report progress.
             log_signal (QtCore.Signal, optional): Signal to report messages back.
 
         """
@@ -600,22 +600,22 @@ class BootstrapRepos:
         self.quadpype_filter = [
             "quadpype", "../LICENSE"
         ]
-        self._progress_bar = progress_bar
+
+        # dummy progress reporter
+        def empty_progress(x: int):
+            """Progress callback dummy."""
+            return x
+
+        if not progress_callback:
+            progress_callback = empty_progress
+        self._progress_callback = progress_callback
+        self._progress_bar_step = 1
 
     def progress_bar_set_total(self, total):
-        if not self._progress_bar:
-            return
-        self._progress_bar.total = total
+        self._progress_bar_step = 100 / total
 
-    def progress_bar_increment(self, value=1):
-        if not self._progress_bar:
-            return
-        self._progress_bar.update(incr=value)
-
-    def progress_bar_remove(self):
-        if not self._progress_bar:
-            return
-        self._progress_bar.close(clear=True)
+    def progress_bar_increment(self, incr_value=1):
+        self._progress_callback(incr_value * self._progress_bar_step)
 
     def set_data_dir(self, data_dir):
         if not data_dir:
@@ -718,8 +718,6 @@ class BootstrapRepos:
 
             destination = self._move_zip_to_data_dir(temp_zip)
 
-        self.progress_bar_remove()
-
         return QuadPypeVersion(version=version_str, path=Path(destination))
 
     def _move_zip_to_data_dir(self, zip_file) -> Union[None, Path]:
@@ -821,8 +819,6 @@ class BootstrapRepos:
                     self.progress_bar_increment()
 
             destination = self._move_zip_to_data_dir(temp_zip)
-
-        self.progress_bar_remove()
 
         return QuadPypeVersion(version=version_str, path=destination)
 
@@ -1304,7 +1300,9 @@ class BootstrapRepos:
         if self._log_signal:
             self._log_signal.emit(message, level == log.ERROR)
 
-        if level == log.INFO:
+        if not term:
+            header = ""
+        elif level == log.INFO:
             header = term.aquamarine3(">>> ")
         elif level == log.WARNING:
             header = term.gold("*** ")
@@ -1317,7 +1315,9 @@ class BootstrapRepos:
 
         print(f"{header}{message}")
         if exception:
-            print(term.red(f"{str(exception)}"))
+            exc_msg = str(exception)
+            exc_msg_formated = term.red(f"{exc_msg}") if term else exc_msg
+            print(exc_msg_formated)
 
     def extract_quadpype(self, version: QuadPypeVersion) -> Union[Path, None]:
         """Extract zipped QuadPype version to user data directory.

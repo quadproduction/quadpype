@@ -88,7 +88,6 @@ def open_update_window(quadpype_version, zxp_hosts=None):
 
     if not is_event_loop_running:
         app.exec_()
-        app.shutdown()
     else:
         d.exec_()
 
