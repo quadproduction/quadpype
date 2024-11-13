@@ -25,7 +25,7 @@ class WebpublisherAddon(QuadPypeModule, IHostAddon):
             return
 
         dbcon = get_webpublish_conn()
-        _id = os.environ.get("BATCH_LOG_ID")
+        _id = os.getenv("BATCH_LOG_ID")
         if not _id:
             log.warning("Unable to store log records, "
                         "batch will be unfinished!")

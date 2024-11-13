@@ -1,7 +1,5 @@
 from uuid import uuid4
-from abc import ABCMeta, abstractmethod, abstractproperty
-
-import six
+from abc import ABC, abstractmethod, abstractproperty
 
 from .lib import (
     NOT_SET,
@@ -18,8 +16,7 @@ from .exceptions import (
 from quadpype.lib import Logger
 
 
-@six.add_metaclass(ABCMeta)
-class BaseEntity:
+class BaseEntity(ABC):
     """Base entity class for Setting's item type workflow.
 
     Args:

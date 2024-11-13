@@ -1,12 +1,9 @@
 import nuke
 import re
 import os
-import sys
-import six
 import random
 import string
 from collections import OrderedDict, defaultdict
-from abc import abstractmethod
 
 from quadpype.settings import get_current_project_settings
 from quadpype.lib import (
@@ -14,10 +11,9 @@ from quadpype.lib import (
     EnumDef
 )
 from quadpype.pipeline import (
-    LegacyCreator,
     LoaderPlugin,
     CreatorError,
-    Creator as NewCreator,
+    Creator,
     CreatedInstance,
     get_current_task_name
 )
@@ -32,18 +28,13 @@ from quadpype.lib.transcoding import (
 from .lib import (
     INSTANCE_DATA_KNOB,
     Knobby,
-    check_subsetname_exists,
     maintained_selection,
     get_avalon_knob_data,
-    set_avalon_knob_data,
-    add_publish_knob,
-    get_nuke_imageio_settings,
     set_node_knobs_from_settings,
     set_node_data,
     get_node_data,
     get_view_process_node,
     get_viewer_config_from_string,
-    deprecated,
     get_filenames_without_hash,
     link_knobs
 )
@@ -69,7 +60,7 @@ class NukeCreatorError(CreatorError):
     pass
 
 
-class NukeCreator(NewCreator):
+class NukeCreator(Creator):
     selected_nodes = []
 
     def pass_pre_attributes_to_instance(
@@ -160,7 +151,7 @@ class NukeCreator(NewCreator):
     def set_selected_nodes(self, pre_create_data):
         if pre_create_data.get("use_selection"):
             self.selected_nodes = nuke.selectedNodes()
-            if self.selected_nodes == []:
+            if not self.selected_nodes:
                 raise NukeCreatorError("Creator error: No active selection")
         else:
             self.selected_nodes = []
@@ -195,10 +186,7 @@ class NukeCreator(NewCreator):
             return instance
 
         except Exception as er:
-            six.reraise(
-                NukeCreatorError,
-                NukeCreatorError("Creator error: {}".format(er)),
-                sys.exc_info()[2])
+            raise NukeCreatorError("Creator error: {}".format(er))
 
     def collect_instances(self):
         cached_instances = _collect_and_cache_nodes(self)
@@ -293,8 +281,8 @@ class NukeWriteCreator(NukeCreator):
         dependent_nodes = self.selected_node.dependent() if outputs else []
 
         # relinking to collected connections
-        for i, input in enumerate(input_nodes):
-            node.setInput(i, input)
+        for i, input_node in enumerate(input_nodes):
+            node.setInput(i, input_node)
 
         # make it nicer in graph
         node.autoplace()
@@ -306,7 +294,7 @@ class NukeWriteCreator(NukeCreator):
     def set_selected_nodes(self, pre_create_data):
         if pre_create_data.get("use_selection"):
             selected_nodes = nuke.selectedNodes()
-            if selected_nodes == []:
+            if not selected_nodes:
                 raise NukeCreatorError("Creator error: No active selection")
             elif len(selected_nodes) > 1:
                 NukeCreatorError("Creator error: Select only one camera node")
@@ -383,11 +371,7 @@ class NukeWriteCreator(NukeCreator):
             return instance
 
         except Exception as er:
-            six.reraise(
-                NukeCreatorError,
-                NukeCreatorError("Creator error: {}".format(er)),
-                sys.exc_info()[2]
-            )
+            raise NukeCreatorError("Creator error: {}".format(er))
 
     def apply_settings(self, project_settings):
         """Method called on initialization of plugin to apply settings."""
@@ -407,55 +391,7 @@ class NukeWriteCreator(NukeCreator):
         )
 
 
-class QuadPypeCreator(LegacyCreator):
-    """Pype Nuke Creator class wrapper"""
-    node_color = "0xdfea5dff"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if check_subsetname_exists(
-                nuke.allNodes(),
-                self.data["subset"]):
-            msg = ("The subset name `{0}` is already used on a node in"
-                   "this workfile.".format(self.data["subset"]))
-            self.log.error(msg + "\n\nPlease use other subset name!")
-            raise NameError("`{0}: {1}".format(__name__, msg))
-        return
-
-    def process(self):
-        from nukescripts import autoBackdrop
-
-        instance = None
-
-        if (self.options or {}).get("useSelection"):
-
-            nodes = nuke.selectedNodes()
-            if not nodes:
-                nuke.message("Please select nodes that you "
-                             "wish to add to a container")
-                return
-
-            elif len(nodes) == 1:
-                # only one node is selected
-                instance = nodes[0]
-
-        if not instance:
-            # Not using selection or multiple nodes selected
-            bckd_node = autoBackdrop()
-            bckd_node["tile_color"].setValue(int(self.node_color, 16))
-            bckd_node["note_font_size"].setValue(24)
-            bckd_node["label"].setValue("[{}]".format(self.name))
-
-            instance = bckd_node
-
-        # add avalon knobs
-        set_avalon_knob_data(instance, self.data)
-        add_publish_knob(instance)
-
-        return instance
-
-
-def get_instance_group_node_childs(instance):
+def get_instance_group_node_children(instance):
     """Return list of instance group node children
 
     Args:
@@ -1048,165 +984,12 @@ class ExporterReviewMov(ExporterReview):
         self._shift_to_previous_node_and_temp(subset, node, message)
 
 
-@deprecated("quadpype.hosts.nuke.api.plugin.NukeWriteCreator")
-class AbstractWriteRender(QuadPypeCreator):
-    """Abstract creator to gather similar implementation for Write creators"""
-    name = ""
-    label = ""
-    hosts = ["nuke"]
-    n_class = "Write"
-    family = "render"
-    icon = "sign-out"
-    defaults = ["Main", "Mask"]
-    knobs = []
-    prenodes = {}
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        data = OrderedDict()
-
-        data["family"] = self.family
-        data["families"] = self.n_class
-
-        for k, v in self.data.items():
-            if k not in data.keys():
-                data.update({k: v})
-
-        self.data = data
-        self.nodes = nuke.selectedNodes()
-
-    def process(self):
-
-        inputs = []
-        outputs = []
-        instance = nuke.toNode(self.data["subset"])
-        selected_node = None
-
-        # use selection
-        if (self.options or {}).get("useSelection"):
-            nodes = self.nodes
-
-            if not (len(nodes) < 2):
-                msg = ("Select only one node. "
-                       "The node you want to connect to, "
-                       "or tick off `Use selection`")
-                self.log.error(msg)
-                nuke.message(msg)
-                return
-
-            if len(nodes) == 0:
-                msg = (
-                    "No nodes selected. Please select a single node to connect"
-                    " to or tick off `Use selection`"
-                )
-                self.log.error(msg)
-                nuke.message(msg)
-                return
-
-            selected_node = nodes[0]
-            inputs = [selected_node]
-            outputs = selected_node.dependent()
-
-            if instance:
-                if (instance.name() in selected_node.name()):
-                    selected_node = instance.dependencies()[0]
-
-        # if node already exist
-        if instance:
-            # collect input / outputs
-            inputs = instance.dependencies()
-            outputs = instance.dependent()
-            selected_node = inputs[0]
-            # remove old one
-            nuke.delete(instance)
-
-        # recreate new
-        write_data = {
-            "nodeclass": self.n_class,
-            "families": [self.family],
-            "avalon": self.data,
-            "subset": self.data["subset"],
-            "knobs": self.knobs
-        }
-
-        # add creator data
-        creator_data = {"creator": self.__class__.__name__}
-        self.data.update(creator_data)
-        write_data.update(creator_data)
-
-        write_node = self._create_write_node(
-            selected_node,
-            inputs,
-            outputs,
-            write_data
-        )
-
-        # relinking to collected connections
-        for i, input in enumerate(inputs):
-            write_node.setInput(i, input)
-
-        write_node.autoplace()
-
-        for output in outputs:
-            output.setInput(0, write_node)
-
-        write_node = self._modify_write_node(write_node)
-
-        return write_node
-
-    def is_legacy(self):
-        """Check if it needs to run legacy code
-
-        In case where `type` key is missing in single
-        knob it is legacy project anatomy.
-
-        Returns:
-            bool: True if legacy
-        """
-        imageio_nodes = get_nuke_imageio_settings()["nodes"]
-        node = imageio_nodes["requiredNodes"][0]
-        if "type" not in node["knobs"][0]:
-            # if type is not yet in project anatomy
-            return True
-        elif next(iter(
-            _k for _k in node["knobs"]
-            if _k.get("type") == "__legacy__"
-        ), None):
-            # in case someone re-saved anatomy
-            # with old configuration
-            return True
-
-    @abstractmethod
-    def _create_write_node(self, selected_node, inputs, outputs, write_data):
-        """Family dependent implementation of Write node creation
-
-        Args:
-            selected_node (nuke.Node)
-            inputs (list of nuke.Node) - input dependencies (what is connected)
-            outputs (list of nuke.Node) - output dependencies
-            write_data (dict) - values used to fill Knobs
-        Returns:
-            node (nuke.Node): group node with  data as Knobs
-        """
-        pass
-
-    @abstractmethod
-    def _modify_write_node(self, write_node):
-        """Family dependent modification of created 'write_node'
-
-        Returns:
-            node (nuke.Node): group node with data as Knobs
-        """
-        pass
-
-
-def convert_to_valid_instaces():
+def convert_to_valid_instances():
     """ Check and convert to latest publisher instances
 
     Also save as new minor version of workfile.
     """
-    def family_to_identifier(family):
+    def family_to_identifier(family_name):
         mapping = {
             "render": "create_write_render",
             "prerender": "create_write_prerender",
@@ -1218,7 +1001,7 @@ def convert_to_valid_instaces():
             "source": "create_source"
 
         }
-        return mapping[family]
+        return mapping[family_name]
 
     from quadpype.hosts.nuke.api import workio
 
@@ -1227,7 +1010,7 @@ def convert_to_valid_instaces():
     # save into new workfile
     current_file = workio.current_file()
 
-    # add file suffex if not
+    # add file suffix if not
     if "_publisherConvert" not in current_file:
         new_workfile = (
             current_file[:-3]
@@ -1292,7 +1075,7 @@ def convert_to_valid_instaces():
             transfer_data["active"] = (
                 node["publish"].value())
 
-        # add idetifier
+        # add identifier
         transfer_data["creator_identifier"] = family_to_identifier(family)
 
         # Add all nodes in group instances.

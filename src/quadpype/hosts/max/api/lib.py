@@ -5,7 +5,6 @@ import logging
 import json
 from typing import Any, Dict, Union
 
-import six
 from quadpype.pipeline import get_current_project_name, colorspace
 from quadpype.settings import get_project_settings
 from quadpype.pipeline.context_tools import (
@@ -94,7 +93,7 @@ def read(container) -> dict:
             continue
 
         value = value.strip()
-        if isinstance(value.strip(), six.string_types) and \
+        if isinstance(value.strip(), str) and \
                 value.startswith(JSON_PREFIX):
             with contextlib.suppress(json.JSONDecodeError):
                 value = json.loads(value[len(JSON_PREFIX):])

@@ -215,7 +215,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
 
         # Add mongo url if it's enabled
         if instance.context.data.get("deadlinePassMongoUrl"):
-            mongo_url = os.environ.get("QUADPYPE_MONGO")
+            mongo_url = os.getenv("QUADPYPE_MONGO")
             if mongo_url:
                 environment["QUADPYPE_MONGO"] = mongo_url
 
@@ -438,9 +438,9 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                 "deadlineUser", getpass.getuser())
 
             render_job["Props"]["Env"] = {
-                "FTRACK_API_USER": os.environ.get("FTRACK_API_USER"),
-                "FTRACK_API_KEY": os.environ.get("FTRACK_API_KEY"),
-                "FTRACK_SERVER": os.environ.get("FTRACK_SERVER"),
+                "FTRACK_API_USER": os.getenv("FTRACK_API_USER"),
+                "FTRACK_API_KEY": os.getenv("FTRACK_API_KEY"),
+                "FTRACK_SERVER": os.getenv("FTRACK_SERVER"),
             }
 
         # get default deadline webservice url from deadline module

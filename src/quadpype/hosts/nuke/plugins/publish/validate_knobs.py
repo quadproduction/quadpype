@@ -1,5 +1,4 @@
 import nuke
-import six
 import pyblish.api
 
 from quadpype.pipeline.publish import (
@@ -118,7 +117,7 @@ class ValidateKnobs(pyblish.api.ContextPlugin):
         for data in invalid:
             # TODO: will need to improve type definitions
             # with the new settings for knob types
-            if isinstance(data["expected"], six.text_type):
+            if isinstance(data["expected"], str):
                 data["knob"].setValue(str(data["expected"]))
                 continue
 

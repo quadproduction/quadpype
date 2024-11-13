@@ -1088,7 +1088,7 @@ def get_current_project_settings():
     variable must be set and should not happen that any part of process will
     change the value of the environment variable.
     """
-    project_name = os.environ.get("AVALON_PROJECT")
+    project_name = os.getenv("AVALON_PROJECT")
     if not project_name:
         raise ValueError(
             "Missing context project in environment variable `AVALON_PROJECT`."

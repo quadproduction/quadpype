@@ -185,7 +185,7 @@ def cli_publish_from_app(
     if targets:
         if isinstance(targets, str):
             targets = [targets]
-        current_targets = os.environ.get("PYBLISH_TARGETS", "").split(
+        current_targets = os.getenv("PYBLISH_TARGETS", "").split(
             os.pathsep)
         for target in targets:
             current_targets.append(target)

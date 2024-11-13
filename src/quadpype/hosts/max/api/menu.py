@@ -78,7 +78,7 @@ class QuadPypeMenu(object):
 
             if before in item.title():
                 help_action = item.menuAction()
-        tab_menu_label = os.environ.get("AVALON_LABEL") or "QUADPYPE"
+        tab_menu_label = os.getenv("AVALON_LABEL") or "QUADPYPE"
         op_menu = QtWidgets.QMenu("&{}".format(tab_menu_label))
         menu_bar.insertMenu(help_action, op_menu)
 

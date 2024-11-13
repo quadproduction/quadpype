@@ -1,4 +1,3 @@
-import six
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 from . import FamilyRole, PluginRole
@@ -81,7 +80,7 @@ class FamilyDescriptionWidget(QtWidgets.QWidget):
         # Support a font-awesome icon
         plugin = item.data(PluginRole)
         icon = getattr(plugin, "icon", "info-circle")
-        assert isinstance(icon, six.string_types)
+        assert isinstance(icon, str)
         icon = qtawesome.icon("fa.{}".format(icon), color="white")
         pixmap = icon.pixmap(self.SIZE, self.SIZE)
         pixmap = pixmap.scaled(self.SIZE, self.SIZE)

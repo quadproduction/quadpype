@@ -107,7 +107,7 @@ class ValidateExpectedFiles(pyblish.api.InstancePlugin):
         # job_id collected from metadata.json
         original_job_id = instance.data["render_job_id"]
 
-        dependent_job_ids_env = os.environ.get("RENDER_JOB_IDS")
+        dependent_job_ids_env = os.getenv("RENDER_JOB_IDS")
         if dependent_job_ids_env:
             dependent_job_ids = dependent_job_ids_env.split(',')
         elif original_job_id:

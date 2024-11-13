@@ -80,7 +80,7 @@ def session_data_from_environment(context_keys=False):
     session_data = {}
     if context_keys:
         for key in SESSION_CONTEXT_KEYS:
-            value = os.environ.get(key)
+            value = os.getenv(key)
             session_data[key] = value or ""
     else:
         for key in SESSION_CONTEXT_KEYS:
@@ -98,7 +98,7 @@ def session_data_from_environment(context_keys=False):
         # Name of database used in MongoDB
         ("AVALON_DB", "avalon"),
     ):
-        value = os.environ.get(key) or default_value
+        value = os.getenv(key) or default_value
         if value is not None:
             session_data[key] = value
 

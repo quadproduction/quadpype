@@ -518,7 +518,7 @@ def on_init():
     cmds.loadPlugin("objExport", quiet=True)
 
     if not lib.IS_HEADLESS:
-        launch_workfiles = os.environ.get("WORKFILES_STARTUP")
+        launch_workfiles = os.getenv("WORKFILES_STARTUP")
         if launch_workfiles:
             safe_deferred(host_tools.show_workfiles)
 

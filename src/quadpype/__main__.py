@@ -6,9 +6,9 @@ import traceback
 
 if __name__ == '__main__':
     try:
-        cli.main(obj={}, prog_name="pype")
+        cli.main(obj={}, prog_name="quadpype")
     except Exception:
         exc_info = sys.exc_info()
-        print("!!! Pype crashed:")
+        print("!!! QuadPype crashed:")
         traceback.print_exception(*exc_info)
         sys.exit(1)

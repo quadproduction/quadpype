@@ -4,8 +4,6 @@ import collections
 import copy
 import numbers
 
-import six
-
 from quadpype.client import (
     get_project,
     get_assets,
@@ -40,9 +38,9 @@ class InvalidFpsValue(Exception):
 
 def is_string_number(value):
     """Can string value be converted to number (float)."""
-    if not isinstance(value, six.string_types):
+    if not isinstance(value, str):
         raise TypeError("Expected {} got {}".format(
-            ", ".join(str(t) for t in six.string_types), str(type(value))
+            ", ".join(str(t) for t in str), str(type(value))
         ))
     if value == ".":
         return False
@@ -91,7 +89,7 @@ def convert_to_fps(source_value):
     Raises:
         InvalidFpsValue: When value can't be converted to float.
     """
-    if not isinstance(source_value, six.string_types):
+    if not isinstance(source_value, str):
         if isinstance(source_value, numbers.Number):
             return float(source_value)
         return source_value

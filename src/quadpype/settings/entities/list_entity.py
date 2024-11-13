@@ -1,5 +1,4 @@
 import copy
-import six
 import re
 from . import (
     BaseEntity,
@@ -150,7 +149,7 @@ class ListEntity(EndpointEntity):
     def has_child_with_key(self, key):
         if (
             key
-            and isinstance(key, six.string_types)
+            and isinstance(key, str)
             and self._key_regex.match(key)
         ):
             key = int(key)

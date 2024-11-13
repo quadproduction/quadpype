@@ -12,9 +12,7 @@ import collections
 import traceback
 
 from uuid import uuid4
-from abc import ABCMeta, abstractmethod
-
-import six
+from abc import ABC, abstractmethod
 
 from quadpype.settings import (
     get_global_settings,
@@ -426,8 +424,7 @@ def _load_modules():
                 log.error(msg, exc_info=True)
 
 
-@six.add_metaclass(ABCMeta)
-class QuadPypeModule(object):
+class QuadPypeModule(ABC):
     """Base class for QuadPype module.
 
     Attributes:
@@ -1343,8 +1340,7 @@ def get_module_settings_defs():
     return settings_defs
 
 
-@six.add_metaclass(ABCMeta)
-class BaseModuleSettingsDef:
+class BaseModuleSettingsDef(ABC):
     """Definition of settings for QuadPype module or AddOn."""
     _id = None
 

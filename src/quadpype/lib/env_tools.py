@@ -16,7 +16,7 @@ def env_value_to_bool(env_key=None, value=None, default=False):
         return default
 
     if value is None:
-        value = os.environ.get(env_key)
+        value = os.getenv(env_key)
 
     if value is not None:
         value = str(value).lower()
@@ -47,7 +47,7 @@ def get_paths_from_environ(env_key=None, env_value=None, return_first=False):
         return existing_paths
 
     if env_value is None:
-        env_value = os.environ.get(env_key) or ""
+        env_value = os.getenv(env_key) or ""
 
     path_items = env_value.split(os.pathsep)
     for path in path_items:

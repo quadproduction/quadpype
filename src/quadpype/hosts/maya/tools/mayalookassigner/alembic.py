@@ -4,8 +4,6 @@ import os
 from collections import defaultdict
 import logging
 
-import six
-
 import alembic.Abc
 
 
@@ -91,7 +89,7 @@ def get_alembic_ids_cache(path):
     """
     node_ids = get_alembic_paths_by_property(path, attr="cbId")
     id_nodes = defaultdict(list)
-    for node, _id in six.iteritems(node_ids):
+    for node, _id in node_ids.items():
         id_nodes[_id].append(node)
 
-    return dict(six.iteritems(id_nodes))
+    return dict(id_nodes.items())

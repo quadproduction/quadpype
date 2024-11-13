@@ -1,3 +1,4 @@
+import io
 import os
 import sys
 import shutil
@@ -6,7 +7,6 @@ import contextlib
 
 import pyblish
 import pyblish.plugin
-from pyblish.vendor import six
 
 
 # Setup
@@ -15,7 +15,7 @@ FAMILY = 'test.family'
 
 REGISTERED = pyblish.plugin.registered_paths()
 PACKAGEPATH = pyblish.lib.main_package_path()
-ENVIRONMENT = os.environ.get("PYBLISHPLUGINPATH", "")
+ENVIRONMENT = os.getenv("PYBLISHPLUGINPATH", "")
 PLUGINPATH = os.path.join(PACKAGEPATH, '..', 'tests', 'plugins')
 
 
@@ -53,7 +53,7 @@ def teardown():
 def captured_stdout():
     """Temporarily reassign stdout to a local variable"""
     try:
-        sys.stdout = six.StringIO()
+        sys.stdout = io.StringIO()
         yield sys.stdout
     finally:
         sys.stdout = sys.__stdout__
@@ -63,7 +63,7 @@ def captured_stdout():
 def captured_stderr():
     """Temporarily reassign stderr to a local variable"""
     try:
-        sys.stderr = six.StringIO()
+        sys.stderr = io.StringIO()
         yield sys.stderr
     finally:
         sys.stderr = sys.__stderr__
@@ -85,4 +85,4 @@ def is_in_tests():
     In tests mode different source DB is used, some plugins might be disabled
     etc.
     """
-    return os.environ.get("IS_TEST") == '1'
+    return os.getenv("IS_TEST") == '1'

@@ -336,7 +336,7 @@ def set_unit_scale_from_settings(unit_scale_settings=None):
 
 
 def on_new():
-    project = os.environ.get("AVALON_PROJECT")
+    project = os.getenv("AVALON_PROJECT")
     settings = get_project_settings(project).get("blender")
 
     set_resolution_startup = settings.get("set_resolution_startup")
@@ -357,7 +357,7 @@ def on_new():
 
 
 def on_open():
-    project = os.environ.get("AVALON_PROJECT")
+    project = os.getenv("AVALON_PROJECT")
     settings = get_project_settings(project).get("blender")
 
     set_resolution_startup = settings.get("set_resolution_startup")

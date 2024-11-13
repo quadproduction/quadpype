@@ -45,7 +45,7 @@ class LegacyCreator(object):
     def apply_settings(cls, project_settings, global_settings):
         """Apply QuadPype settings to a plugin class."""
 
-        host_name = os.environ.get("AVALON_APP")
+        host_name = os.getenv("AVALON_APP")
         plugin_type = "create"
         plugin_type_settings = (
             project_settings

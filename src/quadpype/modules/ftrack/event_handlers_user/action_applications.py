@@ -21,7 +21,7 @@ class AppplicationsAction(BaseAction):
     identifier = "quadpype_app"
     _launch_identifier_with_id = None
 
-    icon_url = os.environ.get("QUADPYPE_STATICS_SERVER")
+    icon_url = os.getenv("QUADPYPE_STATICS_SERVER")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

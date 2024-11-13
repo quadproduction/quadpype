@@ -173,7 +173,7 @@ def install():
         os.remove(filepath)
 
     icon = get_app_icon_filepath()
-    tab_menu_label = os.environ.get("AVALON_LABEL") or "QuadPype"
+    tab_menu_label = os.getenv("AVALON_LABEL") or "QuadPype"
 
     # Create context only to get creator plugins, so we don't reset and only
     # populate what we need to retrieve the list of creator plugins

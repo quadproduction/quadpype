@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 """Maya look extractor."""
-import sys
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from collections import OrderedDict
 import contextlib
 import json
 import logging
 import os
 import tempfile
-import six
 import attr
 
 import pyblish.api
@@ -93,8 +91,7 @@ def no_workspace_dir():
         os.rmdir(fake_workspace_dir)
 
 
-@six.add_metaclass(ABCMeta)
-class TextureProcessor:
+class TextureProcessor(ABC):
 
     extension = None
 
@@ -199,10 +196,10 @@ class MakeRSTexBin(TextureProcessor):
         self.log.debug(" ".join(subprocess_args))
         try:
             run_subprocess(subprocess_args, logger=self.log)
-        except Exception:
+        except Exception as e:
             self.log.error("Texture .rstexbin conversion failed",
                            exc_info=True)
-            six.reraise(*sys.exc_info())
+            raise e
 
         return TextureResult(
             path=destination,

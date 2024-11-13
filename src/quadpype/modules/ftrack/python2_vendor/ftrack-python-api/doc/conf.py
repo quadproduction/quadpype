@@ -54,7 +54,7 @@ modindex_common_prefix = [
 
 # -- HTML output --------------------------------------------------------------
 
-if not os.environ.get('READTHEDOCS', None) == 'True':
+if not os.getenv('READTHEDOCS', None) == 'True':
     # Only import and set the theme if building locally.
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
@@ -93,7 +93,7 @@ intersphinx_mapping = {
 
 # -- Todos ---------------------------------------------------------------------
 
-todo_include_todos = os.environ.get('FTRACK_DOC_INCLUDE_TODOS', False) == 'True'
+todo_include_todos = os.getenv('FTRACK_DOC_INCLUDE_TODOS', False) == 'True'
 
 
 # -- Setup --------------------------------------------------------------------

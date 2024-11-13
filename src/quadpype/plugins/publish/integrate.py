@@ -1,11 +1,9 @@
 import os
 import logging
-import sys
 import copy
 import datetime
 
 import clique
-import six
 from bson.objectid import ObjectId
 import pyblish.api
 
@@ -188,15 +186,13 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
             # Raise DuplicateDestinationError as KnownPublishError
             # and rollback the transactions
             file_transactions.rollback()
-            six.reraise(KnownPublishError,
-                        KnownPublishError(exc),
-                        sys.exc_info()[2])
-        except Exception:
+            raise KnownPublishError(exc)
+        except Exception as e:
             # clean destination
             # todo: preferably we'd also rollback *any* changes to the database
             file_transactions.rollback()
             self.log.critical("Error when registering", exc_info=True)
-            six.reraise(*sys.exc_info())
+            raise e
 
         # Finalizing can't rollback safely so no use for moving it to
         # the try, except.

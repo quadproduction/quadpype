@@ -86,7 +86,7 @@ class StdOutBroker:
         if not self._std_available:  # not content to log
             return
         ws = websocket.WebSocket()
-        webserver_url = os.environ.get("QUADPYPE_WEBSERVER_URL")
+        webserver_url = os.getenv("QUADPYPE_WEBSERVER_URL")
 
         if not webserver_url:
             print("Unknown webserver url, cannot connect to pass log")

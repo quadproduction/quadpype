@@ -201,14 +201,14 @@ def show(root=None, debug=False, parent=None, items=None):
     if debug is True:
         legacy_io.install()
 
-        if not os.environ.get("AVALON_PROJECT"):
+        if not os.getenv("AVALON_PROJECT"):
             any_project = next(
                 project for project in get_projects()
             )
 
             project_name = any_project["name"]
         else:
-            project_name = os.environ.get("AVALON_PROJECT")
+            project_name = os.getenv("AVALON_PROJECT")
         legacy_io.Session["AVALON_PROJECT"] = project_name
 
     with qt_app_context():

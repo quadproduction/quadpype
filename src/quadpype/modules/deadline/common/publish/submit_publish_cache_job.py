@@ -160,7 +160,7 @@ class ProcessSubmittedCacheJobOnFarm(pyblish.api.InstancePlugin,
 
         # Add mongo url if it's enabled
         if instance.context.data.get("deadlinePassMongoUrl"):
-            mongo_url = os.environ.get("QUADPYPE_MONGO")
+            mongo_url = os.getenv("QUADPYPE_MONGO")
             if mongo_url:
                 environment["QUADPYPE_MONGO"] = mongo_url
 

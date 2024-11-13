@@ -1,9 +1,7 @@
 import copy
 import collections
 
-from abc import ABCMeta, abstractmethod
-
-import six
+from abc import ABC, abstractmethod
 
 from quadpype.settings import get_global_settings, get_project_settings
 from quadpype.lib import Logger, is_func_signature_supported
@@ -31,8 +29,7 @@ class CreatorError(Exception):
         super().__init__(message)
 
 
-@six.add_metaclass(ABCMeta)
-class SubsetConvertorPlugin(object):
+class SubsetConvertorPlugin(ABC):
     """Helper for conversion of instances created using legacy creators.
 
     Conversion from legacy creators would mean to loose legacy instances,
@@ -145,8 +142,7 @@ class SubsetConvertorPlugin(object):
         self._create_context.remove_convertor_item(self.identifier)
 
 
-@six.add_metaclass(ABCMeta)
-class BaseCreator:
+class BaseCreator(ABC):
     """Plugin that create and modify instance data before publishing process.
 
     We should maybe find better name as creation is only one part of it's logic

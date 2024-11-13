@@ -7,19 +7,15 @@ exists is used.
 """
 
 import os
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 import platform
-
-import six
 
 from quadpype.lib import Logger
 from quadpype.modules import ModulesManager
 from quadpype.settings import get_project_settings
-from quadpype.settings.lib import get_site_local_overrides
 
 
-@six.add_metaclass(ABCMeta)
-class HostDirmap(object):
+class HostDirmap(ABC):
     """Abstract class for running dirmap on a workfile in a host.
 
     Dirmap is used to translate paths inside of host workfile from one
@@ -42,7 +38,7 @@ class HostDirmap(object):
         self.project_name = project_name
         self._project_settings = project_settings
         self._sync_module = sync_module
-        # to limit reinit of Modules
+        # To limit reinit of the addon
         self._sync_module_discovered = sync_module is not None
         self._log = None
 
@@ -163,7 +159,7 @@ class HostDirmap(object):
         if (
             sync_module is None
             or not sync_module.enabled
-            or project_name not in sync_module.get_enabled_projects()
+            or not sync_module.is_project_enabled(project_name, True)
         ):
             return mapping
 
@@ -181,25 +177,23 @@ class HostDirmap(object):
                 exclude_locals=False,
                 cached=False)
 
-            active_overrides = get_site_local_overrides(
-                project_name, active_site)
-            remote_overrides = get_site_local_overrides(
-                project_name, remote_site)
+            active_roots_overrides = self._get_site_root_overrides(
+                sync_module, project_name, active_site)
 
-            self.log.debug("local overrides {}".format(active_overrides))
-            self.log.debug("remote overrides {}".format(remote_overrides))
+            remote_roots_overrides = self._get_site_root_overrides(
+                sync_module, project_name, remote_site)
 
             current_platform = platform.system().lower()
             remote_provider = sync_module.get_provider_for_site(
                 project_name, remote_site
             )
             # dirmap has sense only with regular disk provider, in the workfile
-            # won't be root on cloud or sftp provider
+            # won't be root on cloud or sftp provider so fallback to studio
             if remote_provider != "local_drive":
                 remote_site = "studio"
-            for root_name, active_site_dir in active_overrides.items():
+            for root_name, active_site_dir in active_roots_overrides.items():
                 remote_site_dir = (
-                    remote_overrides.get(root_name)
+                    remote_roots_overrides.get(root_name)
                     or sync_settings["sites"][remote_site]["root"][root_name]
                 )
 
@@ -220,3 +214,17 @@ class HostDirmap(object):
 
             self.log.debug("local sync mapping:: {}".format(mapping))
         return mapping
+
+    def _get_site_root_overrides(
+            self, sync_module, project_name, site_name):
+        """Safely handle root overrides.
+        SiteSync raises ValueError for non-local or studio sites.
+        """
+        try:
+            site_roots_overrides = sync_module.get_site_root_overrides(
+                project_name, site_name)
+        except ValueError:
+            site_roots_overrides = {}
+        self.log.debug("{} roots overrides {}".format(
+            site_name, site_roots_overrides))
+        return site_roots_overrides

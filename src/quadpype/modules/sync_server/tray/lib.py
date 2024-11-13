@@ -1,6 +1,5 @@
 import attr
-import abc
-import six
+from abc import ABC, abstractmethod
 
 STATUS = {
     0: 'In Progress',
@@ -14,8 +13,7 @@ STATUS = {
 DUMMY_PROJECT = "No project configured"
 
 
-@six.add_metaclass(abc.ABCMeta)
-class AbstractColumnFilter:
+class AbstractColumnFilter(ABC):
 
     def __init__(self, column_name, dbcon=None):
         self.column_name = column_name
@@ -28,14 +26,14 @@ class AbstractColumnFilter:
         """
         return self._search_variants
 
-    @abc.abstractmethod
+    @abstractmethod
     def values(self):
         """
             Returns dict of available values for filter {'label':'value'}
         """
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def prepare_match_part(self, values):
         """
             Prepares format valid for $match part from 'values
