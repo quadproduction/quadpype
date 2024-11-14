@@ -99,15 +99,6 @@ class InstallThread(QtCore.QThread):
             self.message.emit("None detected.", True)
             self.message.emit(("We will use QuadPype coming with "
                                "installer."), False)
-            # quadpype_version = bs.create_version_from_frozen_code()
-            # if not quadpype_version:
-            #     self.message.emit(
-            #         f"!!! Install failed - {quadpype_version}", True)
-            #     self._set_result(-1)
-            #     return
-            # self.message.emit(f"Using: {quadpype_version}", False)
-            # bs.install_version(quadpype_version)
-            # self.message.emit(f"Installed as {quadpype_version}", False)
             self.progress.emit(100)
             self._set_result(1)
             return

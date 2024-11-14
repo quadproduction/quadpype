@@ -954,7 +954,6 @@ class BootstrapRepos:
 
         """
         checksums_file = Path(path / "checksums")
-        print(str(checksums_file))
         if not checksums_file.exists():
             return False, "Cannot read checksums for archive."
         checksums_data = checksums_file.read_text()
