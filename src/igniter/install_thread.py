@@ -65,11 +65,9 @@ class InstallThread(QtCore.QThread):
             progress_callback=self.set_progress, log_signal=self.message)
         local_version = QuadPypeVersion.get_installed_version_str()
 
-        # user did not entered url
         if self._mongo:
             self.message.emit("Saving mongo connection string ...", False)
             bs.secure_registry.set_item("quadpypeMongo", self._mongo)
-
         elif os.getenv("QUADPYPE_MONGO"):
             self._mongo = os.getenv("QUADPYPE_MONGO")
         else:
@@ -94,22 +92,22 @@ class InstallThread(QtCore.QThread):
         bs.set_data_dir(data_dir)
 
         self.message.emit(
-            f"Detecting installed QuadPype versions in {bs.data_dir}",
+            f"Detecting QuadPype Patch versions in {bs.data_dir}",
             False)
         detected = bs.find_quadpype(include_zips=True)
         if not detected and getattr(sys, 'frozen', False):
             self.message.emit("None detected.", True)
             self.message.emit(("We will use QuadPype coming with "
                                "installer."), False)
-            quadpype_version = bs.create_version_from_frozen_code()
-            if not quadpype_version:
-                self.message.emit(
-                    f"!!! Install failed - {quadpype_version}", True)
-                self._set_result(-1)
-                return
-            self.message.emit(f"Using: {quadpype_version}", False)
-            bs.install_version(quadpype_version)
-            self.message.emit(f"Installed as {quadpype_version}", False)
+            # quadpype_version = bs.create_version_from_frozen_code()
+            # if not quadpype_version:
+            #     self.message.emit(
+            #         f"!!! Install failed - {quadpype_version}", True)
+            #     self._set_result(-1)
+            #     return
+            # self.message.emit(f"Using: {quadpype_version}", False)
+            # bs.install_version(quadpype_version)
+            # self.message.emit(f"Installed as {quadpype_version}", False)
             self.progress.emit(100)
             self._set_result(1)
             return

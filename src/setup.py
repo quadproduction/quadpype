@@ -6,6 +6,7 @@ import platform
 import hashlib
 import distutils.spawn
 from pathlib import Path
+from typing import List
 
 from cx_Freeze import setup, Executable
 from sphinx.setup_command import BuildDoc
@@ -243,30 +244,59 @@ def sha256sum(filename):
     return h.hexdigest()
 
 
-def generate_checksums(folder_to_parse, checksum_file):
+def _get_dir_files(dir_path: Path) -> List[Path]:
+    dir_files = []
+    for item in dir_path.iterdir():
+        if item.name.startswith('.'):
+            continue
+        if item.is_dir():
+            dir_files.extend(_get_dir_files(item))
+        else:
+            dir_files.append(item)
+    return dir_files
+
+
+def _get_included_files_list(included_paths: List[Path]) -> List[Path]:
+    included_files = []
+    for curr_path in included_paths:
+        if curr_path.is_dir():
+            included_files += _get_dir_files(curr_path)
+        else:
+            included_files.append(curr_path)
+
+    return included_files
+
+
+def generate_checksums_file(root_path, included_paths, dest_file_path):
     checksums = []
-    for root, _, files in os.walk(folder_to_parse):
-        for file in files:
-            file_path = Path(root) / file
-            checksums.append(
-                (
-                    sha256sum(sanitize_long_path(file_path.as_posix())),
-                    file_path.resolve().relative_to(folder_to_parse)
-                )
+
+    included_files = _get_included_files_list(included_paths)
+    for filepath in included_files:
+        checksums.append(
+            (
+                sha256sum(sanitize_long_path(filepath.as_posix())),
+                filepath.resolve().relative_to(root_path)
             )
+        )
 
     # Write the output lines to the checksum file
     checksums_str = ""
-    for c in checksums:
-        file_str = c[1]
+    for checksum_tuple in checksums:
+        file_str = checksum_tuple[1]
         if platform.system().lower() == "windows":
-            file_str = c[1].as_posix().replace("\\", "/")
-        checksums_str += "{}:{}\n".format(c[0], file_str)
+            file_str = checksum_tuple[1].as_posix().replace("\\", "/")
+        checksums_str += "{}:{}\n".format(checksum_tuple[0], file_str)
 
-    with open(checksum_file, 'w', encoding='ascii') as f:
+    with open(dest_file_path, 'w', encoding='ascii') as f:
         f.write(checksums_str + "\n")
-    print(f">>> Checksum Written to {checksum_file}")
+    print(f">>> Checksum Written to {dest_file_path}")
 
 
-checksum_file = Path(app_root) / build_exe_options.get('build_exe') / 'checksums'
-generate_checksums(checksum_file.parent, checksum_file)
+# Generate the checksums file
+build_dir_path = app_root.joinpath(build_exe_options.get("build_exe"))
+input_paths = [
+    build_dir_path.joinpath("quadpype"),
+    build_dir_path.joinpath("LICENSE")
+]
+checksum_file_path = build_dir_path.joinpath("checksums").resolve()
+generate_checksums_file(build_dir_path, input_paths, checksum_file_path)

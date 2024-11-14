@@ -963,13 +963,15 @@ class BootstrapRepos:
             for line in checksums_data.split("\n") if line
         ]
 
-        # compare file list against list of files from checksum file.
+        # compare content of the quadpype/ folder against list of files from checksum file.
         # If difference exists, something is wrong and we invalidate directly
+        quadpype_path = path.joinpath("quadpype")
         files_in_dir = set(
             file.relative_to(path).as_posix()
-            for file in path.iterdir() if file.is_file()
+            for file in quadpype_path.iterdir() if file.is_file()
         )
-        files_in_dir.remove("checksums")
+        files_in_dir.discard("checksums")
+        files_in_dir.add("LICENSE")
         files_in_checksum = {file[1] for file in checksums}
 
         diff = files_in_dir.difference(files_in_checksum)

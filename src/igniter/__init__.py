@@ -51,16 +51,20 @@ def _get_qt_app():
     return QtWidgets.QApplication(sys.argv), is_event_loop_running
 
 
-def open_dialog():
+def open_dialog(log=None):
     """Show Igniter dialog."""
     if os.getenv("QUADPYPE_HEADLESS_MODE"):
-        print("!!! Can't open dialog in headless mode. Exiting.")
+        error_msg = "!!! Can't open dialog in headless mode. Exiting."
+        if log:
+            log(error_msg)
+        else:
+            print(error_msg)
         sys.exit(1)
     from .install_dialog import InstallDialog
 
     app, is_event_loop_running = _get_qt_app()
 
-    d = InstallDialog()
+    d = InstallDialog(log)
     d.open()
 
     if not is_event_loop_running:

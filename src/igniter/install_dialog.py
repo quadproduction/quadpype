@@ -173,8 +173,10 @@ class InstallDialog(QtWidgets.QDialog):
         ("run_from_code", "Run from code")
     ])
 
-    def __init__(self, parent=None):
+    def __init__(self, log=None, parent=None):
         super().__init__(parent)
+
+        self._log = log
 
         self.setWindowTitle(
             f"QuadPype"
@@ -477,6 +479,9 @@ class InstallDialog(QtWidgets.QDialog):
             error (bool): if True, print it red.
         """
         self._console_widget.update_console(msg, error)
+        if self._log:
+            header = "!!! " if error else ">>> "
+            self.log(f"{header}{msg}")
 
     def _show_console(self):
         self._console_widget.show_console()
