@@ -3,6 +3,7 @@
 import os
 import re
 import platform
+import hashlib
 import distutils.spawn
 from pathlib import Path
 
@@ -10,7 +11,6 @@ from cx_Freeze import setup, Executable
 from sphinx.setup_command import BuildDoc
 
 app_root = Path(os.path.dirname(__file__))
-
 
 def validate_thirdparty_binaries():
     """Check the existence of the third party executables."""
@@ -199,3 +199,74 @@ setup(
     executables=executables,
     packages=[]
 )
+
+
+def sanitize_long_path(path):
+    """Sanitize long paths (260 characters) when on Windows.
+
+    Long paths are not capable with ZipFile or reading a file, so we can
+    shorten the path to use.
+
+    Args:
+        path (str): path to either directory or file.
+
+    Returns:
+        str: sanitized path
+    """
+    if platform.system().lower() != "windows":
+        return path
+    path = os.path.abspath(path)
+
+    if path.startswith("\\\\"):
+        path = "\\\\?\\UNC\\" + path[2:]
+    else:
+        path = "\\\\?\\" + path
+    return path
+
+
+def sha256sum(filename):
+    """Calculate sha256 for content of the file.
+
+    Args:
+         filename (str): Path to file.
+
+    Returns:
+        str: hex encoded sha256
+
+    """
+    h = hashlib.sha256()
+    b = bytearray(128 * 1024)
+    mv = memoryview(b)
+    with open(filename, 'rb', buffering=0) as f:
+        for n in iter(lambda: f.readinto(mv), 0):
+            h.update(mv[:n])
+    return h.hexdigest()
+
+
+def generate_checksums(folder_to_parse, checksum_file):
+    checksums = []
+    for root, _, files in os.walk(folder_to_parse):
+        for file in files:
+            file_path = Path(root) / file
+            checksums.append(
+                (
+                    sha256sum(sanitize_long_path(file_path.as_posix())),
+                    file_path.resolve().relative_to(folder_to_parse)
+                )
+            )
+
+    # Write the output lines to the checksum file
+    checksums_str = ""
+    for c in checksums:
+        file_str = c[1]
+        if platform.system().lower() == "windows":
+            file_str = c[1].as_posix().replace("\\", "/")
+        checksums_str += "{}:{}\n".format(c[0], file_str)
+
+    with open(checksum_file, 'w', encoding='ascii') as f:
+        f.write(checksums_str + "\n")
+    print(f">>> Checksum Written to {checksum_file}")
+
+
+checksum_file = Path(app_root) / build_exe_options.get('build_exe') / 'checksums'
+generate_checksums(checksum_file.parent, checksum_file)
