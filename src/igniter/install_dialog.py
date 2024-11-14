@@ -481,7 +481,7 @@ class InstallDialog(QtWidgets.QDialog):
         self._console_widget.update_console(msg, error)
         if self._log:
             header = "!!! " if error else ">>> "
-            self.log(f"{header}{msg}")
+            self._log(f"{header}{msg}")
 
     def _show_console(self):
         self._console_widget.show_console()

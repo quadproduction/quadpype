@@ -641,7 +641,7 @@ def _process_arguments() -> tuple:
             _print("!!! Cannot open Igniter dialog in headless mode.", True)
             sys.exit(1)
 
-        return_code = igniter.open_dialog()
+        return_code = igniter.open_dialog(_print)
 
         # this is when we want to run QuadPype without installing anything.
         # or we are ready to run.
@@ -694,7 +694,7 @@ def _determine_mongodb() -> str:
             sys.exit(1)
         _print("--- launching setup UI ...")
 
-        result = igniter.open_dialog()
+        result = igniter.open_dialog(_print)
         if result == 0:
             raise RuntimeError("MongoDB URL was not defined")
 
