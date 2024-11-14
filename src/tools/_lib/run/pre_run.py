@@ -23,11 +23,11 @@ def main():
 
     if args.mongo_uri:
         # First, check MongoDB connection string format validity
-        match = re.fullmatch(r"^mongodb(\+srv)?://[\w.-]+:\d{1,5}$", args.mongo_uri)
+        match = re.fullmatch(r"^mongodb(\+srv)?://([\w.%-]+:[\w.%-]+@)?[\w.%-]+(:\d{1,5})?/?$", args.mongo_uri)
         if not match:
             raise ValueError("Value of script argument '--mongo-uri' doesn't match the expected format\n"
                              "The connection string should look like: mongodb://uri.to.my.mongo-db:27017\n"
-                             "The regex pattern used is: 'mongodb(\+srv)?://[\w.-]+:\d{1,5}'")
+                             "The regex pattern used is: '^mongodb(\+srv)?://([\w.%-]+:[\w.%-]+@)?[\w.%-]+(:\d{1,5})?/?$'")
         args_string += " -m {}".format(args.mongo_uri)
 
     low_platform = platform.system().lower()

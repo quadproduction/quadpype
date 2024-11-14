@@ -7,6 +7,7 @@
 #define AppVer GetEnv("BUILD_VERSION")
 #define AppPublisher "Quad Group"
 #define AppURL "https://github.com/quadproduction/quadpype"
+#define CurrYear GetDateTimeString('yyyy', '', '')
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -20,6 +21,7 @@ AppPublisher={#AppPublisher}
 AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}
 AppUpdatesURL={#AppURL}
+AppCopyright=2023-CurrYear {#AppPublisher}
 DefaultDirName={autopf}\{#AppNameLower}\{#AppVer}
 UsePreviousAppDir=no
 DisableProgramGroupPage=yes
@@ -36,7 +38,7 @@ OutputBaseFilename={#AppNameLower}-{#AppVer}-installer
 AllowCancelDuringInstall=yes
 PrivilegesRequired=lowest
 SetupIconFile=igniter\resources\icons\quadpype.ico
-UninstallIconFile=igniter\resources\icons\quadpype.ico
+UninstallDisplayIcon={uninstallexe}
 OutputDir=build\
 Compression=lzma2
 SolidCompression=yes

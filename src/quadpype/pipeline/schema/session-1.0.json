@@ -61,7 +61,7 @@
         "AVALON_MONGO": {
             "description": "Address to the asset database",
             "type": "string",
-            "pattern": "^mongodb://[\\w/@:.]*$",
+            "pattern": "^mongodb(\\+srv)?://([\\w.%-]+:[\\w.%-]+@)?[\\w.%-]+(:\\d{1,5})?/?$",
             "example": "mongodb://localhost:27017",
             "default": "mongodb://localhost:27017"
         },

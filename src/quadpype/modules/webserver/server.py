@@ -1,3 +1,5 @@
+import logging.config
+
 import threading
 import asyncio
 from pathlib import Path

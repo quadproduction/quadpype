@@ -575,9 +575,9 @@ class BootstrapRepos:
     Attributes:
         data_dir (Path): local QuadPype installation directory.
         registry (QuadPypeSettingsRegistry): QuadPype registry object.
-        zip_filter (list): List of files to exclude from zip
-        quadpype_filter (list): list of top level directories to
-            include in zip in QuadPype repository.
+        exclusion_list (list): List of files to exclude from zip
+        inclusion_list (list): list of top level directories and files to
+            include in QuadPype patch zip.
 
     """
 
@@ -596,9 +596,9 @@ class BootstrapRepos:
         self.set_data_dir(None)
         self.secure_registry = QuadPypeSecureRegistry("mongodb")
         self.registry = QuadPypeSettingsRegistry()
-        self.zip_filter = [".pyc", "__pycache__"]
-        self.quadpype_filter = [
-            "quadpype", "../LICENSE"
+        self.exclusion_list = [".pyc", "__pycache__"]
+        self.inclusion_list = [
+            "quadpype", "../LICENSE", "LICENSE"
         ]
 
         # dummy progress reporter
@@ -761,19 +761,34 @@ class BootstrapRepos:
 
         return destination
 
-    def _filter_dir(self, path: Path, path_filter: List) -> List[Path]:
+    def _filter_dir(self, path: Path, exclusion_list: List) -> List[Path]:
         """Recursively crawl over path and filter."""
         result = []
         for item in path.iterdir():
-            if item.name in path_filter:
+            if item.name in exclusion_list:
                 continue
             if item.name.startswith('.'):
                 continue
             if item.is_dir():
-                result.extend(self._filter_dir(item, path_filter))
+                result.extend(self._filter_dir(item, exclusion_list))
             else:
                 result.append(item)
         return result
+
+    def _get_included_files_list(self, root_path: Path) -> List[Path]:
+        included_files = []
+        for item in self.inclusion_list:
+            item_fullpath = root_path.joinpath(item)
+            if not item_fullpath.exists():
+                continue
+
+            if item_fullpath.is_dir():
+                included_files += self._filter_dir(
+                    item_fullpath, self.exclusion_list)
+            else:
+                included_files.append(item_fullpath)
+
+        return included_files
 
     def create_version_from_frozen_code(self) -> Union[None, QuadPypeVersion]:
         """Create QuadPype version from *frozen* code distributed by installer.
@@ -788,28 +803,20 @@ class BootstrapRepos:
 
         """
         frozen_root = Path(sys.executable).parent
-
-        quadpype_list = []
-        for f in self.quadpype_filter:
-            if (frozen_root / f).is_dir():
-                quadpype_list += self._filter_dir(
-                    frozen_root / f, self.zip_filter)
-            else:
-                quadpype_list.append(frozen_root / f)
-
+        included_files = self._get_included_files_list(frozen_root)
         version_str = str(self.get_version(frozen_root))
 
-        # create zip inside temporary directory.
+        # Create the patch zip inside a temporary directory.
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_zip = \
                 Path(temp_dir) / f"quadpype-v{version_str}.zip"
             self._print(f"Creating zip: {temp_zip}")
 
             with ZipFile(temp_zip, "w") as zip_file:
-                self.progress_bar_set_total(len(quadpype_list))
+                self.progress_bar_set_total(len(included_files))
 
                 file: Path
-                for file in quadpype_list:
+                for file in included_files:
                     arc_name = file.relative_to(frozen_root.parent)
                     # we need to replace first part of path which starts with
                     # something like `exe.win/linux....` with `quadpype` as
@@ -818,6 +825,7 @@ class BootstrapRepos:
                     zip_file.write(file, arc_name)
                     self.progress_bar_increment()
 
+            # Move the patch zip to the proper patch data folder
             destination = self._move_zip_to_data_dir(temp_zip)
 
         return QuadPypeVersion(version=version_str, path=destination)
@@ -827,8 +835,8 @@ class BootstrapRepos:
 
         We are using :mod:`ZipFile` instead :meth:`shutil.make_archive`
         because we need to decide what file and directories to include in zip
-        and what not. They are determined by :attr:`zip_filter` on file level
-        and :attr:`quadpype_filter` on top level directory in QuadPype
+        and what not. They are determined by :attr:`exclusion_list` on file level
+        and :attr:`inclusion_list` on top level directory in QuadPype
         repository.
 
         Args:
@@ -836,38 +844,16 @@ class BootstrapRepos:
             quadpype_path (Path): Path to QuadPype sources.
 
         """
-        # get filtered list of file in Pype repository
-        # quadpype_list = self._filter_dir(quadpype_path, self.zip_filter)
-        quadpype_list = []
-        for f in self.quadpype_filter:
-            if (quadpype_path / f).is_dir():
-                quadpype_list += self._filter_dir(
-                    quadpype_path / f, self.zip_filter)
-            else:
-                quadpype_list.append(quadpype_path / f)
+        quadpype_root = quadpype_path.resolve()
+        included_files = self._get_included_files_list(quadpype_root)
 
         with ZipFile(zip_path, "w") as zip_file:
-            quadpype_root = quadpype_path.resolve()
-            # generate list of filtered paths
-            dir_filter = [quadpype_root / f for f in self.quadpype_filter]
             checksums = []
 
             file: Path
-            # Adding 2 to the total for the checksum and test zip operations
-            self.progress_bar_set_total(len(quadpype_list) + 2)
-            for file in quadpype_list:
-                # if file resides in filtered path, skip it
-                is_inside = None
-                df: Path
-                for df in dir_filter:
-                    try:
-                        is_inside = file.resolve().relative_to(df)
-                    except ValueError:
-                        pass
-
-                if not is_inside:
-                    continue
-
+            # Progress bar: adding 2 to the total for the checksum and test zip operations
+            self.progress_bar_set_total(len(included_files) + 2)
+            for file in included_files:
                 checksums.append(
                     (
                         sha256sum(sanitize_long_path(file.as_posix())),
@@ -922,8 +908,7 @@ class BootstrapRepos:
             try:
                 checksums_data = str(zip_file.read("checksums"))
             except IOError:
-                # FIXME: This should be set to False sometimes in the future
-                return True, "Cannot read checksums for archive."
+                return False, "Cannot read checksums for archive."
 
             # split it to the list of tuples
             checksums = [
@@ -969,9 +954,9 @@ class BootstrapRepos:
 
         """
         checksums_file = Path(path / "checksums")
+        print(str(checksums_file))
         if not checksums_file.exists():
-            # FIXME: This should be set to False sometimes in the future
-            return True, "Cannot read checksums for archive."
+            return False, "Cannot read checksums for archive."
         checksums_data = checksums_file.read_text()
         checksums = [
             tuple(line.split(":"))

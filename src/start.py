@@ -141,49 +141,49 @@ import blessed  # noqa: E402
 import certifi  # noqa: E402
 
 
-if sys.__stdout__:
-    term = blessed.Terminal()
+term = blessed.Terminal() if sys.__stdout__ else None
 
-    def _print(message: str, force=False):
-        if silent_mode and not force:
-            return
-        if message.startswith("!!! "):
-            print(f'{term.orangered2("!!! ")}{message[4:]}')
-            return
-        if message.startswith(">>> "):
-            print(f'{term.aquamarine3(">>> ")}{message[4:]}')
-            return
-        if message.startswith("--- "):
-            print(f'{term.darkolivegreen3("--- ")}{message[4:]}')
-            return
-        if message.startswith("*** "):
-            print(f'{term.gold("*** ")}{message[4:]}')
-            return
-        if message.startswith("  - "):
-            print(f'{term.wheat("  - ")}{message[4:]}')
-            return
-        if message.startswith("  . "):
-            print(f'{term.tan("  . ")}{message[4:]}')
-            return
-        if message.startswith("     - "):
-            print(f'{term.seagreen3("     - ")}{message[7:]}')
-            return
-        if message.startswith("     ! "):
-            print(f'{term.goldenrod("     ! ")}{message[7:]}')
-            return
-        if message.startswith("     * "):
-            print(f'{term.aquamarine1("     * ")}{message[7:]}')
-            return
-        if message.startswith("    "):
-            print(f'{term.darkseagreen3("    ")}{message[4:]}')
-            return
 
-        print(message)
-else:
-    def _print(message: str):
-        if silent_mode:
-            return
-        print(message)
+def _print(msg: str, force=False):
+    if silent_mode and not force:
+        return
+
+    if not term:
+        header = ""
+    elif msg.startswith("!!! "):
+        header = term.orangered2("!!! ")
+        msg = msg[4:]
+    elif msg.startswith(">>> "):
+        header = term.aquamarine3(">>> ")
+        msg = msg[4:]
+    elif msg.startswith("--- "):
+        header = term.darkolivegreen3("--- ")
+        msg = msg[4:]
+    elif msg.startswith("*** "):
+        header = term.gold("*** ")
+        msg = msg[4:]
+    elif msg.startswith("  - "):
+        header = term.wheat("  - ")
+        msg = msg[4:]
+    elif msg.startswith("  . "):
+        header = term.tan("  . ")
+        msg = msg[4:]
+    elif msg.startswith("     - "):
+        header = term.seagreen3("     - ")
+        msg = msg[7:]
+    elif msg.startswith("     ! "):
+        header = term.goldenrod("     ! ")
+        msg = msg[7:]
+    elif msg.startswith("     * "):
+        header = term.aquamarine1("     * ")
+        msg = msg[7:]
+    elif msg.startswith("    "):
+        header = term.darkseagreen3("    ")
+        msg = msg[4:]
+    else:
+        header = term.darkolivegreen3("--- ")
+
+    print("{}{}".format(header, msg))
 
 
 # if SSL_CERT_FILE is not set prior to QuadPype launch, we set it to point
