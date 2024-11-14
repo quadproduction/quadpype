@@ -13,6 +13,7 @@ from sphinx.setup_command import BuildDoc
 
 app_root = Path(os.path.dirname(__file__))
 
+
 def validate_thirdparty_binaries():
     """Check the existence of the third party executables."""
     low_platform = platform.system().lower()
@@ -82,7 +83,11 @@ if IS_WINDOWS:
 # build_exe
 # Build options for cx_Freeze. Manually add/exclude packages and binaries
 
+# In a perfect world, the install_requires should probably be the exact
+# same as the poetry dependency list in pyproject.toml
 install_requires = [
+    "fastapi",
+    "uvicorn",
     "appdirs",
     "cx_Freeze",
     "keyring",
