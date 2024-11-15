@@ -105,7 +105,7 @@ class BaseItemEntity(BaseEntity):
         self.is_group = False
         # Entity's value will be stored into file with name of it's key
         self.is_file = False
-        # Default values are not stored to an quadpype file
+        # Default values are not stored to anQuadPype file
         # - these must not be set through schemas directly
         self.dynamic_schema_id = None
         self.is_dynamic_schema_node = False

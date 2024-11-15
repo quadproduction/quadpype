@@ -80,7 +80,7 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
         if not login:
             self.log.error(
                 "No Shotgrid login found, please "
-                "login to shotgrid withing quadpype Tray"
+                "login to shotgrid withing QuadPype Tray"
             )
 
         # Set QUADPYPE_SG_USER with login so other deadline tasks can make

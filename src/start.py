@@ -857,7 +857,7 @@ def _find_frozen_quadpype(use_version: str = None,
         is_inside = quadpype_version.path.resolve().relative_to(
             bootstrap.data_dir)
     except ValueError:
-        # if relative path cannot be calculated, quadpype version is not
+        # if relative path cannot be calculated, QuadPype version is not
         # inside user data dir
         pass
 
@@ -1077,7 +1077,7 @@ def boot():
         sys.exit(1)
 
     os.environ["QUADPYPE_MONGO"] = quadpype_mongo
-    # name of Pype database
+    # name of QuadPype database
     os.environ["QUADPYPE_DATABASE_NAME"] = \
         os.getenv("QUADPYPE_DATABASE_NAME") or "quadpype"
 
@@ -1105,7 +1105,7 @@ def boot():
     _print(f">>> Logging to server is turned {log_to_server_msg}")
 
     # Get path to the folder containing QuadPype patch versions, then set it to
-    # environment so quadpype can find its versions there and bootstrap them.
+    # environment so QuadPype can find its versions there and bootstrap them.
     quadpype_path = get_quadpype_path_from_settings(global_settings)
 
     # Check if local versions should be installed in custom folder and not in

@@ -158,7 +158,7 @@ def save_studio_settings(data):
     Raises:
         SaveWarningExc: If any module raises the exception.
     """
-    # Notify Pype modules
+    # Notify QuadPype modules
     from quadpype.modules import ModulesManager, ISettingsChangeListener
 
     old_data = get_global_settings()
@@ -206,7 +206,7 @@ def save_project_settings(project_name, overrides):
     Raises:
         SaveWarningExc: If any module raises the exception.
     """
-    # Notify Pype modules
+    # Notify QuadPype modules
     from quadpype.modules import ModulesManager, ISettingsChangeListener
 
     default_values = get_default_settings()[PROJECT_SETTINGS_KEY]
@@ -268,7 +268,7 @@ def save_project_anatomy(project_name, anatomy_data):
         SaveWarningExc: If any module raises the exception.
     """
     bypass_protect_attrs = anatomy_data.pop("bypass_protect_anatomy_attributes", None)
-    # Notify Pype modules
+    # Notify QuadPype modules
     from quadpype.modules import ModulesManager, ISettingsChangeListener
 
     default_values = get_default_settings()[PROJECT_ANATOMY_KEY]
@@ -533,7 +533,7 @@ def update_user_profile_on_startup():
 
 
 def load_quadpype_default_settings():
-    """Load quadpype default settings."""
+    """Load QuadPype default settings."""
     return load_jsons_from_dir(DEFAULTS_DIR)
 
 
@@ -1112,7 +1112,7 @@ def _get_general_environments():
     Function is implemented to be able to load general environments without using
     `get_default_settings`.
     """
-    # Use only quadpype defaults.
+    # Use only QuadPype defaults.
     # - prevent to use `get_global_settings` where `get_default_settings`
     #   is used
     default_values = load_quadpype_default_settings()

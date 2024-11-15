@@ -327,7 +327,7 @@ def _validate_all_atrributes(
 
 def get_track_item_tags(track_item):
     """
-    Get track item tags excluded quadpype tag
+    Get track item tags excluded QuadPype tag
 
     Attributes:
         trackItem (hiero.core.TrackItem): hiero object
@@ -341,7 +341,7 @@ def get_track_item_tags(track_item):
     if not _tags:
         return []
 
-    # collect all tags which are not quadpype tag
+    # collect all tags which are not QuadPype tag
     returning_tag_data.extend(
         tag for tag in _tags
         if tag.name() != QUADPYPE_TAG_NAME
@@ -356,8 +356,7 @@ def _get_tag_unique_hash():
 
 
 def set_track_quadpype_tag(track, data=None):
-    """
-    Set quadpype track tag to input track object.
+    """Set QuadPype track tag to input track object.
 
     Attributes:
         track (hiero.core.VideoTrack): hiero object
@@ -374,14 +373,14 @@ def set_track_quadpype_tag(track, data=None):
         "icon": "quadpype_icon_default.png",
         "metadata": dict(data.items())
     }
-    # get available pype tag if any
+    # get available QuadPype tag if any
     _tag = get_track_quadpype_tag(track)
 
     if _tag:
         # it not tag then create one
         tag = tags.update_tag(_tag, tag_data)
     else:
-        # if pype tag available then update with input data
+        # if QuadPype tag available then update with input data
         tag = tags.create_tag(
             "{}_{}".format(
                 QUADPYPE_TAG_NAME,
@@ -397,7 +396,7 @@ def set_track_quadpype_tag(track, data=None):
 
 def get_track_quadpype_tag(track):
     """
-    Get pype track item tag created by creator or loader plugin.
+    Get QuadPype track item tag created by creator or loader plugin.
 
     Attributes:
         trackItem (hiero.core.TrackItem): hiero object
@@ -416,17 +415,16 @@ def get_track_quadpype_tag(track):
 
 
 def get_track_quadpype_data(track, container_name=None):
-    """
-    Get track's quadpype tag data.
+    """Get track's QuadPype tag data.
 
     Attributes:
         trackItem (hiero.core.VideoTrack): hiero object
 
     Returns:
-        dict: data found on pype tag
+        dict: data found on QuadPype tag
     """
     return_data = {}
-    # get pype data tag from track item
+    # get QuadPype data tag from track item
     tag = get_track_quadpype_tag(track)
 
     if not tag:
@@ -468,8 +466,7 @@ def get_track_item_pype_data(track_item):
 
 
 def get_trackitem_quadpype_tag(track_item):
-    """
-    Get pype track item tag created by creator or loader plugin.
+    """Get QuadPype track item tag created by creator or loader plugin.
 
     Attributes:
         trackItem (hiero.core.TrackItem): hiero object
@@ -488,8 +485,7 @@ def get_trackitem_quadpype_tag(track_item):
 
 
 def set_trackitem_quadpype_tag(track_item, data=None):
-    """
-    Set quadpype track tag to input track object.
+    """Set QuadPype track tag to input track object.
 
     Attributes:
         track (hiero.core.VideoTrack): hiero object
@@ -506,13 +502,13 @@ def set_trackitem_quadpype_tag(track_item, data=None):
         "icon": "quadpype_icon_default.png",
         "metadata": dict(data.items())
     }
-    # get available pype tag if any
+    # get available QuadPype tag if any
     _tag = get_trackitem_quadpype_tag(track_item)
     if _tag:
         # it not tag then create one
         tag = tags.update_tag(_tag, tag_data)
     else:
-        # if pype tag available then update with input data
+        # if QuadPype tag available then update with input data
         tag = tags.create_tag(
             "{}_{}".format(
                 QUADPYPE_TAG_NAME,
@@ -528,16 +524,16 @@ def set_trackitem_quadpype_tag(track_item, data=None):
 
 def get_trackitem_quadpype_data(track_item):
     """
-    Get track item's pype tag data.
+    Get track item's QuadPype tag data.
 
     Attributes:
         trackItem (hiero.core.TrackItem): hiero object
 
     Returns:
-        dict: data found on pype tag
+        dict: data found on QuadPype tag
     """
     data = {}
-    # get pype data tag from track item
+    # get QuadPype data tag from track item
     tag = get_trackitem_quadpype_tag(track_item)
 
     if not tag:
@@ -639,7 +635,7 @@ def sync_avalon_data_to_workfile():
     if "Tag Presets" in project.name():
         return
 
-    log.debug("Synchronizing Pype metadata to project: {}".format(
+    log.debug("Synchronizing QuadPype metadata to project: {}".format(
         project.name()))
 
     # set project root with backward compatibility

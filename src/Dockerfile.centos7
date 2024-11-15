@@ -1,4 +1,4 @@
-# Build Pype docker image
+# Build QuadPype docker image
 FROM centos:7 AS builder
 ARG QUADPYPE_PYTHON_VERSION=3.9.12
 

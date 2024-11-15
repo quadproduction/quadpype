@@ -10,11 +10,11 @@ if ($env:PSModulePath.IndexOf($PATH_PS_VENDOR_DIR) -Eq -1) {
     $env:PSModulePath += ";$($PATH_PS_VENDOR_DIR)"
 }
 
-# Set the path to the QuadPype project and quadpype package
+# Set the path to the QuadPype project and QuadPype package
 [System.Environment]::SetEnvironmentVariable("QUADPYPE_ROOT", "$($PATH_QUADPYPE_ROOT)", [System.EnvironmentVariableTarget]::User)
 $env:QUADPYPE_ROOT="$($PATH_QUADPYPE_ROOT)"
 
-# Add quadpype package path to the Python Path if needed
+# Add QuadPype package path to the Python Path if needed
 $CURR_PYTHON_PATH = [System.Environment]::GetEnvironmentVariable("PYTHONPATH", [System.EnvironmentVariableTarget]::User)
 if (-Not $CURR_PYTHON_PATH) {
     $env:PYTHONPATH="$($PATH_QUADPYPE_ROOT)$([IO.Path]::PathSeparator)"

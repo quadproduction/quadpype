@@ -32,7 +32,7 @@ class SettingsStateInfo:
 
     Is used to hold information about last saved and last opened UI. Keep
     information about the time when that happened and on which machine under
-    which user and on which quadpype version.
+    which user and on which QuadPype version.
 
     To create current machine and time information use 'create_new' method.
     """

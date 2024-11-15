@@ -21,7 +21,7 @@ from .python_module_tools import import_filepath
 # Functions independent on QuadPypeVersion
 # ----------------------------------------
 def get_quadpype_version():
-    """Version of pype that is currently used."""
+    """Version of QuadPype that is currently used."""
     return quadpype.version.__version__
 
 

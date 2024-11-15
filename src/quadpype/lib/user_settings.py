@@ -6,7 +6,7 @@ import platform
 from datetime import datetime
 from abc import ABC, abstractmethod
 
-# TODO QUAD: Use pype igniter logic instead of using duplicated code
+# TODO QUAD: Use QuadPype igniter logic instead of using duplicated code
 # disable lru cache in Python 2
 try:
     from functools import lru_cache
@@ -496,9 +496,9 @@ class QuadPypeSettingsRegistry(JSONSettingRegistry):
 
 
 def change_quadpype_mongo_url(new_mongo_url):
-    """Change mongo url in pype registry.
+    """Change mongo url in QuadPype registry.
 
-    Change of QuadPype mongo URL require restart of running pype processes or
+    Change of QuadPype mongo URL require restart of running QuadPype processes or
     processes using pype.
     """
 

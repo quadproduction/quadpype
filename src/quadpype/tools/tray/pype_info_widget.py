@@ -427,7 +427,7 @@ class PypeInfoSubWidget(QtWidgets.QWidget):
     def _create_quadpype_info_widget(self):
         """Create widget with information about QuadPype application."""
 
-        # Get pype info data
+        # Get QuadPype info data
         info_values = get_quadpype_info()
         # Modify version key/values
         version_value = "{} ({})".format(

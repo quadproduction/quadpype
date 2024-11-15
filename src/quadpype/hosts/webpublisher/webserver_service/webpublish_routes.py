@@ -197,7 +197,7 @@ class TaskNode(Node):
 class BatchPublishEndpoint(WebpublishApiEndpoint):
     """Triggers headless publishing of batch."""
     async def post(self, request) -> Response:
-        # Validate existence of quadpype executable
+        # Validate existence of QuadPype executable
         quadpype_app = self.resource.executable
         if not quadpype_app or not os.path.exists(quadpype_app):
             msg = "Non existent QuadPype executable {}".format(quadpype_app)

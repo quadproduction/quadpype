@@ -49,5 +49,5 @@ CollectFarmRender.prototype.getRenderNodeSettings = function(n) {
     return output;
 };
 
-// add self to Pype Loaders
+// add self to QuadPype Loaders
 PypeHarmony.Publish.CollectFarmRender = new CollectFarmRender();

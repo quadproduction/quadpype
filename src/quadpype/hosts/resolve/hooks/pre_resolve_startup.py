@@ -13,7 +13,7 @@ class PreLaunchResolveStartup(PreLaunchHook):
     launch_types = {LaunchTypes.local}
 
     def execute(self):
-        # Set the quadpype prelaunch startup script path for easy access
+        # Set the QuadPype prelaunch startup script path for easy access
         # in the LUA .scriptlib code
         op_resolve_root = os.path.dirname(quadpype.hosts.resolve.__file__)
         script_path = os.path.join(op_resolve_root, "startup.py")

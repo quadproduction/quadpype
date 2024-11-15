@@ -94,14 +94,14 @@ def ls():
 
 
 def parse_container(tl_segment, validate=True):
-    """Return container data from timeline_item's quadpype tag.
+    """Return container data from timeline_item's QuadPype tag.
     """
     # TODO: parse_container
     pass
 
 
 def update_container(tl_segment, data=None):
-    """Update container data to input timeline_item's quadpype tag.
+    """Update container data to input timeline_item's QuadPype tag.
     """
     # TODO: update_container
     pass
@@ -136,7 +136,7 @@ def list_instances():
 
 def imprint(segment, data=None):
     """
-    Adding quadpype data to Flame timeline segment.
+    Adding QuadPype data to Flame timeline segment.
 
     Also including publish attribute into tag.
 

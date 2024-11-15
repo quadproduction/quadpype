@@ -50,5 +50,5 @@ ExtractTemplate.prototype.getBackdropsByNode = function(probeNode) {
     return valid_backdrops;
 };
 
-// add self to Pype Loaders
+// add self to QuadPype Loaders
 PypeHarmony.Publish.ExtractTemplate = new ExtractTemplate();

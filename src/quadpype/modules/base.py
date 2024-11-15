@@ -573,7 +573,7 @@ class QuadPypeAddOn(QuadPypeModule):
 
 
 class ModulesManager:
-    """Manager of Pype modules helps to load and prepare them to work.
+    """Manager of QuadPype modules helps to load and prepare them to work.
 
     Args:
         global_settings (Optional[dict[str, Any]]): QuadPype global settings.
@@ -1294,7 +1294,7 @@ def get_module_settings_defs():
 
     Returns:
         list: All valid and not abstract settings definitions from imported
-            quadpype addons and modules.
+            QuadPype addons and modules.
     """
     # Make sure modules are loaded
     load_modules()

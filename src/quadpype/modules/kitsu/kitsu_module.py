@@ -112,7 +112,7 @@ def cli_main():
     "--password", envvar="KITSU_PWD", help="Password for kitsu username"
 )
 def push_to_zou(login, password):
-    """Synchronize Zou database (Kitsu backend) with quadpype database.
+    """Synchronize Zou database (Kitsu backend) with QuadPype database.
 
     Args:
         login (str): Kitsu user login
@@ -145,7 +145,7 @@ def push_to_zou(login, password):
     help="Listen to events only without any syncing",
 )
 def sync_service(login, password, projects, listen_only):
-    """Synchronize quadpype database from Zou sever database.
+    """Synchronize QuadPype database from Zou sever database.
 
     Args:
         login (str): Kitsu user login

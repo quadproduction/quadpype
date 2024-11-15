@@ -246,7 +246,7 @@ class QuadPypeVersion(semver.VersionInfo):
 
         Args:
             zip_item (Path): Zip file to test.
-            version (QuadPypeVersion): Pype version detected
+            version (QuadPypeVersion): QuadPype version detected
                 from name.
 
         Returns:
@@ -315,7 +315,7 @@ class QuadPypeVersion(semver.VersionInfo):
 
     @classmethod
     def get_quadpype_path(cls):
-        """Path to quadpype zip directory.
+        """Path to QuadPype zip directory.
 
         Path can be set through environment variable 'QUADPYPE_PATH' which
         is set during start of QuadPype if is not available.
@@ -1247,7 +1247,7 @@ class BootstrapRepos:
             self._print("Cannot point to user data dir", level=log.ERROR)
             return None
 
-        # find quadpype zip files in location. There can be
+        # Find QuadPype zip files in location. There can be
         # either "live" QuadPype repository, or multiple zip files or even
         # multiple QuadPype version directories. This process looks into zip
         # files and directories and tries to parse `version.py` file.
@@ -1631,7 +1631,7 @@ class BootstrapRepos:
 
         Args:
             zip_item (Path): Zip file to test.
-            detected_version (QuadPypeVersion): Pype version detected from
+            detected_version (QuadPypeVersion): QuadPype version detected from
                 name.
 
         Returns:

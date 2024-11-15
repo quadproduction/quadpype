@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Show dialog for choosing central pype repository."""
+"""Show dialog for choosing central QuadPype repository."""
 import os
 import sys
 import re

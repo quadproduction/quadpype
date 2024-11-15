@@ -321,14 +321,14 @@ def path_to_subprocess_arg(path):
 
 
 def get_quadpype_execute_args(*args):
-    """Arguments to run pype command.
+    """Arguments to run QuadPype command.
 
-    Arguments for subprocess when need to spawn new pype process. Which may be
-    needed when new python process for pype scripts must be executed in build
+    Arguments for subprocess when need to spawn new QuadPype process. Which may be
+    needed when new python process for QuadPype scripts must be executed in build
     pype.
 
     ## Why is this needed?
-    Pype executed from code has different executable set to virtual env python
+    QuadPype executed from code has different executable set to virtual env python
     and must have path to script as first argument which is not needed for
     build pype.
 

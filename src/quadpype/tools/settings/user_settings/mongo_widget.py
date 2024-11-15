@@ -16,7 +16,7 @@ class QuadPypeMongoWidget(QtWidgets.QWidget):
         # Warning label
         warning_label = QtWidgets.QLabel((
             "WARNING: Requires restart. Change of the QuadPype Mongo requires to"
-            " restart of all running Pype processes and process using Pype"
+            " restart of all running QuadPype processes and process using QuadPype"
             " (Including this)."
             "\n- all changes in different categories won't be saved."
         ), self)

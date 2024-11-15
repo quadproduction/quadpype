@@ -30,7 +30,7 @@ class AvalonModule(QuadPypeModule, ITrayModule):
         self.rest_api_obj = None
 
     def get_global_environments(self):
-        """Avalon global environments for pype implementation."""
+        """Avalon global environments for QuadPype implementation."""
         return {
             # TODO thumbnails root should be multiplafrom
             # - thumbnails root

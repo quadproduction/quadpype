@@ -49,7 +49,7 @@ class PrecollectInstances(pyblish.api.ContextPlugin):
             source_clip = track_item.source()
             self.log.debug("clip_name: {}".format(clip_name))
 
-            # get quadpype tag data
+            # Get the QuadPype tag data
             tag_data = phiero.get_trackitem_quadpype_data(track_item)
             self.log.debug("__ tag_data: {}".format(pformat(tag_data)))
 

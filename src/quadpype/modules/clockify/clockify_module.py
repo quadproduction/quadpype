@@ -137,7 +137,7 @@ class ClockifyModule(QuadPypeModule, ITrayModule, IPluginPaths):
                     if not current_timer_hierarchy:
                         continue
                     hierarchy_items = current_timer_hierarchy.split("/")
-                    # Each pype timer must have at least 2 items!
+                    # Each QuadPype timer must have at least 2 items!
                     if len(hierarchy_items) < 2:
                         continue
 

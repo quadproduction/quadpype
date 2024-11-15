@@ -33,7 +33,7 @@ Some parts of code are still using direct mongo calls. In most of cases it is fo
 ## Known missing replacements
 - change subset group in loader tool
 - integrate subset group
-- query input links in quadpype lib
-- create project in quadpype lib
-- save/create workfile doc in quadpype lib
+- query input links in QuadPype lib
+- create project in QuadPype lib
+- save/create workfile doc in QuadPype lib
 - integrate hero version

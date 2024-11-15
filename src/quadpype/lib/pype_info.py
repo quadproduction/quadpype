@@ -16,7 +16,7 @@ from .quadpype_version import (
 
 
 def get_quadpype_info():
-    """Information about currently used Pype process."""
+    """Information about currently used QuadPype process."""
     executable_args = get_quadpype_execute_args()
     if is_running_from_build():
         version_type = "build"
@@ -64,7 +64,7 @@ def extract_pype_info_to_file(dir_path):
     """Extract all current info to a file.
 
     It is possible to define onpy directory path. Filename is concatenated with
-    pype version, workstation site id and timestamp.
+    QuadPype version, workstation site id and timestamp.
 
     Args:
         dir_path (str): Path to directory where file will be stored.

@@ -99,7 +99,7 @@ class FilesWidget(QtWidgets.QWidget):
         self._task_name = None
         self._task_type = None
 
-        # Pype's anatomy object for current project
+        # QuadPype's anatomy object for current project
         project_name = get_current_project_name()
         self.anatomy = Anatomy(project_name)
         self.project_name = project_name

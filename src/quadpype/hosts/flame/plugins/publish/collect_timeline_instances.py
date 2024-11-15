@@ -38,7 +38,7 @@ class CollectTimelineInstances(pyblish.api.ContextPlugin):
 
         # process all sellected
         for segment in selected_segments:
-            # get quadpype tag data
+            # Get the QuadPype tag data
             marker_data = opfapi.get_segment_data_marker(segment)
 
             self.log.debug("__ marker_data: {}".format(

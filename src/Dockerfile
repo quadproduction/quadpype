@@ -1,4 +1,4 @@
-# Build Pype docker image
+# Build QuadPype docker image
 FROM ubuntu:focal AS builder
 ARG QUADPYPE_PYTHON_VERSION=3.9.12
 ARG BUILD_DATE

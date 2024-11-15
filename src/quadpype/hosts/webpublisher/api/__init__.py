@@ -13,7 +13,7 @@ class WebpublisherHost(HostBase):
     name = "webpublisher"
 
     def install(self):
-        print("Installing Pype config...")
+        print("Installing QuadPype config...")
         pyblish.api.register_host(self.name)
 
         publish_plugin_dir = os.path.join(

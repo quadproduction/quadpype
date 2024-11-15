@@ -24,5 +24,5 @@ CollectCurrentFile.prototype.collect = function() {
     );
 };
 
-// add self to Pype Loaders
+// add self to QuadPype Loaders
 PypeHarmony.Publish.CollectCurrentFile = new CollectCurrentFile();

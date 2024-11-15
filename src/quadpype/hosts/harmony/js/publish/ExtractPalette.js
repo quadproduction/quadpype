@@ -33,5 +33,5 @@ ExtractPalette.prototype.getPalette = function(paletteId) {
     ];
 };
 
-// add self to Pype Loaders
+// add self to QuadPype Loaders
 PypeHarmony.Publish.ExtractPalette = new ExtractPalette();

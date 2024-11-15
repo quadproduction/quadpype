@@ -95,7 +95,7 @@ class LoadClip(opfapi.ClipLoader):
         ))
         self.log.debug(openclip_path)
 
-        # make quadpype clip file
+        # Make QuadPype clip file
         opfapi.OpenClipSolver(
             openclip_path, loading_context, logger=self.log).make()
 

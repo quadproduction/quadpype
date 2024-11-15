@@ -147,7 +147,7 @@ class ExtractPalette(publish.Extractor):
                     pixels[i, j] = (255, 255, 255)
 
         draw = ImageDraw.Draw(img)
-        # TODO: This needs to be font included with Pype because
+        # TODO: This needs to be font included with QuadPype because
         # arial is not available on other platforms then Windows.
         title_font = ImageFont.truetype("arial.ttf", 28)
         label_font = ImageFont.truetype("arial.ttf", 20)
