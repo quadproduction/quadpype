@@ -14,15 +14,13 @@ from quadpype.lib import (
     get_quadpype_execute_args,
     run_detached_process,
 )
-from quadpype.lib.user_settings import get_quadpype_username
+from quadpype.lib.user import get_quadpype_username
 from quadpype.lib.quadpype_version import (
     op_version_control_available,
     get_expected_version,
     get_installed_version,
     is_current_version_studio_latest,
     is_current_version_higher_than_expected,
-    is_version_checking_popup_enabled,
-    is_running_locally,
     get_quadpype_version,
     is_running_staging,
     is_staging_enabled
@@ -341,18 +339,10 @@ class TrayManager:
         global_settings = get_global_settings()
         self.module_settings = global_settings[MODULES_SETTINGS_KEY]
 
-        version_check_interval = global_settings[CORE_SETTINGS_KEY].get(
-            "version_check_interval"
-        )
-        if version_check_interval is None:
-            version_check_interval = 5
-        self._version_check_interval = version_check_interval * 60 * 1000
-
         self.modules_manager = TrayModulesManager()
 
         self.errors = []
 
-        self._version_check_timer = None
         self._version_dialog = None
 
         self.main_thread_timer = None
@@ -370,16 +360,6 @@ class TrayManager:
         callback = self.doubleclick_callback
         if callback:
             self.execute_in_main_thread(callback)
-
-    def _on_version_check_timer(self):
-        # Check if is running from build and stop future validations if yes
-        if not is_version_checking_popup_enabled() or \
-                is_running_locally() or \
-                not op_version_control_available():
-            self._version_check_timer.stop()
-            return
-
-        self.validate_quadpype_version()
 
     def validate_quadpype_version(self):
         is_running_latest_version = is_current_version_studio_latest()
@@ -529,13 +509,6 @@ class TrayManager:
 
         self.main_thread_timer = main_thread_timer
 
-        version_check_timer = QtCore.QTimer()
-        if self._version_check_interval > 0:
-            version_check_timer.timeout.connect(self._on_version_check_timer)
-            version_check_timer.setInterval(self._version_check_interval)
-            version_check_timer.start()
-        self._version_check_timer = version_check_timer
-
         # For storing missing settings dialog
         self._settings_validation_dialog = None
 
@@ -543,9 +516,6 @@ class TrayManager:
 
     def _startup_validations(self):
         """Run possible startup validations."""
-        # Trigger version validation on start
-        self._version_check_timer.timeout.emit()
-
         # SLOW: This operation is very slow
         self._validate_settings_defaults()
 

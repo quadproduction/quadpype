@@ -220,16 +220,6 @@
                 },
                 {
                     "type": "splitter"
-                },
-                {
-                    "type": "label",
-                    "label": "Trigger a check to ensure users are using the correct QuadPype version and patch. To disable it, enter 0."
-                },
-                {
-                    "type": "number",
-                    "key": "version_check_interval",
-                    "label": "Version check interval (minutes)",
-                    "minimum": 0
                 }
             ]
         }

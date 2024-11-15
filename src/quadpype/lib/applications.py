@@ -26,7 +26,7 @@ from quadpype.settings.constants import (
 )
 from .log import Logger
 from .profiles_filtering import filter_profiles
-from .user_settings import get_quadpype_username
+from .user import get_quadpype_username
 
 from .python_module_tools import (
     modules_from_path,

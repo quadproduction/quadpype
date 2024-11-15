@@ -1220,7 +1220,6 @@ def boot():
     from quadpype.settings.lib import update_user_profile_on_startup
 
     # Do the program display popups to the users regarding updates or incompatibilities
-    os.environ["QUADPYPE_VERSION_CHECK_POPUP"] = "False" if "disable_version_popup" in commands else "True"
     _print(">>> Loading user profile ...")
     user_profile = update_user_profile_on_startup()
     _print(">>> Loading environments ...")

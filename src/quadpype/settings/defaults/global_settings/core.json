@@ -26,6 +26,5 @@
         "linux": ""
     },
     "production_version": "",
-    "staging_version": "",
-    "version_check_interval": 5
+    "staging_version": ""
 }
