@@ -22,10 +22,10 @@ from quadpype.lib.quadpype_version import (
     is_current_version_studio_latest,
     is_current_version_higher_than_expected,
     is_version_checking_popup_enabled,
-    is_running_from_build,
+    is_running_locally,
     get_quadpype_version,
     is_running_staging,
-    is_staging_enabled,
+    is_staging_enabled
 )
 from quadpype.modules import TrayModulesManager
 from quadpype.settings import (
@@ -374,7 +374,7 @@ class TrayManager:
     def _on_version_check_timer(self):
         # Check if is running from build and stop future validations if yes
         if not is_version_checking_popup_enabled() or \
-                not is_running_from_build() or \
+                is_running_locally() or \
                 not op_version_control_available():
             self._version_check_timer.stop()
             return

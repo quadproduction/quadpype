@@ -21,7 +21,7 @@ from quadpype_modules.ftrack.ftrack_server.lib import (
 from quadpype.lib import (
     Logger,
     is_current_version_studio_latest,
-    is_running_from_build,
+    is_running_locally,
     get_expected_version,
     get_quadpype_version
 )
@@ -219,7 +219,7 @@ class StatusFactory:
             "type": "label",
             "value": "# QuadPype version"
         })
-        if not is_running_from_build():
+        if is_running_locally():
             items.append({
                 "type": "label",
                 "value": (

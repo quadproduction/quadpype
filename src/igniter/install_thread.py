@@ -17,7 +17,8 @@ from .bootstrap_repos import (
 from .tools import (
     get_quadpype_global_settings,
     get_local_quadpype_path_from_settings,
-    validate_mongo_connection
+    validate_mongo_connection,
+    is_running_locally
 )
 
 
@@ -95,7 +96,7 @@ class InstallThread(QtCore.QThread):
             f"Detecting QuadPype Patch versions in {bs.data_dir}",
             False)
         detected = bs.find_quadpype(include_zips=True)
-        if not detected and getattr(sys, 'frozen', False):
+        if not detected and (getattr(sys, 'frozen', False) or is_running_locally()):
             self.message.emit("None detected.", True)
             self.message.emit(("We will use QuadPype coming with "
                                "installer."), False)

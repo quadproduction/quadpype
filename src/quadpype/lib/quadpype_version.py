@@ -28,8 +28,8 @@ def get_quadpype_version():
 def get_build_version():
     """QuadPype version of build."""
 
-    # Return QuadPype version if is running from code
-    if not is_running_from_build():
+    # Return QuadPype version if it is running from code
+    if is_running_locally():
         return get_quadpype_version()
 
     # Import `version.py` from build directory
@@ -238,7 +238,7 @@ def is_current_version_studio_latest():
     # Skip if is not running from build or build does not support version
     #   control or path to folder with zip files is not accessible
     if (
-        not is_running_from_build()
+        is_running_locally()
         or not op_version_control_available()
         or not quadpype_path_is_accessible()
     ):
@@ -267,7 +267,7 @@ def is_current_version_higher_than_expected():
     # Skip if is not running from build or build does not support version
     #   control or path to folder with zip files is not accessible
     if (
-        not is_running_from_build()
+        is_running_locally()
         or not op_version_control_available()
         or not quadpype_path_is_accessible()
     ):

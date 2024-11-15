@@ -513,7 +513,7 @@ def _create_user_id(registry=None):
 
     print("Created user id \"{}\"".format(new_id))
 
-    registry.set_item("userId", new_id)
+    registry.set_item("user_id", new_id)
 
     # Create a profile in the database
     create_user_profile()
@@ -524,12 +524,12 @@ def _create_user_id(registry=None):
 def get_user_id():
     """Get user identifier.
 
-    Identifier is created if does not exists yet.
+    Identifier is created if it does not exists yet.
     """
 
     registry = QuadPypeSettingsRegistry()
     try:
-        return registry.get_item("userId")
+        return registry.get_item("user_id")
     except ValueError:
         return _create_user_id(registry=registry)
 

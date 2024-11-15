@@ -8,7 +8,7 @@ import tempfile
 from .log import Logger
 from .vendor_bin_utils import find_executable
 
-from .quadpype_version import is_running_from_build
+from .quadpype_version import is_running_locally
 
 # MSDN process creation flag (Windows only)
 CREATE_NO_WINDOW = 0x08000000
@@ -226,7 +226,7 @@ def run_quadpype_process(*args, **kwargs):
         env = clean_envs_for_quadpype_process(os.environ)
 
     # Only keep QuadPype version if we are running from build.
-    if not is_running_from_build():
+    if is_running_locally():
         env.pop("QUADPYPE_VERSION", None)
 
     return run_subprocess(args, env=env, **kwargs)
@@ -340,7 +340,7 @@ def get_quadpype_execute_args(*args):
     launch_args = [executable]
 
     executable_filename = os.path.basename(executable)
-    if "python" in executable_filename.lower():
+    if is_running_locally():
         filepath = os.path.join(os.environ["QUADPYPE_ROOT"], "start.py")
         launch_args.append(filepath)
 
@@ -372,7 +372,7 @@ def get_linux_launcher_args(*args):
     executable = os.environ["QUADPYPE_EXECUTABLE"]
 
     executable_filename = os.path.basename(executable)
-    if "python" in executable_filename.lower():
+    if is_running_locally():
         root = os.environ["QUADPYPE_ROOT"]
         script_path = os.path.join(root, "{}.py".format(filename))
         launch_args = [executable, script_path]

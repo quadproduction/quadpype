@@ -5,7 +5,10 @@
 docker ps | findstr $QUADPYPE_MONGO_CONTAINER_NAME > $null
 if ($? -eq $true) {
     docker stop $QUADPYPE_MONGO_CONTAINER_NAME | Out-Null
-    docker kill $QUADPYPE_MONGO_CONTAINER_NAME | Out-Null
+    docker ps | findstr $QUADPYPE_MONGO_CONTAINER_NAME > $null
+    if ($? -eq $true) {
+        docker kill $QUADPYPE_MONGO_CONTAINER_NAME | Out-Null
+    }
     docker rm $QUADPYPE_MONGO_CONTAINER_NAME | Out-Null
     return 0
 }

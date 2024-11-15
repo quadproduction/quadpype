@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Tools used in **Igniter** GUI."""
 import os
+import sys
 from typing import Union
 from urllib.parse import urlparse, parse_qs
 from pathlib import Path
@@ -24,6 +25,10 @@ class QuadPypeVersionNotFound(Exception):
 class QuadPypeVersionIncompatible(Exception):
     """QuadPype version is not compatible with the installed one (build)."""
     pass
+
+
+def is_running_locally():
+    return "python" in os.path.basename(sys.executable).lower()
 
 
 def should_add_certificate_path_to_mongo_url(mongo_url):
