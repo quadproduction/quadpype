@@ -523,11 +523,6 @@ def get_user_settings():
 
 
 @require_user_handler
-def create_user_profile():
-    return _USER_HANDLER.create_user_profile()
-
-
-@require_user_handler
 def get_user_profile():
     return _USER_HANDLER.get_user_profile()
 

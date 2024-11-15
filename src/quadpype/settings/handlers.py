@@ -1796,11 +1796,18 @@ class MongoUserHandler(UserHandler):
 
         self.user_id = user_id
 
+        if not self.collection.find_one({"user_id": self.user_id}):
+            # if there isn't any user, the first one is automatically added as administrator
+            user_role = "user" if self.collection.count_documents({}) else "administrator"
+            # Create the user profile in the database
+            self.create_user_profile(user_role=user_role)
+
         self.user_settings_cache = CacheValues()
 
-    def create_user_profile(self):
+    def create_user_profile(self, user_role="user"):
         user_profile = deepcopy(self.user_profile_template)
         user_profile["user_id"] = self.user_id
+        user_profile["role"] = user_role
 
         timestamp = datetime.datetime.now()
         user_profile["first_connection"] = timestamp
@@ -1820,8 +1827,7 @@ class MongoUserHandler(UserHandler):
         })
 
         if user_profile is None:
-            raise RuntimeError("Cannot find the user profile in the QuadPype database.\n"
-                               "This shouldn't be possible, please contact the Quad Dev Team.")
+            self.create_user_profile()
 
         return user_profile
 

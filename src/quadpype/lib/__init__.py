@@ -118,15 +118,19 @@ from .user_settings import (
     JSONSettingRegistry,
     QuadPypeSecureRegistry,
     QuadPypeSettingsRegistry,
-    get_local_site_id,
+
+    change_quadpype_mongo_url
+)
+
+from .user import (
     get_user_id,
-    change_quadpype_mongo_url,
+    get_local_site_id,
     get_quadpype_username
 )
 
 from .applications import (
     ApplicationLaunchFailed,
-    ApplictionExecutableNotFound,
+    ApplicationExecutableNotFound,
     ApplicationNotFound,
     ApplicationManager,
 
@@ -242,13 +246,14 @@ __all__ = [
     "JSONSettingRegistry",
     "QuadPypeSecureRegistry",
     "QuadPypeSettingsRegistry",
-    "get_local_site_id",
-    "get_user_id",
     "change_quadpype_mongo_url",
+
+    "get_user_id",
+    "get_local_site_id",
     "get_quadpype_username",
 
     "ApplicationLaunchFailed",
-    "ApplictionExecutableNotFound",
+    "ApplicationExecutableNotFound",
     "ApplicationNotFound",
     "ApplicationManager",
     "PreLaunchHook",
