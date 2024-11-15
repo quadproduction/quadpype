@@ -7,8 +7,7 @@ from time import sleep
 
 from .providers import lib
 from quadpype.client import get_linked_representation_id
-from quadpype.lib import Logger
-from quadpype.lib.user_settings import get_local_site_id
+from quadpype.lib import Logger, get_local_site_id
 from quadpype.modules.base import ModulesManager
 from quadpype.pipeline import Anatomy
 from quadpype.pipeline.load.utils import get_representation_path_with_anatomy
