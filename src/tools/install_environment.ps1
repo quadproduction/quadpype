@@ -36,13 +36,16 @@ function Exit-WithCode($exitcode) {
    exit $exitcode
 }
 
+$result = Test-Connection -ComputerName www.google.com -Count 1 -Quiet -ErrorAction "SilentlyContinue"
+if ($null -eq $result) {
+  Write-Color -Text "!!! ", "No Internet connection, aborting." -Color Red, Yellow
+  Exit-WithCode 1
+}
+
 
 # 1. Delete the PyEnv directory
 ###############################
-
-if (Test-Path -Path $PATH_PYENV_DIR) {
-    Remove-Item $PATH_PYENV_DIR -Recurse -Force
-}
+Remove-Item $PATH_PYENV_DIR -Recurse -Force -ErrorAction SilentlyContinue
 
 # 2. Save terminal encoding
 #    Mandatory to work on Windows seesion with UTF-8 characters (like accents and foreign characters)
@@ -102,7 +105,6 @@ $RESULT = [regex]::Matches($CONTENT_QUADPYPE_VERSION_FILE, '__version__ = "(?<ve
 $QUADPYPE_VERSION = $RESULT[0].Groups['version'].Value
 if (-not $QUADPYPE_VERSION) {
   Write-Color -Text "!!! ", "Cannot determine QuadPype version." -Color Red, Yellow
-  Set-Location -Path "$($PATH_ORIGINAL_LOCATION)"
   Exit-WithCode 1
 }
 Write-Color -Text ">>> ", "Found QuadPype version ", "[ ", $($QUADPYPE_VERSION), " ]" -Color Green, Gray, Cyan, White, Cyan
@@ -119,7 +121,6 @@ function Test-Python() {
     }
     if (-not (Get-Command $PYTHON -ErrorAction SilentlyContinue)) {
         Write-Color -Text "!!! ", "Python not detected." -Color Red, Yellow
-        Set-Location -Path "$($PATH_ORIGINAL_LOCATION)"
         Exit-WithCode 1
     }
     $VERSION_COMMAND = "import sys; print('{0}.{1}'.format(sys.version_info[0], sys.version_info[1]))"
@@ -129,7 +130,6 @@ function Test-Python() {
     $MATCH_RESULT = $PYTHON_VERSION_STR -match '(\d+)\.(\d+)'
     if(-not $MATCH_RESULT) {
       Write-Color -Text "!!! ", "Cannot determine Python version." -Color Red, Yellow
-      Set-Location -Path "$($PATH_ORIGINAL_LOCATION)"
       Exit-WithCode 1
     }
 
@@ -137,7 +137,6 @@ function Test-Python() {
     # Newer version is tolerated but at you own risks
     if (([int]$matches[1] -lt 3) -or ([int]$matches[2] -lt 9)) {
       Write-Color -Text "FAILED ", "Version ", "[", $PYTHON_VERSION_STR ,"]",  "is old and unsupported" -Color Red, Yellow, Cyan, White, Cyan, Yellow
-      Set-Location -Path "$($PATH_ORIGINAL_LOCATION)"
       Exit-WithCode 1
     } elseif (([int]$matches[1] -eq 3) -and ([int]$matches[2] -gt 9)) {
         Write-Color -Text "WARNING Version ", "[",  $PYTHON_VERSION_STR, "]",  " is unsupported, use at your own risk." -Color Yellow, Cyan, White, Cyan, Yellow
@@ -149,30 +148,32 @@ function Test-Python() {
 
 Test-Python
 
-# 5.D Check if Poetry is installed, if not install it
-Write-Color -Text ">>> ", "Check Poetry Installation ... " -Color Green, Gray -NoNewline
+# 5.D Clear and re-install Poetry
+Write-Color -Text ">>> ", "Installing Poetry ... " -Color Green, Gray
 
 function Install-Poetry() {
-    Write-Color -Text ">>> ", "Installing Poetry ... " -Color Green, Gray
     $PYTHON = "python"
     if (Get-Command "pyenv" -ErrorAction SilentlyContinue) {
         $PYTHON = Get-Command python | Select-Object -ExpandProperty Path
     }
 
+    # Specify the dest path and the version to use
     $env:POETRY_HOME="$($PATH_QUADPYPE_ROOT)\.poetry"
-    $env:POETRY_VERSION="1.3.2"
+    $env:POETRY_VERSION="1.8.4"
+
+    # Delete the poetry directory (if exists)
+    Remove-Item $env:POETRY_HOME -Recurse -Force -ErrorAction SilentlyContinue
+
+    # Start the installation
     (Invoke-WebRequest -Uri https://install.python-poetry.org/ -UseBasicParsing).Content | & $($PYTHON) -
 }
 
-if (!$env:POETRY_HOME -Or -not (Test-Path -PathType Container -Path "$($env:POETRY_HOME)\bin")) {
-    Write-Color -Text "NOT FOUND" -Color Yellow
-    Install-Poetry
-    Write-Color -Text "INSTALLED" -Color Cyan
-} else {
-    Write-Color -Text "OK" -Color Green
-}
+Install-Poetry
 
-# 5.E Install the project requirements specified in the Poetry file
+# 5.E Remove the potentially existing .venv
+Remove-Item "$($PATH_QUADPYPE_ROOT)\.venv" -Recurse -Force -ErrorAction SilentlyContinue
+
+# 5.F Install the project requirements specified in the Poetry file
 if (-not (Test-Path -PathType Leaf -Path "$($PATH_QUADPYPE_ROOT)\poetry.lock")) {
     Write-Color -Text ">>> ", "Installing virtual environment and creating lock." -Color Green, Gray
 } else {
@@ -182,33 +183,32 @@ if (-not (Test-Path -PathType Leaf -Path "$($PATH_QUADPYPE_ROOT)\poetry.lock")) 
 & "$env:POETRY_HOME\bin\poetry" install --no-root --ansi
 if ($LASTEXITCODE -ne 0) {
     Write-Color -Text "!!! ", "Poetry command failed." -Color Red, Yellow
-    Set-Location -Path "$($PATH_ORIGINAL_LOCATION)"
     Exit-WithCode 1
 }
 
-# 5.F Install the pre-commit hooks
+# 6. Install the git pre-commit hooks
+#####################################
 Write-Color -Text ">>> ", "Installing pre-commit hooks ..." -Color Green, White
 & "$env:POETRY_HOME\bin\poetry" run pre-commit install
 if ($LASTEXITCODE -ne 0) {
     Write-Color -Text "!!! ", "Installation of pre-commit hooks failed." -Color Red, Yellow
-    Set-Location -Path "$($PATH_ORIGINAL_LOCATION)"
     Exit-WithCode 1
 }
 
 Write-Color -Text ">>> ", "Virtual environment created." -Color Green, White
 
-# 6. Ensure the virtual environment is activated
+# 7. Ensure the virtual environment is activated
 ################################################
 . "$($SCRIPT_DIR)\activate.ps1"
 
-# 7 Update PIP for the Poetry Python
+# 8 Update PIP for the Poetry Python
 ####################################
 & "$env:POETRY_HOME\bin\poetry" run python -m pip install --upgrade --force-reinstall pip
 
-# 8. Download and install all the required dependencies
+# 9. Download and install all the required dependencies
 #######################################################
 & "$env:POETRY_HOME\bin\poetry" run python "$($SCRIPT_DIR)\_lib\install\install_additional_dependencies.py"
 
-# 9. Set back the current location to the current script folder
+# 10. Set back the current location to the current script folder
 ###############################################################
 Set-Location -Path "$($PATH_ORIGINAL_LOCATION)"
