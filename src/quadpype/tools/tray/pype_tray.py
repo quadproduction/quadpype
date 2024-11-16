@@ -4,6 +4,7 @@ import sys
 import atexit
 
 import platform
+from typing import Optional
 
 from qtpy import QtCore, QtGui, QtWidgets
 
@@ -43,6 +44,8 @@ from quadpype.tools.utils import (
 )
 
 from .pype_info_widget import PypeInfoWidget
+
+TRAY_ICON_WIDGET = None
 
 g_tray_starter = None
 g_splash_screen = None
@@ -759,7 +762,8 @@ class QuadPypeTrayStarter(QtCore.QObject):
         self._splash_animation = None
 
         main_window = QtWidgets.QMainWindow()
-        tray_widget = SystemTrayIcon(main_window)
+        global TRAY_ICON_WIDGET
+        TRAY_ICON_WIDGET = SystemTrayIcon(main_window)
 
         launch_ops_timed_loop = QtCore.QTimer()
         launch_ops_timed_loop.setInterval(100)
@@ -768,7 +772,7 @@ class QuadPypeTrayStarter(QtCore.QObject):
         launch_ops_timed_loop.timeout.connect(self._execute_launch_operations)
 
         self._main_window = main_window
-        self._tray_widget = tray_widget
+        self._tray_widget = TRAY_ICON_WIDGET
         self._launch_phase = 0
         self._launch_ops_timed_loop = launch_ops_timed_loop
 
@@ -862,3 +866,7 @@ def main():
         )
 
     sys.exit(app.exec_())
+
+
+def get_tray_icon_widget() -> Optional[SystemTrayIcon]:
+    return TRAY_ICON_WIDGET
