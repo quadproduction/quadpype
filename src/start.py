@@ -55,8 +55,7 @@ So, bootstrapping QuadPype looks like this::
 ┌─────────────────┴─────────────────────────────────────┐  │
 │ Get location of QuadPype:                             │  │
 │   1) Test for `QUADPYPE_PATH` environment variable    │  │
-│   2) Test `quadpypePath` in registry setting          │  │
-│   3) Test user data directory                         │  │
+│   2) Test user data directory                         │  │
 │ ····················································· │  │
 │ If running from frozen code:                          │  │
 │   - Use latest one found in user data dir             │  │

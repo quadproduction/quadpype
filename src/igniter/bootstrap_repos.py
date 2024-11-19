@@ -8,6 +8,7 @@ import shutil
 import sys
 import tempfile
 import zipfile
+from abc import abstractmethod
 from pathlib import Path
 from typing import Union, Callable, List, Tuple
 import hashlib
@@ -35,38 +36,6 @@ from quadpype.settings.lib import get_studio_global_settings_overrides
 from quadpype.settings import MODULES_SETTINGS_KEY
 
 term = blessed.Terminal() if sys.__stdout__ else None
-
-
-def get_version_string(repo_dir: Union[str, Path, None]=None) -> Union[str, None]:
-    """Get version of QuadPype in given directory.
-
-    Note: in frozen QuadPype installed in user data dir, this must point
-    one level deeper as it is:
-    `quadpype-version-v3.0.0/quadpype/version.py`
-
-    Args:
-        repo_dir (Path): Path to QuadPype repo.
-
-    Returns:
-        str: version string.
-        None: if QuadPype is not found.
-
-    """
-    if repo_dir is None:
-        repo_dir = Path(os.environ["QUADPYPE_ROOT"])
-    elif not isinstance(repo_dir, Path):
-        repo_dir = Path(repo_dir)
-
-    # try to find version
-    version_file = repo_dir.joinpath("quadpype", "version.py")
-    if not version_file.exists():
-        return None
-
-    version = {}
-    with version_file.open("r") as fp:
-        exec(fp.read(), version)
-
-    return version['__version__']
 
 
 def sanitize_long_path(path):
@@ -129,7 +98,7 @@ class BaseVersion(semver.VersionInfo):
     _local_path = None
     _remote_path = None
     # this should match any string complying with https://semver.org/
-    _VERSION_REGEX = re.compile(r"(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>[a-zA-Z\d\-.]*))?(?:\+(?P<buildmetadata>[a-zA-Z\d\-.]*))?")  # noqa: E501
+    _VERSION_REGEX = re.compile(r"(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>[a-zA-Z\d\-.]*))?(?:\+(?P<buildmetadata>[a-zA-Z\d\-.]*))?$")  # noqa: E501
     _installed_version = None
 
     def __init__(self, *args, **kwargs):
@@ -197,18 +166,8 @@ class BaseVersion(semver.VersionInfo):
     def __hash__(self):
         return hash(self.path) if self.path else hash(str(self))
 
-    def get_main_version(self) -> str:
-        """Return main version component.
-
-        This returns x.x.x part of version from possibly more complex one
-        like x.x.x-foo-bar.
-
-            use `finalize_version()` instead.
-        Returns:
-            str: main version component
-
-        """
-        return str(self.finalize_version())
+    def compare_major_minor_patch(self, other) -> bool:
+        return self.finalize_version() == other.finalize_version()
 
     @staticmethod
     def version_in_str(string: str) -> Union[None, BaseVersion]:
@@ -221,49 +180,39 @@ class BaseVersion(semver.VersionInfo):
             BaseVersion: of detected or None.
 
         """
-        # strip .zip ext if present
+        # Strip .zip ext (if present)
         string = re.sub(r"\.zip$", "", string, flags=re.IGNORECASE)
         m = re.search(BaseVersion._VERSION_REGEX, string)
+
         if not m:
             return None
-        version = BaseVersion.parse(string[m.start():m.end()])
-        return version
+
+        return BaseVersion.parse(string[m.start():m.end()])
 
     @staticmethod
+    @abstractmethod
     def is_version_in_dir(
             dir_item: Path, version: BaseVersion) -> Tuple[bool, str]:
-        """Test if path item is version matching detected version.
+        """Test if path item is the version matching detected version.
 
         If item is directory that might (based on it's name)
-        contain version, check if it really does contain
-        QuadPype and that their versions matches.
+        contain  version, check if it really does contain a package and
+        that their versions matches.
 
         Args:
             dir_item (Path): Directory to test.
-            version (BaseVersion): QuadPype version detected
+            version (BaseVersion): version detected
                 from name.
 
         Returns:
-            Tuple: State and reason, True if it is valid QuadPype version,
+            Tuple: State and reason, True if it is valid  version,
                    False otherwise.
 
         """
-        try:
-            # add one level as inside dir there shouldbe many other repositories.
-            version_str = get_version_string(dir_item)
-            version_check = BaseVersion(version=version_str)
-        except ValueError:
-            return False, f"cannot determine version from {dir_item}"
-
-        version_main = version_check.get_main_version()
-        detected_main = version.get_main_version()
-        if version_main != detected_main:
-            return False, (f"dir version ({version}) and "
-                           f"its content version ({version_check}) "
-                           "doesn't match. Skipping.")
-        return True, "Versions match"
+        raise NotImplementedError("Must be implemented by subclasses")
 
     @staticmethod
+    @abstractmethod
     def is_version_in_zip(
             zip_item: Path, version: BaseVersion) -> Tuple[bool, str]:
         """Check if zip path is a Version matching detected version.
@@ -282,47 +231,7 @@ class BaseVersion(semver.VersionInfo):
                 False otherwise.
 
         """
-        # skip non-zip files
-        if zip_item.suffix.lower() != ".zip":
-            return False, "Not a zip"
-
-        try:
-            with zipfile.ZipFile(zip_item, "r") as zip_file:
-                # Dynamically find the version file
-                version_file = None
-                for file in zip_file.namelist():
-                    if file.lower().endswith("version.py"):
-                        version_file = file
-                        break
-
-                if not version_file:
-                    return False, "No version.py found in zip"
-
-                # Open the found version.py and extract the version
-                with zip_file.open(version_file) as f:
-                    zip_version = {}
-                    exec(f.read(), zip_version)
-
-                    # Extract the version from the content
-                    try:
-                        zip_version_str = zip_version["__version__"]
-                    except KeyError:
-                        return False, "Version information not found in version.py"
-
-                    version_check = BaseVersion(version=zip_version_str)
-
-                    # Compare the main versions
-                    if version.get_main_version() != version_check.get_main_version():
-                        return False, (
-                            f"Version mismatch: zip version ({version_check}) "
-                            f"and detected version ({version}) do not match."
-                        )
-        except BadZipFile:
-            return False, f"{zip_item} is not a valid zip file"
-        except Exception as e:
-            return False, str(e)
-
-        return True, "Versions match"
+        raise NotImplementedError("Must be implemented by subclasses")
 
     @classmethod
     def is_remote_path_accessible(cls):
@@ -330,21 +239,10 @@ class BaseVersion(semver.VersionInfo):
 
         Exists for this machine.
         """
-        # First check if is set
-        if not cls.is_remote_path_setted():
-            return False
-
         # Validate existence
-        if Path(cls.get_remote_path()).exists():
-            return True
-        return False
+        remote_path = cls.get_remote_path()
 
-    @classmethod
-    def is_remote_path_setted(cls):
-        """Check is remote path/directory is set."""
-        if cls.get_remote_path():
-            return True
-        return False
+        return remote_path and remote_path.exists()
 
     @classmethod
     def get_local_path(cls):
@@ -352,16 +250,12 @@ class BaseVersion(semver.VersionInfo):
 
         By default, it should be user appdata
         """
-        if cls._local_path:
-            return cls._local_path
+        return cls._local_path
 
     @classmethod
     def get_remote_path(cls):
-        """Path to remote repo
-
-        """
-        if cls._remote_path:
-            return cls._remote_path
+        """Path to remote repo"""
+        return cls._remote_path
 
     @staticmethod
     def get_latest_version(
@@ -391,16 +285,14 @@ class BaseVersion(semver.VersionInfo):
         if local is None and remote is None:
             local = True
             remote = True
-
         elif local is None and not remote:
             local = True
-
         elif remote is None and not local:
             remote = True
 
-        installed_version = [v for v in [BaseVersion.get_installed_version()] if v]
+        installed_version = BaseVersion.get_installed_version()
         local_versions = BaseVersion.get_local_versions() if local else []
-        remote_versions = BaseVersion.get_remote_versions() if remote else []  # noqa: E501
+        remote_versions = BaseVersion.get_remote_versions() if remote else []
         all_versions = local_versions + remote_versions + [installed_version]
 
         all_versions.sort()
@@ -428,7 +320,7 @@ class BaseVersion(semver.VersionInfo):
         # Return all local versions if arguments are set to None
         dir_to_search = None
         if cls.is_remote_path_accessible():
-            dir_to_search = Path(cls.get_remote_path())
+            dir_to_search = cls._remote_path
 
         if not dir_to_search:
             return []
@@ -438,13 +330,10 @@ class BaseVersion(semver.VersionInfo):
         return list(sorted(set(versions)))
 
     @classmethod
+    @abstractmethod
     def get_installed_version(cls):
         """Get version inside build."""
-        if cls._installed_version is None:
-            installed_version = cls.get_versions_from_directory(cls.get_local_path())
-            if installed_version:
-                cls._installed_version = installed_version[0]
-        return cls._installed_version
+        raise NotImplementedError("Must be implemented by subclasses")
 
     @staticmethod
     def get_versions_from_directory(
@@ -502,7 +391,7 @@ class BaseVersion(semver.VersionInfo):
         and the rest).
 
         Args:
-            version (QuadPypeVersion): Version to check compatibility with.
+            version (BaseVersion): Version to check compatibility with.
 
         Returns:
             bool: if the version is compatible
@@ -515,15 +404,15 @@ class BaseVersion(semver.VersionInfo):
         """
             Updates the local additional module to the latest version available from remote.
         """
-        local_version = cls.get_installed_version()
+        installed_version = cls.get_installed_version()
         latest_remote_version = cls.get_latest_version(remote=True)
-        destination_path = Path(cls.get_local_additional_modules_dir()) / str(latest_remote_version)
+        destination_path = Path(cls.get_local_path()) / str(latest_remote_version)
         destination_path.mkdir(parents=True, exist_ok=True)
         # If no local version or remote version is newer, copy the latest version
-        if latest_remote_version and local_version is None or latest_remote_version > local_version:
+        if (latest_remote_version and installed_version is None) or latest_remote_version > installed_version:
             # Remove the old version if exists
-            if local_version is not None:
-                shutil.rmtree(local_version.path)
+            if installed_version is not None:
+                shutil.rmtree(installed_version.path)
 
             # Copy latest version
             if str(latest_remote_version.path).endswith('.zip'):
@@ -532,7 +421,7 @@ class BaseVersion(semver.VersionInfo):
             else:
                 shutil.copytree(latest_remote_version.path, destination_path, dirs_exist_ok=True)
 
-        return destination_path or None
+        return destination_path
 
 
 class AdditionalModulesVersion(BaseVersion):
@@ -542,19 +431,55 @@ class AdditionalModulesVersion(BaseVersion):
         path (str): path to Additional Modules
 
     """
-    _VERSION_REGEX = re.compile(r"(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)")  # noqa: E501
+
+    @staticmethod
+    def is_version_in_dir(
+            dir_item: Path, version: AdditionalModulesVersion) -> Tuple[bool, str]:
+        # TODO: Write this method
+        return True, "Versions match"
+
+    @staticmethod
+    def is_version_in_zip(
+            zip_item: Path, version: AdditionalModulesVersion) -> Tuple[bool, str]:
+        # TODO: Write this method
+        return True, "Versions match"
+
+    @classmethod
+    def get_installed_version(cls):
+        """Get version inside build."""
+        #1. dans les settings overrides check en fonction prod (3.4.1) / staging (7.2.1)
+        # if boolean est pas checké c'est directement le path du serveur
+        # installed_versions = cls.get_versions_from_directory(LE_PATH_SPECIFIER_DANS_LES_SETTINGS)
+        #lorsque bool coché : cls.get_local_path()
+        # installed_versions = cls.get_versions_from_directory(cls.get_local_path())
+
+        # if prod check que prod (3.4.1) est bien dans installed_versions
+        # if staging la meme
+
+        # si empty pour la version dep rod en prod ou de staging en staging
+        # return installed_versions[-1]
+        # TODO: Write this method
+
+        #if cls._installed_version is None:
+        #    installed_versions = cls.get_versions_from_directory(cls.get_local_path())
+        #    if installed_versions:
+        #        cls._installed_version = installed_versions[0]
+        #return cls._installed_version
 
     @classmethod
     def get_remote_path(cls):
         """Path to additional_modules directory."""
-        super().get_remote_path()
-
         value = get_studio_global_settings_overrides()
         addon_settings = value.get(MODULES_SETTINGS_KEY).get("addon")
         addon_path = addon_settings.get("addon_paths").get(platform.system().lower())
+
+        remote_path = None
         if addon_path:
-            cls._remote_path = Path(addon_path[0].format(**os.environ)).parent
-            return cls._remote_path
+            remote_path = Path(addon_path[0].format(**os.environ)).parent
+
+        cls._remote_path = remote_path
+
+        return cls._remote_path
 
     @classmethod
     def get_local_path(cls):
@@ -563,8 +488,6 @@ class AdditionalModulesVersion(BaseVersion):
         By default, it should be user appdata, but could be overridden by
         settings.
         """
-        super().get_local_path()
-
         cls._local_additional_modules_path = Path(user_data_dir("quadpype", "quad")) / "additional_modules"
         return cls._local_additional_modules_path
 
@@ -578,8 +501,11 @@ class QuadPypeVersion(BaseVersion):
         Path can be set through environment variable 'QUADPYPE_PATH' which
         is set during start of QuadPype if is not available.
         """
-        super().get_remote_path()
-        cls._remote_path = os.getenv("QUADPYPE_PATH")
+        remote_path = os.getenv("QUADPYPE_PATH")
+
+        if remote_path:
+            cls._remote_path = Path(remote_path)
+
         return cls._remote_path
 
     @classmethod
@@ -589,7 +515,6 @@ class QuadPypeVersion(BaseVersion):
         By default, it should be user appdata, but could be overridden by
         settings.
         """
-        super().get_local_path()
         settings = get_quadpype_global_settings(os.environ["QUADPYPE_MONGO"])
         data_dir = get_local_quadpype_path_from_settings(settings)
         if not data_dir:
@@ -598,41 +523,11 @@ class QuadPypeVersion(BaseVersion):
         return data_dir
 
     @classmethod
-    def get_remote_versions(cls) -> List:
-        """Get all versions available in QuadPype Path.
-
-        Returns:
-            list of QuadPypeVersions: Versions found in QuadPype path.
-
-        """
-        # Attempt to get remote versions using the BaseVersion logic
-        dir_to_search = super().get_remote_versions()
-
-        # If no remote versions found, fall back to checking the registry
-        if not dir_to_search:
-            registry = QuadPypeSettingsRegistry()
-            try:
-                registry_dir = Path(str(registry.get_item("quadpypePath")))
-                if registry_dir.exists():
-                    dir_to_search = registry_dir
-            except ValueError:
-                # nothing found in registry, we'll use data dir
-                pass
-
-        # If dir_to_search is still None, return an empty list
-        if not dir_to_search:
-            return []
-
-        # Get and return the versions from the directory
-        versions = cls.get_versions_from_directory(dir_to_search)
-        return list(sorted(set(versions)))
-
-    @classmethod
     def get_installed_version(cls):
         """Get version of QuadPype inside build."""
         root_directory = Path(os.environ["QUADPYPE_ROOT"])
         if cls._installed_version is None:
-            installed_version_str = get_version_string(root_directory)
+            installed_version_str = cls.get_version_str_from_quadpype_version(root_directory)
             if installed_version_str:
                 cls._installed_version = QuadPypeVersion(
                     version=installed_version_str,
@@ -660,6 +555,84 @@ class QuadPypeVersion(BaseVersion):
         if not result:
             return None
         return QuadPypeVersion(version=result)
+
+    @classmethod
+    def get_version_str_from_quadpype_version(cls, repo_dir: Union[str, Path, None] = None) -> Union[str, None]:
+        """Get version of QuadPype in the given version directory.
+
+        Note: in frozen QuadPype installed in user data dir, this must point
+        one level deeper as it is:
+        `quadpype-version-v3.0.0/quadpype/version.py`
+
+        Args:
+            repo_dir (Path): Path to QuadPype repo.
+
+        Returns:
+            str: version string.
+            None: if QuadPype is not found.
+
+        """
+        if repo_dir is None:
+            repo_dir = Path(os.environ["QUADPYPE_ROOT"])
+        elif not isinstance(repo_dir, Path):
+            repo_dir = Path(repo_dir)
+
+        # try to find version
+        version_file = repo_dir.joinpath("quadpype", "version.py")
+        if not version_file.exists():
+            return None
+
+        version = {}
+        with version_file.open("r") as fp:
+            exec(fp.read(), version)
+
+        return version['__version__']
+
+    @staticmethod
+    def is_version_in_dir(
+            dir_item: Path, version: QuadPypeVersion) -> Tuple[bool, str]:
+        try:
+            # add one level as inside dir there should be many other repositories.
+            version_str = QuadPypeVersion.get_version_str_from_quadpype_version(dir_item)
+            version_check = QuadPypeVersion(version=version_str)
+        except ValueError:
+            return False, f"cannot determine version from {dir_item}"
+
+        if not version_check.compare_major_minor_patch(version):
+            return False, (f"dir version ({version}) and "
+                           f"its content version ({version_check}) "
+                           "doesn't match. Skipping.")
+        return True, "Versions match"
+
+    @staticmethod
+    def is_version_in_zip(
+            zip_item: Path, version: QuadPypeVersion) -> Tuple[bool, str]:
+        # skip non-zip files
+        if zip_item.suffix.lower() != ".zip":
+            return False, "Not a zip"
+
+        try:
+            with ZipFile(zip_item, "r") as zip_file:
+                with zip_file.open(
+                        "quadpype/version.py") as version_file:
+                    zip_version = {}
+                    exec(version_file.read(), zip_version)
+                    try:
+                        version_check = QuadPypeVersion(
+                            version=zip_version["__version__"])
+                    except ValueError as e:
+                        return False, str(e)
+
+                    if not version_check.compare_major_minor_patch(version):
+                        return False, (f"zip version ({version}) "
+                                       f"and its content version "
+                                       f"({version_check}) "
+                                       "doesn't match. Skipping.")
+        except BadZipFile:
+            return False, f"{zip_item} is not a zip file"
+        except KeyError:
+            return False, "Zip does not contain OpenPype"
+        return True, "Versions match"
 
 
 class ZXPExtensionData:
@@ -697,7 +670,7 @@ class BootstrapRepos:
         self.data_dir = None
         self.set_data_dir(None)
         self.secure_registry = QuadPypeSecureRegistry("mongodb")
-        base_version = get_version_string()
+        base_version = QuadPypeVersion.get_version_str_from_quadpype_version()
         self.registry = QuadPypeSettingsRegistry(base_version=base_version)
         self.exclusion_list = [".pyc", "__pycache__"]
         self.inclusion_list = [
@@ -1242,7 +1215,6 @@ class BootstrapRepos:
         Resolution order for QuadPype is following:
 
             1) First we test for ``QUADPYPE_PATH`` environment variable
-            2) We try to find ``quadpypePath`` in registry setting
             3) We use user data directory
 
         Args:
@@ -1280,16 +1252,6 @@ class BootstrapRepos:
             # first try QUADPYPE_PATH and if that is not available,
             # try registry.
             dirs_to_search = [Path(os.getenv("QUADPYPE_PATH"))]
-        else:
-            try:
-                registry_dir = Path(
-                    str(self.registry.get_item("quadpypePath")))
-                if registry_dir.exists():
-                    dirs_to_search = [registry_dir]
-
-            except ValueError:
-                # nothing found in registry, we'll use data dir
-                pass
 
         quadpype_versions = []
         for dir_to_search in dirs_to_search:
@@ -1713,9 +1675,7 @@ class BootstrapRepos:
                 f"Cannot determine version from {dir_item}", level=log.ERROR, exception=e)
             return False
 
-        version_main = version_check.get_main_version()
-        detected_main = detected_version.get_main_version()
-        if version_main != detected_main:
+        if not version_check.compare_major_minor_patch(detected_version):
             self._print(
                 (f"Dir version ({detected_version}) and "
                  f"its content version ({version_check}) "
@@ -1758,10 +1718,7 @@ class BootstrapRepos:
                         self._print(str(e), level=log.ERROR)
                         return False
 
-                    version_main = version_check.get_main_version()  # noqa: E501
-                    detected_main = detected_version.get_main_version()  # noqa: E501
-
-                    if version_main != detected_main:
+                    if not version_check.compare_major_minor_patch(detected_version):
                         self._print(
                             (f"Zip version ({detected_version}) "
                              "and its content version "

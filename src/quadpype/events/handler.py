@@ -56,6 +56,8 @@ class EventHandlerWorker(QtCore.QThread):
             }
         }).sort("timestamp", 1)
 
+        print(self._manager.webserver.url)
+
         # Process the events
         for doc in db_cursor:
             if not self._manager.is_running:
@@ -137,6 +139,7 @@ class EventsHandlerManager:
     def webserver(self):
         return self._webserver
 
+    @property
     def is_running(self):
         return self._is_running
 
@@ -155,6 +158,8 @@ class EventsHandlerManager:
             raise RuntimeError("The Event Handler cannot be started multiple times.")
         if not self._webserver:
             raise RuntimeError("Webserver not set. Cannot start the event handler.")
+        if not self._webserver.is_running:
+            raise RuntimeError("Webserver is not running. Cannot start the event handler.")
 
         self._worker_thread = EventHandlerWorker(self)
         self._worker_thread.task_completed.connect(self._restart_worker)
@@ -170,7 +175,6 @@ class EventsHandlerManager:
 
     def set_webserver(self, webserver):
         self._webserver = webserver
-
 
 
 def get_event_handler() -> EventsHandlerManager:

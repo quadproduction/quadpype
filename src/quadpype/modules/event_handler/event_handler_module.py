@@ -27,7 +27,7 @@ class EventHandlerModule(QuadPypeModule, ITrayService):
             self._event_handler.stop()
 
     def tray_start(self):
-        if not self._event_handler or self._event_handler.is_running():
+        if not self._event_handler or self._event_handler.is_running:
             return
         self._event_handler.start()
 

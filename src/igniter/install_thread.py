@@ -135,7 +135,7 @@ class InstallThread(QtCore.QThread):
                 self._set_result(0)
                 return
 
-            if QuadPypeVersion(version=local_version).get_main_version() == detected[-1].get_main_version():  # noqa: E501
+            if QuadPypeVersion(version=local_version).compare_major_minor_patch(detected[-1]):  # noqa: E501
                 self.message.emit((
                     f"Latest installed version is the same as "
                     f"currently running {local_version}"
