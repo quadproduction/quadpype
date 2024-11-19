@@ -31,6 +31,8 @@ from .tools import (
     get_local_quadpype_path_from_settings
 )
 
+from quadpype.settings.lib import get_studio_global_settings_overrides
+from quadpype.settings import MODULES_SETTINGS_KEY
 
 term = blessed.Terminal() if sys.__stdout__ else None
 
@@ -114,6 +116,428 @@ class ZipFileLongPaths(ZipFile):
         return ZipFile._extract_member(
             self, member, sanitize_long_path(target_path), pwd
         )
+
+
+class AdditionalModulesVersion(semver.VersionInfo):
+    """Class for storing information about Additional Modules version.
+
+    Attributes:
+        path (str): path to Additional Modules
+
+    """
+    path = None
+
+    _local_additional_modules_path = None
+    # this should match any string complying with https://semver.org/
+    _VERSION_REGEX = re.compile(r"(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)")  # noqa: E501
+    _installed_version = None
+
+    def __init__(self, *args, **kwargs):
+        """Create AdditionalModules version.
+
+        .. deprecated:: 3.0.0
+            `client` and `variant` are removed.
+
+
+        Args:
+            major (int): version when you make incompatible API changes.
+            minor (int): version when you add functionality in a
+                backwards-compatible manner.
+            patch (int): version when you make backwards-compatible bug fixes.
+            version (str): if set, it will be parsed and will override
+                parameters like `major`, `minor` and so on.
+            path (Path): path to version location.
+
+        """
+        self.path = None
+
+        if "version" in kwargs.keys():
+            if not kwargs.get("version"):
+                raise ValueError("Invalid version specified")
+            v = AdditionalModulesVersion.parse(kwargs.get("version"))
+            kwargs["major"] = v.major
+            kwargs["minor"] = v.minor
+            kwargs["patch"] = v.patch
+            kwargs.pop("version")
+
+        if kwargs.get("path"):
+            if isinstance(kwargs.get("path"), str):
+                self.path = Path(kwargs.get("path"))
+            elif isinstance(kwargs.get("path"), Path):
+                self.path = kwargs.get("path")
+            else:
+                raise TypeError("Path must be str or Path")
+            kwargs.pop("path")
+
+        if "path" in kwargs.keys():
+            kwargs.pop("path")
+
+        if args or kwargs:
+            super().__init__(*args, **kwargs)
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}: {str(self)} - path={self.path}>"
+
+    def __lt__(self, other: AdditionalModulesVersion):
+        result = super().__lt__(other)
+        # prefer path over no path
+        if self == other and not self.path and other.path:
+            return True
+
+        if self == other and self.path and other.path and \
+                other.path.is_dir() and self.path.is_file():
+            return True
+
+        if self.finalize_version() == other.finalize_version() and \
+                self.prerelease == other.prerelease:
+            return True
+
+        return result
+
+    def get_main_version(self) -> str:
+        """Return main version component.
+
+        This returns x.x.x part of version from possibly more complex one
+        like x.x.x
+
+        .. deprecated:: 3.0.0
+            use `finalize_version()` instead.
+        Returns:
+            str: main version component
+
+        """
+        return str(self.finalize_version())
+
+    @staticmethod
+    def version_in_str(string: str) -> Union[None, AdditionalModulesVersion]:
+        """Find Additional Modules Version in given string.
+
+        Args:
+            string (str):  string to search.
+
+        Returns:
+            AdditionalModulesVersion: of detected or None.
+
+        """
+        # strip .zip ext if present
+        string = re.sub(r"\.zip$", "", string, flags=re.IGNORECASE)
+        m = re.search(AdditionalModulesVersion._VERSION_REGEX, string)
+        if not m:
+            return None
+
+        version = AdditionalModulesVersion.parse(string[m.start():m.end()])
+        return version
+
+    def __hash__(self):
+        return hash(self.path) if self.path else hash(str(self))
+
+    @staticmethod
+    def is_version_in_dir(
+            dir_item: Path, version: AdditionalModulesVersion) -> Tuple[bool, str]:
+        """Test if path item is Additional Modules Version matching detected version.
+
+        If item is directory that might (based on it's name)
+        contain Additional Modules version, check if it really does contain
+        QuadPype and that their versions matches.
+
+        Args:
+            dir_item (Path): Directory to test.
+            version (AdditionalModulesVersion): Additional Modules version detected
+                from name.
+
+        Returns:
+            Tuple: State and reason, True if it is valid Additional Modules version,
+                   False otherwise.
+
+        """
+        try:
+            # add one 'AdditionalModules' level as inside dir there should
+            # be many other repositories.
+            version_str = AdditionalModulesVersion.get_version_string_from_directory(dir_item)  # noqa: E501
+            version_check = AdditionalModulesVersion(version=version_str)
+        except ValueError:
+            return False, f"cannot determine version from {dir_item}"
+
+        version_main = version_check.get_main_version()
+        detected_main = version.get_main_version()
+        if version_main != detected_main:
+            return False, (f"dir version ({version}) and "
+                           f"its content version ({version_check}) "
+                           "doesn't match. Skipping.")
+        return True, "Versions match"
+
+    @staticmethod
+    def is_version_in_zip(
+            zip_item: Path, version: AdditionalModulesVersion) -> Tuple[bool, str]:
+        """Test if zip path is Additional Modules version matching detected version.
+
+        Open zip file, look inside and parse version from Additional Modules
+        inside it. If there is none, or it is different from
+        version specified in file name, skip it.
+
+        Args:
+            zip_item (Path): Zip file to test.
+            version (AdditionalModulesVersion): Pype version detected
+                from name.
+
+        Returns:
+           Tuple: State and reason, True if it is valid Additional Modules version,
+                False otherwise.
+
+        """
+        # skip non-zip files
+        if zip_item.suffix.lower() != ".zip":
+            return False, "Not a zip"
+
+        try:
+            with ZipFile(zip_item, "r") as zip_file:
+                with zip_file.open(
+                        "quad_pyblish_module/version.py") as version_file:
+                    zip_version = {}
+                    exec(version_file.read(), zip_version)
+                    try:
+                        version_check = AdditionalModulesVersion(
+                            version=zip_version["__version__"])
+                    except ValueError as e:
+                        return False, str(e)
+
+                    version_main = version_check.get_main_version()  #
+                    # noqa: E501
+                    detected_main = version.get_main_version()
+                    # noqa: E501
+
+                    if version_main != detected_main:
+                        return False, (f"zip version ({version}) "
+                                       f"and its content version "
+                                       f"({version_check}) "
+                                       "doesn't match. Skipping.")
+        except BadZipFile:
+            return False, f"{zip_item} is not a zip file"
+        except KeyError:
+            return False, "Zip does not contain Additional Modules"
+        return True, "Versions match"
+
+    @staticmethod
+    def get_version_string_from_directory(repo_dir: Path) -> Union[str, None]:
+        """Get version of Additional Modules in given directory.
+
+        Note: in frozen Additional Modules Version installed in user data dir, this must point
+        one level deeper as it is:
+        `quadpype-version-v3.0.0/quad_pyblish_module/version.py`
+
+        Args:
+            repo_dir (Path): Path to additional modules repo.
+
+        Returns:
+            str: version string.
+            None: if quad_pyblish_module is not found.
+
+        """
+        # try to find version
+        version_file = Path(repo_dir) / "quad_pyblish_module" / "version.py"
+        if not version_file.exists():
+            return None
+
+        version = {}
+        with version_file.open("r") as fp:
+            exec(fp.read(), version)
+
+        return version['__version__']
+
+    @classmethod
+    def get_additional_modules_dir(cls):
+        """Path to additional_modules directory."""
+        value = get_studio_global_settings_overrides()
+        addon_settings = value.get(MODULES_SETTINGS_KEY).get("addon")
+        addon_path = addon_settings.get("addon_paths").get(platform.system().lower())
+        if addon_path:
+            return Path(addon_path[0].format(**os.environ)).parent
+
+    @classmethod
+    def get_local_additional_modules_dir(cls):
+        """Path to unzipped versions.
+
+        By default, it should be user appdata, but could be overridden by
+        settings.
+        """
+        if cls._local_additional_modules_path:
+            return cls._local_additional_modules_path
+
+        cls._local_additional_modules_path = Path(user_data_dir("quadpype", "quad")) / "additional_modules"
+        return cls._local_additional_modules_path
+
+    @classmethod
+    def additional_modules_path_is_set(cls):
+        """Path to additional modules zip directory is set."""
+        if cls.get_additional_modules_dir():
+            return True
+        return False
+
+    @classmethod
+    def additional_modules_path_is_accessible(cls):
+        """Path to additional modules zip directory is accessible.
+
+        Exists for this machine.
+        """
+        # First check if is set
+        if not cls.additional_modules_path_is_set():
+            return False
+
+        # Validate existence
+        if Path(cls.get_additional_modules_dir()).exists():
+            return True
+        return False
+
+    @classmethod
+    def get_local_versions(cls) -> List:
+        """Get all versions available on this machine.
+
+        Returns:
+            list: of compatible versions available on the machine.
+
+        """
+        versions = cls.get_versions_from_directory(cls.get_local_additional_modules_dir())
+        return list(sorted(set(versions)))
+
+    @classmethod
+    def get_remote_versions(cls) -> List:
+        """Get all versions available in additional modules Path.
+
+        Returns:
+            list of Addit: Versions found in Additional Modules path.
+
+        """
+        # Return all local versions if arguments are set to None
+        dir_to_search = None
+        if cls.additional_modules_path_is_accessible():
+            dir_to_search = Path(cls.get_additional_modules_dir())
+        if not dir_to_search:
+            return []
+        versions = cls.get_versions_from_directory(dir_to_search)
+
+        return list(sorted(set(versions)))
+
+    @staticmethod
+    def get_versions_from_directory(
+            additional_modules_dir: Path) -> List:
+        """Get all detected additional modules versions in directory.
+
+        Args:
+            additional_modules_dir (Path): Directory to scan.
+
+        Returns:
+            list of AdditionalModulesVersion
+
+        Throws:
+            ValueError: if invalid path is specified.
+
+        """
+        additional_modules = []
+        if not additional_modules_dir.exists() and not additional_modules_dir.is_dir():
+            return additional_modules
+
+        # iterate over directory in first level and find all that might contain additional modules.
+        for item in additional_modules_dir.iterdir():
+            # if the item is directory with major.minor version, dive deeper
+
+            if item.is_dir() and re.match(r"^\d+\.\d+$", item.name):
+                _versions = AdditionalModulesVersion.get_versions_from_directory(item)
+                if _versions:
+                    additional_modules += _versions
+
+            # if file exists, strip extension, in case of dir don't.
+            name = item.name if item.is_dir() else item.stem
+            result = AdditionalModulesVersion.version_in_str(name)
+
+            if result:
+                detected_version: AdditionalModulesVersion
+                detected_version = result
+                if item.is_dir() and not AdditionalModulesVersion.is_version_in_dir(item, detected_version)[0]:
+                    continue
+
+                if item.is_file() and not AdditionalModulesVersion.is_version_in_zip(item, detected_version)[0]:
+                    continue
+
+                detected_version.path = item
+                additional_modules.append(detected_version)
+
+        return sorted(additional_modules)
+
+    @classmethod
+    def get_installed_version(cls):
+        """Get version of Additional Modules inside build."""
+        if cls._installed_version is None:
+            installed_version = cls.get_versions_from_directory(cls.get_local_additional_modules_dir())
+            if installed_version:
+                cls._installed_version = installed_version[0]
+        return cls._installed_version
+
+    @staticmethod
+    def get_latest_version(
+        local: bool = None,
+        remote: bool = None
+    ) -> Union[AdditionalModulesVersion, None]:
+        """Get the latest available version.
+
+        The version does not contain information about path and source.
+
+        This is utility version to get the latest version from all found.
+
+        Arguments 'local' and 'remote' define if local and remote repository
+        versions are used. All versions are used if both are not set (or set
+        to 'None'). If only one of them is set to 'True' the other is disabled.
+        It is possible to set both to 'True' (same as both set to None) and to
+        'False' in that case only build version can be used.
+
+        Args:
+            local (bool, optional): List local versions if True.
+            remote (bool, optional): List remote versions if True.
+
+        Returns:
+            Latest AdditionalModulesVersion or None
+
+        """
+        if local is None and remote is None:
+            local = True
+            remote = True
+
+        elif local is None and not remote:
+            local = True
+
+        elif remote is None and not local:
+            remote = True
+
+        installed_version = [v for v in [AdditionalModulesVersion.get_installed_version()] if v]
+        local_versions = AdditionalModulesVersion.get_local_versions() if local else []
+        remote_versions = AdditionalModulesVersion.get_remote_versions() if remote else []  # noqa: E501
+        all_versions = local_versions + remote_versions + installed_version
+
+        all_versions.sort()
+        return all_versions[-1]
+
+    @classmethod
+    def update_local_to_latest_version(cls):
+        """
+            Updates the local additional module to the latest version available from remote.
+        """
+        local_version = cls.get_installed_version()
+        latest_remote_version = cls.get_latest_version(remote=True)
+        destination_path = Path(cls.get_local_additional_modules_dir()) / str(latest_remote_version)
+        destination_path.mkdir(parents=True, exist_ok=True)
+        # If no local version or remote version is newer, copy the latest version
+        if latest_remote_version and local_version is None or latest_remote_version > local_version:
+            # Remove the old version if exists
+            if local_version is not None:
+                shutil.rmtree(local_version.path)
+
+            # Copy latest version
+            if str(latest_remote_version.path).endswith('.zip'):
+                with zipfile.ZipFile(latest_remote_version.path, 'r') as zip_ref:
+                    zip_ref.extractall(destination_path)
+            else:
+                shutil.copytree(latest_remote_version.path, destination_path, dirs_exist_ok=True)
+
+        return destination_path or None
 
 
 class QuadPypeVersion(semver.VersionInfo):
