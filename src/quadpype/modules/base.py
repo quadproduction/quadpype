@@ -42,6 +42,8 @@ from .interfaces import (
     ITrayService
 )
 
+from igniter.bootstrap_repos import AdditionalModulesVersion
+
 # Files that will always be ignored on addons import
 IGNORED_FILENAMES = (
     "__pycache__",
@@ -178,7 +180,7 @@ def get_dynamic_modules_dirs():
     """Possible paths to QuadPype Addons of Modules.
 
     Paths are loaded from studio settings under:
-        `modules -> addon_paths -> {platform name}`
+        `modules -> addon -> addon_paths -> {platform name}`
 
     Path may contain environment variable as a formatting string.
 
@@ -191,20 +193,24 @@ def get_dynamic_modules_dirs():
     output = []
 
     value = get_studio_global_settings_overrides()
-    for key in (MODULES_SETTINGS_KEY, "addon_paths", platform.system().lower()):
+    addon_settings = value.get(MODULES_SETTINGS_KEY).get("addon", {})
+    retrieve_locally = addon_settings.get('retrieve_locally', False)
+    for key in (MODULES_SETTINGS_KEY, "addon", "addon_paths", platform.system().lower()):
         if key not in value:
             return output
         value = value[key]
+    if retrieve_locally:
+        output.append(AdditionalModulesVersion.update_local_to_latest_version())
+    else:
+        for path in value:
+            if not path:
+                continue
 
-    for path in value:
-        if not path:
-            continue
-
-        try:
-            path = path.format(**os.environ)
-        except Exception:
-            pass
-        output.append(path)
+            try:
+                path = path.format(**os.environ)
+            except Exception:
+                pass
+            output.append(path)
     return output
 
 

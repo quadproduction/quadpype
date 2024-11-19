@@ -1,8 +1,11 @@
 {
-    "addon_paths": {
-        "windows": [],
-        "darwin": [],
-        "linux": []
+    "addon":{
+        "addon_paths": {
+            "windows": [],
+            "darwin": [],
+            "linux": []
+        },
+        "retrieve_locally": false
     },
     "avalon": {
         "AVALON_TIMEOUT": 1000,

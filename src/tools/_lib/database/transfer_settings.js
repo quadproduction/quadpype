@@ -67,7 +67,9 @@ function transferSettings(sourceDbName, targetDbName) {
         if (document.type === "system_settings_versioned") {
             document.type = "global_settings_versioned"
             document.data.core = document.data.general;
+            document.data.addon.addon_paths = document.data.addon_paths;
             delete document.data.general;
+            delete document.data.addon_path;
             if (document.last_saved_info && document.last_saved_info.timestamp) {
                 const timestamp = new Date(document.last_saved_info.timestamp);
                 if (!latestVersionedSystemSettings || timestamp > new Date(latestVersionedSystemSettings.last_saved_info.timestamp)) {

@@ -6,13 +6,26 @@
     "is_file": true,
     "children": [
         {
-            "type": "path",
-            "key": "addon_paths",
-            "label": "QuadPype AddOn Paths",
+            "key" : "addon",
+            "type" : "dict",
+            "label": "QuadPype AddOn",
             "use_label_wrap": true,
-            "multiplatform": true,
-            "multipath": true,
-            "require_restart": true
+            "collapsible": true,
+            "children": [
+                {
+                    "type": "path",
+                    "key": "addon_paths",
+                    "label": "Paths",
+                    "multiplatform": true,
+                    "multipath": true,
+                    "require_restart": true
+                },
+                {
+                    "type": "boolean",
+                    "key": "retrieve_locally",
+                    "label": "Retrieve AddOn Paths Locally"
+                }
+            ]
         },
         {
             "type": "separator"
