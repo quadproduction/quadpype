@@ -640,7 +640,7 @@ class PublishClip:
         kwargs (optional): additional data needed for rename=True (presets)
 
     Returns:
-        hiero.core.TrackItem: hiero track item object with pype tag
+        hiero.core.TrackItem: hiero track item object with QuadPype tag
     """
     vertical_clip_match = {}
     tag_data = {}
@@ -747,7 +747,7 @@ class PublishClip:
             pformat(self.tag_data)
         ))
 
-        # create pype tag on track_item and add data
+        # create QuadPype tag on track_item and add data
         lib.imprint(self.track_item, self.tag_data)
 
         return self.track_item

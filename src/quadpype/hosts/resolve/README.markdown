@@ -24,5 +24,5 @@ Notice I had renamed tracks to `main` (holding metadata markers) and `review` us
 4.  in Creator select `Create Publishable Clip [New]` (temporary name)
 5.  set `Rename clips` to True, Master Track to `main` and Use review track to `review` as in picture
     ![image](https://user-images.githubusercontent.com/40640033/102643773-0d419600-4160-11eb-919e-9c2be0aecab8.png)
-6.  after you hit `ok` all clips are colored to `ping` and marked with quadpype metadata tag
-7.  git `Publish` on quadpype menu and see that all had been collected correctly. That is the last step for now as rest is Work in progress. Next steps will follow.
+6.  after you hit `ok` all clips are colored to `ping` and marked with QuadPype metadata tag
+7.  git `Publish` on QuadPype menu and see that all had been collected correctly. That is the last step for now as rest is Work in progress. Next steps will follow.

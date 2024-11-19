@@ -81,7 +81,8 @@ from .path_templates import (
 
 from .dateutils import (
     get_datetime_data,
-    get_timestamp,
+    get_timestamp_str,
+    get_datetime_from_timestamp_str,
     get_formatted_current_time
 )
 
@@ -113,20 +114,35 @@ from .transcoding import (
     get_rescaled_command_arguments,
 )
 
-from .user_settings import (
+from .cache import (
+    CacheValues
+)
+
+from .registry import (
     IniSettingRegistry,
     JSONSettingRegistry,
     QuadPypeSecureRegistry,
     QuadPypeSettingsRegistry,
-    get_local_site_id,
+    get_app_registry
+)
+
+from .registry_ops import (
+    change_quadpype_mongo_url
+)
+
+from .user import (
     get_user_id,
-    change_quadpype_mongo_url,
-    get_quadpype_username
+    get_local_site_id,
+    get_quadpype_username,
+    get_user_settings,
+    save_user_settings,
+    get_user_profile,
+    get_user_workstation_info
 )
 
 from .applications import (
     ApplicationLaunchFailed,
-    ApplictionExecutableNotFound,
+    ApplicationExecutableNotFound,
     ApplicationNotFound,
     ApplicationManager,
 
@@ -163,11 +179,15 @@ from .quadpype_version import (
     is_running_from_build,
     is_running_locally,
     is_running_staging,
-    is_version_checking_popup_enabled,
     is_current_version_studio_latest,
     is_current_version_higher_than_expected
 )
 
+from .pype_info import (
+    get_all_current_info,
+    get_quadpype_info,
+    extract_pype_info_to_file
+)
 
 from .connections import (
     requests_get,
@@ -238,17 +258,26 @@ __all__ = [
     "convert_ffprobe_fps_to_float",
     "get_rescaled_command_arguments",
 
+    "CacheValues",
+
     "IniSettingRegistry",
     "JSONSettingRegistry",
     "QuadPypeSecureRegistry",
     "QuadPypeSettingsRegistry",
-    "get_local_site_id",
-    "get_user_id",
+    "get_app_registry",
+
     "change_quadpype_mongo_url",
+
+    "get_user_id",
+    "get_local_site_id",
     "get_quadpype_username",
+    "get_user_settings",
+    "save_user_settings",
+    "get_user_profile",
+    "get_user_workstation_info",
 
     "ApplicationLaunchFailed",
-    "ApplictionExecutableNotFound",
+    "ApplicationExecutableNotFound",
     "ApplicationNotFound",
     "ApplicationManager",
     "PreLaunchHook",
@@ -284,6 +313,8 @@ __all__ = [
     "terminal",
 
     "get_datetime_data",
+    "get_timestamp_str",
+    "get_datetime_from_timestamp_str",
     "get_formatted_current_time",
 
     "Logger",
@@ -295,8 +326,11 @@ __all__ = [
     "is_running_from_build",
     "is_running_locally",
     "is_running_staging",
-    "is_version_checking_popup_enabled",
     "is_current_version_studio_latest",
+
+    "get_all_current_info",
+    "get_quadpype_info",
+    "extract_pype_info_to_file",
 
     "requests_get",
     "requests_post"

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Package for handling pype command line arguments."""
+"""Package for handling QuadPype command line arguments."""
 import os
 import sys
 import code
@@ -57,15 +57,15 @@ def main(ctx):
 @main.command()
 @click.option("-d", "--dev", is_flag=True, help="Settings in Dev mode")
 def settings(dev):
-    """Show Pype Settings UI."""
+    """Show QuadPype Settings UI."""
     PypeCommands().launch_settings_gui(dev)
 
 
 @main.command()
 def tray():
-    """Launch pype tray.
+    """Launch QuadPype tray.
 
-    Default action of pype command is to launch tray widget to control basic
+    Default action of QuadPype command is to launch tray widget to control basic
     aspects of pype. See documentation for more information.
     """
     PypeCommands().launch_tray()
@@ -227,7 +227,7 @@ def contextselection(
         allow_extra_args=True))
 @click.argument("script", required=True, type=click.Path(exists=True))
 def run(script):
-    """Run python script in Pype context."""
+    """Run python script in QuadPype context."""
     import runpy
 
     if not script:
@@ -379,14 +379,14 @@ def interactive():
 def version(build):
     """Print QuadPype version."""
     from quadpype.version import __version__
-    from igniter.bootstrap_repos import BootstrapRepos, QuadPypeVersion
+    from igniter.bootstrap_repos import BootstrapRepos, get_version_string
     from pathlib import Path
 
     if getattr(sys, 'frozen', False):
         local_version = BootstrapRepos.get_version(
             Path(os.getenv("QUADPYPE_ROOT")))
     else:
-        local_version = QuadPypeVersion.get_installed_version_str()
+        local_version = get_version_string()
 
     if build:
         print(local_version)

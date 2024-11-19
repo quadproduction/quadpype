@@ -76,7 +76,7 @@ def get_datetime_data(datetime_obj=None):
     }
 
 
-def get_timestamp(datetime_obj=None):
+def get_timestamp_str(datetime_obj=None):
     """Get standardized timestamp from datetime object.
 
     Args:
@@ -86,10 +86,19 @@ def get_timestamp(datetime_obj=None):
 
     if datetime_obj is None:
         datetime_obj = datetime.datetime.now()
-    return datetime_obj.strftime(
-        "%Y%m%dT%H%M%SZ"
-    )
+    return datetime_obj.astimezone().isoformat()
+
+def get_datetime_from_timestamp_str(timestamp_str):
+    return datetime.datetime.fromisoformat(timestamp_str)
 
 
 def get_formatted_current_time():
-    return get_timestamp()
+    return get_timestamp_str()
+
+
+__all__ = (
+    "get_datetime_data",
+    "get_timestamp_str",
+    "get_datetime_from_timestamp_str",
+    "get_formatted_current_time"
+)

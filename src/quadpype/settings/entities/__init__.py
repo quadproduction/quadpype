@@ -1,6 +1,6 @@
 """QuadPype Settings
 
-Settings define how quadpype and it's modules behave. They became main
+Settings define how QuadPype and it's modules behave. They became main
 component of dynamism.
 
 QuadPype settings (ATM) have 3 layers:

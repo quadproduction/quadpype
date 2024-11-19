@@ -6,15 +6,12 @@ import collections
 import numbers
 import time
 
-from quadpype.settings.lib import (
-    get_user_settings,
-)
 from quadpype.settings.constants import (
     DEFAULT_PROJECT_KEY,
     PROJECTS_SETTINGS_KEY
 )
 from quadpype.client import get_project
-from quadpype.lib import Logger
+from quadpype.lib import Logger, get_user_settings
 from quadpype.lib.path_templates import (
     TemplateUnsolved,
     TemplateResult,

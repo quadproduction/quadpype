@@ -6,12 +6,12 @@ from qtpy import QtCore, QtGui, QtWidgets
 
 from quadpype import style
 from quadpype import resources
-from quadpype.lib import get_user_id
-from quadpype.settings.lib import get_user_settings
-from quadpype.lib.pype_info import (
+from quadpype.lib import (
+    get_user_id,
+    get_user_settings,
     get_all_current_info,
     get_quadpype_info,
-    get_workstation_info,
+    get_user_workstation_info,
     extract_pype_info_to_file
 )
 
@@ -363,7 +363,7 @@ class PypeInfoSubWidget(QtWidgets.QWidget):
             "workstation_name",
             "host_ip"
         ]
-        workstation_info = get_workstation_info()
+        workstation_info = get_user_workstation_info()
         workstation_info["user_id"] = get_user_id()
         for key in workstation_info.keys():
             if key not in keys_order:
@@ -427,7 +427,7 @@ class PypeInfoSubWidget(QtWidgets.QWidget):
     def _create_quadpype_info_widget(self):
         """Create widget with information about QuadPype application."""
 
-        # Get pype info data
+        # Get QuadPype info data
         info_values = get_quadpype_info()
         # Modify version key/values
         version_value = "{} ({})".format(

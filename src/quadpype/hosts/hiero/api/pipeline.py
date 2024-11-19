@@ -144,7 +144,7 @@ def ls():
 
 
 def parse_container(item, validate=True):
-    """Return container data from track_item's pype tag.
+    """Return container data from track_item's QuadPype tag.
 
     Args:
         item (hiero.core.TrackItem or hiero.core.VideoTrack):
@@ -212,7 +212,7 @@ def _update_container_data(container, data):
 
 def update_container(item, data=None):
     """Update container data to input track_item or track's
-    quadpype tag.
+    QuadPype tag.
 
     Args:
         item (hiero.core.TrackItem or hiero.core.VideoTrack):

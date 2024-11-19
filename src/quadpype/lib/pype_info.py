@@ -1,13 +1,9 @@
 import os
 import json
 import datetime
-import platform
-import getpass
-import socket
 
-from quadpype.settings.lib import get_user_profile
 from .execute import get_quadpype_execute_args
-from .user_settings import get_user_id
+from .user import get_user_id, get_user_profile
 from .quadpype_version import (
     is_running_from_build,
     get_quadpype_version,
@@ -16,7 +12,7 @@ from .quadpype_version import (
 
 
 def get_quadpype_info():
-    """Information about currently used Pype process."""
+    """Information about currently used QuadPype process."""
     executable_args = get_quadpype_execute_args()
     if is_running_from_build():
         version_type = "build"
@@ -33,20 +29,7 @@ def get_quadpype_info():
     }
 
 
-def get_workstation_info():
-    """Basic information about workstation."""
-    host_name = socket.gethostname()
-    try:
-        host_ip = socket.gethostbyname(host_name)
-    except socket.gaierror:
-        host_ip = "127.0.0.1"
 
-    return {
-        "workstation_name": host_name,
-        "host_ip": host_ip,
-        "username": getpass.getuser(),
-        "system_name": platform.system()
-    }
 
 
 def get_all_current_info():
@@ -60,14 +43,14 @@ def get_all_current_info():
     return output
 
 
-def extract_pype_info_to_file(dirpath):
+def extract_pype_info_to_file(dir_path):
     """Extract all current info to a file.
 
     It is possible to define onpy directory path. Filename is concatenated with
-    pype version, workstation site id and timestamp.
+    QuadPype version, workstation site id and timestamp.
 
     Args:
-        dirpath (str): Path to directory where file will be stored.
+        dir_path (str): Path to directory where file will be stored.
 
     Returns:
         filepath (str): Full path to file where data were extracted.
@@ -77,10 +60,10 @@ def extract_pype_info_to_file(dirpath):
         get_user_id(),
         datetime.datetime.now().strftime("%y%m%d%H%M%S")
     )
-    filepath = os.path.join(dirpath, filename)
+    filepath = os.path.join(dir_path, filename)
     data = get_all_current_info()
-    if not os.path.exists(dirpath):
-        os.makedirs(dirpath)
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
 
     with open(filepath, "w") as file_stream:
         json.dump(data, file_stream, indent=4)

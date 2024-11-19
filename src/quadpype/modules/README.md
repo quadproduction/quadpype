@@ -33,12 +33,12 @@ QuadPype modules should contain separated logic of specific kind of implementati
 
 ## How to add addons/modules
 - in Global settings go to `modules/addon/addon_paths` (`Modules/QuadPype AddOn/Paths`) where you have to add path to addon root folder
-- for quadpype example addons use `{QUADPYPE_REPOS_ROOT}/quadpype/modules/example_addons`
+- for QuadPype example addons use `{QUADPYPE_REPOS_ROOT}/quadpype/modules/example_addons`
 
 ## Addon/module settings
 - addons/modules may have defined custom settings definitions with default values
 - it is based on settings type `dynamic_schema` which has `name`
- - that item defines that it can be replaced dynamically with any schemas from module or module which won't be saved to quadpype core defaults
+ - that item defines that it can be replaced dynamically with any schemas from module or module which won't be saved to QuadPype core defaults
  - they can't be added to any schema hierarchy
  - item must not be in settings group (under overrides) or in dynamic item (e.g. `list` of `dict-modifiable`)
  - addons may define it's dynamic schema items
@@ -114,7 +114,7 @@ QuadPype modules should contain separated logic of specific kind of implementati
 - Clockify inherits from more interfaces. It's class definition looks like:
 ```
 class ClockifyModule(
- QuadPypeModule, # Says it's Pype module so ModulesManager will try to initialize.
+ QuadPypeModule, # Says it's QuadPype module so ModulesManager will try to initialize.
  ITrayModule, # Says has special implementation when used in tray.
  IPluginPaths, # Says has plugin paths that want to register (paths to clockify actions for launcher).
  IFtrackEventHandlerPaths, # Says has Ftrack actions/events for user/server.
@@ -145,4 +145,4 @@ class ClockifyModule(
 
 ### TrayModulesManager
 - inherits from `ModulesManager`
-- has specific implementation for Pype Tray tool and handle `ITrayModule` methods
+- has specific implementation for QuadPype Tray tool and handle `ITrayModule` methods

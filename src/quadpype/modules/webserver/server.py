@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
+from quadpype import get_all_registered_web_api_routers
 from quadpype.lib import Logger
 
 app_meta = {
@@ -18,11 +19,15 @@ app_meta = {
     }
 }
 
-app = FastAPI(
+WEB_API = FastAPI(
     docs_url=None,
     redoc_url="/docs",
     **app_meta,
 )
+
+# Register all defined routers
+for router in get_all_registered_web_api_routers():
+    WEB_API.include_router(router)
 
 
 class WebServerManager:
@@ -40,7 +45,7 @@ class WebServerManager:
         self.handlers = {}
         self.on_stop_callbacks = []
 
-        self.app = app
+        self.app = WEB_API
         origin_regex = r"^https?://localhost"
         self.app.add_middleware(
             CORSMiddleware,
@@ -144,7 +149,7 @@ class WebServerThread(threading.Thread):
             self.loop = asyncio.new_event_loop()
             asyncio.set_event_loop(self.loop)
 
-            config = uvicorn.Config(app, host=self.host, port=int(self.port), log_level="info", loop=self.loop)
+            config = uvicorn.Config(WEB_API, host=self.host, port=int(self.port), log_level="info", loop=self.loop)
             self.server = uvicorn.Server(config)
             self.log.debug(
                 "Running Web server on URL: \"localhost:{}\"".format(self.port)

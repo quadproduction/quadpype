@@ -29,5 +29,5 @@ CreateRender.prototype.create = function(args) {
     node.setTextAttr(args[0], 'MOVIE_PATH', 1, args[1]);
 };
 
-// add self to Pype Loaders
+// add self to QuadPype Loaders
 PypeHarmony.Creators.CreateRender = new CreateRender();

@@ -2,40 +2,17 @@
 """Package to deal with saving and retrieving user specific settings."""
 import os
 import json
-import getpass
 import platform
 from datetime import datetime
 from abc import ABC, abstractmethod
-
-from quadpype.settings import GENERAL_SETTINGS_KEY
-from quadpype.settings.lib import create_user_profile
-
-# TODO QUAD: Use pype igniter logic instead of using duplicated code
-# disable lru cache in Python 2
-try:
-    from functools import lru_cache
-except ImportError:
-    def lru_cache(maxsize):
-        def max_size(func):
-            def wrapper(*args, **kwargs):
-                value = func(*args, **kwargs)
-                return value
-            return wrapper
-        return max_size
-
-# ConfigParser was renamed in python3 to configparser
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
+from functools import lru_cache
+import configparser
 
 import appdirs
 
-from quadpype.settings import get_user_settings
-import quadpype.settings.lib as sett_lib
-from quadpype.client.mongo import validate_mongo_connection
 
 _PLACEHOLDER = object()
+_REGISTRY = None
 
 
 class QuadPypeSecureRegistry:
@@ -390,25 +367,33 @@ class IniSettingRegistry(ASettingRegistry):
 class JSONSettingRegistry(ASettingRegistry):
     """Class using json file as storage."""
 
-    def __init__(self, name, path):
-        # type: (str, str) -> JSONSettingRegistry
+    def __init__(self, name, path, base_version=None):
         super(JSONSettingRegistry, self).__init__(name)
         #: str: name of registry file
         self._registry_file = os.path.join(path, "{}.json".format(name))
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        header = {
+
+        if not base_version:
+            base_version = "N/A"
+        version = os.getenv("QUADPYPE_VERSION", base_version)
+        if not isinstance(version, str):
+            version = str(version)
+
+        default_content = {
             "__metadata__": {
-                "quadpype-version": os.getenv("QUADPYPE_VERSION", "N/A"),
+                "quadpype_version": version,
                 "generated": now
             },
-            "registry": {}
+            "registry": {
+                "last_handled_event_timestamp": 0
+            }
         }
 
         if not os.path.exists(os.path.dirname(self._registry_file)):
             os.makedirs(os.path.dirname(self._registry_file), exist_ok=True)
         if not os.path.exists(self._registry_file):
             with open(self._registry_file, mode="w") as cfg:
-                json.dump(header, cfg, indent=4)
+                json.dump(default_content, cfg, indent=4)
 
     @lru_cache(maxsize=32)
     def _get_item(self, name):
@@ -490,7 +475,7 @@ class QuadPypeSettingsRegistry(JSONSettingRegistry):
 
     """
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, base_version=None):
         vendor = "quad"
         product = "quadpype"
         default_name = "quadpype_settings"
@@ -499,87 +484,12 @@ class QuadPypeSettingsRegistry(JSONSettingRegistry):
         if not name:
             name = default_name
         path = appdirs.user_data_dir(self.product, self.vendor)
-        super().__init__(name, path)
+        super().__init__(name, path, base_version)
 
 
-def _create_user_id(registry=None):
-    """Create a user identifier."""
-    from coolname import generate_slug
+def get_app_registry() -> QuadPypeSettingsRegistry:
+    global _REGISTRY
+    if not _REGISTRY:
+        _REGISTRY = QuadPypeSettingsRegistry()
 
-    if registry is None:
-        registry = QuadPypeSettingsRegistry()
-
-    new_id = generate_slug(3)
-
-    print("Created user id \"{}\"".format(new_id))
-
-    registry.set_item("user_id", new_id)
-
-    # Create a profile in the database
-    create_user_profile()
-
-    return new_id
-
-
-def get_user_id():
-    """Get user identifier.
-
-    Identifier is created if it does not exists yet.
-    """
-
-    registry = QuadPypeSettingsRegistry()
-    try:
-        return registry.get_item("user_id")
-    except ValueError:
-        return _create_user_id(registry=registry)
-
-
-def get_local_site_id():
-    """Get the local site identifier."""
-
-    # Check if the value is set on the env variable
-    # This is used for background syncing
-    if os.getenv("QUADPYPE_LOCAL_ID"):
-        return os.environ["QUADPYPE_LOCAL_ID"]
-
-    # Else using the user ID
-    return get_user_id()
-
-
-def change_quadpype_mongo_url(new_mongo_url):
-    """Change mongo url in pype registry.
-
-    Change of QuadPype mongo URL require restart of running pype processes or
-    processes using pype.
-    """
-
-    validate_mongo_connection(new_mongo_url)
-    key = "quadpypeMongo"
-    registry = QuadPypeSecureRegistry("mongodb")
-    existing_value = registry.get_item(key, None)
-    if existing_value is not None:
-        registry.delete_item(key)
-    registry.set_item(key, new_mongo_url)
-
-
-def get_quadpype_username():
-    """QuadPype username used for templates and publishing.
-
-    May be different from machine's username.
-
-    Always returns "QUADPYPE_USERNAME" environment if is set then tries local
-    settings and last option is to use `getpass.getuser()` which returns
-    machine username.
-    """
-
-    username = os.getenv("QUADPYPE_USERNAME")
-    if not username:
-        user_settings = get_user_settings()
-        username = (
-            user_settings
-            .get(GENERAL_SETTINGS_KEY, {})
-            .get("username")
-        )
-        if not username:
-            username = getpass.getuser()
-    return username
+    return _REGISTRY

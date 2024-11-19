@@ -440,7 +440,7 @@ class PublishableClip:
         else:
             self.marker_data["reviewTrack"] = None
 
-        # create pype tag on track_item and add data
+        # create QuadPype tag on track_item and add data
         fpipeline.imprint(self.current_segment, self.marker_data)
 
         return self.current_segment

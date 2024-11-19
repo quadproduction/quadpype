@@ -17,7 +17,7 @@ log = Logger.get_logger(__name__)
 
 
 def ensure_installed_host():
-    """Install resolve host with quadpype and return the registered host.
+    """Install resolve host with QuadPype and return the registered host.
 
     This function can be called multiple times without triggering an
     additional install.

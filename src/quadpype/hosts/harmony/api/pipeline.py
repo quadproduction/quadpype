@@ -167,8 +167,8 @@ def export_template(backdrops, nodes, filepath):
 
 
 def install():
-    """Install Pype as host config."""
-    print("Installing Pype config ...")
+    """Install QuadPype as host config."""
+    print("Installing QuadPype config ...")
 
     pyblish.api.register_host("harmony")
     pyblish.api.register_plugin_path(PUBLISH_PATH)

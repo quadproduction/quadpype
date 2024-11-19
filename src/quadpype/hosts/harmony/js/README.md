@@ -1,4 +1,4 @@
-## Pype - ToonBoom Harmony integration
+## QuadPype - ToonBoom Harmony integration
 
 ### Development
 

@@ -175,5 +175,5 @@ TemplateLoader.prototype.askForColumnsUpdate = function() {
         'No'));
 };
 
-// add self to Pype Loaders
+// add self to QuadPype Loaders
 PypeHarmony.Loaders.TemplateLoader = new TemplateLoader();

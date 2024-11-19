@@ -1,5 +1,5 @@
 import os
-from quadpype.settings import get_user_settings
+from quadpype.lib import get_user_settings
 
 # Constant key under which user settings are stored
 LOCAL_EXPERIMENTAL_KEY = "experimental_tools"

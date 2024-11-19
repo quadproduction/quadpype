@@ -153,7 +153,7 @@ class LoadClip(plugin.TimelineItemLoader):
             timeline.DeleteClips([timeline_item])
         else:
             # Resolve versions older than 18.5 can't delete clips via API
-            # so all we can do is just remove the pype marker to 'untag' it
+            # so all we can do is just remove the QuadPype marker to 'untag' it
             if lib.get_pype_marker(timeline_item):
                 # Note: We must call `get_pype_marker` because
                 # `delete_pype_marker` uses a global variable set by

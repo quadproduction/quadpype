@@ -442,13 +442,13 @@ def get_pype_timeline_item_by_name(name: str) -> object:
 
 def get_timeline_item_pype_tag(timeline_item):
     """
-    Get quadpype track item tag created by creator or loader plugin.
+    Get QuadPype track item tag created by creator or loader plugin.
 
     Attributes:
         trackItem (resolve.TimelineItem): resolve object
 
     Returns:
-        dict: quadpype tag data
+        dict: QuadPype tag data
     """
     return_tag = None
 
@@ -470,8 +470,7 @@ def get_timeline_item_pype_tag(timeline_item):
 
 
 def set_timeline_item_pype_tag(timeline_item, data=None):
-    """
-    Set quadpype track item tag to input timeline_item.
+    """Set QuadPype track item tag to input timeline_item.
 
     Attributes:
         trackItem (resolve.TimelineItem): resolve api object
@@ -481,7 +480,7 @@ def set_timeline_item_pype_tag(timeline_item, data=None):
     """
     data = data or dict()
 
-    # get available quadpype tag if any
+    # get available QuadPype tag if any
     tag_data = get_timeline_item_pype_tag(timeline_item)
 
     if self.pype_marker_workflow:
@@ -500,7 +499,7 @@ def set_timeline_item_pype_tag(timeline_item, data=None):
                 self.pype_tag_name, json.dumps(tag_data))
         else:
             tag_data = data
-            # if quadpype tag available then update with input data
+            # if QuadPype tag available then update with input data
             # add it to the input track item
             timeline_item.SetMetadata(self.pype_tag_name, json.dumps(tag_data))
 
@@ -757,8 +756,7 @@ def _validate_tc(x):
 
 
 def get_pype_clip_metadata(clip):
-    """
-    Get quadpype metadata created by creator plugin
+    """Get QuadPype metadata created by creator plugin
 
     Attributes:
         clip (resolve.TimelineItem): resolve's object

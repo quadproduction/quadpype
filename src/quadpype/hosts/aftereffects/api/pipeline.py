@@ -67,7 +67,7 @@ class AfterEffectsHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         return self._stub
 
     def install(self):
-        print("Installing Pype config...")
+        print("Installing QuadPype config...")
 
         pyblish.api.register_host("aftereffects")
         pyblish.api.register_plugin_path(PUBLISH_PATH)

@@ -1,6 +1,6 @@
+from quadpype.lib import get_user_settings
 from quadpype.settings import (
     get_global_settings,
-    get_user_settings,
     CORE_SETTINGS_KEY,
     GENERAL_SETTINGS_KEY
 )

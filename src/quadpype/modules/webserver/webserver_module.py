@@ -1,7 +1,7 @@
 """WebServerModule spawns aiohttp server in asyncio loop.
 
 Main usage of the module is in QuadPype tray where make sense to add ability
-of other modules to add theirs routes. Module which would want use that
+of other modules to add theirs routes. Module which would want to use that
 option must have implemented method `webserver_initialization` which must
 expect `WebServerManager` object where is possible to add routes or paths
 with handlers.
@@ -15,7 +15,7 @@ with predefined host and port and separated routes and logic.
 Running multiple servers in one process is not recommended and probably won't
 work as expected. It is because of few limitations connected to asyncio module.
 
-When module's `create_server_manager` is called it is also set environment
+When module's `_create_server_manager` is called it is also set environment
 variable "QUADPYPE_WEBSERVER_URL". Which should lead to root access point
 of server.
 """
@@ -60,7 +60,7 @@ class WebServerModule(QuadPypeModule, ITrayService):
                 )
 
     def tray_init(self):
-        self.create_server_manager()
+        self._create_server_manager()
         self._add_resources_statics()
         self._add_listeners()
 
@@ -108,7 +108,7 @@ class WebServerModule(QuadPypeModule, ITrayService):
 
         return WebServerManager(port, host)
 
-    def create_server_manager(self):
+    def _create_server_manager(self):
         if self.server_manager:
             return
 

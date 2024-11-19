@@ -5,7 +5,7 @@ from quadpype_modules.ftrack.lib import BaseAction
 from quadpype.lib.applications import (
     ApplicationManager,
     ApplicationLaunchFailed,
-    ApplictionExecutableNotFound,
+    ApplicationExecutableNotFound,
     CUSTOM_LAUNCH_APP_GROUPS
 )
 
@@ -221,7 +221,7 @@ class AppplicationsAction(BaseAction):
                 task_name=task_name
             )
 
-        except ApplictionExecutableNotFound as exc:
+        except ApplicationExecutableNotFound as exc:
             self.log.warning(exc.exc_msg)
             return {
                 "success": False,

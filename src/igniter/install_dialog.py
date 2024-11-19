@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Show dialog for choosing central pype repository."""
+"""Show dialog for choosing central QuadPype repository."""
 import os
 import sys
 import re
@@ -16,7 +16,7 @@ from .tools import (
 )
 
 from .nice_progress_bar import NiceProgressBar
-from .user_settings import QuadPypeSecureRegistry
+from .registry import QuadPypeSecureRegistry
 from .tools import load_stylesheet
 from .version import __version__
 

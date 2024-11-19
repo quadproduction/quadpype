@@ -319,14 +319,14 @@ def get_metadata(project_name, _log=None):
 
 def get_segment_data_marker(segment, with_marker=None):
     """
-    Get quadpype track item tag created by creator or loader plugin.
+    Get QuadPype track item tag created by creator or loader plugin.
 
     Attributes:
         segment (flame.PySegment): flame api object
         with_marker (bool)[optional]: if true it will return also marker object
 
     Returns:
-        dict: quadpype tag data
+        dict: QuadPype tag data
 
     Returns(with_marker=True):
         flame.PyMarker, dict
@@ -346,7 +346,7 @@ def get_segment_data_marker(segment, with_marker=None):
 
 def set_segment_data_marker(segment, data=None):
     """
-    Set quadpype track item tag to input segment.
+    Set QuadPype track item tag to input segment.
 
     Attributes:
         segment (flame.PySegment): flame api object
@@ -359,7 +359,7 @@ def set_segment_data_marker(segment, data=None):
     marker_data = get_segment_data_marker(segment, True)
 
     if marker_data:
-        # get available quadpype tag if any
+        # Get available QuadPype tag if any
         marker, tag_data = marker_data
         # update tag data with new data
         tag_data.update(data)
@@ -405,7 +405,7 @@ def get_publish_attribute(segment):
 
 
 def create_segment_data_marker(segment):
-    """ Create quadpype marker on a segment.
+    """ Create QuadPype marker on a segment.
 
     Attributes:
         segment (flame.PySegment): flame api object
@@ -1188,7 +1188,6 @@ class TimeEffectMetadata(object):
                     [0]["Channel"][0]["Value"][0]["_text"]
                 ) / 100
             elif mode == 1:  # timewarp
-                print("timing")
                 r_data[self._retime_modes[mode]] = self._get_anim_keys(
                     tw_setup_state["TW_Timing"]
                 )

@@ -588,7 +588,7 @@ class PublishClip:
         kwargs (optional): additional data needed for rename=True (presets)
 
     Returns:
-        hiero.core.TrackItem: hiero track item object with quadpype tag
+        hiero.core.TrackItem: hiero track item object with QuadPype tag
     """
     vertical_clip_match = {}
     tag_data = {}
@@ -677,21 +677,21 @@ class PublishClip:
         )
         self.tag_data["folder_path"] = folder_path
 
-        # create new name for track item
+        # Create new name for track item
         if not lib.pype_marker_workflow:
-            # create compound clip workflow
+            # Create compound clip workflow
             lib.create_compound_clip(
                 self.timeline_item_data,
                 self.tag_data["asset_name"],
                 self.mp_folder
             )
 
-            # add timeline_item_data selection to tag
+            # Add timeline_item_data selection to tag
             self.tag_data.update({
                 "track_data": self.timeline_item_data["track"]
             })
 
-        # create quadpype tag on timeline_item and add data
+        # Create a QuadPype tag on timeline_item and add data
         lib.imprint(self.timeline_item, self.tag_data)
 
         return self.timeline_item

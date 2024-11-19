@@ -17,7 +17,7 @@ from quadpype.modules.kitsu.utils.credentials import validate_credentials
 
 
 def sync_zou(login: str, password: str):
-    """Synchronize Zou database (Kitsu backend) with quadpype database.
+    """Synchronize Zou database (Kitsu backend) with QuadPype database.
     This is an utility function to help updating zou data with OP's, it may not
     handle correctly all cases, a human intervention might
     be required after all.

@@ -1,5 +1,5 @@
+from quadpype.lib import get_user_profile
 from quadpype.modules import QuadPypeModule, ITrayAction
-from quadpype.settings.lib import get_user_profile
 
 
 class ControlPanelAction(QuadPypeModule, ITrayAction):

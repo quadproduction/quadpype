@@ -21,7 +21,7 @@ from .python_module_tools import import_filepath
 # Functions independent on QuadPypeVersion
 # ----------------------------------------
 def get_quadpype_version():
-    """Version of pype that is currently used."""
+    """Version of QuadPype that is currently used."""
     return quadpype.version.__version__
 
 
@@ -119,13 +119,6 @@ def is_running_staging():
         return True
 
     return is_staging_enabled()
-
-
-def is_version_checking_popup_enabled():
-    value = os.getenv("QUADPYPE_VERSION_CHECK_POPUP", 'False').lower()
-    if value == "true" or value == "1":
-        return True
-    return False
 
 
 # ----------------------------------------
@@ -235,7 +228,7 @@ def is_current_version_studio_latest():
         bool: True when is using studio
     """
     output = None
-    # Skip if is not running from build or build does not support version
+    # Skip if it is not running from build or build does not support version
     #   control or path to folder with zip files is not accessible
     if (
         is_running_locally()

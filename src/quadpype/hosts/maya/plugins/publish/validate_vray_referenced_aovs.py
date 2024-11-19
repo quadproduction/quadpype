@@ -16,7 +16,7 @@ class ValidateVrayReferencedAOVs(pyblish.api.InstancePlugin,
 
     This will check if there are AOVs pulled from references. If
     `Vray Use Referenced Aovs` is checked on render instance, u must add those
-    manually to Render Elements as Pype will expect them to be rendered.
+    manually to Render Elements as QuadPype will expect them to be rendered.
 
     """
 
@@ -46,9 +46,9 @@ class ValidateVrayReferencedAOVs(pyblish.api.InstancePlugin,
                 self.log.warning((
                     "Referenced AOVs are enabled in Vray "
                     "Render Settings and are detected in scene, but "
-                    "Pype render instance option for referenced AOVs is "
+                    "QuadPype render instance option for referenced AOVs is "
                     "disabled. Those AOVs will be rendered but not published "
-                    "by Pype."
+                    "by QuadPype."
                 ))
                 self.log.warning(", ".join(ref_aovs))
         else:

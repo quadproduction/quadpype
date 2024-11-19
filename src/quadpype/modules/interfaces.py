@@ -131,7 +131,7 @@ class IPluginPaths(QuadPypeInterface):
 
 
 class ITrayModule(QuadPypeInterface):
-    """Module has special procedures when used in Pype Tray.
+    """Module has special procedures when used in QuadPype Tray.
 
     IMPORTANT:
     The module still must be usable if it is not used in the tray, even if it

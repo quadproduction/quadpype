@@ -135,7 +135,7 @@ class OrderGroups:
 
 def env_variable_to_bool(env_key, default=False):
     """Boolean based on environment variable value."""
-    # TODO: move to pype lib
+    # TODO: move to QuadPype lib
     value = os.getenv(env_key)
     if value is not None:
         value = value.lower()

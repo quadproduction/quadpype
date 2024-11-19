@@ -11,12 +11,8 @@ while ((Split-Path $PATH_QUADPYPE_ROOT -Leaf) -ne "src") {
     $PATH_QUADPYPE_ROOT = (get-item $PATH_QUADPYPE_ROOT).Parent.FullName
 }
 
-if ($DEV) {
-    $QUADPYPE_MONGO = "mongodb://localhost:27017"
-} elseif ($MONGO_URI) {
+if ($MONGO_URI) {
     $QUADPYPE_MONGO = $MONGO_URI
-} else {
-    $QUADPYPE_MONGO = [System.Environment]::GetEnvironmentVariable("QUADPYPE_MONGO", [System.EnvironmentVariableTarget]::User)
 }
 
 if (($QUADPYPE_MONGO -eq "")) {
@@ -27,7 +23,6 @@ if (($QUADPYPE_MONGO -eq "")) {
     exit 1
 }
 
-[System.Environment]::SetEnvironmentVariable("QUADPYPE_MONGO", $QUADPYPE_MONGO, [System.EnvironmentVariableTarget]::User)
 [System.Environment]::SetEnvironmentVariable("QUADPYPE_ROOT", $PATH_QUADPYPE_ROOT, [System.EnvironmentVariableTarget]::User)
 [System.Environment]::SetEnvironmentVariable("PYENV_ROOT", (Resolve-Path -Path "~\.pyenv"), [System.EnvironmentVariableTarget]::User)
 
@@ -39,7 +34,7 @@ if (Test-Path -Path $PATH_ADDITIONAL_ENV_FILE) {
     Remove-Item $PATH_ADDITIONAL_ENV_FILE -Force -ErrorAction SilentlyContinue | Out-Null
 }
 
-New-Item "$($PATH_ADDITIONAL_ENV_FILE)" -ItemType File -Value "QUADPYPE_MONGO=$QUADPYPE_MONGO$([Environment]::NewLine)QUADPYPE_ROOT=$PATH_QUADPYPE_ROOT" | Out-Null
+New-Item "$($PATH_ADDITIONAL_ENV_FILE)" -ItemType File -Value "QUADPYPE_ROOT=$PATH_QUADPYPE_ROOT" | Out-Null
 
 
 # Launch the activate script

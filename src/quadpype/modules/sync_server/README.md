@@ -1,6 +1,6 @@
 Synchronization server
 ---------------------
-This server is scheduled at start of Pype, it periodically checks avalon DB
+This server is scheduled at start of QuadPype, it periodically checks avalon DB
 for 'representation' records which have in theirs files.sites record with
 name: 'gdrive' (or any other site name from 'gdrive.json') without
 field 'created_dt'.
@@ -33,7 +33,7 @@ to name of site you set in previous step.
 
 - Check that project setting is enabled (in this `global.json` file)
 
-- Start Pype and publish
+- Start QuadPype and publish
 
 My published file is not syncing:
 --------------------------------
@@ -50,7 +50,7 @@ the problem mentioned in 'error' field, delete 'tries' field.
 I want to sync my already published files:
 -----------------------------------------
 
-- Configure your Pype for syncing (see first section of Howtos).
+- Configure your QuadPype for syncing (see first section of Howtos).
 - Manually add skeleton {name: "MY_CONFIGURED_REMOTE_SITE"} to all
 representation.files.sites:
 `db.getCollection('MY_PROJECT').update({type:"representation"},

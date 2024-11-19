@@ -177,7 +177,7 @@ def get_main_menu_custom_ui_actions():
     Returns:
         list: menu object
     """
-    # install quadpype and the host
+    # install QuadPype and the host
     quadpype_install()
 
     return _build_app_menu("FlameMenuProjectConnect")
@@ -189,7 +189,7 @@ def get_timeline_custom_ui_actions():
     Returns:
         list: menu object
     """
-    # install quadpype and the host
+    # install QuadPype and the host
     quadpype_install()
 
     return _build_app_menu("FlameMenuTimeline")
@@ -201,7 +201,7 @@ def get_batch_custom_ui_actions():
     Returns:
         list: menu object
     """
-    # install quadpype and the host
+    # install QuadPype and the host
     quadpype_install()
 
     return _build_app_menu("FlameMenuUniversal")
@@ -213,7 +213,7 @@ def get_media_panel_custom_ui_actions():
     Returns:
         list: menu object
     """
-    # install quadpype and the host
+    # install QuadPype and the host
     quadpype_install()
 
     return _build_app_menu("FlameMenuUniversal")

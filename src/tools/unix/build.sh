@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Build Pype using existing virtual environment.
+# Build QuadPype using existing virtual environment.
 
 # Colors for terminal
 

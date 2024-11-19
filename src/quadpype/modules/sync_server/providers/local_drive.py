@@ -4,8 +4,7 @@ import shutil
 import threading
 import time
 
-from quadpype.lib import Logger
-from quadpype.lib.user_settings import get_local_site_id
+from quadpype.lib import Logger, get_local_site_id
 from quadpype.pipeline import Anatomy
 from .abstract_provider import AbstractProvider
 

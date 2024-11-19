@@ -156,7 +156,7 @@ def ls():
 
 
 def parse_container(timeline_item, validate=True):
-    """Return container data from timeline_item's quadpype tag.
+    """Return container data from timeline_item's QuadPype tag.
 
     Args:
         timeline_item (hiero.core.TrackItem): A containerised track item.
@@ -193,7 +193,7 @@ def parse_container(timeline_item, validate=True):
 
 
 def update_container(timeline_item, data=None):
-    """Update container data to input timeline_item's quadpype tag.
+    """Update container data to input timeline_item's QuadPype tag.
 
     Args:
         timeline_item (hiero.core.TrackItem): A containerised track item.
@@ -266,7 +266,7 @@ def remove_instance(instance):
     for timeline_item_data in selected_timeline_items:
         timeline_item = timeline_item_data["clip"]["item"]
 
-        # get quadpype tag data
+        # Get the QuadPype tag data
         tag_data = lib.get_timeline_item_pype_tag(timeline_item)
         _ti_id = tag_data.get("uuid")
         if _ti_id == instance_id:
@@ -291,7 +291,7 @@ def list_instances():
         timeline_item = timeline_item_data["clip"]["item"]
         ti_name = timeline_item.GetName().split(".")[0]
 
-        # get quadpype tag data
+        # Get QuadPype tag data
         tag_data = lib.get_timeline_item_pype_tag(timeline_item)
 
         if tag_data:

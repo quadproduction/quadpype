@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """Script to fix frozen dependencies.
 
-Because Pype code needs to run under different versions of Python interpreter
+Because QuadPype code needs to run under different versions of Python interpreter
 (yes, even Python 2) we need to include all dependencies as source code
 without Python's system stuff. Cx-freeze puts everything into lib and compile
 it as .pyc/.pyo files and that doesn't work for hosts like Maya 2020 with
 their own Python interpreter and libraries.
 
-This script will take ``site-packages`` and copy them to built Pype under
+This script will take ``site-packages`` and copy them to built QuadPype under
 ``dependencies`` directory. It will then compare stuff inside with ``lib``
-folder in  frozen Pype, removing duplicities from there.
+folder in frozen QuadPype, removing duplicities from there.
 
 This must be executed after build finished and it is done by build PowerShell
 script.

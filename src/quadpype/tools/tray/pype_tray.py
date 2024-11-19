@@ -4,6 +4,7 @@ import sys
 import atexit
 
 import platform
+from typing import Optional
 
 from qtpy import QtCore, QtGui, QtWidgets
 
@@ -13,16 +14,14 @@ from quadpype.lib import (
     Logger,
     get_quadpype_execute_args,
     run_detached_process,
+    get_quadpype_username
 )
-from quadpype.lib.user_settings import get_quadpype_username
 from quadpype.lib.quadpype_version import (
     op_version_control_available,
     get_expected_version,
     get_installed_version,
     is_current_version_studio_latest,
     is_current_version_higher_than_expected,
-    is_version_checking_popup_enabled,
-    is_running_locally,
     get_quadpype_version,
     is_running_staging,
     is_staging_enabled
@@ -41,46 +40,16 @@ from quadpype.tools.utils import (
     paint_image_with_color,
     get_warning_pixmap,
     get_quadpype_qt_app,
+    PixmapLabel
 )
 
 from .pype_info_widget import PypeInfoWidget
+from ...events import create_event_handler
 
+TRAY_ICON_WIDGET = None
 
-# TODO PixmapLabel should be moved to 'utils' in other future PR so should be
-#   imported from there
-class PixmapLabel(QtWidgets.QLabel):
-    """Label resizing image to height of font."""
-    def __init__(self, pixmap, parent):
-        super().__init__(parent)
-        self._empty_pixmap = QtGui.QPixmap(0, 0)
-        self._source_pixmap = pixmap
-
-    def set_source_pixmap(self, pixmap):
-        """Change source image."""
-        self._source_pixmap = pixmap
-        self._set_resized_pix()
-
-    def _get_pix_size(self):
-        size = self.fontMetrics().height() * 3
-        return size, size
-
-    def _set_resized_pix(self):
-        if self._source_pixmap is None:
-            self.setPixmap(self._empty_pixmap)
-            return
-        width, height = self._get_pix_size()
-        self.setPixmap(
-            self._source_pixmap.scaled(
-                width,
-                height,
-                QtCore.Qt.KeepAspectRatio,
-                QtCore.Qt.SmoothTransformation
-            )
-        )
-
-    def resizeEvent(self, event):
-        self._set_resized_pix()
-        super(PixmapLabel, self).resizeEvent(event)
+g_tray_starter = None
+g_splash_screen = None
 
 
 class VersionUpdateDialog(QtWidgets.QDialog):
@@ -335,29 +304,26 @@ class TrayManager:
         self.main_window = main_window
         self.pype_info_widget = None
         self._restart_action = None
+        self._is_init_completed = False
 
         self.log = Logger.get_logger(self.__class__.__name__)
 
         global_settings = get_global_settings()
         self.module_settings = global_settings[MODULES_SETTINGS_KEY]
 
-        version_check_interval = global_settings[CORE_SETTINGS_KEY].get(
-            "version_check_interval"
-        )
-        if version_check_interval is None:
-            version_check_interval = 5
-        self._version_check_interval = version_check_interval * 60 * 1000
-
         self.modules_manager = TrayModulesManager()
 
         self.errors = []
 
-        self._version_check_timer = None
         self._version_dialog = None
 
         self.main_thread_timer = None
         self._main_thread_callbacks = collections.deque()
         self._execution_in_progress = None
+
+    @property
+    def is_init_completed(self):
+        return self._is_init_completed
 
     @property
     def doubleclick_callback(self):
@@ -370,16 +336,6 @@ class TrayManager:
         callback = self.doubleclick_callback
         if callback:
             self.execute_in_main_thread(callback)
-
-    def _on_version_check_timer(self):
-        # Check if is running from build and stop future validations if yes
-        if not is_version_checking_popup_enabled() or \
-                is_running_locally() or \
-                not op_version_control_available():
-            self._version_check_timer.stop()
-            return
-
-        self.validate_quadpype_version()
 
     def validate_quadpype_version(self):
         is_running_latest_version = is_current_version_studio_latest()
@@ -529,30 +485,22 @@ class TrayManager:
 
         self.main_thread_timer = main_thread_timer
 
-        version_check_timer = QtCore.QTimer()
-        if self._version_check_interval > 0:
-            version_check_timer.timeout.connect(self._on_version_check_timer)
-            version_check_timer.setInterval(self._version_check_interval)
-            version_check_timer.start()
-        self._version_check_timer = version_check_timer
-
         # For storing missing settings dialog
         self._settings_validation_dialog = None
 
-        self.execute_in_main_thread(self._startup_validations)
+        self._is_init_completed = True
 
-    def _startup_validations(self):
+        self.execute_in_main_thread(self._validations)
+
+    def _validations(self):
         """Run possible startup validations."""
-        # Trigger version validation on start
-        self._version_check_timer.timeout.emit()
-
-        # SLOW: This operation is very slow
-        self._validate_settings_defaults()
+        # TODO: Need a better way of validating settings
+        # SLOW: This operation is very slow, so it's currently disabled
+        # self._validate_settings_defaults()
 
         if not op_version_control_available():
             dialog = BuildVersionDialog()
             dialog.exec_()
-
         elif is_staging_enabled() and not is_running_staging():
             dialog = ProductionStagingDialog()
             dialog.exec_()
@@ -618,7 +566,6 @@ class TrayManager:
         self.tray_widget.showMessage(*args, **kwargs)
 
     def _add_version_item(self):
-
         subversion = os.getenv("QUADPYPE_SUBVERSION")
         client_name = os.getenv("QUADPYPE_CLIENT")
 
@@ -654,7 +601,7 @@ class TrayManager:
         Args:
             use_expected_version(bool): QuadPype version is set to expected
                 version.
-            reset_version(bool): QuadPype version is cleaned up so igniters
+            reset_version(bool): QuadPype version is cleaned up so the igniter
                 logic will decide which version will be used.
         """
         args = get_quadpype_execute_args()
@@ -717,7 +664,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     :type parent: QtWidgets.QMainWindow
     """
 
-    doubleclick_time_ms = 500
+    doubleclick_time_ms = 400
 
     def __init__(self, parent):
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
@@ -726,7 +673,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
         self._exited = False
 
-        # Store parent - QtWidgets.QMainWindow()
+        # Store parent (the app QMainWindow)
         self.parent = parent
 
         # Setup menu in Tray
@@ -741,10 +688,9 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
         atexit.register(self.exit)
 
-        # Catch activate event for left click if not on MacOS
-        #   - MacOS has this ability by design and is harder to modify this
-        #       behavior
+        # Add ability for left-click on the tray icon
         if platform.system().lower() == "darwin":
+            # Since macOS has this ability by design we can skip
             return
 
         self.activated.connect(self.on_systray_activated)
@@ -757,16 +703,12 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self._doubleclick = False
         self._click_pos = None
 
-        self._initializing_modules = False
-
     @property
-    def initializing_modules(self):
-        return self._initializing_modules
+    def is_init_completed(self):
+        return self.tray_man.is_init_completed
 
     def initialize_modules(self):
-        self._initializing_modules = True
         self.tray_man.initialize_modules()
-        self._initializing_modules = False
 
     def _click_timer_timeout(self):
         self._click_timer.stop()
@@ -811,66 +753,119 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         QtCore.QCoreApplication.exit()
 
 
-class PypeTrayStarter(QtCore.QObject):
+class QuadPypeTrayStarter(QtCore.QObject):
     def __init__(self, app):
+        super().__init__()
+
         app.setQuitOnLastWindowClosed(False)
         self._app = app
+        self._event_handler = None
         self._splash = None
+        self._splash_animation = None
 
         main_window = QtWidgets.QMainWindow()
-        tray_widget = SystemTrayIcon(main_window)
+        global TRAY_ICON_WIDGET
+        TRAY_ICON_WIDGET = SystemTrayIcon(main_window)
 
-        start_timer = QtCore.QTimer()
-        start_timer.setInterval(100)
-        start_timer.start()
+        launch_ops_timed_loop = QtCore.QTimer()
+        launch_ops_timed_loop.setInterval(100)
+        launch_ops_timed_loop.start()
 
-        start_timer.timeout.connect(self._on_start_timer)
+        launch_ops_timed_loop.timeout.connect(self._execute_launch_operations)
 
         self._main_window = main_window
-        self._tray_widget = tray_widget
-        self._timer_counter = 0
-        self._start_timer = start_timer
+        self._tray_widget = TRAY_ICON_WIDGET
+        self._launch_phase = 0
+        self._launch_ops_timed_loop = launch_ops_timed_loop
 
-    def _on_start_timer(self):
-        if self._timer_counter == 0:
-            self._timer_counter += 1
-            splash = self._get_splash()
-            splash.show()
+    def _execute_launch_operations(self):
+        if self._launch_phase == 0:
+            self._launch_phase += 1
+
             self._tray_widget.show()
+
+            # Create the splash screen
+            self._splash = self._create_splash()
+            self._splash.show()
+
+            # Create the opacity effect
+            opacity_effect = QtWidgets.QGraphicsOpacityEffect(self._splash)
+            opacity_effect.setOpacity(0.0)
+            self._splash.setGraphicsEffect(opacity_effect)
+
+            # Create the fade in animation
+            self._splash_animation = QtCore.QPropertyAnimation(opacity_effect, b"opacity")
+            self._splash_animation.setDuration(500)  # Duration in milliseconds
+            self._splash_animation.setStartValue(0.0)
+            self._splash_animation.setEndValue(1.0)
+            self._splash_animation.setEasingCurve(QtCore.QEasingCurve.InQuad)
+
+            # Start animation
+            self._splash_animation.start(QtCore.QPropertyAnimation.DeleteWhenStopped)
+
+            # Wait until the fade in animation is done
+            while self._splash_animation.state() != QtCore.QAbstractAnimation.Stopped:
+                QtWidgets.QApplication.processEvents()
+
             # Make sure tray and splash are painted out
             QtWidgets.QApplication.processEvents()
+        elif self._launch_phase == 1:
+            self._launch_phase += 1
 
-        elif self._timer_counter == 1:
             # Second processing of events to make sure splash is painted
             QtWidgets.QApplication.processEvents()
-            self._timer_counter += 1
+
+            # Start the initialization of all the enabled modules
             self._tray_widget.initialize_modules()
+        elif self._tray_widget.is_init_completed:
+            # QuadPype is fully initialized
 
-        elif not self._tray_widget.initializing_modules:
-            splash = self._get_splash()
-            splash.hide()
-            self._start_timer.stop()
+            # We can now create the event handler to receive info and commands
+            self._event_handler = create_event_handler()
+            self._event_handler.start()
 
-    def _get_splash(self):
-        if self._splash is None:
-            self._splash = self._create_splash()
-        return self._splash
+            # Fade out the splash screen
+            opacity_effect = QtWidgets.QGraphicsOpacityEffect(self._splash)
+            self._splash.setGraphicsEffect(opacity_effect)
 
-    def _create_splash(self):
+            # Create the fade out animation
+            self._splash_animation = QtCore.QPropertyAnimation(opacity_effect, b"opacity")
+            self._splash_animation.setDuration(500)  # Duration in milliseconds
+            self._splash_animation.setStartValue(1.0)
+            self._splash_animation.setEndValue(0.0)
+            self._splash_animation.setEasingCurve(QtCore.QEasingCurve.OutQuad)
+
+            # Hide it at the end of the animation
+            self._splash_animation.finished.connect(self._splash.hide)
+
+            # Start animation
+            self._splash_animation.start(QtCore.QPropertyAnimation.DeleteWhenStopped)
+
+            # Wait until the fade out animation is done
+            while self._splash_animation.state() != QtCore.QAbstractAnimation.Stopped:
+                QtWidgets.QApplication.processEvents()
+
+            # Launch is completed, stop the timed loop
+            self._launch_ops_timed_loop.stop()
+
+    @staticmethod
+    def _create_splash():
         splash_pix = QtGui.QPixmap(resources.get_app_splash_filepath())
         splash = QtWidgets.QSplashScreen(splash_pix)
-        splash.setMask(splash_pix.mask())
         splash.setEnabled(False)
         splash.setWindowFlags(
             QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint
         )
-        return splash
 
+        return splash
 
 def main():
     app = get_quadpype_qt_app()
 
-    starter = PypeTrayStarter(app)
+    global g_tray_starter
+    # Storing the tray starter in a global variable
+    # to ensure the timed loop will continue running properly
+    g_tray_starter = QuadPypeTrayStarter(app)
 
     if os.name == "nt":
         import ctypes
@@ -879,3 +874,7 @@ def main():
         )
 
     sys.exit(app.exec_())
+
+
+def get_tray_icon_widget() -> Optional[SystemTrayIcon]:
+    return TRAY_ICON_WIDGET

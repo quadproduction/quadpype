@@ -13,7 +13,6 @@ from quadpype import PACKAGE_DIR
 from quadpype.settings import (
     get_global_settings,
     get_project_settings,
-    get_user_settings,
     APPS_SETTINGS_KEY,
     CORE_SETTINGS_KEY,
     ENV_SETTINGS_KEY,
@@ -26,7 +25,7 @@ from quadpype.settings.constants import (
 )
 from .log import Logger
 from .profiles_filtering import filter_profiles
-from .user_settings import get_quadpype_username
+from .user import get_quadpype_username, get_user_settings
 
 from .python_module_tools import (
     modules_from_path,
@@ -171,7 +170,7 @@ class ApplicationNotFound(Exception):
         )
 
 
-class ApplictionExecutableNotFound(Exception):
+class ApplicationExecutableNotFound(Exception):
     """Defined executable paths are not available on the machine."""
 
     def __init__(self, application):
@@ -534,7 +533,7 @@ class ApplicationManager:
         """
 
         if not launch_context.executable:
-            raise ApplictionExecutableNotFound(launch_context.application)
+            raise ApplicationExecutableNotFound(launch_context.application)
         return launch_context.launch()
 
     def launch(self, app_name, **data):
@@ -551,7 +550,7 @@ class ApplicationManager:
         Raises:
             ApplicationNotFound: Application was not found by entered
                 argument `app_name`.
-            ApplictionExecutableNotFound: Executables in application definition
+            ApplicationExecutableNotFound: Executables in application definition
                 were not found on this machine.
             ApplicationLaunchFailed: Something important for application launch
                 failed. Exception should contain explanation message,

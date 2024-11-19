@@ -860,7 +860,7 @@ class AbstractTemplateBuilder(ABC):
         solved_path = os.path.normpath(solved_path)
         if not os.path.exists(solved_path):
             raise TemplateNotFound(
-                "Template found in quadpype settings for task '{}' with host "
+                "Template found in QuadPype settings for task '{}' with host "
                 "'{}' does not exists. (Not found : {})".format(
                     task_name, host_name, solved_path))
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Main entry point for Pype command."""
+"""Main entry point for QuadPype command."""
 from . import cli
 import sys
 import traceback

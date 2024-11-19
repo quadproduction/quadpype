@@ -17,7 +17,7 @@ log = logging.getLogger("quadpype.hosts.houdini.shelves")
 
 def generate_shelves():
     """This function generates complete shelves from shelf set to tools
-    in Houdini from quadpype project settings houdini shelf definition.
+    in Houdini from QuadPype project settings houdini shelf definition.
     """
     current_os = platform.system().lower()
 

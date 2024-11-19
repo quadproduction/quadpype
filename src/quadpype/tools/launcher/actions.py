@@ -7,7 +7,7 @@ from quadpype import style
 from quadpype import resources
 from quadpype.lib import (
     Logger,
-    ApplictionExecutableNotFound,
+    ApplicationExecutableNotFound,
     ApplicationLaunchFailed
 )
 from quadpype.pipeline import (
@@ -116,7 +116,7 @@ class ApplicationAction(LauncherAction):
                 **self.data
             )
 
-        except ApplictionExecutableNotFound as exc:
+        except ApplicationExecutableNotFound as exc:
             details = exc.details
             msg = exc.msg
             log_msg = str(msg)
