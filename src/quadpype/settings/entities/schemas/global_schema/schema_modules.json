@@ -1,34 +1,56 @@
 {
     "key": "modules",
     "type": "dict",
-    "label": "Modules",
+    "label": "Add-ons",
     "collapsible": true,
     "is_file": true,
     "children": [
         {
-            "key" : "addon",
+            "key" : "custom_addon",
             "type" : "dict",
-            "label": "QuadPype AddOn",
+            "label": "Custom Add-on",
             "use_label_wrap": true,
             "collapsible": true,
             "children": [
                 {
                     "type": "path",
-                    "key": "addon_paths",
-                    "label": "Paths",
+                    "key": "versions_dir",
+                    "label": "Versions Folder",
                     "multiplatform": true,
                     "multipath": true,
                     "require_restart": true
                 },
                 {
+                    "type": "label",
+                    "label": "Define the version that should be used. _Keep empty to use latest available version._"
+                },
+                {
+                    "type": "addon-versions-text",
+                    "key": "production_version",
+                    "label": "Production Version"
+                },
+                {
+                    "type": "addon-versions-text",
+                    "key": "staging_version",
+                    "label": "Staging Version"
+                },
+                {
                     "type": "boolean",
                     "key": "retrieve_locally",
-                    "label": "Retrieve AddOn Paths Locally"
+                    "label": "Copy Version Locally"
+                },
+                {
+                    "type": "label",
+                    "label": "Copying the version on the user machine remove latency."
                 }
             ]
         },
         {
             "type": "separator"
+        },
+        {
+            "type": "label",
+            "label": "Shipped Add-ons"
         },
         {
             "type": "dict",

@@ -38,19 +38,12 @@
             }
         },
         {
-            "type": "boolean",
-            "key": "access_restricted",
-            "label": "Restrict settings access (admins only)",
-            "require_restart": true
-
-        },
-        {
             "type": "splitter"
         },
         {
             "type": "boolean",
             "key": "windows_can_stay_on_top",
-            "label": "Allow windows to stay on top"
+            "label": "Allow Windows To Stay On Top"
         },
         {
             "type": "splitter"
@@ -67,7 +60,7 @@
         {
             "type": "boolean",
             "key": "log_to_server",
-            "label": "Log to mongo"
+            "label": "Log to Database"
         },
         {
             "type": "dict",
@@ -174,12 +167,12 @@
         },
         {
             "type": "collapsible-wrap",
-            "label": "QuadPype deployment control",
+            "label": "QuadPype Deployment Control",
             "collapsible": true,
             "children": [
                 {
                     "type": "label",
-                    "label": "Specify the location accessible by all machines to check for the QuadPype zip versions."
+                    "label": "Specify the location (accessible by all machines) to check for QuadPype ZIP patches."
                 },
                 {
                     "type": "path",
@@ -191,7 +184,7 @@
                 },
                 {
                     "type": "label",
-                    "label": "Define custom location for artist machine where to unzip versions of QuadPype code. By default it's in user app data folder."
+                    "label": "Define custom location for artist machine where to unzip versions of QuadPype code. _By default it's in user app data folder_."
                 },
                 {
                     "type": "path",
@@ -206,17 +199,17 @@
                 },
                 {
                     "type": "label",
-                    "label": "Define explicit QuadPype version that should be used. Keep empty to use latest available version."
+                    "label": "Define the version that should be used. _Keep empty to use latest available version._"
                 },
                 {
                     "type": "versions-text",
                     "key": "production_version",
-                    "label": "Production version"
+                    "label": "Production Version"
                 },
                 {
                     "type": "versions-text",
                     "key": "staging_version",
-                    "label": "Staging version"
+                    "label": "Staging Version"
                 },
                 {
                     "type": "splitter"

@@ -505,15 +505,15 @@ class PasswordWidget(TextWidget):
         self.input_field.setEnabled(not self._read_only)
 
 
-class QuadPypeVersionText(TextWidget):
+class VersionText(TextWidget):
     def __init__(self, *args, **kwargs):
         self._info_widget = None
         super().__init__(*args, **kwargs)
 
     def create_ui(self):
-        super(QuadPypeVersionText, self).create_ui()
+        super(VersionText, self).create_ui()
         info_widget = QtWidgets.QLabel(self)
-        info_widget.setObjectName("QuadPypeVersionLabel")
+        info_widget.setObjectName("VersionLabel")
         self.content_layout.addWidget(info_widget, 1)
 
         self._info_widget = info_widget
@@ -524,12 +524,12 @@ class QuadPypeVersionText(TextWidget):
         tooltip = ""
         state = None
         if self._is_invalid:
-            message = "Invalid QuadPype version format"
+            message = "Invalid version format"
 
         elif value == "":
             message = "Use latest available version"
             tooltip = (
-                "Latest version from QuadPype zip repository will be used"
+                "Latest version from zip repository will be used"
             )
 
         elif value in self.entity.value_hints:
@@ -553,7 +553,7 @@ class QuadPypeVersionText(TextWidget):
         self.set_style_property(self._info_widget, "state", state)
 
     def set_entity_value(self):
-        super(QuadPypeVersionText, self).set_entity_value()
+        super(VersionText, self).set_entity_value()
         self._invalidate()
         self._update_info_widget()
 
@@ -580,7 +580,7 @@ class QuadPypeVersionText(TextWidget):
         self._is_invalid = is_invalid
 
     def _on_entity_change(self):
-        super(QuadPypeVersionText, self)._on_entity_change()
+        super(VersionText, self)._on_entity_change()
         self._refresh_completer()
 
 

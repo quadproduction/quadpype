@@ -34,8 +34,8 @@ from quadpype.settings.entities.exceptions import (
     StudioDefaultsNotDefined,
     SchemaError
 )
-from quadpype.settings.entities.op_version_entity import (
-    QuadPypeVersionInput
+from quadpype.settings.entities.version_entity import (
+    VersionInput
 )
 
 from quadpype.settings import (
@@ -76,7 +76,7 @@ from .item_widgets import (
     DictImmutableKeysWidget,
     TextWidget,
     PasswordWidget,
-    QuadPypeVersionText,
+    VersionText,
     NumberWidget,
     RawJsonWidget,
     EnumeratorWidget,
@@ -250,8 +250,8 @@ class ControlPanelPageWidget(QtWidgets.QWidget):
         elif isinstance(entity, BoolEntity):
             return BoolWidget(*args)
 
-        elif isinstance(entity, QuadPypeVersionInput):
-            return QuadPypeVersionText(*args)
+        elif isinstance(entity, VersionInput):
+            return VersionText(*args)
 
         elif isinstance(entity, PasswordEntity):
             # Order of this elif (before the TextEntity one) because

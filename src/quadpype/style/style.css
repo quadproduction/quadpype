@@ -1417,11 +1417,11 @@ CreateNextPageOverlay {
     border-radius: 5px;
 }
 
-#QuadPypeVersionLabel[state="success"] {
+#VersionLabel[state="success"] {
     color: {color:settings:version-exists};
 }
 
-#QuadPypeVersionLabel[state="warning"] {
+#VersionLabel[state="warning"] {
     color: {color:settings:version-not-found};
 }
 
