@@ -58,7 +58,13 @@ class EventHandlerWorker(QtCore.QThread):
 
         # Process the events
         for doc in db_cursor:
+            if not self._manager.is_running:
+                break
+            # Webserver status
+            # Webserver url + port
             print(doc)
+
+            # Update the last handled timestamp
             self._last_handled_event_timestamp = doc["timestamp"]
 
         if db_cursor.retrieved > 0:
@@ -67,6 +73,10 @@ class EventHandlerWorker(QtCore.QThread):
             self._manager.app_registry.set_item(
                 "last_handled_event_timestamp",
                 get_timestamp_str(self._last_handled_event_timestamp))
+
+        if not self._manager.is_running:
+            # Simply exit without emiting the signal
+            return
 
         elapsed_time = round(time.time() - start_time)
         waiting_time = max(0, self._manager.check_new_events_interval_secs - elapsed_time)
@@ -82,58 +92,88 @@ class EventsHandlerManager:
 
     def __init__(self):
         self._user_profile = get_user_profile()
-
         self._app_registry = get_app_registry()
+        self._is_running = False
 
-        # Get mongo connection
-        self._mongo_client = QuadPypeMongoConnection.get_mongo_client()
+        self._webserver = None
 
-        self._database = self._mongo_client[os.environ["QUADPYPE_DATABASE_NAME"]]
+        # Get database connection
+        self._db_client = QuadPypeMongoConnection.get_mongo_client()
+
+        self._database = self._db_client[os.environ["QUADPYPE_DATABASE_NAME"]]
         self._collection_name = "events"
 
         # Create or retrieve the collection
         if self._collection_name not in self._database.list_collection_names():
             self._database.create_collection(self._collection_name)
-            self.collection = self._database[self._collection_name]
-            self.collection.create_index(
+            self._collection = self._database[self._collection_name]
+            self._collection.create_index(
                 [("expire_at", pymongo.ASCENDING)],
                 expireAfterSeconds=self.non_mandatory_event_max_lifespan
             )
         else:
-            self.collection = self._database[self._collection_name]
+            self._collection = self._database[self._collection_name]
 
         self._worker_thread = None
 
         # Timer to wait before re-triggering the worker
-        self.timer = QtCore.QTimer(QtWidgets.QApplication.instance())
-        self.timer.setSingleShot(True)
-        self.timer.timeout.connect(self._start_worker)
+        self._timer = QtCore.QTimer(QtWidgets.QApplication.instance())
+        self._timer.setSingleShot(True)
+        self._timer.timeout.connect(self._start_worker)
+
+    @property
+    def user_profile(self):
+        return self._user_profile
 
     @property
     def app_registry(self):
         return self._app_registry
 
+    @property
+    def collection(self):
+        return self._collection
+
+    @property
+    def webserver(self):
+        return self._webserver
+
+    def is_running(self):
+        return self._is_running
+
     def _start_worker(self):
         if self._worker_thread.isRunning():
             raise RuntimeError("The Event Worker is already running.")
 
+        self._is_running = True
         self._worker_thread.start(QtCore.QThread.HighestPriority)
 
     def _restart_worker(self, waiting_time_msec):
-        self.timer.start(waiting_time_msec)
+        self._timer.start(waiting_time_msec)
 
     def start(self):
         if self._worker_thread:
             raise RuntimeError("The Event Handler cannot be started multiple times.")
+        if not self._webserver:
+            raise RuntimeError("Webserver not set. Cannot start the event handler.")
 
         self._worker_thread = EventHandlerWorker(self)
         self._worker_thread.task_completed.connect(self._restart_worker)
 
         self._start_worker()
 
+    def stop(self):
+        if self._timer.isActive():
+            self._timer.stop()
+        if self._worker_thread.isRunning():
+            self._is_running = False
+            self._worker_thread.wait()
+
+    def set_webserver(self, webserver):
+        self._webserver = webserver
 
 
-def create_event_handler() -> EventsHandlerManager:
+
+def get_event_handler() -> EventsHandlerManager:
     global _EVENT_HANDLER
     if _EVENT_HANDLER is None:
         _EVENT_HANDLER = EventsHandlerManager()

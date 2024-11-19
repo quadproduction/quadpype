@@ -29,17 +29,21 @@ from quadpype.modules import QuadPypeModule, ITrayService
 
 class WebServerModule(QuadPypeModule, ITrayService):
     name = "webserver"
-    label = "WebServer"
+    label = "Web Server"
 
     webserver_url_env = "QUADPYPE_WEBSERVER_URL"
 
-    def initialize(self, _module_settings):
-        self.enabled = True
+    def __init__(self, manager, settings):
+        super().__init__(manager, settings)
+
         self.server_manager = None
         self._host_listener = None
 
-        self.port = self.find_free_port()
+        self.port = 0
         self.webserver_url = None
+
+    def initialize(self, _module_settings):
+        self.enabled = True
 
     def connect_with_modules(self, enabled_modules):
         if not self.server_manager:
@@ -60,6 +64,7 @@ class WebServerModule(QuadPypeModule, ITrayService):
                 )
 
     def tray_init(self):
+        self.port = self.find_free_port()
         self._create_server_manager()
         self._add_resources_statics()
         self._add_listeners()
