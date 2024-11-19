@@ -22,14 +22,16 @@ of server.
 
 import os
 import socket
+from time import sleep
 
 from quadpype import resources
-from quadpype.modules import QuadPypeModule, ITrayService
+from quadpype.modules import QuadPypeModule, ITrayService, AddOnRegisterPriority
 
 
 class WebServerModule(QuadPypeModule, ITrayService):
     name = "webserver"
     label = "Web Server"
+    priority = AddOnRegisterPriority.CRITICAL
 
     webserver_url_env = "QUADPYPE_WEBSERVER_URL"
 
@@ -71,6 +73,7 @@ class WebServerModule(QuadPypeModule, ITrayService):
 
     def tray_start(self):
         self.start_server()
+        sleep(0.050)  # To ensure the server is up and running
 
     def tray_exit(self):
         self.stop_server()

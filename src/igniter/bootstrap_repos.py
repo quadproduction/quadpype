@@ -32,9 +32,6 @@ from .tools import (
     get_local_quadpype_path_from_settings
 )
 
-from quadpype.settings.lib import get_studio_global_settings_overrides
-from quadpype.settings import MODULES_SETTINGS_KEY
-
 term = blessed.Terminal() if sys.__stdout__ else None
 
 
@@ -469,10 +466,10 @@ class AdditionalModulesVersion(BaseVersion):
     @classmethod
     def get_remote_path(cls):
         """Path to additional_modules directory."""
-        value = get_studio_global_settings_overrides()
-        addon_settings = value.get(MODULES_SETTINGS_KEY).get("addon")
-        addon_path = addon_settings.get("addon_paths").get(platform.system().lower())
-
+        #value = get_studio_global_settings_overrides()
+        #addon_settings = value.get(MODULES_SETTINGS_KEY).get("addon")
+        #addon_path = addon_settings.get("addon_paths").get(platform.system().lower())
+        addon_path = None
         remote_path = None
         if addon_path:
             remote_path = Path(addon_path[0].format(**os.environ)).parent
@@ -558,7 +555,7 @@ class QuadPypeVersion(BaseVersion):
 
     @classmethod
     def get_version_str_from_quadpype_version(cls, repo_dir: Union[str, Path, None] = None) -> Union[str, None]:
-        """Get version of QuadPype in the given version directory.
+        """Get the version of QuadPype in the given version directory.
 
         Note: in frozen QuadPype installed in user data dir, this must point
         one level deeper as it is:
@@ -577,7 +574,7 @@ class QuadPypeVersion(BaseVersion):
         elif not isinstance(repo_dir, Path):
             repo_dir = Path(repo_dir)
 
-        # try to find version
+        # try to find the version
         version_file = repo_dir.joinpath("quadpype", "version.py")
         if not version_file.exists():
             return None

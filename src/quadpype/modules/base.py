@@ -10,6 +10,7 @@ import platform
 import threading
 import collections
 import traceback
+from enum import IntEnum
 
 from uuid import uuid4
 from abc import ABC, abstractmethod
@@ -56,6 +57,13 @@ IGNORED_DEFAULT_FILENAMES = (
     "example_addons",
     "default_modules",
 )
+
+
+class AddOnRegisterPriority(IntEnum):
+    LOW = 60
+    MEDIUM = 40
+    HIGH = 20
+    CRITICAL = 10
 
 
 # Inherit from `object` for Python 2 hosts
@@ -193,24 +201,20 @@ def get_dynamic_modules_dirs():
     output = []
 
     value = get_studio_global_settings_overrides()
-    addon_settings = value.get(MODULES_SETTINGS_KEY).get("addon", {})
-    retrieve_locally = addon_settings.get('retrieve_locally', False)
-    for key in (MODULES_SETTINGS_KEY, "addon", "addon_paths", platform.system().lower()):
+    for key in (MODULES_SETTINGS_KEY, "addon_paths", platform.system().lower()):
         if key not in value:
             return output
         value = value[key]
-    if retrieve_locally:
-        output.append(AdditionalModulesVersion.update_local_to_latest_version())
-    else:
-        for path in value:
-            if not path:
-                continue
 
-            try:
-                path = path.format(**os.environ)
-            except Exception:
-                pass
-            output.append(path)
+    for path in value:
+        if not path:
+            continue
+
+        try:
+            path = path.format(**os.environ)
+        except Exception:
+            pass
+        output.append(path)
     return output
 
 
@@ -444,6 +448,7 @@ class QuadPypeModule(ABC):
 
     enabled = True
     _id = None
+    priority = AddOnRegisterPriority.MEDIUM
 
     def __init__(self, manager, settings):
         self.manager = manager
@@ -700,7 +705,7 @@ class ModulesManager:
             try:
                 # Try initialize module
                 module = modules_item(self, settings)
-                # Store initialized object
+                # Store the initialized instance
                 self.modules.append(module)
                 self.modules_by_id[module.id] = module
                 self.modules_by_name[module.name] = module
@@ -718,6 +723,9 @@ class ModulesManager:
                     "Initialization of module {} failed.".format(name),
                     exc_info=True
                 )
+
+        # Sort the modules by priority
+        self.modules.sort(key=lambda module_inst: module_inst.priority)
 
         if self._report is not None:
             report[self._report_total_key] = time.time() - time_start

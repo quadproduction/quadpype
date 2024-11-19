@@ -8,7 +8,6 @@ from qtpy import QtCore
 
 from .bootstrap_repos import (
     BootstrapRepos,
-    get_version_string,
     QuadPypeVersionInvalid,
     QuadPypeVersionIOError,
     QuadPypeVersionExists,
@@ -65,7 +64,7 @@ class InstallThread(QtCore.QThread):
         # find local version of QuadPype
         bs = BootstrapRepos(
             progress_callback=self.set_progress, log_signal=self.message)
-        local_version = get_version_string()
+        local_version = QuadPypeVersion.get_version_str_from_quadpype_version()
 
         if self._mongo:
             self.message.emit("Saving mongo connection string ...", False)

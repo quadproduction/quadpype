@@ -7,6 +7,7 @@ from datetime import datetime
 from abc import ABC, abstractmethod
 from functools import lru_cache
 import configparser
+from typing import Any
 
 import appdirs
 
@@ -66,7 +67,7 @@ class QuadPypeSecureRegistry:
 
     @lru_cache(maxsize=32)
     def get_item(self, name, default=_PLACEHOLDER):
-        """Get value of sensitive item from system's keyring.
+        """Get the value of sensitive item from the system's keyring.
 
         See also `Keyring module`_
 
@@ -157,12 +158,13 @@ class ASettingRegistry(ABC):
         self._items[name] = value
         self._set_item(name, value)
 
-    def get_item(self, name):
-        # type: (str) -> str
+    def get_item(self, name, fallback=_PLACEHOLDER):
+        # type: (str, Any) -> str
         """Get item from settings registry.
 
         Args:
             name (str): Name of the item.
+            fallback (Any): Fallback value if item is not found.
 
         Returns:
             value (str): Value of the item.
@@ -171,11 +173,11 @@ class ASettingRegistry(ABC):
             ValueError: If item doesn't exist.
 
         """
-        return self._get_item(name)
+        return self._get_item(name, fallback)
 
     @abstractmethod
-    def _get_item(self, name):
-        # type: (str) -> str
+    def _get_item(self, name, fallback=_PLACEHOLDER):
+        # type: (str, Any) -> str
         # Implement it
         pass
 
@@ -273,15 +275,16 @@ class IniSettingRegistry(ASettingRegistry):
         # we cast value to str as ini options values must be strings.
         super(IniSettingRegistry, self).set_item(name, str(value))
 
-    def get_item(self, name):
-        # type: (str) -> str
-        """Gets item from settings ini file.
+    def get_item(self, name, fallback=_PLACEHOLDER):
+        # type: (str, Any) -> str
+        """Gets item from the settings INI file.
 
-        This gets settings from ``DEFAULT`` section of ini file as each item
+        This gets settings from the ``DEFAULT`` section of the ini file as each item
         there must reside in some section.
 
         Args:
             name (str): Name of the item.
+            fallback (Any): Fallback value if item is not found.
 
         Returns:
             str: Value of item.
@@ -290,20 +293,21 @@ class IniSettingRegistry(ASettingRegistry):
             ValueError: If value doesn't exist.
 
         """
-        return super(IniSettingRegistry, self).get_item(name)
+        return super(IniSettingRegistry, self).get_item(name, fallback)
 
     @lru_cache(maxsize=32)
-    def get_item_from_section(self, section, name):
-        # type: (str, str) -> str
-        """Get item from section of ini file.
+    def get_item_from_section(self, section, name, fallback=_PLACEHOLDER):
+        # type: (str, str, Any) -> str
+        """Get item from a specific section of the INI file.
 
-        This will read ini file and try to get item value from specified
+        This will read the INI file and try to get item value from the specified
         section. If that section or item doesn't exist, :exc:`ValueError`
         is risen.
 
         Args:
-            section (str): Name of ini section.
+            section (str): Name of the INI section.
             name (str): Name of the item.
+            fallback (Any): Fallback value if item is not found.
 
         Returns:
             str: Item value.
@@ -317,17 +321,19 @@ class IniSettingRegistry(ASettingRegistry):
         try:
             value = config[section][name]
         except KeyError:
+            if fallback is not _PLACEHOLDER:
+                return fallback
             raise ValueError(
                 "Registry doesn't contain value {}:{}".format(section, name))
         return value
 
-    def _get_item(self, name):
-        # type: (str) -> str
-        return self.get_item_from_section("MAIN", name)
+    def _get_item(self, name, fallback=_PLACEHOLDER):
+        # type: (str, Any) -> str
+        return self.get_item_from_section("MAIN", name, fallback)
 
     def delete_item_from_section(self, section, name):
         # type: (str, str) -> None
-        """Delete item from section in ini file.
+        """Delete an item from a section in the INI file.
 
         Args:
             section (str): Section name.
@@ -347,7 +353,7 @@ class IniSettingRegistry(ASettingRegistry):
                 "Registry doesn't contain value {}:{}".format(section, name))
         config.remove_option(section, name)
 
-        # if section is empty, delete it
+        # if the section is empty, delete it
         if len(config[section].keys()) == 0:
             config.remove_section(section)
 
@@ -355,17 +361,16 @@ class IniSettingRegistry(ASettingRegistry):
             config.write(cfg)
 
     def _delete_item(self, name):
-        """Delete item from default section.
+        """Delete item from the default section.
 
         Note:
             See :meth:`~quadpype.lib.IniSettingsRegistry.delete_item_from_section`
-
         """
         self.delete_item_from_section("MAIN", name)
 
 
 class JSONSettingRegistry(ASettingRegistry):
-    """Class using json file as storage."""
+    """Class using a JSON file as storage."""
 
     def __init__(self, name, path, base_version=None):
         super(JSONSettingRegistry, self).__init__(name)
@@ -396,9 +401,9 @@ class JSONSettingRegistry(ASettingRegistry):
                 json.dump(default_content, cfg, indent=4)
 
     @lru_cache(maxsize=32)
-    def _get_item(self, name):
-        # type: (str) -> object
-        """Get item value from registry json.
+    def _get_item(self, name, fallback=_PLACEHOLDER):
+        # type: (str, Any) -> object
+        """Get item value from registry the JSON.
 
         Note:
             See :meth:`quadpype.lib.JSONSettingRegistry.get_item`
@@ -409,29 +414,32 @@ class JSONSettingRegistry(ASettingRegistry):
             try:
                 value = data["registry"][name]
             except KeyError:
+                if fallback is not _PLACEHOLDER:
+                    return fallback
                 raise ValueError(
                     "Registry doesn't contain value {}".format(name))
         return value
 
-    def get_item(self, name):
-        # type: (str) -> object
-        """Get item value from registry json.
+    def get_item(self, name, fallback=_PLACEHOLDER):
+        # type: (str, Any) -> object
+        """Get item value from registry the JSON.
 
         Args:
             name (str): Name of the item.
+            fallback (Any): Fallback value if item is not found.
 
         Returns:
             value of the item
 
         Raises:
-            ValueError: If item is not found in registry file.
+            ValueError: If item is not found in the registry file.
 
         """
-        return self._get_item(name)
+        return self._get_item(name, fallback)
 
     def _set_item(self, name, value):
         # type: (str, object) -> None
-        """Set item value to registry json.
+        """Set item value to the registry JSON file.
 
         Note:
             See :meth:`quadpype.lib.JSONSettingRegistry.set_item`

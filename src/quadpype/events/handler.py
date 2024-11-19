@@ -33,7 +33,7 @@ class EventHandlerWorker(QtCore.QThread):
 
         # Get info about the timestamp of the last handled event
         self._last_handled_event_timestamp = self._manager.app_registry.get_item(
-            "last_handled_event_timestamp"
+            "last_handled_event_timestamp", fallback=0
         )
 
         # If no event seems to have ever been handled, set the EPOCH time

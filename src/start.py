@@ -314,7 +314,6 @@ from igniter.tools import (
 from igniter.bootstrap_repos import (
     BootstrapRepos,
     QuadPypeVersion,
-    get_version_string
 )
 
 bootstrap = BootstrapRepos()
@@ -1007,7 +1006,7 @@ def _boot_print_versions(quadpype_root):
     if getattr(sys, 'frozen', False):
         local_version = bootstrap.get_version(Path(quadpype_root))
     else:
-        local_version = get_version_string()
+        local_version = QuadPypeVersion.get_version_str_from_quadpype_version()
 
     compatible_with = QuadPypeVersion(version=local_version)
     if "--all" in sys.argv:
@@ -1117,7 +1116,7 @@ def boot():
     if getattr(sys, 'frozen', False):
         local_version = bootstrap.get_version(Path(QUADPYPE_ROOT))
     else:
-        local_version = get_version_string()
+        local_version = QuadPypeVersion.get_version_str_from_quadpype_version()
 
     if "validate" in commands:
         valid = _boot_validate_versions(use_version, local_version)

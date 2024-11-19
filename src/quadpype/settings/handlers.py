@@ -533,7 +533,7 @@ class SettingsHandler(ABC):
 
 
 class MongoSettingsHandler(SettingsHandler):
-    """Settings handler that use mongo for storing and loading of settings."""
+    """Settings handler that uses mongo for storing and loading of settings."""
     key_suffix = "_versioned"
     _version_order_key = "versions_order"
     _all_versions_keys = "all_versions"
