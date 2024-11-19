@@ -4,8 +4,7 @@ import os
 from typing import Tuple
 import gazu
 
-from quadpype.lib.user_settings import QuadPypeSecureRegistry
-from quadpype.lib import emit_event
+from quadpype.lib import emit_event, QuadPypeSecureRegistry
 
 
 def validate_credentials(

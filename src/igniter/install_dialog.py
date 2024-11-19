@@ -16,7 +16,7 @@ from .tools import (
 )
 
 from .nice_progress_bar import NiceProgressBar
-from .user_settings import QuadPypeSecureRegistry
+from .registry import QuadPypeSecureRegistry
 from .tools import load_stylesheet
 from .version import __version__
 

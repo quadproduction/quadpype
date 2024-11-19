@@ -25,6 +25,7 @@ from .constants import (
     PROJECTS_SETTINGS_KEY
 )
 
+from quadpype.lib import get_user_settings
 
 log = logging.getLogger(__name__)
 
@@ -43,9 +44,6 @@ _DEFAULT_SETTINGS = None
 
 # Handler for studio overrides
 _SETTINGS_HANDLER = None
-
-# Handler for users
-_USER_HANDLER = None
 
 
 def clear_metadata_from_settings(values):
@@ -87,12 +85,7 @@ def create_settings_handler():
     return MongoSettingsHandler()
 
 
-def create_user_handler():
-    from .handlers import MongoUserHandler
-    return MongoUserHandler()
-
-
-def require_handler(func):
+def require_settings_handler(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         global _SETTINGS_HANDLER
@@ -102,42 +95,32 @@ def require_handler(func):
     return wrapper
 
 
-def require_user_handler(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        global _USER_HANDLER
-        if _USER_HANDLER is None:
-            _USER_HANDLER = create_user_handler()
-        return func(*args, **kwargs)
-    return wrapper
-
-
-@require_handler
+@require_settings_handler
 def get_global_settings_last_saved_info():
     return _SETTINGS_HANDLER.get_global_settings_last_saved_info()
 
 
-@require_handler
+@require_settings_handler
 def get_project_settings_last_saved_info(project_name):
     return _SETTINGS_HANDLER.get_project_settings_last_saved_info(project_name)
 
 
-@require_handler
+@require_settings_handler
 def get_last_opened_info():
     return _SETTINGS_HANDLER.get_last_opened_info()
 
 
-@require_handler
+@require_settings_handler
 def opened_settings_ui():
     return _SETTINGS_HANDLER.opened_settings_ui()
 
 
-@require_handler
+@require_settings_handler
 def closed_settings_ui(info_obj):
     return _SETTINGS_HANDLER.closed_settings_ui(info_obj)
 
 
-@require_handler
+@require_settings_handler
 def save_studio_settings(data):
     """Save studio overrides of global settings.
 
@@ -186,7 +169,7 @@ def save_studio_settings(data):
         raise SaveWarningExc(warnings)
 
 
-@require_handler
+@require_settings_handler
 def save_project_settings(project_name, overrides):
     """Save studio overrides of project settings.
 
@@ -247,7 +230,7 @@ def save_project_settings(project_name, overrides):
         raise SaveWarningExc(warnings)
 
 
-@require_handler
+@require_settings_handler
 def save_project_anatomy(project_name, anatomy_data):
     """Save studio overrides of project anatomy.
 
@@ -355,7 +338,7 @@ def _project_anatomy_backwards_compatible_conversion(project_anatomy):
             node["type"] = "__legacy__"
 
 
-@require_handler
+@require_settings_handler
 def get_studio_global_settings_overrides(return_version=False):
     output = _SETTINGS_HANDLER.get_studio_global_settings_overrides(
         return_version
@@ -367,35 +350,35 @@ def get_studio_global_settings_overrides(return_version=False):
     return output
 
 
-@require_handler
+@require_settings_handler
 def get_studio_project_settings_overrides(return_version=False):
     return _SETTINGS_HANDLER.get_studio_project_settings_overrides(
         return_version
     )
 
 
-@require_handler
+@require_settings_handler
 def get_studio_project_anatomy_overrides(return_version=False):
     return _SETTINGS_HANDLER.get_studio_project_anatomy_overrides(
         return_version
     )
 
 
-@require_handler
+@require_settings_handler
 def get_project_settings_overrides(project_name, return_version=False):
     return _SETTINGS_HANDLER.get_project_settings_overrides(
         project_name, return_version
     )
 
 
-@require_handler
+@require_settings_handler
 def get_project_anatomy_overrides(project_name):
     output = _SETTINGS_HANDLER.get_project_anatomy_overrides(project_name, return_version=False)
     _project_anatomy_backwards_compatible_conversion(output)
     return output
 
 
-@require_handler
+@require_settings_handler
 def get_studio_global_settings_overrides_for_version(version):
     return (
         _SETTINGS_HANDLER
@@ -403,7 +386,7 @@ def get_studio_global_settings_overrides_for_version(version):
     )
 
 
-@require_handler
+@require_settings_handler
 def get_studio_project_anatomy_overrides_for_version(version):
     return (
         _SETTINGS_HANDLER
@@ -411,7 +394,7 @@ def get_studio_project_anatomy_overrides_for_version(version):
     )
 
 
-@require_handler
+@require_settings_handler
 def get_studio_project_settings_overrides_for_version(version):
     return (
         _SETTINGS_HANDLER
@@ -419,7 +402,7 @@ def get_studio_project_settings_overrides_for_version(version):
     )
 
 
-@require_handler
+@require_settings_handler
 def get_project_settings_overrides_for_version(
     project_name, version
 ):
@@ -429,7 +412,7 @@ def get_project_settings_overrides_for_version(
     )
 
 
-@require_handler
+@require_settings_handler
 def get_available_studio_global_settings_overrides_versions(sorted=None):
     return (
         _SETTINGS_HANDLER
@@ -439,7 +422,7 @@ def get_available_studio_global_settings_overrides_versions(sorted=None):
     )
 
 
-@require_handler
+@require_settings_handler
 def get_available_studio_project_anatomy_overrides_versions(sorted=None):
     return (
         _SETTINGS_HANDLER
@@ -449,7 +432,7 @@ def get_available_studio_project_anatomy_overrides_versions(sorted=None):
     )
 
 
-@require_handler
+@require_settings_handler
 def get_available_studio_project_settings_overrides_versions(sorted=None):
     return (
         _SETTINGS_HANDLER
@@ -459,7 +442,7 @@ def get_available_studio_project_settings_overrides_versions(sorted=None):
     )
 
 
-@require_handler
+@require_settings_handler
 def get_available_project_settings_overrides_versions(
     project_name, sorted=None
 ):
@@ -471,7 +454,7 @@ def get_available_project_settings_overrides_versions(
     )
 
 
-@require_handler
+@require_settings_handler
 def find_closest_version_for_projects(project_names):
     return (
         _SETTINGS_HANDLER
@@ -479,7 +462,7 @@ def find_closest_version_for_projects(project_names):
     )
 
 
-@require_handler
+@require_settings_handler
 def clear_studio_global_settings_overrides_for_version(version):
     return (
         _SETTINGS_HANDLER
@@ -487,7 +470,7 @@ def clear_studio_global_settings_overrides_for_version(version):
     )
 
 
-@require_handler
+@require_settings_handler
 def clear_studio_project_settings_overrides_for_version(version):
     return (
         _SETTINGS_HANDLER
@@ -495,7 +478,7 @@ def clear_studio_project_settings_overrides_for_version(version):
     )
 
 
-@require_handler
+@require_settings_handler
 def clear_studio_project_anatomy_overrides_for_version(version):
     return (
         _SETTINGS_HANDLER
@@ -503,33 +486,13 @@ def clear_studio_project_anatomy_overrides_for_version(version):
     )
 
 
-@require_handler
+@require_settings_handler
 def clear_project_settings_overrides_for_version(
     version, project_name
 ):
     return _SETTINGS_HANDLER.clear_project_settings_overrides_for_version(
         version, project_name
     )
-
-
-@require_user_handler
-def save_user_settings(data):
-    return _USER_HANDLER.save_user_settings(data)
-
-
-@require_user_handler
-def get_user_settings():
-    return _USER_HANDLER.get_user_settings()
-
-
-@require_user_handler
-def get_user_profile():
-    return _USER_HANDLER.get_user_profile()
-
-
-@require_user_handler
-def update_user_profile_on_startup():
-    return _USER_HANDLER.update_user_profile_on_startup()
 
 
 def load_quadpype_default_settings():
@@ -597,15 +560,15 @@ def get_default_settings():
     return copy.deepcopy(_DEFAULT_SETTINGS)
 
 
-def load_json_file(fpath):
+def load_json_file(filepath):
     # Load json data
     try:
-        with open(fpath, "r") as opened_file:
+        with open(filepath, "r") as opened_file:
             return json.load(opened_file)
 
     except JSON_EXC:
         log.warning(
-            "File has invalid json format \"{}\"".format(fpath),
+            "File has invalid json format \"{}\"".format(filepath),
             exc_info=True
         )
     return {}
@@ -1091,7 +1054,7 @@ def get_current_project_settings():
     return get_project_settings(project_name)
 
 
-@require_handler
+@require_settings_handler
 def _get_core_settings():
     default_settings = load_quadpype_default_settings()
     default_values = default_settings[GLOBAL_SETTINGS_KEY][CORE_SETTINGS_KEY]

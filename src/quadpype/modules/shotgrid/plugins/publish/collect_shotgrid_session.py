@@ -4,7 +4,7 @@ import pyblish.api
 import shotgun_api3
 from shotgun_api3.shotgun import AuthenticationFault
 
-from quadpype.lib import QuadPypeSettingsRegistry
+from quadpype.lib import get_app_registry
 from quadpype.modules.shotgrid.lib.settings import (
     get_shotgrid_servers,
     get_shotgrid_project_settings,
@@ -121,7 +121,7 @@ def set_shotgrid_certificate(certificate):
 
 
 def get_login():
-    reg = QuadPypeSettingsRegistry()
+    reg = get_app_registry()
     try:
         return str(reg.get_item("shotgrid_login"))
     except Exception:

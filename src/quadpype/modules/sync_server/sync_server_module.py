@@ -26,12 +26,15 @@ from quadpype.settings import (
     MODULES_SETTINGS_KEY,
     PROJECTS_SETTINGS_KEY
 )
-from quadpype.lib import Logger, get_local_site_id
+from quadpype.lib import (
+    Logger,
+    get_local_site_id,
+    get_user_settings
+)
 from quadpype.pipeline import AvalonMongoDB, Anatomy
 from quadpype.settings.lib import (
     get_default_anatomy_settings,
-    get_anatomy_settings,
-    get_user_settings,
+    get_anatomy_settings
 )
 from quadpype.settings.constants import (
     DEFAULT_PROJECT_KEY

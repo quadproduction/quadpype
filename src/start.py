@@ -106,7 +106,7 @@ from pathlib import Path
 
 silent_mode = False
 
-# QUADPYPE_ROOT is variable pointing to build (or code) directory
+# QUADPYPE_ROOT is a variable pointing to build (or code) directory
 # WARNING `QUADPYPE_ROOT` must be defined before igniter import
 # - igniter changes cwd which cause that filepath of this script won't lead
 #   to right directory
@@ -304,7 +304,6 @@ if "--use-staging" in sys.argv:
     os.environ["QUADPYPE_USE_STAGING"] = "1"
 
 import igniter  # noqa: E402
-from igniter import BootstrapRepos  # noqa: E402
 from igniter.tools import (
     get_quadpype_global_settings,
     get_quadpype_path_from_settings,
@@ -313,7 +312,11 @@ from igniter.tools import (
     QuadPypeVersionNotFound,
     QuadPypeVersionIncompatible
 )  # noqa
-from igniter.bootstrap_repos import QuadPypeVersion  # noqa: E402
+from igniter.bootstrap_repos import (
+    BootstrapRepos,
+    QuadPypeVersion,
+    get_version_string
+)
 
 bootstrap = BootstrapRepos()
 silent_commands = {"run", "igniter", "standalonepublisher",
@@ -1005,7 +1008,7 @@ def _boot_print_versions(quadpype_root):
     if getattr(sys, 'frozen', False):
         local_version = bootstrap.get_version(Path(quadpype_root))
     else:
-        local_version = QuadPypeVersion.get_installed_version_str()
+        local_version = get_version_string()
 
     compatible_with = QuadPypeVersion(version=local_version)
     if "--all" in sys.argv:
@@ -1115,7 +1118,7 @@ def boot():
     if getattr(sys, 'frozen', False):
         local_version = bootstrap.get_version(Path(QUADPYPE_ROOT))
     else:
-        local_version = QuadPypeVersion.get_installed_version_str()
+        local_version = get_version_string()
 
     if "validate" in commands:
         valid = _boot_validate_versions(use_version, local_version)
@@ -1217,7 +1220,7 @@ def boot():
     except KeyError:
         pass
 
-    from quadpype.settings.lib import update_user_profile_on_startup
+    from quadpype.lib.user import update_user_profile_on_startup
 
     # Do the program display popups to the users regarding updates or incompatibilities
     _print(">>> Loading user profile ...")

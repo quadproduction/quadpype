@@ -3,6 +3,13 @@ import pkgutil
 
 from fastapi import APIRouter
 
+from .handler import (
+    create_event_handler
+)
+
+from .notification import (
+    show_tray_message
+)
 
 # Find and include routers defined in this package modules
 def get_web_api_routers():
@@ -20,3 +27,11 @@ def get_web_api_routers():
             print(f"Get web API routers: Error while handling module {module_name}: {e}")
 
     return routers
+
+
+__all__ = (
+    "create_event_handler",
+    "get_web_api_routers",
+
+    "show_tray_message"
+)

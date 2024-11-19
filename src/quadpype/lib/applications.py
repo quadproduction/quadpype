@@ -13,7 +13,6 @@ from quadpype import PACKAGE_DIR
 from quadpype.settings import (
     get_global_settings,
     get_project_settings,
-    get_user_settings,
     APPS_SETTINGS_KEY,
     CORE_SETTINGS_KEY,
     ENV_SETTINGS_KEY,
@@ -26,7 +25,7 @@ from quadpype.settings.constants import (
 )
 from .log import Logger
 from .profiles_filtering import filter_profiles
-from .user import get_quadpype_username
+from .user import get_quadpype_username, get_user_settings
 
 from .python_module_tools import (
     modules_from_path,

@@ -27,8 +27,7 @@ from .lib import (
     get_global_settings,
     get_project_settings,
     get_current_project_settings,
-    get_anatomy_settings,
-    get_user_settings,
+    get_anatomy_settings
 )
 from .entities import (
     GlobalSettingsEntity,
@@ -65,7 +64,6 @@ __all__ = (
     "get_project_settings",
     "get_current_project_settings",
     "get_anatomy_settings",
-    "get_user_settings",
 
     "GlobalSettingsEntity",
     "ProjectSettingsEntity",

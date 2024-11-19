@@ -1,13 +1,9 @@
 import os
 import json
 import datetime
-import platform
-import getpass
-import socket
 
-from quadpype.settings.lib import get_user_profile
 from .execute import get_quadpype_execute_args
-from .user import get_user_id
+from .user import get_user_id, get_user_profile
 from .quadpype_version import (
     is_running_from_build,
     get_quadpype_version,
@@ -33,20 +29,7 @@ def get_quadpype_info():
     }
 
 
-def get_workstation_info():
-    """Basic information about workstation."""
-    host_name = socket.gethostname()
-    try:
-        host_ip = socket.gethostbyname(host_name)
-    except socket.gaierror:
-        host_ip = "127.0.0.1"
 
-    return {
-        "workstation_name": host_name,
-        "host_ip": host_ip,
-        "username": getpass.getuser(),
-        "system_name": platform.system()
-    }
 
 
 def get_all_current_info():

@@ -7,8 +7,7 @@ from .constants import (
     ADMIN_PERMISSION_NAMES,
 )
 
-from quadpype.lib.user_settings import QuadPypeSecureRegistry
-from quadpype.lib import Logger
+from quadpype.lib import Logger, QuadPypeSecureRegistry
 
 
 class ClockifyAPI:

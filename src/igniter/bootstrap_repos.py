@@ -20,7 +20,7 @@ from appdirs import user_data_dir
 from speedcopy import copyfile
 import semver
 
-from .user_settings import (
+from .registry import (
     QuadPypeSecureRegistry,
     QuadPypeSettingsRegistry
 )
@@ -33,6 +33,38 @@ from .tools import (
 
 
 term = blessed.Terminal() if sys.__stdout__ else None
+
+
+def get_version_string(repo_dir: Union[str, Path, None]=None) -> Union[str, None]:
+    """Get version of QuadPype in given directory.
+
+    Note: in frozen QuadPype installed in user data dir, this must point
+    one level deeper as it is:
+    `quadpype-version-v3.0.0/quadpype/version.py`
+
+    Args:
+        repo_dir (Path): Path to QuadPype repo.
+
+    Returns:
+        str: version string.
+        None: if QuadPype is not found.
+
+    """
+    if repo_dir is None:
+        repo_dir = Path(os.environ["QUADPYPE_ROOT"])
+    elif not isinstance(repo_dir, Path):
+        repo_dir = Path(repo_dir)
+
+    # try to find version
+    version_file = repo_dir.joinpath("quadpype", "version.py")
+    if not version_file.exists():
+        return None
+
+    version = {}
+    with version_file.open("r") as fp:
+        exec(fp.read(), version)
+
+    return version['__version__']
 
 
 def sanitize_long_path(path):
@@ -221,8 +253,7 @@ class QuadPypeVersion(semver.VersionInfo):
         try:
             # add one 'quadpype' level as inside dir there should
             # be many other repositories.
-            version_str = QuadPypeVersion.get_version_string_from_directory(
-                dir_item)  # noqa: E501
+            version_str = get_version_string(dir_item)
             version_check = QuadPypeVersion(version=version_str)
         except ValueError:
             return False, f"cannot determine version from {dir_item}"
@@ -285,33 +316,6 @@ class QuadPypeVersion(semver.VersionInfo):
         except KeyError:
             return False, "Zip does not contain QuadPype"
         return True, "Versions match"
-
-    @staticmethod
-    def get_version_string_from_directory(repo_dir: Path) -> Union[str, None]:
-        """Get version of QuadPype in given directory.
-
-        Note: in frozen QuadPype installed in user data dir, this must point
-        one level deeper as it is:
-        `quadpype-version-v3.0.0/quadpype/version.py`
-
-        Args:
-            repo_dir (Path): Path to QuadPype repo.
-
-        Returns:
-            str: version string.
-            None: if QuadPype is not found.
-
-        """
-        # try to find version
-        version_file = Path(repo_dir) / "quadpype" / "version.py"
-        if not version_file.exists():
-            return None
-
-        version = {}
-        with version_file.open("r") as fp:
-            exec(fp.read(), version)
-
-        return version['__version__']
 
     @classmethod
     def get_quadpype_path(cls):
@@ -458,25 +462,16 @@ class QuadPypeVersion(semver.VersionInfo):
 
         return sorted(quadpype_versions)
 
-    @staticmethod
-    def get_installed_version_str() -> str:
-        """Get version of local QuadPype."""
-
-        version = {}
-        path = Path(os.environ["QUADPYPE_ROOT"]) / "quadpype" / "version.py"
-        with open(path, "r") as fp:
-            exec(fp.read(), version)
-        return version["__version__"]
-
     @classmethod
     def get_installed_version(cls):
         """Get version of QuadPype inside build."""
+        root_directory = Path(os.environ["QUADPYPE_ROOT"])
         if cls._installed_version is None:
-            installed_version_str = cls.get_installed_version_str()
+            installed_version_str = get_version_string(root_directory)
             if installed_version_str:
                 cls._installed_version = QuadPypeVersion(
                     version=installed_version_str,
-                    path=Path(os.environ["QUADPYPE_ROOT"])
+                    path=root_directory
                 )
         return cls._installed_version
 
@@ -595,7 +590,8 @@ class BootstrapRepos:
         self.data_dir = None
         self.set_data_dir(None)
         self.secure_registry = QuadPypeSecureRegistry("mongodb")
-        self.registry = QuadPypeSettingsRegistry()
+        base_version = get_version_string()
+        self.registry = QuadPypeSettingsRegistry(base_version=base_version)
         self.exclusion_list = [".pyc", "__pycache__"]
         self.inclusion_list = [
             "quadpype", "../LICENSE", "LICENSE"

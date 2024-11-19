@@ -1,7 +1,7 @@
 """WebServerModule spawns aiohttp server in asyncio loop.
 
 Main usage of the module is in QuadPype tray where make sense to add ability
-of other modules to add theirs routes. Module which would want use that
+of other modules to add theirs routes. Module which would want to use that
 option must have implemented method `webserver_initialization` which must
 expect `WebServerManager` object where is possible to add routes or paths
 with handlers.

@@ -1,7 +1,12 @@
 import os
 import json
-from quadpype.lib import Logger, filter_profiles, get_user_id
-from quadpype.lib.pype_info import get_workstation_info
+
+from quadpype.lib import (
+    Logger,
+    filter_profiles,
+    get_user_id,
+    get_user_workstation_info
+)
 from quadpype.settings import get_project_settings
 from quadpype.pipeline import get_process_id
 
@@ -48,7 +53,7 @@ def delete_workfile_lock(filepath):
 
 def create_workfile_lock(filepath):
     lock_filepath = _get_lock_file(filepath)
-    info = get_workstation_info()
+    info = get_user_workstation_info()
     info["user_id"] = get_user_id()
     info["process_id"] = get_process_id()
     with open(lock_filepath, "w") as stream:

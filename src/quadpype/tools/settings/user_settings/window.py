@@ -12,11 +12,11 @@ from quadpype.settings import (
     MODULES_SETTINGS_KEY,
     PROJECTS_SETTINGS_KEY
 )
-from quadpype.settings.lib import (
+from quadpype.lib import (
+    Logger,
     get_user_settings,
     save_user_settings
 )
-from quadpype.lib import Logger
 from quadpype.tools.settings import CHILD_OFFSET
 from quadpype.tools.utils import MessageOverlayObject
 from quadpype.modules import ModulesManager

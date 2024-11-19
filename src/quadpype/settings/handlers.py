@@ -1,10 +1,8 @@
 import os
-import json
 import copy
 import collections
 import datetime
 from abc import ABC, abstractmethod
-from copy import deepcopy
 
 import quadpype.version
 from quadpype.client.mongo import (
@@ -12,8 +10,7 @@ from quadpype.client.mongo import (
     get_project_connection,
 )
 from quadpype.client import get_project
-from quadpype.lib.pype_info import get_workstation_info
-
+from quadpype.lib import get_user_workstation_info, get_user_id, CacheValues
 
 from .constants import (
     CORE_SETTINGS_KEY,
@@ -24,7 +21,6 @@ from .constants import (
 
     APPS_SETTINGS_KEY
 )
-from ..lib import get_user_id
 
 
 class SettingsStateInfo:
@@ -77,10 +73,10 @@ class SettingsStateInfo:
     ):
         """Create information about this machine for current time."""
 
-        from quadpype.lib.pype_info import get_workstation_info
+        from quadpype.lib import get_user_workstation_info
 
         now = datetime.datetime.now()
-        workstation_info = get_workstation_info()
+        workstation_info = get_user_workstation_info()
 
         return cls(
             quadpype_version,
@@ -536,101 +532,6 @@ class SettingsHandler(ABC):
         pass
 
 
-class UserHandler(ABC):
-    """Handler using to store and load user info & settings.
-
-    User settings are specific modifications that modify how
-    global and project settings look on the workstation and only there.
-    """
-    user_profile_template = {
-        "user_id": "",
-        "role": "user",
-        "first_connection": datetime.datetime.now(),
-        "last_connection": datetime.datetime.now(),
-        "last_workstation_profile_index": 0,
-        "workstation_profiles": [],
-        "settings": {}
-    }
-
-    @abstractmethod
-    def save_user_settings(self, data):
-        """Save local data of user settings.
-
-        Args:
-            data(dict): Data of local data with override metadata.
-        """
-        pass
-
-    @abstractmethod
-    def get_user_settings(self):
-        """User overrides of global settings."""
-        pass
-
-    @abstractmethod
-    def create_user_profile(self):
-        """Create a new entry in the database for this new user."""
-        pass
-
-    @abstractmethod
-    def get_user_profile(self):
-        """Profile of the user in the database, including settings overrides."""
-        pass
-
-    @abstractmethod
-    def update_user_profile_on_startup(self):
-        """Update the user profile on startup."""
-        pass
-
-
-class CacheValues:
-    cache_lifetime = 10
-
-    def __init__(self):
-        self.data = None
-        self.creation_time = None
-        self.version = None
-        self.last_saved_info = None
-
-    def data_copy(self):
-        if not self.data:
-            return {}
-        return copy.deepcopy(self.data)
-
-    def update_data(self, data, version):
-        self.data = data
-        self.creation_time = datetime.datetime.now()
-        self.version = version
-
-    def update_last_saved_info(self, last_saved_info):
-        self.last_saved_info = last_saved_info
-
-    def update_from_document(self, document, version):
-        data = {}
-        if document:
-            if "data" in document:
-                data = document["data"]
-            elif "value" in document:
-                value = document["value"]
-                if value:
-                    data = json.loads(value)
-
-        self.data = data
-        self.version = version
-
-    def to_json_string(self):
-        return json.dumps(self.data or {})
-
-    @property
-    def is_outdated(self):
-        if self.creation_time is None:
-            return True
-        delta = (datetime.datetime.now() - self.creation_time).seconds
-        return delta > self.cache_lifetime
-
-    def set_outdated(self):
-        self.create_time = None
-
-
 class MongoSettingsHandler(SettingsHandler):
     """Settings handler that use mongo for storing and loading of settings."""
     key_suffix = "_versioned"
@@ -960,7 +861,7 @@ class MongoSettingsHandler(SettingsHandler):
         if settings_type == "project" and not project_name:
             project_name = "default"
 
-        host_info = get_workstation_info()
+        host_info = get_user_workstation_info()
 
         document = {
             "user_id": get_user_id(),
@@ -1768,126 +1669,3 @@ class MongoSettingsHandler(SettingsHandler):
                 {"_id": doc["_id"]},
                 {"$set": {"info": None}}
             )
-
-
-class MongoUserHandler(UserHandler):
-    """Settings handler that use mongo for store and load user info & settings.
-
-    The Data query criteria is the key "user_id" which can be obtained
-    with the `get_user_id` function.
-    """
-
-    def __init__(self, user_id=None):
-        # Get mongo connection
-        from quadpype.lib import get_user_id
-
-        if user_id is None:
-            user_id = get_user_id()
-
-        database_name = os.environ["QUADPYPE_DATABASE_NAME"]
-        collection_name = "users"
-
-        self.mongo_client = QuadPypeMongoConnection.get_mongo_client()
-
-        self.database_name = database_name
-        self.collection_name = collection_name
-
-        self.collection = self.mongo_client[database_name][collection_name]
-
-        self.user_id = user_id
-
-        if not self.collection.find_one({"user_id": self.user_id}):
-            # if there isn't any user, the first one is automatically added as administrator
-            user_role = "user" if self.collection.count_documents({}) else "administrator"
-            # Create the user profile in the database
-            self.create_user_profile(user_role=user_role)
-
-        self.user_settings_cache = CacheValues()
-
-    def create_user_profile(self, user_role="user"):
-        user_profile = deepcopy(self.user_profile_template)
-        user_profile["user_id"] = self.user_id
-        user_profile["role"] = user_role
-
-        timestamp = datetime.datetime.now()
-        user_profile["first_connection"] = timestamp
-        user_profile["last_connection"] = timestamp
-
-        user_profile["workstation_profiles"].append(get_workstation_info())
-
-        self.collection.replace_one(
-            {"user_id": self.user_id},
-            user_profile, upsert=True
-        )
-        return user_profile
-
-    def get_user_profile(self):
-        user_profile = self.collection.find_one({
-            "user_id": self.user_id
-        })
-
-        if user_profile is None:
-            self.create_user_profile()
-
-        return user_profile
-
-    def update_user_profile_on_startup(self):
-        """Update user profile on startup"""
-        user_profile = self.get_user_profile()
-        user_profile["last_connection"] = datetime.datetime.now()
-
-        workstation_info = get_workstation_info()
-
-        workstation_profile_found = False
-        for index, workstation_profile in enumerate(user_profile["workstation_profiles"]):
-            if workstation_info == workstation_profile:
-                user_profile["last_workstation_profile_index"] = index
-                workstation_profile_found = True
-                break
-
-        if not workstation_profile_found:
-            user_profile["workstation_profiles"].append(workstation_info)
-            user_profile["last_workstation_profile_index"] = len(user_profile["workstation_profiles"]) - 1
-
-        self.collection.replace_one(
-            {"user_id": self.user_id},
-            user_profile, upsert=True
-        )
-
-        return user_profile
-
-    def save_user_settings(self, data):
-        """Save user settings.
-
-        Args:
-            data(dict): Data of studio overrides with override metadata.
-        """
-        data = data or {}
-
-        self.user_settings_cache.update_data(data, None)
-
-        user_profile = self.collection.find_one(
-            { "user_id": self.user_id }
-        )
-
-        if not user_profile:
-            raise RuntimeError("Cannot find the user profile in the QuadPype database.\n"
-                               "This shouldn't be possible, please contact the Quad Dev Team.")
-
-        user_profile["settings"] = data
-
-        self.collection.replace_one(
-            { "user_id": self.user_id },
-            user_profile
-        )
-
-    def get_user_settings(self):
-        """Get the user according to the user id."""
-        if self.user_settings_cache.is_outdated:
-            document = self.collection.find_one({
-                "user_id": self.user_id
-            })
-
-            self.user_settings_cache.update_from_document(document["settings"], None)
-
-        return self.user_settings_cache.data_copy()

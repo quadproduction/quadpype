@@ -14,8 +14,8 @@ from quadpype.lib import (
     Logger,
     get_quadpype_execute_args,
     run_detached_process,
+    get_quadpype_username
 )
-from quadpype.lib.user import get_quadpype_username
 from quadpype.lib.quadpype_version import (
     op_version_control_available,
     get_expected_version,
@@ -44,6 +44,7 @@ from quadpype.tools.utils import (
 )
 
 from .pype_info_widget import PypeInfoWidget
+from ...events import create_event_handler
 
 TRAY_ICON_WIDGET = None
 
@@ -758,6 +759,7 @@ class QuadPypeTrayStarter(QtCore.QObject):
 
         app.setQuitOnLastWindowClosed(False)
         self._app = app
+        self._event_handler = None
         self._splash = None
         self._splash_animation = None
 
@@ -816,7 +818,13 @@ class QuadPypeTrayStarter(QtCore.QObject):
             # Start the initialization of all the enabled modules
             self._tray_widget.initialize_modules()
         elif self._tray_widget.is_init_completed:
-            # QuadPype is fully initialized, fade out the splash screen
+            # QuadPype is fully initialized
+
+            # We can now create the event handler to receive info and commands
+            self._event_handler = create_event_handler()
+            self._event_handler.start()
+
+            # Fade out the splash screen
             opacity_effect = QtWidgets.QGraphicsOpacityEffect(self._splash)
             self._splash.setGraphicsEffect(opacity_effect)
 

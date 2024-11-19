@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 import shotgun_api3
 from shotgun_api3.shotgun import AuthenticationFault
 
-from quadpype.lib import QuadPypeSecureRegistry, QuadPypeSettingsRegistry
+from quadpype.lib import QuadPypeSecureRegistry, get_app_registry
 from quadpype.modules.shotgrid.lib.record import Credentials
 
 
@@ -87,7 +87,7 @@ def clear_credentials(shotgrid_url):
 
 
 def get_local_login():
-    reg = QuadPypeSettingsRegistry()
+    reg = get_app_registry()
     try:
         return str(reg.get_item("shotgrid_login"))
     except Exception:
@@ -95,12 +95,12 @@ def get_local_login():
 
 
 def save_local_login(login):
-    reg = QuadPypeSettingsRegistry()
+    reg = get_app_registry()
     reg.set_item("shotgrid_login", login)
 
 
 def clear_local_login():
-    reg = QuadPypeSettingsRegistry()
+    reg = get_app_registry()
     reg.delete_item("shotgrid_login")
 
 
