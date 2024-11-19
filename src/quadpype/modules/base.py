@@ -589,7 +589,7 @@ class ModulesManager:
     _report_total_key = "Total"
     _global_settings = None
 
-    def __init__(self, global_settings=None):
+    def __init__(self, global_settings=None, init_and_connect=True):
         self.log = logging.getLogger(self.__class__.__name__)
 
         self._global_settings = global_settings
@@ -600,8 +600,9 @@ class ModulesManager:
         # For report of time consumption
         self._report = {}
 
-        self.initialize_modules()
-        self.connect_modules()
+        if init_and_connect:
+            self.initialize_modules()
+            self.connect_modules()
 
     def __getitem__(self, module_name):
         return self.modules_by_name[module_name]
@@ -1125,7 +1126,7 @@ class TrayModulesManager(ModulesManager):
     )
 
     def __init__(self):
-        super().__init__()
+        super().__init__(None, False)
 
         self.log = Logger.get_logger(self.__class__.__name__)
 
