@@ -56,7 +56,7 @@ class UpdateThread(QtCore.QThread):
                             log_signal=self.log_signal,
                             step_text_signal=self.step_text_signal)
 
-        bs.set_data_dir(QuadPypeVersion.get_local_quadpype_path())
+        bs.set_data_dir(QuadPypeVersion.get_local_path())
 
         # Adding the conditions to be able to show this window to update the ZXP extensions
         # without needing to install an QuadPype version
