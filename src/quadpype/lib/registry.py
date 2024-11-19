@@ -1,32 +1,18 @@
 # -*- coding: utf-8 -*-
 """Package to deal with saving and retrieving user specific settings."""
 import os
+import json
+import platform
 from datetime import datetime
 from abc import ABC, abstractmethod
-import json
+from functools import lru_cache
+import configparser
 
-# disable lru cache in Python 2
-try:
-    from functools import lru_cache
-except ImportError:
-    def lru_cache(maxsize):
-        def max_size(func):
-            def wrapper(*args, **kwargs):
-                value = func(*args, **kwargs)
-                return value
-            return wrapper
-        return max_size
-
-# ConfigParser was renamed in python3 to configparser
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
-
-import platform
 import appdirs
 
+
 _PLACEHOLDER = object()
+_REGISTRY = None
 
 
 class QuadPypeSecureRegistry:
@@ -101,7 +87,7 @@ class QuadPypeSecureRegistry:
         import keyring
 
         value = keyring.get_password(self._name, name)
-        if value:
+        if value is not None:
             return value
 
         if default is not _PLACEHOLDER:
@@ -381,25 +367,33 @@ class IniSettingRegistry(ASettingRegistry):
 class JSONSettingRegistry(ASettingRegistry):
     """Class using json file as storage."""
 
-    def __init__(self, name, path):
-        # type: (str, str) -> JSONSettingRegistry
-        super().__init__(name)
+    def __init__(self, name, path, base_version=None):
+        super(JSONSettingRegistry, self).__init__(name)
         #: str: name of registry file
         self._registry_file = os.path.join(path, "{}.json".format(name))
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        header = {
+
+        if not base_version:
+            base_version = "N/A"
+        version = os.getenv("QUADPYPE_VERSION", base_version)
+        if not isinstance(version, str):
+            version = str(version)
+
+        default_content = {
             "__metadata__": {
-                "quadpype-version": os.getenv("QUADPYPE_VERSION", "N/A"),
+                "quadpype_version": version,
                 "generated": now
             },
-            "registry": {}
+            "registry": {
+                "last_handled_event_timestamp": 0
+            }
         }
 
         if not os.path.exists(os.path.dirname(self._registry_file)):
             os.makedirs(os.path.dirname(self._registry_file), exist_ok=True)
         if not os.path.exists(self._registry_file):
             with open(self._registry_file, mode="w") as cfg:
-                json.dump(header, cfg, indent=4)
+                json.dump(default_content, cfg, indent=4)
 
     @lru_cache(maxsize=32)
     def _get_item(self, name):
@@ -481,10 +475,21 @@ class QuadPypeSettingsRegistry(JSONSettingRegistry):
 
     """
 
-    def __init__(self, name=None):
-        self.vendor = "quad"
-        self.product = "quadpype"
+    def __init__(self, name=None, base_version=None):
+        vendor = "quad"
+        product = "quadpype"
+        default_name = "quadpype_settings"
+        self.vendor = vendor
+        self.product = product
         if not name:
-            name = "quadpype_settings"
+            name = default_name
         path = appdirs.user_data_dir(self.product, self.vendor)
-        super().__init__(name, path)
+        super().__init__(name, path, base_version)
+
+
+def get_app_registry() -> QuadPypeSettingsRegistry:
+    global _REGISTRY
+    if not _REGISTRY:
+        _REGISTRY = QuadPypeSettingsRegistry()
+
+    return _REGISTRY
