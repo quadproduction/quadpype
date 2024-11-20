@@ -492,14 +492,38 @@ class QuadPypeVersionManager(BaseVersionManager):
 
 
 class AddOnVersionManager(BaseVersionManager):
+    def __init__(self, local_dir_path: Union[str, Path], remote_dir_path: Union[str, Path], use_local_dir: bool = False):
+        super().__init__(local_dir_path, remote_dir_path)
+
+        self._use_local_dir = use_local_dir
+        self._current_version = None
+
+    @property
+    def use_local_dir(self):
+        return self._use_local_dir
+
+    @property
+    def current_version(self):
+        return self._current_version
+
+    def change_current_version(self, current_version: Any):
+        """Set current version."""
+        if isinstance(current_version, str):
+            current_version = PackageVersion(version=current_version)
+        self._current_version = current_version
+
+    @classmethod
+    def get_package_version_from_dir(cls, dir_path: Union[str, Path, None] = None) -> Union[str, None]:
+        return cls.get_version_from_str(dir_path.name)
+
     def is_version_in_dir(self, dir_path: Path, version_obj) -> Tuple[bool, str]:
-        pass
+        return True, "Versions match"
 
     def is_version_in_zip(self, zip_path: Path, version_obj) -> Tuple[bool, str]:
-        pass
+        return True, "Versions match"
 
     def get_installed_version(self):
-        pass
+        return self._current_version
 
 
 def create_app_version_manager(root_dir_path: Union[str, Path], local_dir_path: Union[str, Path], remote_dir_path: Union[str, Path]) -> QuadPypeVersionManager:

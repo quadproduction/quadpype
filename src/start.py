@@ -1122,8 +1122,17 @@ def boot():
     # user app data
     data_dir = get_local_quadpype_path(global_settings)
 
-    from quadpype.lib.version import create_app_version_manager
+    from quadpype.lib.version import create_app_version_manager, create_addon_version_manager
     create_app_version_manager(QUADPYPE_ROOT, data_dir, quadpype_path)
+
+    # TODO: Add the logic to retrieve and/or compute the correct paths
+    ##########################
+    local_addon_dir_path = ""
+    remote_addon_dir_path = ""
+    #######################
+
+    create_addon_version_manager(local_addon_dir_path, remote_addon_dir_path)
+
     igniter_version_classes_reload_module()
 
     bootstrap.set_data_dir(data_dir)
