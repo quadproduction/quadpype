@@ -414,39 +414,102 @@ class AdditionalModulesVersion(BaseVersion):
         path (str): path to Additional Modules
 
     """
+    def get_version_str_from_dir(cls, repo_dir: Union[str, Path, None] = None) -> Union[str, None]:
+        if not isinstance(repo_dir, Path):
+            repo_dir = Path(repo_dir)
+
+        # Recursively find `version.py`
+        version_file = next(repo_dir.rglob("version.py"), None)
+        if not version_file:
+            return None
+
+        version = {}
+        with version_file.open("r") as fp:
+            exec(fp.read(), version)
+
+        return version.get('__version__')
 
     @staticmethod
-    def is_version_in_dir(
-            dir_item: Path, version: "AdditionalModulesVersion") -> Tuple[bool, str]:
-        # TODO: Write this method
+    def is_version_in_dir(dir_item: Path, version: "AdditionalModulesVersion") -> Tuple[bool, str]:
+        try:
+            version_str = AdditionalModulesVersion.get_version_str_from_dir(dir_item)
+            version_check = AdditionalModulesVersion(version=version_str)
+        except ValueError:
+            return False, f"cannot determine version from {dir_item}"
+
+        if not version_check.compare_major_minor_patch(version):
+            return False, (f"dir version ({version}) and "
+                           f"its content version ({version_check}) "
+                           "doesn't match. Skipping.")
         return True, "Versions match"
 
     @staticmethod
-    def is_version_in_zip(
-            zip_item: Path, version: "AdditionalModulesVersion") -> Tuple[bool, str]:
-        # TODO: Write this method
+    def is_version_in_zip(zip_item: Path, version: "AdditionalModulesVersion") -> Tuple[bool, str]:
+        # skip non-zip files
+        if zip_item.suffix.lower() != ".zip":
+            return False, "Not a zip"
+
+        try:
+            with ZipFile(zip_item, "r") as zip_file:
+                # Find `version.py` file in the archive
+                version_file_path = None
+                for file in zip_file.namelist():
+                    if file.endswith("version.py"):
+                        version_file_path = file
+                        break
+
+                if not version_file_path:
+                    return False, "Zip does not contain version.py"
+
+                with zip_file.open(version_file_path) as version_file:
+                    zip_version = {}
+                    exec(version_file.read(), zip_version)
+
+                    try:
+                        zip_version_instance = QuadPypeVersion(
+                            version=zip_version["__version__"]
+                        )
+                    except ValueError as e:
+                        return False, str(e)
+
+                    if not zip_version_instance.compare_major_minor_patch(version):
+                        return False, (
+                            f"zip version ({version}) and its content version "
+                            f"({zip_version_instance}) doesn't match. Skipping."
+                        )
+        except BadZipFile:
+            return False, f"{zip_item} is not a valid zip file"
+        except KeyError:
+            return False, "Error reading version information"
         return True, "Versions match"
 
     def get_installed_version(self):
-        """Get version inside build."""
-        #1. dans les settings overrides check en fonction prod (3.4.1) / staging (7.2.1)
-        # if boolean est pas checké c'est directement le path du serveur
-        # installed_versions = cls.get_versions_from_directory(LE_PATH_SPECIFIER_DANS_LES_SETTINGS)
-        #lorsque bool coché : cls.get_local_path()
-        # installed_versions = cls.get_versions_from_directory(cls.get_local_path())
+        from quadpype.settings.lib import get_studio_global_settings_overrides
+        from quadpype.lib.version_utils import is_running_staging
+        from quadpype.settings import MODULES_SETTINGS_KEY
+        import platform
 
-        # if prod check que prod (3.4.1) est bien dans installed_versions
-        # if staging la meme
+        settings_override = get_studio_global_settings_overrides()
+        custom_addon_settings = settings_override.get(MODULES_SETTINGS_KEY).get("custom_addon", {})
+        # TODO: Need manage multipath
+        versions_dir = custom_addon_settings.get("versions_dir", {}).get(platform.system().lower(), '')
+        retrieve_locally = custom_addon_settings.get('retrieve_locally', False)
 
-        # si empty pour la version dep rod en prod ou de staging en staging
-        # return installed_versions[-1]
-        # TODO: Write this method
+        if is_running_staging():
+            target_version = self.version_in_str(custom_addon_settings.get('staging_version', ''))
+        else:
+            target_version = self.version_in_str(custom_addon_settings.get('production_version', ''))
 
-        #if cls._installed_version is None:
-        #    installed_versions = cls.get_versions_from_directory(cls.get_local_path())
-        #    if installed_versions:
-        #        cls._installed_version = installed_versions[0]
-        #return cls._installed_version
+        if retrieve_locally:
+            installed_versions = self.get_local_versions()
+        else:
+            installed_versions = self.get_versions_from_directory(versions_dir)
+
+        if target_version in installed_versions:
+            installed_versions.get(target_version)
+        else:
+            return installed_versions[-1]
+
 
     def get_remote_path(self):
         """Path to additional_modules directory."""
