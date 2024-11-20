@@ -2,11 +2,13 @@
 """Working thread for update."""
 from qtpy import QtCore
 
-from .bootstrap_repos import (
-    BootstrapRepos,
+from .bootstrap import (
+    BootstrapPackage,
     QuadPypeVersion,
     ZXPExtensionData
 )
+
+from .settings_utils import get_local_quadpype_path
 
 
 class UpdateThread(QtCore.QThread):
@@ -48,15 +50,15 @@ class UpdateThread(QtCore.QThread):
     def run(self):
         """Thread entry point.
 
-        Using :class:`BootstrapRepos` to either install QuadPype as zip files
+        Using :class:`BootstrapPackage` to either install QuadPype as zip files
         or copy them from location specified by user or retrieved from
         database.
         """
-        bs = BootstrapRepos(progress_callback=self.set_progress,
+        bs = BootstrapPackage(progress_callback=self.set_progress,
                             log_signal=self.log_signal,
                             step_text_signal=self.step_text_signal)
 
-        bs.set_data_dir(QuadPypeVersion.get_local_path())
+        bs.set_data_dir(get_local_quadpype_path())
 
         # Adding the conditions to be able to show this window to update the ZXP extensions
         # without needing to install an QuadPype version

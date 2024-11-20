@@ -6,17 +6,10 @@ import sys
 
 os.chdir(os.path.dirname(__file__))  # for override sys.path in Deadline
 
-from .bootstrap_repos import (
-    BootstrapRepos,
-    QuadPypeVersion
+from .bootstrap import (
+    BootstrapPackage
 )
 from .version import __version__ as version
-
-# Store QuadPypeVersion to 'sys.modules'
-#   - this makes it available in QuadPype processes without modifying
-#       'sys.path' or 'PYTHONPATH'
-if "QuadPypeVersion" not in sys.modules:
-    sys.modules["QuadPypeVersion"] = QuadPypeVersion
 
 
 def _get_qt_app():
@@ -119,7 +112,7 @@ def show_message_dialog(title, message):
 
 
 __all__ = [
-    "BootstrapRepos",
+    "BootstrapPackage",
     "open_dialog",
     "open_update_window",
     "show_message_dialog",

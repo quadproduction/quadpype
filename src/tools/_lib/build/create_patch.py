@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Create QuadPype patch from current src."""
-from igniter import bootstrap_repos
+from igniter import bootstrap
 import click
 import enlighten
 from pathlib2 import Path
@@ -22,7 +22,7 @@ def main(path):
     def update_progress(value):
         progress_bar.update(incr=value)
 
-    bs = bootstrap_repos.BootstrapRepos(progress_callback=update_progress)
+    bs = bootstrap.BootstrapPackage(progress_callback=update_progress)
 
     if path:
         out_path = Path(path)
@@ -49,16 +49,16 @@ def _print(msg: str, message_type: int = 0) -> None:
         message_type (int): type of message (0 info, 1 error, 2 note)
 
     """
-    if not bootstrap_repos.term:
+    if not bootstrap.term:
         header = ""
     elif message_type == 0:
-        header = bootstrap_repos.term.aquamarine3(">>> ")
+        header = bootstrap.term.aquamarine3(">>> ")
     elif message_type == 1:
-        header = bootstrap_repos.term.orangered2("!!! ")
+        header = bootstrap.term.orangered2("!!! ")
     elif message_type == 2:
-        header = bootstrap_repos.term.tan1("... ")
+        header = bootstrap.term.tan1("... ")
     else:
-        header = bootstrap_repos.term.darkolivegreen3("--- ")
+        header = bootstrap.term.darkolivegreen3("--- ")
 
     print(f"{header}{msg}")
 

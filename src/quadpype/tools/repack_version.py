@@ -9,7 +9,7 @@ from zipfile import ZipFile
 from typing import List
 import hashlib
 import sys
-from igniter.bootstrap_repos import QuadPypeVersion
+from igniter.bootstrap import QuadPypeVersion
 
 
 class VersionRepacker:

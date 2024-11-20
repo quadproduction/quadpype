@@ -109,7 +109,7 @@ from .dict_conditional import (
 )
 
 from .anatomy_entities import AnatomyEntity
-from .op_version_entity import VersionsInputEntity
+from .version_entity import VersionsInputEntity
 
 __all__ = (
     "DefaultsNotDefined",

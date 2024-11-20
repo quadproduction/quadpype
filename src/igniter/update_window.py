@@ -7,7 +7,7 @@ from pathlib import Path
 from qtpy import QtCore, QtGui, QtWidgets
 
 from .update_thread import UpdateThread
-from .bootstrap_repos import QuadPypeVersion, ZXPExtensionData
+from .bootstrap import QuadPypeVersion, ZXPExtensionData
 from .nice_progress_bar import NiceProgressBar
 from .tools import load_stylesheet, get_app_icon_path, get_fonts_dir_path
 

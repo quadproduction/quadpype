@@ -4,7 +4,7 @@ import datetime
 
 from .execute import get_quadpype_execute_args
 from .user import get_user_id, get_user_profile
-from .quadpype_version import (
+from .version_utils import (
     is_running_from_build,
     get_quadpype_version,
     get_build_version

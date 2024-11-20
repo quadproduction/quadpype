@@ -34,7 +34,7 @@ from quadpype.settings.entities.exceptions import (
     StudioDefaultsNotDefined,
     SchemaError
 )
-from quadpype.settings.entities.op_version_entity import (
+from quadpype.settings.entities.version_entity import (
     QuadPypeVersionInput
 )
 

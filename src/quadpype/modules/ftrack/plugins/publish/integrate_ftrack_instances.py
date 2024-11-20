@@ -4,7 +4,7 @@ import copy
 import pyblish.api
 
 from quadpype.pipeline.publish import get_publish_repre_path
-from quadpype.lib.quadpype_version import get_quadpype_version
+from quadpype.lib.version_utils import get_quadpype_version
 from quadpype.lib.transcoding import (
     get_ffprobe_streams,
     convert_ffprobe_fps_to_float,

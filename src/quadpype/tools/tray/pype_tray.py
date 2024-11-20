@@ -16,16 +16,16 @@ from quadpype.lib import (
     run_detached_process,
     get_quadpype_username
 )
-from quadpype.lib.quadpype_version import (
-    op_version_control_available,
+from quadpype.lib.version import QuadPypeVersion
+from quadpype.lib.version_utils import (
     get_expected_version,
-    get_installed_version,
     is_current_version_studio_latest,
     is_current_version_higher_than_expected,
     get_quadpype_version,
     is_running_staging,
     is_staging_enabled
 )
+from quadpype.lib.settings import get_local_quadpype_path
 from quadpype.modules import TrayModulesManager
 from quadpype.settings import (
     get_global_settings,
@@ -352,7 +352,7 @@ class TrayManager:
                 self._version_dialog.close()
             return
 
-        installed_version = get_installed_version()
+        installed_version = QuadPypeVersion(path=os.getenv("QUADPYPE_ROOT")).get_installed_version()
         expected_version = get_expected_version()
 
         # Request new build if is needed
@@ -498,10 +498,7 @@ class TrayManager:
         # SLOW: This operation is very slow, so it's currently disabled
         # self._validate_settings_defaults()
 
-        if not op_version_control_available():
-            dialog = BuildVersionDialog()
-            dialog.exec_()
-        elif is_staging_enabled() and not is_running_staging():
+        if is_staging_enabled() and not is_running_staging():
             dialog = ProductionStagingDialog()
             dialog.exec_()
 

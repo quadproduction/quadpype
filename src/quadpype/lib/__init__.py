@@ -171,8 +171,7 @@ from .path_tools import (
     get_last_version_from_path,
 )
 
-from .quadpype_version import (
-    op_version_control_available,
+from .version_utils import (
     get_quadpype_version,
     get_build_version,
     get_expected_version,
@@ -319,7 +318,6 @@ __all__ = [
 
     "Logger",
 
-    "op_version_control_available",
     "get_quadpype_version",
     "get_build_version",
     "get_expected_version",

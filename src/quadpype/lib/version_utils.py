@@ -1,20 +1,22 @@
 """Lib access to QuadPypeVersion from igniter.
 
 Access to logic from igniter is available only for QuadPype processes.
-Is meant to be able check QuadPype versions for studio. The logic is dependent
+Is meant to be able to check QuadPype versions for studio. The logic is dependent
 on igniter's inner logic of versions.
-
-Keep in mind that all functions except 'get_installed_version' does not return
-QuadPype version located in build but versions available in remote versions
-repository or locally available.
 """
 
 import os
-import sys
+from pathlib import Path
 
 import quadpype.version
 
 from .python_module_tools import import_filepath
+
+from .version import QuadPypeVersion
+from .settings import (
+    get_expected_studio_version_str,
+    get_local_quadpype_path
+)
 
 
 # ----------------------------------------
@@ -93,9 +95,6 @@ def is_running_staging():
     if os.getenv("QUADPYPE_IS_STAGING") == "1":
         return True
 
-    if not op_version_control_available():
-        return False
-
     from quadpype.settings import get_core_settings
 
     core_settings = get_core_settings()
@@ -125,87 +124,52 @@ def is_running_staging():
 # Functions dependent on QuadPypeVersion
 #   - Make sense to call only in QuadPype process
 # ----------------------------------------
-def get_QuadPypeVersion():
-    """Access to QuadPypeVersion class stored in sys modules."""
-    return sys.modules.get("QuadPypeVersion")
-
-
-def op_version_control_available():
-    """Check if current process has access to QuadPypeVersion."""
-    if get_QuadPypeVersion() is None:
-        return False
-    return True
-
-
-def get_installed_version():
-    """Get QuadPype version inside build.
-
-    This version is not returned by any other functions here.
-    """
-    if op_version_control_available():
-        return get_QuadPypeVersion().get_installed_version()
-    return None
-
-
 def get_available_versions(*args, **kwargs):
     """Get list of available versions."""
-    if op_version_control_available():
-        return get_QuadPypeVersion().get_available_versions(
-            *args, **kwargs
-        )
-    return None
-
-
-def quadpype_path_is_set():
-    """QuadPype repository path is set in settings."""
-    if op_version_control_available():
-        return get_QuadPypeVersion().quadpype_path_is_set()
-    return None
+    root_path = os.environ["QUADPYPE_ROOT"]
+    local_path = get_local_quadpype_path()
+    remote_path = os.getenv("QUADPYPE_PATH")
+    temp_version = QuadPypeVersion(
+        path=root_path,
+        local_path=local_path,
+        remote_path=remote_path
+    )
+    return temp_version.get_available_versions(*args, **kwargs)
 
 
 def quadpype_path_is_accessible():
     """QuadPype version repository path can be accessed."""
-    if op_version_control_available():
-        return get_QuadPypeVersion().quadpype_path_is_accessible()
-    return None
+    return os.getenv("QUADPYPE_PATH") and Path(os.getenv("QUADPYPE_PATH")).exists()
 
 
-def get_local_versions(*args, **kwargs):
+def get_local_versions():
     """QuadPype versions available on this workstation."""
-    if op_version_control_available():
-        return get_QuadPypeVersion().get_local_versions(*args, **kwargs)
-    return None
+    return QuadPypeVersion(local_path=get_local_quadpype_path()).get_local_versions()
 
 
-def get_remote_versions(*args, **kwargs):
+def get_remote_versions():
     """QuadPype versions in repository path."""
-    if op_version_control_available():
-        return get_QuadPypeVersion().get_remote_versions(*args, **kwargs)
-    return None
+    return QuadPypeVersion(remote_path=os.getenv("QUADPYPE_PATH")).get_remote_versions()
 
 
 def get_latest_version(local=None, remote=None):
     """Get latest version from repository path."""
+    root_path = os.environ["QUADPYPE_ROOT"]
+    local_path = get_local_quadpype_path()
+    remote_path = os.getenv("QUADPYPE_PATH")
+    temp_version = QuadPypeVersion(
+        path=root_path,
+        local_path=local_path,
+        remote_path=remote_path
+    )
+    latest_version = temp_version.get_latest_version(local=local,remote=remote)
 
-    if op_version_control_available():
-        return get_QuadPypeVersion().get_latest_version(
-            local=local,
-            remote=remote
-        )
-    return None
-
-
-def get_expected_studio_version(staging=None):
-    """Expected production or staging version in studio."""
-    if op_version_control_available():
-        if staging is None:
-            staging = is_staging_enabled()
-        return get_QuadPypeVersion().get_expected_studio_version(staging)
-    return None
+    return latest_version
 
 
 def get_expected_version(staging=None):
-    expected_version = get_expected_studio_version(staging)
+    expected_version_str = get_expected_studio_version_str(staging)
+    expected_version = QuadPypeVersion(version=expected_version_str) if expected_version_str else None
     if expected_version is None:
         # Look for latest if expected version is not set in settings
         expected_version = get_latest_version(
@@ -232,13 +196,10 @@ def is_current_version_studio_latest():
     #   control or path to folder with zip files is not accessible
     if (
         is_running_locally()
-        or not op_version_control_available()
         or not quadpype_path_is_accessible()
     ):
         return output
 
-    # Get QuadPypeVersion class
-    QuadPypeVersion = get_QuadPypeVersion()
     # Convert current version to QuadPypeVersion object
     current_version = QuadPypeVersion(version=get_quadpype_version())
 
@@ -257,17 +218,14 @@ def is_current_version_higher_than_expected():
         bool: True when is higher than studio version.
     """
     output = None
-    # Skip if is not running from build or build does not support version
+    # Skip if it is not running from build or build does not support version
     #   control or path to folder with zip files is not accessible
     if (
         is_running_locally()
-        or not op_version_control_available()
         or not quadpype_path_is_accessible()
     ):
         return output
 
-    # Get QuadPypeVersion class
-    QuadPypeVersion = get_QuadPypeVersion()
     # Convert current version to QuadPypeVersion object
     current_version = QuadPypeVersion(version=get_quadpype_version())
 

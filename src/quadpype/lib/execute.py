@@ -8,7 +8,7 @@ import tempfile
 from .log import Logger
 from .vendor_bin_utils import find_executable
 
-from .quadpype_version import is_running_locally
+from .version_utils import is_running_locally
 
 # MSDN process creation flag (Windows only)
 CREATE_NO_WINDOW = 0x08000000

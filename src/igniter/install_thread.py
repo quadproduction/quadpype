@@ -6,8 +6,8 @@ from pathlib import Path
 
 from qtpy import QtCore
 
-from .bootstrap_repos import (
-    BootstrapRepos,
+from .bootstrap import (
+    BootstrapPackage,
     QuadPypeVersionInvalid,
     QuadPypeVersionIOError,
     QuadPypeVersionExists,
@@ -15,10 +15,13 @@ from .bootstrap_repos import (
 )
 
 from .tools import (
-    get_quadpype_global_settings,
-    get_local_quadpype_path_from_settings,
     validate_mongo_connection,
     is_running_locally
+)
+
+from .settings_utils import (
+    get_quadpype_global_settings,
+    get_local_quadpype_path
 )
 
 
@@ -54,7 +57,7 @@ class InstallThread(QtCore.QThread):
     def run(self):
         """Thread entry point.
 
-        Using :class:`BootstrapRepos` to either install QuadPype as zip files
+        Using :class:`BootstrapPackage` to either install QuadPype as zip files
         or copy them from location specified by user or retrieved from
         database.
 
@@ -62,7 +65,7 @@ class InstallThread(QtCore.QThread):
         self.message.emit("Installing QuadPype ...", False)
 
         # find local version of QuadPype
-        bs = BootstrapRepos(
+        bs = BootstrapPackage(
             progress_callback=self.set_progress, log_signal=self.message)
         local_version = QuadPypeVersion.get_version_str_from_quadpype_version()
 
@@ -89,7 +92,7 @@ class InstallThread(QtCore.QThread):
             return
 
         global_settings = get_quadpype_global_settings(self._mongo)
-        data_dir = get_local_quadpype_path_from_settings(global_settings)
+        data_dir = get_local_quadpype_path(global_settings)
         bs.set_data_dir(data_dir)
 
         self.message.emit(
@@ -104,7 +107,9 @@ class InstallThread(QtCore.QThread):
             self._set_result(1)
             return
 
-        if detected and not QuadPypeVersion.get_installed_version().is_compatible(detected[-1]):  # noqa: E501
+        installed_version = QuadPypeVersion(path=os.getenv("QUADPYPE_ROOT")).get_installed_version()
+
+        if detected and not installed_version.is_compatible(detected[-1]):  # noqa: E501
             self.message.emit((
                 f"Latest detected version {detected[-1]} "
                 "is not compatible with the currently running "
@@ -117,8 +122,7 @@ class InstallThread(QtCore.QThread):
         # filter results to get only compatible versions
         detected = [
             version for version in detected
-            if version.is_compatible(
-                QuadPypeVersion.get_installed_version())
+            if version.is_compatible(installed_version)
         ]
 
         if detected:

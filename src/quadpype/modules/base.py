@@ -43,8 +43,6 @@ from .interfaces import (
     ITrayService
 )
 
-from igniter.bootstrap_repos import AdditionalModulesVersion
-
 # Files that will always be ignored on addons import
 IGNORED_FILENAMES = (
     "__pycache__",
@@ -310,7 +308,6 @@ def load_modules(force=False):
         # If lock is locked wait until is finished
         while _LoadCache.modules_lock.locked():
             time.sleep(0.1)
-
 
 
 def _load_modules():
@@ -1449,7 +1446,7 @@ class ModuleSettingsDef(BaseModuleSettingsDef):
 
     def get_dynamic_schemas(self, schema_type):
         """Split method into 2 methods by schema type."""
-        if schema_type == SCHEMA_KEY_GLOBAl_SETTINGS:
+        if schema_type == SCHEMA_KEY_GLOBAL_SETTINGS:
             return self.get_global_dynamic_schemas() or {}
         elif schema_type == SCHEMA_KEY_PROJECT_SETTINGS:
             return self.get_project_dynamic_schemas() or {}

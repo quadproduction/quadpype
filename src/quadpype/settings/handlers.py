@@ -11,6 +11,7 @@ from quadpype.client.mongo import (
 )
 from quadpype.client import get_project
 from quadpype.lib import get_user_workstation_info, get_user_id, CacheValues
+from quadpype.lib.version import QuadPypeVersion
 
 from .constants import (
     CORE_SETTINGS_KEY,
@@ -996,13 +997,6 @@ class MongoSettingsHandler(SettingsHandler):
             return
         self._version_order_checked = True
 
-        from quadpype.lib.quadpype_version import get_QuadPypeVersion
-
-        QuadPypeVersion = get_QuadPypeVersion()
-        # Skip if 'QuadPypeVersion' is not available
-        if QuadPypeVersion is None:
-            return
-
         # Query document holding sorted list of version strings
         doc = self._get_versions_order_doc()
         if not doc:
@@ -1040,11 +1034,6 @@ class MongoSettingsHandler(SettingsHandler):
             project_name: None
             for project_name in project_names
         }
-        from quadpype.lib.quadpype_version import get_QuadPypeVersion
-        QuadPypeVersion = get_QuadPypeVersion()
-        if QuadPypeVersion is None:
-            return output
-
         versioned_doc = self._get_versions_order_doc()
 
         settings_ids = []
@@ -1510,34 +1499,9 @@ class MongoSettingsHandler(SettingsHandler):
         if not versions:
             return []
 
-        set_versions = set(versions)
-
-        from quadpype.lib.quadpype_version import get_QuadPypeVersion
-
-        QuadPypeVersion = get_QuadPypeVersion()
-
-        # Skip if 'QuadPypeVersion' is not available
-        if QuadPypeVersion is not None:
-            obj_versions = sorted(
-                [QuadPypeVersion(version=version) for version in set_versions]
-            )
-            sorted_versions = [str(version) for version in obj_versions]
-
-            return sorted_versions
-
-        doc = self._get_versions_order_doc()
-        all_versions = doc.get(self._all_versions_keys)
-        if not all_versions:
-            return list(sorted(versions))
-
-        sorted_versions = []
-        for version in all_versions:
-            if version in set_versions:
-                set_versions.remove(version)
-                sorted_versions.append(version)
-
-        for version in sorted(set_versions):
-            sorted_versions.insert(0, version)
+        sorted_versions = sorted(
+            list({str(QuadPypeVersion(version=version)) for version in versions})
+        )
 
         return sorted_versions
 

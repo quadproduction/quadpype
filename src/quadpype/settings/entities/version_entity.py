@@ -1,7 +1,9 @@
-from quadpype.lib.quadpype_version import (
-    get_remote_versions,
-    get_QuadPypeVersion,
-    get_installed_version
+import os
+from quadpype.lib.version import (
+    QuadPypeVersion
+)
+from quadpype.lib.settings import (
+    get_local_quadpype_path
 )
 from .input_entities import TextEntity
 from .lib import (
@@ -9,7 +11,6 @@ from .lib import (
     NOT_SET
 )
 from .exceptions import BaseInvalidValue
-
 
 class QuadPypeVersionInput(TextEntity):
     """Entity to store QuadPype version to use.
@@ -37,11 +38,7 @@ class QuadPypeVersionInput(TextEntity):
         """Update value hints for UI purposes."""
         value_hints = []
         if state is OverrideState.STUDIO:
-            versions = self._get_quadpype_versions()
-            for version in versions:
-                version_str = str(version)
-                if version_str not in value_hints:
-                    value_hints.append(version_str)
+            value_hints = list(self._get_quadpype_versions())
 
         self.value_hints = value_hints
 
@@ -52,17 +49,13 @@ class QuadPypeVersionInput(TextEntity):
     def convert_to_valid_type(self, value):
         """Add validation of version regex."""
         if value and value is not NOT_SET:
-            QuadPypeVersion = get_QuadPypeVersion()
-            if QuadPypeVersion is not None:
-                try:
-                    QuadPypeVersion(version=value)
-                except Exception:
-                    raise BaseInvalidValue(
-                        "Value \"{}\"is not valid version format.".format(
-                            value
-                        ),
-                        self.path
-                    )
+            if not QuadPypeVersion().version_in_str(value):
+                raise BaseInvalidValue(
+                    "Value \"{}\"is not valid version format.".format(
+                        value
+                    ),
+                    self.path
+                )
         return super(QuadPypeVersionInput, self).convert_to_valid_type(value)
 
 
@@ -71,8 +64,17 @@ class VersionsInputEntity(QuadPypeVersionInput):
     schema_types = ["versions-text"]
 
     def _get_quadpype_versions(self):
-        versions = get_remote_versions()
-        if versions is None:
-            return []
-        versions.append(get_installed_version())
+        root_path = os.getenv("QUADPYPE_ROOT")
+        local_path = get_local_quadpype_path()
+        remote_path = os.getenv("QUADPYPE_PATH")
+        temp_version = QuadPypeVersion(path=root_path, local_path=local_path, remote_path=remote_path)
+
+        versions = []
+
+        installed_version = temp_version.get_installed_version()
+        remote_versions = temp_version.get_remote_versions(excluded_str_versions=[str(installed_version)])
+        versions.append(str(installed_version))
+        for version in remote_versions:
+            versions.append(str(version))
+
         return sorted(versions)
