@@ -30,10 +30,12 @@ from .tools import (
 )
 
 from .version_classes import (
-    QuadPypeVersion,
-    QuadPypeVersionExists,
-    QuadPypeVersionIOError,
-    QuadPypeVersionInvalid
+    PackageVersion,
+    PackageVersionExists,
+    PackageVersionIOError,
+    PackageVersionInvalid,
+    QuadPypeVersionManager,
+    get_app_version_manager
 )
 
 from .settings_utils import (
@@ -122,7 +124,7 @@ class BootstrapPackage:
         self.data_dir = None
         self.set_data_dir(None)
         self.secure_registry = QuadPypeSecureRegistry("mongodb")
-        base_version = QuadPypeVersion.get_version_str_from_quadpype_version()
+        base_version = QuadPypeVersionManager.get_package_version_from_dir()
         self.registry = QuadPypeSettingsRegistry(base_version=base_version)
         self.exclusion_list = [".pyc", "__pycache__"]
         self.inclusion_list = [
@@ -159,7 +161,7 @@ class BootstrapPackage:
 
         Args:
             version (str): Version string to look for (1.2.4-nightly.1+test)
-            version_list (list of QuadPypeVersion): list of version to search.
+            version_list (list of PackageVersion): list of version to search.
 
         Returns:
             Path: Path to given version.
@@ -171,7 +173,7 @@ class BootstrapPackage:
         return None
 
     @staticmethod
-    def get_version(repo_dir: Path) -> Union[QuadPypeVersion, None]:
+    def get_version(repo_dir: Path) -> Union[PackageVersion, None]:
         """Get version of QuadPype in given directory.
 
         Note: in frozen QuadPype installed in user data dir, this must point
@@ -186,19 +188,12 @@ class BootstrapPackage:
             None: if QuadPype is not found.
 
         """
-        # try to find version
-        version_file = Path(repo_dir) / "quadpype" / "version.py"
-        if not version_file.exists():
-            return None
+        version_str = QuadPypeVersionManager.get_package_version_from_dir(repo_dir)
 
-        version = {}
-        with version_file.open("r") as fp:
-            exec(fp.read(), version)
-
-        return QuadPypeVersion(version=version['__version__'], path=repo_dir)
+        return PackageVersion(version=version_str, path=repo_dir)
 
     def create_version_from_live_code(
-            self, repo_dir: Path = None, data_dir: Path = None) -> Union[QuadPypeVersion, None]:
+            self, repo_dir: Path = None, data_dir: Path = None) -> Union[PackageVersion, None]:
         """Copy zip created from QuadPype repositories to user data dir.
 
         This detects QuadPype version either in local "live" QuadPype
@@ -211,7 +206,7 @@ class BootstrapPackage:
             data_dir (Path, optional): Path to the user data directory.
 
         Returns:
-            version (QuadPypeVersion): Info of the version created.
+            version (PackageVersion): Info of the version created.
 
         """
         # If repo dir is not set, we detect local "live" QuadPype repository
@@ -220,7 +215,7 @@ class BootstrapPackage:
         if repo_dir:
             version_str = str(self.get_version(repo_dir))
         else:
-            installed_version = QuadPypeVersion(path=os.getenv("QUADPYPE_ROOT")).get_installed_version()
+            installed_version = get_app_version_manager().get_installed_version()
             version_str = str(installed_version)
             repo_dir = installed_version.path
 
@@ -246,7 +241,7 @@ class BootstrapPackage:
 
             destination = self._move_zip_to_data_dir(temp_zip)
 
-        return QuadPypeVersion(version=version_str, path=Path(destination))
+        return PackageVersion(version=version_str, path=Path(destination))
 
     def _move_zip_to_data_dir(self, zip_file) -> Union[None, Path]:
         """Move zip with QuadPype version to user data directory.
@@ -259,7 +254,7 @@ class BootstrapPackage:
             Path to moved zip on success.
 
         """
-        version = QuadPypeVersion.version_in_str(zip_file.name)
+        version = get_app_version_manager().get_version_from_str(zip_file.name)
         destination_dir = self.data_dir / f"{version.major}.{version.minor}"
         if not destination_dir.exists():
             destination_dir.mkdir(parents=True)
@@ -318,7 +313,7 @@ class BootstrapPackage:
 
         return included_files
 
-    def create_version_from_frozen_code(self) -> Union[None, QuadPypeVersion]:
+    def create_version_from_frozen_code(self) -> Union[None, PackageVersion]:
         """Create QuadPype version from *frozen* code distributed by installer.
 
         This should be real edge case for those wanting to try out QuadPype
@@ -327,7 +322,7 @@ class BootstrapPackage:
         that can be out of date.
 
         Returns:
-            :class:`QuadPypeVersion` zip file to be installed.
+            :class:`PackageVersion` zip file to be installed.
 
         """
         frozen_root = Path(sys.executable).parent
@@ -356,7 +351,7 @@ class BootstrapPackage:
             # Move the patch zip to the proper patch data folder
             destination = self._move_zip_to_data_dir(temp_zip)
 
-        return QuadPypeVersion(version=version_str, path=destination)
+        return PackageVersion(version=version_str, path=destination)
 
     def _create_quadpype_zip(self, zip_path: Path, quadpype_path: Path) -> None:
         """Pack repositories and QuadPype into zip.
@@ -565,19 +560,18 @@ class BootstrapPackage:
         sys.path.insert(0, directory.as_posix())
 
     @staticmethod
-    def find_quadpype_local_version(version: QuadPypeVersion) -> Union[QuadPypeVersion, None]:
+    def find_quadpype_local_version(version: PackageVersion) -> Union[PackageVersion, None]:
         """
            Finds the specified QuadPype version in the local directory.
 
            Parameters:
-           - version (QuadPypeVersion): A specific version of QuadPype to search for.
+           - version (PackageVersion): A specific version of QuadPype to search for.
 
            Returns:
-           - QuadPypeVersion() or None: Returns the found QuadPype version if available, or None if not found.
+           - PackageVersion() or None: Returns the found QuadPype version if available, or None if not found.
         """
         zip_version = None
-        temp_obj = QuadPypeVersion(local_path=get_local_quadpype_path())
-        for local_version in temp_obj.get_local_versions():
+        for local_version in get_app_version_manager().get_local_versions():
             if local_version == version:
                 if local_version.path.suffix.lower() == ".zip":
                     zip_version = local_version
@@ -587,18 +581,17 @@ class BootstrapPackage:
         return zip_version
 
     @staticmethod
-    def find_quadpype_remote_version(version: QuadPypeVersion) -> Union[QuadPypeVersion, None]:
+    def find_quadpype_remote_version(version: PackageVersion) -> Union[PackageVersion, None]:
         """
            Finds the specified QuadPype version in the remote directory.
 
            Parameters:
-           - version (QuadPypeVersion): A specific version of QuadPype to search for.
+           - version (PackageVersion): A specific version of QuadPype to search for.
 
            Returns:
-           - QuadPypeVersion() or None: Returns the found QuadPype version if available, or None if not found.
+           - PackageVersion() or None: Returns the found QuadPype version if available, or None if not found.
         """
-        version.set_remote_path(os.getenv("QUADPYPE_PATH"))
-        remote_versions = version.get_remote_versions()
+        remote_versions = get_app_version_manager().get_remote_versions()
         return next(
             (
                 remote_version for remote_version in remote_versions
@@ -607,21 +600,21 @@ class BootstrapPackage:
 
     @staticmethod
     def find_quadpype_version(
-            version: Union[str, QuadPypeVersion]
-    ) -> Union[QuadPypeVersion, None]:
+            version: Union[str, PackageVersion]
+    ) -> Union[PackageVersion, None]:
         """Find location of specified QuadPype version.
 
         Args:
-            version (Union[str, QuadPypeVersion): Version to find.
+            version (Union[str, PackageVersion): Version to find.
 
         Returns:
-            requested QuadPypeVersion.
+            requested PackageVersion.
 
         """
         if isinstance(version, str):
-            version = QuadPypeVersion(version=version)
+            version = PackageVersion(version=version)
 
-        installed_version = QuadPypeVersion(path=os.getenv("QUADPYPE_ROOT")).get_installed_version()
+        installed_version = get_app_version_manager().get_installed_version()
         if installed_version == version:
             return installed_version
 
@@ -632,30 +625,20 @@ class BootstrapPackage:
         return BootstrapPackage.find_quadpype_remote_version(version)
 
     @staticmethod
-    def find_latest_quadpype_version() -> Union[QuadPypeVersion, None]:
+    def find_latest_quadpype_version() -> Union[PackageVersion, None]:
         """Find the latest available QuadPype version in all location.
 
         Returns:
             Latest QuadPype version on None if nothing was found.
 
         """
-        root_path = os.environ["QUADPYPE_ROOT"]
-        local_path = get_local_quadpype_path()
-        remote_path = os.getenv("QUADPYPE_PATH")
-        temp_version = QuadPypeVersion(
-            path=root_path,
-            local_path=local_path,
-            remote_path=remote_path
-        )
-        latest_version = temp_version.get_latest_version()
-
-        return latest_version
+        return get_app_version_manager().get_latest_version()
 
     def find_quadpype(
             self,
             quadpype_path: Union[Path, str] = None,
             include_zips: bool = False
-    ) -> Union[List[QuadPypeVersion], None]:
+    ) -> Union[List[PackageVersion], None]:
         """Get ordered dict of detected QuadPype version.
 
         Resolution order for QuadPype is following:
@@ -816,11 +799,11 @@ class BootstrapPackage:
             exc_msg_formated = term.red(f"{exc_msg}") if term else exc_msg
             print(exc_msg_formated)
 
-    def extract_quadpype(self, version: QuadPypeVersion) -> Union[Path, None]:
+    def extract_quadpype(self, version: PackageVersion) -> Union[Path, None]:
         """Extract zipped QuadPype version to user data directory.
 
         Args:
-            version (QuadPypeVersion): Version of QuadPype.
+            version (PackageVersion): Version of QuadPype.
 
         Returns:
             Path: path to extracted version.
@@ -872,26 +855,26 @@ class BootstrapPackage:
         return is_inside
 
     def install_version(self,
-                        quadpype_version: QuadPypeVersion,
+                        quadpype_version: PackageVersion,
                         force: bool = False) -> Path:
         """Install QuadPype version to user data directory.
 
         Args:
-            quadpype_version (QuadPypeVersion): QuadPype version to install.
+            quadpype_version (PackageVersion): QuadPype version to install.
             force (bool, optional): Force overwrite existing version.
 
         Returns:
             Path: Path to installed QuadPype.
 
         Raises:
-            QuadPypeVersionExists: If not forced and this version already exist
+            PackageVersionExists: If not forced and this version already exist
                 in user data directory.
-            QuadPypeVersionInvalid: If version to install is invalid.
-            QuadPypeVersionIOError: If copying or zipping fail.
+            PackageVersionInvalid: If version to install is invalid.
+            PackageVersionIOError: If copying or zipping fail.
 
         """
         if self.is_inside_user_data(quadpype_version.path) and not quadpype_version.path.is_file():  # noqa
-            raise QuadPypeVersionExists(
+            raise PackageVersionExists(
                 "QuadPype already inside user data dir")
 
         # determine destination directory name
@@ -912,11 +895,11 @@ class BootstrapPackage:
                 self._print(
                     f"Cannot remove already existing {destination}",
                     log.ERROR, exception=e)
-                raise QuadPypeVersionIOError(
+                raise PackageVersionIOError(
                     f"Cannot remove existing {destination}") from e
         elif destination.exists() and not force:
             self._print("Destination directory already exists")
-            raise QuadPypeVersionExists(f"{destination} already exist.")
+            raise PackageVersionExists(f"{destination} already exist.")
         else:
             # create destination parent directories even if they don't exist.
             destination.mkdir(parents=True)
@@ -934,13 +917,13 @@ class BootstrapPackage:
                 self._create_quadpype_zip(temp_zip, quadpype_version.path)
                 if not os.path.exists(temp_zip):
                     self._print("Make archive failed.", log.ERROR)
-                    raise QuadPypeVersionIOError("Zip creation failed.")
+                    raise PackageVersionIOError("Zip creation failed.")
 
                 # set zip as version source
                 quadpype_version.path = temp_zip
 
                 if self.is_inside_user_data(quadpype_version.path):
-                    raise QuadPypeVersionInvalid(
+                    raise PackageVersionInvalid(
                         "Version is in user data dir.")
                 quadpype_version.path = self._copy_zip(
                     quadpype_version.path, destination)
@@ -948,7 +931,7 @@ class BootstrapPackage:
         elif quadpype_version.path.is_file():
             # check if file is zip (by extension)
             if quadpype_version.path.suffix.lower() != ".zip":
-                raise QuadPypeVersionInvalid("Invalid file format")
+                raise PackageVersionInvalid("Invalid file format")
 
             if not self.is_inside_user_data(quadpype_version.path):
                 quadpype_version.path = self._copy_zip(
@@ -991,7 +974,7 @@ class BootstrapPackage:
 
         return extension_id, extension_version
 
-    def update_zxp_extensions(self, quadpype_version: QuadPypeVersion, extensions: [ZXPExtensionData]):
+    def update_zxp_extensions(self, quadpype_version: PackageVersion, extensions: [ZXPExtensionData]):
         # Determine the user-specific Adobe extensions directory
         user_extensions_dir = Path(os.getenv('APPDATA'), 'Adobe', 'CEP', 'extensions')
 
@@ -1089,14 +1072,14 @@ class BootstrapPackage:
             self._print(
                 "Cannot copy version to user data directory", log.ERROR,
                 exception=e)
-            raise QuadPypeVersionIOError((
+            raise PackageVersionIOError((
                 f"can't copy version {source.as_posix()} "
                 f"to destination {destination.parent.as_posix()}")) from e
         return _destination_zip
 
     def _is_quadpype_in_dir(self,
                             dir_item: Path,
-                            detected_version: QuadPypeVersion) -> bool:
+                            detected_version: PackageVersion) -> bool:
         """Test if path item is QuadPype version matching detected version.
 
         If item is directory that might (based on it's name)
@@ -1105,7 +1088,7 @@ class BootstrapPackage:
 
         Args:
             dir_item (Path): Directory to test.
-            detected_version (QuadPypeVersion): QuadPype version detected
+            detected_version (PackageVersion): QuadPype version detected
                 from name.
 
         Returns:
@@ -1131,7 +1114,7 @@ class BootstrapPackage:
 
     def _is_quadpype_in_zip(self,
                             zip_item: Path,
-                            detected_version: QuadPypeVersion) -> bool:
+                            detected_version: PackageVersion) -> bool:
         """Test if zip path is QuadPype version matching detected version.
 
         Open zip file, look inside and parse version from QuadPype
@@ -1140,7 +1123,7 @@ class BootstrapPackage:
 
         Args:
             zip_item (Path): Zip file to test.
-            detected_version (QuadPypeVersion): QuadPype version detected from
+            detected_version (PackageVersion): QuadPype version detected from
                 name.
 
         Returns:
@@ -1158,7 +1141,7 @@ class BootstrapPackage:
                     zip_version = {}
                     exec(version_file.read(), zip_version)
                     try:
-                        version_check = QuadPypeVersion(
+                        version_check = PackageVersion(
                             version=zip_version["__version__"])
                     except ValueError as e:
                         self._print(str(e), level=log.ERROR)
@@ -1186,7 +1169,7 @@ class BootstrapPackage:
             quadpype_dir (Path): Directory to scan.
 
         Returns:
-            list of QuadPypeVersion
+            list of PackageVersion
 
         Throws:
             ValueError: if invalid path is specified.
@@ -1207,10 +1190,10 @@ class BootstrapPackage:
 
             # if it is file, strip extension, in case of dir don't.
             name = item.name if item.is_dir() else item.stem
-            result = QuadPypeVersion.version_in_str(name)
+            result = get_app_version_manager().get_version_from_str(name)
 
             if result:
-                detected_version: QuadPypeVersion
+                detected_version: PackageVersion
                 detected_version = result
 
                 if item.is_dir() and not self._is_quadpype_in_dir(

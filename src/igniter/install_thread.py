@@ -7,11 +7,7 @@ from pathlib import Path
 from qtpy import QtCore
 
 from .bootstrap import (
-    BootstrapPackage,
-    QuadPypeVersionInvalid,
-    QuadPypeVersionIOError,
-    QuadPypeVersionExists,
-    QuadPypeVersion
+    BootstrapPackage
 )
 
 from .tools import (
@@ -22,6 +18,15 @@ from .tools import (
 from .settings_utils import (
     get_quadpype_global_settings,
     get_local_quadpype_path
+)
+
+from .version_classes import (
+    PackageVersion,
+    PackageVersionInvalid,
+    PackageVersionIOError,
+    PackageVersionExists,
+    QuadPypeVersionManager,
+    get_app_version_manager
 )
 
 
@@ -67,7 +72,7 @@ class InstallThread(QtCore.QThread):
         # find local version of QuadPype
         bs = BootstrapPackage(
             progress_callback=self.set_progress, log_signal=self.message)
-        local_version = QuadPypeVersion.get_version_str_from_quadpype_version()
+        local_version = QuadPypeVersionManager.get_package_version_from_dir()
 
         if self._mongo:
             self.message.emit("Saving mongo connection string ...", False)
@@ -107,7 +112,7 @@ class InstallThread(QtCore.QThread):
             self._set_result(1)
             return
 
-        installed_version = QuadPypeVersion(path=os.getenv("QUADPYPE_ROOT")).get_installed_version()
+        installed_version = get_app_version_manager().get_installed_version()
 
         if detected and not installed_version.is_compatible(detected[-1]):  # noqa: E501
             self.message.emit((
@@ -126,7 +131,7 @@ class InstallThread(QtCore.QThread):
         ]
 
         if detected:
-            if QuadPypeVersion(
+            if PackageVersion(
                     version=local_version, path=Path()) < detected[-1]:
                 self.message.emit((
                     f"Latest installed version {detected[-1]} is newer "
@@ -138,7 +143,7 @@ class InstallThread(QtCore.QThread):
                 self._set_result(0)
                 return
 
-            if QuadPypeVersion(version=local_version).compare_major_minor_patch(detected[-1]):  # noqa: E501
+            if PackageVersion(version=local_version).compare_major_minor_patch(detected[-1]):  # noqa: E501
                 self.message.emit((
                     f"Latest installed version is the same as "
                     f"currently running {local_version}"
@@ -166,9 +171,9 @@ class InstallThread(QtCore.QThread):
 
         try:
             bs.install_version(local_quadpype)
-        except (QuadPypeVersionExists,
-                QuadPypeVersionInvalid,
-                QuadPypeVersionIOError) as e:
+        except (PackageVersionExists,
+                PackageVersionInvalid,
+                PackageVersionIOError) as e:
             self.message.emit(f"Installed failed: ", True)
             self.message.emit(str(e), True)
             self._set_result(-1)

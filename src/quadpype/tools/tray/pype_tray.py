@@ -16,7 +16,7 @@ from quadpype.lib import (
     run_detached_process,
     get_quadpype_username
 )
-from quadpype.lib.version import QuadPypeVersion
+from quadpype.lib.version import get_app_version_manager
 from quadpype.lib.version_utils import (
     get_expected_version,
     is_current_version_studio_latest,
@@ -352,7 +352,7 @@ class TrayManager:
                 self._version_dialog.close()
             return
 
-        installed_version = QuadPypeVersion(path=os.getenv("QUADPYPE_ROOT")).get_installed_version()
+        installed_version = get_app_version_manager().get_installed_version()
         expected_version = get_expected_version()
 
         # Request new build if is needed

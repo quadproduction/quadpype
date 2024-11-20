@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 """Working thread for update."""
+from typing import List
+
 from qtpy import QtCore
 
 from .bootstrap import (
     BootstrapPackage,
-    QuadPypeVersion,
+    PackageVersion,
     ZXPExtensionData
 )
 
@@ -32,10 +34,10 @@ class UpdateThread(QtCore.QThread):
         self._zxp_hosts = []
         super().__init__(parent)
 
-    def set_version(self, quadpype_version: QuadPypeVersion):
+    def set_version(self, quadpype_version: PackageVersion):
         self._quadpype_version = quadpype_version
 
-    def set_zxp_hosts(self, zxp_hosts: [ZXPExtensionData]):
+    def set_zxp_hosts(self, zxp_hosts: List[ZXPExtensionData]):
         self._zxp_hosts = zxp_hosts
 
     def result(self):

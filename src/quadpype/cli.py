@@ -380,14 +380,14 @@ def version(build):
     """Print QuadPype version."""
     from quadpype.version import __version__
     from igniter.bootstrap import BootstrapPackage
-    from igniter.version_utils import QuadPypeVersion
+    from igniter.version_classes import QuadPypeVersionManager
     from pathlib import Path
 
     if getattr(sys, 'frozen', False):
         local_version = BootstrapPackage.get_version(
             Path(os.getenv("QUADPYPE_ROOT")))
     else:
-        local_version = QuadPypeVersion.get_version_str_from_quadpype_version()
+        local_version = QuadPypeVersionManager.get_package_version_from_dir()
 
     if build:
         print(local_version)

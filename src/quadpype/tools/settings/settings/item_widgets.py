@@ -513,7 +513,7 @@ class QuadPypeVersionText(TextWidget):
     def create_ui(self):
         super(QuadPypeVersionText, self).create_ui()
         info_widget = QtWidgets.QLabel(self)
-        info_widget.setObjectName("QuadPypeVersionLabel")
+        info_widget.setObjectName("PackageVersionLabel")
         self.content_layout.addWidget(info_widget, 1)
 
         self._info_widget = info_widget

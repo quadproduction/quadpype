@@ -1,9 +1,6 @@
 import os
 from quadpype.lib.version import (
-    QuadPypeVersion
-)
-from quadpype.lib.settings import (
-    get_local_quadpype_path
+    get_app_version_manager
 )
 from .input_entities import TextEntity
 from .lib import (
@@ -49,7 +46,8 @@ class QuadPypeVersionInput(TextEntity):
     def convert_to_valid_type(self, value):
         """Add validation of version regex."""
         if value and value is not NOT_SET:
-            if not QuadPypeVersion().version_in_str(value):
+            app_version_manager = get_app_version_manager()
+            if not app_version_manager.get_version_from_str(value):
                 raise BaseInvalidValue(
                     "Value \"{}\"is not valid version format.".format(
                         value
@@ -64,15 +62,11 @@ class VersionsInputEntity(QuadPypeVersionInput):
     schema_types = ["versions-text"]
 
     def _get_quadpype_versions(self):
-        root_path = os.getenv("QUADPYPE_ROOT")
-        local_path = get_local_quadpype_path()
-        remote_path = os.getenv("QUADPYPE_PATH")
-        temp_version = QuadPypeVersion(path=root_path, local_path=local_path, remote_path=remote_path)
-
+        app_version_manager = get_app_version_manager()
         versions = []
 
-        installed_version = temp_version.get_installed_version()
-        remote_versions = temp_version.get_remote_versions(excluded_str_versions=[str(installed_version)])
+        installed_version = app_version_manager.get_installed_version()
+        remote_versions = app_version_manager.get_remote_versions(excluded_str_versions=[str(installed_version)])
         versions.append(str(installed_version))
         for version in remote_versions:
             versions.append(str(version))

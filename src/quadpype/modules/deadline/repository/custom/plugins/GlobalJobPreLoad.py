@@ -24,7 +24,7 @@ VERSION_REGEX = re.compile(
 )
 
 
-class QuadPypeVersion:
+class PackageVersion:
     """Fake semver version class for QuadPype version purposes.
 
     The version
@@ -57,7 +57,7 @@ class QuadPypeVersion:
             version (str): Version as a string.
 
         Returns:
-            Union[QuadPypeVersion, None]: Version object if input is nonempty
+            Union[PackageVersion, None]: Version object if input is nonempty
                 string otherwise None.
         """
 
@@ -90,7 +90,7 @@ class QuadPypeVersion:
         a build can be considered as release compatible with any version.
 
         Args:
-            other (QuadPypeVersion): Other version.
+            other (PackageVersion): Other version.
 
         Returns:
             bool: Version is release compatible with other version.
@@ -153,7 +153,7 @@ def get_quadpype_version_from_path(path, build=True):
          build (bool, optional): Get only builds, not sources
 
     Returns:
-        Union[QuadPypeVersion, None]: version of QuadPype if found.
+        Union[PackageVersion, None]: version of QuadPype if found.
     """
 
     # fix path for application bundle on macos
@@ -180,7 +180,7 @@ def get_quadpype_version_from_path(path, build=True):
 
     version_str = version.get("__version__")
     if version_str:
-        return QuadPypeVersion.from_string(version_str)
+        return PackageVersion.from_string(version_str)
     return None
 
 
@@ -223,7 +223,7 @@ def get_quadpype_versions(dir_list):
 def get_requested_quadpype_executable(
     exe, dir_list, requested_version
 ):
-    requested_version_obj = QuadPypeVersion.from_string(requested_version)
+    requested_version_obj = PackageVersion.from_string(requested_version)
     if not requested_version_obj:
         print((
             ">>> Requested version '{}' does not match version regex '{}'"

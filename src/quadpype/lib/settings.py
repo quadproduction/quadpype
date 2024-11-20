@@ -85,7 +85,7 @@ def get_expected_studio_version_str(staging=False, global_settings=None):
         global_settings (dict): Optional precached global settings.
 
     Returns:
-        QuadPypeVersion: Version that should be used.
+        PackageVersion: Version that should be used.
     """
     mongo_url = os.getenv("QUADPYPE_MONGO")
     if global_settings is None:

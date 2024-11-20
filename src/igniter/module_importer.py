@@ -1,3 +1,4 @@
+import sys
 import importlib.util
 from pathlib import Path
 
@@ -17,8 +18,9 @@ def load_quadpype_module(module_relative_path, module_name):
 
     # Load the registry module without triggering __init__.py
     # Appending _proxy at the end of the module-name to avoid conflicts between modules in sys.modules
-    spec = importlib.util.spec_from_file_location(module_name + "_proxy", module_path)
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
     module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
     spec.loader.exec_module(module)
 
     return module

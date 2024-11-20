@@ -9,7 +9,7 @@ from zipfile import ZipFile
 from typing import List
 import hashlib
 import sys
-from igniter.bootstrap import QuadPypeVersion
+from igniter.bootstrap import PackageVersion, get_app_version_manager
 
 
 class VersionRepacker:
@@ -86,7 +86,7 @@ class VersionRepacker:
                  "Please run it on extracted version."), 1)
             return
         self._print(f"Rehashing and zipping {self.version_path}")
-        version = QuadPypeVersion.version_in_str(self.version_path.name)
+        version = get_app_version_manager().get_version_from_str(self.version_path.name)
         if not version:
             self._print("Cannot get version from directory", 1)
             return
@@ -137,11 +137,11 @@ class VersionRepacker:
         self._print(f"All done, you can find new zip here: {zip_filename}")
 
     @staticmethod
-    def _replace_version(version: QuadPypeVersion, path: Path):
+    def _replace_version(version: PackageVersion, path: Path):
         """Replace version in version.py.
 
         Args:
-            version (QuadPypeVersion): QuadPype version to set
+            version (PackageVersion): QuadPype version to set
             path (Path): Path to unzipped version.
 
         """

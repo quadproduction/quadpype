@@ -1,4 +1,4 @@
-"""Lib access to QuadPypeVersion from igniter.
+"""Lib access to PackageVersion and QuadPypeVersionManager from igniter.
 
 Access to logic from igniter is available only for QuadPype processes.
 Is meant to be able to check QuadPype versions for studio. The logic is dependent
@@ -12,7 +12,10 @@ import quadpype.version
 
 from .python_module_tools import import_filepath
 
-from .version import QuadPypeVersion
+from .version import (
+    PackageVersion,
+    get_app_version_manager
+)
 from .settings import (
     get_expected_studio_version_str,
     get_local_quadpype_path
@@ -20,7 +23,7 @@ from .settings import (
 
 
 # ----------------------------------------
-# Functions independent on QuadPypeVersion
+# Functions independent on PackageVersion
 # ----------------------------------------
 def get_quadpype_version():
     """Version of QuadPype that is currently used."""
@@ -82,7 +85,7 @@ def is_running_staging():
 
     First checks for 'QUADPYPE_IS_STAGING' environment which can be set to '1'.
     The value should be set only when a process without access to
-    QuadPypeVersion is launched (e.g. in DCCs). If current version is same
+    PackageVersion is launched (e.g. in DCCs). If current version is same
     as production version it is expected that it is not staging, and it
     doesn't matter what would 'is_staging_enabled' return. If current version
     is same as staging version it is expected we're in staging. In all other
@@ -121,20 +124,12 @@ def is_running_staging():
 
 
 # ----------------------------------------
-# Functions dependent on QuadPypeVersion
+# Functions dependent on PackageVersion
 #   - Make sense to call only in QuadPype process
 # ----------------------------------------
 def get_available_versions(*args, **kwargs):
     """Get list of available versions."""
-    root_path = os.environ["QUADPYPE_ROOT"]
-    local_path = get_local_quadpype_path()
-    remote_path = os.getenv("QUADPYPE_PATH")
-    temp_version = QuadPypeVersion(
-        path=root_path,
-        local_path=local_path,
-        remote_path=remote_path
-    )
-    return temp_version.get_available_versions(*args, **kwargs)
+    return get_app_version_manager().get_available_versions(*args, **kwargs)
 
 
 def quadpype_path_is_accessible():
@@ -144,37 +139,27 @@ def quadpype_path_is_accessible():
 
 def get_local_versions():
     """QuadPype versions available on this workstation."""
-    return QuadPypeVersion(local_path=get_local_quadpype_path()).get_local_versions()
+    return get_app_version_manager().get_local_versions()
 
 
 def get_remote_versions():
     """QuadPype versions in repository path."""
-    return QuadPypeVersion(remote_path=os.getenv("QUADPYPE_PATH")).get_remote_versions()
+    return get_app_version_manager().get_remote_versions()
 
 
-def get_latest_version(local=None, remote=None):
+def get_latest_version(from_local=None, from_remote=None):
     """Get latest version from repository path."""
-    root_path = os.environ["QUADPYPE_ROOT"]
-    local_path = get_local_quadpype_path()
-    remote_path = os.getenv("QUADPYPE_PATH")
-    temp_version = QuadPypeVersion(
-        path=root_path,
-        local_path=local_path,
-        remote_path=remote_path
-    )
-    latest_version = temp_version.get_latest_version(local=local,remote=remote)
-
-    return latest_version
+    return get_app_version_manager().get_latest_version(from_local=from_local,from_remote=from_remote)
 
 
 def get_expected_version(staging=None):
     expected_version_str = get_expected_studio_version_str(staging)
-    expected_version = QuadPypeVersion(version=expected_version_str) if expected_version_str else None
+    expected_version = PackageVersion(version=expected_version_str) if expected_version_str else None
     if expected_version is None:
         # Look for latest if expected version is not set in settings
         expected_version = get_latest_version(
-            local=False,
-            remote=True
+            from_local=False,
+            from_remote=True
         )
     return expected_version
 
@@ -200,8 +185,8 @@ def is_current_version_studio_latest():
     ):
         return output
 
-    # Convert current version to QuadPypeVersion object
-    current_version = QuadPypeVersion(version=get_quadpype_version())
+    # Convert current version to PackageVersion object
+    current_version = PackageVersion(version=get_quadpype_version())
 
     # Get expected version (from settings)
     expected_version = get_expected_version()
@@ -226,8 +211,8 @@ def is_current_version_higher_than_expected():
     ):
         return output
 
-    # Convert current version to QuadPypeVersion object
-    current_version = QuadPypeVersion(version=get_quadpype_version())
+    # Convert current version to PackageVersion object
+    current_version = PackageVersion(version=get_quadpype_version())
 
     # Get expected version (from settings)
     expected_version = get_expected_version()

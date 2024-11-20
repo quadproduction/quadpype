@@ -7,7 +7,7 @@ from pathlib import Path
 from qtpy import QtCore, QtGui, QtWidgets
 
 from .update_thread import UpdateThread
-from .bootstrap import QuadPypeVersion, ZXPExtensionData
+from .bootstrap import PackageVersion, ZXPExtensionData
 from .nice_progress_bar import NiceProgressBar
 from .tools import load_stylesheet, get_app_icon_path, get_fonts_dir_path
 
@@ -18,7 +18,7 @@ class UpdateWindow(QtWidgets.QDialog):
     _width = 500
     _height = 100
 
-    def __init__(self, version: QuadPypeVersion, zxp_hosts: [ZXPExtensionData], parent=None):
+    def __init__(self, version: PackageVersion, zxp_hosts: [ZXPExtensionData], parent=None):
         super().__init__(parent)
         self._quadpype_version = version
         self._zxp_hosts = zxp_hosts

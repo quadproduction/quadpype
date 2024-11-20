@@ -11,7 +11,7 @@ from quadpype.client.mongo import (
 )
 from quadpype.client import get_project
 from quadpype.lib import get_user_workstation_info, get_user_id, CacheValues
-from quadpype.lib.version import QuadPypeVersion
+from quadpype.lib.version import PackageVersion
 
 from .constants import (
     CORE_SETTINGS_KEY,
@@ -990,7 +990,7 @@ class MongoSettingsHandler(SettingsHandler):
         in semantic version order.
 
         This document can be then used to find closes version of settings in
-        processes where 'QuadPypeVersion' is not available.
+        processes where 'PackageVersion' is not available.
         """
         # Do this step only once
         if self._version_order_checked:
@@ -1012,11 +1012,11 @@ class MongoSettingsHandler(SettingsHandler):
         if self._current_version not in doc[self._all_versions_keys]:
             # Add all versions into list
             all_objected_versions = [
-                QuadPypeVersion(version=self._current_version)
+                PackageVersion(version=self._current_version)
             ]
             for version_str in doc[self._all_versions_keys]:
                 all_objected_versions.append(
-                    QuadPypeVersion(version=version_str)
+                    PackageVersion(version=version_str)
                 )
 
             doc[self._all_versions_keys] = [
@@ -1500,7 +1500,7 @@ class MongoSettingsHandler(SettingsHandler):
             return []
 
         sorted_versions = sorted(
-            list({str(QuadPypeVersion(version=version)) for version in versions})
+            list({str(PackageVersion(version=version)) for version in versions})
         )
 
         return sorted_versions

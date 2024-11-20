@@ -102,7 +102,6 @@ import site
 import distutils.spawn
 from pathlib import Path
 
-
 silent_mode = False
 
 # QUADPYPE_ROOT is a variable pointing to build (or code) directory
@@ -308,17 +307,20 @@ from igniter.tools import (
     validate_mongo_connection
 )
 from igniter.version_classes import (
-    QuadPypeVersionNotFound,
-    QuadPypeVersionIncompatible,
+    PackageVersion,
+    PackageVersionNotFound,
+    PackageVersionIncompatible,
+    QuadPypeVersionManager,
+    get_app_version_manager
 )
+from igniter.version_classes import reload_module as igniter_version_classes_reload_module
 from igniter.settings_utils import (
     get_expected_studio_version_str,
     get_quadpype_global_settings,
     get_local_quadpype_path
 )
 from igniter.bootstrap import (
-    BootstrapPackage,
-    QuadPypeVersion,
+    BootstrapPackage
 )
 
 bootstrap = BootstrapPackage()
@@ -715,7 +717,7 @@ def _determine_mongodb() -> str:
     return quadpype_mongo
 
 
-def _initialize_environment(quadpype_version: QuadPypeVersion) -> None:
+def _initialize_environment(quadpype_version: PackageVersion) -> None:
     version_path = quadpype_version.path
     if not version_path:
         _print(f"!!! Version {quadpype_version} doesn't have path set.")
@@ -755,7 +757,7 @@ def _initialize_environment(quadpype_version: QuadPypeVersion) -> None:
     os.environ["PYTHONPATH"] = os.pathsep.join(split_paths)
 
 
-def _install_and_initialize_version(quadpype_version: QuadPypeVersion, delete_zip=True):
+def _install_and_initialize_version(quadpype_version: PackageVersion, delete_zip=True):
     if quadpype_version.path.is_file():
         _print(">>> Extracting zip file ...")
         try:
@@ -766,7 +768,7 @@ def _install_and_initialize_version(quadpype_version: QuadPypeVersion, delete_zi
             sys.exit(1)
         else:
             # cleanup zip after extraction, we don't touch prod dir
-            remote_versions = QuadPypeVersion(remote_path=os.getenv("QUADPYPE_PATH")).get_remote_versions()
+            remote_versions = get_app_version_manager().get_remote_versions()
             if delete_zip and quadpype_version not in remote_versions:
                 os.unlink(quadpype_version.path)
 
@@ -774,7 +776,7 @@ def _install_and_initialize_version(quadpype_version: QuadPypeVersion, delete_zi
 
 
 def _find_frozen_quadpype(use_version: str = None,
-                          use_staging: bool = False) -> QuadPypeVersion:
+                          use_staging: bool = False) -> PackageVersion:
     """Find QuadPype to run from frozen code.
 
     This will process and modify environment variables:
@@ -785,7 +787,7 @@ def _find_frozen_quadpype(use_version: str = None,
         use_staging (bool, optional): Prefer *staging* flavor over production.
 
     Returns:
-        QuadPypeVersion: Version to be used.
+        PackageVersion: Version to be used.
 
     Raises:
         RuntimeError: If no QuadPype version are found.
@@ -793,12 +795,12 @@ def _find_frozen_quadpype(use_version: str = None,
     """
 
     # Collect QuadPype versions
-    installed_version = QuadPypeVersion(path=os.getenv("QUADPYPE_ROOT")).get_installed_version()
+    installed_version = get_app_version_manager().get_installed_version()
     # Expected version that should be used by studio settings
     #   - this option is used only if version is not explicitly set and if
     #       studio has set explicit version in settings
     studio_version_str = get_expected_studio_version_str(use_staging)
-    studio_version = QuadPypeVersion(version=studio_version_str) if studio_version_str else None
+    studio_version = PackageVersion(version=studio_version_str) if studio_version_str else None
 
     if use_version is not None:
         # Specific version is defined
@@ -811,7 +813,7 @@ def _find_frozen_quadpype(use_version: str = None,
             quadpype_version = bootstrap.find_quadpype_version(use_version)
 
         if quadpype_version is None:
-            raise QuadPypeVersionNotFound(
+            raise PackageVersionNotFound(
                 f"Requested version \"{use_version}\" was not found."
             )
 
@@ -820,7 +822,7 @@ def _find_frozen_quadpype(use_version: str = None,
         _print(f">>> Finding studio version \"{studio_version}\"")
         quadpype_version = bootstrap.find_quadpype_version(studio_version)
         if quadpype_version is None:
-            raise QuadPypeVersionNotFound((
+            raise PackageVersionNotFound((
                 "Requested QuadPype version "
                 f"\"{studio_version}\" defined by settings"
                 " was not found."
@@ -834,7 +836,7 @@ def _find_frozen_quadpype(use_version: str = None,
         quadpype_version = bootstrap.find_latest_quadpype_version()
 
         if quadpype_version is None:
-            raise QuadPypeVersionNotFound("Didn't find any versions.")
+            raise PackageVersionNotFound("Didn't find any versions.")
 
     # get local frozen version and add it to detected version so if it is
     # newer it will be used instead.
@@ -856,7 +858,7 @@ def _find_frozen_quadpype(use_version: str = None,
                 )
             )
         # Raise incompatible error
-        raise QuadPypeVersionIncompatible(
+        raise PackageVersionIncompatible(
             message.format(quadpype_version, installed_version)
         )
 
@@ -893,7 +895,7 @@ def _find_frozen_quadpype(use_version: str = None,
     return quadpype_version
 
 
-def _bootstrap_from_code(use_version) -> QuadPypeVersion:
+def _bootstrap_from_code(use_version) -> PackageVersion:
     """Bootstrap live code (or the one coming with frozen QuadPype).
 
     Args:
@@ -919,11 +921,11 @@ def _bootstrap_from_code(use_version) -> QuadPypeVersion:
         switch_str = f" - will switch to {use_version}" if use_version and use_version != local_version_str else ""  # noqa
         _print(f"  - booting version: {local_version_str}{switch_str}")
         if not local_version_str:
-            raise QuadPypeVersionNotFound(
+            raise PackageVersionNotFound(
                 f"Cannot find version at {_quadpype_root}")
     else:
         # Get current version of QuadPype
-        local_version = QuadPypeVersion(path=os.getenv("QUADPYPE_ROOT")).get_installed_version()
+        local_version = get_app_version_manager().get_installed_version()
 
     # All cases when should be used different version than build
     if use_version and use_version != str(local_version):
@@ -931,12 +933,12 @@ def _bootstrap_from_code(use_version) -> QuadPypeVersion:
             # Explicit version should be used
             version_to_use = bootstrap.find_quadpype_version(use_version)
             if version_to_use is None:
-                raise QuadPypeVersionIncompatible(
+                raise PackageVersionIncompatible(
                     f"Requested version \"{use_version}\" was not found.")
         else:
             version_to_use = bootstrap.find_latest_quadpype_version()
             if version_to_use is None:
-                raise QuadPypeVersionNotFound("Didn't find any versions.")
+                raise PackageVersionNotFound("Didn't find any versions.")
 
         # Start extraction of version if needed
         if version_to_use.path.is_file():
@@ -994,7 +996,7 @@ def _bootstrap_from_code(use_version) -> QuadPypeVersion:
 def _boot_validate_versions(use_version, local_version):
     _print(f">>> Validating version [ {use_version} ]")
     quadpype_versions = bootstrap.find_quadpype(include_zips=True)
-    v: QuadPypeVersion
+    v: PackageVersion
     found = [v for v in quadpype_versions if str(v) == use_version]
     if not found:
         _print(f"!!! Version [ {use_version} ] not found.", True)
@@ -1014,9 +1016,9 @@ def _boot_print_versions(quadpype_root):
     if getattr(sys, 'frozen', False):
         local_version = bootstrap.get_version(Path(quadpype_root))
     else:
-        local_version = QuadPypeVersion.get_version_str_from_quadpype_version()
+        local_version = QuadPypeVersionManager.get_package_version_from_dir()
 
-    compatible_with = QuadPypeVersion(version=local_version)
+    compatible_with = PackageVersion(version=local_version)
     if "--all" in sys.argv:
         _print("--- Showing all version (even those not compatible).")
     else:
@@ -1119,11 +1121,16 @@ def boot():
     # Check if local versions should be installed in custom folder and not in
     # user app data
     data_dir = get_local_quadpype_path(global_settings)
+
+    from quadpype.lib.version import create_app_version_manager
+    create_app_version_manager(QUADPYPE_ROOT, data_dir, quadpype_path)
+    igniter_version_classes_reload_module()
+
     bootstrap.set_data_dir(data_dir)
     if getattr(sys, 'frozen', False):
         local_version = bootstrap.get_version(Path(QUADPYPE_ROOT))
     else:
-        local_version = QuadPypeVersion.get_version_str_from_quadpype_version()
+        local_version = QuadPypeVersionManager.get_package_version_from_dir()
 
     if "validate" in commands:
         valid = _boot_validate_versions(use_version, local_version)
@@ -1144,7 +1151,7 @@ def boot():
     # ------------------------------------------------------------------------
     curr_version = local_version
     if isinstance(local_version, str):
-        curr_version = QuadPypeVersion(version=local_version)
+        curr_version = PackageVersion(version=local_version)
     user_dir_version = bootstrap.find_quadpype_local_version(curr_version)
     prod_dir_version = bootstrap.find_quadpype_remote_version(curr_version)
     dev_mode = "python" in os.path.basename(sys.executable).lower()
@@ -1157,7 +1164,7 @@ def boot():
 
     if prod_dir_version and not user_dir_version:
         # Need to copy the prod version into the correct user/artist directory
-        # Get QuadPypeVersion() Object
+        # Get PackageVersion() Object
         op_version_to_extract = prod_dir_version
 
     if not prod_dir_version and dev_mode and quadpype_path:
@@ -1181,7 +1188,7 @@ def boot():
         # find versions of QuadPype to be used with frozen code
         try:
             quadpype_version = _find_frozen_quadpype(use_version, use_staging)
-        except QuadPypeVersionNotFound as exc:
+        except PackageVersionNotFound as exc:
             _boot_handle_missing_version(local_version, str(exc))
             sys.exit(1)
         except RuntimeError as e:
@@ -1201,7 +1208,7 @@ def boot():
     else:
         try:
             quadpype_version = _bootstrap_from_code(use_version)
-        except QuadPypeVersionNotFound as exc:
+        except PackageVersionNotFound as exc:
             _boot_handle_missing_version(local_version, str(exc))
             sys.exit(1)
 
