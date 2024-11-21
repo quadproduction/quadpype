@@ -7,7 +7,7 @@ import platform
 
 from pathlib import Path
 from zipfile import ZipFile, BadZipFile
-from typing import Union, List, Tuple, Any, Optional
+from typing import Union, List, Tuple, Any, Optional, Dict
 
 import semver
 
@@ -183,6 +183,7 @@ class ZipFileLongPaths(ZipFile):
 
 class PackageHandler:
     """Class for handling a package."""
+    type = "package"
 
     def __init__(self,
                  pkg_name: str,
@@ -201,6 +202,8 @@ class PackageHandler:
         self._remote_dir_path = remote_dir_path
         # remote_dir_path can be None in case the path to package version isn't specified
         # This can happen only for the QuadPype app package of the settings is not set
+
+        self._running_version = None
 
         if install_dir_path and not isinstance(install_dir_path, Path):
             install_dir_path = Path(install_dir_path)
@@ -405,8 +408,9 @@ class PackageHandler:
         #if self._install_dir_path:
         #    installed_version = self.get_installed_version()
 
-        installed_version = self.running_version
-        versions[str(installed_version)] = installed_version
+        if self._running_version:
+            installed_version = self._running_version
+            versions[str(installed_version)] = installed_version
 
         versions_lists = [
             self.get_local_versions() if from_local else [],
@@ -633,6 +637,10 @@ class PackageHandler:
         sys.path.insert(0, version_path)
 
 
+class AddOnHandler(PackageHandler):
+    type = "add_on"
+
+
 class PackageManager:
     def __init__(self):
         self._packages = {}
@@ -641,9 +649,13 @@ class PackageManager:
         # This is called when you use square bracket syntax to access an item
         return self._packages[key]
 
+    @property
+    def packages(self) -> Dict[str, PackageHandler]:
+        return self._packages
+
     def add_package(self, package_instance):
         """Add package to manager."""
-        if not issubclass(package_instance, PackageHandler):
+        if not isinstance(package_instance, PackageHandler):
             raise TypeError("Package must be a subclass of PackageHandler")
         self._packages[package_instance.name] = package_instance
 
@@ -672,3 +684,21 @@ def get_package(package_name: str) -> PackageHandler:
     if _PACKAGE_MANAGER is None:
         raise RuntimeError("Package Manager is not initialized")
     return _PACKAGE_MANAGER[package_name]
+
+
+def get_packages(package_type: Union[str, None]=None) -> List[PackageHandler]:
+    global _PACKAGE_MANAGER
+    if _PACKAGE_MANAGER is None:
+        raise RuntimeError("Package Manager is not initialized")
+
+    packages = []
+
+    all_packages = _PACKAGE_MANAGER.packages.values()
+    if not package_type:
+        return all_packages
+
+    for package in all_packages:
+        if package.type == package_type:
+            packages.append(package)
+
+    return packages
