@@ -1129,7 +1129,7 @@ def boot():
     from appdirs import user_data_dir
     import platform
     custom_addon_settings = global_settings.get('modules').get("custom_addon", {})
-    remote_addon_dir_path = custom_addon_settings.get("versions_dir", {}).get(platform.system().lower(), r"C:\prod\softprod\apps\openpype\openpype_custom_plugins")
+    remote_addon_dir_path = custom_addon_settings.get("versions_dir", {}).get(platform.system().lower(), "")
     local_addon_dir_path = Path(user_data_dir("quadpype", "quad")) / "additional_modules"
     retrieve_locally = custom_addon_settings.get("retrieve_locally", False)
     # In case if settings has not been setted yet (maybe replace and by or in this condition)
