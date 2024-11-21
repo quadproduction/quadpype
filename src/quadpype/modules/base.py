@@ -195,26 +195,26 @@ def get_dynamic_modules_dirs():
     Returns:
         list: Paths loaded from studio overrides.
     """
+    from quadpype.lib.version import get_addon_version_manager
 
-    output = []
+    # Load global settings
+    addon_version_manager = get_addon_version_manager()
 
-    value = get_studio_global_settings_overrides()
-    for key in (MODULES_SETTINGS_KEY, "addon_paths", platform.system().lower()):
-        if key not in value:
-            return output
-        value = value[key]
+    # Get available versions
+    if addon_version_manager.retrieve_locally:
+        if addon_version_manager.current_version in addon_version_manager.get_local_versions():
+            installed_version = addon_version_manager.get_version(addon_version_manager.current_version, from_local=True)
+        else:
+            addon_version_manager.retrieve_version(addon_version_manager.current_version, from_remote=True)
+            installed_version = addon_version_manager.get_version(addon_version_manager.current_version, from_local=True)
+    else:
+        installed_version = addon_version_manager.get_version(addon_version_manager.current_version, from_remote=True)
 
-    for path in value:
-        if not path:
-            continue
+    # Validate and retrieve the appropriate version
+    addon_version_manager.change_current_version(installed_version)
 
-        try:
-            path = path.format(**os.environ)
-        except Exception:
-            pass
-        output.append(path)
-    return output
-
+    # Return the resolved directory for the current version
+    return [addon_version_manager.get_installed_version()]
 
 def get_module_dirs():
     """List of paths where QuadPype modules can be found."""
