@@ -92,7 +92,7 @@ def get_expected_studio_version_str(staging=False, global_settings=None):
         global_settings = get_quadpype_global_settings(mongo_url)
     key = "staging_version" if staging else "production_version"
 
-    return  global_settings.get(key, "")
+    return global_settings.get(key, "")
 
 
 def get_local_quadpype_path(settings: Optional[dict] = None) -> Union[Path, None]:

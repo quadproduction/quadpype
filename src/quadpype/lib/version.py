@@ -1,13 +1,16 @@
 import os
 import re
+import sys
 import shutil
+import hashlib
+import platform
 
 from pathlib import Path
-from abc import abstractmethod
 from zipfile import ZipFile, BadZipFile
 from typing import Union, List, Tuple, Any, Optional
 
 import semver
+
 
 MODULES_SETTINGS_KEY = "modules"
 _NOT_SET = object()
@@ -15,8 +18,7 @@ _NOT_SET = object()
 # Versions should match any string complying with https://semver.org/
 VERSION_REGEX = re.compile(r"(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>[a-zA-Z\d\-.]*))?(?:\+(?P<buildmetadata>[a-zA-Z\d\-.]*))?$")  # noqa: E501
 
-QUADPYPE_VERSION_MANAGER = None
-ADDON_VERSION_MANAGER = None
+_PACKAGE_MANAGER = None
 
 
 class PackageVersion(semver.VersionInfo):
@@ -43,7 +45,6 @@ class PackageVersion(semver.VersionInfo):
 
         """
         self.path = None
-        self._installed_version = None
 
         if "version" in kwargs:
             version_value = kwargs.pop("version")
@@ -107,125 +108,287 @@ class PackageVersion(semver.VersionInfo):
 
 
 class PackageVersionExists(Exception):
-    """Exception for handling existing QuadPype version."""
+    """Exception for handling existing package version."""
     pass
 
 
 class PackageVersionInvalid(Exception):
-    """Exception for handling invalid QuadPype version."""
+    """Exception for handling invalid package version."""
     pass
 
 
 class PackageVersionIOError(Exception):
-    """Exception for handling IO errors in QuadPype version."""
+    """Exception for handling IO errors in Package version."""
     pass
 
 
 class PackageVersionNotFound(Exception):
-    """QuadPype version was not found in remote and local repository."""
+    """Package version was not found in remote and local repository."""
     pass
 
 
 class PackageVersionIncompatible(Exception):
-    """QuadPype version is not compatible with the installed one (build)."""
+    """Package version is not compatible with the installed one (build)."""
     pass
 
 
-class BaseVersionManager:
-    _version_class = PackageVersion
+def sanitize_long_path(path):
+    """Sanitize long paths (260 characters) when on Windows.
 
-    def __init__(self, local_dir_path: Union[str, Path], remote_dir_path: Union[str, Path]):
-        self._local_dir_path = local_dir_path
+    Long paths are not capable with ZipFile or reading a file, so we can
+    shorten the path to use.
+
+    Args:
+        path (str): path to either directory or file.
+
+    Returns:
+        str: sanitized path
+    """
+    if platform.system().lower() != "windows":
+        return path
+    path = os.path.abspath(path)
+
+    if path.startswith("\\\\"):
+        path = "\\\\?\\UNC\\" + path[2:]
+    else:
+        path = "\\\\?\\" + path
+    return path
+
+
+def sha256sum(filename):
+    """Calculate sha256 for content of the file.
+
+    Args:
+         filename (str): Path to file.
+
+    Returns:
+        str: hex encoded sha256
+
+    """
+    h = hashlib.sha256()
+    b = bytearray(128 * 1024)
+    mv = memoryview(b)
+    with open(filename, 'rb', buffering=0) as f:
+        for n in iter(lambda: f.readinto(mv), 0):
+            h.update(mv[:n])
+    return h.hexdigest()
+
+
+class ZipFileLongPaths(ZipFile):
+    def _extract_member(self, member, target_path, pwd):
+        return ZipFile._extract_member(
+            self, member, sanitize_long_path(target_path), pwd
+        )
+
+
+class PackageHandler:
+    """Class for handling a package."""
+
+    def __init__(self,
+                 pkg_name: str,
+                 local_dir_path: Union[str, Path, None],
+                 remote_dir_path: Union[str, Path],
+                 running_version_str: str,
+                 retrieve_locally: bool = True,
+                 install_dir_path: Union[str, Path, None] = None):
+        self._name = pkg_name
+
+        skip_version_check = False
+        self._local_dir_path = local_dir_path if local_dir_path else remote_dir_path
+        if not self.is_local_dir_path_accessible():
+            raise RuntimeError(f"Local directory path for package \"{pkg_name}\" is not accessible.")
+
         self._remote_dir_path = remote_dir_path
+        # remote_dir_path can be None in case the path to package version isn't specified
+        # This can happen only for the QuadPype app package of the settings is not set
 
-        self._installed_version = None
+        if install_dir_path and not isinstance(install_dir_path, Path):
+            install_dir_path = Path(install_dir_path)
+
+        self._install_dir_path = install_dir_path
+
+        if not running_version_str:
+            # If no version specified get the latest version
+            latest_version = self.get_latest_version()
+            if latest_version:
+                running_version_str = str(latest_version)
+            elif install_dir_path:
+                skip_version_check = True
+                running_version_str = self.get_package_version_from_dir(self._install_dir_path)
+
+        if not running_version_str:
+            raise ValueError("CCCCC")
+
+        if not isinstance(running_version_str, str):
+            raise ValueError("Running version must be a valid version string.")
+
+        if skip_version_check:
+            self._running_version = PackageVersion(version=running_version_str, path=self._install_dir_path)
+        else:
+            # Find (and retrieve if necessary) the specified version to run
+            running_version = self.find_version(running_version_str, from_local=True)
+            if running_version:
+                self._running_version = running_version
+            else:
+                running_version = self.find_version(running_version_str)
+                if not running_version:
+                    raise ValueError(f"Specified version \"{running_version_str}\" is not available locally and on the remote path directory.")
+
+                if retrieve_locally:
+                    self._running_version = self.retrieve_version_locally(running_version_str)
+                else:
+                    self._running_version = running_version
+
+        self.retrieve_locally = retrieve_locally
+
+        self._add_package_path_to_env()
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def local_dir_path(self):
         return self._local_dir_path
 
     def change_local_dir_path(self, local_dir_path: Any):
-        """Set local path."""
+        """Set the local directory path."""
         if isinstance(local_dir_path, str):
             local_dir_path = Path(local_dir_path)
+
+        if not isinstance(local_dir_path, Path):
+            raise ValueError("Invalid local directory path. Must be a string or a Path object.")
+
         self._local_dir_path = local_dir_path
+
+        # Ensure accessibility
+        self.is_local_dir_path_accessible()
+
+    def is_local_dir_path_accessible(self) -> bool:
+        """Check if the path to the local directory is accessible."""
+        return self._local_dir_path and isinstance(self._local_dir_path, Path) and self._local_dir_path.exists()
 
     @property
     def remote_dir_path(self):
         return self._remote_dir_path
 
     def change_remote_dir_path(self, remote_dir_path: Any):
-        """Set remote path."""
+        """Set the remote directory path."""
         if isinstance(remote_dir_path, str):
             remote_dir_path = Path(remote_dir_path)
+        elif not remote_dir_path:
+            # If the remote_dir-path is unset we use the local_dir_path
+            remote_dir_path = self._local_dir_path
         self._remote_dir_path = remote_dir_path
 
+        # Ensure accessibility
+        self.is_remote_dir_path_accessible()
+
+    def is_remote_dir_path_accessible(self) -> bool:
+        """Check if the path to the remote directory is accessible."""
+        return self._remote_dir_path and isinstance(self._remote_dir_path, Path) and self._remote_dir_path.exists()
+
+    @property
+    def running_version(self):
+        return self._running_version
+
     @classmethod
-    def get_version_from_str(cls, input_string: str):
+    def validate_version_str(cls, version_str:str) -> Union[str, None]:
+        # Strip the .zip extension (if present)
+        input_string = re.sub(r"\.zip$", "", version_str, flags=re.IGNORECASE)
+
+        # Validate version string
+        match_obj = re.search(VERSION_REGEX, input_string)
+
+        # Return the version str part from the original string (if we get a match)
+        return input_string[match_obj.start():match_obj.end()] if match_obj else None
+
+    @classmethod
+    def get_version_from_str(cls, version_str: str) -> Union[PackageVersion, None]:
         """Find version in given string.
 
         Args:
-            input_string (str):  string to search.
+            version_str (str):  string to search.
 
         Returns:
-            BaseVersion: of detected or None.
-
+            PackageVersion: of detected or None.
         """
-        # Strip .zip ext (if present)
-        input_string = re.sub(r"\.zip$", "", input_string, flags=re.IGNORECASE)
-        match_obj = re.search(VERSION_REGEX, input_string)
+        version_str = cls.validate_version_str(version_str)
+        return PackageVersion.parse(version_str) if version_str else None
 
-        if not match_obj:
+    def get_package_version_from_dir(self, dir_path: Union[str, Path]) -> Union[str, None]:
+        """Get version of Package in the given directory.
+
+        Args:
+            dir_path (Path): Path to the directory containing the package.
+
+        Returns:
+            str: version string.
+            None: if version file is not found.
+        """
+        if dir_path is None:
+            raise ValueError("Directory path is not set")
+
+        if isinstance(dir_path, str):
+            dir_path = Path(dir_path)
+
+        # Try to find version
+        version_file = dir_path.joinpath(self._name, "version.py")
+        if not version_file.exists():
             return None
 
-        return cls._version_class.parse(input_string[match_obj.start():match_obj.end()])
+        version = {}
+        with version_file.open("r") as fp:
+            exec(fp.read(), version)
 
-    @abstractmethod
-    def is_version_in_dir(self, dir_path: Path, version_obj) -> Tuple[bool, str]:
-        """Test if path item is the version matching detected version.
+        return version['__version__']
 
-        If item is directory that might (based on it's name)
-        contain  version, check if it really does contain a package and
-        that their versions matches.
+    def compare_version_with_package_dir(self, dir_path: Path, version_obj) -> Tuple[bool, str]:
+        if not dir_path or not isinstance(dir_path, Path) or not dir_path.exists() or not dir_path.is_dir():
+            raise ValueError("Invalid directory path")
 
-        Args:
-            dir_path (Path): Directory to test.
-            version_obj (BaseVersion): version detected
-                from name.
+        try:
+            version_str = self.get_package_version_from_dir(dir_path)
+            version_check = PackageVersion(version=version_str)
+        except ValueError:
+            return False, f"Cannot determine version from {dir_path}"
 
-        Returns:
-            Tuple: State and reason, True if it is valid  version,
-                   False otherwise.
+        if not version_check.compare_major_minor_patch(version_obj):
+            return False, (f"Dir version ({version_obj}) and "
+                           f"its content version ({version_check}) "
+                           "doesn't match. Skipping.")
+        return True, "Versions match"
 
-        """
-        raise NotImplementedError("Must be implemented by subclasses")
+    def compare_version_with_package_zip(self, zip_path: Path, version_obj) -> Tuple[bool, str]:
+        if not zip_path or not isinstance(zip_path, Path) or not zip_path.exists() or not zip_path.is_file():
+            raise ValueError("Invalid ZIP file path.")
 
-    @abstractmethod
-    def is_version_in_zip(self, zip_path: Path, version_obj) -> Tuple[bool, str]:
-        """Check if zip path is a Version matching detected version.
+        # Skip non-zip files
+        if zip_path.suffix.lower() != ".zip":
+            return False, "Not a ZIP file."
 
-        Open zip file, look inside and parse version from QuadPype
-        inside it. If there is none, or it is different from
-        version specified in file name, skip it.
+        try:
+            with ZipFile(zip_path, "r") as zip_file:
+                with zip_file.open(
+                        f"{self._name}/version.py") as version_file:
+                    zip_version = {}
+                    exec(version_file.read(), zip_version)
+                    try:
+                        version_check = PackageVersion(
+                            version=zip_version["__version__"])
+                    except ValueError as e:
+                        return False, str(e)
 
-        Args:
-            zip_path (Path): Path to the ZIP file to test.
-            version_obj (BaseVersion): version detected
-                from name.
-
-        Returns:
-           Tuple: State and reason, True if it is valid Base Version,
-                False otherwise.
-
-        """
-        raise NotImplementedError("Must be implemented by subclasses")
-
-    def is_remote_dir_path_accessible(self) -> bool:
-        """Path to remote directory is accessible.
-
-        Exists for this machine.
-        """
-        return self._remote_dir_path and self._remote_dir_path.exists()
+                    if not version_check.compare_major_minor_patch(version_obj):
+                        return False, (f"zip version ({version_obj}) "
+                                       f"and its content version "
+                                       f"({version_check}) "
+                                       "doesn't match. Skipping.")
+        except BadZipFile:
+            return False, f"{zip_path} is not a zip file"
+        except KeyError:
+            return False, "Zip does not contain OpenPype"
+        return True, "Versions match"
 
     def get_available_versions(self, from_local: bool = None, from_remote: bool = None) -> List:
         """Get all available versions."""
@@ -239,7 +402,10 @@ class BaseVersionManager:
 
         versions = {}
 
-        installed_version = self.get_installed_version()
+        #if self._install_dir_path:
+        #    installed_version = self.get_installed_version()
+
+        installed_version = self.running_version
         versions[str(installed_version)] = installed_version
 
         versions_lists = [
@@ -255,15 +421,16 @@ class BaseVersionManager:
 
         return sorted(list(versions.values()))
 
-    def get_versions_from_dir(self, dir_path: Path, excluded_str_versions: Optional[List[str]] = None) -> List:
-        """Get all detected BaseVersions in directory.
+    def get_versions_from_dir(self, dir_path: Path, excluded_str_versions: Optional[List[str]] = None, parent_version: Optional[PackageVersion] = None) -> List:
+        """Get all detected PackageVersions in directory.
 
         Args:
             dir_path (Path): Directory to scan.
             excluded_str_versions (List[str]): List of excluded versions as strings.
+            parent_version (PackageVersion): Parent version to use for nested directories.
 
         Returns:
-            List[BaseVersion]: List of detected BaseVersions.
+            List[PackageVersion]: List of detected PackageVersions.
 
         Throws:
             ValueError: if invalid path is specified.
@@ -275,16 +442,15 @@ class BaseVersionManager:
         versions = []
 
         # Ensure the directory exists and is valid
-        if not dir_path.exists() or not dir_path.is_dir():
+        if not dir_path or not dir_path.exists() or not dir_path.is_dir():
             return versions
 
         # Iterate over directory at the first level
         for item in dir_path.iterdir():
             # If the item is a directory with a major.minor version format, dive deeper
-            # /!\ Careful: Doing a recursive loop could add multiple versions with the
-            #              same base version (major, minor, patch)
-            if item.is_dir() and re.match(r"^\d+\.\d+$", item.name):
-                detected_versions = self.get_versions_from_dir(item, excluded_str_versions)
+            if item.is_dir() and re.match(r"^\d+\.\d+$", item.name) and parent_version is None:
+                parent_version = PackageVersion(version=item.name)
+                detected_versions = self.get_versions_from_dir(item, excluded_str_versions, parent_version)
                 if detected_versions:
                     versions.extend(detected_versions)
 
@@ -292,20 +458,20 @@ class BaseVersionManager:
             name = item.name if item.is_dir() else item.stem
             version = self.get_version_from_str(name)
 
-            if version:
-                detected_version = version
+            if not version or version.major != parent_version.major or version.minor != parent_version.minor:
+                continue
 
-                # If it's a directory, check if version is valid within it
-                if item.is_dir() and not self.is_version_in_dir(item, detected_version)[0]:
-                    continue
+            # If it's a directory, check if version is valid within it
+            if item.is_dir() and not self.compare_version_with_package_dir(item, version)[0]:
+                continue
 
-                # If it's a file, check if version is valid within the zip
-                if item.is_file() and not self.is_version_in_zip(item, detected_version)[0]:
-                    continue
+            # If it's a file, check if version is valid within the zip
+            if item.is_file() and not self.compare_version_with_package_zip(item, version)[0]:
+                continue
 
-                detected_version.path = item
-                if str(detected_version) not in excluded_str_versions:
-                    versions.append(detected_version)
+            version.path = item.resolve()
+            if str(version) not in excluded_str_versions:
+                versions.append(version)
 
         return list(sorted(set(versions)))
 
@@ -316,7 +482,7 @@ class BaseVersionManager:
 
         This is utility version to get the latest version from all found.
 
-        Arguments 'local' and 'remote' define if local and remote repository
+        Arguments 'from_local' and 'from_remote' define if local and remote repository
         versions are used. All versions are used if both are not set (or set
         to 'None'). If only one of them is set to 'True' the other is disabled.
         It is possible to set both to 'True' (same as both set to None) and to
@@ -330,7 +496,8 @@ class BaseVersionManager:
             Latest version or None
 
         """
-        return self.get_available_versions(from_local, from_remote)[-1]
+        available_versions = self.get_available_versions(from_local, from_remote)
+        return available_versions[-1] if available_versions else None
 
     def get_local_versions(self, excluded_str_versions: Optional[List[str]] = None) -> List:
         """Get all versions available on this machine.
@@ -353,203 +520,155 @@ class BaseVersionManager:
         if excluded_str_versions is None:
             excluded_str_versions = []
 
-        if not self.is_remote_dir_path_accessible():
-            return []
-
         return self.get_versions_from_dir(self._remote_dir_path, excluded_str_versions)
 
-    @abstractmethod
-    def get_installed_version(self):
-        """Get version inside build."""
-        raise NotImplementedError("Must be implemented by subclasses")
+    def find_version(self, version: Union[PackageVersion, str], from_local: bool = False) -> Union[PackageVersion, None]:
+        """Get a specific version from the local or remote dir if available."""
+        if isinstance(version, str):
+            version = PackageVersion(version=version)
 
-    def retrieve_latest_remote_version(self):
-        """Retrieve the latest version available from remote."""
-        installed_version = self.get_installed_version()
-        latest_remote_version = self.get_latest_version(from_remote=True)
+        versions = self.get_local_versions() if from_local else self.get_remote_versions()
+        if versions:
+            for curr_version in versions:
+                if curr_version == version:
+                    return curr_version
 
-        destination_path = self.local_dir_path.joinpath(str(latest_remote_version))
+        return None
+
+    def retrieve_version_locally(self, version: Union[str, PackageVersion, None] = None):
+        """Retrieve the version specified available from remote."""
+        if isinstance(version, str):
+            version = PackageVersion(version=version)
+
+        if not version:
+            version = self._running_version
+
+        # Check if the version exists locally
+        local_version = self.find_version(version, from_local=True)
+        if local_version:
+            # Nothing to do the version is already in the local dir path
+            return
+
+        # Check if the version exists on the remote
+        remote_version = self.find_version(version)
+        if not remote_version:
+            raise PackageVersionNotFound(
+                f"Version {version} of package \"{self._name}\" not found in remote repository.")
+
+        destination_path = self.local_dir_path.joinpath(f"{remote_version.major}.{remote_version.minor}",
+                                                        str(remote_version))
         destination_path.mkdir(parents=True, exist_ok=True)
 
-        # If no local version or remote version is newer, copy the latest version
-        if (latest_remote_version and installed_version is None) or latest_remote_version > installed_version:
-            # Remove the old version (if exists)
-            if installed_version:
-                shutil.rmtree(installed_version.path)
+        if str(remote_version.path).endswith('.zip'):
+            with ZipFile(remote_version.path, 'r') as zip_ref:
+                zip_ref.extractall(destination_path)
+        else:
+            shutil.copytree(remote_version.path, destination_path, dirs_exist_ok=True)
 
-            # Copy the latest version
-            if str(latest_remote_version.path).endswith('.zip'):
-                with ZipFile(latest_remote_version.path, 'r') as zip_ref:
-                    zip_ref.extractall(destination_path)
-            else:
-                shutil.copytree(latest_remote_version.path, destination_path, dirs_exist_ok=True)
+        return PackageVersion(version=str(version), path=destination_path)
 
-        return destination_path
-
-
-class QuadPypeVersionManager(BaseVersionManager):
-    def __init__(self, root_dir_path: Union[str, Path], local_dir_path: Union[str, Path], remote_dir_path: Union[str, Path]):
-        super().__init__(local_dir_path, remote_dir_path)
-
-        self._root_dir_path = root_dir_path
-
-    @property
-    def root_dir_path(self):
-        return self._root_dir_path
-
-    def change_root_dir_path(self, root_dir_path: Any):
-        """Set root path."""
-        if isinstance(root_dir_path, str):
-            root_dir_path = Path(root_dir_path)
-        self._root_dir_path = root_dir_path
-
-    @classmethod
-    def get_package_version_from_dir(cls, dir_path: Union[str, Path, None] = None) -> Union[str, None]:
-        """Get version of QuadPype in the given version directory.
-
-        Note: in frozen QuadPype installed in user data dir, this must point
-        one level deeper as it is:
-        `quadpype-version-v3.0.0/quadpype/version.py`
-
-        Args:
-            dir_path (Path): Path to QuadPype repo.
+    def validate_checksums(self, base_version_path: Union[str, None] = None) -> tuple:
+        """Validate checksums in a given path.
 
         Returns:
-            str: version string.
-            None: if QuadPype is not found.
+            tuple(bool, str): returns status and reason as a bool
+                and str in a tuple.
 
         """
-        if dir_path is None:
-            dir_path = Path(os.environ["QUADPYPE_ROOT"])
-        elif not isinstance(dir_path, Path):
+        dir_path = self._running_version.path
+        if base_version_path:
+            dir_path = base_version_path
+
+        if not isinstance(dir_path, Path):
             dir_path = Path(dir_path)
 
-        # try to find version
-        version_file = dir_path.joinpath("quadpype", "version.py")
-        if not version_file.exists():
-            return None
+        if not dir_path:
+            raise ValueError("Installation dir path not specified.")
 
-        version = {}
-        with version_file.open("r") as fp:
-            exec(fp.read(), version)
+        checksums_file = dir_path.joinpath("checksums")
+        if not checksums_file.exists():
+            return False, "Cannot read checksums for archive."
+        checksums_data = checksums_file.read_text()
+        checksums = [
+            tuple(line.split(":"))
+            for line in checksums_data.split("\n") if line
+        ]
 
-        return version['__version__']
+        # compare content of the package / folder against list of files from checksum file.
+        # If difference exists, something is wrong and we invalidate directly
+        package_path = dir_path.joinpath(self._name)
+        files_in_dir = set(
+            file.relative_to(dir_path).as_posix()
+            for file in package_path.iterdir() if file.is_file()
+        )
+        files_in_dir.discard("checksums")
+        files_in_checksum = {file[1] for file in checksums}
 
-    def is_version_in_dir(self, dir_path: Path, version_obj) -> Tuple[bool, str]:
-        try:
-            # add one level as inside dir there should be many other repositories.
-            version_str = self.get_package_version_from_dir(dir_path)
-            version_check = PackageVersion(version=version_str)
-        except ValueError:
-            return False, f"Cannot determine version from {dir_path}"
+        diff = files_in_dir.difference(files_in_checksum)
+        if diff:
+            return False, f"Missing files {diff}"
 
-        if not version_check.compare_major_minor_patch(version_obj):
-            return False, (f"Dir version ({version_obj}) and "
-                           f"its content version ({version_check}) "
-                           "doesn't match. Skipping.")
-        return True, "Versions match"
-
-    def is_version_in_zip(self, zip_path: Path, version_obj) -> Tuple[bool, str]:
-        # Skip non-zip files
-        if zip_path.suffix.lower() != ".zip":
-            return False, "Not a zip"
-
-        try:
-            with ZipFile(zip_path, "r") as zip_file:
-                with zip_file.open(
-                        "quadpype/version.py") as version_file:
-                    zip_version = {}
-                    exec(version_file.read(), zip_version)
-                    try:
-                        version_check = PackageVersion(
-                            version=zip_version["__version__"])
-                    except ValueError as e:
-                        return False, str(e)
-
-                    if not version_check.compare_major_minor_patch(version_obj):
-                        return False, (f"zip version ({version_obj}) "
-                                       f"and its content version "
-                                       f"({version_check}) "
-                                       "doesn't match. Skipping.")
-        except BadZipFile:
-            return False, f"{zip_path} is not a zip file"
-        except KeyError:
-            return False, "Zip does not contain OpenPype"
-        return True, "Versions match"
-
-    def get_installed_version(self):
-        """Get version of QuadPype inside build."""
-
-        if self._installed_version is None:
-            installed_version_str = self.get_package_version_from_dir(self._root_dir_path)
-            if installed_version_str:
-                self._installed_version = PackageVersion(
-                    version=installed_version_str,
-                    path=self._root_dir_path
+        # calculate and compare checksums
+        for file_checksum, file_name in checksums:
+            if platform.system().lower() == "windows":
+                file_name = file_name.replace("/", "\\")
+            try:
+                current = sha256sum(
+                    sanitize_long_path((dir_path / file_name).as_posix())
                 )
+            except FileNotFoundError:
+                return False, f"Missing file [ {file_name} ]"
 
-        return self._installed_version
+            if file_checksum != current:
+                return False, f"Invalid checksum on {file_name}"
 
+        return True, "All ok"
 
-class AddOnVersionManager(BaseVersionManager):
-    def __init__(self, local_dir_path: Union[str, Path], remote_dir_path: Union[str, Path], use_local_dir: bool = False):
-        super().__init__(local_dir_path, remote_dir_path)
+    def _add_package_path_to_env(self):
+        """Add package path to environment."""
+        if not self._running_version.path:
+            raise ValueError("Installation dir path not specified in running_version. Please call first retrieve_version_locally.")
 
-        self._use_local_dir = use_local_dir
-        self._current_version = None
-
-    @property
-    def use_local_dir(self):
-        return self._use_local_dir
-
-    @property
-    def current_version(self):
-        return self._current_version
-
-    def change_current_version(self, current_version: Any):
-        """Set current version."""
-        if isinstance(current_version, str):
-            current_version = PackageVersion(version=current_version)
-        self._current_version = current_version
-
-    @classmethod
-    def get_package_version_from_dir(cls, dir_path: Union[str, Path, None] = None) -> Union[str, None]:
-        return cls.get_version_from_str(dir_path.name)
-
-    def is_version_in_dir(self, dir_path: Path, version_obj) -> Tuple[bool, str]:
-        return True, "Versions match"
-
-    def is_version_in_zip(self, zip_path: Path, version_obj) -> Tuple[bool, str]:
-        return True, "Versions match"
-
-    def get_installed_version(self):
-        return self._current_version
+        version_path = self._running_version.path.resolve().as_posix()
+        sys.path.insert(0, version_path)
 
 
-def create_app_version_manager(root_dir_path: Union[str, Path], local_dir_path: Union[str, Path], remote_dir_path: Union[str, Path]) -> QuadPypeVersionManager:
-    global QUADPYPE_VERSION_MANAGER
-    if QUADPYPE_VERSION_MANAGER is None:
-        QUADPYPE_VERSION_MANAGER = QuadPypeVersionManager(root_dir_path, local_dir_path, remote_dir_path)
-    return QUADPYPE_VERSION_MANAGER
+class PackageManager:
+    def __init__(self):
+        self._packages = {}
+
+    def __getitem__(self, key) -> PackageHandler:
+        # This is called when you use square bracket syntax to access an item
+        return self._packages[key]
+
+    def add_package(self, package_instance):
+        """Add package to manager."""
+        if not issubclass(package_instance, PackageHandler):
+            raise TypeError("Package must be a subclass of PackageHandler")
+        self._packages[package_instance.name] = package_instance
+
+    def remove_package(self, package_name):
+        """Remove package from manager."""
+        if package_name in self._packages:
+            del self._packages[package_name]
 
 
-def get_app_version_manager() -> QuadPypeVersionManager:
-    global QUADPYPE_VERSION_MANAGER
-    if QUADPYPE_VERSION_MANAGER is None:
-        raise RuntimeError("QuadPype Version Manager is not initialized")
-    return QUADPYPE_VERSION_MANAGER
+def create_package_manager() -> PackageManager:
+    global _PACKAGE_MANAGER
+    if _PACKAGE_MANAGER is None:
+        _PACKAGE_MANAGER = PackageManager()
+    return _PACKAGE_MANAGER
 
 
-def create_addon_version_manager(local_dir_path: Union[str, Path], remote_dir_path: Union[str, Path]) -> AddOnVersionManager:
-    global ADDON_VERSION_MANAGER
-    if ADDON_VERSION_MANAGER:
-        raise RuntimeError("AddOn version manager already initialized")
-    ADDON_VERSION_MANAGER = AddOnVersionManager(local_dir_path, remote_dir_path)
-    return ADDON_VERSION_MANAGER
+def get_package_manager() -> PackageManager:
+    global _PACKAGE_MANAGER
+    if _PACKAGE_MANAGER is None:
+        raise RuntimeError("Package Manager is not initialized")
+    return _PACKAGE_MANAGER
 
 
-def get_addon_version_manager() -> AddOnVersionManager:
-    global ADDON_VERSION_MANAGER
-    if ADDON_VERSION_MANAGER is None:
-        raise RuntimeError("AddOn Version Manager is not initialized")
-    return ADDON_VERSION_MANAGER
+def get_package(package_name: str) -> PackageHandler:
+    global _PACKAGE_MANAGER
+    if _PACKAGE_MANAGER is None:
+        raise RuntimeError("Package Manager is not initialized")
+    return _PACKAGE_MANAGER[package_name]

@@ -11,17 +11,10 @@ PackageVersionInvalid = version_module.PackageVersionInvalid
 PackageVersionNotFound = version_module.PackageVersionNotFound
 PackageVersionIncompatible = version_module.PackageVersionIncompatible
 
-QuadPypeVersionManager = version_module.QuadPypeVersionManager
-
+get_package = version_module.get_package
 
 def reload_module():
     load_quadpype_module("quadpype/lib/version.py", "quadpype.lib.version")
-
-def get_app_version_manager() -> QuadPypeVersionManager:
-    if version_module.QUADPYPE_VERSION_MANAGER is None:
-        raise RuntimeError("QuadPype Version Manager is not initialized")
-    return version_module.QUADPYPE_VERSION_MANAGER
-
 
 __all__ = [
     "PackageVersion",
@@ -31,6 +24,7 @@ __all__ = [
     "PackageVersionNotFound",
     "PackageVersionIncompatible",
 
-    "QuadPypeVersionManager",
-    "get_app_version_manager"
+    "get_package",
+
+    "reload_module"
 ]

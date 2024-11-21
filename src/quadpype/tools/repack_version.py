@@ -9,7 +9,7 @@ from zipfile import ZipFile
 from typing import List
 import hashlib
 import sys
-from igniter.bootstrap import PackageVersion, get_app_version_manager
+from igniter.bootstrap import PackageVersion, get_package
 
 
 class VersionRepacker:
@@ -86,7 +86,7 @@ class VersionRepacker:
                  "Please run it on extracted version."), 1)
             return
         self._print(f"Rehashing and zipping {self.version_path}")
-        version = get_app_version_manager().get_version_from_str(self.version_path.name)
+        version = get_package("quadpype").get_version_from_str(self.version_path.name)
         if not version:
             self._print("Cannot get version from directory", 1)
             return

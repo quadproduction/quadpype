@@ -25,8 +25,7 @@ from .version_classes import (
     PackageVersionInvalid,
     PackageVersionIOError,
     PackageVersionExists,
-    QuadPypeVersionManager,
-    get_app_version_manager
+    get_package
 )
 
 
@@ -72,7 +71,7 @@ class InstallThread(QtCore.QThread):
         # find local version of QuadPype
         bs = BootstrapPackage(
             progress_callback=self.set_progress, log_signal=self.message)
-        local_version = QuadPypeVersionManager.get_package_version_from_dir()
+        local_version = get_package("quadpype").get_package_version_from_dir(os.getenv("QUADPYPE_ROOT"))
 
         if self._mongo:
             self.message.emit("Saving mongo connection string ...", False)

@@ -1,4 +1,4 @@
-"""Lib access to PackageVersion and QuadPypeVersionManager from igniter.
+"""Lib access to PackageVersion from igniter.
 
 Access to logic from igniter is available only for QuadPype processes.
 Is meant to be able to check QuadPype versions for studio. The logic is dependent
@@ -14,11 +14,10 @@ from .python_module_tools import import_filepath
 
 from .version import (
     PackageVersion,
-    get_app_version_manager
+    get_package
 )
 from .settings import (
-    get_expected_studio_version_str,
-    get_local_quadpype_path
+    get_expected_studio_version_str
 )
 
 
@@ -129,7 +128,7 @@ def is_running_staging():
 # ----------------------------------------
 def get_available_versions(*args, **kwargs):
     """Get list of available versions."""
-    return get_app_version_manager().get_available_versions(*args, **kwargs)
+    return get_package("quadpype").get_available_versions(*args, **kwargs)
 
 
 def quadpype_path_is_accessible():
@@ -139,17 +138,17 @@ def quadpype_path_is_accessible():
 
 def get_local_versions():
     """QuadPype versions available on this workstation."""
-    return get_app_version_manager().get_local_versions()
+    return get_package("quadpype").get_local_versions()
 
 
 def get_remote_versions():
     """QuadPype versions in repository path."""
-    return get_app_version_manager().get_remote_versions()
+    return get_package("quadpype").get_remote_versions()
 
 
 def get_latest_version(from_local=None, from_remote=None):
     """Get latest version from repository path."""
-    return get_app_version_manager().get_latest_version(from_local=from_local,from_remote=from_remote)
+    return get_package("quadpype").get_latest_version(from_local=from_local,from_remote=from_remote)
 
 
 def get_expected_version(staging=None):
