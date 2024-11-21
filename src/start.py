@@ -1125,13 +1125,25 @@ def boot():
     from quadpype.lib.version import create_app_version_manager, create_addon_version_manager
     create_app_version_manager(QUADPYPE_ROOT, data_dir, quadpype_path)
 
-    # TODO: Add the logic to retrieve and/or compute the correct paths
-    ##########################
-    local_addon_dir_path = ""
-    remote_addon_dir_path = ""
-    #######################
+    from quadpype.lib.version_utils import is_running_staging
+    from appdirs import user_data_dir
+    import platform
+    custom_addon_settings = global_settings.get('modules').get("custom_addon", {})
+    remote_addon_dir_path = custom_addon_settings.get("versions_dir", {}).get(platform.system().lower(), r"C:\prod\softprod\apps\openpype\openpype_custom_plugins")
+    local_addon_dir_path = Path(user_data_dir("quadpype", "quad")) / "additional_modules"
+    retrieve_locally = custom_addon_settings.get("retrieve_locally", False)
+    # In case if settings has not been setted yet (maybe replace and by or in this condition)
+    if local_addon_dir_path and remote_addon_dir_path:
+        addon_version_manager = create_addon_version_manager(local_addon_dir_path, remote_addon_dir_path)
+        addon_version_manager.retrieve_locally = retrieve_locally
 
-    create_addon_version_manager(local_addon_dir_path, remote_addon_dir_path)
+        if is_running_staging():
+            target_version_str = custom_addon_settings.get("staging_version", "")
+        else:
+            target_version_str = custom_addon_settings.get("production_version", "")
+
+        if target_version_str:
+            addon_version_manager.change_current_version(target_version_str)
 
     igniter_version_classes_reload_module()
 
@@ -1242,7 +1254,6 @@ def boot():
         pass
 
     from quadpype.lib.user import update_user_profile_on_startup
-
     # Do the program display popups to the users regarding updates or incompatibilities
     _print(">>> Loading user profile ...")
     user_profile = update_user_profile_on_startup()

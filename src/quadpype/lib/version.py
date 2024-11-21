@@ -160,6 +160,14 @@ class BaseVersionManager:
             remote_dir_path = Path(remote_dir_path)
         self._remote_dir_path = remote_dir_path
 
+    def get_version(self, version, from_remote=False, from_local=False):
+        target_version = self.get_version_from_str(version)
+        available_versions = self.get_available_versions(from_local=from_local, from_remote=from_remote)
+        for available_version in available_versions:
+            if str(available_version) == str(target_version):
+                return available_version
+        return None
+
     @classmethod
     def get_version_from_str(cls, input_string: str):
         """Find version in given string.
@@ -363,28 +371,27 @@ class BaseVersionManager:
         """Get version inside build."""
         raise NotImplementedError("Must be implemented by subclasses")
 
-    def retrieve_latest_remote_version(self):
-        """Retrieve the latest version available from remote."""
-        installed_version = self.get_installed_version()
-        latest_remote_version = self.get_latest_version(from_remote=True)
+    def retrieve_version(self, version: PackageVersion, from_remote=False, from_local=False):
+        """Retrieve specific version available."""
+        version_obj  = self.get_version(version, from_remote=from_remote, from_local=from_local)
+        if not version_obj:
+            raise ValueError(f"Mo version ({version}) available found.")
 
-        destination_path = self.local_dir_path.joinpath(str(latest_remote_version))
+        if from_remote:
+            destination_path = self.local_dir_path.joinpath(str(version_obj))
+        elif from_local:
+            destination_path = self.remote_dir_path.joinpath(str(version_obj))
         destination_path.mkdir(parents=True, exist_ok=True)
 
-        # If no local version or remote version is newer, copy the latest version
-        if (latest_remote_version and installed_version is None) or latest_remote_version > installed_version:
-            # Remove the old version (if exists)
-            if installed_version:
-                shutil.rmtree(installed_version.path)
+        # Copy the latest version
+        if str(version_obj.path).endswith('.zip'):
+            with ZipFile(version_obj.path, 'r') as zip_ref:
+                zip_ref.extractall(version_obj)
+        else:
+            shutil.copytree(version_obj.path, destination_path, dirs_exist_ok=True)
 
-            # Copy the latest version
-            if str(latest_remote_version.path).endswith('.zip'):
-                with ZipFile(latest_remote_version.path, 'r') as zip_ref:
-                    zip_ref.extractall(destination_path)
-            else:
-                shutil.copytree(latest_remote_version.path, destination_path, dirs_exist_ok=True)
+        return version_obj
 
-        return destination_path
 
 
 class QuadPypeVersionManager(BaseVersionManager):
