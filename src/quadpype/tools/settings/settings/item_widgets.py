@@ -29,6 +29,8 @@ from .base import (
     InputWidget
 )
 
+import platform
+from pathlib import Path
 
 class DictImmutableKeysWidget(BaseWidget):
 
@@ -579,15 +581,13 @@ class PackageVersionWidget(TextWidget):
         package = get_package(package_name)
         if not package:
             # Could not find a loaded package with this name yet
-            # TODO: Get the versions from package_remote_dir if specified
-            # package_name_entity = self.entity_widget.entity.non_gui_children.get("package_remote_dir")
-            # if package_name_entity:
-            #     # platform.system().lower()
-            #     package_remote_dir = package_name_entity.value
-            #     if package_remote_dir:
-            #         PackageHandler.get_versions_from_dir(package_name, package_remote_dir)
-            self.entity.value_hints = []
-            return
+            package_name_entity = self.entity_widget.entity.non_gui_children.get("package_remote_dir")
+            if package_name_entity:
+                package_remote_dir = package_name_entity.value.get(platform.system().lower())
+                if package_remote_dir:
+                    versions = PackageHandler.get_versions_from_dir(package_name, Path(package_remote_dir[0]))
+                    self.entity.value_hints = [str(version) for version in versions]
+                    return
 
         self._package_name_cache = package_name
         self.entity.value_hints = [str(version) for version in package.get_available_versions()]
