@@ -770,7 +770,8 @@ def _boot_print_versions(quadpype_package):
 
 def _initialize_package_manager(global_settings, use_version, use_staging):
     """Initialize the Package Manager and add the registered AddOns."""
-    from quadpype.lib.version import create_package_manager, PackageHandler
+    from quadpype.lib.version import create_package_manager, PackageHandler, AddOnHandler, MODULES_SETTINGS_KEY
+    from appdirs import user_data_dir
     package_manager = create_package_manager()
 
     quadpype_local_dir_path = get_local_quadpype_path(global_settings)
@@ -790,6 +791,21 @@ def _initialize_package_manager(global_settings, use_version, use_staging):
         install_dir_path=os.getenv("QUADPYPE_ROOT")
     )
     package_manager.add_package(quadpype_package)
+
+    custom_addon_settings = global_settings.get(MODULES_SETTINGS_KEY).get("custom_addon", {})
+    for addon_setting in custom_addon_settings:
+        if use_staging:
+            target_version_str = addon_setting.get("staging_version", "")
+        else:
+            target_version_str = addon_setting.get("production_version", "")
+        addon_package = AddOnHandler(
+            pkg_name="add_on",
+            local_dir_path=Path(user_data_dir("quadpype", "quad")) / "additional_modules",
+            remote_dir_path=addon_setting.get("versions_dir", {}).get(platform.system().lower()),
+            running_version_str=target_version_str,
+            retrieve_locally=addon_setting.get("retrieve_locally", False),
+        )
+        package_manager.add_package(addon_package)
 
     igniter_reimport_package_manager_module()
 
