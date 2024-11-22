@@ -534,28 +534,25 @@ class PackageVersionWidget(TextWidget):
         state = None
         if self._is_invalid:
             message = "Invalid Package version format"
-
         elif value == "":
             message = "Use latest available version"
             tooltip = (
                 "Latest package version from the repository will be used"
             )
-
         elif value in self.entity.value_hints:
             state = "success"
             message = "Version {} will be used".format(value)
-
         else:
             state = "warning"
             message = (
-                "Version {} not found in listed versions".format(value)
+                "Version {} not found in available versions".format(value)
             )
             if self.entity.value_hints:
-                tooltip = "Listed versions: {}".format(", ".join(
+                tooltip = "Available versions: {}".format(", ".join(
                     ['"{}"'.format(hint) for hint in self.entity.value_hints]
                 ))
             else:
-                tooltip = "No versions were listed"
+                tooltip = "No versions were found."
 
         self._info_widget.setText(message)
         self._info_widget.setToolTip(tooltip)
@@ -569,28 +566,32 @@ class PackageVersionWidget(TextWidget):
             package_name = package_name_entity.value
 
         if not package_name:
-            # Package name not yet specified, empty the value_hints
+            # Package name isn't yet specified, empty the value_hints
             self.entity.value_hints = []
             return
 
         if self._package_name_cache == package_name:
             # Nothing to do the current value_hints should be correct
-            # We assume no new versions has been added since we cached the package_name
+            # We assume no new versions have been added since we cached the package_name
             return
 
         package = get_package(package_name)
+
+        versions = []
         if not package:
             # Could not find a loaded package with this name yet
+
+            # Try to get the versions directly from the remote dir path
             package_name_entity = self.entity_widget.entity.non_gui_children.get("package_remote_dir")
             if package_name_entity:
                 package_remote_dir = package_name_entity.value.get(platform.system().lower())
                 if package_remote_dir:
                     versions = PackageHandler.get_versions_from_dir(package_name, Path(package_remote_dir[0]))
-                    self.entity.value_hints = [str(version) for version in versions]
-                    return
+        else:
+            versions = [str(version) for version in package.get_available_versions()]
 
         self._package_name_cache = package_name
-        self.entity.value_hints = [str(version) for version in package.get_available_versions()]
+        self.entity.value_hints = [str(version) for version in versions]
 
     def set_entity_value(self):
         super(PackageVersionWidget, self).set_entity_value()
