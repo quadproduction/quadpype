@@ -38,19 +38,12 @@
             }
         },
         {
-            "type": "boolean",
-            "key": "access_restricted",
-            "label": "Restrict settings access (admins only)",
-            "require_restart": true
-
-        },
-        {
             "type": "splitter"
         },
         {
             "type": "boolean",
             "key": "windows_can_stay_on_top",
-            "label": "Allow windows to stay on top"
+            "label": "Allow Windows to Stay on Top"
         },
         {
             "type": "splitter"
@@ -67,12 +60,12 @@
         {
             "type": "boolean",
             "key": "log_to_server",
-            "label": "Log to mongo"
+            "label": "Log to Database"
         },
         {
             "type": "dict",
             "key": "disk_mapping",
-            "label": "Disk mapping",
+            "label": "Disk Mapping",
             "is_group": true,
             "use_label_wrap": false,
             "collapsible": false,
@@ -174,12 +167,12 @@
         },
         {
             "type": "collapsible-wrap",
-            "label": "QuadPype deployment control",
+            "label": "QuadPype Deployment Control",
             "collapsible": true,
             "children": [
                 {
                     "type": "label",
-                    "label": "Specify the location accessible by all machines to check for the QuadPype zip versions."
+                    "label": "Specify the location (accessible by all machines) to check for the QuadPype ZIP patches."
                 },
                 {
                     "type": "path",
@@ -191,12 +184,12 @@
                 },
                 {
                     "type": "label",
-                    "label": "Define custom location for artist machine where to unzip versions of QuadPype code. By default it's in user app data folder."
+                    "label": "Define a custom location for machines where to unzip patch versions. _By default it's in the user app data folder._"
                 },
                 {
                     "type": "path",
                     "key": "local_quadpype_path",
-                    "label": "Custom Local Versions Folder",
+                    "label": "Local Versions Folder",
                     "multiplatform": true,
                     "multipath": false,
                     "require_restart": true
@@ -206,17 +199,17 @@
                 },
                 {
                     "type": "label",
-                    "label": "Define explicit QuadPype version that should be used. Keep empty to use latest available version."
+                    "label": "Define the explicit QuadPype version that should be used. _Keep empty to use latest available version._"
                 },
                 {
-                    "type": "versions-text",
+                    "type": "package-version",
                     "key": "production_version",
-                    "label": "Production version"
+                    "label": "Production Version"
                 },
                 {
-                    "type": "versions-text",
+                    "type": "package-version",
                     "key": "staging_version",
-                    "label": "Staging version"
+                    "label": "Staging Version"
                 },
                 {
                     "type": "splitter"

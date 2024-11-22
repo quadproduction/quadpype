@@ -1,12 +1,5 @@
 {
-    "addon":{
-        "addon_paths": {
-            "windows": [],
-            "darwin": [],
-            "linux": []
-        },
-        "retrieve_locally": false
-    },
+    "custom_addons": [],
     "avalon": {
         "AVALON_TIMEOUT": 1000,
         "AVALON_THUMBNAIL_ROOT": {

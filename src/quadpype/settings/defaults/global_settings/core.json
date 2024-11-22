@@ -2,7 +2,6 @@
     "studio_name": "Cool Studio",
     "studio_code": "cool_std",
     "administrators": [],
-    "access_restricted": false,
     "windows_can_stay_on_top": true,
     "environment": {},
     "log_to_server": true,

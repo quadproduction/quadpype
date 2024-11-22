@@ -1581,7 +1581,7 @@ class MongoSettingsHandler(SettingsHandler):
             "type": "last_opened_settings_ui",
             "version": self._current_version
         }) or {}
-        info_data = doc.get("info", {})
+        info_data = doc.get("info", {}) or {}
         if not info_data:
             return info_data
 

@@ -1,34 +1,68 @@
 {
     "key": "modules",
     "type": "dict",
-    "label": "Modules",
+    "label": "Add-ons",
     "collapsible": true,
     "is_file": true,
     "children": [
         {
-            "key" : "addon",
-            "type" : "dict",
-            "label": "QuadPype AddOn",
-            "use_label_wrap": true,
-            "collapsible": true,
-            "children": [
-                {
-                    "type": "path",
-                    "key": "addon_paths",
-                    "label": "Paths",
-                    "multiplatform": true,
-                    "multipath": true,
-                    "require_restart": true
-                },
-                {
-                    "type": "boolean",
-                    "key": "retrieve_locally",
-                    "label": "Retrieve AddOn Paths Locally"
-                }
-            ]
+            "type": "list",
+            "key": "custom_addons",
+            "label": "Custom Add-ons",
+            "object_type": {
+                "type": "dict",
+                "required_keys": ["package_name", "package_remote_dir"],
+                "children": [
+                    {
+                    "type": "text",
+                    "key": "package_name",
+                    "label": "Add-on Name"
+                    },
+                    {
+                        "type": "label",
+                        "label": "Define where the add-on versions are located. _This need to be an OS path, not an URL._"
+                    },
+                    {
+                        "type": "path",
+                        "key": "package_remote_dir",
+                        "label": "Versions Repository",
+                        "multiplatform": true,
+                        "multipath": true,
+                        "require_restart": true
+                    },
+                    {
+                        "type": "label",
+                        "label": "Define the version that should be used. _Keep empty to use latest available version._"
+                    },
+                    {
+                        "type": "package-version",
+                        "key": "version",
+                        "label": "Version"
+                    },
+                    {
+                        "type": "package-version",
+                        "key": "staging_version",
+                        "label": "Staging Version"
+                    },
+                    {
+                        "type": "boolean",
+                        "key": "retrieve_locally",
+                        "label": "Copy Version Locally",
+                        "default": true
+                    },
+                    {
+                        "type": "label",
+                        "label": "Copying the version on the user machine remove latency caused by accessing distant data."
+                    }
+                ]
+            }
         },
         {
             "type": "separator"
+        },
+        {
+            "type": "label",
+            "label": "Shipped Add-ons"
         },
         {
             "type": "dict",

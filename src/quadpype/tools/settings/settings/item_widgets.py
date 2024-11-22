@@ -2,6 +2,7 @@ import json
 
 from qtpy import QtWidgets, QtCore, QtGui
 
+from quadpype.lib.version import get_package, PackageHandler
 from quadpype.resources import get_resource
 from quadpype.widgets.sliders import NiceSlider
 from quadpype.tools.settings import CHILD_OFFSET
@@ -505,13 +506,17 @@ class PasswordWidget(TextWidget):
         self.input_field.setEnabled(not self._read_only)
 
 
-class QuadPypeVersionText(TextWidget):
+class PackageVersionWidget(TextWidget):
+    _default_package_name = "quadpype"
+
     def __init__(self, *args, **kwargs):
         self._info_widget = None
+        self._package_name_cache = None
         super().__init__(*args, **kwargs)
 
     def create_ui(self):
-        super(QuadPypeVersionText, self).create_ui()
+        self._update_value_hints()
+        super(PackageVersionWidget, self).create_ui()
         info_widget = QtWidgets.QLabel(self)
         info_widget.setObjectName("PackageVersionLabel")
         self.content_layout.addWidget(info_widget, 1)
@@ -519,17 +524,19 @@ class QuadPypeVersionText(TextWidget):
         self._info_widget = info_widget
 
     def _update_info_widget(self):
+        self._update_value_hints()
+
         value = self.input_value()
 
         tooltip = ""
         state = None
         if self._is_invalid:
-            message = "Invalid QuadPype version format"
+            message = "Invalid Package version format"
 
         elif value == "":
             message = "Use latest available version"
             tooltip = (
-                "Latest version from QuadPype zip repository will be used"
+                "Latest package version from the repository will be used"
             )
 
         elif value in self.entity.value_hints:
@@ -552,8 +559,41 @@ class QuadPypeVersionText(TextWidget):
         self._info_widget.setToolTip(tooltip)
         self.set_style_property(self._info_widget, "state", state)
 
+    def _update_value_hints(self):
+        package_name_entity = self.entity_widget.entity.non_gui_children.get("package_name")
+        package_name = self._default_package_name
+
+        if package_name_entity:
+            package_name = package_name_entity.value
+
+        if not package_name:
+            # Package name not yet specified, empty the value_hints
+            self.entity.value_hints = []
+            return
+
+        if self._package_name_cache == package_name:
+            # Nothing to do the current value_hints should be correct
+            # We assume no new versions has been added since we cached the package_name
+            return
+
+        package = get_package(package_name)
+        if not package:
+            # Could not find a loaded package with this name yet
+            # TODO: Get the versions from package_remote_dir if specified
+            # package_name_entity = self.entity_widget.entity.non_gui_children.get("package_remote_dir")
+            # if package_name_entity:
+            #     # platform.system().lower()
+            #     package_remote_dir = package_name_entity.value
+            #     if package_remote_dir:
+            #         PackageHandler.get_versions_from_dir(package_name, package_remote_dir)
+            self.entity.value_hints = []
+            return
+
+        self._package_name_cache = package_name
+        self.entity.value_hints = [str(version) for version in package.get_available_versions()]
+
     def set_entity_value(self):
-        super(QuadPypeVersionText, self).set_entity_value()
+        super(PackageVersionWidget, self).set_entity_value()
         self._invalidate()
         self._update_info_widget()
 
@@ -580,7 +620,7 @@ class QuadPypeVersionText(TextWidget):
         self._is_invalid = is_invalid
 
     def _on_entity_change(self):
-        super(QuadPypeVersionText, self)._on_entity_change()
+        super(PackageVersionWidget, self)._on_entity_change()
         self._refresh_completer()
 
 

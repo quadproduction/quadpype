@@ -292,13 +292,13 @@ class BaseItemEntity(BaseEntity):
                 self, "Dynamic entity has set `is_group` to true."
             )
 
-        if (
-            self.require_restart_on_change
-            and (self.is_dynamic_item or self.is_in_dynamic_item)
-        ):
-            raise EntitySchemaError(
-                self, "Dynamic entity can't require restart."
-            )
+        # if (
+        #     self.require_restart_on_change
+        #     and (self.is_dynamic_item or self.is_in_dynamic_item)
+        # ):
+        #     raise EntitySchemaError(
+        #         self, "Dynamic entity can't require restart."
+        #     )
 
     @abstractproperty
     def root_key(self):

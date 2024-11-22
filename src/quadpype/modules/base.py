@@ -33,7 +33,7 @@ from quadpype.lib import (
     import_module_from_dirpath,
 )
 
-from quadpype.lib.version import get_package_manager, get_packages
+from quadpype.lib.version import get_packages
 
 from .interfaces import (
     QuadPypeInterface,

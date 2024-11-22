@@ -217,7 +217,7 @@ class PackageHandler:
                 running_version_str = str(latest_version)
             elif install_dir_path:
                 skip_version_check = True
-                running_version_str = self.get_package_version_from_dir(self._install_dir_path)
+                running_version_str = self.get_package_version_from_dir(self._name, self._install_dir_path)
 
         if not running_version_str:
             raise ValueError("CCCCC")
@@ -319,10 +319,12 @@ class PackageHandler:
         version_str = cls.validate_version_str(version_str)
         return PackageVersion.parse(version_str) if version_str else None
 
-    def get_package_version_from_dir(self, dir_path: Union[str, Path]) -> Union[str, None]:
+    @classmethod
+    def get_package_version_from_dir(cls, pkg_name: str, dir_path: Union[str, Path]) -> Union[str, None]:
         """Get version of Package in the given directory.
 
         Args:
+            pkg_name (str):  Package name.
             dir_path (Path): Path to the directory containing the package.
 
         Returns:
@@ -336,7 +338,7 @@ class PackageHandler:
             dir_path = Path(dir_path)
 
         # Try to find version
-        version_file = dir_path.joinpath(self._name, "version.py")
+        version_file = dir_path.joinpath(pkg_name, "version.py")
         if not version_file.exists():
             return None
 
@@ -346,12 +348,13 @@ class PackageHandler:
 
         return version['__version__']
 
-    def compare_version_with_package_dir(self, dir_path: Path, version_obj) -> Tuple[bool, str]:
+    @classmethod
+    def compare_version_with_package_dir(cls, pkg_name:str, dir_path: Path, version_obj) -> Tuple[bool, str]:
         if not dir_path or not isinstance(dir_path, Path) or not dir_path.exists() or not dir_path.is_dir():
             raise ValueError("Invalid directory path")
 
         try:
-            version_str = self.get_package_version_from_dir(dir_path)
+            version_str = cls.get_package_version_from_dir(pkg_name, dir_path)
             version_check = PackageVersion(version=version_str)
         except ValueError:
             return False, f"Cannot determine version from {dir_path}"
@@ -362,7 +365,8 @@ class PackageHandler:
                            "doesn't match. Skipping.")
         return True, "Versions match"
 
-    def compare_version_with_package_zip(self, zip_path: Path, version_obj) -> Tuple[bool, str]:
+    @ classmethod
+    def compare_version_with_package_zip(cls, pkg_name:str, zip_path: Path, version_obj) -> Tuple[bool, str]:
         if not zip_path or not isinstance(zip_path, Path) or not zip_path.exists() or not zip_path.is_file():
             raise ValueError("Invalid ZIP file path.")
 
@@ -373,7 +377,7 @@ class PackageHandler:
         try:
             with ZipFile(zip_path, "r") as zip_file:
                 with zip_file.open(
-                        f"{self._name}/version.py") as version_file:
+                        f"{pkg_name}/version.py") as version_file:
                     zip_version = {}
                     exec(version_file.read(), zip_version)
                     try:
@@ -425,10 +429,12 @@ class PackageHandler:
 
         return sorted(list(versions.values()))
 
-    def get_versions_from_dir(self, dir_path: Path, excluded_str_versions: Optional[List[str]] = None, parent_version: Optional[PackageVersion] = None) -> List:
+    @classmethod
+    def get_versions_from_dir(cls, pkg_name: str, dir_path: Path, excluded_str_versions: Optional[List[str]] = None, parent_version: Optional[PackageVersion] = None) -> List:
         """Get all detected PackageVersions in directory.
 
         Args:
+            pkg_name (str):  Name of the package.
             dir_path (Path): Directory to scan.
             excluded_str_versions (List[str]): List of excluded versions as strings.
             parent_version (PackageVersion): Parent version to use for nested directories.
@@ -454,23 +460,23 @@ class PackageHandler:
             # If the item is a directory with a major.minor version format, dive deeper
             if item.is_dir() and re.match(r"^\d+\.\d+$", item.name) and parent_version is None:
                 parent_version = PackageVersion(version=item.name)
-                detected_versions = self.get_versions_from_dir(item, excluded_str_versions, parent_version)
+                detected_versions = cls.get_versions_from_dir(pkg_name, item, excluded_str_versions, parent_version)
                 if detected_versions:
                     versions.extend(detected_versions)
 
             # If it's a file, process its name (stripped of extension)
             name = item.name if item.is_dir() else item.stem
-            version = self.get_version_from_str(name)
+            version = cls.get_version_from_str(name)
 
             if not version or version.major != parent_version.major or version.minor != parent_version.minor:
                 continue
 
             # If it's a directory, check if version is valid within it
-            if item.is_dir() and not self.compare_version_with_package_dir(item, version)[0]:
+            if item.is_dir() and not cls.compare_version_with_package_dir(pkg_name, item, version)[0]:
                 continue
 
             # If it's a file, check if version is valid within the zip
-            if item.is_file() and not self.compare_version_with_package_zip(item, version)[0]:
+            if item.is_file() and not cls.compare_version_with_package_zip(pkg_name, item, version)[0]:
                 continue
 
             version.path = item.resolve()
@@ -512,7 +518,7 @@ class PackageHandler:
         """
         if excluded_str_versions is None:
             excluded_str_versions = []
-        return self.get_versions_from_dir(self._local_dir_path, excluded_str_versions)
+        return self.get_versions_from_dir(self._name, self._local_dir_path, excluded_str_versions)
 
     def get_remote_versions(self, excluded_str_versions: Optional[List[str]] = None) -> List:
         """Get all versions available in remote path.
@@ -524,7 +530,7 @@ class PackageHandler:
         if excluded_str_versions is None:
             excluded_str_versions = []
 
-        return self.get_versions_from_dir(self._remote_dir_path, excluded_str_versions)
+        return self.get_versions_from_dir(self._name, self._remote_dir_path, excluded_str_versions)
 
     def find_version(self, version: Union[PackageVersion, str], from_local: bool = False) -> Union[PackageVersion, None]:
         """Get a specific version from the local or remote dir if available."""
@@ -645,8 +651,10 @@ class PackageManager:
     def __init__(self):
         self._packages = {}
 
-    def __getitem__(self, key) -> PackageHandler:
+    def __getitem__(self, key) -> Union[PackageHandler, None]:
         # This is called when you use square bracket syntax to access an item
+        if key not in self._packages:
+            return None
         return self._packages[key]
 
     @property
@@ -678,6 +686,9 @@ def get_package_manager() -> PackageManager:
         raise RuntimeError("Package Manager is not initialized")
     return _PACKAGE_MANAGER
 
+def set_package_manager(package_manager: Any):
+    global _PACKAGE_MANAGER
+    _PACKAGE_MANAGER = package_manager
 
 def get_package(package_name: str) -> PackageHandler:
     global _PACKAGE_MANAGER

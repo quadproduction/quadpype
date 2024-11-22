@@ -792,22 +792,21 @@ def _initialize_package_manager(global_settings, use_version, use_staging):
     )
     package_manager.add_package(quadpype_package)
 
-    custom_addon_settings = global_settings.get(MODULES_SETTINGS_KEY).get("custom_addon", {})
-    for addon_setting in custom_addon_settings:
-        if use_staging:
-            target_version_str = addon_setting.get("staging_version", "")
-        else:
-            target_version_str = addon_setting.get("production_version", "")
+    #version current = str(quadpype_package.running_version)
+    # Get les global settings avec les overrides de la version current
+    #custom_addon_settings = global_settings.get(MODULES_SETTINGS_KEY, {}).get("custom_addon", {})
+    for addon_setting in []:
+        version_key = "staging_version" if use_staging else "version"
         addon_package = AddOnHandler(
-            pkg_name="add_on",
-            local_dir_path=Path(user_data_dir("quadpype", "quad")) / "additional_modules",
-            remote_dir_path=addon_setting.get("versions_dir", {}).get(platform.system().lower()),
-            running_version_str=target_version_str,
+            pkg_name=addon_setting.get("package_name"),
+            local_dir_path=Path(user_data_dir("quadpype", "quad")) / "addons",
+            remote_dir_path=addon_setting.get("package_remote_dir", {}).get(platform.system().lower()),
+            running_version_str=addon_setting.get(version_key, ""),
             retrieve_locally=addon_setting.get("retrieve_locally", False),
         )
         package_manager.add_package(addon_package)
 
-    igniter_reimport_package_manager_module()
+    #igniter_reimport_package_manager_module()
 
     return package_manager
 
@@ -928,6 +927,11 @@ def boot():
         pass
     except KeyError:
         pass
+
+    # Since we clear the Python modules caches,
+    # we need to re-set the package manager global variable
+    from quadpype.lib.version import set_package_manager
+    set_package_manager(package_manager)
 
     from quadpype.lib.user import update_user_profile_on_startup
 
