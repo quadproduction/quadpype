@@ -459,7 +459,7 @@ class PackageHandler:
         for item in dir_path.iterdir():
             # If the item is a directory with a major.minor version format, dive deeper
             if item.is_dir() and re.match(r"^\d+\.\d+$", item.name) and parent_version is None:
-                parent_version = PackageVersion(version=item.name)
+                parent_version = PackageVersion(version=f"{item.name}.0")
                 detected_versions = cls.get_versions_from_dir(pkg_name, item, excluded_str_versions, parent_version)
                 if detected_versions:
                     versions.extend(detected_versions)
@@ -468,7 +468,7 @@ class PackageHandler:
             name = item.name if item.is_dir() else item.stem
             version = cls.get_version_from_str(name)
 
-            if not version or version.major != parent_version.major or version.minor != parent_version.minor:
+            if not version or (parent_version and (version.major != parent_version.major or version.minor != parent_version.minor)):
                 continue
 
             # If it's a directory, check if version is valid within it
