@@ -312,6 +312,7 @@ from igniter.version_classes import reload_module as igniter_reimport_package_ma
 from igniter.settings_utils import (
     get_expected_studio_version_str,
     get_quadpype_global_settings,
+    get_studio_global_settings_overrides_for_version,
     get_local_quadpype_path
 )
 from igniter.registry import (
@@ -792,15 +793,17 @@ def _initialize_package_manager(global_settings, use_version, use_staging):
     )
     package_manager.add_package(quadpype_package)
 
-    #version current = str(quadpype_package.running_version)
-    # Get les global settings avec les overrides de la version current
-    #custom_addon_settings = global_settings.get(MODULES_SETTINGS_KEY, {}).get("custom_addon", {})
-    for addon_setting in []:
+    global_settings = get_studio_global_settings_overrides_for_version(os.getenv("QUADPYPE_MONGO"), str(quadpype_package.running_version))
+    addon_settings = global_settings.get(MODULES_SETTINGS_KEY, {}).get("custom_addons", {})
+    local_dir = Path(user_data_dir("quadpype", "quad")) / "addons"
+    if not local_dir.exists():
+        local_dir.mkdir(parents=True, exist_ok=True)
+    for addon_setting in addon_settings:
         version_key = "staging_version" if use_staging else "version"
         addon_package = AddOnHandler(
             pkg_name=addon_setting.get("package_name"),
-            local_dir_path=Path(user_data_dir("quadpype", "quad")) / "addons",
-            remote_dir_path=addon_setting.get("package_remote_dir", {}).get(platform.system().lower()),
+            local_dir_path=local_dir,
+            remote_dir_path=Path(addon_setting.get("package_remote_dir", {}).get(platform.system().lower())[0]),
             running_version_str=addon_setting.get(version_key, ""),
             retrieve_locally=addon_setting.get("retrieve_locally", False),
         )
