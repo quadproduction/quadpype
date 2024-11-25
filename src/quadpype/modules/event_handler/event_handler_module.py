@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """Module storing the class and logic of the QuadPype Events Handler."""
-from quadpype.modules import QuadPypeModule, ITrayService
+from quadpype.modules import QuadPypeModule, ITrayService, AddOnPriority
 
 
 class EventHandlerModule(QuadPypeModule, ITrayService):
     """Class handling QuadPype events."""
     name = "event_handler"
     label = "Events Handler"
+    priority = AddOnPriority.LOW
 
     def __init__(self, manager, settings):
         super().__init__(manager, settings)

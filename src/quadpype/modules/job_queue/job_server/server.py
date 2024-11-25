@@ -12,10 +12,10 @@ log = logging.getLogger(__name__)
 
 
 class WebServerManager:
-    """Manger that care about web server thread."""
-    def __init__(self, port, host, loop=None):
-        self.port = port
+    """Manager that care about web server thread."""
+    def __init__(self, host, port, loop=None):
         self.host = host
+        self.port = port
         self.app = web.Application()
         if loop is None:
             loop = asyncio.new_event_loop()
@@ -44,9 +44,8 @@ class WebServerManager:
         try:
             log.debug("Stopping Web server")
             self.webserver_thread.stop()
-
         except Exception as exc:
-            print("Errored", str(exc))
+            print("Error", str(exc))
             log.warning(
                 "Error has happened during Killing Web server",
                 exc_info=True
@@ -76,12 +75,12 @@ class WebServerThread(threading.Thread):
         self.workers_route = WorkerRpc(job_queue, manager, loop=loop)
 
     @property
-    def port(self):
-        return self.manager.port
-
-    @property
     def host(self):
         return self.manager.host
+
+    @property
+    def port(self):
+        return self.manager.port
 
     @property
     def stopped(self):
@@ -101,8 +100,7 @@ class WebServerThread(threading.Thread):
 
             asyncio.ensure_future(self.check_shutdown(), loop=self.loop)
             self.loop.run_forever()
-
-        except Exception:
+        except Exception:  # noqa
             log.warning(
                 "Web Server service has failed", exc_info=True
             )
@@ -130,16 +128,12 @@ class WebServerThread(threading.Thread):
         while not self._stopped:
             await asyncio.sleep(0.5)
 
-        print("Starting shutdown")
         if self.workers_route:
             await self.workers_route.stop()
 
-        print("Stopping site")
         await self.site.stop()
-        print("Site stopped")
         await self.runner.cleanup()
 
-        print("Runner stopped")
         tasks = [
             task
             for task in asyncio.all_tasks()

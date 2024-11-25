@@ -4,7 +4,6 @@ import os
 import re
 import platform
 import hashlib
-import distutils.spawn
 from pathlib import Path
 from typing import List
 
@@ -15,47 +14,51 @@ app_root = Path(os.path.dirname(__file__))
 
 
 def validate_thirdparty_binaries():
-    """Check the existence of the third party executables."""
+    """Check the existence of third party executables."""
     low_platform = platform.system().lower()
-    binary_vendors_dir = os.path.join(
-        app_root,
-        "vendor",
-        "bin"
-    )
+    binary_vendors_dir = Path(os.environ["QUADPYPE_ROOT"]).joinpath("vendor", "bin")
+
+    ext_list = [""]  # Add no extension (for linux)
+    ext_list.extend(os.environ['PATHEXT'].lower().split(os.pathsep))
 
     error_msg = (
-        "Missing binary dependency {}. Please fetch third party dependencies."
+        "Missing binary dependency {}. Please fetch thirdparty dependencies."
     )
-    # Validate the presence of FFmpeg
-    ffmpeg_dir = os.path.join(binary_vendors_dir, "ffmpeg", low_platform)
+    # Validate existence of FFMPEG
+    ffmpeg_dir_path = binary_vendors_dir.joinpath("ffmpeg", low_platform)
     if low_platform == "windows":
-        ffmpeg_dir = os.path.join(ffmpeg_dir, "bin")
-    ffmpeg_executable = os.path.join(ffmpeg_dir, "ffmpeg")
-    ffmpeg_result = distutils.spawn.find_executable(ffmpeg_executable)
-    if ffmpeg_result is None:
-        raise RuntimeError(error_msg.format("FFmpeg"))
+        ffmpeg_dir_path = ffmpeg_dir_path.joinpath("bin")
 
-    # Validate existence of OpenImageIO (not on MacOs)
-    oiio_tool_path = None
+    ffmpeg_binary_path = ffmpeg_dir_path.joinpath("ffmpeg")
+
+    binary_exists = False
+    for ext in ext_list:
+        test_ffmpeg_binary_path = ffmpeg_binary_path.with_suffix(ext)
+        if test_ffmpeg_binary_path.exists():
+            binary_exists = True
+            break
+    if not binary_exists:
+        raise RuntimeError(error_msg.format("FFMPEG"))
+
+    # Validate existence of OpenImageIO (not on macOS)
+    if low_platform == "darwin":
+        return
+
+    oiiotool_dir_path = binary_vendors_dir.joinpath("oiio", low_platform)
     if low_platform == "linux":
-        oiio_tool_path = os.path.join(
-            binary_vendors_dir,
-            "oiio",
-            low_platform,
-            "bin",
-            "oiiotool"
-        )
-    elif low_platform == "windows":
-        oiio_tool_path = os.path.join(
-            binary_vendors_dir,
-            "oiio",
-            low_platform,
-            "oiiotool"
-        )
-    if oiio_tool_path is not None:
-        oiio_result = distutils.spawn.find_executable(oiio_tool_path)
-        if oiio_result is None:
-            raise RuntimeError(error_msg.format("OpenImageIO"))
+        oiiotool_dir_path = oiiotool_dir_path.joinpath("bin")
+
+    oiiotool_binary_path = oiiotool_dir_path.joinpath("oiiotool")
+
+    binary_exists = False
+    for ext in ext_list:
+        test_oiiotool_binary_path = oiiotool_binary_path.with_suffix(ext)
+        if test_oiiotool_binary_path.exists():
+            binary_exists = True
+            break
+
+    if not binary_exists:
+        raise RuntimeError(error_msg.format("OpenImageIO"))
 
 
 # Give the ability to skip the validation

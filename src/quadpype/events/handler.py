@@ -147,6 +147,9 @@ class EventsHandlerManager:
         if self._worker_thread.isRunning():
             raise RuntimeError("The Event Worker is already running.")
 
+        if not self._webserver.is_running:
+            raise RuntimeError("Webserver is not running. Cannot start the worker thread.")
+
         self._is_running = True
         self._worker_thread.start(QtCore.QThread.HighestPriority)
 
@@ -158,13 +161,16 @@ class EventsHandlerManager:
             raise RuntimeError("The Event Handler cannot be started multiple times.")
         if not self._webserver:
             raise RuntimeError("Webserver not set. Cannot start the event handler.")
-        if not self._webserver.is_running:
-            raise RuntimeError("Webserver is not running. Cannot start the event handler.")
 
         self._worker_thread = EventHandlerWorker(self)
         self._worker_thread.task_completed.connect(self._restart_worker)
 
-        self._start_worker()
+        if not self._webserver.is_running:
+            # The webserver is not yet running, wait a bit before starting the loop
+            waiting_time_msec = 10 * 1000
+            self._timer.start(waiting_time_msec)
+        else:
+            self._start_worker()
 
     def stop(self):
         if self._timer.isActive():

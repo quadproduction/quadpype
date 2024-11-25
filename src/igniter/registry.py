@@ -5,10 +5,10 @@ registry_module = load_quadpype_module("quadpype/lib/registry.py", "quadpype.lib
 
 # Expose specific classes from registry
 QuadPypeSecureRegistry = registry_module.QuadPypeSecureRegistry
-QuadPypeSettingsRegistry = registry_module.QuadPypeSettingsRegistry
+QuadPypeRegistry = registry_module.QuadPypeRegistry
 
 
 __all__ = [
     "QuadPypeSecureRegistry",
-    "QuadPypeSettingsRegistry"
+    "QuadPypeRegistry"
 ]

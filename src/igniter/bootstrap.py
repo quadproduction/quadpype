@@ -21,7 +21,7 @@ from speedcopy import copyfile
 
 from .registry import (
     QuadPypeSecureRegistry,
-    QuadPypeSettingsRegistry
+    QuadPypeRegistry
 )
 from .tools import (
     get_quadpype_path_from_settings
@@ -152,7 +152,7 @@ class BootstrapPackage:
 
     Attributes:
         data_dir (Path): local QuadPype installation directory.
-        registry (QuadPypeSettingsRegistry): QuadPype registry object.
+        registry (QuadPypeRegistry): QuadPype registry object.
         exclusion_list (list): List of files to exclude from zip
         inclusion_list (list): list of top level directories and files to
             include in QuadPype patch zip.
@@ -174,7 +174,7 @@ class BootstrapPackage:
         self.set_data_dir(None)
         self.secure_registry = QuadPypeSecureRegistry("mongodb")
         base_version = get_package("quadpype").get_version_from_dir(os.getenv("QUADPYPE_ROOT"))
-        self.registry = QuadPypeSettingsRegistry(base_version=base_version)
+        self.registry = QuadPypeRegistry(base_version=base_version)
         self.exclusion_list = [".pyc", "__pycache__"]
         self.inclusion_list = [
             "quadpype", "../LICENSE", "LICENSE"

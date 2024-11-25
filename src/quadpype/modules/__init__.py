@@ -13,7 +13,7 @@ from .base import (
     QuadPypeModule,
     QuadPypeAddOn,
 
-    AddOnRegisterPriority,
+    AddOnPriority,
 
     load_modules,
 
@@ -41,7 +41,7 @@ __all__ = (
     "QuadPypeModule",
     "QuadPypeAddOn",
 
-    "AddOnRegisterPriority",
+    "AddOnPriority",
 
     "load_modules",
 

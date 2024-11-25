@@ -43,7 +43,7 @@ def run_webserver(executable, upload_dir, host=None, port=None):
     manager = ModulesManager()
     webserver_module = manager.modules_by_name["webserver"]
 
-    server_manager = webserver_module.create_new_server_manager(port, host)
+    server_manager = webserver_module.create_new_server_manager(host, port)
     webserver_url = server_manager.url
     # queue for publishfromapp tasks
     studio_task_queue = collections.deque()

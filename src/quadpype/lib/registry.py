@@ -474,7 +474,7 @@ class JSONSettingRegistry(ASettingRegistry):
             json.dump(data, cfg, indent=4)
 
 
-class QuadPypeSettingsRegistry(JSONSettingRegistry):
+class QuadPypeRegistry(JSONSettingRegistry):
     """Class handling QuadPype general settings registry.
 
     Attributes:
@@ -495,9 +495,9 @@ class QuadPypeSettingsRegistry(JSONSettingRegistry):
         super().__init__(name, path, base_version)
 
 
-def get_app_registry() -> QuadPypeSettingsRegistry:
+def get_app_registry() -> QuadPypeRegistry:
     global _REGISTRY
     if not _REGISTRY:
-        _REGISTRY = QuadPypeSettingsRegistry()
+        _REGISTRY = QuadPypeRegistry()
 
     return _REGISTRY
