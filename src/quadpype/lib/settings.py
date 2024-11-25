@@ -6,7 +6,7 @@ from urllib.parse import urlparse, parse_qs
 from pathlib import Path
 import certifi
 from pymongo import MongoClient
-
+from semver import VersionInfo
 
 # TODO: Avoid code duplication with same function in mongo client
 def should_add_certificate_path_to_mongo_url(mongo_url):
@@ -40,8 +40,40 @@ def should_add_certificate_path_to_mongo_url(mongo_url):
 def _get_studio_global_settings_overrides_for_version(collection, version=None):
     return collection.find_one({"type": "global_settings_versioned", "version": version})
 
+def _check_version_order(collection, version):
+    # Query document holding sorted list of version strings
+    doc = collection.find_one({"type": "versions_order"} or {})
+
+    if not doc:
+        doc = {"type":  "versions_order"}
+
+    if "all_versions" not in doc:
+        doc["all_versions"] = []
+
+    # Skip if the current version is already available
+    if version in doc["all_versions"]:
+        return
+
+    # Add the current version and existing versions, then sort them
+    all_objected_versions = [VersionInfo.parse(version)]
+    for version_str in doc["all_versions"]:
+        all_objected_versions.append(VersionInfo.parse(version_str))
+
+    doc["all_versions"] = [
+        str(version) for version in sorted(all_objected_versions)
+    ]
+
+    # Update the document in the database
+    collection.replace_one(
+        {"type": "versions_order"},
+        doc,
+        upsert=True
+        )
+    raise Exception
 
 def find_closest_global_settings(collection, settings_key, fallback_key, version):
+    _check_version_order(collection, version)
+
     doc_filters = {
         "type": {"$in": [settings_key, fallback_key]}
     }
