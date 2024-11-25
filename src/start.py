@@ -307,11 +307,10 @@ from igniter.tools import (
 from igniter.version_classes import (
     PackageVersion
 )
-from igniter.version_classes import reload_module as igniter_reimport_package_manager_module
 from igniter.settings_utils import (
     get_expected_studio_version_str,
     get_quadpype_global_settings,
-    get_studio_global_settings_overrides_for_version,
+    get_studio_global_settings_overrides,
     get_local_quadpype_path
 )
 from igniter.registry import (
@@ -796,7 +795,7 @@ def _initialize_package_manager(global_settings, use_version, use_staging):
     )
     package_manager.add_package(quadpype_package)
 
-    global_settings = get_studio_global_settings_overrides_for_version(os.getenv("QUADPYPE_MONGO"), str(quadpype_package.running_version))
+    global_settings = get_studio_global_settings_overrides(os.getenv("QUADPYPE_MONGO"), str(quadpype_package.running_version))
     addon_settings = global_settings.get(MODULES_SETTINGS_KEY, {}).get("custom_addons", {})
     local_dir = Path(user_data_dir("quadpype", "quad")) / "addons"
     if not local_dir.exists():
@@ -811,8 +810,6 @@ def _initialize_package_manager(global_settings, use_version, use_staging):
             retrieve_locally=addon_setting.get("retrieve_locally", False),
         )
         package_manager.add_package(addon_package)
-
-    #igniter_reimport_package_manager_module()
 
     return package_manager
 

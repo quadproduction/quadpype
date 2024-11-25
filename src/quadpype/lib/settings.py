@@ -4,10 +4,9 @@ from appdirs import user_data_dir
 from typing import Union, Optional
 from urllib.parse import urlparse, parse_qs
 from pathlib import Path
-
 import certifi
 from pymongo import MongoClient
-
+from semver import VersionInfo
 
 # TODO: Avoid code duplication with same function in mongo client
 def should_add_certificate_path_to_mongo_url(mongo_url):
@@ -38,29 +37,149 @@ def should_add_certificate_path_to_mongo_url(mongo_url):
     return add_certificate
 
 
-def get_studio_global_settings_overrides_for_version(url: str, version=None):
+def _get_studio_global_settings_overrides_for_version(collection, version=None):
+    return collection.find_one({"type": "global_settings_versioned", "version": version})
+
+def _check_version_order(collection, version):
+    # Query document holding sorted list of version strings
+    doc = collection.find_one({"type": "versions_order"} or {})
+
+    if not doc:
+        doc = {"type":  "versions_order"}
+
+    if "all_versions" not in doc:
+        doc["all_versions"] = []
+
+    # Skip if the current version is already available
+    if version in doc["all_versions"]:
+        return
+
+    # Add the current version and existing versions, then sort them
+    all_objected_versions = [VersionInfo.parse(version)]
+    for version_str in doc["all_versions"]:
+        all_objected_versions.append(VersionInfo.parse(version_str))
+
+    doc["all_versions"] = [
+        str(version) for version in sorted(all_objected_versions)
+    ]
+
+    # Update the document in the database
+    collection.replace_one(
+        {"type": "versions_order"},
+        doc,
+        upsert=True
+        )
+
+def find_closest_global_settings(collection, settings_key, fallback_key, version):
+    _check_version_order(collection, version)
+
+    doc_filters = {
+        "type": {"$in": [settings_key, fallback_key]}
+    }
+    other_versions = collection.find(
+        doc_filters,
+        {
+            "_id": True,
+            "version": True,
+            "type": True
+        }
+    )
+
+    versioned_doc = collection.find_one({"type": "versions_order"}) or {}
+
+    legacy_settings_doc = None
+    versioned_settings_by_version = {}
+    for doc in other_versions:
+        if doc["type"] == fallback_key:
+            legacy_settings_doc = doc
+        elif doc["type"] == settings_key:
+            if doc["version"] == version:
+                return doc["_id"]
+            versioned_settings_by_version[doc["version"]] = doc
+
+    versions_in_doc = versioned_doc.get("all_versions") or []
+    # Cases when only legacy settings can be used
+    if (
+            # There are not versioned documents yet
+            not versioned_settings_by_version
+            # Versioned document is not available at all
+            # - this can happen only if old build of QuadPype was used
+            or not versioned_doc
+            # Current QuadPype version is not available
+            # - something went really wrong when this happens
+            or version not in versions_in_doc
+    ):
+        if not legacy_settings_doc:
+            return None
+        return legacy_settings_doc["_id"]
+
+
+    # Separate versions to lower and higher and keep their order
+    lower_versions = []
+    higher_versions = []
+    before = True
+    for version_str in versions_in_doc:
+        if version_str == version:
+            before = False
+        elif before:
+            lower_versions.append(version_str)
+        else:
+            higher_versions.append(version_str)
+
+    # Use legacy settings doc as source document
+    src_doc_id = None
+    if legacy_settings_doc:
+        src_doc_id = legacy_settings_doc["_id"]
+
+    # Find the highest version which has available settings
+    if lower_versions:
+        for version_str in reversed(lower_versions):
+            doc = versioned_settings_by_version.get(version_str)
+            if doc:
+                src_doc_id = doc["_id"]
+                break
+    # Use versions with higher version only if there are no legacy
+    #   settings and there are not any versions before
+    if src_doc_id is None and higher_versions:
+        for version_str in higher_versions:
+            doc = versioned_settings_by_version.get(version_str)
+            if doc:
+                src_doc_id = doc["_id"]
+                break
+
+    if src_doc_id is None:
+        return None
+    return collection.find_one({"_id": src_doc_id})
+
+
+def get_global_settings_overrides_doc(collection, version):
+    document = _get_studio_global_settings_overrides_for_version(collection, version)
+    if document is None:
+        document = find_closest_global_settings(collection,
+                                                "global_settings_versioned",
+                                                "global_settings",
+                                                str(version))
+
+    version = None
+    if document and document["type"] == "global_settings_versioned":
+        version = document["version"]
+
+    return document, version
+
+
+def get_studio_global_settings_overrides(url: str, version=None):
     kwargs = {}
     if should_add_certificate_path_to_mongo_url(url):
         kwargs["tlsCAFile"] = certifi.where()
+    client = MongoClient(url, **kwargs)
+    quadpype_db = os.getenv("QUADPYPE_DATABASE_NAME") or "quadpype"
+    collection = client[quadpype_db]["settings"]
+    document, version = get_global_settings_overrides_doc(collection, version)
 
-    try:
-        # Create mongo connection
-        client = MongoClient(url, **kwargs)
-        # Access settings collection
-        quadpype_db = os.getenv("QUADPYPE_DATABASE_NAME") or "quadpype"
-        col = client[quadpype_db]["settings"]
-        # Query global settings
-        global_settings = col.find_one({
-            "type": "global_settings_versioned",
-            "version": version
-        }) or {}
-        # Close Mongo connection
-        client.close()
-
-    except Exception:
-        return {}
-
-    return global_settings.get("data") or {}
+    if not document:
+        document = collection.find_one({"type": "global_settings"})
+    client.close()
+    return document.get("data") if document else {}
 
 
 def get_quadpype_global_settings(url: str) -> dict:
