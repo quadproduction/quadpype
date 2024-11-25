@@ -1,15 +1,18 @@
 import threading
 import asyncio
 from pathlib import Path
+from datetime import date
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 from quadpype import get_all_registered_web_api_routers
-from quadpype.resources import get_app_favicon_filepath
+from quadpype.version import __version__
+from quadpype.resources import get_app_favicon_filepath, get_app_icon_filepath
 from quadpype.lib import Logger
 
 app_meta = {
@@ -27,9 +30,27 @@ WEB_API = FastAPI(
     **app_meta,
 )
 
+templates = Jinja2Templates(directory=Path(__file__).parent.joinpath("templates"))
+
 @WEB_API.get('/favicon.ico', include_in_schema=False)
 async def favicon():
     return FileResponse(get_app_favicon_filepath())
+
+@WEB_API.get('/logo.png', include_in_schema=False)
+async def webserver_logo():
+    return FileResponse(get_app_icon_filepath(variation_name="default"))
+
+
+@WEB_API.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "version": __version__,
+            "current_year": date.today().strftime("%Y")
+        }
+    )
 
 # Register all defined routers
 for router in get_all_registered_web_api_routers():

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Theme HTML5 Page</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            overflow-y:scroll;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Figtree', sans-serif;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+        }
+
+        /* Header Styling */
+        header {
+            background-color: #1e1e1e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            height: 100px;
+            border-bottom: 1px solid #333;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        header img {
+            max-height: 100%;
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .header-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .header-content h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+
+        .header-content p {
+            color: #b0b0b0;
+            font-size: 16px;
+        }
+
+        .github-button {
+            background-color: #333;
+            color: #f0f0f0;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .github-button:hover {
+            background-color: #444;
+        }
+
+        /* Main Section Styling */
+        main {
+            flex: 1;
+            display: flex;
+            max-width: 1000px;
+            margin: 20px auto;
+            width: 100%;
+            border-radius: 10px;
+            background-color: #1e1e1e;
+        }
+
+        .content {
+            flex: 3;
+            padding: 30px;
+        }
+
+        .content h2 {
+            color: #ccf6fe;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            color: #f6f6f6;
+            line-height: 1.6em;
+            margin-bottom: 30px;
+            text-align: justify;
+        }
+
+        .content p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Key Features Section */
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 16px 0 30px;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 26px;
+        }
+
+        .feature-list .icon {
+            flex-shrink: 0;
+            font-size: 30px;
+            color: #ffffff;
+            padding-left: 10px;
+            width: 65px;
+        }
+
+        .feature-list .text h3 {
+            font-size: 18px;
+            color: #d0e4e8;
+            margin-bottom: 5px;
+        }
+
+        .feature-list .text p {
+            margin: 0;
+            font-size: 16px;
+            color: #ededed;
+        }
+
+        .feature-list li:last-child {
+            margin-bottom: 0;
+        }
+        .sidebar {
+            flex: 1;
+            background-color: #333;
+            padding: 30px 20px;
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .sidebar h3 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            text-decoration: underline #a3a3a3;
+            text-underline-offset: 4px;
+        }
+
+        .sidebar p {
+            color: #c0c0c0;
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: #1e1e1e;
+            color: #c0c0c0;
+            text-align: center;
+            padding: 16px 20px;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        footer div {
+            margin-bottom: 10px;
+        }
+
+        footer a, footer a:visited {
+            color: #76baff;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Header -->
+        <header>
+            <div class="header-container">
+                <div class="logo">
+                    <img src="/logo.png" alt="Logo">
+                </div>
+                <div class="header-content">
+                    <h1>QuadPype Webserver</h1>
+                    <p>Retrive & Interact via web requests</p>
+                </div>
+                <a href="https://github.com/quadproduction/quadpype" target="_blank" class="github-button">GitHub Repo</a>
+            </div>
+        </header>
+        <!-- Main Section -->
+        <main>
+            <div class="content">
+                <h2>What is it?</h2>
+                <p>The <b>QuadPype Webserver API</b>, serves as a seamless bridge between <b>QuadPype</b> software and external systems, enabling developers to interact with published production data effortlessly.<br>Designed for performance and scalability, this API provides a robust interface for retrieving critical information about production workflows, ensuring an efficient and streamlined integration process.</p>
+                <h2>Key Features</h2>
+                <p>Beyond simple data retrieval, the Webserver API opens a world of possibilities to enhance studio operations. Its powerful features include:</p>
+                <ul class="feature-list">
+                    <li>
+                        <div class="icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <div class="text">
+                            <h3>Studio Settings Management</h3>
+                            <p>Easily update and configure your studio settings for optimal production workflows.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="icon">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <div class="text">
+                            <h3>Project Oversight</h3>
+                            <p>Manage and organize the projects with external tools that can send requests to update configurations.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="text">
+                            <h3>User Administration</h3>
+                            <p>Browse and manage the user list efficiently, ensuring streamlined access and role assignments.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="text">
+                            <h3>User Notifications</h3>
+                            <p>Notify connected users in real-time through intuitive pop-ups or tray notifications, keeping everyone informed and aligned.</p>
+                        </div>
+                    </li>
+                </ul>
+                <h2>Extensibility</h2>
+                <p>The Webserver API's architecture is built with flexibility in mind. With minimal development effort, new features and functionalities can be added by defining additional API routes that connect directly to the <b>QuadPype</b> core. This extensibility ensures that the API evolves with the unique demands of your studio environment.</p>
+                <h2>Open Source Collaboration</h2>
+                <p>Like the <b>QuadPype</b> core, the <b>Webserver API</b> is maintained by the <b>Quad Dev Team</b> as an open-source project. We actively encourage contributions to enhance and expand the API's capabilities. For more information on how to contribute, visit the project's wiki page and join the vibrant community helping to shape the future of this powerful tool.</p>
+            </div>
+            <aside class="sidebar">
+                <h3>Runtime information</h3>
+                <p>QuadPype version: {{ version }}</p>
+            </aside>
+        </main>
+        <footer>
+            <p>&copy; 2023 - {{ current_year }} <b>QuadPype</b>. Project and code under the <a href="https://github.com/quadproduction/quadpype/blob/main/LICENSE">MIT license</a>.</p>
+        </footer>
+    </div>
+</body>
+</html>
