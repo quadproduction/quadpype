@@ -38,29 +38,30 @@ def should_add_certificate_path_to_mongo_url(mongo_url):
     return add_certificate
 
 
-def get_studio_global_settings_overrides_for_version(url: str, version=None):
+def get_studio_global_settings_overrides(url: str, version=None):
+
     kwargs = {}
     if should_add_certificate_path_to_mongo_url(url):
         kwargs["tlsCAFile"] = certifi.where()
 
     try:
-        # Create mongo connection
         client = MongoClient(url, **kwargs)
-        # Access settings collection
         quadpype_db = os.getenv("QUADPYPE_DATABASE_NAME") or "quadpype"
-        col = client[quadpype_db]["settings"]
-        # Query global settings
-        global_settings = col.find_one({
-            "type": "global_settings_versioned",
-            "version": version
-        }) or {}
-        # Close Mongo connection
+        collection = client[quadpype_db]["settings"]
+
+        # Get global settings overrides
+        document = collection.find_one({"type": "global_settings_versioned", "version": version})
+
+        if not document:
+            document = collection.find_one({"type": "global_settings"})
+
         client.close()
 
     except Exception:
+        # TODO log traceback or message
         return {}
 
-    return global_settings.get("data") or {}
+    return document.get("data") if document else {}
 
 
 def get_quadpype_global_settings(url: str) -> dict:
