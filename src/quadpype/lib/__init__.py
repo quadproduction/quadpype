@@ -122,7 +122,7 @@ from .registry import (
     IniSettingRegistry,
     JSONSettingRegistry,
     QuadPypeSecureRegistry,
-    QuadPypeSettingsRegistry,
+    QuadPypeRegistry,
     get_app_registry
 )
 
@@ -262,7 +262,7 @@ __all__ = [
     "IniSettingRegistry",
     "JSONSettingRegistry",
     "QuadPypeSecureRegistry",
-    "QuadPypeSettingsRegistry",
+    "QuadPypeRegistry",
     "get_app_registry",
 
     "change_quadpype_mongo_url",

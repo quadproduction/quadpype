@@ -57,3 +57,7 @@ def get_app_splash_filepath(variation_name=None):
     if not variation_name:
         variation_name = _get_app_image_variation_name()
     return get_resource("icons", "quadpype_splash_{}.png".format(variation_name))
+
+
+def get_app_favicon_filepath():
+    return get_resource("icons", "quadpype_favicon.ico")

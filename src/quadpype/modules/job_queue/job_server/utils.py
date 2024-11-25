@@ -35,7 +35,7 @@ def main(port=None, host=None):
         return 1
 
     print("Running server {}:{}".format(host, port))
-    manager = WebServerManager(port, host)
+    manager = WebServerManager(host, port)
     manager.start_server()
 
     stopped = False

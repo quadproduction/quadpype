@@ -57,7 +57,7 @@ IGNORED_DEFAULT_FILENAMES = (
 )
 
 
-class AddOnRegisterPriority(IntEnum):
+class AddOnPriority(IntEnum):
     LOW = 60
     MEDIUM = 40
     HIGH = 20
@@ -430,7 +430,7 @@ class QuadPypeModule(ABC):
 
     enabled = True
     _id = None
-    priority = AddOnRegisterPriority.MEDIUM
+    priority = AddOnPriority.MEDIUM
 
     def __init__(self, manager, settings):
         self.manager = manager
@@ -633,7 +633,7 @@ class ModulesManager:
 
         import quadpype_modules
 
-        self.log.debug("*** {} initialization.".format("QuadPype modules"))
+        self.log.debug("*** {} initialization.".format("QuadPype Add-ons"))
         # Prepare settings for modules
         global_settings = getattr(self, "_global_settings", None)
         if global_settings is None:
@@ -681,6 +681,9 @@ class ModulesManager:
                     continue
                 module_classes.append(modules_item)
 
+        # Sort the modules by priority
+        module_classes.sort(key=lambda module_class: module_class.priority)
+
         for modules_item in module_classes:
             settings = modules_settings
             name = modules_item.__name__
@@ -705,9 +708,6 @@ class ModulesManager:
                     "Initialization of module {} failed.".format(name),
                     exc_info=True
                 )
-
-        # Sort the modules by priority
-        self.modules.sort(key=lambda module_inst: module_inst.priority)
 
         if self._report is not None:
             report[self._report_total_key] = time.time() - time_start

@@ -25,13 +25,14 @@ import socket
 from time import sleep
 
 from quadpype import resources
-from quadpype.modules import QuadPypeModule, ITrayService, AddOnRegisterPriority
+from quadpype.lib import get_app_registry
+from quadpype.modules import QuadPypeModule, ITrayService, AddOnPriority
 
 
 class WebServerModule(QuadPypeModule, ITrayService):
     name = "webserver"
     label = "Web Server"
-    priority = AddOnRegisterPriority.CRITICAL
+    priority = AddOnPriority.CRITICAL
 
     webserver_url_env = "QUADPYPE_WEBSERVER_URL"
 
@@ -42,6 +43,7 @@ class WebServerModule(QuadPypeModule, ITrayService):
         self._host_listener = None
 
         self.port = 0
+        self.default_host = "127.0.0.1"
         self.webserver_url = None
 
     def initialize(self, _module_settings):
@@ -57,7 +59,7 @@ class WebServerModule(QuadPypeModule, ITrayService):
 
             try:
                 module.webserver_initialization(self.server_manager)
-            except Exception:
+            except Exception:  # noqa
                 self.log.warning(
                     (
                         "Failed to connect module \"{}\" to webserver."
@@ -67,13 +69,13 @@ class WebServerModule(QuadPypeModule, ITrayService):
 
     def tray_init(self):
         self.port = self.find_free_port()
+
         self._create_server_manager()
         self._add_resources_statics()
         self._add_listeners()
 
     def tray_start(self):
         self.start_server()
-        sleep(0.050)  # To ensure the server is up and running
 
     def tray_exit(self):
         self.stop_server()
@@ -102,32 +104,38 @@ class WebServerModule(QuadPypeModule, ITrayService):
             self.server_manager.stop_server()
 
     @staticmethod
-    def create_new_server_manager(port=None, host=None):
+    def create_new_server_manager(host=None, port=None):
         """Create webserver manager for passed port and host.
 
         Args:
+            host(str): Host name or IP address. Default is the 'localhost' ip: '127.0.0.1'.
             port(int): Port on which wil webserver listen.
-            host(str): Host name or IP address. Default is 'localhost'.
 
         Returns:
             WebServerManager: Prepared manager.
         """
         from .server import WebServerManager
 
-        return WebServerManager(port, host)
+        return WebServerManager(host, port)
 
     def _create_server_manager(self):
         if self.server_manager:
             return
 
-        self.server_manager = self.create_new_server_manager(self.port)
+        self.server_manager = self.create_new_server_manager(self.default_host, self.port)
         self.server_manager.on_stop_callbacks.append(
             self.set_service_failed_icon
         )
 
         webserver_url = self.server_manager.url
-        os.environ[self.webserver_url_env] = str(webserver_url)
         self.webserver_url = webserver_url
+
+        # Save the webserver url into the current environment variables
+        # and in the registry file on disk
+        os.environ[self.webserver_url_env] = str(webserver_url)
+        app_registry = get_app_registry()
+        app_registry.set_item("webserver_url", webserver_url)
+
 
     @staticmethod
     def find_free_port(

@@ -6,8 +6,10 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 from quadpype import get_all_registered_web_api_routers
+from quadpype.resources import get_app_favicon_filepath
 from quadpype.lib import Logger
 
 app_meta = {
@@ -25,6 +27,10 @@ WEB_API = FastAPI(
     **app_meta,
 )
 
+@WEB_API.get('/favicon.ico', include_in_schema=False)
+async def favicon():
+    return FileResponse(get_app_favicon_filepath())
+
 # Register all defined routers
 for router in get_all_registered_web_api_routers():
     WEB_API.include_router(router)
@@ -35,7 +41,7 @@ class WebServerManager:
 
     ALL_METHODS = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
 
-    def __init__(self, port, host):
+    def __init__(self, host, port):
         self._log = None
 
         self.port = port
@@ -46,7 +52,8 @@ class WebServerManager:
         self.on_stop_callbacks = []
 
         self.app = WEB_API
-        origin_regex = r"^https?://localhost"
+
+        origin_regex = fr"^https?://{host}"
         self.app.add_middleware(
             CORSMiddleware,
             allow_origin_regex=origin_regex,
@@ -152,7 +159,7 @@ class WebServerThread(threading.Thread):
             config = uvicorn.Config(WEB_API, host=self.host, port=int(self.port), log_level="info", loop=self.loop)
             self.server = uvicorn.Server(config)
             self.log.debug(
-                "Running Web server on URL: \"localhost:{}\"".format(self.port)
+                "Running Web server on http://{}:{}".format(self.host, self.port)
             )
             self.is_running = True
             self.loop.run_until_complete(self.server.serve())
