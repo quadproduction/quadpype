@@ -69,7 +69,6 @@ def _check_version_order(collection, version):
         doc,
         upsert=True
         )
-    raise Exception
 
 def find_closest_global_settings(collection, settings_key, fallback_key, version):
     _check_version_order(collection, version)
