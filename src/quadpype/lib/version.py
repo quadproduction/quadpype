@@ -194,6 +194,11 @@ class PackageHandler:
                  install_dir_path: Union[str, Path, None] = None):
         self._name = pkg_name
 
+        if isinstance(local_dir_path, str):
+            local_dir_path = Path(local_dir_path)
+        if isinstance(remote_dir_path, str):
+            remote_dir_path = Path(remote_dir_path)
+
         skip_version_check = False
         self._local_dir_path = local_dir_path if local_dir_path else remote_dir_path
         if not self.is_local_dir_path_accessible():
@@ -466,8 +471,9 @@ class PackageHandler:
         for item in dir_path.iterdir():
             # If the item is a directory with a major.minor version format, dive deeper
             if item.is_dir() and re.match(r"^\d+\.\d+$", item.name) and parent_version is None:
-                parent_version = PackageVersion(version=f"{item.name}.0")
-                detected_versions = cls.get_versions_from_dir(pkg_name, item, excluded_str_versions, parent_version)
+                detected_versions = cls.get_versions_from_dir(
+                    pkg_name, item, excluded_str_versions, PackageVersion(version=f"{item.name}.0"))
+
                 if detected_versions:
                     versions.extend(detected_versions)
 

@@ -1414,7 +1414,11 @@ def get_global_settings_overrides_no_handler(collection, version_str):
         version_str
     )
 
-    return apply_core_settings(document, core_document)
+    merged_doc = apply_core_settings(document, core_document)
+
+    if "data" in merged_doc:
+        return merged_doc["data"]
+    return {}
 
 
 def get_expected_studio_version_str(staging=False, collection=None):
@@ -1506,8 +1510,12 @@ def get_quadpype_local_dir_path(settings: dict) -> Union[Path, None]:
     Returns:
         path to QuadPype or None if not found
     """
-
-    paths = settings.get("local_quadpype_path", {}).get(platform.system().lower()) or []
+    paths = (
+        settings
+        .get(CORE_SETTINGS_KEY, {})
+        .get("local_quadpype_path", {})
+        .get(platform.system().lower())
+    ) or []
     # For cases when `quadpype_path` is a single path
     if paths and isinstance(paths, str):
         paths = [paths]
@@ -1527,6 +1535,7 @@ def get_quadpype_remote_dir_path(settings: dict) -> Union[str, None]:
     """
     paths = (
         settings
+        .get(CORE_SETTINGS_KEY, {})
         .get("quadpype_path", {})
         .get(platform.system().lower())
     ) or []
