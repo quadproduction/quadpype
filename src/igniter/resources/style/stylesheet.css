@@ -245,36 +245,17 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
     color: rgba(64, 64, 64, 63);
 }
 
-#ButtonWithOptions QPushButton{
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
+#RunBtn{
     border: none;
     background-color: rgb(84, 209, 178);
     color: rgb(39, 39, 39);
     font-weight: 400;
     padding: 0.5em;
 }
-#ButtonWithOptions QPushButton:hover{
+#RunBtn:hover{
     background-color: rgb(85, 224, 189)
 }
-#ButtonWithOptions QPushButton:disabled {
-    background-color: rgba(72, 200, 150, 31);
-    color: rgba(64, 64, 64, 63);
-}
-
-#ButtonWithOptions QToolButton{
-    border: none;
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-top-right-radius: 3px;
-    border-bottom-right-radius: 3px;
-    background-color: rgb(84, 209, 178);
-    color: rgb(39, 39, 39);
-}
-#ButtonWithOptions QToolButton:hover{
-    background-color: rgb(85, 224, 189)
-}
-#ButtonWithOptions QToolButton:disabled {
-    background-color: rgba(72, 200, 150, 31);
+#RunBtn:disabled {
+    background-color: rgba(185, 185, 185, 31);
     color: rgba(64, 64, 64, 63);
 }

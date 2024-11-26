@@ -20,7 +20,7 @@ from .zxp_utils import ZXPExtensionData, ZXPUpdateThread
 from.version_classes import PackageVersion
 
 
-mongo_module = load_quadpype_module("quadpype/client/mongo.py", "quadpype.client.mongo")
+mongo_module = load_quadpype_module("quadpype/client/mongo/mongo.py", "quadpype.client.mongo.mongo")
 
 
 class NiceProgressBar(QtWidgets.QProgressBar):
@@ -355,14 +355,16 @@ class DatabaseStringDialog(QtWidgets.QDialog):
             True if url is valid mongo string.
 
         """
-        if self.mongo_url == "":
-            return False
+        if not self.mongo_url:
+            is_valid = False
+            reason_str = "No connection string specified"
+        else:
+            is_valid, reason_str = mongo_module.validate_mongo_connection_with_info(self.mongo_url)
 
-        is_valid, reason_str = mongo_module.validate_mongo_connection_with_info(self.mongo_url)
         if not is_valid:
             self.set_invalid_mongo_connection(self.mongo_url)
             self._mongo_input.set_invalid()
-            self.update_console(f"!!! {reason_str}", True)
+            self.update_console(reason_str, True)
             self._show_console()
             return False
 
@@ -374,11 +376,11 @@ class DatabaseStringDialog(QtWidgets.QDialog):
         if reason is None:
             self._mongo_connection_msg.setText("")
         else:
-            self._mongo_connection_msg.setText("- {}".format(reason))
+            self._mongo_connection_msg.setText("{}".format(reason))
 
     def set_invalid_mongo_connection(self, mongo_url, connecting=False):
-        if mongo_url is None:
-            self.set_invalid_mongo_url(mongo_url)
+        if not mongo_url:
+            self.set_invalid_mongo_url("<b>No connection string specified</b>")
             return
 
         if connecting:
