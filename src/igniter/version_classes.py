@@ -12,6 +12,7 @@ PackageVersionNotFound = version_module.PackageVersionNotFound
 PackageVersionIncompatible = version_module.PackageVersionIncompatible
 
 get_package = version_module.get_package
+create_package_manager = version_module.create_package_manager
 
 def reload_module():
     load_quadpype_module("quadpype/lib/version.py", "quadpype.lib.version")
@@ -27,6 +28,7 @@ __all__ = [
     "PackageVersionIncompatible",
 
     "get_package",
+    "create_package_manager",
 
     "reload_module"
 ]
