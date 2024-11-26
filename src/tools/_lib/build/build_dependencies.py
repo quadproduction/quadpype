@@ -18,10 +18,8 @@ Note: Speedcopy can be used for copying if server-side copy is important for
 speed.
 
 """
-import os
 import sys
 import site
-from sysconfig import get_platform
 import platform
 import subprocess
 from pathlib import Path
@@ -36,19 +34,19 @@ term = blessed.Terminal()
 manager = enlighten.get_manager()
 
 
-def _print(msg: str, type: int = 0) -> None:
+def _print(msg: str, msg_type: int = 0) -> None:
     """Print message to console.
 
     Args:
         msg (str): message to print
-        type (int): type of message (0 info, 1 error, 2 note)
+        msg_type (int): type of message (0 info, 1 error, 2 note)
 
     """
-    if type == 0:
+    if msg_type == 0:
         header = term.aquamarine3(">>> ")
-    elif type == 1:
+    elif msg_type == 1:
         header = term.orangered2("!!! ")
-    elif type == 2:
+    elif msg_type == 2:
         header = term.tan1("... ")
     else:
         header = term.darkolivegreen3("--- ")
@@ -186,7 +184,6 @@ if platform.system().lower() == "linux":
         )
 
 to_delete = []
-# _print("Finding duplicates ...")
 deps_items = list(deps_dir.iterdir())
 item_count = len(list(libs_dir.iterdir()))
 find_progress_bar = enlighten.Counter(
@@ -196,7 +193,6 @@ find_progress_bar = enlighten.Counter(
 for d in libs_dir.iterdir():
     if (deps_dir / d.name) in deps_items:
         to_delete.append(d)
-        # _print(f"found {d}", 3)
     find_progress_bar.update()
 
 find_progress_bar.close()
@@ -207,7 +203,6 @@ to_delete.append(libs_dir.joinpath("quadpype.pth"))
 to_delete.append(deps_dir.joinpath("quadpype.pth"))
 
 # delete duplicates
-# _print(f"Deleting {len(to_delete)} duplicates ...")
 delete_progress_bar = enlighten.Counter(
     total=len(to_delete), desc="Deleting duplicates", units="%",
     color=(251, 192, 32))

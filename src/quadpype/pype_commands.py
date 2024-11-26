@@ -283,13 +283,6 @@ class PypeCommands:
         import pytest
         pytest.main(args)
 
-    def repack_version(self, directory):
-        """Repacking QuadPype version."""
-        from quadpype.tools.repack_version import VersionRepacker
-
-        version_packer = VersionRepacker(directory)
-        version_packer.process()
-
     def pack_project(self, project_name, dirpath, database_only):
         from quadpype.lib.project_backpack import pack_project
 
