@@ -1,7 +1,14 @@
 import argparse
 import semver
 import xml.etree.ElementTree as ET
+from xml.etree import ElementTree
 
+class CommentedTreeBuilder(ElementTree.TreeBuilder):
+    """ This class will retain remarks and comments"""
+    def comment(self, data):
+        self.start(ElementTree.Comment, {})
+        self.data(data)
+        self.end(ElementTree.Comment)
 
 def bump_xml_version(xml_path):
     """
@@ -11,7 +18,8 @@ def bump_xml_version(xml_path):
         xml_path (str): Path of the xml where the version need to be updated
     """
     # Parse XML
-    tree = ET.parse(xml_path)
+    ctb = CommentedTreeBuilder()
+    tree = ET.parse(xml_path, parser=ET.XMLParser(target=ctb))
     root = tree.getroot()
 
     # Find the ExtensionBundleVersion attribute
