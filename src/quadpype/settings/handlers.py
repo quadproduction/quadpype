@@ -12,7 +12,7 @@ from quadpype.client.mongo import (
 from quadpype.client import get_project
 from quadpype.lib import get_user_workstation_info, get_user_id, CacheValues
 from quadpype.lib.version import PackageVersion
-
+from quadpype.lib.settings import check_version_order
 from .constants import (
     CORE_SETTINGS_KEY,
     GLOBAL_SETTINGS_KEY,
@@ -983,52 +983,6 @@ class MongoSettingsHandler(SettingsHandler):
             projection
         ) or {}
 
-    def _check_version_order(self):
-        """This method will work only in QuadPype process.
-
-        Will create/update mongo document where QuadPype versions are stored
-        in semantic version order.
-
-        This document can be then used to find closes version of settings in
-        processes where 'PackageVersion' is not available.
-        """
-        # Do this step only once
-        if self._version_order_checked:
-            return
-        self._version_order_checked = True
-
-        # Query document holding sorted list of version strings
-        doc = self._get_versions_order_doc()
-        if not doc:
-            doc = {"type": self._version_order_key}
-
-        if self._all_versions_keys not in doc:
-            doc[self._all_versions_keys] = []
-
-        # Skip if current version is already available
-        if self._current_version in doc[self._all_versions_keys]:
-            return
-
-        if self._current_version not in doc[self._all_versions_keys]:
-            # Add all versions into list
-            all_objected_versions = [
-                PackageVersion(version=self._current_version)
-            ]
-            for version_str in doc[self._all_versions_keys]:
-                all_objected_versions.append(
-                    PackageVersion(version=version_str)
-                )
-
-            doc[self._all_versions_keys] = [
-                str(version) for version in sorted(all_objected_versions)
-            ]
-
-        self.collection.replace_one(
-            {"type": self._version_order_key},
-            doc,
-            upsert=True
-        )
-
     def find_closest_version_for_projects(self, project_names):
         output = {
             project_name: None
@@ -1078,8 +1032,11 @@ class MongoSettingsHandler(SettingsHandler):
                 for project specific settings.
         """
         # Trigger check of versions
-        self._check_version_order()
-
+        self._version_order_checked = check_version_order(self._version_order_key,
+                                                          self._all_versions_keys,
+                                                          self.collection,
+                                                          self._current_version,
+                                                          self._version_order_checked)
         doc_filters = {
             "type": {"$in": [key, legacy_key]}
         }

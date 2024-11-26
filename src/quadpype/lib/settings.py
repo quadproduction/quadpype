@@ -36,42 +36,48 @@ def should_add_certificate_path_to_mongo_url(mongo_url):
         add_certificate = False
     return add_certificate
 
-
 def _get_studio_global_settings_overrides_for_version(collection, version=None):
     return collection.find_one({"type": "global_settings_versioned", "version": version})
 
-def _check_version_order(collection, version):
+def check_version_order(version_order_key, all_versions_keys, collection, version, version_order_checked=False):
+    if version_order_checked:
+        return
+
     # Query document holding sorted list of version strings
-    doc = collection.find_one({"type": "versions_order"} or {})
-
+    doc = collection.find_one({"type": version_order_key} or {})
     if not doc:
-        doc = {"type":  "versions_order"}
+        doc = {"type":  version_order_key}
 
-    if "all_versions" not in doc:
-        doc["all_versions"] = []
+    if all_versions_keys not in doc:
+        doc[all_versions_keys] = []
 
     # Skip if the current version is already available
-    if version in doc["all_versions"]:
+    if version in doc[all_versions_keys]:
         return
 
     # Add the current version and existing versions, then sort them
     all_objected_versions = [VersionInfo.parse(version)]
-    for version_str in doc["all_versions"]:
+    for version_str in doc[all_versions_keys]:
         all_objected_versions.append(VersionInfo.parse(version_str))
 
-    doc["all_versions"] = [
+    doc[all_versions_keys] = [
         str(version) for version in sorted(all_objected_versions)
     ]
 
     # Update the document in the database
     collection.replace_one(
-        {"type": "versions_order"},
+        {"type": version_order_key},
         doc,
         upsert=True
         )
+    return True
 
 def find_closest_global_settings(collection, settings_key, fallback_key, version):
-    _check_version_order(collection, version)
+    check_version_order("versions_order",
+                         "all_versions",
+                         collection,
+                         version,
+                         version_order_checked=False)
 
     doc_filters = {
         "type": {"$in": [settings_key, fallback_key]}
@@ -151,7 +157,6 @@ def find_closest_global_settings(collection, settings_key, fallback_key, version
         return None
     return collection.find_one({"_id": src_doc_id})
 
-
 def get_global_settings_overrides_doc(collection, version):
     document = _get_studio_global_settings_overrides_for_version(collection, version)
     if document is None:
@@ -166,7 +171,6 @@ def get_global_settings_overrides_doc(collection, version):
 
     return document, version
 
-
 def get_studio_global_settings_overrides(url: str, version=None):
     kwargs = {}
     if should_add_certificate_path_to_mongo_url(url):
@@ -180,7 +184,6 @@ def get_studio_global_settings_overrides(url: str, version=None):
         document = collection.find_one({"type": "global_settings"})
     client.close()
     return document.get("data") if document else {}
-
 
 def get_quadpype_global_settings(url: str) -> dict:
     """Load global settings from Mongo database.
@@ -215,7 +218,6 @@ def get_quadpype_global_settings(url: str) -> dict:
 
     return global_settings.get("data") or {}
 
-
 def get_expected_studio_version_str(staging=False, global_settings=None):
     """Expected QuadPype version that should be used at the moment.
 
@@ -237,7 +239,6 @@ def get_expected_studio_version_str(staging=False, global_settings=None):
     key = "staging_version" if staging else "production_version"
 
     return global_settings.get(key, "")
-
 
 def get_local_quadpype_path(settings: Optional[dict] = None) -> Union[Path, None]:
     """Get QuadPype local path from global settings.
