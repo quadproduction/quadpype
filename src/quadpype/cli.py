@@ -321,18 +321,6 @@ def syncserver(ctx, active_site):
 
 
 @main.command()
-@click.argument("directory")
-def repack_version(directory):
-    """Repack QuadPype version from directory.
-
-    This command will re-create zip file from specified directory,
-    recalculating file checksums. It will try to use version detected in
-    directory name.
-    """
-    PypeCommands().repack_version(directory)
-
-
-@main.command()
 @click.option("--project", help="Project name")
 @click.option(
     "--dirpath", help="Directory where package is stored", default=None)

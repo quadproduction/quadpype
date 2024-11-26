@@ -616,6 +616,8 @@ class PackageHandler:
             for file in package_path.iterdir() if file.is_file()
         )
         files_in_dir.discard("checksums")
+        if "LICENSE" in files_in_dir:
+            files_in_dir.discard("LICENSE")
         files_in_checksum = {file[1] for file in checksums}
 
         diff = files_in_dir.difference(files_in_checksum)
