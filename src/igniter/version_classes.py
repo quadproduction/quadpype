@@ -1,9 +1,9 @@
-import importlib
 from .module_importer import load_quadpype_module
 
 
 version_module = load_quadpype_module("quadpype/lib/version.py", "quadpype.lib.version")
 
+PackageHandler = version_module.PackageHandler
 PackageVersion = version_module.PackageVersion
 PackageVersionExists = version_module.PackageVersionExists
 PackageVersionIOError = version_module.PackageVersionIOError
@@ -16,7 +16,9 @@ get_package = version_module.get_package
 def reload_module():
     load_quadpype_module("quadpype/lib/version.py", "quadpype.lib.version")
 
+
 __all__ = [
+    "PackageHandler",
     "PackageVersion",
     "PackageVersionExists",
     "PackageVersionIOError",

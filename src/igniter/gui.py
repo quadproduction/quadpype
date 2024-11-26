@@ -1,86 +1,45 @@
 # -*- coding: utf-8 -*-
 """Show dialog for choosing central QuadPype repository."""
 import os
-import sys
 import re
-import collections
+import logging as log
 
 from pathlib import Path
 from qtpy import QtCore, QtGui, QtWidgets
 
-from .install_thread import InstallThread
 from .tools import (
-    validate_mongo_connection,
+    load_stylesheet,
     get_app_icon_path,
     get_fonts_dir_path
 )
 
-from .nice_progress_bar import NiceProgressBar
 from .registry import QuadPypeSecureRegistry
-from .tools import load_stylesheet
 from .version import __version__
+from .module_importer import load_quadpype_module
+from .zxp_utils import ZXPExtensionData, ZXPUpdateThread
+from.version_classes import PackageVersion
 
 
-class ButtonWithOptions(QtWidgets.QFrame):
-    option_clicked = QtCore.Signal(str)
+mongo_module = load_quadpype_module("quadpype/client/mongo.py", "quadpype.client.mongo")
 
-    def __init__(self, commands, parent=None):
+
+class NiceProgressBar(QtWidgets.QProgressBar):
+    def __init__(self, parent=None):
         super().__init__(parent)
+        self._real_value = 0
 
-        self.setObjectName("ButtonWithOptions")
+    def setValue(self, value):
+        self._real_value = value
+        if value != 0 and value < 11:
+            value = 11
 
-        options_btn = QtWidgets.QToolButton(self)
-        options_btn.setArrowType(QtCore.Qt.DownArrow)
-        options_btn.setIconSize(QtCore.QSize(12, 12))
+        super(NiceProgressBar, self).setValue(value)
 
-        default = None
-        default_label = None
-        options_menu = QtWidgets.QMenu(self)
-        for option, option_label in commands.items():
-            if default is None:
-                default = option
-                default_label = option_label
-                continue
-            action = QtWidgets.QAction(option_label, options_menu)
-            action.setData(option)
-            options_menu.addAction(action)
+    def value(self):
+        return self._real_value
 
-        main_btn = QtWidgets.QPushButton(default_label, self)
-        main_btn.setFlat(True)
-
-        main_layout = QtWidgets.QHBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(1)
-
-        main_layout.addWidget(main_btn, 1, QtCore.Qt.AlignVCenter)
-        main_layout.addWidget(options_btn, 0, QtCore.Qt.AlignVCenter)
-
-        main_btn.clicked.connect(self._on_main_button)
-        options_btn.clicked.connect(self._on_options_click)
-        options_menu.triggered.connect(self._on_trigger)
-
-        self.main_btn = main_btn
-        self.options_btn = options_btn
-        self.options_menu = options_menu
-
-        options_btn.setEnabled(not options_menu.isEmpty())
-
-        self._default_value = default
-
-    def resizeEvent(self, event):
-        super(ButtonWithOptions, self).resizeEvent(event)
-        self.options_btn.setFixedHeight(self.main_btn.height())
-
-    def _on_options_click(self):
-        pos = self.main_btn.rect().bottomLeft()
-        point = self.main_btn.mapToGlobal(pos)
-        self.options_menu.popup(point)
-
-    def _on_trigger(self, action):
-        self.option_clicked.emit(action.data())
-
-    def _on_main_button(self):
-        self.option_clicked.emit(self._default_value)
+    def text(self):
+        return "{} %".format(self._real_value)
 
 
 class ConsoleWidget(QtWidgets.QWidget):
@@ -161,17 +120,13 @@ class MongoUrlInput(QtWidgets.QLineEdit):
         self.style().polish(self)
 
 
-class InstallDialog(QtWidgets.QDialog):
-    """Main Igniter dialog window."""
+class DatabaseStringDialog(QtWidgets.QDialog):
+    """Ask database string dialog window."""
 
     mongo_url_regex = re.compile(r"^mongodb(\+srv)?://([\w.%-]+:[\w.%-]+@)?[\w.%-]+(:\d{1,5})?/?$")
 
     _width = 500
     _height = 200
-    commands = collections.OrderedDict([
-        ("run", "Start"),
-        ("run_from_code", "Run from code")
-    ])
 
     def __init__(self, log=None, parent=None):
         super().__init__(parent)
@@ -201,6 +156,7 @@ class InstallDialog(QtWidgets.QDialog):
         pixmap_app_logo = QtGui.QPixmap(icon_path)
         # Set logo as icon of the window
         self.setWindowIcon(QtGui.QIcon(pixmap_app_logo))
+        self._pixmap_app_logo = pixmap_app_logo
 
         secure_registry = QuadPypeSecureRegistry("mongodb")
         mongo_url = ""
@@ -213,7 +169,7 @@ class InstallDialog(QtWidgets.QDialog):
             pass
 
         self.mongo_url = mongo_url
-        self._pixmap_app_logo = pixmap_app_logo
+
 
         self._secure_registry = secure_registry
         self._controls_disabled = False
@@ -272,14 +228,14 @@ class InstallDialog(QtWidgets.QDialog):
 
         launcher_version_label = QtWidgets.QLabel(f"<i>Launcher v{__version__}</i>", bottom_widget)
 
-        run_button = ButtonWithOptions(
-            self.commands,
-            btns_widget
-        )
+        # install button
+        # --------------------------------------------------------------------
+        run_button = QtWidgets.QPushButton("Start", btns_widget)
+        run_button.setObjectName("RunBtn")
+        run_button.setFlat(True)
         run_button.setMinimumSize(64, 30)
-        run_button.setToolTip("Run QuadPype")
+        run_button.setToolTip("Start QuadPype")
 
-        # install button - - - - - - - - - - - - - - - - - - - - - - - - - - -
         exit_button = QtWidgets.QPushButton("Exit", btns_widget)
         exit_button.setObjectName("ExitBtn")
         exit_button.setFlat(True)
@@ -313,7 +269,7 @@ class InstallDialog(QtWidgets.QDialog):
 
         main.addWidget(bottom_widget, 0)
 
-        run_button.option_clicked.connect(self._on_run_btn_click)
+        run_button.clicked.connect(self._on_run_btn_clicked)
         exit_button.clicked.connect(self._on_exit_clicked)
         mongo_input.textChanged.connect(self._on_mongo_url_change)
 
@@ -329,11 +285,11 @@ class InstallDialog(QtWidgets.QDialog):
         self._exit_button = exit_button
         self._progress_bar = progress_bar
 
-    def _on_run_btn_click(self, option):
-        # Disable buttons
+    def _on_run_btn_clicked(self):
+        # Disable the buttons
         self._disable_buttons()
         # Set progress to any value
-        self._update_progress(1)
+        self._update_progress(50)
         self._progress_bar.repaint()
         # Add label to show that is connecting to mongo
         self.set_invalid_mongo_connection(self.mongo_url, True)
@@ -348,56 +304,16 @@ class InstallDialog(QtWidgets.QDialog):
             self._mongo_input.setText(self.mongo_url)
             return
 
-        if option == "run":
-            self._run_quadpype()
-        elif option == "run_from_code":
-            self._run_quadpype_from_code()
-        else:
-            raise AssertionError("BUG: Unknown variant \"{}\"".format(option))
+        self._update_progress(100)
+        QtWidgets.QApplication.processEvents()
 
-    def _run_quadpype_from_code(self):
         os.environ["QUADPYPE_MONGO"] = self.mongo_url
         try:
             self._secure_registry.set_item("quadpypeMongo", self.mongo_url)
         except ValueError:
             print("Couldn't save Mongo URL to keyring")
 
-        self.done(2)
-
-    def _run_quadpype(self):
-        """Start install process.
-
-        This will once again validate entered path and mongo if ok, start
-        working thread that will do actual job.
-        """
-        # Check if install thread is not already running
-        if self._install_thread and self._install_thread.isRunning():
-            return
-
-        self._mongo_input.set_valid()
-
-        install_thread = InstallThread(self)
-        install_thread.message.connect(self.update_console)
-        install_thread.progress.connect(self._update_progress)
-        install_thread.finished.connect(self._installation_finished)
-        install_thread.set_mongo(self.mongo_url)
-
-        self._install_thread = install_thread
-
-        install_thread.start()
-
-    def _installation_finished(self):
-        # TODO we should find out why status can be set to 'None'?
-        # - 'InstallThread.run' should handle all cases so not sure where
-        #       that come from
-        status = self._install_thread.result()
-        if status is not None and status >= 0:
-            self._update_progress(100)
-            QtWidgets.QApplication.processEvents()
-            self.done(3)
-        else:
-            self._enable_buttons()
-            self._show_console()
+        self.done(7)
 
     def _update_progress(self, progress: int):
         self._progress_bar.setValue(progress)
@@ -436,17 +352,18 @@ class InstallDialog(QtWidgets.QDialog):
         """Validate if entered url is ok.
 
         Returns:
-            True if url is valid monogo string.
+            True if url is valid mongo string.
 
         """
         if self.mongo_url == "":
             return False
 
-        is_valid, reason_str = validate_mongo_connection(self.mongo_url)
+        is_valid, reason_str = mongo_module.validate_mongo_connection_with_info(self.mongo_url)
         if not is_valid:
             self.set_invalid_mongo_connection(self.mongo_url)
             self._mongo_input.set_invalid()
             self.update_console(f"!!! {reason_str}", True)
+            self._show_console()
             return False
 
         self.set_invalid_mongo_connection(None)
@@ -503,11 +420,176 @@ class InstallDialog(QtWidgets.QDialog):
         """Prevent closing if window when controls are disabled."""
         if self._controls_disabled:
             return event.ignore()
-        return super(InstallDialog, self).closeEvent(event)
+        return super(DatabaseStringDialog, self).closeEvent(event)
 
 
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    d = InstallDialog()
-    d.show()
-    sys.exit(app.exec_())
+class MessageDialog(QtWidgets.QDialog):
+    """Simple message dialog with title, message and OK button."""
+    def __init__(self, title, message):
+        super().__init__()
+
+        # Set logo as icon of the window
+        icon_path = get_app_icon_path()
+        pixmap_app_logo = QtGui.QPixmap(icon_path)
+        self.setWindowIcon(QtGui.QIcon(pixmap_app_logo))
+
+        # Set title
+        self.setWindowTitle(title)
+
+        # Set message
+        label_widget = QtWidgets.QLabel(message, self)
+
+        ok_btn = QtWidgets.QPushButton("OK", self)
+        btns_layout = QtWidgets.QHBoxLayout()
+        btns_layout.addStretch(1)
+        btns_layout.addWidget(ok_btn, 0)
+
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(label_widget, 1)
+        layout.addLayout(btns_layout, 0)
+
+        ok_btn.clicked.connect(self._on_ok_clicked)
+
+        self._label_widget = label_widget
+        self._ok_btn = ok_btn
+
+    def _on_ok_clicked(self):
+        self.close()
+
+    def showEvent(self, event):
+        super(MessageDialog, self).showEvent(event)
+        self.setStyleSheet(load_stylesheet())
+
+
+class ZXPUpdateWindow(QtWidgets.QDialog):
+    """QuadPype update window."""
+
+    _width = 500
+    _height = 100
+
+    def __init__(self, version: PackageVersion, zxp_hosts: [ZXPExtensionData], parent=None):
+        super().__init__(parent)
+        self._quadpype_version = version
+        self._zxp_hosts = zxp_hosts
+        self._log = log.getLogger(str(__class__))
+
+        self.setWindowTitle(
+            f"QuadPype is updating ..."
+        )
+        self.setModal(True)
+        self.setWindowFlags(
+            QtCore.Qt.WindowMinimizeButtonHint
+        )
+
+        fonts_dir = Path(get_fonts_dir_path())
+        roboto_font_path = str(fonts_dir.joinpath("RobotoMono-Regular.ttf"))
+        poppins_font_path = str(fonts_dir.joinpath("Poppins"))
+        icon_path = get_app_icon_path()
+
+        # Install fonts
+        QtGui.QFontDatabase.addApplicationFont(roboto_font_path)
+        for filename in os.listdir(poppins_font_path):
+            if os.path.splitext(filename)[1] == ".ttf":
+                QtGui.QFontDatabase.addApplicationFont(filename)
+
+        # Load logo
+        pixmap_app_logo = QtGui.QPixmap(icon_path)
+        # Set logo as icon of the window
+        self.setWindowIcon(QtGui.QIcon(pixmap_app_logo))
+
+        self._pixmap_app_logo = pixmap_app_logo
+
+        self._update_thread = None
+
+        self._init_ui()
+
+        # Set stylesheet
+        self.setStyleSheet(load_stylesheet())
+        self._run_update()
+
+    def _init_ui(self):
+
+        # Main info
+        # --------------------------------------------------------------------
+        main_label = QtWidgets.QLabel(
+            f"<b>QuadPype</b> is updating to {self._quadpype_version}", self)
+        main_label.setWordWrap(True)
+        main_label.setObjectName("MainLabel")
+
+        # Progress bar
+        # --------------------------------------------------------------------
+        progress_bar = NiceProgressBar(self)
+        progress_bar.setAlignment(QtCore.Qt.AlignCenter)
+        progress_bar.setTextVisible(False)
+
+        # add all to main
+        main = QtWidgets.QVBoxLayout(self)
+        main.addSpacing(15)
+        main.addWidget(main_label, 0)
+        main.addSpacing(15)
+        main.addWidget(progress_bar, 0)
+        main.addSpacing(15)
+
+        self._main_label = main_label
+        self._progress_bar = progress_bar
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        current_size = self.size()
+        new_size = QtCore.QSize(
+            max(current_size.width(), self._width),
+            max(current_size.height(), self._height)
+        )
+        if current_size != new_size:
+            self.resize(new_size)
+
+    def _run_update(self):
+        """Start install process.
+
+        This will once again validate entered path and mongo if ok, start
+        working thread that will do actual job.
+        """
+        # Check if install thread is not already running
+        if self._update_thread and self._update_thread.isRunning():
+            return
+        self._progress_bar.setRange(0, 0)
+        update_thread = ZXPUpdateThread(self)
+        update_thread.set_version(self._quadpype_version)
+        update_thread.set_zxp_hosts(self._zxp_hosts)
+        update_thread.log_signal.connect(self._print)
+        update_thread.step_text_signal.connect(self.update_step_text)
+        update_thread.finished.connect(self._installation_finished)
+
+        self._update_thread = update_thread
+
+        update_thread.start()
+
+    def _installation_finished(self):
+        self._update_thread.result()
+        self._progress_bar.setRange(0, 1)
+        self._progress_bar.setValue(100)
+        QtWidgets.QApplication.processEvents()
+        self.done(int(QtWidgets.QDialog.Accepted))
+        if self._update_thread.isRunning():
+            self._update_thread.quit()
+        self.close()
+
+    def _print(self, message: str, error: bool = False) -> None:
+        """Print the message in the console.
+
+        Args:
+            message (str): message.
+            error (bool): if True, print it red.
+        """
+        if error:
+            self._log.error(message)
+        else:
+            self._log.info(message)
+
+    def update_step_text(self, text: str) -> None:
+        """Print the message in the console.
+
+        Args:
+            text (str): Text describing the current step.
+        """
+        self._main_label.setText(text)

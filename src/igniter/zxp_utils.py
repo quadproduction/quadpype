@@ -7,8 +7,10 @@ from pathlib import Path
 from typing import List
 
 import semver
+from qtpy import QtCore
 
 from .version_classes import PackageVersion
+
 
 class ZXPExtensionData:
 
@@ -35,6 +37,7 @@ def extract_zxp_info_from_manifest(path_manifest: Path):
             extension_version = semver.VersionInfo.parse(match_extension_version.group("extension_version"))
 
     return extension_id, extension_version
+
 
 def update_zxp_extensions(quadpype_version: PackageVersion, extensions: [ZXPExtensionData]):
     # Determine the user-specific Adobe extensions directory
@@ -70,6 +73,7 @@ def update_zxp_extensions(quadpype_version: PackageVersion, extensions: [ZXPExte
 
         # Cleaned up temporary files removed zip_path
         os.remove(zip_path)
+
 
 def get_zxp_extensions_to_update(quadpype_version, global_settings, force=False) -> List[ZXPExtensionData]:
     # List of all Adobe software ids (named hosts) handled by QuadPype
@@ -112,3 +116,34 @@ def get_zxp_extensions_to_update(quadpype_version, global_settings, force=False)
                                                     extension_new_version))
 
     return zxp_hosts_to_update
+
+
+class ZXPUpdateThread(QtCore.QThread):
+    """Thread worker to update the ZXP"""
+    log_signal = QtCore.Signal((str, bool))
+    step_text_signal = QtCore.Signal(str)
+
+    def __init__(self, parent=None):
+        self._result = None
+        self._quadpype_version = None
+        self._zxp_hosts = []
+        super().__init__(parent)
+
+    def set_version(self, quadpype_version: PackageVersion):
+        self._quadpype_version = quadpype_version
+
+    def set_zxp_hosts(self, zxp_hosts: List[ZXPExtensionData]):
+        self._zxp_hosts = zxp_hosts
+
+    def result(self):
+        """Result of finished installation."""
+        return self._result
+
+    def _set_result(self, value):
+        self._result = value
+
+    def run(self):
+        """Thread entry point."""
+        version_path = self._quadpype_version.path
+        update_zxp_extensions(self._quadpype_version, self._zxp_hosts)
+        self._set_result(version_path)

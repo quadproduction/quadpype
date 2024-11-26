@@ -4,7 +4,7 @@
 import sys
 from qtpy import QtWidgets
 
-from .install_dialog import InstallDialog
+from .gui import DatabaseStringDialog
 
 
 RESULT = 0
@@ -18,7 +18,7 @@ def get_result(res: int):
 
 app = QtWidgets.QApplication(sys.argv)
 
-d = InstallDialog()
+d = DatabaseStringDialog()
 d.finished.connect(get_result)
 d.open()
 app.exec()

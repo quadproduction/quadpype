@@ -1,5 +1,11 @@
+import os
 import re
 
+
+DEFAULTS_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "defaults"
+)
 
 # Metadata keys for work with studio and project overrides
 M_OVERRIDDEN_KEY = "__overriden_keys__"
@@ -32,8 +38,27 @@ DEFAULT_PROJECT_KEY = "__default_project__"
 KEY_ALLOWED_SYMBOLS = "a-zA-Z0-9-_ "
 KEY_REGEX = re.compile(r"^[{}]+$".format(KEY_ALLOWED_SYMBOLS))
 
+# Database settings documents related constants
+_DATABASE_SUFFIX = "_versioned"
+
+DATABASE_ALL_VERSIONS_KEY = "all_versions"
+DATABASE_VERSIONS_ORDER = "versions_order"
+DATABASE_GLOBAL_SETTINGS_VERSIONED_KEY = GLOBAL_SETTINGS_KEY + _DATABASE_SUFFIX
+DATABASE_PROJECT_SETTINGS_VERSIONED_KEY = PROJECT_SETTINGS_KEY + _DATABASE_SUFFIX
+DATABASE_PROJECT_ANATOMY_VERSIONED_KEY = PROJECT_ANATOMY_KEY + _DATABASE_SUFFIX
+
+
+CORE_KEYS = {
+    "quadpype_path",
+    "local_quadpype_path",
+    "log_to_server",
+    "disk_mapping",
+    "production_version",
+    "staging_version"
+}
 
 __all__ = (
+    "DEFAULTS_DIR",
     "M_OVERRIDDEN_KEY",
     "M_DYNAMIC_KEY_LABEL",
 
@@ -56,5 +81,13 @@ __all__ = (
     "DEFAULT_PROJECT_KEY",
 
     "KEY_ALLOWED_SYMBOLS",
-    "KEY_REGEX"
+    "KEY_REGEX",
+
+    "DATABASE_ALL_VERSIONS_KEY",
+    "DATABASE_VERSIONS_ORDER",
+    "DATABASE_GLOBAL_SETTINGS_VERSIONED_KEY",
+    "DATABASE_PROJECT_SETTINGS_VERSIONED_KEY",
+    "DATABASE_PROJECT_ANATOMY_VERSIONED_KEY",
+
+    "CORE_KEYS"
 )

@@ -73,7 +73,7 @@ Write-Color -Text "OK" -Color Green
 
 Write-Color -Text ">>> ", "Generating patch zip archive from current sources ..." -Color Green, Gray
 
-& "$($env:POETRY_HOME)\bin\poetry" run python "$($SCRIPT_DIR)\_lib\build\create_patch.py" $ARGS
+& "$($env:POETRY_HOME)\bin\poetry" run python "$($SCRIPT_DIR)\_lib\build\create_patch_version.py" $ARGS
 
 # Set back the current location to the current script folder
 Set-Location -Path "$($PATH_ORIGINAL_LOCATION)"

@@ -80,17 +80,9 @@ So, bootstrapping QuadPype looks like this::
 │      Run QuadPype        │
 └─────══════════════───────┘
 
-
-Todo:
-    Move or remove bootstrapping environments out of the code.
-
 Attributes:
     silent_commands (set): list of commands for which we won't print QuadPype
         info header.
-
-.. _MongoDB:
-   https://www.mongodb.com/
-
 """
 import os
 import re
@@ -300,18 +292,9 @@ if "--use-staging" in sys.argv:
     os.environ["QUADPYPE_USE_STAGING"] = "1"
 
 import igniter
-from igniter.tools import (
-    get_quadpype_path_from_settings,
-    validate_mongo_connection
-)
 from igniter.version_classes import (
+    PackageHandler,
     PackageVersion
-)
-from igniter.settings_utils import (
-    get_expected_studio_version_str,
-    get_quadpype_global_settings,
-    get_studio_global_settings_overrides,
-    get_local_quadpype_path
 )
 from igniter.registry import (
     QuadPypeSecureRegistry
@@ -471,7 +454,7 @@ def _update_zxp_extensions(quadpype_version):
     if in_headless_mode:
         update_zxp_extensions(quadpype_version, zxp_hosts_to_update)
     else:
-        igniter.open_update_window(quadpype_version, zxp_hosts_to_update)
+        igniter.open_zxp_update_window(quadpype_version, zxp_hosts_to_update)
 
 
 def set_modules_environments():
@@ -649,11 +632,8 @@ def _process_arguments() -> tuple:
             _print("!!! Cannot open Igniter dialog in headless mode.", True)
             sys.exit(1)
 
-        return_code = igniter.open_dialog(_print)
-
-        # this is when we want to run QuadPype without installing anything.
-        # or we are ready to run.
-        if return_code not in [2, 3]:
+        return_code = igniter.ask_database_connection_string(_print)
+        if return_code != 7:
             sys.exit(return_code)
 
         idx = sys.argv.index("igniter")
@@ -688,9 +668,11 @@ def _determine_mongodb() -> str:
             pass
 
     if quadpype_mongo:
-        result, msg = validate_mongo_connection(quadpype_mongo)
-        if not result:
-            _print(msg)
+        from quadpype.client.mongo import validate_mongo_connection
+        try:
+            validate_mongo_connection(quadpype_mongo)
+        except Exception as e:
+            _print(str(e))
             quadpype_mongo = None
 
     if not quadpype_mongo:
@@ -702,8 +684,8 @@ def _determine_mongodb() -> str:
             sys.exit(1)
         _print("--- launching setup UI ...")
 
-        result = igniter.open_dialog(_print)
-        if result == 0:
+        result = igniter.ask_database_connection_string(_print)
+        if result != 7:
             raise RuntimeError("MongoDB URL was not defined")
 
         quadpype_mongo = os.getenv("QUADPYPE_MONGO")
@@ -771,19 +753,16 @@ def _boot_print_versions(quadpype_package):
     list_versions(versions_to_display, compatible_with)
 
 
-def _initialize_package_manager(global_settings, use_version, use_staging):
+def _initialize_package_manager(global_settings, version_str, use_staging, quadpype_remote_dir_path):
     """Initialize the Package Manager and add the registered AddOns."""
     from quadpype.lib.version import create_package_manager, PackageHandler, AddOnHandler, MODULES_SETTINGS_KEY
+    from quadpype.settings.lib import get_quadpype_local_dir_path
+
     from appdirs import user_data_dir
+
     package_manager = create_package_manager()
 
-    quadpype_local_dir_path = get_local_quadpype_path(global_settings)
-    quadpype_remote_dir_path = get_quadpype_path_from_settings(global_settings)
-
-    if use_version:
-        version_str = use_version
-    else:
-        version_str = get_expected_studio_version_str(use_staging)
+    quadpype_local_dir_path = get_quadpype_local_dir_path(global_settings)
 
     quadpype_package = PackageHandler(
         pkg_name="quadpype",
@@ -795,7 +774,6 @@ def _initialize_package_manager(global_settings, use_version, use_staging):
     )
     package_manager.add_package(quadpype_package)
 
-    global_settings = get_studio_global_settings_overrides(os.getenv("QUADPYPE_MONGO"), str(quadpype_package.running_version))
     addon_settings = global_settings.get(MODULES_SETTINGS_KEY, {}).get("custom_addons", {})
     local_dir = Path(user_data_dir("quadpype", "quad")) / "addons"
     if not local_dir.exists():
@@ -836,6 +814,7 @@ def boot():
 
     use_version, commands = _process_arguments()
     use_staging = os.getenv("QUADPYPE_USE_STAGING") == "1"
+    local_version = PackageHandler.get_package_version_from_dir("quadpype", os.getenv("QUADPYPE_ROOT"))
 
     if os.getenv("QUADPYPE_VERSION"):
         if use_version:
@@ -852,7 +831,7 @@ def boot():
     try:
         quadpype_mongo = _determine_mongodb()
     except RuntimeError as e:
-        # without mongodb url we are done for.
+        # without mongodb url we are done.
         _print(f"!!! {e}", True)
         sys.exit(1)
 
@@ -869,7 +848,14 @@ def boot():
         if "_tests" not in avalon_db:
             os.environ["AVALON_DB"] = avalon_db + "_tests"
 
-    global_settings = get_quadpype_global_settings(quadpype_mongo)
+    from quadpype.settings.lib import get_global_settings_and_version_no_handler
+
+    global_settings, version_str = get_global_settings_and_version_no_handler(
+        quadpype_mongo,
+        use_version,
+        use_staging,
+        local_version
+    )
 
     _print(">>> Run disk mapping command ...")
     run_disk_mapping_commands(global_settings)
@@ -886,21 +872,26 @@ def boot():
 
     # Get path to the folder containing QuadPype patch versions, then set it to
     # environment so QuadPype can find its versions there and bootstrap them.
-    quadpype_path = get_quadpype_path_from_settings(global_settings)
+    from quadpype.settings.lib import get_quadpype_remote_dir_path
+    quadpype_remote_dir_path = get_quadpype_remote_dir_path(global_settings)
 
     # Create the Package Manager and add the QuadPype package & the registered AddOns
-    package_manager = _initialize_package_manager(global_settings, use_version, use_staging)
+    package_manager = _initialize_package_manager(
+        global_settings,
+        version_str,
+        use_staging,
+        quadpype_remote_dir_path
+    )
 
-    #bootstrap.set_data_dir(data_dir)
     if "validate" in commands:
         valid = package_manager["quadpype"].validate_checksums(QUADPYPE_ROOT)[0]
         sys.exit(0 if valid else 1)
 
-    if not quadpype_path:
+    if not quadpype_remote_dir_path:
         _print("*** Cannot get QuadPype patches directory path from database.")
 
-    if not os.getenv("QUADPYPE_PATH") and quadpype_path:
-        os.environ["QUADPYPE_PATH"] = quadpype_path
+    if not os.getenv("QUADPYPE_PATH") and quadpype_remote_dir_path:
+        os.environ["QUADPYPE_PATH"] = quadpype_remote_dir_path
 
     if "print_versions" in commands:
         _boot_print_versions(package_manager["quadpype"])

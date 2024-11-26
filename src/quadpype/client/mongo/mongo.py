@@ -1,8 +1,8 @@
 import os
-import sys
 import time
 import logging
 import pymongo
+import pymongo.errors
 import certifi
 
 from bson.json_util import (
@@ -11,11 +11,7 @@ from bson.json_util import (
     CANONICAL_JSON_OPTIONS
 )
 
-if sys.version_info[0] == 2:
-    from urlparse import urlparse, parse_qs
-else:
-    from urllib.parse import urlparse, parse_qs
-
+from urllib.parse import urlparse, parse_qs
 
 class MongoEnvNotSet(Exception):
     pass
@@ -123,7 +119,7 @@ def should_add_certificate_path_to_mongo_url(mongo_url):
     """Check if should add ca certificate to mongo url.
 
     Since 30.9.2021 cloud mongo requires newer certificates that are not
-    available on most of workstation. This adds path to certifi certificate
+    available on most workstation. This adds path to certifi certificate
     which is valid for it. To add the certificate path url must have scheme
     'mongodb+srv' or has 'ssl=true' or 'tls=true' in url query.
     """
@@ -167,6 +163,45 @@ def validate_mongo_connection(mongo_uri):
         mongo_uri, retry_attempts=1
     )
     client.close()
+
+
+def validate_mongo_connection_with_info(mongo_uri: str) -> (bool, str):
+    """Check if provided mongodb URL is valid.
+
+    Args:
+        mongo_uri (str): Connection URI to validate.
+
+    Returns:
+        (bool, str): True if ok, False if not and reason in str.
+
+    """
+    parsed = urlparse(mongo_uri)
+    if parsed.scheme not in ["mongodb", "mongodb+srv"]:
+        return False, "Not mongodb schema"
+
+    kwargs = {
+        "serverSelectionTimeoutMS": os.environ.get("AVALON_TIMEOUT", 2000)
+    }
+    # Add certificate path if it's required
+    if should_add_certificate_path_to_mongo_url(mongo_uri):
+        kwargs["tlsCAFile"] = certifi.where()
+
+    try:
+        client = pymongo.MongoClient(mongo_uri, **kwargs)
+        client.server_info()
+        with client.start_session():
+            pass
+        client.close()
+    except pymongo.errors.ServerSelectionTimeoutError as e:
+        return False, f"Cannot connect to server {mongo_uri} - {e}"
+    except ValueError:
+        return False, f"Invalid port specified {parsed.port}"
+    except (pymongo.errors.ConfigurationError,
+            pymongo.errors.OperationFailure,
+            pymongo.errors.InvalidURI) as exc:
+        return False, str(exc)
+    else:
+        return True, "Connection is successful"
 
 
 class QuadPypeMongoConnection:

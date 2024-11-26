@@ -6,9 +6,6 @@ import sys
 
 os.chdir(os.path.dirname(__file__))  # for override sys.path in Deadline
 
-from .bootstrap import (
-    BootstrapPackage
-)
 from .version import __version__ as version
 
 
@@ -44,8 +41,8 @@ def _get_qt_app():
     return QtWidgets.QApplication(sys.argv), is_event_loop_running
 
 
-def open_dialog(log=None):
-    """Show Igniter dialog."""
+def ask_database_connection_string(log=None):
+    """Show the GUI dialog."""
     if os.getenv("QUADPYPE_HEADLESS_MODE"):
         error_msg = "!!! Can't open dialog in headless mode. Exiting."
         if log:
@@ -53,11 +50,11 @@ def open_dialog(log=None):
         else:
             print(error_msg)
         sys.exit(1)
-    from .install_dialog import InstallDialog
+    from .gui import DatabaseStringDialog
 
     app, is_event_loop_running = _get_qt_app()
 
-    d = InstallDialog(log)
+    d = DatabaseStringDialog(log)
     d.open()
 
     if not is_event_loop_running:
@@ -68,28 +65,25 @@ def open_dialog(log=None):
     return d.result()
 
 
-def open_update_window(quadpype_version, zxp_hosts=None):
-    """Open update window."""
+def open_zxp_update_window(quadpype_version, zxp_hosts=None):
+    """Open ZXP update window."""
     if zxp_hosts is None:
         zxp_hosts = []
     if os.getenv("QUADPYPE_HEADLESS_MODE"):
         print("!!! Can't open dialog in headless mode. Exiting.")
         sys.exit(1)
 
-    from .update_window import UpdateWindow
+    from .gui import ZXPUpdateWindow
 
     app, is_event_loop_running = _get_qt_app()
 
-    d = UpdateWindow(version=quadpype_version, zxp_hosts=zxp_hosts)
+    d = ZXPUpdateWindow(version=quadpype_version, zxp_hosts=zxp_hosts)
     d.open()
 
     if not is_event_loop_running:
         app.exec_()
     else:
         d.exec_()
-
-    version_path = d.get_version_path()
-    return version_path
 
 
 def show_message_dialog(title, message):
@@ -98,7 +92,7 @@ def show_message_dialog(title, message):
         print("!!! Can't open dialog in headless mode. Exiting.")
         sys.exit(1)
 
-    from .message_dialog import MessageDialog
+    from .gui import MessageDialog
 
     app, is_event_loop_running = _get_qt_app()
 
@@ -112,9 +106,8 @@ def show_message_dialog(title, message):
 
 
 __all__ = [
-    "BootstrapPackage",
-    "open_dialog",
-    "open_update_window",
+    "ask_database_connection_string",
+    "open_zxp_update_window",
     "show_message_dialog",
     "version"
 ]

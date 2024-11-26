@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """Create QuadPype patch from current src."""
-from igniter import bootstrap
 import click
 import enlighten
 from pathlib2 import Path
+
+from appdirs import user_data_dir
 
 
 manager = enlighten.get_manager()
@@ -22,16 +23,15 @@ def main(path):
     def update_progress(value):
         progress_bar.update(incr=value)
 
-    bs = bootstrap.BootstrapPackage(progress_callback=update_progress)
-
     if path:
-        out_path = Path(path)
-        bs.data_dir = out_path
-        if out_path.is_file():
-            bs.data_dir = out_path.parent
+        out_dir_path = Path(path)
+        if out_dir_path.is_file():
+            out_dir_path = out_dir_path.parent
+    else:
+        out_dir_path = Path(user_data_dir("quadpype", "quad"))
 
-    _print(f"Creating the patch zip archive in {bs.data_dir} ...")
-    version = bs.create_version_from_live_code()
+    _print(f"Creating the patch zip archive in {out_dir_path} ...")
+    version = create_version_from_live_code(progress_callback=update_progress)
 
     progress_bar.close(clear=True)
     if not version:

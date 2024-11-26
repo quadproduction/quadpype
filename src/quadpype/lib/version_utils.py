@@ -16,7 +16,7 @@ from .version import (
     PackageVersion,
     get_package
 )
-from .settings import (
+from igniter.settings import (
     get_expected_studio_version_str
 )
 

@@ -25,7 +25,6 @@ from quadpype.lib.version_utils import (
     is_running_staging,
     is_staging_enabled
 )
-from quadpype.lib.settings import get_local_quadpype_path
 from quadpype.modules import TrayModulesManager
 from quadpype.settings import (
     get_global_settings,

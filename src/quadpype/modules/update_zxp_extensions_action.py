@@ -2,9 +2,10 @@ import os
 
 from quadpype.modules import QuadPypeModule, ITrayAction
 from quadpype.settings import get_global_settings
+from quadpype.lib.version import get_package
 
-import igniter  # noqa: E402
-from igniter import BootstrapPackage  # noqa: E402
+import igniter
+from igniter.zxp_utils import get_zxp_extensions_to_update
 
 
 class UpdateZXPExtensionsAction(QuadPypeModule, ITrayAction):
@@ -30,11 +31,8 @@ class UpdateZXPExtensionsAction(QuadPypeModule, ITrayAction):
         return
 
     def on_action_trigger(self):
-        # install latest version to user data dir
-        bootstrap = BootstrapPackage()
-
-        quadpype_version = bootstrap.find_quadpype_version(os.environ["QUADPYPE_VERSION"])
+        quadpype_version = get_package("quadpype").running_version
 
         global_settings = get_global_settings()
-        zxp_hosts_to_update = bootstrap.get_zxp_extensions_to_update(quadpype_version, global_settings, force=True)
-        igniter.open_update_window(quadpype_version, zxp_hosts_to_update)
+        zxp_hosts_to_update = get_zxp_extensions_to_update(quadpype_version, global_settings, force=True)
+        igniter.open_zxp_update_window(quadpype_version, zxp_hosts_to_update)

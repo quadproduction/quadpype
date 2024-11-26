@@ -12,15 +12,28 @@ from quadpype.client.mongo import (
 from quadpype.client import get_project
 from quadpype.lib import get_user_workstation_info, get_user_id, CacheValues
 from quadpype.lib.version import PackageVersion
-
 from .constants import (
+    CORE_KEYS,
     CORE_SETTINGS_KEY,
     GLOBAL_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     PROJECT_ANATOMY_KEY,
     M_OVERRIDDEN_KEY,
 
-    APPS_SETTINGS_KEY
+    APPS_SETTINGS_KEY,
+
+    DATABASE_GLOBAL_SETTINGS_VERSIONED_KEY,
+    DATABASE_PROJECT_SETTINGS_VERSIONED_KEY,
+    DATABASE_PROJECT_ANATOMY_VERSIONED_KEY
+)
+from .lib import (
+    apply_core_settings,
+    check_version_order,
+    get_versions_order_doc,
+    find_closest_settings_id,
+    find_closest_settings,
+    get_global_settings_overrides_doc,
+    get_global_settings_overrides_for_version_doc
 )
 
 
@@ -188,14 +201,6 @@ class SettingsStateInfo:
 
 
 class SettingsHandler(ABC):
-    core_keys = {
-        "quadpype_path",
-        "local_quadpype_path",
-        "log_to_server",
-        "disk_mapping",
-        "production_version",
-        "staging_version"
-    }
 
     @abstractmethod
     def save_studio_settings(self, data):
@@ -359,7 +364,7 @@ class SettingsHandler(ABC):
     def get_core_settings(self):
         """Studio core settings available across versions.
 
-        Output must contain all keys from 'core_keys'. If value is not set
+        Output must contain all keys from 'CORE_KEYS'. If value is not set
         the output value should be 'None'.
 
         Returns:
@@ -535,19 +540,12 @@ class SettingsHandler(ABC):
 
 class MongoSettingsHandler(SettingsHandler):
     """Settings handler that uses mongo for storing and loading of settings."""
-    key_suffix = "_versioned"
-    _version_order_key = "versions_order"
-    _all_versions_keys = "all_versions"
 
     def __init__(self):
         self._anatomy_keys = None
         self._attribute_keys = None
 
         self._version_order_checked = False
-
-        self._global_settings_key = GLOBAL_SETTINGS_KEY + self.key_suffix
-        self._project_settings_key = PROJECT_SETTINGS_KEY + self.key_suffix
-        self._project_anatomy_key = PROJECT_ANATOMY_KEY + self.key_suffix
         self._current_version = quadpype.version.__version__
 
         database_name = os.environ["QUADPYPE_DATABASE_NAME"]
@@ -597,10 +595,10 @@ class MongoSettingsHandler(SettingsHandler):
 
     def get_core_settings_doc(self):
         if self.core_settings_cache.is_outdated:
-            global_settings_doc = self.collection.find_one({
-                "type": GLOBAL_SETTINGS_KEY
+            core_settings_doc = self.collection.find_one({
+                "type": CORE_SETTINGS_KEY
             }) or {}
-            self.core_settings_cache.update_data(global_settings_doc, None)
+            self.core_settings_cache.update_data(core_settings_doc, None)
         return self.core_settings_cache.data_copy()
 
     def get_core_settings(self):
@@ -608,7 +606,7 @@ class MongoSettingsHandler(SettingsHandler):
         global_settings = global_settings_doc.get("data", {})
         return {
             key: global_settings[key]
-            for key in self.core_keys
+            for key in CORE_KEYS
             if key in global_settings
         }
 
@@ -625,7 +623,7 @@ class MongoSettingsHandler(SettingsHandler):
         core_data = data[CORE_SETTINGS_KEY]
 
         # Add predefined keys to global settings if are set
-        for key in self.core_keys:
+        for key in CORE_KEYS:
             if key not in core_data:
                 continue
             # Pop key from values
@@ -637,77 +635,6 @@ class MongoSettingsHandler(SettingsHandler):
             ):
                 core_data[M_OVERRIDDEN_KEY].remove(key)
         return output
-
-    def _apply_core_settings(
-        self, global_settings_document, core_document
-    ):
-        """Apply core settings data to global settings.
-
-        Application is skipped if document with core settings is not
-        available or does not have set data in.
-
-        Global settings document is "faked" like it exists if core document
-        has set values.
-
-        Args:
-            global_settings_document (dict): Global settings document from
-                MongoDB.
-            core_document (dict): Core settings document from MongoDB.
-
-        Returns:
-            Merged document which has applied global settings data.
-        """
-        # Skip if core document is not available
-        if (
-            not core_document
-            or "data" not in core_document
-            or not core_document["data"]
-        ):
-            return global_settings_document
-
-        core_data = core_document["data"]
-        # Check if data contain any key from predefined keys
-        any_key_found = False
-        if core_data:
-            for key in self.core_keys:
-                if key in core_data:
-                    any_key_found = True
-                    break
-
-        # Skip if any key from predefined key was not found in globals
-        if not any_key_found:
-            return global_settings_document
-
-        # "Fake" global settings document if document does not exist
-        # - global settings document may exist but global settings not yet
-        if not global_settings_document:
-            global_settings_document = {}
-
-        if "data" in global_settings_document:
-            global_settings_data = global_settings_document["data"]
-        else:
-            global_settings_data = {}
-            global_settings_document["data"] = global_settings_data
-
-        if CORE_SETTINGS_KEY in global_settings_data:
-            global_core_data = global_settings_data[CORE_SETTINGS_KEY]
-        else:
-            global_core_data = {}
-            global_settings_data[CORE_SETTINGS_KEY] = global_core_data
-
-        overridden_keys = global_core_data.get(M_OVERRIDDEN_KEY) or []
-        for key in self.core_keys:
-            if key not in core_data:
-                continue
-
-            global_core_data[key] = core_data[key]
-            if key not in overridden_keys:
-                overridden_keys.append(key)
-
-        if overridden_keys:
-            global_core_data[M_OVERRIDDEN_KEY] = overridden_keys
-
-        return global_settings_document
 
     def save_studio_settings(self, data):
         """Save studio overrides of global settings.
@@ -745,7 +672,7 @@ class MongoSettingsHandler(SettingsHandler):
 
         global_settings_doc = self.collection.find_one(
             {
-                "type": self._global_settings_key,
+                "type": DATABASE_GLOBAL_SETTINGS_VERSIONED_KEY,
                 "version": self._current_version
             },
             {"_id": True}
@@ -753,7 +680,7 @@ class MongoSettingsHandler(SettingsHandler):
 
         # Store global settings
         new_global_settings_doc = {
-            "type": self._global_settings_key,
+            "type": DATABASE_GLOBAL_SETTINGS_VERSIONED_KEY,
             "version": self._current_version,
             "data": global_settings_data,
             "last_saved_info": last_saved_info.to_document_data()
@@ -807,7 +734,7 @@ class MongoSettingsHandler(SettingsHandler):
 
         self._save_project_data(
             project_name,
-            self._project_settings_key,
+            DATABASE_PROJECT_SETTINGS_VERSIONED_KEY,
             data_cache,
             last_saved_info
         )
@@ -834,7 +761,7 @@ class MongoSettingsHandler(SettingsHandler):
             )
             self._save_project_data(
                 project_name,
-                self._project_anatomy_key,
+                DATABASE_PROJECT_ANATOMY_VERSIONED_KEY,
                 data_cache,
                 last_saved_info
             )
@@ -976,13 +903,6 @@ class MongoSettingsHandler(SettingsHandler):
         else:
             self.collection.insert_one(new_project_settings_doc)
 
-    def _get_versions_order_doc(self, projection=None):
-        # TODO cache
-        return self.collection.find_one(
-            {"type": self._version_order_key},
-            projection
-        ) or {}
-
     def _check_version_order(self):
         """This method will work only in QuadPype process.
 
@@ -997,44 +917,14 @@ class MongoSettingsHandler(SettingsHandler):
             return
         self._version_order_checked = True
 
-        # Query document holding sorted list of version strings
-        doc = self._get_versions_order_doc()
-        if not doc:
-            doc = {"type": self._version_order_key}
-
-        if self._all_versions_keys not in doc:
-            doc[self._all_versions_keys] = []
-
-        # Skip if current version is already available
-        if self._current_version in doc[self._all_versions_keys]:
-            return
-
-        if self._current_version not in doc[self._all_versions_keys]:
-            # Add all versions into list
-            all_objected_versions = [
-                PackageVersion(version=self._current_version)
-            ]
-            for version_str in doc[self._all_versions_keys]:
-                all_objected_versions.append(
-                    PackageVersion(version=version_str)
-                )
-
-            doc[self._all_versions_keys] = [
-                str(version) for version in sorted(all_objected_versions)
-            ]
-
-        self.collection.replace_one(
-            {"type": self._version_order_key},
-            doc,
-            upsert=True
-        )
+        check_version_order(self.collection, self._current_version)
 
     def find_closest_version_for_projects(self, project_names):
         output = {
             project_name: None
             for project_name in project_names
         }
-        versioned_doc = self._get_versions_order_doc()
+        versioned_doc = get_versions_order_doc(self.collection)
 
         settings_ids = []
         for project_name in project_names:
@@ -1042,8 +932,10 @@ class MongoSettingsHandler(SettingsHandler):
                 doc_filter = {"is_default": True}
             else:
                 doc_filter = {"project_name": project_name}
-            settings_id = self._find_closest_settings_id(
-                self._project_settings_key,
+            settings_id = find_closest_settings_id(
+                self.collection,
+                self._current_version,
+                DATABASE_PROJECT_SETTINGS_VERSIONED_KEY,
                 PROJECT_SETTINGS_KEY,
                 doc_filter,
                 versioned_doc
@@ -1062,151 +954,29 @@ class MongoSettingsHandler(SettingsHandler):
                 output[project_name] = version
         return output
 
-    def _find_closest_settings_id(
-        self, key, legacy_key, additional_filters=None, versioned_doc=None
-    ):
-        """Try to find closes available versioned settings for settings key.
-
-        This method should be used only if settings for current QuadPype
-        version are not available.
-
-        Args:
-            key(str): Settings key under which are settings stored ("type").
-            legacy_key(str): Settings key under which were stored not versioned
-                settings.
-            additional_filters(dict): Additional filters of document. Used
-                for project specific settings.
-        """
-        # Trigger check of versions
-        self._check_version_order()
-
-        doc_filters = {
-            "type": {"$in": [key, legacy_key]}
-        }
-        if additional_filters:
-            doc_filters.update(additional_filters)
-
-        # Query base data of each settings doc
-        other_versions = self.collection.find(
-            doc_filters,
-            {
-                "_id": True,
-                "version": True,
-                "type": True
-            }
-        )
-        # Query doc with list of sorted versions
-        if versioned_doc is None:
-            versioned_doc = self._get_versions_order_doc()
-
-        # Separate queried docs
-        legacy_settings_doc = None
-        versioned_settings_by_version = {}
-        for doc in other_versions:
-            if doc["type"] == legacy_key:
-                legacy_settings_doc = doc
-            elif doc["type"] == key:
-                if doc["version"] == self._current_version:
-                    return doc["_id"]
-                versioned_settings_by_version[doc["version"]] = doc
-
-        versions_in_doc = versioned_doc.get(self._all_versions_keys) or []
-        # Cases when only legacy settings can be used
-        if (
-            # There are not versioned documents yet
-            not versioned_settings_by_version
-            # Versioned document is not available at all
-            # - this can happen only if old build of QuadPype was used
-            or not versioned_doc
-            # Current QuadPype version is not available
-            # - something went really wrong when this happens
-            or self._current_version not in versions_in_doc
-        ):
-            if not legacy_settings_doc:
-                return None
-            return legacy_settings_doc["_id"]
-
-        # Separate versions to lower and higher and keep their order
-        lower_versions = []
-        higher_versions = []
-        before = True
-        for version_str in versions_in_doc:
-            if version_str == self._current_version:
-                before = False
-            elif before:
-                lower_versions.append(version_str)
-            else:
-                higher_versions.append(version_str)
-
-        # Use legacy settings doc as source document
-        src_doc_id = None
-        if legacy_settings_doc:
-            src_doc_id = legacy_settings_doc["_id"]
-
-        # Find the highest version which has available settings
-        if lower_versions:
-            for version_str in reversed(lower_versions):
-                doc = versioned_settings_by_version.get(version_str)
-                if doc:
-                    src_doc_id = doc["_id"]
-                    break
-
-        # Use versions with higher version only if there are no legacy
-        #   settings and there are not any versions before
-        if src_doc_id is None and higher_versions:
-            for version_str in higher_versions:
-                doc = versioned_settings_by_version.get(version_str)
-                if doc:
-                    src_doc_id = doc["_id"]
-                    break
-
-        return src_doc_id
-
-    def _find_closest_settings(
-        self, key, legacy_key, additional_filters=None, versioned_doc=None
-    ):
-        doc_id = self._find_closest_settings_id(
-            key, legacy_key, additional_filters, versioned_doc
-        )
-        if doc_id is None:
-            return None
-        return self.collection.find_one({"_id": doc_id})
-
-    def _find_closest_global_settings(self):
-        return self._find_closest_settings(
-            self._global_settings_key,
-            GLOBAL_SETTINGS_KEY
-        )
-
     def _find_closest_project_settings(self, project_name):
         if project_name is None:
             additional_filters = {"is_default": True}
         else:
             additional_filters = {"project_name": project_name}
 
-        return self._find_closest_settings(
-            self._project_settings_key,
+        return find_closest_settings(
+            self.collection,
+            self._current_version,
+            DATABASE_PROJECT_SETTINGS_VERSIONED_KEY,
             PROJECT_SETTINGS_KEY,
             additional_filters
         )
 
     def _find_closest_project_anatomy(self):
         additional_filters = {"is_default": True}
-        return self._find_closest_settings(
-            self._project_anatomy_key,
+        return find_closest_settings(
+            self.collection,
+            self._current_version,
+            DATABASE_PROJECT_ANATOMY_VERSIONED_KEY,
             PROJECT_ANATOMY_KEY,
             additional_filters
         )
-
-    def _get_studio_global_settings_overrides_for_version(self, version=None):
-        # QUESTION cache?
-        if version is None:
-            version = self._current_version
-
-        return self.collection.find_one({
-            "type": self._global_settings_key,
-            "version": version
-        })
 
     def _get_project_settings_overrides_for_version(
         self, project_name, version=None
@@ -1215,7 +985,7 @@ class MongoSettingsHandler(SettingsHandler):
             version = self._current_version
 
         document_filter = {
-            "type": self._project_settings_key,
+            "type": DATABASE_PROJECT_SETTINGS_VERSIONED_KEY,
             "version": version
         }
 
@@ -1231,7 +1001,7 @@ class MongoSettingsHandler(SettingsHandler):
             version = self._current_version
 
         return self.collection.find_one({
-            "type": self._project_anatomy_key,
+            "type": DATABASE_PROJECT_ANATOMY_VERSIONED_KEY,
             "is_default": True,
             "version": version
         })
@@ -1240,14 +1010,15 @@ class MongoSettingsHandler(SettingsHandler):
         """Studio overrides of global settings."""
         if self.global_settings_cache.is_outdated:
             core_document = self.get_core_settings_doc()
-            document, version = self._get_global_settings_overrides_doc()
+            document, version = get_global_settings_overrides_doc(
+                self.collection,
+                self._current_version
+            )
 
             last_saved_info = SettingsStateInfo.from_document(
                 version, GLOBAL_SETTINGS_KEY, document
             )
-            merged_document = self._apply_core_settings(
-                document, core_document
-            )
+            merged_document = apply_core_settings(document, core_document)
 
             self.global_settings_cache.update_from_document(
                 merged_document, version
@@ -1261,19 +1032,6 @@ class MongoSettingsHandler(SettingsHandler):
         if return_version:
             return data, cache.version
         return data
-
-    def _get_global_settings_overrides_doc(self):
-        document = (
-            self._get_studio_global_settings_overrides_for_version()
-        )
-        if document is None:
-            document = self._find_closest_global_settings()
-
-        version = None
-        if document and document["type"] == self._global_settings_key:
-                version = document["version"]
-
-        return document, version
 
     def get_global_settings_last_saved_info(self):
         # Make sure settings are re-cached
@@ -1311,7 +1069,7 @@ class MongoSettingsHandler(SettingsHandler):
             document = self._find_closest_project_settings(project_name)
 
         version = None
-        if document and document["type"] == self._project_settings_key:
+        if document and document["type"] == DATABASE_PROJECT_SETTINGS_VERSIONED_KEY:
                 version = document["version"]
 
         return document, version
@@ -1392,7 +1150,7 @@ class MongoSettingsHandler(SettingsHandler):
                     document = self._find_closest_project_anatomy()
 
                 version = None
-                if document and document["type"] == self._project_anatomy_key:
+                if document and document["type"] == DATABASE_PROJECT_ANATOMY_VERSIONED_KEY:
                     version = document["version"]
 
                 self.project_anatomy_cache[project_name].update_from_document(
@@ -1432,7 +1190,8 @@ class MongoSettingsHandler(SettingsHandler):
 
     # Implementations of abstract methods to get overrides for version
     def get_studio_global_settings_overrides_for_version(self, version):
-        doc = self._get_studio_global_settings_overrides_for_version(version)
+        version = version if version else self._current_version
+        doc = get_global_settings_overrides_for_version_doc(self.collection, version)
         if not doc:
             return doc
         return doc["data"]
@@ -1462,20 +1221,20 @@ class MongoSettingsHandler(SettingsHandler):
     # Implementations of abstract methods to clear overrides for version
     def clear_studio_global_settings_overrides_for_version(self, version):
         self.collection.delete_one({
-            "type": self._global_settings_key,
+            "type": DATABASE_GLOBAL_SETTINGS_VERSIONED_KEY,
             "version": version
         })
 
     def clear_studio_project_settings_overrides_for_version(self, version):
         self.collection.delete_one({
-            "type": self._project_settings_key,
+            "type": DATABASE_PROJECT_SETTINGS_VERSIONED_KEY,
             "version": version,
             "is_default": True
         })
 
     def clear_studio_project_anatomy_overrides_for_version(self, version):
         self.collection.delete_one({
-            "type": self._project_anatomy_key,
+            "type": DATABASE_PROJECT_ANATOMY_VERSIONED_KEY,
             "version": version
         })
 
@@ -1483,7 +1242,7 @@ class MongoSettingsHandler(SettingsHandler):
         self, version, project_name
     ):
         self.collection.delete_one({
-            "type": self._project_settings_key,
+            "type": DATABASE_PROJECT_SETTINGS_VERSIONED_KEY,
             "version": version,
             "project_name": project_name
         })
@@ -1511,7 +1270,7 @@ class MongoSettingsHandler(SettingsHandler):
     ):
         docs = self.collection.find(
             {"type": {
-                "$in": [self._global_settings_key, GLOBAL_SETTINGS_KEY]
+                "$in": [DATABASE_GLOBAL_SETTINGS_VERSIONED_KEY, GLOBAL_SETTINGS_KEY]
             }},
             {"type": True, "version": True}
         )
@@ -1527,7 +1286,7 @@ class MongoSettingsHandler(SettingsHandler):
     ):
         docs = self.collection.find(
             {"type": {
-                "$in": [self._project_anatomy_key, PROJECT_ANATOMY_KEY]
+                "$in": [DATABASE_PROJECT_ANATOMY_VERSIONED_KEY, PROJECT_ANATOMY_KEY]
             }},
             {"type": True, "version": True}
         )
@@ -1545,7 +1304,7 @@ class MongoSettingsHandler(SettingsHandler):
             {
                 "is_default": True,
                 "type": {
-                    "$in": [self._project_settings_key, PROJECT_SETTINGS_KEY]
+                    "$in": [DATABASE_PROJECT_SETTINGS_VERSIONED_KEY, PROJECT_SETTINGS_KEY]
                 }
             },
             {"type": True, "version": True}
@@ -1564,7 +1323,7 @@ class MongoSettingsHandler(SettingsHandler):
             {
                 "project_name": project_name,
                 "type": {
-                    "$in": [self._project_settings_key, PROJECT_SETTINGS_KEY]
+                    "$in": [DATABASE_PROJECT_SETTINGS_VERSIONED_KEY, PROJECT_SETTINGS_KEY]
                 }
             },
             {"type": True, "version": True}
