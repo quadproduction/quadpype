@@ -14,6 +14,7 @@ from quadpype.lib import get_user_workstation_info, get_user_id, CacheValues
 from quadpype.lib.version import PackageVersion
 from .constants import (
     CORE_KEYS,
+    CORE_SETTINGS_DOC_KEY,
     CORE_SETTINGS_KEY,
     GLOBAL_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
@@ -596,7 +597,7 @@ class MongoSettingsHandler(SettingsHandler):
     def get_core_settings_doc(self):
         if self.core_settings_cache.is_outdated:
             core_settings_doc = self.collection.find_one({
-                "type": CORE_SETTINGS_KEY
+                "type": CORE_SETTINGS_DOC_KEY
             }) or {}
             self.core_settings_cache.update_data(core_settings_doc, None)
         return self.core_settings_cache.data_copy()
@@ -696,10 +697,10 @@ class MongoSettingsHandler(SettingsHandler):
         # Store core settings
         self.collection.replace_one(
             {
-                "type": CORE_SETTINGS_KEY
+                "type": CORE_SETTINGS_DOC_KEY
             },
             {
-                "type": CORE_SETTINGS_KEY,
+                "type": CORE_SETTINGS_DOC_KEY,
                 "data": core_settings
             },
             upsert=True

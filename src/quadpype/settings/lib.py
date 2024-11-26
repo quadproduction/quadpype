@@ -25,6 +25,7 @@ from .constants import (
     DEFAULTS_DIR,
 
     CORE_KEYS,
+    CORE_SETTINGS_DOC_KEY,
     CORE_SETTINGS_KEY,
     GLOBAL_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
@@ -1406,7 +1407,7 @@ def apply_core_settings(global_settings_document, core_document):
 
 def get_global_settings_overrides_no_handler(collection, version_str):
     core_document = collection.find_one({
-        "type": CORE_SETTINGS_KEY
+        "type": CORE_SETTINGS_DOC_KEY
     }) or {}
 
     document, version = get_global_settings_overrides_doc(
@@ -1447,7 +1448,7 @@ def get_expected_studio_version_str(staging=False, collection=None):
         quadpype_db_name = os.getenv("QUADPYPE_DATABASE_NAME") or "quadpype"
         collection = client[quadpype_db_name]["settings"]
 
-    core_document = collection.find_one({"type": CORE_SETTINGS_KEY}) or {}
+    core_document = collection.find_one({"type": CORE_SETTINGS_DOC_KEY}) or {}
 
     key = "staging_version" if staging else "production_version"
 

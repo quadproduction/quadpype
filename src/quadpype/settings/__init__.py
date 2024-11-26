@@ -1,4 +1,5 @@
 from .constants import (
+    CORE_SETTINGS_DOC_KEY,
     CORE_SETTINGS_KEY,
     GLOBAL_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
@@ -42,6 +43,7 @@ from .entities import (
 
 
 __all__ = (
+    "CORE_SETTINGS_DOC_KEY",
     "CORE_SETTINGS_KEY",
     "GLOBAL_SETTINGS_KEY",
     "PROJECT_SETTINGS_KEY",
