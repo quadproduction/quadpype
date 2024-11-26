@@ -197,7 +197,10 @@ class PackageHandler:
         skip_version_check = False
         self._local_dir_path = local_dir_path if local_dir_path else remote_dir_path
         if not self.is_local_dir_path_accessible():
-            raise RuntimeError(f"Local directory path for package \"{pkg_name}\" is not accessible.")
+            try:
+                self._local_dir_path.mkdir(parents=True, exist_ok=True)
+            except Exception:  # noqa
+                raise RuntimeError(f"Local directory path for package \"{pkg_name}\" is not accessible.")
 
         self._remote_dir_path = remote_dir_path
         # remote_dir_path can be None in case the path to package version isn't specified

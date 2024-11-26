@@ -164,6 +164,22 @@ def validate_mongo_connection(mongo_uri):
     )
     client.close()
 
+def _ensure_db_user_has_read_write_privilege(client, roles):
+    for role in roles:
+        if role["role"] == "readWriteAnyDatabase":
+            return True, "Connection is successful"
+        else:
+            role_info = client[role["db"]].command("rolesInfo", {
+                "role": role["role"],
+                "db": role["db"],
+                "showPrivileges": True,
+                "showBuiltinRoles": True
+            })
+            result, msg = _ensure_db_user_has_read_write_privilege(client, role_info["roles"][0]["roles"])
+            if result:
+                return result, msg
+
+    return False, "User hasn't the read and write access to the Database"
 
 def validate_mongo_connection_with_info(mongo_uri: str) -> (bool, str):
     """Check if provided mongodb URL is valid.
@@ -200,8 +216,25 @@ def validate_mongo_connection_with_info(mongo_uri: str) -> (bool, str):
             pymongo.errors.OperationFailure,
             pymongo.errors.InvalidURI) as exc:
         return False, str(exc)
-    else:
-        return True, "Connection is successful"
+
+    try:
+        # Attempt to list databases
+        client.list_database_names()
+    except pymongo.errors.OperationFailure:
+        return False, "User hasn't the read and write access to the Database"
+
+    # Check connection status and roles
+    try:
+        connection_status = client.admin.command("connectionStatus")
+        roles = connection_status["authInfo"]["authenticatedUserRoles"]
+        if not roles:
+            return True, "Connection is successful"
+
+        # Authentication enabled with user roles
+        # Check if the user has the read write role
+        return _ensure_db_user_has_read_write_privilege(client, roles)
+    except Exception as e:  # noqa
+        return False, "User hasn't the read and write access to the Database"
 
 
 class QuadPypeMongoConnection:

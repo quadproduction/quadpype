@@ -25,36 +25,6 @@ if ($env:PSModulePath.IndexOf($PATH_PS_VENDOR_DIR) -Eq -1) {
     $env:PSModulePath += ";$($PATH_PS_VENDOR_DIR)"
 }
 
-function Start-Progress {
-    param([ScriptBlock]$code)
-    $scroll = "/-\|/-\|"
-    $idx = 0
-    $job = Invoke-Command -ComputerName $env:ComputerName -ScriptBlock { $code } -AsJob
-
-    $origpos = $host.UI.RawUI.CursorPosition
-
-    # $origpos.Y -= 1
-
-    while (($job.State -eq "Running") -and ($job.State -ne "NotStarted")) {
-        $host.UI.RawUI.CursorPosition = $origpos
-        Write-Host $scroll[$idx] -NoNewline
-        $idx++
-        if ($idx -ge $scroll.Length) {
-            $idx = 0
-        }
-        Start-Sleep -Milliseconds 100
-    }
-    # It's over - clear the activity indicator.
-    $host.UI.RawUI.CursorPosition = $origpos
-    Write-Host ' '
-  <#
-  .SYNOPSIS
-  Display spinner for running job
-  .PARAMETER code
-  Job to display spinner for
-  #>
-}
-
 
 function Exit-WithCode($exitcode) {
    # Only exit this host process if it's a child of another PowerShell parent process...
@@ -97,7 +67,7 @@ if (-not (Test-Path -PathType Container -Path "$($QUADPYPE_BUILD_DIR)")) {
     Exit-WithCode 1
 }
 
-Write-Color -Text "--- ", "Build directory ", "${build_dir}" -Color Green, Gray, White
+Write-Color -Text "--- ", "Build directory ", "${QUADPYPE_BUILD_DIR}" -Color Green, Gray, White
 $env:BUILD_DIR = "$QUADPYPE_BUILD_DIR"
 
 if (-not (Get-Command iscc -errorAction SilentlyContinue -ErrorVariable ProcessError)) {
@@ -106,7 +76,7 @@ if (-not (Get-Command iscc -errorAction SilentlyContinue -ErrorVariable ProcessE
     Exit-WithCode 1
 }
 
-& iscc "$PATH_QUADPYPE_ROOT\inno_setup.iss"
+& iscc /Qp "$PATH_QUADPYPE_ROOT\inno_setup.iss"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Color -Text "!!! ", "Creating installer failed." -Color Red, Yellow
