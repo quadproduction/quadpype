@@ -1477,13 +1477,14 @@ def get_global_settings_and_version_no_handler(url: str, version_str: str, use_s
     collection = client[quadpype_db_name]["settings"]
 
     if not version_str:
-        version_str = get_expected_studio_version_str(use_staging, collection) or fallback_version_str
-
-    if not version_str:
-        raise RuntimeError("Cannot determine expected version")
+        version_str = get_expected_studio_version_str(use_staging, collection)
 
     default_values = load_quadpype_default_settings()[GLOBAL_SETTINGS_KEY]
-    overrides_values = get_global_settings_overrides_no_handler(collection, version_str)
+    version_str_for_overrides = version_str if version_str else fallback_version_str
+    overrides_values = get_global_settings_overrides_no_handler(
+        collection,
+        version_str_for_overrides
+    )
 
     result = apply_overrides(default_values, overrides_values)
 
