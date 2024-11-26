@@ -377,14 +377,14 @@ def run(arguments: list, env: dict = None) -> int:
     return p.returncode
 
 
-def run_disk_mapping_commands(settings):
+def run_disk_mapping_commands(global_settings):
     """ Run disk mapping command
 
         Used to map shared disk for QuadPype to pull codebase.
     """
 
     low_platform = platform.system().lower()
-    disk_mapping = settings.get("disk_mapping")
+    disk_mapping = global_settings.get("disk_mapping")
     if not disk_mapping:
         return
 
@@ -442,10 +442,7 @@ def set_avalon_environments():
     })
 
 
-def _update_zxp_extensions(quadpype_version):
-    from quadpype.settings import get_global_settings
-
-    global_settings = get_global_settings()
+def _update_zxp_extensions(quadpype_version, global_settings):
     zxp_hosts_to_update = get_zxp_extensions_to_update(quadpype_version, global_settings)
     if not zxp_hosts_to_update:
         return
@@ -848,7 +845,10 @@ def boot():
         if "_tests" not in avalon_db:
             os.environ["AVALON_DB"] = avalon_db + "_tests"
 
-    from quadpype.settings.lib import get_global_settings_and_version_no_handler
+    from quadpype.settings.lib import (
+        get_global_settings_and_version_no_handler,
+        get_quadpype_remote_dir_path
+    )
 
     global_settings, version_str = get_global_settings_and_version_no_handler(
         quadpype_mongo,
@@ -872,7 +872,6 @@ def boot():
 
     # Get path to the folder containing QuadPype patch versions, then set it to
     # environment so QuadPype can find its versions there and bootstrap them.
-    from quadpype.settings.lib import get_quadpype_remote_dir_path
     quadpype_remote_dir_path = get_quadpype_remote_dir_path(global_settings)
 
     # Create the Package Manager and add the QuadPype package & the registered AddOns
@@ -931,7 +930,7 @@ def boot():
 
     # Do the program display popups to the users regarding updates or incompatibilities
     _print(">>> Loading user profile ...")
-    user_profile = update_user_profile_on_startup()
+    update_user_profile_on_startup()
     _print(">>> Loading environments ...")
     # Avalon environments must be set before avalon module is imported
     _print("  - for Avalon ...")
@@ -943,7 +942,7 @@ def boot():
 
     if not os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE"):
         _print(">>> Check ZXP extensions ...")
-        _update_zxp_extensions(package_manager["quadpype"].running_version)
+        _update_zxp_extensions(package_manager["quadpype"].running_version, global_settings)
 
     # print info when not running scripts defined in 'silent commands'
     if all(arg not in silent_commands for arg in sys.argv):
