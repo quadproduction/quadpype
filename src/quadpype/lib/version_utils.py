@@ -103,7 +103,7 @@ def is_running_staging():
     production_version = core_settings["production_version"]
     latest_version = None
     if not production_version or production_version == "latest":
-        latest_version = get_latest_version(local=False, remote=True)
+        latest_version = get_latest_version(from_local=False, from_remote=True)
         production_version = latest_version
 
     current_version = get_quadpype_version()
@@ -113,7 +113,7 @@ def is_running_staging():
     staging_version = core_settings["staging_version"]
     if not staging_version or staging_version == "latest":
         if latest_version is None:
-            latest_version = get_latest_version(local=False, remote=True)
+            latest_version = get_latest_version(from_local=False, from_remote=True)
         staging_version = latest_version
 
     if current_version == staging_version:
@@ -127,7 +127,7 @@ def is_running_staging():
 #   - Make sense to call only in QuadPype process
 # ----------------------------------------
 def get_available_versions(*args, **kwargs):
-    """Get list of available versions."""
+    """Get the list of available versions."""
     return get_package("quadpype").get_available_versions(*args, **kwargs)
 
 
