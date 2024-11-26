@@ -1417,7 +1417,7 @@ def get_global_settings_overrides_no_handler(collection, version_str):
 
     merged_doc = apply_core_settings(document, core_document)
 
-    if "data" in merged_doc:
+    if merged_doc and "data" in merged_doc:
         return merged_doc["data"]
     return {}
 

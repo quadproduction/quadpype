@@ -578,12 +578,16 @@ class PackageHandler:
             raise PackageVersionNotFound(
                 f"Version {version} of package \"{self._name}\" not found in remote repository.")
 
-        destination_path = self.local_dir_path.joinpath(f"{remote_version.major}.{remote_version.minor}",
-                                                        str(remote_version))
+        destination_dir = self.local_dir_path.joinpath(f"{remote_version.major}.{remote_version.minor}")
+        destination_path = destination_dir.joinpath(str(remote_version))
         destination_path.mkdir(parents=True, exist_ok=True)
 
-        if str(remote_version.path).endswith('.zip'):
-            with ZipFile(remote_version.path, 'r') as zip_ref:
+        if remote_version.path.suffix == ".zip":
+            # Copy locally first
+            shutil.copy2(remote_version.path, destination_dir, follow_symlinks=True)
+
+            # Unzip the local copy
+            with ZipFile(destination_dir.joinpath(remote_version.path.name), 'r') as zip_ref:
                 zip_ref.extractall(destination_path)
         else:
             shutil.copytree(remote_version.path, destination_path, dirs_exist_ok=True)
