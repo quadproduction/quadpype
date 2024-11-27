@@ -668,9 +668,10 @@ class MongoSettingsHandler(SettingsHandler):
             global_settings_data
         )
 
-        # Apply changes to core settings
-        self._apply_core_version_changes(core_settings)
+        # Check and potentially apply the changes to the package instance
+        self._apply_core_settings_changes_to_package_instance(core_settings)
 
+        # Update the cache
         self.core_settings_cache.update_data(
             core_settings,
             None
@@ -699,7 +700,7 @@ class MongoSettingsHandler(SettingsHandler):
                 {"$set": new_global_settings_doc}
             )
 
-        # Store core settings
+        # Add or update the core settings in the database
         self.collection.replace_one(
             {
                 "type": CORE_SETTINGS_DOC_KEY
@@ -909,31 +910,31 @@ class MongoSettingsHandler(SettingsHandler):
         else:
             self.collection.insert_one(new_project_settings_doc)
 
-    def _apply_core_version_changes(self, core_settings):
-        """apply changes to core settings in the quadpype package."""
+    def _apply_core_settings_changes_to_package_instance(self, new_core_settings):
+        """Apply the new changes of the core settings to the QuadPype package instance."""
 
-        # Fetch core settings
-        existing_core_settings_doc = self.core_settings_cache.data
-        existing_core_settings = existing_core_settings_doc["data"] if existing_core_settings_doc else {}
+        # Fetch the core settings
+        curr_core_settings_doc = self.get_core_settings_doc()
+        curr_core_settings = curr_core_settings_doc["data"] if curr_core_settings_doc else {}
 
         # Keys to monitor
         keys_to_check = ["quadpype_path", "local_quadpype_path"]
-        changes_detected = {}
+        changes = {}
 
         # Check for changes
         for key in keys_to_check:
-            old_value = existing_core_settings.get(key)
-            new_value = core_settings.get(key)
-            if old_value != new_value:
-                changes_detected[key] = new_value
+            curr_value = curr_core_settings.get(key)
+            new_value = new_core_settings.get(key)
+            if curr_value != new_value:
+                changes[key] = new_value
 
-        # Apply changes if any
-        if changes_detected:
+        # Apply the changes (if any)
+        if changes:
             package = get_package("quadpype")
-            if "quadpype_path" in changes_detected:
-                package.change_remote_dir_path(changes_detected["quadpype_path"][platform.system().lower()][0])
-            if "local_quadpype_path" in changes_detected:
-                package.change_local_dir_path(changes_detected["local_quadpype_path"][platform.system().lower()][0])
+            if "quadpype_path" in changes:
+                package.change_remote_dir_paths(changes["quadpype_path"][platform.system().lower()])
+            if "local_quadpype_path" in changes:
+                package.change_local_dir_path(changes["local_quadpype_path"][platform.system().lower()][0])
 
     def _check_version_order(self):
         """This method will work only in QuadPype process.

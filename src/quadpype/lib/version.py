@@ -189,28 +189,36 @@ class PackageHandler:
     def __init__(self,
                  pkg_name: str,
                  local_dir_path: Union[str, Path, None],
-                 remote_dir_path: Union[str, Path],
+                 remote_dir_paths: List[Union[str, Path]],
                  running_version_str: str,
                  retrieve_locally: bool = True,
                  install_dir_path: Union[str, Path, None] = None):
         self._name = pkg_name
+        self.retrieve_locally = retrieve_locally
 
         if isinstance(local_dir_path, str):
             local_dir_path = Path(local_dir_path)
-        if isinstance(remote_dir_path, str):
-            remote_dir_path = Path(remote_dir_path)
 
-        skip_version_check = False
-        self._local_dir_path = local_dir_path if local_dir_path else remote_dir_path
+        if isinstance(remote_dir_paths, str):
+            remote_dir_paths = [Path(remote_dir_paths)]
+
+        # Ensure paths are Path objects
+        remote_dir_paths = [Path(curr_path) for curr_path in remote_dir_paths]
+
+        if retrieve_locally and not local_dir_path:
+            raise ValueError("local_dir_path cannot be None if retrieve_locally = True")
+
+        self._local_dir_path = local_dir_path
+
         if not self.is_local_dir_path_accessible():
             try:
                 self._local_dir_path.mkdir(parents=True, exist_ok=True)
             except Exception:  # noqa
                 raise RuntimeError(f"Local directory path for package \"{pkg_name}\" is not accessible.")
 
-        self._remote_dir_path = remote_dir_path
-        # remote_dir_path can be None in case the path to package version isn't specified
-        # This can happen only for the QuadPype app package of the settings is not set
+        self._remote_dir_paths = remote_dir_paths
+        # remote_dir_paths can be None in case the path to package version isn't specified
+        # This can happen only for the QuadPype app package
 
         self._running_version = None
 
@@ -262,8 +270,6 @@ class PackageHandler:
                     running_version = self.ensure_version_is_dir(running_version)
                     self._running_version = running_version
 
-        self.retrieve_locally = retrieve_locally
-
         self._add_package_path_to_env()
 
     @property
@@ -285,31 +291,40 @@ class PackageHandler:
         self._local_dir_path = local_dir_path
 
         # Ensure accessibility
-        self.is_local_dir_path_accessible()
+        if not self.is_local_dir_path_accessible():
+            raise ValueError(f"Local directory path of package \"{self._name}\" is not accessible.")
 
     def is_local_dir_path_accessible(self) -> bool:
         """Check if the path to the local directory is accessible."""
         return self._local_dir_path and isinstance(self._local_dir_path, Path) and self._local_dir_path.exists()
 
     @property
-    def remote_dir_path(self):
-        return self._remote_dir_path
+    def remote_dir_paths(self):
+        return self._remote_dir_paths
 
-    def change_remote_dir_path(self, remote_dir_path: Any):
+    def change_remote_dir_paths(self, remote_dir_paths: Union[List[Union[str, Path]], None]):
         """Set the remote directory path."""
-        if isinstance(remote_dir_path, str):
-            remote_dir_path = Path(remote_dir_path)
-        elif not remote_dir_path:
+        if isinstance(remote_dir_paths, str):
+            remote_dir_paths = [Path(remote_dir_paths)]
+        elif not remote_dir_paths:
             # If the remote_dir-path is unset we use the local_dir_path
-            remote_dir_path = self._local_dir_path
-        self._remote_dir_path = remote_dir_path
+            remote_dir_paths = [self._local_dir_path]
 
-        # Ensure accessibility
-        self.is_remote_dir_path_accessible()
+        # Ensure paths are Path objects
+        remote_dir_paths = [Path(curr_path) for curr_path in remote_dir_paths]
 
-    def is_remote_dir_path_accessible(self) -> bool:
-        """Check if the path to the remote directory is accessible."""
-        return self._remote_dir_path and isinstance(self._remote_dir_path, Path) and self._remote_dir_path.exists()
+        self._remote_dir_paths = remote_dir_paths
+
+    def get_accessible_remote_dir_path(self):
+        """Get the first accessible remote directory path (if any)."""
+        if not self._remote_dir_paths:
+            return None
+
+        for remote_dir_path in self._remote_dir_paths:
+            if remote_dir_path and isinstance(remote_dir_path, Path) and remote_dir_path.exists():
+                return remote_dir_path
+
+        return None
 
     @property
     def running_version(self):
@@ -450,13 +465,14 @@ class PackageHandler:
         return sorted(list(versions.values()))
 
     @classmethod
-    def get_versions_from_dir(cls, pkg_name: str, dir_path: Path, looking_for_archives = False, excluded_str_versions: Optional[List[str]] = None, parent_version: Optional[PackageVersion] = None) -> List:
+    def get_versions_from_dir(cls, pkg_name: str, dir_path: Path, priority_to_archives = False, excluded_str_versions: Optional[List[str]] = None, parent_version: Optional[PackageVersion] = None) -> List:
         """Get all detected PackageVersions in directory.
 
         Args:
             pkg_name (str):  Name of the package.
             dir_path (Path): Directory to scan.
-            looking_for_archives (bool, optional): If True, look for archives.
+            priority_to_archives (bool, optional): If True, look for archives in priority.
+                (if only a dir exists it will still be added).
             excluded_str_versions (List[str]): List of excluded versions as strings.
             parent_version (PackageVersion): Parent version to use for nested directories.
 
@@ -483,7 +499,7 @@ class PackageHandler:
                 detected_versions = cls.get_versions_from_dir(
                     pkg_name,
                     item,
-                    looking_for_archives,
+                    priority_to_archives,
                     excluded_str_versions,
                     PackageVersion(version=f"{item.name}.0")
                 )
@@ -520,11 +536,26 @@ class PackageHandler:
                 versions_correlation[str(curr_version)] = curr_version
             else:
                 favorite_version = versions_correlation[str(curr_version)]
-                if (looking_for_archives and not favorite_version.is_archive and curr_version.is_archive) or \
-                        (not looking_for_archives and favorite_version.is_archive and not curr_version.is_archive):
+                if (priority_to_archives and not favorite_version.is_archive and curr_version.is_archive) or \
+                        (not priority_to_archives and favorite_version.is_archive and not curr_version.is_archive):
                     versions_correlation[str(curr_version)] = curr_version
 
         return list(sorted(versions_correlation.values()))
+
+    @classmethod
+    def get_versions_from_dirs(cls, pkg_name: str, dir_paths: List[Path], priority_to_archives = False, excluded_str_versions: Optional[List[str]] = None) -> List:
+        versions_set = set()
+        for dir_path in dir_paths:
+            if not dir_path:
+                continue
+
+            if isinstance(dir_path, str):
+                dir_path = Path(dir_path)
+
+            found_versions = cls.get_versions_from_dir(pkg_name, dir_path, priority_to_archives, excluded_str_versions)
+            versions_set.update(found_versions)
+
+        return sorted(versions_set)
 
     def get_latest_version(self, from_local: bool = None, from_remote: bool = None):
         """Get the latest available version.
@@ -559,7 +590,12 @@ class PackageHandler:
         """
         if excluded_str_versions is None:
             excluded_str_versions = []
-        return self.get_versions_from_dir(self._name, self._local_dir_path, excluded_str_versions=excluded_str_versions)
+
+        return self.get_versions_from_dir(
+            self._name,
+            self._local_dir_path,
+            excluded_str_versions=excluded_str_versions
+        )
 
     def get_remote_versions(self, excluded_str_versions: Optional[List[str]] = None) -> List:
         """Get all versions available in remote path.
@@ -571,10 +607,13 @@ class PackageHandler:
         if excluded_str_versions is None:
             excluded_str_versions = []
 
-        return self.get_versions_from_dir(
+        # If the goal is to retrieve the code, we want archives
+        priority_to_archives = self.retrieve_locally
+
+        return self.get_versions_from_dirs(
             self._name,
-            self._remote_dir_path,
-            looking_for_archives=True,
+            self._remote_dir_paths,
+            priority_to_archives=priority_to_archives,
             excluded_str_versions=excluded_str_versions
         )
 

@@ -756,7 +756,7 @@ def _initialize_package_manager(database_url, version_str):
     from quadpype.settings.lib import (
         get_core_settings_no_handler,
         get_quadpype_local_dir_path,
-        get_quadpype_remote_dir_path
+        get_quadpype_remote_dir_paths
     )
 
     core_settings = get_core_settings_no_handler(database_url)
@@ -766,7 +766,7 @@ def _initialize_package_manager(database_url, version_str):
     quadpype_package = PackageHandler(
         pkg_name="quadpype",
         local_dir_path=get_quadpype_local_dir_path(core_settings),
-        remote_dir_path=get_quadpype_remote_dir_path(core_settings),
+        remote_dir_paths=get_quadpype_remote_dir_paths(core_settings),
         running_version_str=version_str,
         retrieve_locally=True,
         install_dir_path=os.getenv("QUADPYPE_ROOT")
@@ -781,7 +781,6 @@ def _load_addons(package_manager, global_settings, use_staging):
     from appdirs import user_data_dir
 
     addon_settings = global_settings.get(MODULES_SETTINGS_KEY, {}).get("custom_addons", {})
-    print(addon_settings)
     local_dir = Path(user_data_dir("quadpype", "quad")) / "addons"
 
     if not local_dir.exists():
@@ -798,10 +797,14 @@ def _load_addons(package_manager, global_settings, use_staging):
             local_dir.mkdir(parents=True, exist_ok=True)
 
         version_key = "staging_version" if use_staging else "version"
+
+        remote_dir_paths = addon_setting.get("package_remote_dirs", {}).get(platform.system().lower(), [])
+        remote_dir_paths = [Path(curr_path_str) for curr_path_str in remote_dir_paths]
+
         addon_package = AddOnHandler(
             pkg_name=addon_setting.get("package_name"),
             local_dir_path=addon_local_dir,
-            remote_dir_path=Path(addon_setting.get("package_remote_dir", {}).get(platform.system().lower())[0]),
+            remote_dir_paths=remote_dir_paths,
             running_version_str=addon_setting.get(version_key, ""),
             retrieve_locally=addon_setting.get("retrieve_locally", False),
         )
@@ -915,11 +918,11 @@ def boot():
         valid = package_manager["quadpype"].validate_checksums(QUADPYPE_ROOT)[0]
         sys.exit(0 if valid else 1)
 
-    if not package_manager["quadpype"].remote_dir_path:
+    if not package_manager["quadpype"].remote_dir_paths:
         _print("*** Cannot get QuadPype patches directory path from database.")
 
-    if not os.getenv("QUADPYPE_PATH") and package_manager["quadpype"].remote_dir_path:
-        os.environ["QUADPYPE_PATH"] = str(package_manager["quadpype"].remote_dir_path)
+    if not os.getenv("QUADPYPE_PATH") and package_manager["quadpype"].remote_dir_paths:
+        os.environ["QUADPYPE_PATH"] = str(package_manager["quadpype"].get_accessible_remote_dir_path())
 
     if "print_versions" in commands:
         _boot_print_versions(package_manager["quadpype"])

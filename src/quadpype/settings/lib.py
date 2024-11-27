@@ -6,7 +6,7 @@ import platform
 import copy
 
 from appdirs import user_data_dir
-from typing import Union, Tuple
+from typing import Union, List
 from urllib.parse import urlparse, parse_qs
 from pathlib import Path
 
@@ -1542,7 +1542,7 @@ def get_quadpype_local_dir_path(settings: dict) -> Union[Path, None]:
                 Path(user_data_dir("quadpype", "quad")))
 
 
-def get_quadpype_remote_dir_path(settings: dict) -> Union[str, None]:
+def get_quadpype_remote_dir_paths(settings: dict) -> List[str]:
     """Get QuadPype path from global settings.
 
     Args:
@@ -1556,8 +1556,8 @@ def get_quadpype_remote_dir_path(settings: dict) -> Union[str, None]:
         .get("quadpype_path", {})
         .get(platform.system().lower())
     ) or []
-    # For cases when `quadpype_path` is a single path
+    # For cases when it's a single path
     if paths and isinstance(paths, str):
         paths = [paths]
 
-    return next((path for path in paths if os.path.exists(path)), None)
+    return paths if paths else []
