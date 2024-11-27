@@ -67,9 +67,18 @@ function transferSettings(sourceDbName, targetDbName) {
         if (document.type === "system_settings_versioned") {
             document.type = "global_settings_versioned"
             document.data.core = document.data.general;
-//            document.data.addon.addon_paths = document.data.addon_paths;
+// TODO : Need PackageHandler can handle environment variable {OPENPYPE_CUSTOM_PLUGINS}
+//            document.data.modules.custom_addons = [
+//                {
+//                    package_name: "openpype_custom_plugins",
+//                    package_remote_dir: document.data.modules.addon_paths,
+//                    version: "",
+//                    staging_version: "",
+//                    retrieve_locally: true
+//                }
+//            ];
             delete document.data.general;
-//            delete document.data.addon_paths;
+            delete document.data.modules.addon_paths;
             if (document.last_saved_info && document.last_saved_info.timestamp) {
                 const timestamp = new Date(document.last_saved_info.timestamp);
                 if (!latestVersionedSystemSettings || timestamp > new Date(latestVersionedSystemSettings.last_saved_info.timestamp)) {
@@ -78,7 +87,6 @@ function transferSettings(sourceDbName, targetDbName) {
             }
             return
         }
-
 
         if (document.type === "project_settings_versioned") {
             if (document.last_saved_info && document.last_saved_info.timestamp && document.project_name) {
