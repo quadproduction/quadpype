@@ -229,7 +229,6 @@ class PackageHandler:
                 running_version_str = str(latest_version)
             elif local_version_str:
                 running_version_str = local_version_str
-
         if not running_version_str:
             raise ValueError("Cannot find a version to run, neither locally or remotely.")
 
@@ -245,7 +244,7 @@ class PackageHandler:
             # Find (and retrieve if necessary) the specified version to run
             running_version = self.find_version(running_version_str, from_local=True)
             if running_version:
-                running_version = ensure_version_is_dir(running_version)
+                running_version = self.ensure_version_is_dir(running_version)
                 self._running_version = running_version
             else:
                 running_version = self.find_version(running_version_str)
@@ -259,7 +258,7 @@ class PackageHandler:
                 else:
                     # We are about to use a remote version
                     # We need to ensure this version is un-archived
-                    running_version = ensure_version_is_dir(running_version)
+                    running_version = self.ensure_version_is_dir(running_version)
                     self._running_version = running_version
 
         self.retrieve_locally = retrieve_locally
@@ -494,23 +493,18 @@ class PackageHandler:
             # If it's a file, process its name (stripped of extension)
             name = item.name if item.is_dir() else item.stem
             version = cls.get_version_from_str(name)
-            version.is_archive = item.is_file()
-
             if not version or (parent_version and (version.major != parent_version.major or version.minor != parent_version.minor)):
                 continue
-
             # If it's a directory, check if version is valid within it
             if item.is_dir() and not cls.compare_version_with_package_dir(pkg_name, item, version)[0]:
                 continue
-
             # If it's a file, check if version is valid within the zip
             if item.is_file() and not cls.compare_version_with_package_zip(pkg_name, item, version)[0]:
                 continue
-
             version.path = item.resolve()
+            version.is_archive = item.is_file()
             if str(version) not in excluded_str_versions:
                 versions.append(version)
-
         # Correlation dict (key is version str, value is version obj)
         versions_correlation = {}
 
@@ -604,7 +598,7 @@ class PackageHandler:
         if local_version:
             # The version exists locally
             # We need to ensure this version is un-archived
-            return ensure_version_is_dir(local_version)
+            return self.ensure_version_is_dir(local_version)
 
         # Check if the version exists on the remote
         remote_version = self.find_version(version)
@@ -694,6 +688,25 @@ class PackageHandler:
 
         version_path = self._running_version.path.resolve().as_posix()
         sys.path.insert(0, version_path)
+
+    def ensure_version_is_dir(self, version_to_check):
+        if version_to_check.is_archive:
+            # Extract the archive
+            with ZipFile(version_to_check.path, 'r') as zip_ref:
+                zip_ref.extractall(version_to_check.path.parent.joinpath(str(version_to_check)))
+
+            # Get all versions in the directory, ignoring archives
+            versions = self.get_versions_from_dir(self._name,
+                                                  version_to_check.path.parent,
+                                                  looking_for_archives=False)
+
+            # Return the matching non-archive version if found
+            if versions:
+                for version in versions:
+                    if str(version_to_check) == str(version) and not version.is_archive:
+                        return version
+        # If not an archive, return the original version
+        return version_to_check
 
 
 class AddOnHandler(PackageHandler):
