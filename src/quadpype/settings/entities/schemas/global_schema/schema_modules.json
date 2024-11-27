@@ -9,6 +9,7 @@
             "type": "list",
             "key": "custom_addons",
             "label": "Custom Add-ons",
+            "require_restart": true,
             "object_type": {
                 "type": "dict",
                 "required_keys": ["package_name", "package_remote_dir"],
@@ -20,19 +21,18 @@
                     },
                     {
                         "type": "label",
-                        "label": "Define where the add-on versions are located. _This need to be an OS path, not an URL._"
+                        "label": "Define where the add-on versions are located. <i>This need to be an OS path, not an URL.</i>"
                     },
                     {
                         "type": "path",
                         "key": "package_remote_dir",
                         "label": "Versions Repository",
                         "multiplatform": true,
-                        "multipath": true,
-                        "require_restart": true
+                        "multipath": true
                     },
                     {
                         "type": "label",
-                        "label": "Define the version that should be used. _Keep empty to use latest available version._"
+                        "label": "Define the version that should be used. <i>Keep empty to use latest available version.</i>"
                     },
                     {
                         "type": "package-version",

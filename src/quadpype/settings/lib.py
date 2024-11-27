@@ -1405,10 +1405,15 @@ def apply_core_settings(global_settings_document, core_document):
     return global_settings_document
 
 
-def get_global_settings_overrides_no_handler(collection, version_str):
+def get_core_settings_doc(collection):
     core_document = collection.find_one({
         "type": CORE_SETTINGS_DOC_KEY
     }) or {}
+    return core_document
+
+
+def get_global_settings_overrides_no_handler(collection, version_str):
+    core_document = get_core_settings_doc(collection)
 
     document, version = get_global_settings_overrides_doc(
         collection,
@@ -1455,7 +1460,7 @@ def get_expected_studio_version_str(staging=False, collection=None):
     return core_document.get(key, "")
 
 
-def get_global_settings_and_version_no_handler(url: str, version_str: str, use_staging: bool, fallback_version_str: Union[str, None] = None) -> Tuple[dict, str]:
+def get_global_settings_and_version_no_handler(url: str, version_str: str) -> dict:
     """Load global settings from Mongo database.
 
     We are loading data from database `quadpype` and collection `settings`.
@@ -1464,8 +1469,6 @@ def get_global_settings_and_version_no_handler(url: str, version_str: str, use_s
     Args:
         url (str): MongoDB url.
         version_str (str): QuadPype version string.
-        use_staging (bool): If True, use staging version.
-        fallback_version_str (str or None): Fallback version string.
 
     Returns:
         dict: With settings data. Empty dictionary is returned if not found.
@@ -1481,14 +1484,10 @@ def get_global_settings_and_version_no_handler(url: str, version_str: str, use_s
     quadpype_db_name = os.getenv("QUADPYPE_DATABASE_NAME") or "quadpype"
     collection = client[quadpype_db_name]["settings"]
 
-    if not version_str:
-        version_str = get_expected_studio_version_str(use_staging, collection)
-
     default_values = load_quadpype_default_settings()[GLOBAL_SETTINGS_KEY]
-    version_str_for_overrides = version_str if version_str else fallback_version_str
     overrides_values = get_global_settings_overrides_no_handler(
         collection,
-        version_str_for_overrides
+        version_str
     )
 
     result = apply_overrides(default_values, overrides_values)
@@ -1498,7 +1497,26 @@ def get_global_settings_and_version_no_handler(url: str, version_str: str, use_s
     # Close Mongo connection
     client.close()
 
-    return result, version_str
+    return result
+
+
+def get_core_settings_no_handler(url: str) -> dict:
+    kwargs = {}
+    if should_add_certificate_path_to_mongo_url(url):
+        kwargs["tlsCAFile"] = certifi.where()
+
+    # Create mongo connection
+    client = MongoClient(url, **kwargs)
+    # Access settings collection
+    quadpype_db_name = os.getenv("QUADPYPE_DATABASE_NAME") or "quadpype"
+    collection = client[quadpype_db_name]["settings"]
+
+    core_settings_doc = get_core_settings_doc(collection)
+
+    # Close Mongo connection
+    client.close()
+
+    return core_settings_doc["data"] if "data" in core_settings_doc else {}
 
 
 def get_quadpype_local_dir_path(settings: dict) -> Union[Path, None]:

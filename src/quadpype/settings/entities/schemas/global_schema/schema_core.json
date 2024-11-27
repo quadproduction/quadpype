@@ -184,7 +184,7 @@
                 },
                 {
                     "type": "label",
-                    "label": "Define a custom location for machines where to unzip patch versions. _By default it's in the user app data folder._"
+                    "label": "Define a custom location for machines where to unzip patch versions. <i>By default it's in the user app data folder.</i>"
                 },
                 {
                     "type": "path",
@@ -199,7 +199,7 @@
                 },
                 {
                     "type": "label",
-                    "label": "Define the explicit QuadPype version that should be used. _Keep empty to use latest available version._"
+                    "label": "Define the explicit QuadPype version that should be used. <i>Keep empty to use latest available version.</i>"
                 },
                 {
                     "type": "package-version",

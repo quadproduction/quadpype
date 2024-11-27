@@ -750,43 +750,62 @@ def _boot_print_versions(quadpype_package):
     list_versions(versions_to_display, compatible_with)
 
 
-def _initialize_package_manager(global_settings, version_str, use_staging, quadpype_remote_dir_path):
+def _initialize_package_manager(database_url, version_str):
     """Initialize the Package Manager and add the registered AddOns."""
-    from quadpype.lib.version import create_package_manager, PackageHandler, AddOnHandler, MODULES_SETTINGS_KEY
-    from quadpype.settings.lib import get_quadpype_local_dir_path
+    from quadpype.lib.version import create_package_manager, PackageHandler
+    from quadpype.settings.lib import (
+        get_core_settings_no_handler,
+        get_quadpype_local_dir_path,
+        get_quadpype_remote_dir_path
+    )
 
-    from appdirs import user_data_dir
+    core_settings = get_core_settings_no_handler(database_url)
 
     package_manager = create_package_manager()
 
-    quadpype_local_dir_path = get_quadpype_local_dir_path(global_settings)
-
     quadpype_package = PackageHandler(
         pkg_name="quadpype",
-        local_dir_path=quadpype_local_dir_path,
-        remote_dir_path=quadpype_remote_dir_path,
+        local_dir_path=get_quadpype_local_dir_path(core_settings),
+        remote_dir_path=get_quadpype_remote_dir_path(core_settings),
         running_version_str=version_str,
         retrieve_locally=True,
         install_dir_path=os.getenv("QUADPYPE_ROOT")
     )
     package_manager.add_package(quadpype_package)
 
+    return package_manager
+
+
+def _load_addons(package_manager, global_settings, use_staging):
+    from quadpype.lib.version import AddOnHandler, MODULES_SETTINGS_KEY
+    from appdirs import user_data_dir
+
     addon_settings = global_settings.get(MODULES_SETTINGS_KEY, {}).get("custom_addons", {})
+    print(addon_settings)
     local_dir = Path(user_data_dir("quadpype", "quad")) / "addons"
+
     if not local_dir.exists():
         local_dir.mkdir(parents=True, exist_ok=True)
+
     for addon_setting in addon_settings:
+        addon_package_name = addon_setting.get("package_name", "").strip()
+        if not addon_package_name:
+            _print("!!! A custom add-on package name is empty, add-on skipped.")
+            continue
+
+        addon_local_dir = local_dir / addon_package_name
+        if not addon_local_dir.exists():
+            local_dir.mkdir(parents=True, exist_ok=True)
+
         version_key = "staging_version" if use_staging else "version"
         addon_package = AddOnHandler(
             pkg_name=addon_setting.get("package_name"),
-            local_dir_path=local_dir,
+            local_dir_path=addon_local_dir,
             remote_dir_path=Path(addon_setting.get("package_remote_dir", {}).get(platform.system().lower())[0]),
             running_version_str=addon_setting.get(version_key, ""),
             retrieve_locally=addon_setting.get("retrieve_locally", False),
         )
         package_manager.add_package(addon_package)
-
-    return package_manager
 
 
 def boot():
@@ -799,6 +818,10 @@ def boot():
     # Set environment to QuadPype root path
     # ------------------------------------------------------------------------
     os.environ["QUADPYPE_ROOT"] = QUADPYPE_ROOT
+
+    # set this to point either to `python` from venv in case of live code
+    # or to `quadpype` or `quadpype_console` in case of frozen code
+    os.environ["QUADPYPE_EXECUTABLE"] = sys.executable
 
     # ------------------------------------------------------------------------
     # Do necessary startup validations
@@ -853,15 +876,27 @@ def boot():
 
     from quadpype.settings.lib import (
         get_global_settings_and_version_no_handler,
-        get_quadpype_remote_dir_path
+        get_expected_studio_version_str,
     )
 
-    global_settings, version_str = get_global_settings_and_version_no_handler(
+    if not use_version:
+        # Check if a specific version as been saved in the core settings
+        use_version = get_expected_studio_version_str(use_staging)
+
+    # Create the Package Manager and add the QuadPype package & the registered AddOns
+    package_manager = _initialize_package_manager(quadpype_mongo, use_version)
+
+    # Ensure the settings will be retrieved from the correct running version
+    running_version = str(package_manager["quadpype"].running_version)
+
+    # Get the full settings with the final version that will be used
+    global_settings = get_global_settings_and_version_no_handler(
         quadpype_mongo,
-        use_version,
-        use_staging,
-        local_version
+        running_version
     )
+
+    # Add the Add-ons to the Package Manager
+    _load_addons(package_manager, global_settings, use_staging)
 
     _print(">>> Run disk mapping command ...")
     run_disk_mapping_commands(global_settings)
@@ -876,27 +911,15 @@ def boot():
         log_to_server_msg = "OFF"
     _print(f">>> Logging to server is turned {log_to_server_msg}")
 
-    # Get path to the folder containing QuadPype patch versions, then set it to
-    # environment so QuadPype can find its versions there and bootstrap them.
-    quadpype_remote_dir_path = get_quadpype_remote_dir_path(global_settings)
-
-    # Create the Package Manager and add the QuadPype package & the registered AddOns
-    package_manager = _initialize_package_manager(
-        global_settings,
-        version_str,
-        use_staging,
-        quadpype_remote_dir_path
-    )
-
     if "validate" in commands:
         valid = package_manager["quadpype"].validate_checksums(QUADPYPE_ROOT)[0]
         sys.exit(0 if valid else 1)
 
-    if not quadpype_remote_dir_path:
+    if not package_manager["quadpype"].remote_dir_path:
         _print("*** Cannot get QuadPype patches directory path from database.")
 
-    if not os.getenv("QUADPYPE_PATH") and quadpype_remote_dir_path:
-        os.environ["QUADPYPE_PATH"] = quadpype_remote_dir_path
+    if not os.getenv("QUADPYPE_PATH") and package_manager["quadpype"].remote_dir_path:
+        os.environ["QUADPYPE_PATH"] = package_manager["quadpype"].remote_dir_path
 
     if "print_versions" in commands:
         _boot_print_versions(package_manager["quadpype"])
@@ -906,11 +929,7 @@ def boot():
     if is_dev_mode:
         _print(">>> [DEV] The version used is the current local code.")
 
-    _initialize_environment(package_manager["quadpype"].running_version)
-
-    # set this to point either to `python` from venv in case of live code
-    # or to `quadpype` or `quadpype_console` in case of frozen code
-    os.environ["QUADPYPE_EXECUTABLE"] = sys.executable
+    _initialize_environment(running_version)
 
     # delete QuadPype module and it's submodules from cache so it is used from
     # specific version
