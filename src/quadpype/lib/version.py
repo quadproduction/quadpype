@@ -235,7 +235,10 @@ class PackageHandler:
         if not isinstance(running_version_str, str):
             raise ValueError("Running version must be a valid version string.")
 
-        if local_version_str == running_version_str:
+        # If the installation directory path is specified and
+        # the version requested is the same as the local one,
+        # then use the local code version
+        if local_version_str == running_version_str and self._install_dir_path:
             self._running_version = PackageVersion(version=running_version_str, path=self._install_dir_path)
         else:
             # Find (and retrieve if necessary) the specified version to run

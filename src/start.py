@@ -812,6 +812,7 @@ def boot():
     use_version, commands = _process_arguments()
     use_staging = os.getenv("QUADPYPE_USE_STAGING") == "1"
     local_version = PackageHandler.get_package_version_from_dir("quadpype", os.getenv("QUADPYPE_ROOT"))
+    is_dev_mode = "python" in os.path.basename(sys.executable).lower()
 
     if os.getenv("QUADPYPE_VERSION"):
         if use_version:
@@ -820,6 +821,11 @@ def boot():
         else:
             _print(">>> Version set by environment variable")
             use_version = os.getenv("QUADPYPE_VERSION")
+
+    # If QuadPype has been started in DEV mode and no version has been specified
+    # The local code version is used
+    if is_dev_mode and not use_version:
+        use_version = local_version
 
     # ------------------------------------------------------------------------
     # Determine mongodb connection
@@ -896,8 +902,9 @@ def boot():
         _boot_print_versions(package_manager["quadpype"])
         sys.exit(0)
 
-    dev_mode = "python" in os.path.basename(sys.executable).lower()
-    _print(">>> Dev Mode Enabled: {}".format(dev_mode))
+    _print(">>> Dev Mode Enabled: {}".format(is_dev_mode))
+    if is_dev_mode:
+        _print(">>> [DEV] The version used is the current local code.")
 
     _initialize_environment(package_manager["quadpype"].running_version)
 
