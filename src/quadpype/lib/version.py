@@ -45,6 +45,7 @@ class PackageVersion(semver.VersionInfo):
 
         """
         self.path = None
+        self.is_archive = False
 
         if "version" in kwargs:
             version_value = kwargs.pop("version")
@@ -244,6 +245,7 @@ class PackageHandler:
             # Find (and retrieve if necessary) the specified version to run
             running_version = self.find_version(running_version_str, from_local=True)
             if running_version:
+                running_version = ensure_version_is_dir(running_version)
                 self._running_version = running_version
             else:
                 running_version = self.find_version(running_version_str)
@@ -255,6 +257,9 @@ class PackageHandler:
                 if retrieve_locally:
                     self._running_version = self.retrieve_version_locally(running_version_str)
                 else:
+                    # We are about to use a remote version
+                    # We need to ensure this version is un-archived
+                    running_version = ensure_version_is_dir(running_version)
                     self._running_version = running_version
 
         self.retrieve_locally = retrieve_locally
@@ -445,12 +450,13 @@ class PackageHandler:
         return sorted(list(versions.values()))
 
     @classmethod
-    def get_versions_from_dir(cls, pkg_name: str, dir_path: Path, excluded_str_versions: Optional[List[str]] = None, parent_version: Optional[PackageVersion] = None) -> List:
+    def get_versions_from_dir(cls, pkg_name: str, dir_path: Path, looking_for_archives = False, excluded_str_versions: Optional[List[str]] = None, parent_version: Optional[PackageVersion] = None) -> List:
         """Get all detected PackageVersions in directory.
 
         Args:
             pkg_name (str):  Name of the package.
             dir_path (Path): Directory to scan.
+            looking_for_archives (bool, optional): If True, look for archives.
             excluded_str_versions (List[str]): List of excluded versions as strings.
             parent_version (PackageVersion): Parent version to use for nested directories.
 
@@ -475,7 +481,12 @@ class PackageHandler:
             # If the item is a directory with a major.minor version format, dive deeper
             if item.is_dir() and re.match(r"^\d+\.\d+$", item.name) and parent_version is None:
                 detected_versions = cls.get_versions_from_dir(
-                    pkg_name, item, excluded_str_versions, PackageVersion(version=f"{item.name}.0"))
+                    pkg_name,
+                    item,
+                    looking_for_archives,
+                    excluded_str_versions,
+                    PackageVersion(version=f"{item.name}.0")
+                )
 
                 if detected_versions:
                     versions.extend(detected_versions)
@@ -483,6 +494,7 @@ class PackageHandler:
             # If it's a file, process its name (stripped of extension)
             name = item.name if item.is_dir() else item.stem
             version = cls.get_version_from_str(name)
+            version.is_archive = item.is_file()
 
             if not version or (parent_version and (version.major != parent_version.major or version.minor != parent_version.minor)):
                 continue
@@ -499,7 +511,20 @@ class PackageHandler:
             if str(version) not in excluded_str_versions:
                 versions.append(version)
 
-        return list(sorted(set(versions)))
+        # Correlation dict (key is version str, value is version obj)
+        versions_correlation = {}
+
+        # Loop to get in priority what was requested (archives or dir)
+        for curr_version in versions:
+            if str(curr_version) not in versions_correlation:
+                versions_correlation[str(curr_version)] = curr_version
+            else:
+                favorite_version = versions_correlation[str(curr_version)]
+                if (looking_for_archives and not favorite_version.is_archive and curr_version.is_archive) or \
+                        (not looking_for_archives and favorite_version.is_archive and not curr_version.is_archive):
+                    versions_correlation[str(curr_version)] = curr_version
+
+        return list(sorted(versions_correlation.values()))
 
     def get_latest_version(self, from_local: bool = None, from_remote: bool = None):
         """Get the latest available version.
@@ -534,7 +559,7 @@ class PackageHandler:
         """
         if excluded_str_versions is None:
             excluded_str_versions = []
-        return self.get_versions_from_dir(self._name, self._local_dir_path, excluded_str_versions)
+        return self.get_versions_from_dir(self._name, self._local_dir_path, excluded_str_versions=excluded_str_versions)
 
     def get_remote_versions(self, excluded_str_versions: Optional[List[str]] = None) -> List:
         """Get all versions available in remote path.
@@ -546,7 +571,12 @@ class PackageHandler:
         if excluded_str_versions is None:
             excluded_str_versions = []
 
-        return self.get_versions_from_dir(self._name, self._remote_dir_path, excluded_str_versions)
+        return self.get_versions_from_dir(
+            self._name,
+            self._remote_dir_path,
+            looking_for_archives=True,
+            excluded_str_versions=excluded_str_versions
+        )
 
     def find_version(self, version: Union[PackageVersion, str], from_local: bool = False) -> Union[PackageVersion, None]:
         """Get a specific version from the local or remote dir if available."""
@@ -572,8 +602,9 @@ class PackageHandler:
         # Check if the version exists locally
         local_version = self.find_version(version, from_local=True)
         if local_version:
-            # Nothing to do the version is already in the local dir path
-            return
+            # The version exists locally
+            # We need to ensure this version is un-archived
+            return ensure_version_is_dir(local_version)
 
         # Check if the version exists on the remote
         remote_version = self.find_version(version)

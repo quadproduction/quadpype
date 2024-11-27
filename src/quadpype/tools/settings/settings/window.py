@@ -142,6 +142,7 @@ class MainWidget(QtWidgets.QWidget):
 
         current_settings = get_global_settings()
         production_version = current_settings.get(CORE_SETTINGS_KEY).get("production_version")
+        # TODO: Get latest and then compare
         # If production_version is empty, this means no version can be found
         # Avoid blocking the global settings in that case
         if production_version and production_version != global_settings_widget._current_version:
