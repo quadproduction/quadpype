@@ -2,6 +2,7 @@ import os
 import copy
 import collections
 import datetime
+import platform
 from abc import ABC, abstractmethod
 
 import quadpype.version
@@ -11,7 +12,7 @@ from quadpype.client.mongo import (
 )
 from quadpype.client import get_project
 from quadpype.lib import get_user_workstation_info, get_user_id, CacheValues
-from quadpype.lib.version import PackageVersion
+from quadpype.lib.version import PackageVersion, get_package
 from .constants import (
     CORE_KEYS,
     CORE_SETTINGS_DOC_KEY,
@@ -666,6 +667,10 @@ class MongoSettingsHandler(SettingsHandler):
         core_settings = self._extract_core_settings(
             global_settings_data
         )
+
+        # Apply changes to core settings
+        self._apply_core_version_changes(core_settings)
+
         self.core_settings_cache.update_data(
             core_settings,
             None
@@ -903,6 +908,32 @@ class MongoSettingsHandler(SettingsHandler):
             )
         else:
             self.collection.insert_one(new_project_settings_doc)
+
+    def _apply_core_version_changes(self, core_settings):
+        """apply changes to core settings in the quadpype package."""
+
+        # Fetch core settings
+        existing_core_settings_doc = self.core_settings_cache.data
+        existing_core_settings = existing_core_settings_doc["data"] if existing_core_settings_doc else {}
+
+        # Keys to monitor
+        keys_to_check = ["quadpype_path", "local_quadpype_path"]
+        changes_detected = {}
+
+        # Check for changes
+        for key in keys_to_check:
+            old_value = existing_core_settings.get(key)
+            new_value = core_settings.get(key)
+            if old_value != new_value:
+                changes_detected[key] = new_value
+
+        # Apply changes if any
+        if changes_detected:
+            package = get_package("quadpype")
+            if "quadpype_path" in changes_detected:
+                package.change_remote_dir_path(changes_detected["quadpype_path"][platform.system().lower()][0])
+            if "local_quadpype_path" in changes_detected:
+                package.change_local_dir_path(changes_detected["local_quadpype_path"][platform.system().lower()][0])
 
     def _check_version_order(self):
         """This method will work only in QuadPype process.

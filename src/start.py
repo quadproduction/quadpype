@@ -887,12 +887,12 @@ def boot():
     package_manager = _initialize_package_manager(quadpype_mongo, use_version)
 
     # Ensure the settings will be retrieved from the correct running version
-    running_version = str(package_manager["quadpype"].running_version)
+    running_version = package_manager["quadpype"].running_version
 
     # Get the full settings with the final version that will be used
     global_settings = get_global_settings_and_version_no_handler(
         quadpype_mongo,
-        running_version
+        str(running_version)
     )
 
     # Add the Add-ons to the Package Manager
@@ -919,7 +919,7 @@ def boot():
         _print("*** Cannot get QuadPype patches directory path from database.")
 
     if not os.getenv("QUADPYPE_PATH") and package_manager["quadpype"].remote_dir_path:
-        os.environ["QUADPYPE_PATH"] = package_manager["quadpype"].remote_dir_path
+        os.environ["QUADPYPE_PATH"] = str(package_manager["quadpype"].remote_dir_path)
 
     if "print_versions" in commands:
         _boot_print_versions(package_manager["quadpype"])

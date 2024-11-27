@@ -1457,7 +1457,7 @@ def get_expected_studio_version_str(staging=False, collection=None):
 
     key = "staging_version" if staging else "production_version"
 
-    return core_document.get(key, "")
+    return core_document.get("data", {}).get(key, "")
 
 
 def get_global_settings_and_version_no_handler(url: str, version_str: str) -> dict:
@@ -1531,7 +1531,6 @@ def get_quadpype_local_dir_path(settings: dict) -> Union[Path, None]:
     """
     paths = (
         settings
-        .get(CORE_SETTINGS_KEY, {})
         .get("local_quadpype_path", {})
         .get(platform.system().lower())
     ) or []
@@ -1554,7 +1553,6 @@ def get_quadpype_remote_dir_path(settings: dict) -> Union[str, None]:
     """
     paths = (
         settings
-        .get(CORE_SETTINGS_KEY, {})
         .get("quadpype_path", {})
         .get(platform.system().lower())
     ) or []
