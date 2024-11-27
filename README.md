@@ -56,7 +56,8 @@ As you can see by the diagram above, **QuadPype** is the result of the collabora
 > [!NOTE]
 > If you have development skills or want to try debugging **QuadPype** by yourself, check the [Developer Documentation](https://github.com/quadproduction/quadpype/wiki/07-%E2%80%90-Development).
 
-
 ## 📑 License
 
 The project is under the [MIT License](https://github.com/quadproduction/quadpype/blob/main/LICENSE).
+
+![github-bottom-banner](https://github.com/user-attachments/assets/715e368d-c14b-42dd-b089-2dff6e7963cf)
