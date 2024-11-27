@@ -182,19 +182,6 @@ class ZipFileLongPaths(ZipFile):
         )
 
 
-def ensure_version_is_dir(version_obj):
-    if not version_obj.is_archive:
-        return version_obj
-
-    # Unzip
-    destination_path = version_obj.path.parent.joinpath(str(version_obj))
-    with ZipFile(version_obj.path, 'r') as zip_ref:
-        zip_ref.extractall(destination_path)
-
-    version_obj.path = destination_path
-    return version_obj
-
-
 class PackageHandler:
     """Class for handling a package."""
     type = "package"
@@ -519,8 +506,8 @@ class PackageHandler:
             if item.is_file() and not cls.compare_version_with_package_zip(pkg_name, item, version)[0]:
                 continue
 
-            version.is_archive = item.is_file()
             version.path = item.resolve()
+            version.is_archive = item.is_file()
             if str(version) not in excluded_str_versions:
                 versions.append(version)
 
@@ -617,7 +604,7 @@ class PackageHandler:
         if local_version:
             # The version exists locally
             # We need to ensure this version is un-archived
-            return ensure_version_is_dir(local_version)
+            return self.ensure_version_is_dir(local_version)
 
         # Check if the version exists on the remote
         remote_version = self.find_version(version)
@@ -707,6 +694,25 @@ class PackageHandler:
 
         version_path = self._running_version.path.resolve().as_posix()
         sys.path.insert(0, version_path)
+
+    def ensure_version_is_dir(self, version_to_check):
+        if version_to_check.is_archive:
+            # Extract the archive
+            with ZipFile(version_to_check.path, 'r') as zip_ref:
+                zip_ref.extractall(version_to_check.path.parent.joinpath(str(version_to_check)))
+
+            # Get all versions in the directory, ignoring archives
+            versions = self.get_versions_from_dir(self._name,
+                                                  version_to_check.path.parent,
+                                                  looking_for_archives=False)
+
+            # Return the matching non-archive version if found
+            if versions:
+                for version in versions:
+                    if str(version_to_check) == str(version) and not version.is_archive:
+                        return version
+        # If not an archive, return the original version
+        return version_to_check
 
 
 class AddOnHandler(PackageHandler):
