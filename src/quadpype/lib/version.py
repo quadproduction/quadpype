@@ -182,6 +182,19 @@ class ZipFileLongPaths(ZipFile):
         )
 
 
+def ensure_version_is_dir(version_obj):
+    if not version_obj.is_archive:
+        return version_obj
+
+    # Unzip
+    destination_path = version_obj.path.parent.joinpath(str(version_obj))
+    with ZipFile(version_obj.path, 'r') as zip_ref:
+        zip_ref.extractall(destination_path)
+
+    version_obj.path = destination_path
+    return version_obj
+
+
 class PackageHandler:
     """Class for handling a package."""
     type = "package"
@@ -494,7 +507,6 @@ class PackageHandler:
             # If it's a file, process its name (stripped of extension)
             name = item.name if item.is_dir() else item.stem
             version = cls.get_version_from_str(name)
-            version.is_archive = item.is_file()
 
             if not version or (parent_version and (version.major != parent_version.major or version.minor != parent_version.minor)):
                 continue
@@ -507,6 +519,7 @@ class PackageHandler:
             if item.is_file() and not cls.compare_version_with_package_zip(pkg_name, item, version)[0]:
                 continue
 
+            version.is_archive = item.is_file()
             version.path = item.resolve()
             if str(version) not in excluded_str_versions:
                 versions.append(version)
