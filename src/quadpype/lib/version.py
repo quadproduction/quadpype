@@ -245,7 +245,7 @@ class PackageHandler:
             # Find (and retrieve if necessary) the specified version to run
             running_version = self.find_version(running_version_str, from_local=True)
             if running_version:
-                running_version = ensure_version_is_dir(running_version)
+                running_version = self.ensure_version_is_dir(running_version)
                 self._running_version = running_version
             else:
                 running_version = self.find_version(running_version_str)
@@ -259,7 +259,7 @@ class PackageHandler:
                 else:
                     # We are about to use a remote version
                     # We need to ensure this version is un-archived
-                    running_version = ensure_version_is_dir(running_version)
+                    running_version = self.ensure_version_is_dir(running_version)
                     self._running_version = running_version
 
         self.retrieve_locally = retrieve_locally
@@ -695,24 +695,18 @@ class PackageHandler:
         version_path = self._running_version.path.resolve().as_posix()
         sys.path.insert(0, version_path)
 
-    def ensure_version_is_dir(self, version_to_check):
-        if version_to_check.is_archive:
-            # Extract the archive
-            with ZipFile(version_to_check.path, 'r') as zip_ref:
-                zip_ref.extractall(version_to_check.path.parent.joinpath(str(version_to_check)))
+    @staticmethod
+    def ensure_version_is_dir(version_obj):
+        if not version_obj.is_archive:
+            return version_obj
 
-            # Get all versions in the directory, ignoring archives
-            versions = self.get_versions_from_dir(self._name,
-                                                  version_to_check.path.parent,
-                                                  looking_for_archives=False)
+        # Unzip
+        destination_path = version_obj.path.parent.joinpath(str(version_obj))
+        with ZipFile(version_obj.path, 'r') as zip_ref:
+            zip_ref.extractall(destination_path)
 
-            # Return the matching non-archive version if found
-            if versions:
-                for version in versions:
-                    if str(version_to_check) == str(version) and not version.is_archive:
-                        return version
-        # If not an archive, return the original version
-        return version_to_check
+        version_obj.path = destination_path
+        return version_obj
 
 
 class AddOnHandler(PackageHandler):
