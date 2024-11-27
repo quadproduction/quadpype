@@ -1,7 +1,7 @@
 ![banner](https://github.com/user-attachments/assets/a4dda6e4-55b9-4baa-9242-89120c36aabb)
 
 
-# Welcome to the QuadPype Documentation
+# Welcome
 
 **QuadPype** is an open source comprehensive solution designed to streamline and structure studio workflows for all kind of productions (2D, 3D, VFX, …). Whether you're an artist, developer, or project manager, **QuadPype** provides the tools you need to simplify and enhance digital content creation.
 
