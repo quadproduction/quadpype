@@ -38,7 +38,9 @@ function transferSettings(mongoSourceURI, mongoDestinationURI, sourceDbName, tar
         if (document.type === "system_settings"){
             document.type = "global_settings";
             document.data.core = document.data.general;
+            document.data.addons = document.data.modules;
             delete document.data.general;
+            delete document.data.modules;
             targetSettings.insert(document);
             return
         }
