@@ -66,7 +66,10 @@ function transferSettings(mongoSourceURI, mongoDestinationURI, sourceDbName, tar
         if (document.type === "system_settings_versioned") {
             document.type = "global_settings_versioned"
             document.data.core = document.data.general;
+            delete document.data.modules.addon_paths;
+            document.data.addons = document.data.modules;
             delete document.data.general;
+            delete document.data.modules;
             if (document.last_saved_info && document.last_saved_info.timestamp) {
                 const timestamp = new Date(document.last_saved_info.timestamp);
                 if (!latestVersionedSystemSettings || timestamp > new Date(latestVersionedSystemSettings.last_saved_info.timestamp)) {
