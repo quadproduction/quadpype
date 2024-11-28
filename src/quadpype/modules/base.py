@@ -1175,7 +1175,7 @@ class TrayModulesManager(ModulesManager):
 
     def restart_tray(self):
         if self.tray_manager:
-            self.tray_manager.restart()
+            self.tray_manager.restart(reset_version=True)
 
     def tray_init(self):
         report = {}
