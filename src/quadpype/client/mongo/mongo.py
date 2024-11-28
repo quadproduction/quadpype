@@ -57,7 +57,7 @@ def get_project_database_name():
         str: Name of database name where projects are.
     """
 
-    return os.getenv("AVALON_DB") or "avalon"
+    return os.getenv("AVALON_DB") or "quadpype_projects"
 
 
 def _decompose_url(url):

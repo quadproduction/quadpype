@@ -41,8 +41,8 @@
             "description": "Name of database",
             "type": "string",
             "pattern": "^\\w*$",
-            "example": "avalon",
-            "default": "avalon"
+            "example": "quadpype_projects",
+            "default": "quadpype_projects"
         },
         "AVALON_LABEL": {
             "description": "Nice name of Avalon, used in e.g. graphical user interfaces",

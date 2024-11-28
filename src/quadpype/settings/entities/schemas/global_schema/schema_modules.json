@@ -17,7 +17,7 @@
                     {
                     "type": "text",
                     "key": "package_name",
-                    "label": "Add-on Name"
+                    "label": "Add-on Package Name"
                     },
                     {
                         "type": "label",
