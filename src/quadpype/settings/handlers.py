@@ -918,7 +918,7 @@ class MongoSettingsHandler(SettingsHandler):
         curr_core_settings = curr_core_settings_doc["data"] if curr_core_settings_doc else {}
 
         # Keys to monitor
-        keys_to_check = ["quadpype_path", "local_quadpype_path"]
+        keys_to_check = ["remote_versions_dirs", "local_versions_dir"]
         changes = {}
 
         # Check for changes
@@ -931,10 +931,10 @@ class MongoSettingsHandler(SettingsHandler):
         # Apply the changes (if any)
         if changes:
             package = get_package("quadpype")
-            if "quadpype_path" in changes:
-                package.change_remote_dir_paths(changes["quadpype_path"][platform.system().lower()])
-            if "local_quadpype_path" in changes:
-                package.change_local_dir_path(changes["local_quadpype_path"][platform.system().lower()][0])
+            if "remote_versions_dirs" in changes:
+                package.change_remote_dir_paths(changes["remote_versions_dirs"][platform.system().lower()])
+            if "local_versions_dir" in changes:
+                package.change_local_dir_path(changes["local_versions_dir"][platform.system().lower()][0])
 
     def _check_version_order(self):
         """This method will work only in QuadPype process.

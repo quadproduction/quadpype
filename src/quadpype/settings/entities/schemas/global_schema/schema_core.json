@@ -176,7 +176,7 @@
                 },
                 {
                     "type": "path",
-                    "key": "quadpype_path",
+                    "key": "remote_versions_dirs",
                     "label": "Versions Repository",
                     "multiplatform": true,
                     "multipath": true,
@@ -188,7 +188,7 @@
                 },
                 {
                     "type": "path",
-                    "key": "local_quadpype_path",
+                    "key": "local_versions_dir",
                     "label": "Local Versions Folder",
                     "multiplatform": true,
                     "multipath": false,

@@ -131,7 +131,7 @@ def get_available_versions(*args, **kwargs):
     return get_package("quadpype").get_available_versions(*args, **kwargs)
 
 
-def quadpype_path_is_accessible():
+def is_remote_versions_dir_accessible():
     """QuadPype version repository path can be accessed."""
     return os.getenv("QUADPYPE_PATH") and Path(os.getenv("QUADPYPE_PATH")).exists()
 
@@ -180,7 +180,7 @@ def is_current_version_studio_latest():
     #   control or path to folder with zip files is not accessible
     if (
         is_running_locally()
-        or not quadpype_path_is_accessible()
+        or not is_remote_versions_dir_accessible()
     ):
         return output
 
@@ -206,7 +206,7 @@ def is_current_version_higher_than_expected():
     #   control or path to folder with zip files is not accessible
     if (
         is_running_locally()
-        or not quadpype_path_is_accessible()
+        or not is_remote_versions_dir_accessible()
     ):
         return output
 

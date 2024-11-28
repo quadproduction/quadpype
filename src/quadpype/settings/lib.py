@@ -1529,17 +1529,16 @@ def get_quadpype_local_dir_path(settings: dict) -> Union[Path, None]:
     Returns:
         path to QuadPype or None if not found
     """
-    paths = (
+    path = (
         settings
-        .get("local_quadpype_path", {})
+        .get("local_versions_dir", {})
         .get(platform.system().lower())
-    ) or []
-    # For cases when `quadpype_path` is a single path
-    if paths and isinstance(paths, str):
-        paths = [paths]
+    ) or None
 
-    return next((Path(path) for path in paths if os.path.exists(path)),
-                Path(user_data_dir("quadpype", "quad")))
+    if path and isinstance(path, str):
+        path = Path(path)
+
+    return path
 
 
 def get_quadpype_remote_dir_paths(settings: dict) -> List[str]:
@@ -1553,7 +1552,7 @@ def get_quadpype_remote_dir_paths(settings: dict) -> List[str]:
     """
     paths = (
         settings
-        .get("quadpype_path", {})
+        .get("remote_versions_dirs", {})
         .get(platform.system().lower())
     ) or []
     # For cases when it's a single path

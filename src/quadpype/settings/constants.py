@@ -50,8 +50,8 @@ DATABASE_PROJECT_ANATOMY_VERSIONED_KEY = PROJECT_ANATOMY_KEY + _DATABASE_SUFFIX
 
 
 CORE_KEYS = {
-    "quadpype_path",
-    "local_quadpype_path",
+    "remote_versions_dir",
+    "local_versions_dir",
     "log_to_server",
     "disk_mapping",
     "production_version",
