@@ -433,7 +433,7 @@ def set_avalon_environments():
     environment variables.
     """
 
-    avalon_db = os.getenv("AVALON_DB") or "avalon"  # for tests
+    avalon_db = os.getenv("AVALON_DB") or "quadpype_projects"  # for tests
     os.environ.update({
         # Mongo DB name where avalon docs are stored
         "AVALON_DB": avalon_db,
@@ -873,7 +873,7 @@ def boot():
         # change source DBs to predefined ones set for automatic testing
         if "_tests" not in os.environ["QUADPYPE_DATABASE_NAME"]:
             os.environ["QUADPYPE_DATABASE_NAME"] += "_tests"
-        avalon_db = os.getenv("AVALON_DB") or "avalon"
+        avalon_db = os.getenv("AVALON_DB") or "quadpype_projects"
         if "_tests" not in avalon_db:
             os.environ["AVALON_DB"] = avalon_db + "_tests"
 

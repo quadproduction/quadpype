@@ -141,7 +141,7 @@
             "children": [
                 {
                     "type": "label",
-                    "label": "Ensure the Project Anatomy Attributes can **only** be updated via the tracker, not from the Project Settings tab."
+                    "label": "Ensure the Project Anatomy Attributes can <b>only</b> be updated via the tracker, not from the Project Settings tab."
                 },
                 {
                     "type": "boolean",

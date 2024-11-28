@@ -96,7 +96,7 @@ def session_data_from_environment(context_keys=False):
         ("AVALON_TIMEOUT", "1000"),
 
         # Name of database used in MongoDB
-        ("AVALON_DB", "avalon"),
+        ("AVALON_DB", "quadpype_projects"),
     ):
         value = os.getenv(key) or default_value
         if value is not None:
