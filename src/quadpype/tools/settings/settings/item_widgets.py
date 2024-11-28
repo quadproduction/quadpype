@@ -584,7 +584,7 @@ class PackageVersionWidget(TextWidget):
             # Try to get the versions directly from the remote dir paths
             remote_dirs_entity = self.entity_widget.entity.non_gui_children.get("package_remote_dirs")
             if remote_dirs_entity:
-                remote_dir_paths = package_name_entity.value.get(platform.system().lower())
+                remote_dir_paths = remote_dirs_entity.value.get(platform.system().lower())
                 if remote_dir_paths:
                     versions = package.get_versions_from_dirs(package_name, remote_dir_paths)
         else:
