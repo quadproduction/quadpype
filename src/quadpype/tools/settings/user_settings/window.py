@@ -9,7 +9,7 @@ from quadpype.settings import (
     GENERAL_SETTINGS_KEY,
     ENV_SETTINGS_KEY,
     APPS_SETTINGS_KEY,
-    MODULES_SETTINGS_KEY,
+    ADDONS_SETTINGS_KEY,
     PROJECTS_SETTINGS_KEY
 )
 from quadpype.lib import (
@@ -197,7 +197,7 @@ class UserSettingsWidget(QtWidgets.QWidget):
             value.get(ENV_SETTINGS_KEY)
         )
         self.modules_widget.update_user_settings(
-            value.get(MODULES_SETTINGS_KEY)
+            value.get(ADDONS_SETTINGS_KEY)
         )
         self.apps_widget.update_user_settings(
             value.get(APPS_SETTINGS_KEY)
@@ -221,7 +221,7 @@ class UserSettingsWidget(QtWidgets.QWidget):
 
         modules_value = self.modules_widget.settings_value()
         if modules_value:
-            output[MODULES_SETTINGS_KEY] = modules_value
+            output[ADDONS_SETTINGS_KEY] = modules_value
 
         app_value = self.apps_widget.settings_value()
         if app_value:

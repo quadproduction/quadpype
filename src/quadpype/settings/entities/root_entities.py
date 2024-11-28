@@ -596,9 +596,6 @@ class GlobalSettingsEntity(RootEntity):
     def _save_studio_values(self):
         settings_value = self.settings_value()
 
-        self.log.debug("Saving global settings: {}".format(
-            json.dumps(settings_value, indent=4)
-        ))
         save_studio_settings(settings_value)
         # Reset source version after restart
         self._source_version = None

@@ -7,7 +7,7 @@ attribute or using default server if that attribute doesn't exists.
 """
 import pyblish.api
 from quadpype.settings import (
-    MODULES_SETTINGS_KEY,
+    ADDONS_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     GLOBAL_SETTINGS_KEY
 )
@@ -52,7 +52,7 @@ class CollectDeadlineServerFromInstance(pyblish.api.InstancePlugin):
         deadline_settings = (
             render_instance.context.data
             [GLOBAL_SETTINGS_KEY]
-            [MODULES_SETTINGS_KEY]
+            [ADDONS_SETTINGS_KEY]
             ["deadline"]
         )
 

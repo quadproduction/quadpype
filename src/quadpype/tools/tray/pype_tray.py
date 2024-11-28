@@ -32,7 +32,7 @@ from quadpype.settings import (
     ProjectSettingsEntity,
     DefaultsNotDefined,
     CORE_SETTINGS_KEY,
-    MODULES_SETTINGS_KEY
+    ADDONS_SETTINGS_KEY
 )
 from quadpype.tools.utils import (
     WrappedCallbackItem,
@@ -308,7 +308,7 @@ class TrayManager:
         self.log = Logger.get_logger(self.__class__.__name__)
 
         global_settings = get_global_settings()
-        self.module_settings = global_settings[MODULES_SETTINGS_KEY]
+        self.module_settings = global_settings[ADDONS_SETTINGS_KEY]
 
         self.modules_manager = TrayModulesManager()
 

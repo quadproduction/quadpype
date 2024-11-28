@@ -34,7 +34,7 @@ from .constants import (
 
     ENV_SETTINGS_KEY,
     APPS_SETTINGS_KEY,
-    MODULES_SETTINGS_KEY,
+    ADDONS_SETTINGS_KEY,
     PROJECTS_SETTINGS_KEY,
 
     DATABASE_ALL_VERSIONS_KEY,
@@ -591,8 +591,8 @@ def _apply_applications_settings_override(global_settings, user_settings):
 
 
 def _apply_modules_settings_override(global_settings, user_settings):
-    modules_settings = global_settings[MODULES_SETTINGS_KEY]
-    for module_name, prop in user_settings[MODULES_SETTINGS_KEY].items():
+    modules_settings = global_settings[ADDONS_SETTINGS_KEY]
+    for module_name, prop in user_settings[ADDONS_SETTINGS_KEY].items():
         modules_settings[module_name].update(prop)
 
 
@@ -608,7 +608,7 @@ def apply_user_settings_on_global_settings(global_settings, user_settings):
     if APPS_SETTINGS_KEY in user_settings:
         _apply_applications_settings_override(global_settings, user_settings)
 
-    if MODULES_SETTINGS_KEY in user_settings:
+    if ADDONS_SETTINGS_KEY in user_settings:
         _apply_modules_settings_override(global_settings, user_settings)
 
 
@@ -1538,7 +1538,7 @@ def get_quadpype_local_dir_path(settings: dict) -> Union[Path, None]:
     if path and isinstance(path, str):
         path = Path(path)
 
-    return path
+    return path if path else Path(user_data_dir("quadpype", "quad"))
 
 
 def get_quadpype_remote_dir_paths(settings: dict) -> List[str]:

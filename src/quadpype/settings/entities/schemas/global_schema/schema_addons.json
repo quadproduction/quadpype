@@ -1,5 +1,5 @@
 {
-    "key": "modules",
+    "key": "addons",
     "type": "dict",
     "label": "Add-ons",
     "collapsible": true,
@@ -370,7 +370,7 @@
         },
         {
             "type": "dynamic_schema",
-            "name": "global_settings/modules"
+            "name": "global_settings/addons"
         },
         {
             "type": "dict",

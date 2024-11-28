@@ -12,7 +12,7 @@ from typing import Union, List, Tuple, Any, Optional, Dict
 import semver
 
 
-MODULES_SETTINGS_KEY = "modules"
+ADDONS_SETTINGS_KEY = "addons"
 _NOT_SET = object()
 
 # Versions should match any string complying with https://semver.org/

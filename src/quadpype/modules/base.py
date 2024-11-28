@@ -20,7 +20,7 @@ from quadpype.settings import (
     PROJECT_SETTINGS_KEY,
     SCHEMA_KEY_GLOBAL_SETTINGS,
     SCHEMA_KEY_PROJECT_SETTINGS,
-    MODULES_SETTINGS_KEY
+    ADDONS_SETTINGS_KEY
 )
 
 from quadpype.settings.lib import (
@@ -639,7 +639,7 @@ class ModulesManager:
         if global_settings is None:
             global_settings = get_global_settings()
 
-        modules_settings = global_settings[MODULES_SETTINGS_KEY]
+        modules_settings = global_settings[ADDONS_SETTINGS_KEY]
 
         report = {}
         time_start = time.time()

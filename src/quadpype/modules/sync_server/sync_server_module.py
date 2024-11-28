@@ -23,7 +23,7 @@ from quadpype.modules import (
 from quadpype.settings import (
     get_project_settings,
     get_global_settings,
-    MODULES_SETTINGS_KEY,
+    ADDONS_SETTINGS_KEY,
     PROJECTS_SETTINGS_KEY
 )
 from quadpype.lib import (
@@ -1502,7 +1502,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
     @property
     def sync_global_settings(self):
         if self._sync_global_settings is None:
-            self._sync_global_settings = get_global_settings()[MODULES_SETTINGS_KEY].\
+            self._sync_global_settings = get_global_settings()[ADDONS_SETTINGS_KEY].\
                 get("sync_server")
 
         return self._sync_global_settings

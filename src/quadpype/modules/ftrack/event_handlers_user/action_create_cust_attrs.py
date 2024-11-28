@@ -18,7 +18,7 @@ from quadpype_modules.ftrack.lib import (
     tool_definitions_from_app_manager
 )
 
-from quadpype.settings import get_global_settings, MODULES_SETTINGS_KEY
+from quadpype.settings import get_global_settings, ADDONS_SETTINGS_KEY
 from quadpype.lib import ApplicationManager
 
 """
@@ -226,7 +226,7 @@ class CustomAttributes(BaseAction):
 
         self.groups = {}
 
-        self.ftrack_settings = get_global_settings()[MODULES_SETTINGS_KEY]["ftrack"]
+        self.ftrack_settings = get_global_settings()[ADDONS_SETTINGS_KEY]["ftrack"]
         self.attrs_settings = self.prepare_attribute_settings()
 
     def prepare_attribute_settings(self):

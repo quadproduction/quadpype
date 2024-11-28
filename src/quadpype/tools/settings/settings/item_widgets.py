@@ -513,17 +513,16 @@ class PackageVersionWidget(TextWidget):
 
     def __init__(self, *args, **kwargs):
         self._info_widget = None
-        self._package_name_cache = None
         super().__init__(*args, **kwargs)
 
     def create_ui(self):
-        self._update_value_hints()
         super(PackageVersionWidget, self).create_ui()
         info_widget = QtWidgets.QLabel(self)
         info_widget.setObjectName("PackageVersionLabel")
         self.content_layout.addWidget(info_widget, 1)
 
         self._info_widget = info_widget
+        self.input_field.focused_in.connect(self._update_value_hints)
 
     def _update_info_widget(self):
         self._update_value_hints()
@@ -570,28 +569,23 @@ class PackageVersionWidget(TextWidget):
             self.entity.value_hints = []
             return
 
-        if self._package_name_cache == package_name:
-            # Nothing to do the current value_hints should be correct
-            # We assume no new versions have been added since we cached the package_name
-            return
-
-        package = get_package(package_name)
-
         versions = []
-        if not package:
+        package = get_package(package_name)
+        if package:
+            versions = package.get_available_versions()
+        else:
             # Could not find a loaded package with this name yet
-
             # Try to get the versions directly from the remote dir paths
             remote_dirs_entity = self.entity_widget.entity.non_gui_children.get("package_remote_dirs")
             if remote_dirs_entity:
                 remote_dir_paths = remote_dirs_entity.value.get(platform.system().lower())
                 if remote_dir_paths:
-                    versions = package.get_versions_from_dirs(package_name, remote_dir_paths)
-        else:
-            versions = package.get_available_versions()
+                    versions = PackageHandler.get_versions_from_dirs(package_name, remote_dir_paths)
 
-        self._package_name_cache = package_name
         self.entity.value_hints = [str(version) for version in versions]
+        if self.entity.value_hints:
+            self.input_field.update_completer_values(self.entity.value_hints)
+            self.input_field._show_completer()
 
     def set_entity_value(self):
         super(PackageVersionWidget, self).set_entity_value()

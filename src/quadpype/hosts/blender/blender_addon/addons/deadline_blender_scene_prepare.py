@@ -332,7 +332,7 @@ class ExecutionOrder(bpy.types.Macro):
 
 def register():
     global_settings = get_global_settings()
-    modules_settings = global_settings["modules"]
+    modules_settings = global_settings["addons"]
     if modules_settings["deadline"].get("enabled", False):
         bpy.utils.register_class(PrepareTemporaryFile)
         bpy.utils.register_class(LoadPreviousScene)
@@ -358,7 +358,7 @@ def register():
 
 def unregister():
     global_settings = get_global_settings()
-    modules_settings = global_settings["modules"]
+    modules_settings = global_settings["addons"]
     if modules_settings["deadline"].get("enabled", False):
         bpy.utils.unregister_class(PrepareTemporaryFile)
         bpy.utils.unregister_class(LoadPreviousScene)

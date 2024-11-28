@@ -27,7 +27,7 @@ CORE_SETTINGS_KEY = "core"
 GENERAL_SETTINGS_KEY = "general"
 ENV_SETTINGS_KEY = "environments"
 APPS_SETTINGS_KEY = "applications"
-MODULES_SETTINGS_KEY = "modules"
+ADDONS_SETTINGS_KEY = "addons"
 PROJECTS_SETTINGS_KEY = "projects"
 
 # Schema hub names
@@ -74,7 +74,7 @@ __all__ = (
     "GENERAL_SETTINGS_KEY",
     "ENV_SETTINGS_KEY",
     "APPS_SETTINGS_KEY",
-    "MODULES_SETTINGS_KEY",
+    "ADDONS_SETTINGS_KEY",
     "PROJECTS_SETTINGS_KEY",
 
     "SCHEMA_KEY_GLOBAL_SETTINGS",

@@ -5,13 +5,13 @@ import argparse
 import logging
 import subprocess
 from pathlib import Path
-from quadpype.settings import get_global_settings, MODULES_SETTINGS_KEY
+from quadpype.settings import get_global_settings, ADDONS_SETTINGS_KEY
 
 
 def execute():
     blender_addons_folder_path = get_addons_folder_path()
     global_settings = get_global_settings()
-    modules_settings = global_settings[MODULES_SETTINGS_KEY]
+    modules_settings = global_settings[ADDONS_SETTINGS_KEY]
     if modules_settings["deadline"].get("enabled", False):
         install_deadline_addon(blender_addons_folder_path)
     enable_user_addons(blender_addons_folder_path)

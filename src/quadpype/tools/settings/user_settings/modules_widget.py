@@ -1,6 +1,6 @@
 from qtpy import QtWidgets
 
-from quadpype.settings import MODULES_SETTINGS_KEY
+from quadpype.settings import ADDONS_SETTINGS_KEY
 from quadpype.tools.settings.settings.categories import (
     StandaloneCategoryWidget
 )
@@ -13,7 +13,7 @@ class LocalModulesWidgets(QtWidgets.QWidget):
         self.modules_data = {}
         self.global_settings_entity = global_settings_entity
 
-        for module_name, entity in self.global_settings_entity[MODULES_SETTINGS_KEY].items():
+        for module_name, entity in self.global_settings_entity[ADDONS_SETTINGS_KEY].items():
             self.modules_data[module_name] = {
                 "entity": entity,
                 "widget": None,

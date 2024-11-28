@@ -10,7 +10,7 @@ from .lib import NOT_SET, STRING_TYPE
 from quadpype.settings import (
     get_global_settings,
     APPS_SETTINGS_KEY,
-    MODULES_SETTINGS_KEY,
+    ADDONS_SETTINGS_KEY,
     GLOBAL_SETTINGS_KEY
 )
 
@@ -535,7 +535,7 @@ class DeadlineUrlEnumEntity(DynamicEnumEntity):
 
     def _get_enum_values(self):
         deadline_urls_entity = self.get_entity_from_path(
-            "global_settings/modules/deadline/deadline_urls"
+            "global_settings/addons/deadline/deadline_urls"
         )
 
         valid_keys = set()
@@ -568,7 +568,7 @@ class DeadlineLimitsPluginEnumEntity(BaseEnumEntity):
         # Import here to avoid circular import
         from quadpype.modules.deadline import get_deadline_limits_plugin
 
-        modules_global_settings = get_global_settings()[MODULES_SETTINGS_KEY]
+        modules_global_settings = get_global_settings()[ADDONS_SETTINGS_KEY]
         deadline_enabled = modules_global_settings["deadline"]["enabled"]
         if not deadline_enabled:
             return [], set()
@@ -658,7 +658,7 @@ class DeadlinePoolsEnumEntity(DynamicEnumEntity):
         # Import here to avoid circular import
         from quadpype.pipeline.context_tools import _get_modules_manager
 
-        modules_global_settings = get_global_settings()[MODULES_SETTINGS_KEY]
+        modules_global_settings = get_global_settings()[ADDONS_SETTINGS_KEY]
         deadline_enabled = modules_global_settings["deadline"]["enabled"]
         if not deadline_enabled:
             return [], set()
@@ -702,7 +702,7 @@ class RoyalRenderRootEnumEntity(DynamicEnumEntity):
 
     def _get_enum_values(self):
         rr_root_entity = self.get_entity_from_path(
-            "global_settings/modules/royalrender/rr_paths"
+            "global_settings/addons/royalrender/rr_paths"
         )
 
         valid_keys = set()
@@ -720,7 +720,7 @@ class ShotgridUrlEnumEntity(DynamicEnumEntity):
 
     def _get_enum_values(self):
         shotgrid_settings = self.get_entity_from_path(
-            "global_settings/modules/shotgrid/shotgrid_settings"
+            "global_settings/addons/shotgrid/shotgrid_settings"
         )
 
         valid_keys = set()
