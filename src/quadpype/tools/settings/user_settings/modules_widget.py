@@ -20,8 +20,9 @@ class LocalModulesWidgets(QtWidgets.QWidget):
                 "settings_value": entity.value
             }
 
-        layout = QtWidgets.QVBoxLayout(self)
+        layout = QtWidgets.QGridLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(5)
 
         self.content_layout = layout
 
@@ -44,7 +45,6 @@ class LocalModulesWidgets(QtWidgets.QWidget):
             module_widget.set_entity_value()
 
             self.modules_data[module_name]["widget"] = module_widget
-            self.content_layout.addWidget(module_widget)
 
     def update_user_settings(self, value):
         if not value:

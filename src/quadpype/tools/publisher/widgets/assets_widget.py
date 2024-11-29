@@ -38,7 +38,7 @@ class CreateWidgetAssetsWidget(SingleSelectAssetsWidget):
     def _check_header_height(self):
         """Catch header height changes.
 
-        Label on top of creaters should have same height so Creators view has
+        Label on top of creators should have same height so Creators view has
         same offset.
         """
         height = self.header_widget.height()
