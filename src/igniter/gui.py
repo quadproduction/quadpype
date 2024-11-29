@@ -133,9 +133,10 @@ class DatabaseStringDialog(QtWidgets.QDialog):
 
         self._log = log
 
-        self.setWindowTitle(
-            f"QuadPype"
-        )
+        self.setWindowTitle("QuadPype: Database Connection")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.setWindowFlags(
             QtCore.Qt.WindowCloseButtonHint
             | QtCore.Qt.WindowMinimizeButtonHint
@@ -430,13 +431,9 @@ class MessageDialog(QtWidgets.QDialog):
     def __init__(self, title, message):
         super().__init__()
 
-        # Set logo as icon of the window
-        icon_path = get_app_icon_path()
-        pixmap_app_logo = QtGui.QPixmap(icon_path)
-        self.setWindowIcon(QtGui.QIcon(pixmap_app_logo))
-
-        # Set title
         self.setWindowTitle(title)
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         # Set message
         label_widget = QtWidgets.QLabel(message, self)
@@ -475,9 +472,10 @@ class ZXPUpdateWindow(QtWidgets.QDialog):
         self._zxp_hosts = zxp_hosts
         self._log = log.getLogger(str(__class__))
 
-        self.setWindowTitle(
-            f"QuadPype is updating ..."
-        )
+        self.setWindowTitle("QuadPype: ZXP Updater")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.setModal(True)
         self.setWindowFlags(
             QtCore.Qt.WindowMinimizeButtonHint
@@ -496,10 +494,8 @@ class ZXPUpdateWindow(QtWidgets.QDialog):
 
         # Load logo
         pixmap_app_logo = QtGui.QPixmap(icon_path)
-        # Set logo as icon of the window
-        self.setWindowIcon(QtGui.QIcon(pixmap_app_logo))
 
-        self._pixmap_app_logo = pixmap_app_logo
+        self._pixmap_app_logo = window_icon
 
         self._update_thread = None
 

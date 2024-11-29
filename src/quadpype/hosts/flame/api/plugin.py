@@ -5,7 +5,7 @@ from copy import deepcopy
 from xml.etree import ElementTree as ET
 
 import qargparse
-from qtpy import QtCore, QtWidgets
+from qtpy import QtCore, QtWidgets, QtGui
 
 from quadpype import style
 from quadpype.lib import Logger, StringTemplate
@@ -29,6 +29,10 @@ class CreatorWidget(QtWidgets.QDialog):
     def __init__(self, name, info, ui_inputs, parent=None):
         super().__init__(parent)
 
+        self.setWindowTitle(name or "QuadPype: Creator Input")
+        window_icon = QtGui.QIcon(style.get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.setObjectName(name)
 
         self.setWindowFlags(
@@ -38,7 +42,7 @@ class CreatorWidget(QtWidgets.QDialog):
             | QtCore.Qt.WindowCloseButtonHint
             | QtCore.Qt.WindowStaysOnTopHint
         )
-        self.setWindowTitle(name or "Pype Creator Input")
+
         self.resize(500, 700)
 
         # Where inputs and labels are set

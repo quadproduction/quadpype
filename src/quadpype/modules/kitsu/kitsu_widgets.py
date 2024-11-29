@@ -25,7 +25,10 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("Kitsu Credentials")
+        self.setWindowTitle("QuadPype: Kitsu Login")
+        window_icon = QtGui.QIcon(style.get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.resize(300, 120)
 
         global_settings = get_global_settings()

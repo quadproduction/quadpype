@@ -1,5 +1,7 @@
 import copy
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, QtGui
+
+from quadpype.style import get_app_icon_path
 from quadpype.pipeline import (
     load,
     get_representation_path,
@@ -58,6 +60,11 @@ class SubstanceProjectConfigurationWindow(QtWidgets.QDialog):
     """
     def __init__(self, project_templates):
         super().__init__()
+
+        self.setWindowTitle("QuadPype: Project Configuration")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
 
         self.configuration = None

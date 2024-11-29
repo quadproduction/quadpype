@@ -12,8 +12,7 @@ import time
 import appdirs
 import qtawesome
 from pymongo.collection import Collection
-from qtpy import QtCore, QtWidgets
-from qtpy.QtGui import QClipboard
+from qtpy import QtCore, QtWidgets, QtGui
 
 from quadpype import style
 from quadpype.client import QuadPypeMongoConnection
@@ -187,7 +186,9 @@ class AssetReporterWindow(QtWidgets.QDialog):
         self._result = {}
         self.setObjectName("AssetReporterWindow")
 
-        self.setWindowTitle("Asset Usage Reporter")
+        self.setWindowTitle("QuadPype: Asset Usage Reporter")
+        window_icon = QtGui.QIcon(style.get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         if parent is None:
             on_top_flag = QtCore.Qt.WindowStaysOnTopHint
@@ -267,7 +268,7 @@ class AssetReporterWindow(QtWidgets.QDialog):
 
     def copy_to_clipboard(self):
         clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.setText(self._content, QClipboard.Clipboard)
+        clipboard.setText(self._content, QtGui.QClipboard.Clipboard)
 
     def save_to_file(self):
         file_name, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')

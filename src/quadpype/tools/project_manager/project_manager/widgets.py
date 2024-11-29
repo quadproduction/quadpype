@@ -1,6 +1,8 @@
 import re
 import platform
 
+from qtpy import QtWidgets, QtCore, QtGui
+
 from quadpype.client import get_projects, create_project
 from .constants import (
     NAME_ALLOWED_SYMBOLS,
@@ -11,7 +13,7 @@ from quadpype.client.operations import (
     PROJECT_NAME_REGEX,
     OperationsSession,
 )
-from quadpype.style import load_stylesheet
+from quadpype.style import get_app_icon_path, load_stylesheet
 from quadpype.pipeline import AvalonMongoDB
 from quadpype.tools.utils import (
     PlaceholderLineEdit,
@@ -19,8 +21,6 @@ from quadpype.tools.utils import (
     PixmapLabel,
 )
 from quadpype.settings.lib import get_default_anatomy_settings
-
-from qtpy import QtWidgets, QtCore
 
 
 class NameTextEdit(QtWidgets.QLineEdit):
@@ -127,7 +127,9 @@ class CreateProjectDialog(QtWidgets.QDialog):
     def __init__(self, parent=None, dbcon=None):
         super().__init__(parent)
 
-        self.setWindowTitle("Create Project")
+        self.setWindowTitle("QuadPype: Create Project")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         self.allowed_regex = "[^{}]+".format(PROJECT_NAME_ALLOWED_SYMBOLS)
 
@@ -367,7 +369,9 @@ class ConfirmProjectDeletion(QtWidgets.QDialog):
     def __init__(self, project_name, parent):
         super().__init__(parent)
 
-        self.setWindowTitle("Delete project?")
+        self.setWindowTitle("QuadPype: Delete Project?")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         top_widget = QtWidgets.QWidget(self)
 
@@ -436,8 +440,8 @@ class ConfirmProjectDeletion(QtWidgets.QDialog):
         self.setMaximumWidth(650)
         self.setMaximumHeight(250)
 
-    def exec_(self, *args, **kwargs):
-        super(ConfirmProjectDeletion, self).exec_(*args, **kwargs)
+    def exec_(self):
+        super(ConfirmProjectDeletion, self).exec_()
         return self._result
 
     def showEvent(self, event):

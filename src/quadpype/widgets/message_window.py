@@ -1,6 +1,8 @@
 import sys
 import logging
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, QtGui
+
+from quadpype.style import get_app_icon_path
 
 log = logging.getLogger(__name__)
 
@@ -113,7 +115,11 @@ class ScrollMessageBox(QtWidgets.QDialog):
     """
     def __init__(self, icon, title, messages, cancelable=False):
         super().__init__()
+
         self.setWindowTitle(title)
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.icon = icon
 
         self.setWindowFlags(QtCore.Qt.WindowTitleHint)

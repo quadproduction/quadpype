@@ -19,11 +19,16 @@ class SyncServerWindow(QtWidgets.QDialog):
     def __init__(self, sync_server, parent=None):
         super().__init__(parent)
         self.sync_server = sync_server
+
+        self.setWindowTitle("QuadPype: Sync Queue")
+        window_icon = QtGui.QIcon(resources.get_app_icon_filepath())
+        self.setWindowIcon(window_icon)
+
         self.setWindowFlags(QtCore.Qt.Window)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         self.setStyleSheet(style.load_stylesheet())
-        self.setWindowIcon(QtGui.QIcon(resources.get_app_icon_filepath()))
+
         self.resize(1450, 700)
 
         self.timer = QtCore.QTimer()
@@ -78,8 +83,6 @@ class SyncServerWindow(QtWidgets.QDialog):
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(body)
         layout.addWidget(footer)
-
-        self.setWindowTitle("Sync Queue")
 
         self.projects.project_changed.connect(
             self._on_project_change

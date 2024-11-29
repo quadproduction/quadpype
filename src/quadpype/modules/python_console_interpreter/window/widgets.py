@@ -8,7 +8,7 @@ import appdirs
 from qtpy import QtCore, QtWidgets, QtGui
 
 from quadpype import resources
-from quadpype.style import load_stylesheet
+from quadpype.style import get_app_icon_path, load_stylesheet
 from quadpype.lib import JSONSettingRegistry
 
 
@@ -206,7 +206,8 @@ class PythonTabWidget(QtWidgets.QWidget):
     def execute(self):
         code_text = self._code_input.toPlainText()
         self.before_execute.emit(code_text)
-        self._interpreter.runcode(code_text)
+        code_object = compile(code_text, "<string>", "exec")
+        self._interpreter.runcode(code_object)
 
 
 class TabNameDialog(QtWidgets.QDialog):
@@ -216,7 +217,9 @@ class TabNameDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.setWindowTitle("Enter tab name")
+        self.setWindowTitle("QuadPype: Enter tab name")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         name_label = QtWidgets.QLabel("Tab name:", self)
         name_input = QtWidgets.QLineEdit(self)
@@ -244,15 +247,15 @@ class TabNameDialog(QtWidgets.QDialog):
         self._ok_btn = ok_btn
         self._cancel_btn = cancel_btn
 
-        self._result = None
+        self._tab_name = None
 
         self.resize(self.default_width, self.default_height)
 
     def set_tab_name(self, name):
         self._name_input.setText(name)
 
-    def result(self):
-        return self._result
+    def tab_name(self) -> str:
+        return self._tab_name
 
     def showEvent(self, event):
         super(TabNameDialog, self).showEvent(event)
@@ -265,11 +268,11 @@ class TabNameDialog(QtWidgets.QDialog):
         self._cancel_btn.setMinimumWidth(btns_width)
 
     def _on_ok_clicked(self):
-        self._result = self._name_input.text()
+        self._tab_name = self._name_input.text()
         self.accept()
 
     def _on_cancel_clicked(self):
-        self._result = None
+        self._tab_name = None
         self.reject()
 
 
@@ -431,7 +434,7 @@ class PythonInterpreterWidget(QtWidgets.QWidget):
 
         tabs = []
         for tab_idx in range(self._tab_widget.count()):
-            widget = self._tab_widget.widget(tab_idx)
+            widget: PythonTabWidget = self._tab_widget.widget(tab_idx)  # noqa
             tab_code = widget.get_code()
             tab_name = self._tab_widget.tabText(tab_idx)
             tabs.append({
@@ -489,7 +492,7 @@ class PythonInterpreterWidget(QtWidgets.QWidget):
         dialog = TabNameDialog(self)
         dialog.set_tab_name(self._tab_widget.tabText(tab_idx))
         dialog.exec_()
-        tab_name = dialog.result()
+        tab_name = dialog.tab_name()
         if tab_name:
             self._tab_widget.setTabText(tab_idx, tab_name)
 
@@ -497,7 +500,7 @@ class PythonInterpreterWidget(QtWidgets.QWidget):
         if tab_idx is None:
             tab_idx = self._tab_widget.currentIndex()
 
-        src_widget = self._tab_widget.widget(tab_idx)
+        src_widget: PythonTabWidget = self._tab_widget.widget(tab_idx)  # noqa
         dst_widget = self._add_tab()
         if dst_widget is None:
             return

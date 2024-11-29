@@ -7,9 +7,10 @@ from quadpype.pipeline.workfile.lock_workfile import get_workfile_lock_data
 class WorkfileLockDialog(QtWidgets.QDialog):
     def __init__(self, workfile_path, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Warning")
-        icon = QtGui.QIcon(get_app_icon_path())
-        self.setWindowIcon(icon)
+
+        self.setWindowTitle("QuadPype: Warning")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         data = get_workfile_lock_data(workfile_path)
 

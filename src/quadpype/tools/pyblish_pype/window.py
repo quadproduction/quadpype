@@ -39,20 +39,19 @@ Todo:
     the first time to understand how to actually to it!
 
 """
-import sys
+from queue import Queue
 from functools import partial
 
-from . import delegate, model, settings, util, view, widgets
-from .awesome import tags as awesome
-
 from qtpy import QtCore, QtGui, QtWidgets
+
+from quadpype.style import get_app_icon_path
+
 from .constants import (
     PluginStates, PluginActionStates, InstanceStates, GroupStates, Roles
 )
-if sys.version_info[0] == 3:
-    from queue import Queue
-else:
-    from Queue import Queue
+from . import delegate, model, settings, util, view, widgets
+from .awesome import tags as awesome
+
 
 
 class Window(QtWidgets.QDialog):
@@ -72,11 +71,13 @@ class Window(QtWidgets.QDialog):
                 QtWidgets.QStyleFactory.create(low_keys["plastique"])
             )
 
-        icon = QtGui.QIcon(util.get_asset("img", "logo-extrasmall.png"))
         if parent is None:
             on_top_flag = QtCore.Qt.WindowStaysOnTopHint
         else:
             on_top_flag = QtCore.Qt.Dialog
+
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         self.setWindowFlags(
             self.windowFlags()
@@ -86,7 +87,6 @@ class Window(QtWidgets.QDialog):
             | QtCore.Qt.WindowCloseButtonHint
             | on_top_flag
         )
-        self.setWindowIcon(icon)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
         self.controller = controller
@@ -769,15 +769,15 @@ class Window(QtWidgets.QDialog):
             if showing_widgets_queue.empty():
                 return
 
-            widget = showing_widgets_queue.get()
-            widget.show()
+            widget_queue = showing_widgets_queue.get()
+            widget_queue.show()
 
-            widget_rect = widget.frameGeometry()
+            widget_rect = widget_queue.frameGeometry()
             second_rect = QtCore.QRect(widget_rect)
             second_rect.setTopLeft(second_rect.bottomLeft())
 
             animation = QtCore.QPropertyAnimation(
-                widget, b"geometry", self
+                widget_queue, b"geometry", self
             )
             animation.setDuration(duration)
             animation.setStartValue(second_rect)
@@ -793,14 +793,14 @@ class Window(QtWidgets.QDialog):
 
             item = hiding_widgets_queue.get()
             if isinstance(item, tuple):
-                widget = item[0]
-                hiding_widgets_queue.put(widget)
+                curr_widget = item[0]
+                hiding_widgets_queue.put(curr_widget)
                 widget_rect = widget.frameGeometry()
                 second_rect = QtCore.QRect(widget_rect)
                 second_rect.setTopLeft(second_rect.bottomLeft())
 
                 anim = QtCore.QPropertyAnimation(
-                    widget, b"geometry", self
+                    curr_widget, b"geometry", self
                 )
                 anim.setDuration(duration)
                 anim.setStartValue(widget_rect)
@@ -1198,7 +1198,7 @@ class Window(QtWidgets.QDialog):
         self.footer_button_play.setEnabled(False)
 
         # Cause view to update, but it won't visually
-        # happen until Qt is given time to idle..
+        # happen until Qt is given time to idle.
         plugin_item.setData(
             PluginActionStates.InProgress, Roles.PluginActionProgressRole
         )
@@ -1305,7 +1305,7 @@ class Window(QtWidgets.QDialog):
         """Provide a front-and-center message with optional command
 
         Arguments:
-            title (str): Bold and short message
+            title (str): Bold and short title
             message (str): Extended message
             command (optional, callable): Function is provided as a button
 

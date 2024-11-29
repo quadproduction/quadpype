@@ -12,7 +12,7 @@ if sys.version_info < (3, 7):
     if vendor_path not in sys.path:
         sys.path.insert(0, vendor_path)
 
-    print(f"Added vendorized libraries from {vendor_path}")
+    print(f"Added vendored libraries from {vendor_path}")
 
 from quadpype.lib import Logger
 from quadpype.pipeline import (
@@ -23,7 +23,7 @@ from quadpype.pipeline import (
 
 def main(env):
     # This script working directory starts in Fusion application folder.
-    # However the contents of that folder can conflict with Qt library dlls
+    # However, the contents of that folder can conflict with Qt library dlls
     # so we make sure to move out of it to avoid DLL Load Failed errors.
     os.chdir("..")
     from quadpype.hosts.fusion.api import FusionHost

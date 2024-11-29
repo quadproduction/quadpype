@@ -1,7 +1,7 @@
 import sys
 import traceback
 
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, QtGui
 
 from quadpype.client import get_projects, get_project
 from quadpype import style
@@ -396,7 +396,7 @@ class LoaderWindow(BaseToolDialog):
 
         Args:
             context (dict): The context to apply.
-            refrest (bool): Trigger refresh on context set.
+            refresh (bool): Trigger refresh on context set.
         """
 
         asset = context.get("asset", None)
@@ -464,7 +464,11 @@ class SubsetGroupingDialog(QtWidgets.QDialog):
 
     def __init__(self, items, groups_config, parent=None):
         super().__init__(parent=parent)
-        self.setWindowTitle("Grouping Subsets")
+
+        self.setWindowTitle("QuadPype: Grouping Subsets")
+        window_icon = QtGui.QIcon(style.get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.setMinimumWidth(250)
         self.setModal(True)
 
@@ -566,7 +570,7 @@ def show(debug=False, parent=None, use_context=False):
                 module.window.setWindowState(QtCore.Qt.WindowActive)
 
             # Raise and activate the window
-            module.window.raise_()             # for MacOS
+            module.window.raise_()             # for macOS
             module.window.activateWindow()     # for Windows
             module.window.refresh()
             return

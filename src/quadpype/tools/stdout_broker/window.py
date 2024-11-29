@@ -1,7 +1,7 @@
 import re
 import collections
 
-from qtpy import QtWidgets
+from qtpy import QtWidgets, QtGui
 
 from quadpype import style
 
@@ -51,6 +51,11 @@ class ConsoleDialog(QtWidgets.QDialog):
 
     def __init__(self, text, parent=None):
         super().__init__(parent)
+
+        self.setWindowTitle("QuadPype: Console Output")
+        window_icon = QtGui.QIcon(style.get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         layout = QtWidgets.QHBoxLayout(parent)
 
         plain_text = QtWidgets.QPlainTextEdit(self)
@@ -62,8 +67,6 @@ class ConsoleDialog(QtWidgets.QDialog):
             plain_text.appendPlainText(text.popleft().strip())
 
         layout.addWidget(plain_text)
-
-        self.setWindowTitle("Console output")
 
         self.plain_text = plain_text
 

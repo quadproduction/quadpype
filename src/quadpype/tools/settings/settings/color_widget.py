@@ -1,11 +1,11 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
-from .item_widgets import InputWidget
-
+from quadpype.style import get_app_icon_path
 from quadpype.widgets.color_widgets import (
     ColorPickerWidget,
     draw_checkerboard_tile
 )
+from .item_widgets import InputWidget
 
 
 class ColorWidget(InputWidget):
@@ -125,7 +125,9 @@ class ColorDialog(QtWidgets.QDialog):
     def __init__(self, color=None, use_alpha=True, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("Color picker dialog")
+        self.setWindowTitle("QuadPype: Color picker dialog")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         picker_widget = ColorPickerWidget(color, use_alpha, self)
 

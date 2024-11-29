@@ -1,5 +1,6 @@
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, QtGui
 
+from quadpype.style import get_app_icon_path
 from .widgets import ClickableFrame, ExpandBtn, SeparatorWidget
 
 
@@ -61,7 +62,11 @@ class ErrorMessageBox(QtWidgets.QDialog):
 
     def __init__(self, title, parent):
         super().__init__(parent)
+
         self.setWindowTitle(title)
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         top_widget = self._create_top_widget(self)

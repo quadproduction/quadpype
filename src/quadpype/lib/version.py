@@ -429,7 +429,7 @@ class PackageHandler:
         except BadZipFile:
             return False, f"{zip_path} is not a zip file"
         except KeyError:
-            return False, "Zip does not contain OpenPype"
+            return False, "Zip does not contain QuadPype"
         return True, "Versions match"
 
     def get_available_versions(self, from_local: bool = None, from_remote: bool = None) -> List:

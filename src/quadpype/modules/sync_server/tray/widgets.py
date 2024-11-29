@@ -167,7 +167,7 @@ class SyncProjectListWidget(QtWidgets.QWidget):
                 self.current_project)
 
     def _can_edit(self):
-        """Returns true if some site is user local site, eg. could edit"""
+        """Returns true if some site is user local site, e.g. could edit"""
         return get_local_site_id() in (self.local_site, self.remote_site)
 
     def _get_icon(self, status):
@@ -677,14 +677,18 @@ class SyncServerDetailWindow(QtWidgets.QDialog):
         Creates standalone window with list of files for selected repre_id.
     """
     def __init__(self, sync_server, _id, project, parent=None):
-        log.debug(
-            "!!! SyncServerDetailWindow _id:: {}".format(_id))
         super().__init__(parent)
+        log.debug("!!! SyncServerDetailWindow _id:: {}".format(_id))
+
+        self.setWindowTitle("Sync Representation Detail")
+        window_icon = QtGui.QIcon(style.get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.setWindowFlags(QtCore.Qt.Window)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         self.setStyleSheet(style.load_stylesheet())
-        self.setWindowIcon(QtGui.QIcon(style.app_icon_path()))
+
         self.resize(1000, 400)
 
         body = QtWidgets.QWidget()
@@ -707,8 +711,6 @@ class SyncServerDetailWindow(QtWidgets.QDialog):
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(body)
         layout.addWidget(footer)
-
-        self.setWindowTitle("Sync Representation Detail")
 
 
 class SyncRepresentationDetailWidget(_SyncRepresentationWidget):
@@ -880,11 +882,16 @@ class SyncRepresentationErrorWindow(QtWidgets.QDialog):
     """Wrapper window to show errors during sync on file(s)"""
     def __init__(self, model, selected_ids, parent=None):
         super().__init__(parent)
+
+        self.setWindowTitle("QuadPype: Sync Representation Error")
+        window_icon = QtGui.QIcon(style.get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.setWindowFlags(QtCore.Qt.Window)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         self.setStyleSheet(style.load_stylesheet())
-        self.setWindowIcon(QtGui.QIcon(style.app_icon_path()))
+
         self.resize(900, 150)
 
         body = QtWidgets.QWidget()
@@ -903,7 +910,6 @@ class SyncRepresentationErrorWindow(QtWidgets.QDialog):
         layout.addWidget(body)
 
         self.setLayout(body_layout)
-        self.setWindowTitle("Sync Representation Error Detail")
 
 
 class SyncRepresentationErrorWidget(QtWidgets.QWidget):

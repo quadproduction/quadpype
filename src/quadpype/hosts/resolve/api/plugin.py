@@ -3,8 +3,9 @@ import uuid
 import copy
 
 import qargparse
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, QtGui
 
+from quadpype.style import get_app_icon_path
 from quadpype.settings import get_current_project_settings
 from quadpype.pipeline import (
     LegacyCreator,
@@ -24,6 +25,10 @@ class CreatorWidget(QtWidgets.QDialog):
     def __init__(self, name, info, ui_inputs, parent=None):
         super().__init__(parent)
 
+        self.setWindowTitle(name or "QuadPype: Creator Input")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.setObjectName(name)
 
         self.setWindowFlags(
@@ -33,7 +38,7 @@ class CreatorWidget(QtWidgets.QDialog):
             | QtCore.Qt.WindowCloseButtonHint
             | QtCore.Qt.WindowStaysOnTopHint
         )
-        self.setWindowTitle(name or "QuadPype Creator Input")
+
         self.resize(500, 700)
 
         # Where inputs and labels are set

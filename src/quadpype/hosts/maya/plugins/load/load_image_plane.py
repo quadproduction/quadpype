@@ -1,5 +1,6 @@
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, QtGui
 
+from quadpype.style import get_app_icon_path
 from quadpype.client import (
     get_asset_by_id,
     get_subset_by_id,
@@ -35,9 +36,14 @@ class CameraWindow(QtWidgets.QDialog):
 
     def __init__(self, cameras):
         super().__init__()
-        self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
 
         self.camera = None
+
+        self.setWindowTitle("QuadPype: Load Image Plane")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
+        self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
 
         self.widgets = {
             "label": QtWidgets.QLabel("Select camera for image plane."),

@@ -245,7 +245,7 @@ class TasksWidget(QtWidgets.QWidget):
         cleared.
 
         Args:
-            task (str): Name of the task to select.
+            task_name (str): Name of the task to select.
 
         """
         task_view_model = self._tasks_view.model()

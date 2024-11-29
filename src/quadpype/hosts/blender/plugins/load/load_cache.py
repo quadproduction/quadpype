@@ -286,7 +286,7 @@ class CacheModelLoader(plugin.BlenderLoader):
         """Remove an existing container from a Blender scene.
 
         Arguments:
-            container (openpype:container-1.0): Container to remove,
+            container (quadpype:container-1.0): Container to remove,
                 from `host.ls()`.
 
         Returns:
