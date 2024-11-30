@@ -802,6 +802,9 @@ class GridLabelWidget(QtWidgets.QWidget):
 
         label_widget = QtWidgets.QLabel(label, self)
         label_widget.setObjectName("SettingsLabel")
+        # Adding top and bottom margin to center the label vertically with the widget
+        label_widget.setContentsMargins(0, 6, 0, 6)
+        label_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
         label_proxy_layout = QtWidgets.QHBoxLayout()
         label_proxy_layout.setContentsMargins(0, 0, 0, 0)
@@ -810,10 +813,11 @@ class GridLabelWidget(QtWidgets.QWidget):
         label_proxy_layout.addWidget(label_widget, 0, QtCore.Qt.AlignRight)
 
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 2, 0, 0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
         layout.addLayout(label_proxy_layout, 0)
+        # The stretch is for force widget(s) to snap to the top of the layout
         layout.addStretch(1)
 
         label_widget.setAttribute(QtCore.Qt.WA_TranslucentBackground)

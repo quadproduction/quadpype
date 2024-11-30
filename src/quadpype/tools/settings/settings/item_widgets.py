@@ -30,7 +30,7 @@ from .base import (
 )
 
 import platform
-from pathlib import Path
+
 
 class DictImmutableKeysWidget(BaseWidget):
 
@@ -363,6 +363,8 @@ class BoolWidget(InputWidget):
 
         self.content_layout.addWidget(self.input_field, 0)
         self.content_layout.addStretch(1)
+        # 2px top margin to properly center with label
+        self.content_layout.setContentsMargins(0, 2, 0, 0)
 
         self.setFocusProxy(self.input_field)
 
