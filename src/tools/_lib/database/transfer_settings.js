@@ -39,6 +39,10 @@ function transferSettings(mongoSourceURI, mongoDestinationURI, sourceDbName, tar
             document.type = "global_settings";
             document.data.core = document.data.general;
             document.data.addons = document.data.modules;
+            if (document.data.addons.standalonepublish_tool) {
+                document.data.addons.standalone_publisher = document.data.addons.standalonepublish_tool;
+                delete document.data.addons.standalonepublish_tool;
+            }
             delete document.data.general;
             delete document.data.modules;
             targetSettings.insert(document);
