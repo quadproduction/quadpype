@@ -74,6 +74,10 @@ function transferSettings(mongoSourceURI, mongoDestinationURI, sourceDbName, tar
             document.data.core = document.data.general;
             delete document.data.modules.addon_paths;
             document.data.addons = document.data.modules;
+            if (document.data.addons.standalonepublish_tool) {
+                document.data.addons.standalone_publisher = document.data.addons.standalonepublish_tool;
+                delete document.data.addons.standalonepublish_tool;
+            }
             delete document.data.general;
             delete document.data.modules;
             if (document.last_saved_info && document.last_saved_info.timestamp) {
