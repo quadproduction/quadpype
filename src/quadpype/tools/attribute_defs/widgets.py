@@ -28,11 +28,8 @@ from .files_widget import FilesWidget
 
 def create_widget_for_attr_def(attr_def, parent=None):
     widget = _create_widget_for_attr_def(attr_def, parent)
-    if attr_def.hidden:
-        widget.setVisible(False)
-
-    if attr_def.disabled:
-        widget.setEnabled(False)
+    widget.setVisible(attr_def.visible)
+    widget.setEnabled(attr_def.enabled)
     return widget
 
 
@@ -135,7 +132,7 @@ class AttributeDefinitionsWidget(QtWidgets.QWidget):
             widget = create_widget_for_attr_def(attr_def, self)
             self._widgets.append(widget)
 
-            if attr_def.hidden:
+            if not attr_def.visible:
                 continue
 
             expand_cols = 2
