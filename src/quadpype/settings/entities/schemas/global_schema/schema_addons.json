@@ -295,8 +295,8 @@
         },
         {
             "type": "dict",
-            "key": "standalonepublish_tool",
-            "label": "Standalone Publish",
+            "key": "standalone_publisher",
+            "label": "Standalone Publisher",
             "collapsible": true,
             "checkbox_key": "enabled",
             "children": [

@@ -1093,7 +1093,9 @@ class TrayModulesManager(ModulesManager):
     # Define order of modules in menu
     modules_menu_order = (
         # Menu ------------------------------------------
-        # "user",                  # {USERNAME} <not a real module>
+        # QuadPype: STUDIO_NAME
+        # USERNAME
+        # VERSION
         "ftrack",                  # ftrack
         "kitsu",                   # Kitsu
         "muster",                  # Muster
@@ -1102,17 +1104,17 @@ class TrayModulesManager(ModulesManager):
         "tray_publisher",          # Publisher
         "standalone_publisher",    # Publisher (legacy)
         "clockify",                # Clockify
-        "user_settings",           # User Settings
-        # More Tools Submenu -----------------------------
         "sync_server",             # Sync Queue
+        # More Tools Submenu -----------------------------
         "update_zxp_extensions",   # Update ZXP Extensions
         "log_viewer",              # Show Logs
         "python_interpreter",      # Console
         # Admin Submenu ----------------------------------
         "project_manager",         # Project Manager (beta)
+        # User Settings ----------------------------------
+        "user_settings",           # User Settings
         # Services Submenu -------------------------------
         "control_panel",           # Studio Control Panel
-        # Order currently not defined (this could be done)
     )
 
     def __init__(self):

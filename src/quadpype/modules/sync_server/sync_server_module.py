@@ -120,7 +120,6 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
     name = "sync_server"
     label = "Sync Queue"
-    submenu = "More Tools"
 
     def initialize(self, module_settings):
         """
