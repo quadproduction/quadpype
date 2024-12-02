@@ -9,9 +9,9 @@ function transferSettings(mongoSourceURI, mongoDestinationURI, sourceDbName, tar
     if (targetDb.getCollectionNames().includes('settings')) {
         targetDb.getCollection('settings').drop();
     }
-    // Find all documents in source.settings except "local_settings" and "versions_order"
+    // Find all documents in source.settings except "local_settings"
     settingsDocuments = sourceSettings.find({
-        type: { $nin: ["local_settings", "versions_order"] }
+        type: { $ne: "local_settings" }
     }).toArray();
 
     latestVersionedSettings = {};
@@ -35,6 +35,14 @@ function transferSettings(mongoSourceURI, mongoDestinationURI, sourceDbName, tar
             document.version = "4.0.0";
         }
 
+        if (document.type === "versions_order"){
+            document.all_versions = ["4.0.0"];
+            delete document.production_versions;
+            delete document.staging_versions;
+            targetSettings.insert(document);
+            return
+        }
+
         if (document.type === "system_settings"){
             document.type = "global_settings";
             document.data.core = document.data.general;
@@ -51,8 +59,8 @@ function transferSettings(mongoSourceURI, mongoDestinationURI, sourceDbName, tar
 
         if (document.type === "global_settings") {
             document.type = "core_settings";
-            document.data.production_version = "4.0.0";
-            document.data.staging_version = "4.0.0";
+            document.data.production_version = "";
+            document.data.staging_version = "";
             document.data.remote_versions_dirs = document.data.openpype_path;
             delete document.data.openpype_path;
             targetSettings.insert(document);
@@ -122,24 +130,24 @@ function transferSettings(mongoSourceURI, mongoDestinationURI, sourceDbName, tar
         targetSettings.insert(latestDocument);
     });
 
-    const sourceDbProjectsDb = connect(`${mongoSourceURI}/avalon`);
-    const targetDbProjectsDb = connect(`${mongoDestinationURI}/${targetDbName}_projects`);
-    collections = sourceDbProjectsDb.getCollectionNames();
-    collections.forEach(collectionName => {
-        sourceCollection = sourceDbProjectsDb.getCollection(collectionName);
-        targetCollection = targetDbProjectsDb.getCollection(collectionName);
-        // Drop the target collection if it already exists
-        if (targetDbProjectsDb.getCollectionNames().includes(collectionName)) {
-            targetCollection.drop();
-            console.log("Collection ${collectionName} dropped from target database.");
-        }
-
-        sourceCollection.find().forEach(document => {
-            targetCollection.insert(document);
-        });
-        console.log("Collection $(collectionName) transferred to ${targetDbName}_projects database.");
-    });
-    console.log("Transfer completed!");
+//    const sourceDbProjectsDb = connect(`${mongoSourceURI}/avalon`);
+//    const targetDbProjectsDb = connect(`${mongoDestinationURI}/${targetDbName}_projects`);
+//    collections = sourceDbProjectsDb.getCollectionNames();
+//    collections.forEach(collectionName => {
+//        sourceCollection = sourceDbProjectsDb.getCollection(collectionName);
+//        targetCollection = targetDbProjectsDb.getCollection(collectionName);
+//        // Drop the target collection if it already exists
+//        if (targetDbProjectsDb.getCollectionNames().includes(collectionName)) {
+//            targetCollection.drop();
+//            console.log("Collection ${collectionName} dropped from target database.");
+//        }
+//
+//        sourceCollection.find().forEach(document => {
+//            targetCollection.insert(document);
+//        });
+//        console.log("Collection $(collectionName) transferred to ${targetDbName}_projects database.");
+//    });
+//    console.log("Transfer completed!");
 }
 
 transferSettings(MONGO_URI, MONGO_DESTINATION, 'openpype', 'quadpype');

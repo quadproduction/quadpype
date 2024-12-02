@@ -1144,7 +1144,7 @@ def check_version_order(collection, version_str):
 
     # Skip if current version is already available
     if version_str in doc[DATABASE_ALL_VERSIONS_KEY]:
-        return
+        return doc
 
     if version_str not in doc[DATABASE_ALL_VERSIONS_KEY]:
         # Add all versions into list
@@ -1165,6 +1165,8 @@ def check_version_order(collection, version_str):
         doc,
         upsert=True
     )
+
+    return doc
 
 
 def get_global_settings_overrides_for_version_doc(collection, version_str):
@@ -1188,7 +1190,7 @@ def find_closest_settings_id(collection, version_str, key, legacy_key, additiona
         versioned_doc
     """
     # Trigger check of versions
-    check_version_order(collection, version_str)
+    versions_doc = check_version_order(collection, version_str)
 
     doc_filters = {
         "type": {"$in": [key, legacy_key]}
@@ -1207,7 +1209,7 @@ def find_closest_settings_id(collection, version_str, key, legacy_key, additiona
     )
     # Query doc with list of sorted versions
     if versioned_doc is None:
-        versioned_doc = get_versions_order_doc(collection)
+        versioned_doc = versions_doc
 
     # Separate queried docs
     legacy_settings_doc = None
