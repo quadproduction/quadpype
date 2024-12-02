@@ -101,14 +101,14 @@ class AbstractAttrDef(object, metaclass=AbstractAttrDefMeta):
         label: Optional[str] = None,
         tooltip: Optional[str] = None,
         is_label_horizontal: Optional[bool] = None,
-        visible: Optional[bool] = False,
-        enabled: Optional[bool] = False
+        visible: Optional[bool] = None,
+        enabled: Optional[bool] = None
     ):
         if is_label_horizontal is None:
             is_label_horizontal = True
 
         if visible is None:
-            visible = False
+            visible = True
 
         if enabled is None:
             enabled = True
