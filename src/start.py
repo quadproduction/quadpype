@@ -442,16 +442,16 @@ def set_avalon_environments():
     })
 
 
-def _update_zxp_extensions(quadpype_version, global_settings):
-    zxp_hosts_to_update = get_zxp_extensions_to_update(quadpype_version, global_settings)
+def _update_zxp_extensions(running_version_str, running_version_fullpath, global_settings):
+    zxp_hosts_to_update = get_zxp_extensions_to_update(running_version_fullpath, global_settings)
     if not zxp_hosts_to_update:
         return
 
     in_headless_mode = os.getenv("QUADPYPE_HEADLESS_MODE") == "1"
     if in_headless_mode:
-        update_zxp_extensions(quadpype_version, zxp_hosts_to_update)
+        update_zxp_extensions(running_version_fullpath, zxp_hosts_to_update)
     else:
-        igniter.open_zxp_update_window(quadpype_version, zxp_hosts_to_update)
+        igniter.open_zxp_update_window(running_version_str, running_version_fullpath, zxp_hosts_to_update)
 
 
 def set_addons_environments():
@@ -969,9 +969,11 @@ def boot():
     _print("  - for addons ...")
     set_addons_environments()
 
+    running_version = package_manager["quadpype"].running_version
+    running_version_fullpath = running_version.path.resolve()
     if not os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE"):
         _print(">>> Check ZXP extensions ...")
-        _update_zxp_extensions(package_manager["quadpype"].running_version, global_settings)
+        _update_zxp_extensions(str(running_version), running_version_fullpath, global_settings)
 
     # print info when not running scripts defined in 'silent commands'
     if all(arg not in silent_commands for arg in sys.argv):
@@ -979,8 +981,7 @@ def boot():
         from quadpype.version import __version__
 
         info = get_info(use_staging)
-        running_version_fullpath = str(package_manager["quadpype"].running_version.path.resolve())
-        info.insert(0, f">>> Using QuadPype from [ {running_version_fullpath} ]")
+        info.insert(0, f">>> Using QuadPype from [ {str(running_version_fullpath)} ]")
 
         t_width = 20
         try:
