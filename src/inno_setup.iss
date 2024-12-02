@@ -60,8 +60,8 @@ Source: "{#Build}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs crea
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{autoprograms}\{#AppName} {#AppVer}"; Filename: "{app}\quadpype_gui.exe"
-Name: "{autodesktop}\{#AppName} {#AppVer}"; Filename: "{app}\quadpype_gui.exe"; Tasks: desktopicon
+Name: "{autoprograms}\{#AppName}"; Filename: "{app}\quadpype_gui.exe"
+Name: "{autodesktop}\{#AppName}"; Filename: "{app}\quadpype_gui.exe"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\quadpype_gui.exe"; Description: "{cm:LaunchProgram,QuadPype}"; Flags: nowait postinstall skipifsilent
