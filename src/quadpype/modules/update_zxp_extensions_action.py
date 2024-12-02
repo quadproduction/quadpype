@@ -34,5 +34,5 @@ class UpdateZXPExtensionsAction(QuadPypeModule, ITrayAction):
         quadpype_version = get_package("quadpype").running_version
 
         global_settings = get_global_settings()
-        zxp_hosts_to_update = get_zxp_extensions_to_update(quadpype_version, global_settings, force=True)
-        igniter.open_zxp_update_window(quadpype_version, zxp_hosts_to_update)
+        zxp_hosts_to_update = get_zxp_extensions_to_update(quadpype_version.path, global_settings, force=True)
+        igniter.open_zxp_update_window(str(quadpype_version), quadpype_version.path, zxp_hosts_to_update)

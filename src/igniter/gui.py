@@ -466,9 +466,10 @@ class ZXPUpdateWindow(QtWidgets.QDialog):
     _width = 500
     _height = 100
 
-    def __init__(self, version: PackageVersion, zxp_hosts: [ZXPExtensionData], parent=None):
+    def __init__(self, version_str, version_fullpath: Path, zxp_hosts: [ZXPExtensionData], parent=None):
         super().__init__(parent)
-        self._quadpype_version = version
+        self._version_str = version_str
+        self._version_fullpath = version_fullpath
         self._zxp_hosts = zxp_hosts
         self._log = log.getLogger(str(__class__))
 
@@ -510,7 +511,7 @@ class ZXPUpdateWindow(QtWidgets.QDialog):
         # Main info
         # --------------------------------------------------------------------
         main_label = QtWidgets.QLabel(
-            f"<b>QuadPype</b> is updating to {self._quadpype_version}", self)
+            f"<b>QuadPype</b> is updating to {self._version_str}", self)
         main_label.setWordWrap(True)
         main_label.setObjectName("MainLabel")
 
@@ -552,7 +553,7 @@ class ZXPUpdateWindow(QtWidgets.QDialog):
             return
         self._progress_bar.setRange(0, 0)
         update_thread = ZXPUpdateThread(self)
-        update_thread.set_version(self._quadpype_version)
+        update_thread.set_version_fullpath(self._version_fullpath)
         update_thread.set_zxp_hosts(self._zxp_hosts)
         update_thread.log_signal.connect(self._print)
         update_thread.step_text_signal.connect(self.update_step_text)

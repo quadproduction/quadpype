@@ -22,31 +22,35 @@ class ZXPExtensionData:
 
 
 def extract_zxp_info_from_manifest(path_manifest: Path):
-    pattern_regex_extension_id = r"ExtensionBundleId=\"(?P<extension_id>[\w.]+)\""
-    pattern_regex_extension_version = r"ExtensionBundleVersion=\"(?P<extension_version>[\d.]+)\""
-
     extension_id = ""
     extension_version = ""
-    with open(path_manifest, mode="r") as f:
-        content = f.read()
-        match_extension_id = re.search(pattern_regex_extension_id, content)
-        match_extension_version = re.search(pattern_regex_extension_version, content)
-        if match_extension_id:
-            extension_id = match_extension_id.group("extension_id")
-        if match_extension_version:
-            extension_version = semver.VersionInfo.parse(match_extension_version.group("extension_version"))
+
+    if not path_manifest.exists():
+        return extension_id, extension_version
+
+    pattern_regex_extension_id = r"ExtensionBundleId=\"(?P<extension_id>[\w.]+)\""
+    pattern_regex_extension_version = r"ExtensionBundleVersion=\"(?P<extension_version>[\d.]+)\""
+    try:
+        with open(path_manifest, mode="r") as f:
+            content = f.read()
+            match_extension_id = re.search(pattern_regex_extension_id, content)
+            match_extension_version = re.search(pattern_regex_extension_version, content)
+            if match_extension_id:
+                extension_id = match_extension_id.group("extension_id")
+            if match_extension_version:
+                extension_version = semver.VersionInfo.parse(match_extension_version.group("extension_version"))
+    except Exception:  # noqa
+        return extension_id, extension_version
 
     return extension_id, extension_version
 
 
-def update_zxp_extensions(quadpype_version: PackageVersion, extensions: [ZXPExtensionData]):
+def update_zxp_extensions(running_version_fullpath: Path, extensions: [ZXPExtensionData]):
     # Determine the user-specific Adobe extensions directory
     user_extensions_dir = Path(os.getenv('APPDATA'), 'Adobe', 'CEP', 'extensions')
 
     # Create the user extensions directory if it doesn't exist
     os.makedirs(user_extensions_dir, exist_ok=True)
-
-    version_path = quadpype_version.path
 
     for extension in extensions:
         # Remove installed ZXP extension
@@ -54,11 +58,13 @@ def update_zxp_extensions(quadpype_version: PackageVersion, extensions: [ZXPExte
             shutil.rmtree(user_extensions_dir.joinpath(extension.host_id))
 
         # Install ZXP shipped in the current version folder
-        fullpath_curr_zxp_extension = version_path.joinpath("quadpype",
-                                                            "hosts",
-                                                            extension.host_id,
-                                                            "api",
-                                                            "extension.zxp")
+        fullpath_curr_zxp_extension = running_version_fullpath.joinpath(
+            "quadpype",
+            "hosts",
+            extension.host_id,
+            "api",
+            "extension.zxp"
+        )
         if not fullpath_curr_zxp_extension.exists():
             continue
 
@@ -75,7 +81,7 @@ def update_zxp_extensions(quadpype_version: PackageVersion, extensions: [ZXPExte
         os.remove(zip_path)
 
 
-def get_zxp_extensions_to_update(quadpype_version, global_settings, force=False) -> List[ZXPExtensionData]:
+def get_zxp_extensions_to_update(running_version_fullpath, global_settings, force=False) -> List[ZXPExtensionData]:
     # List of all Adobe software ids (named hosts) handled by QuadPype
     # TODO: where and how to store the list of Adobe software ids
     zxp_host_ids = ["photoshop", "aftereffects"]
@@ -85,17 +91,16 @@ def get_zxp_extensions_to_update(quadpype_version, global_settings, force=False)
 
     zxp_hosts_to_update = []
     for zxp_host_id in zxp_host_ids:
-        version_path = quadpype_version.path
-        path_manifest = version_path.joinpath("quadpype", "hosts", zxp_host_id, "api", "extension", "CSXS",
-                                              "manifest.xml")
-        extension_new_id, extension_new_version = extract_zxp_info_from_manifest(path_manifest)
-        if not extension_new_id or not extension_new_version:
+        path_manifest = running_version_fullpath.joinpath(
+            "quadpype", "hosts", zxp_host_id, "api", "extension", "CSXS", "manifest.xml")
+        running_extension_id, running_extension_version = extract_zxp_info_from_manifest(path_manifest)
+        if not running_extension_id or not running_extension_version:
             # ZXP extension seems invalid or doesn't exists for this software, skipping
             continue
 
-        cur_manifest = user_extensions_dir.joinpath(extension_new_id, "CSXS", "manifest.xml")
+        cur_manifest = user_extensions_dir.joinpath(running_extension_id, "CSXS", "manifest.xml")
         # Get the installed version
-        extension_cur_id, extension_curr_version = extract_zxp_info_from_manifest(cur_manifest)
+        installed_extension_id, installed_extension_version = extract_zxp_info_from_manifest(cur_manifest)
 
         if not force:
             # Is the update required?
@@ -106,14 +111,14 @@ def get_zxp_extensions_to_update(quadpype_version, global_settings, force=False)
                 continue
 
             # Compare the installed version with the new version
-            if extension_curr_version and extension_curr_version == extension_new_version:
+            if installed_extension_version and installed_extension_version == running_extension_version:
                 # The two extensions have the same version number, skipping
                 continue
 
         zxp_hosts_to_update.append(ZXPExtensionData(zxp_host_id,
-                                                    extension_new_id,
-                                                    extension_curr_version,
-                                                    extension_new_version))
+                                                    running_extension_id,
+                                                    installed_extension_version,
+                                                    running_extension_version))
 
     return zxp_hosts_to_update
 
@@ -125,12 +130,12 @@ class ZXPUpdateThread(QtCore.QThread):
 
     def __init__(self, parent=None):
         self._result = None
-        self._quadpype_version = None
+        self._version_fullpath = None
         self._zxp_hosts = []
         super().__init__(parent)
 
-    def set_version(self, quadpype_version: PackageVersion):
-        self._quadpype_version = quadpype_version
+    def set_version_fullpath(self, version_fullpath):
+        self._version_fullpath = version_fullpath
 
     def set_zxp_hosts(self, zxp_hosts: List[ZXPExtensionData]):
         self._zxp_hosts = zxp_hosts
@@ -144,6 +149,5 @@ class ZXPUpdateThread(QtCore.QThread):
 
     def run(self):
         """Thread entry point."""
-        version_path = self._quadpype_version.path
-        update_zxp_extensions(self._quadpype_version, self._zxp_hosts)
-        self._set_result(version_path)
+        update_zxp_extensions(self._version_fullpath, self._zxp_hosts)
+        self._set_result(self._version_fullpath)

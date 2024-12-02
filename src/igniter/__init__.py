@@ -65,7 +65,7 @@ def ask_database_connection_string(log=None):
     return d.result()
 
 
-def open_zxp_update_window(quadpype_version, zxp_hosts=None):
+def open_zxp_update_window(running_version_str, running_version_fullpath, zxp_hosts=None):
     """Open ZXP update window."""
     if zxp_hosts is None:
         zxp_hosts = []
@@ -77,7 +77,11 @@ def open_zxp_update_window(quadpype_version, zxp_hosts=None):
 
     app, is_event_loop_running = _get_qt_app()
 
-    d = ZXPUpdateWindow(version=quadpype_version, zxp_hosts=zxp_hosts)
+    d = ZXPUpdateWindow(
+        version_str=running_version_str,
+        version_fullpath=running_version_fullpath,
+        zxp_hosts=zxp_hosts
+    )
     d.open()
 
     if not is_event_loop_running:

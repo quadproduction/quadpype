@@ -9,7 +9,7 @@ Unable to parse asset name from '{file_name}'. File name doesn't match configure
 
 ### How to repair?
 
-Check Settings: project_settings/standalonepublisher/publish/CollectTextures for naming convention.
+Check Settings: project_settings/standalone_publisher/publish/CollectTextures for naming convention.
 </description>
 <detail>
 ### __Detailed Info__ (optional)

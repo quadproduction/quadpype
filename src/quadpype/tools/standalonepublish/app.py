@@ -240,7 +240,7 @@ def main():
     signal.signal(signal.SIGTERM, signal_handler)
 
     modules_manager = ModulesManager()
-    module = modules_manager.modules_by_name["standalonepublisher"]
+    module = modules_manager.modules_by_name["standalone_publisher"]
 
     window = Window(module.publish_paths)
     window.show()
