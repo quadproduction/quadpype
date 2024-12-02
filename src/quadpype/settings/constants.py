@@ -27,7 +27,7 @@ CORE_SETTINGS_KEY = "core"
 GENERAL_SETTINGS_KEY = "general"
 ENV_SETTINGS_KEY = "environments"
 APPS_SETTINGS_KEY = "applications"
-MODULES_SETTINGS_KEY = "modules"
+ADDONS_SETTINGS_KEY = "addons"
 PROJECTS_SETTINGS_KEY = "projects"
 
 # Schema hub names
@@ -50,8 +50,8 @@ DATABASE_PROJECT_ANATOMY_VERSIONED_KEY = PROJECT_ANATOMY_KEY + _DATABASE_SUFFIX
 
 
 CORE_KEYS = {
-    "quadpype_path",
-    "local_quadpype_path",
+    "remote_versions_dirs",
+    "local_versions_dir",
     "log_to_server",
     "disk_mapping",
     "production_version",
@@ -74,7 +74,7 @@ __all__ = (
     "GENERAL_SETTINGS_KEY",
     "ENV_SETTINGS_KEY",
     "APPS_SETTINGS_KEY",
-    "MODULES_SETTINGS_KEY",
+    "ADDONS_SETTINGS_KEY",
     "PROJECTS_SETTINGS_KEY",
 
     "SCHEMA_KEY_GLOBAL_SETTINGS",

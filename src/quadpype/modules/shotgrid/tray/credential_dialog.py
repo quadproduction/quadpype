@@ -31,10 +31,9 @@ class CredentialsDialog(QtWidgets.QDialog):
         self._module = module
         self._is_logged = False
 
-        self.setWindowTitle("QuadPype - Shotgrid Login")
-
-        icon = QtGui.QIcon(resources.get_app_icon_filepath())
-        self.setWindowIcon(icon)
+        self.setWindowTitle("QuadPype: Shotgrid Login")
+        window_icon = QtGui.QIcon(resources.get_app_icon_filepath())
+        self.setWindowIcon(window_icon)
 
         self.setWindowFlags(
             QtCore.Qt.WindowCloseButtonHint
@@ -91,8 +90,8 @@ class CredentialsDialog(QtWidgets.QDialog):
         self.main_widget.addLayout(self.buttons_layout)
         self.setLayout(self.main_widget)
 
-    def show(self, *args, **kwargs):
-        super(CredentialsDialog, self).show(*args, **kwargs)
+    def show(self):
+        super(CredentialsDialog, self).show()
         self._fill_shotgrid_url()
         self._fill_shotgrid_login()
 
@@ -196,6 +195,5 @@ class CredentialsDialog(QtWidgets.QDialog):
         if verification:
             credentials.save_credentials(login, password, False)
             self._module.set_credentials_to_env(login, password)
-            self.set_credentials(login, password)
             self.login_changed.emit()
         return verification

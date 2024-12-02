@@ -31,8 +31,9 @@ class ContextDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("Select Context")
-        self.setWindowIcon(QtGui.QIcon(style.app_icon_path()))
+        self.setWindowTitle("QuadPype: Select Context")
+        window_icon = QtGui.QIcon(style.get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         # Enable minimize and maximize for app
         window_flags = QtCore.Qt.Window
@@ -50,7 +51,7 @@ class ContextDialog(QtWidgets.QDialog):
         left_side_widget = QtWidgets.QWidget(main_splitter)
 
         project_combobox = QtWidgets.QComboBox(left_side_widget)
-        # Styled delegate to propagate stylessheet
+        # Styled delegate to propagate stylesheet
         project_delegate = QtWidgets.QStyledItemDelegate(project_combobox)
         project_combobox.setItemDelegate(project_delegate)
         # Project model with only active projects without default item
@@ -85,7 +86,7 @@ class ContextDialog(QtWidgets.QDialog):
         main_splitter.setStretchFactor(0, 7)
         main_splitter.setStretchFactor(1, 3)
 
-        # Add confimation button to bottom right
+        # Add confirmation button to bottom right
         ok_btn = QtWidgets.QPushButton("OK", self)
 
         buttons_layout = QtWidgets.QHBoxLayout()
@@ -140,7 +141,7 @@ class ContextDialog(QtWidgets.QDialog):
         self._rerefresh_assets = True
         self._assets_refreshing = False
 
-        # Set stylehseet and resize window on first show
+        # Set stylesheet and resize window on first show
         self._first_show = True
 
         # Helper attributes for handling of refresh

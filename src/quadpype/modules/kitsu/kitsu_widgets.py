@@ -11,10 +11,10 @@ from quadpype.modules.kitsu.utils.credentials import (
 from quadpype.resources import get_resource
 from quadpype.settings import (
     get_global_settings,
-    MODULES_SETTINGS_KEY
+    ADDONS_SETTINGS_KEY
 )
 
-from quadpype.widgets.password_dialog import PressHoverButton
+from quadpype.tools.utils import PressHoverButton
 
 
 class KitsuPasswordDialog(QtWidgets.QDialog):
@@ -25,7 +25,10 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("Kitsu Credentials")
+        self.setWindowTitle("QuadPype: Kitsu Login")
+        window_icon = QtGui.QIcon(style.get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.resize(300, 120)
 
         global_settings = get_global_settings()
@@ -34,12 +37,12 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
 
         self._final_result = None
         self._connectable = bool(
-            global_settings[MODULES_SETTINGS_KEY].get("kitsu", {}).get("server")
+            global_settings[ADDONS_SETTINGS_KEY].get("kitsu", {}).get("server")
         )
 
         # Server label
         server_message = (
-            global_settings[MODULES_SETTINGS_KEY]["kitsu"]["server"]
+            global_settings[ADDONS_SETTINGS_KEY]["kitsu"]["server"]
             if self._connectable
             else "no server url set in Studio Settings..."
         )

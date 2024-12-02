@@ -20,7 +20,7 @@ def my_exception_hook(exctype, value, traceback):
 
 if __name__ == '__main__':
     os.environ["QUADPYPE_MONGO"] = "mongodb://localhost:27017"
-    os.environ["AVALON_DB"] = "avalon"
+    os.environ["AVALON_DB"] = "quadpype_projects"
     os.environ["AVALON_TIMEOUT"] = "1000"
     os.environ["QUADPYPE_DEBUG"] = "1"
     os.environ["AVALON_ASSET"] = "Jungle"

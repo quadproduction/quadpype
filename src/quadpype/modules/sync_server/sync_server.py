@@ -452,10 +452,10 @@ class SyncServerThread(threading.Thread):
                                               error)
 
                 duration = time.time() - start_time
-                self.log.debug("One loop took {:.2f}s".format(duration))
+                self.log.debug("Loop took {:.2f}s".format(duration))
                 delay = self.module.get_loop_delay(project_name)
                 self.log.debug(
-                    "Waiting for {} seconds to new loop".format(delay)
+                    "Waiting {} seconds before running the sync loop".format(delay)
                 )
                 self.timer = asyncio.create_task(self.run_timer(delay))
                 await asyncio.gather(self.timer)

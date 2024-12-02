@@ -80,7 +80,7 @@ class ProjectIconView(QtWidgets.QListView):
             self.setSpacing(0)
             self.setAlternatingRowColors(False)
 
-            self.verticalScrollBar().setSingleStep(33.33)
+            self.verticalScrollBar().setSingleStep(33)
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.RightButton:
@@ -236,12 +236,13 @@ class LauncherWindow(QtWidgets.QDialog):
         )
         self.dbcon = AvalonMongoDB()
 
-        self.setWindowTitle("Launcher")
+        self.setWindowTitle("QuadPype: Launcher")
+        window_icon = QtGui.QIcon(resources.get_app_icon_filepath())
+        self.setWindowIcon(window_icon)
+
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
 
-        icon = QtGui.QIcon(resources.get_app_icon_filepath())
-        self.setWindowIcon(icon)
         self.setStyleSheet(style.load_stylesheet())
 
         # Allow minimize

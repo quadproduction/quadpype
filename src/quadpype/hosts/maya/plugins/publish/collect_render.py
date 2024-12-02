@@ -48,7 +48,7 @@ from maya import cmds
 import pyblish.api
 
 from quadpype.settings import (
-    MODULES_SETTINGS_KEY,
+    ADDONS_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     GLOBAL_SETTINGS_KEY
 )
@@ -301,7 +301,7 @@ class CollectMayaRender(pyblish.api.InstancePlugin):
         }
 
         rr_settings = (
-            context.data[GLOBAL_SETTINGS_KEY][MODULES_SETTINGS_KEY]["royalrender"]
+            context.data[GLOBAL_SETTINGS_KEY][ADDONS_SETTINGS_KEY]["royalrender"]
         )
         if rr_settings["enabled"]:
             data["rrPathName"] = instance.data.get("rrPathName")

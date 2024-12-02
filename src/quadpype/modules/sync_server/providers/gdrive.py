@@ -4,7 +4,7 @@ import time
 import platform
 
 from quadpype.lib import Logger
-from quadpype.settings import get_global_settings, MODULES_SETTINGS_KEY
+from quadpype.settings import get_global_settings, ADDONS_SETTINGS_KEY
 from .abstract_provider import AbstractProvider
 from ..utils import time_function, ResumableError
 
@@ -633,7 +633,7 @@ class GDriveHandler(AbstractProvider):
         provider_presets = None
         try:
             provider_presets = (
-                get_global_settings()[MODULES_SETTINGS_KEY]
+                get_global_settings()[ADDONS_SETTINGS_KEY]
                 ["sync_server"]
                 ["providers"]
                 ["gdrive"]

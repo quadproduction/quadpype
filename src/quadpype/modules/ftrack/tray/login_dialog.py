@@ -18,16 +18,15 @@ class CredentialsDialog(QtWidgets.QDialog):
     def __init__(self, module, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("QuadPype - Ftrack Login")
+        self.setWindowTitle("QuadPype: Ftrack Login")
+        window_icon = QtGui.QIcon(resources.get_app_icon_filepath())
+        self.setWindowIcon(window_icon)
 
         self._module = module
 
         self._login_server_thread = None
         self._is_logged = False
         self._in_advance_mode = False
-
-        icon = QtGui.QIcon(resources.get_app_icon_filepath())
-        self.setWindowIcon(icon)
 
         self.setWindowFlags(
             QtCore.Qt.WindowCloseButtonHint |

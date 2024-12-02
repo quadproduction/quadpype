@@ -4,7 +4,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 
 from quadpype.client import get_projects
-from quadpype.style import get_objected_colors
+from quadpype.style import get_app_icon_path, get_objected_colors
 from quadpype.tools.utils.widgets import ImageButton
 from quadpype.tools.utils.lib import paint_image_with_color
 
@@ -511,7 +511,7 @@ class NumberSpinBox(QtWidgets.QDoubleSpinBox):
         self.setMinimum(min_value)
         self.setMaximum(max_value)
         if steps is not None:
-            self.setSingleStep(steps)
+            self.setSingleStep(float(steps))
 
     def focusInEvent(self, event):
         super(NumberSpinBox, self).focusInEvent(event)
@@ -705,7 +705,9 @@ class UnsavedChangesDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("Unsaved changes")
+        self.setWindowTitle("QuadPype: Unsaved Changes")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         message_label = QtWidgets.QLabel(self.message)
 
@@ -745,6 +747,11 @@ class RestartDialog(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        self.setWindowTitle("QuadPype: Restart Required")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         message_label = QtWidgets.QLabel(self.message)
 
         btns_widget = QtWidgets.QWidget(self)
@@ -795,6 +802,9 @@ class GridLabelWidget(QtWidgets.QWidget):
 
         label_widget = QtWidgets.QLabel(label, self)
         label_widget.setObjectName("SettingsLabel")
+        # Adding top and bottom margin to center the label vertically with the widget
+        label_widget.setContentsMargins(0, 6, 0, 6)
+        label_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
         label_proxy_layout = QtWidgets.QHBoxLayout()
         label_proxy_layout.setContentsMargins(0, 0, 0, 0)
@@ -803,10 +813,11 @@ class GridLabelWidget(QtWidgets.QWidget):
         label_proxy_layout.addWidget(label_widget, 0, QtCore.Qt.AlignRight)
 
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 2, 0, 0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
         layout.addLayout(label_proxy_layout, 0)
+        # The stretch is for force widget(s) to snap to the top of the layout
         layout.addStretch(1)
 
         label_widget.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -888,7 +899,7 @@ class ProjectModel(QtGui.QStandardItemModel):
         return super(ProjectModel, self).flags(index)
 
     def refresh(self):
-        # Change id of versions refresh
+        # Change id of refreshed versions
         self._version_refresh_id = uuid.uuid4()
 
         new_items = []

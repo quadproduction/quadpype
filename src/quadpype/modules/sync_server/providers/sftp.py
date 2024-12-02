@@ -5,7 +5,7 @@ import threading
 import platform
 
 from quadpype.lib import Logger
-from quadpype.settings import get_global_settings, MODULES_SETTINGS_KEY
+from quadpype.settings import get_global_settings, ADDONS_SETTINGS_KEY
 from .abstract_provider import AbstractProvider
 log = Logger.get_logger("SyncServer-SFTPHandler")
 
@@ -376,7 +376,7 @@ class SFTPHandler(AbstractProvider):
         provider_presets = None
         try:
             provider_presets = (
-                get_global_settings()[MODULES_SETTINGS_KEY]
+                get_global_settings()[ADDONS_SETTINGS_KEY]
                 ["sync_server"]
                 ["providers"]
                 ["sftp"]

@@ -1,9 +1,5 @@
 from qtpy import QtWidgets, QtCore
 
-from quadpype.tools.settings import (
-    CHILD_OFFSET
-)
-
 from .base import InputWidget
 from .widgets import ExpandingWidget
 from .lib import (
@@ -210,7 +206,7 @@ class ListWidget(InputWidget):
         content_widget.setObjectName("ContentWidget")
         content_widget.setProperty("content_state", content_state)
         content_layout = QtWidgets.QVBoxLayout(content_widget)
-        content_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 5)
+        content_layout.setContentsMargins(0, 5, 0, 5)
 
         if body_widget is None:
             main_layout.addWidget(content_widget)

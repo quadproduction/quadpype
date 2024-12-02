@@ -402,7 +402,7 @@ class JSONSettingRegistry(ASettingRegistry):
 
     @lru_cache(maxsize=32)
     def _get_item(self, name, fallback=_PLACEHOLDER):
-        # type: (str, Any) -> object
+        # type: (str, Any) -> Any
         """Get item value from registry the JSON.
 
         Note:
@@ -421,7 +421,7 @@ class JSONSettingRegistry(ASettingRegistry):
         return value
 
     def get_item(self, name, fallback=_PLACEHOLDER):
-        # type: (str, Any) -> object
+        # type: (str, Any) -> Any
         """Get item value from registry the JSON.
 
         Args:

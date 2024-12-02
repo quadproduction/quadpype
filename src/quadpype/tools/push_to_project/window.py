@@ -372,14 +372,16 @@ class PushToContextSelectWindow(QtWidgets.QDialog):
         self, controller=None, library_filter=True, context_only=False
     ):
         super().__init__()
+
+        self.setWindowTitle("Push to project (select context)")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         if controller is None:
             controller = PushToContextController(library_filter=library_filter)
         self._controller = controller
         self.context_only = context_only
         self.context = None
-
-        self.setWindowTitle("Push to project (select context)")
-        self.setWindowIcon(QtGui.QIcon(get_app_icon_path()))
 
         main_context_widget = QtWidgets.QWidget(self)
 
@@ -602,7 +604,7 @@ class PushToContextSelectWindow(QtWidgets.QDialog):
         self._user_input_changed_timer = user_input_changed_timer
         # Store current value on input text change
         #   The value is unset when is passed to controller
-        # The goal is to have controll over changes happened during user change
+        # The goal is to have control over changes happened during user change
         #   in UI and controller auto-changes
         self._variant_input_text = None
         self._new_asset_name_input_text = None

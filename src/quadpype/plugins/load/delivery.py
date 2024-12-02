@@ -60,9 +60,9 @@ class DeliveryOptionsDialog(QtWidgets.QDialog):
     def __init__(self, contexts, log=None, parent=None):
         super().__init__(parent=parent)
 
-        self.setWindowTitle("QuadPype - Deliver versions")
-        icon = QtGui.QIcon(resources.get_app_icon_filepath())
-        self.setWindowIcon(icon)
+        self.setWindowTitle("QuadPype: Deliver Versions")
+        window_icon = QtGui.QIcon(resources.get_app_icon_filepath())
+        self.setWindowIcon(window_icon)
 
         self.setWindowFlags(
             QtCore.Qt.WindowStaysOnTopHint

@@ -3,6 +3,8 @@ import collections
 
 from qtpy import QtCore, QtWidgets, QtGui
 
+from quadpype.style import get_app_icon_path
+
 ENTITY_LABEL_ROLE = QtCore.Qt.UserRole + 1
 ENTITY_PATH_ROLE = QtCore.Qt.UserRole + 2
 
@@ -58,7 +60,9 @@ class SearchEntitiesDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__(parent=parent)
 
-        self.setWindowTitle("Search Settings")
+        self.setWindowTitle("QuadPype: Search Settings")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         filter_edit = QtWidgets.QLineEdit(self)
         filter_edit.setPlaceholderText("Search...")

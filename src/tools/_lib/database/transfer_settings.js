@@ -1,6 +1,6 @@
-function transferSettings(sourceDbName, targetDbName) {
-    const sourceDb = connect(`mongodb://localhost/${sourceDbName}`);
-    const targetDb = connect(`mongodb://localhost/${targetDbName}`);
+function transferSettings(mongoSourceURI, mongoDestinationURI, sourceDbName, targetDbName) {
+    const sourceDb = connect(`${mongoSourceURI}/${sourceDbName}`);
+    const targetDb = connect(`${mongoDestinationURI}/${targetDbName}`);
 
     const sourceSettings = sourceDb.getCollection('settings');
     const targetSettings = targetDb.getCollection('settings');
@@ -9,7 +9,6 @@ function transferSettings(sourceDbName, targetDbName) {
     if (targetDb.getCollectionNames().includes('settings')) {
         targetDb.getCollection('settings').drop();
     }
-
     // Find all documents in source.settings except "local_settings" and "versions_order"
     settingsDocuments = sourceSettings.find({
         type: { $nin: ["local_settings", "versions_order"] }
@@ -39,7 +38,13 @@ function transferSettings(sourceDbName, targetDbName) {
         if (document.type === "system_settings"){
             document.type = "global_settings";
             document.data.core = document.data.general;
+            document.data.addons = document.data.modules;
+            if (document.data.addons.standalonepublish_tool) {
+                document.data.addons.standalone_publisher = document.data.addons.standalonepublish_tool;
+                delete document.data.addons.standalonepublish_tool;
+            }
             delete document.data.general;
+            delete document.data.modules;
             targetSettings.insert(document);
             return
         }
@@ -48,7 +53,7 @@ function transferSettings(sourceDbName, targetDbName) {
             document.type = "core_settings";
             document.data.production_version = "4.0.0";
             document.data.staging_version = "4.0.0";
-            document.data.quadpype_path = document.data.openpype_path;
+            document.data.remote_versions_dirs = document.data.openpype_path;
             delete document.data.openpype_path;
             targetSettings.insert(document);
             return
@@ -67,18 +72,14 @@ function transferSettings(sourceDbName, targetDbName) {
         if (document.type === "system_settings_versioned") {
             document.type = "global_settings_versioned"
             document.data.core = document.data.general;
-// TODO : Need PackageHandler can handle environment variable {OPENPYPE_CUSTOM_PLUGINS}
-//            document.data.modules.custom_addons = [
-//                {
-//                    package_name: "openpype_custom_plugins",
-//                    package_remote_dir: document.data.modules.addon_paths,
-//                    version: "",
-//                    staging_version: "",
-//                    retrieve_locally: true
-//                }
-//            ];
-            delete document.data.general;
             delete document.data.modules.addon_paths;
+            document.data.addons = document.data.modules;
+            if (document.data.addons.standalonepublish_tool) {
+                document.data.addons.standalone_publisher = document.data.addons.standalonepublish_tool;
+                delete document.data.addons.standalonepublish_tool;
+            }
+            delete document.data.general;
+            delete document.data.modules;
             if (document.last_saved_info && document.last_saved_info.timestamp) {
                 const timestamp = new Date(document.last_saved_info.timestamp);
                 if (!latestVersionedSystemSettings || timestamp > new Date(latestVersionedSystemSettings.last_saved_info.timestamp)) {
@@ -121,20 +122,24 @@ function transferSettings(sourceDbName, targetDbName) {
         targetSettings.insert(latestDocument);
     });
 
-    const sourceDbProjectsDb = connect(`mongodb://localhost/avalon`);
-    const targetDbProjectsDb = connect(`mongodb://localhost/${targetDbName}_projects`);
-
+    const sourceDbProjectsDb = connect(`${mongoSourceURI}/avalon`);
+    const targetDbProjectsDb = connect(`${mongoDestinationURI}/${targetDbName}_projects`);
     collections = sourceDbProjectsDb.getCollectionNames();
     collections.forEach(collectionName => {
         sourceCollection = sourceDbProjectsDb.getCollection(collectionName);
         targetCollection = targetDbProjectsDb.getCollection(collectionName);
+        // Drop the target collection if it already exists
+        if (targetDbProjectsDb.getCollectionNames().includes(collectionName)) {
+            targetCollection.drop();
+            console.log("Collection ${collectionName} dropped from target database.");
+        }
 
         sourceCollection.find().forEach(document => {
             targetCollection.insert(document);
         });
         console.log("Collection $(collectionName) transferred to ${targetDbName}_projects database.");
     });
-    console.log("Transfer complete!");
+    console.log("Transfer completed!");
 }
 
-transferSettings('openpype', 'quadpype');
+transferSettings(MONGO_URI, MONGO_DESTINATION, 'openpype', 'quadpype');

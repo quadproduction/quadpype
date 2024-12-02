@@ -42,7 +42,7 @@ import copy
 import platform
 
 from quadpype.modules import QuadPypeModule, click_wrap
-from quadpype.settings import get_global_settings, MODULES_SETTINGS_KEY
+from quadpype.settings import get_global_settings, ADDONS_SETTINGS_KEY
 
 
 class JobQueueModule(QuadPypeModule):
@@ -126,7 +126,7 @@ class JobQueueModule(QuadPypeModule):
 
     @classmethod
     def get_jobs_root_from_settings(cls):
-        module_settings = get_global_settings()[MODULES_SETTINGS_KEY]
+        module_settings = get_global_settings()[ADDONS_SETTINGS_KEY]
         jobs_root_mapping = module_settings.get(cls.name, {}).get("jobs_root")
         converted_mapping = cls._roots_mapping_conversion(jobs_root_mapping)
 
@@ -156,7 +156,7 @@ class JobQueueModule(QuadPypeModule):
 
     @classmethod
     def get_server_url_from_settings(cls):
-        module_settings = get_global_settings()[MODULES_SETTINGS_KEY]
+        module_settings = get_global_settings()[ADDONS_SETTINGS_KEY]
         return cls.url_conversion(
             module_settings
             .get(cls.name, {})

@@ -15,7 +15,7 @@ from quadpype.settings import (
     SaveWarningExc,
     get_project_settings,
     CORE_SETTINGS_KEY,
-    MODULES_SETTINGS_KEY
+    ADDONS_SETTINGS_KEY
 )
 from quadpype.settings.lib import get_global_settings
 from quadpype.lib import Logger
@@ -319,7 +319,7 @@ class FtrackModule(
                 " Can't propagate changes to Ftrack server."
             ))
 
-        ftrack_changes = changes.get(MODULES_SETTINGS_KEY, {}).get("ftrack", {})
+        ftrack_changes = changes.get(ADDONS_SETTINGS_KEY, {}).get("ftrack", {})
         url_change_msg = None
         if "ftrack_server" in ftrack_changes:
             url_change_msg = (

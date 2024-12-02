@@ -830,7 +830,7 @@ class SyncServerSites(DictImmutableKeysEntity):
         from quadpype_modules import sync_server
 
         # Load global settings to find out all created sites
-        modules_entity = self.get_entity_from_path("global_settings/modules")
+        modules_entity = self.get_entity_from_path("global_settings/addons")
         sync_server_settings_entity = modules_entity.get("sync_server")
 
         # Get project settings configurations for all providers

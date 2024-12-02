@@ -3,8 +3,10 @@ import re
 import copy
 import logging
 
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, QtGui
 
+
+from quadpype.style import get_app_icon_path
 from quadpype.pipeline import (
     registered_host,
     legacy_io,
@@ -133,9 +135,6 @@ class SubversionLineEdit(QtWidgets.QWidget):
     def set_values(self, values):
         self._update(values)
 
-    def _on_button_clicked(self):
-        self._menu.exec_()
-
     def _on_action_clicked(self, action):
         self._input_field.setText(action.text())
 
@@ -143,7 +142,7 @@ class SubversionLineEdit(QtWidgets.QWidget):
         """Create optional predefined subset names
 
         Args:
-            default_names(list): all predefined names
+            values(list): all predefined names
 
         Returns:
              None
@@ -186,6 +185,11 @@ class SaveAsDialog(QtWidgets.QDialog):
         self, parent, root, anatomy, template_key, extensions, session=None
     ):
         super().__init__(parent=parent)
+
+        self.setWindowTitle("QuadPype: Save As...")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
 
         self.result = None
@@ -433,6 +437,7 @@ class SaveAsDialog(QtWidgets.QDialog):
             if index >= 0:
                 self.ext_combo.setCurrentIndex(index)
 
+        work_file = None
         if not self.last_version_check.isChecked():
             self.version_input.setEnabled(True)
             self.data["version"] = self.version_input.value()

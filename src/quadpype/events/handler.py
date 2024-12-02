@@ -2,9 +2,13 @@
 """Module storing the class and logic of the QuadPype Events Handler."""
 import os
 import time
-from datetime import datetime, timezone
+import functools
+
+from typing import Optional
+from datetime import datetime, timezone, timedelta
 
 import pymongo
+import requests
 from qtpy import QtCore, QtWidgets
 
 from quadpype.lib import (
@@ -17,6 +21,8 @@ from quadpype.client.mongo import QuadPypeMongoConnection
 
 
 _EVENT_HANDLER = None
+CHECK_NEW_EVENTS_INTERVAL_SECONDS = 120
+MINIMUM_EVENT_EXPIRE_IN_SECONDS = CHECK_NEW_EVENTS_INTERVAL_SECONDS + 10
 
 
 class EventHandlerWorker(QtCore.QThread):
@@ -30,6 +36,8 @@ class EventHandlerWorker(QtCore.QThread):
         super(EventHandlerWorker, self).__init__(parent)
 
         self._manager = manager
+
+        self._webserver_url = self._manager.webserver.url
 
         # Get info about the timestamp of the last handled event
         self._last_handled_event_timestamp = self._manager.app_registry.get_item(
@@ -46,7 +54,6 @@ class EventHandlerWorker(QtCore.QThread):
             )
 
     def run(self):
-        print("Processing new events")
         start_time = time.time()
 
         # Retrieve the new events to process
@@ -56,15 +63,28 @@ class EventHandlerWorker(QtCore.QThread):
             }
         }).sort("timestamp", 1)
 
-        print(self._manager.webserver.url)
-
         # Process the events
+        current_timestamp = datetime.now()
         for doc in db_cursor:
             if not self._manager.is_running:
                 break
-            # Webserver status
-            # Webserver url + port
-            print(doc)
+            if "expire_at" in doc and doc["expire_at"] > current_timestamp:
+                # This event is expired, skip
+                self._last_handled_event_timestamp = doc["timestamp"]
+                continue
+
+            route = doc["route"]
+            if not route.startwith("/"):
+                route = "/" + route
+
+            url_with_route = self._webserver_url + route
+
+            # Send the event to the webserver API
+            funct = getattr(requests, doc["type"])
+            if not doc["content"]:
+                response = funct(url_with_route)
+            else:
+                response = funct(url_with_route, **doc["content"])
 
             # Update the last handled timestamp
             self._last_handled_event_timestamp = doc["timestamp"]
@@ -81,7 +101,7 @@ class EventHandlerWorker(QtCore.QThread):
             return
 
         elapsed_time = round(time.time() - start_time)
-        waiting_time = max(0, self._manager.check_new_events_interval_secs - elapsed_time)
+        waiting_time = max(0, CHECK_NEW_EVENTS_INTERVAL_SECONDS - elapsed_time)
         waiting_time_msec = waiting_time * 1000
 
         self.task_completed.emit(waiting_time_msec)
@@ -89,7 +109,6 @@ class EventHandlerWorker(QtCore.QThread):
 
 class EventsHandlerManager:
     """Class handling QuadPype events."""
-    check_new_events_interval_secs = 120
     non_mandatory_event_max_lifespan = 3600
 
     def __init__(self):
@@ -189,3 +208,78 @@ def get_event_handler() -> EventsHandlerManager:
         _EVENT_HANDLER = EventsHandlerManager()
 
     return _EVENT_HANDLER
+
+
+def require_events_handler(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        get_event_handler()
+        return func(*args, **kwargs)
+    return wrapper
+
+
+def _validate_event_values(event_route: str,
+                           event_type: str,
+                           content: Optional[dict],
+                           target_users: list,
+                           target_groups: list,
+                           expire_in: Optional[int]):
+    """Function to validate event values before submitting the event."""
+    if not isinstance(event_route, str) or not event_route.strip():
+        return False, "The event 'route' need to be a not empty string."
+
+    if not isinstance(event_type, str) or not event_type.strip():
+        return False, "The event 'type' need to be a not empty string."
+
+    if content is not None and not isinstance(content, dict):
+        return False, "The event 'content' can only be None or a valid dict."
+
+    if not isinstance(target_users, list):
+        return False, "The event 'target_users' can only be None or a list."
+
+    if not isinstance(target_groups, list):
+        return False, "The event 'target_groups' can only be None or a list."
+
+    if expire_in is not None and not isinstance(expire_in, int) or expire_in <= 0:
+        return False, "The event 'expire_in' can only be None or a strictly positive integer."
+
+
+@require_events_handler
+def register_event(event_route: str,
+                   event_type: str,
+                   content: Optional[dict],
+                   target_users: Optional[list] = None,
+                   target_groups: Optional[list] = None,
+                   expire_in: Optional[int] = None):
+    if target_users is None:
+        target_users = []
+    elif isinstance(target_users, str):
+        target_users = [target_users]
+
+    if target_groups is None:
+        target_groups = []
+    elif isinstance(target_groups, str):
+        target_groups = [target_groups]
+
+    # Ensure the events values are correct before adding the event in the database
+    is_valid, invalid_msg = _validate_event_values(
+        event_route, event_type, content, target_users, target_groups, expire_in)
+
+    if not is_valid:
+        raise ValueError(invalid_msg)
+
+    timestamp = datetime.now()
+    event = {
+        "timestamp": timestamp,
+        "route": event_route,
+        "type": event_type,
+        "target_users": target_users,
+        "target_groups": target_groups,
+        "content": content,
+    }
+
+    if expire_in is not None:
+        expire_in += MINIMUM_EVENT_EXPIRE_IN_SECONDS
+        event["expire_at"] = timestamp + timedelta(seconds=expire_in)
+
+    _EVENT_HANDLER.collection.insert_one(event)

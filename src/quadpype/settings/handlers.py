@@ -912,29 +912,37 @@ class MongoSettingsHandler(SettingsHandler):
 
     def _apply_core_settings_changes_to_package_instance(self, new_core_settings):
         """Apply the new changes of the core settings to the QuadPype package instance."""
+        platform_low = platform.system().lower()
+        package = get_package("quadpype")
 
         # Fetch the core settings
         curr_core_settings_doc = self.get_core_settings_doc()
         curr_core_settings = curr_core_settings_doc["data"] if curr_core_settings_doc else {}
 
         # Keys to monitor
-        keys_to_check = ["quadpype_path", "local_quadpype_path"]
-        changes = {}
+        keys_to_check = [
+            ("remote_versions_dirs", package.change_remote_dir_paths),
+            ("local_versions_dir", package.change_local_dir_path)
+        ]
 
+        changes = {}
         # Check for changes
-        for key in keys_to_check:
+        for key, _ in keys_to_check:
             curr_value = curr_core_settings.get(key)
             new_value = new_core_settings.get(key)
             if curr_value != new_value:
                 changes[key] = new_value
 
-        # Apply the changes (if any)
-        if changes:
-            package = get_package("quadpype")
-            if "quadpype_path" in changes:
-                package.change_remote_dir_paths(changes["quadpype_path"][platform.system().lower()])
-            if "local_quadpype_path" in changes:
-                package.change_local_dir_path(changes["local_quadpype_path"][platform.system().lower()][0])
+        if not changes:
+            return
+
+        # Apply the changes
+        for key, funct in keys_to_check:
+            if key in changes:
+                if changes[key] and platform_low in changes[key]:
+                    funct(changes[key][platform_low])
+                else:
+                    funct(None)
 
     def _check_version_order(self):
         """This method will work only in QuadPype process.
@@ -1302,10 +1310,8 @@ class MongoSettingsHandler(SettingsHandler):
         self, sorted=None
     ):
         docs = self.collection.find(
-            {"type": {
-                "$in": [DATABASE_GLOBAL_SETTINGS_VERSIONED_KEY, GLOBAL_SETTINGS_KEY]
-            }},
-            {"type": True, "version": True}
+            {"type": DATABASE_GLOBAL_SETTINGS_VERSIONED_KEY},
+            {"version": True}
         )
         output = set()
         for doc in docs:
@@ -1321,7 +1327,7 @@ class MongoSettingsHandler(SettingsHandler):
             {"type": {
                 "$in": [DATABASE_PROJECT_ANATOMY_VERSIONED_KEY, PROJECT_ANATOMY_KEY]
             }},
-            {"type": True, "version": True}
+            {"version": True}
         )
         output = set()
         for doc in docs:
@@ -1340,7 +1346,7 @@ class MongoSettingsHandler(SettingsHandler):
                     "$in": [DATABASE_PROJECT_SETTINGS_VERSIONED_KEY, PROJECT_SETTINGS_KEY]
                 }
             },
-            {"type": True, "version": True}
+            {"version": True}
         )
         output = set()
         for doc in docs:
@@ -1359,7 +1365,7 @@ class MongoSettingsHandler(SettingsHandler):
                     "$in": [DATABASE_PROJECT_SETTINGS_VERSIONED_KEY, PROJECT_SETTINGS_KEY]
                 }
             },
-            {"type": True, "version": True}
+            {"version": True}
         )
         output = set()
         for doc in docs:

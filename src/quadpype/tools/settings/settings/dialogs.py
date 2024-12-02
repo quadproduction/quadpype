@@ -1,5 +1,6 @@
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, QtGui
 
+from quadpype.style import get_app_icon_path
 from quadpype.tools.utils.delegates import pretty_date
 
 
@@ -13,6 +14,8 @@ class BaseInfoDialog(QtWidgets.QDialog):
         self._info_obj = info_obj
 
         self.setWindowTitle(title)
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         message_label = QtWidgets.QLabel(message, self)
         message_label.setWordWrap(True)

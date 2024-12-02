@@ -1,9 +1,9 @@
 from math import ceil
 from qtpy import QtWidgets, QtCore, QtGui
 
+from quadpype.style import get_app_icon_path
 from quadpype.widgets.nice_checkbox import NiceCheckbox
 
-# from quadpype.tools.utils import DeselectableTreeView
 from .constants import (
     ITEM_ID_ROLE,
     ITEM_IS_GROUP_ROLE
@@ -328,7 +328,11 @@ class DetailsPopup(QtWidgets.QDialog):
 
     def __init__(self, parent, center_widget):
         super().__init__(parent)
-        self.setWindowTitle("Report Details")
+
+        self.setWindowTitle("QuadPype: Report Details")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         layout = QtWidgets.QHBoxLayout(self)
 
         self._center_widget = center_widget

@@ -20,7 +20,7 @@ from quadpype.settings import (
     PROJECT_SETTINGS_KEY,
     SCHEMA_KEY_GLOBAL_SETTINGS,
     SCHEMA_KEY_PROJECT_SETTINGS,
-    MODULES_SETTINGS_KEY
+    ADDONS_SETTINGS_KEY
 )
 
 from quadpype.settings.lib import (
@@ -639,7 +639,7 @@ class ModulesManager:
         if global_settings is None:
             global_settings = get_global_settings()
 
-        modules_settings = global_settings[MODULES_SETTINGS_KEY]
+        modules_settings = global_settings[ADDONS_SETTINGS_KEY]
 
         report = {}
         time_start = time.time()
@@ -1093,7 +1093,9 @@ class TrayModulesManager(ModulesManager):
     # Define order of modules in menu
     modules_menu_order = (
         # Menu ------------------------------------------
-        # "user",                  # {USERNAME} <not a real module>
+        # QuadPype: STUDIO_NAME
+        # USERNAME
+        # VERSION
         "ftrack",                  # ftrack
         "kitsu",                   # Kitsu
         "muster",                  # Muster
@@ -1102,17 +1104,17 @@ class TrayModulesManager(ModulesManager):
         "tray_publisher",          # Publisher
         "standalone_publisher",    # Publisher (legacy)
         "clockify",                # Clockify
-        "user_settings",           # User Settings
-        # More Tools Submenu -----------------------------
         "sync_server",             # Sync Queue
+        # More Tools Submenu -----------------------------
         "update_zxp_extensions",   # Update ZXP Extensions
         "log_viewer",              # Show Logs
         "python_interpreter",      # Console
         # Admin Submenu ----------------------------------
         "project_manager",         # Project Manager (beta)
+        # User Settings ----------------------------------
+        "user_settings",           # User Settings
         # Services Submenu -------------------------------
         "control_panel",           # Studio Control Panel
-        # Order currently not defined (this could be done)
     )
 
     def __init__(self):
@@ -1175,7 +1177,7 @@ class TrayModulesManager(ModulesManager):
 
     def restart_tray(self):
         if self.tray_manager:
-            self.tray_manager.restart()
+            self.tray_manager.restart(reset_version=True)
 
     def tray_init(self):
         report = {}

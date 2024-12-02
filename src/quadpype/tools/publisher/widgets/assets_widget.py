@@ -2,6 +2,7 @@ import collections
 
 from qtpy import QtWidgets, QtCore, QtGui
 
+from quadpype.style import get_app_icon_path
 from quadpype.tools.utils import (
     PlaceholderLineEdit,
     RecursiveSortFilterProxyModel,
@@ -37,7 +38,7 @@ class CreateWidgetAssetsWidget(SingleSelectAssetsWidget):
     def _check_header_height(self):
         """Catch header height changes.
 
-        Label on top of creaters should have same height so Creators view has
+        Label on top of creators should have same height so Creators view has
         same offset.
         """
         height = self.header_widget.height()
@@ -197,7 +198,10 @@ class AssetsDialog(QtWidgets.QDialog):
 
     def __init__(self, controller, parent):
         super().__init__(parent)
-        self.setWindowTitle("Select asset")
+
+        self.setWindowTitle("QuadPype: Select Asset")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         model = AssetsHierarchyModel(controller)
         proxy_model = RecursiveSortFilterProxyModel()

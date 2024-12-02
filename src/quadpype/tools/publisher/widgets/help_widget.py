@@ -3,7 +3,9 @@ try:
 except Exception:
     commonmark = None
 
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, QtGui
+
+from quadpype.style import get_app_icon_path
 
 
 class HelpButton(QtWidgets.QPushButton):
@@ -57,7 +59,9 @@ class HelpDialog(QtWidgets.QDialog):
     def __init__(self, controller, parent):
         super().__init__(parent)
 
-        self.setWindowTitle("Help dialog")
+        self.setWindowTitle("QuadPype: Help dialog")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         help_content = HelpWidget(self)
 

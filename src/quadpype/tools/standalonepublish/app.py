@@ -33,6 +33,11 @@ class Window(QtWidgets.QDialog):
 
     def __init__(self, pyblish_paths, parent=None):
         super().__init__(parent=parent)
+
+        self.setWindowTitle("QuadPype: Standalone Publish")
+        window_icon = QtGui.QIcon(style.get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self._db = AvalonMongoDB()
         self._db.install()
 
@@ -45,7 +50,6 @@ class Window(QtWidgets.QDialog):
 
         self.pyblish_paths = pyblish_paths
 
-        self.setWindowTitle("Standalone Publish")
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
@@ -121,7 +125,7 @@ class Window(QtWidgets.QDialog):
             self.frameGeometry().height()
             - self.shadow_widget.frameGeometry().height()
         ) / 2
-        self.shadow_widget.move(position_x, position_y)
+        self.shadow_widget.move(int(position_x), int(position_y))
         w = self.frameGeometry().width()
         h = self.frameGeometry().height()
         self.shadow_widget.resize(QtCore.QSize(w, h))

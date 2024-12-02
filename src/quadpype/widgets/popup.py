@@ -1,7 +1,9 @@
 import sys
 import contextlib
 
-from qtpy import QtCore, QtWidgets
+from qtpy import QtCore, QtWidgets, QtGui
+
+from quadpype.style import get_app_icon_path
 
 
 class Popup(QtWidgets.QDialog):
@@ -16,6 +18,11 @@ class Popup(QtWidgets.QDialog):
 
     def __init__(self, parent=None, *args, **kwargs):
         super().__init__(parent=parent, *args, **kwargs)
+
+        self.setWindowTitle("QuadPype: Popup")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
+
         self.setContentsMargins(0, 0, 0, 0)
 
         # Layout
@@ -49,9 +56,6 @@ class Popup(QtWidgets.QDialog):
 
         # Signals
         button.clicked.connect(self._on_clicked)
-
-        # Set default title
-        self.setWindowTitle("Popup")
 
     def setMessage(self, message):
         self.widgets['message'].setText(message)

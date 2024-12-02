@@ -2,7 +2,7 @@ $SCRIPT_DIR = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 
 function migrate_settings() {
     $MIGRATE_DB_SCRIPT_PATH = Join-Path -Path (Split-Path $SCRIPT_DIR -Parent) -ChildPath "tools\_lib\database\transfer_settings.js"
-    $MIGRATE_VAL = mongosh --file $MIGRATE_DB_SCRIPT_PATH --quiet
+    $MIGRATE_VAL =  mongosh --file $MIGRATE_DB_SCRIPT_PATH --eval "MONGO_URI='$MONGO_URI', MONGO_DESTINATION='$MONGO_DESTINATION'" --quiet
     return $MIGRATE_VAL
 }
 
@@ -24,10 +24,19 @@ function main
         }
     }
 
-    # No else statement since the previous if can clear the variable
     if (!$MONGO_URI) {
-        $MONGO_URI = (Read-Host -Prompt "Enter the MongoDB URI (port included) : ").ToLower()
-        if (!$MONGO_URI -Or !($MONGO_URI -match "(mongodb://)?[\w.-]+:\d{1,5}")) {
+        $MONGO_URI = (Read-Host -Prompt "Enter your source MongoDB URI (port included) ").ToLower()
+        if (!$MONGO_URI -Or !($MONGO_URI -match "(^(mongodb(?:\+srv)?):\/\/[^\s]+$)")) {
+            write-output "The MongoDB connection URI seems invalid."
+            write-output "The format should be like: mongodb://uri.to.my.mongo-db:27017"
+            write-output "operation aborted."
+            return 1
+        }
+    }
+
+    if (!$MONGO_DESTINATION) {
+        $MONGO_DESTINATION = (Read-Host -Prompt "Enter your destination MongoDB URI (port included) ").ToLower()
+        if (!$MONGO_DESTINATION -Or !($MONGO_DESTINATION -match "(^(mongodb(?:\+srv)?):\/\/[^\s]+$)")) {
             write-output "The MongoDB connection URI seems invalid."
             write-output "The format should be like: mongodb://uri.to.my.mongo-db:27017"
             write-output "operation aborted."

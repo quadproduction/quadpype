@@ -32,7 +32,7 @@ from quadpype.settings import (
     ProjectSettingsEntity,
     DefaultsNotDefined,
     CORE_SETTINGS_KEY,
-    MODULES_SETTINGS_KEY
+    ADDONS_SETTINGS_KEY
 )
 from quadpype.tools.utils import (
     WrappedCallbackItem,
@@ -61,8 +61,10 @@ class VersionUpdateDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        icon = QtGui.QIcon(resources.get_app_icon_filepath())
-        self.setWindowIcon(icon)
+        self.setWindowTitle("QuadPype: Version Update")
+        window_icon = QtGui.QIcon(resources.get_app_icon_filepath())
+        self.setWindowIcon(window_icon)
+
         self.setWindowFlags(
             self.windowFlags()
             | QtCore.Qt.WindowStaysOnTopHint
@@ -179,16 +181,17 @@ class VersionUpdateDialog(QtWidgets.QDialog):
 class ProductionStagingDialog(QtWidgets.QDialog):
     """Tell user that he has enabled staging but is in production version.
 
-    This is showed only when staging is enabled with '--use-staging' and it's
+    This is shown only when staging is enabled with '--use-staging' and it's
     version is the same as production's version.
     """
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.setWindowTitle("QuadPype: Information")
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
-        self.setWindowTitle("Production and Staging versions are the same")
+
         self.setWindowFlags(
             self.windowFlags()
             | QtCore.Qt.WindowStaysOnTopHint
@@ -244,9 +247,10 @@ class BuildVersionDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        icon = QtGui.QIcon(resources.get_app_icon_filepath())
-        self.setWindowIcon(icon)
-        self.setWindowTitle("Outdated QuadPype installation")
+        self.setWindowTitle("QuadPype: Outdated QuadPype Installation")
+        window_icon = QtGui.QIcon(resources.get_app_icon_filepath())
+        self.setWindowIcon(window_icon)
+
         self.setWindowFlags(
             self.windowFlags()
             | QtCore.Qt.WindowStaysOnTopHint
@@ -308,7 +312,7 @@ class TrayManager:
         self.log = Logger.get_logger(self.__class__.__name__)
 
         global_settings = get_global_settings()
-        self.module_settings = global_settings[MODULES_SETTINGS_KEY]
+        self.module_settings = global_settings[ADDONS_SETTINGS_KEY]
 
         self.modules_manager = TrayModulesManager()
 

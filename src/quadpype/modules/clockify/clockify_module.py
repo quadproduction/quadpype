@@ -9,6 +9,7 @@ from .constants import CLOCKIFY_FTRACK_USER_PATH, CLOCKIFY_FTRACK_SERVER_PATH
 
 
 class ClockifyModule(QuadPypeModule, ITrayModule, IPluginPaths):
+    label = "Clockify"
     name = "clockify"
 
     def initialize(self, modules_settings):
@@ -173,7 +174,7 @@ class ClockifyModule(QuadPypeModule, ITrayModule, IPluginPaths):
         # Menu for Tray App
         from qtpy import QtWidgets
 
-        menu = QtWidgets.QMenu("Clockify", parent_menu)
+        menu = QtWidgets.QMenu(self.label, parent_menu)
         menu.setProperty("submenu", "on")
 
         # Actions

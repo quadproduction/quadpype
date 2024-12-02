@@ -4,6 +4,7 @@ import collections
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 
+from quadpype.style import get_app_icon_path
 from quadpype.tools.flickcharm import FlickCharm
 from quadpype.tools.utils.assets_widget import SingleSelectAssetsWidget
 from quadpype.tools.utils.tasks_widget import TasksWidget
@@ -375,7 +376,7 @@ class ActionBar(QtWidgets.QWidget):
                     actions_mapping[menu_action] = action
                     continue
 
-                sub_menu = QtWidgets.QMenu(label, menu)
+                sub_menu = QtWidgets.QMenu(action_item, menu)
                 for action in actions:
                     menu_action = QtWidgets.QAction(
                         lib.get_action_label(action)
@@ -453,7 +454,10 @@ class ActionHistory(QtWidgets.QPushButton):
 
         # Show history
         dialog = QtWidgets.QDialog(parent=self)
-        dialog.setWindowTitle("Action History")
+        dialog.setWindowTitle("QuadPype: Action History")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        dialog.setWindowIcon(window_icon)
+
         dialog.setWindowFlags(
             QtCore.Qt.FramelessWindowHint | QtCore.Qt.Popup
         )

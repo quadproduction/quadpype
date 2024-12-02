@@ -1,4 +1,4 @@
-from qtpy import QtWidgets
+from qtpy import QtWidgets, QtGui
 
 from quadpype import style
 from quadpype.lib import Logger
@@ -10,7 +10,10 @@ from quadpype.tools.attribute_defs import AttributeDefinitionsWidget
 class WorkfileBuildPlaceholderDialog(QtWidgets.QDialog):
     def __init__(self, host, builder, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Workfile Placeholder Manager")
+
+        self.setWindowTitle("QuadPype: Workfile Placeholder Manager")
+        window_icon = QtGui.QIcon(style.get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         self._log = None
 

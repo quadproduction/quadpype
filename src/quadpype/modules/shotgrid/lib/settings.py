@@ -1,4 +1,4 @@
-from quadpype.settings import get_global_settings, get_project_settings, MODULES_SETTINGS_KEY
+from quadpype.settings import get_global_settings, get_project_settings, ADDONS_SETTINGS_KEY
 from quadpype.modules.shotgrid.lib.const import MODULE_NAME
 
 
@@ -7,7 +7,7 @@ def get_shotgrid_project_settings(project):
 
 
 def get_shotgrid_settings():
-    return get_global_settings().get(MODULES_SETTINGS_KEY, {}).get(MODULE_NAME, {})
+    return get_global_settings().get(ADDONS_SETTINGS_KEY, {}).get(MODULE_NAME, {})
 
 
 def get_shotgrid_servers():

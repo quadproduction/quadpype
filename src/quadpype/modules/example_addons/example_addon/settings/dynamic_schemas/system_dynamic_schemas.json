@@ -1,5 +1,5 @@
 {
-    "global_settings/modules": {
+    "global_settings/addons": {
         "type": "schema",
         "name": "example_addon/main"
     }

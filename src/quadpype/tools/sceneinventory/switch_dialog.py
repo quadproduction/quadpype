@@ -1,8 +1,10 @@
 import collections
 import logging
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 
+
+from quadpype.style import get_app_icon_path
 from quadpype.client import (
     get_asset_by_name,
     get_assets,
@@ -57,7 +59,9 @@ class SwitchAssetDialog(QtWidgets.QDialog):
     def __init__(self, parent=None, items=None):
         super().__init__(parent)
 
-        self.setWindowTitle("Switch selected items ...")
+        self.setWindowTitle("QuadPype: Switch Selected Items ...")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         # Force and keep focus dialog
         self.setModal(True)

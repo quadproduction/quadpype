@@ -1,13 +1,15 @@
-from qtpy import QtWidgets
+from qtpy import QtWidgets, QtGui
 
-from quadpype.style import load_stylesheet
+from quadpype.style import get_app_icon_path, load_stylesheet
 
 
 class MyExampleDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("Connected modules")
+        self.setWindowTitle("QuadPype: Example Dialog")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         msg = "This is example dialog of example addon."
         label_widget = QtWidgets.QLabel(msg, self)

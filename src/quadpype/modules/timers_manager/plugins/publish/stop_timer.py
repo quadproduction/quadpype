@@ -7,7 +7,7 @@ Requires:
 
 import pyblish.api
 
-from quadpype.settings import MODULES_SETTINGS_KEY, GLOBAL_SETTINGS_KEY
+from quadpype.settings import ADDONS_SETTINGS_KEY, GLOBAL_SETTINGS_KEY
 
 
 class StopTimer(pyblish.api.ContextPlugin):
@@ -21,7 +21,7 @@ class StopTimer(pyblish.api.ContextPlugin):
             self.log.debug("TimersManager is disabled")
             return
 
-        modules_settings = context.data[GLOBAL_SETTINGS_KEY][MODULES_SETTINGS_KEY]
+        modules_settings = context.data[GLOBAL_SETTINGS_KEY][ADDONS_SETTINGS_KEY]
         if not modules_settings["timers_manager"]["disregard_publishing"]:
             self.log.debug("Publish is not affecting running timers.")
             return

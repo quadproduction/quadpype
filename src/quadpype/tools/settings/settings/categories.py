@@ -81,7 +81,8 @@ from .item_widgets import (
     RawJsonWidget,
     EnumeratorWidget,
     PathWidget,
-    PathInputWidget
+    PathInputWidget,
+    GridLabelWidget
 )
 from .color_widget import ColorWidget
 
@@ -164,12 +165,16 @@ class StandaloneCategoryWidget(QtWidgets.QWidget):
     def hierarchical_style_update(self):
         pass
 
-    def add_widget_to_layout(self, widget, label_widget=None):
-        if label_widget:
-            raise NotImplementedError(
-                "`add_widget_to_layout` on Category item can't accept labels"
-            )
-        self.content_layout.addWidget(widget, 0)
+    def add_widget_to_layout(self, widget, label=None):
+        row = self.content_layout.rowCount()
+        if not label:
+            self.content_layout.addWidget(widget, row, 0, 1, 2)
+        else:
+            label_widget = GridLabelWidget(label, widget)
+            label_widget.input_field = widget
+            widget.label_widget = label_widget
+            self.content_layout.addWidget(label_widget, row, 0, 1, 1)
+            self.content_layout.addWidget(widget, row, 1, 1, 1)
 
     @contextlib.contextmanager
     def working_state_context(self):

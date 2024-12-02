@@ -3,6 +3,8 @@ import tempfile
 
 from qtpy import QtCore, QtGui, QtWidgets
 
+from quadpype.style import get_app_icon_path
+
 
 class ScreenMarquee(QtWidgets.QDialog):
     """Dialog to interactively define screen area.
@@ -16,6 +18,10 @@ class ScreenMarquee(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+
+        self.setWindowTitle("QuadPype: Take Screenshot")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         self.setWindowFlags(
             QtCore.Qt.Window

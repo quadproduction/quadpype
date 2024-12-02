@@ -1,11 +1,16 @@
-from qtpy import QtWidgets
+from qtpy import QtWidgets, QtGui
 
+from quadpype.style import get_app_icon_path
 from .widgets import AttributeDefinitionsWidget
 
 
 class AttributeDefinitionsDialog(QtWidgets.QDialog):
     def __init__(self, attr_defs, parent=None):
         super().__init__(parent)
+
+        self.setWindowTitle("QuadPype: Attribute Definitions")
+        window_icon = QtGui.QIcon(get_app_icon_path())
+        self.setWindowIcon(window_icon)
 
         attrs_widget = AttributeDefinitionsWidget(attr_defs, self)
 

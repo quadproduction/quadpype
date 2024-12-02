@@ -433,7 +433,7 @@ def set_avalon_environments():
     environment variables.
     """
 
-    avalon_db = os.getenv("AVALON_DB") or "avalon"  # for tests
+    avalon_db = os.getenv("AVALON_DB") or "quadpype_projects"  # for tests
     os.environ.update({
         # Mongo DB name where avalon docs are stored
         "AVALON_DB": avalon_db,
@@ -454,7 +454,7 @@ def _update_zxp_extensions(quadpype_version, global_settings):
         igniter.open_zxp_update_window(quadpype_version, zxp_hosts_to_update)
 
 
-def set_modules_environments():
+def set_addons_environments():
     """Set global environments for QuadPype modules.
 
     This requires to have QuadPype in `sys.path`.
@@ -777,10 +777,10 @@ def _initialize_package_manager(database_url, version_str):
 
 
 def _load_addons(package_manager, global_settings, use_staging):
-    from quadpype.lib.version import AddOnHandler, MODULES_SETTINGS_KEY
+    from quadpype.lib.version import AddOnHandler, ADDONS_SETTINGS_KEY
     from appdirs import user_data_dir
 
-    addon_settings = global_settings.get(MODULES_SETTINGS_KEY, {}).get("custom_addons", {})
+    addon_settings = global_settings.get(ADDONS_SETTINGS_KEY, {}).get("custom_addons", {})
     local_dir = Path(user_data_dir("quadpype", "quad")) / "addons"
 
     if not local_dir.exists():
@@ -873,7 +873,7 @@ def boot():
         # change source DBs to predefined ones set for automatic testing
         if "_tests" not in os.environ["QUADPYPE_DATABASE_NAME"]:
             os.environ["QUADPYPE_DATABASE_NAME"] += "_tests"
-        avalon_db = os.getenv("AVALON_DB") or "avalon"
+        avalon_db = os.getenv("AVALON_DB") or "quadpype_projects"
         if "_tests" not in avalon_db:
             os.environ["AVALON_DB"] = avalon_db + "_tests"
 
@@ -966,8 +966,8 @@ def boot():
     set_avalon_environments()
     _print("  - global QuadPype ...")
     set_quadpype_global_environments()
-    _print("  - for modules ...")
-    set_modules_environments()
+    _print("  - for addons ...")
+    set_addons_environments()
 
     if not os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE"):
         _print(">>> Check ZXP extensions ...")

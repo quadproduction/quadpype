@@ -14,12 +14,12 @@
         "protect_anatomy_attributes": false
     },
     "local_env_white_list": [],
-    "quadpype_path": {
+    "remote_versions_dirs": {
         "windows": [],
         "darwin": [],
         "linux": []
     },
-    "local_quadpype_path": {
+    "local_versions_dir": {
         "windows": "",
         "darwin": "",
         "linux": ""
