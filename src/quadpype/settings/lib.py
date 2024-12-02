@@ -1144,7 +1144,7 @@ def check_version_order(collection, version_str):
 
     # Skip if current version is already available
     if version_str in doc[DATABASE_ALL_VERSIONS_KEY]:
-        return
+        return doc
 
     if version_str not in doc[DATABASE_ALL_VERSIONS_KEY]:
         # Add all versions into list

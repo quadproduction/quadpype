@@ -309,7 +309,7 @@ class ITrayService(ITrayModule):
     def _load_service_icons():
         from qtpy import QtGui
 
-        ITrayService._failed_icon = QtGui.QIcon(
+        ITrayService._icon_failed = QtGui.QIcon(
             resources.get_resource("icons", "circle_red.png")
         )
         ITrayService._icon_running = QtGui.QIcon(
@@ -333,9 +333,9 @@ class ITrayService(ITrayModule):
 
     @staticmethod
     def get_icon_failed():
-        if ITrayService._failed_icon is None:
+        if ITrayService._icon_failed is None:
             ITrayService._load_service_icons()
-        return ITrayService._failed_icon
+        return ITrayService._icon_failed
 
     def tray_menu(self, tray_menu):
         from qtpy import QtWidgets
