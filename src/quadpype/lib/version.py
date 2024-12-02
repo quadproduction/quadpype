@@ -226,17 +226,24 @@ class PackageHandler:
             install_dir_path = Path(install_dir_path)
 
         self._install_dir_path = install_dir_path
-        local_version_str = None
+        local_version = None
         if self._install_dir_path:
-            local_version_str = self.get_package_version_from_dir(self._name, self._install_dir_path)
+            local_version = PackageVersion(
+                version=self.get_package_version_from_dir(
+                    self._name,
+                    self._install_dir_path
+                ),
+                path=self._install_dir_path
+            )
 
         if not running_version_str:
             # If no version specified get the latest version
             latest_version = self.get_latest_version()
-            if latest_version:
+            is_local_more_recent = local_version and local_version >= latest_version
+            if latest_version and not is_local_more_recent:
                 running_version_str = str(latest_version)
-            elif local_version_str:
-                running_version_str = local_version_str
+            elif local_version:
+                running_version_str = str(local_version)
 
         if not running_version_str:
             raise ValueError("Cannot find a version to run, neither locally or remotely.")
@@ -244,11 +251,11 @@ class PackageHandler:
         if not isinstance(running_version_str, str):
             raise ValueError("Running version must be a valid version string.")
 
-        # If the installation directory path is specified and
+        # If there is a local version and
         # the version requested is the same as the local one,
         # then use the local code version
-        if local_version_str == running_version_str and self._install_dir_path:
-            self._running_version = PackageVersion(version=running_version_str, path=self._install_dir_path)
+        if local_version and str(local_version) == running_version_str:
+            self._running_version = local_version
         else:
             # Find (and retrieve if necessary) the specified version to run
             running_version = self.find_version(running_version_str, from_local=True)
