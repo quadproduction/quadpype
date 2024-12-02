@@ -13,7 +13,10 @@ class AssetReporterAction(QuadPypeModule, ITrayAction):
         pass
 
     def initialize(self, modules_settings):
-        self.enabled = True
+        module_settings = modules_settings[self.name]
+
+        # Enabled by settings
+        self.enabled = module_settings.get("enabled", False)
 
     def on_action_trigger(self):
         args = get_quadpype_execute_args()
