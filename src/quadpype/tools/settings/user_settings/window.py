@@ -31,7 +31,7 @@ from .experimental_widget import (
     LOCAL_EXPERIMENTAL_KEY
 )
 from .apps_widget import LocalApplicationsWidgets
-from .modules_widget import LocalModulesWidgets
+from .addons_widget import LocalAddonsWidgets
 from .environments_widget import LocalEnvironmentsWidgets
 from .projects_widget import ProjectSettingsWidget
 
@@ -53,14 +53,14 @@ class UserSettingsWidget(QtWidgets.QWidget):
         self.experimental_widget = None
         self.envs_widget = None
         self.apps_widget = None
-        self.modules_widget = None
+        self.addons_widget = None
         self.projects_widget = None
 
         self._create_mongo_url_ui()
         self._create_general_ui()
         self._create_experimental_ui()
         self._create_environments_ui()
-        self._create_modules_ui()
+        self._create_addons_ui()
         self._create_apps_ui()
         self._create_projects_ui()
 
@@ -132,22 +132,22 @@ class UserSettingsWidget(QtWidgets.QWidget):
 
         self.envs_widget = envs_widget
 
-    def _create_modules_ui(self):
-        modules_expand_widget = ExpandingWidget("Modules", self)
+    def _create_addons_ui(self):
+        addons_expand_widget = ExpandingWidget("Add-ons", self)
 
-        modules_content = QtWidgets.QWidget(self)
-        modules_layout = QtWidgets.QVBoxLayout(modules_content)
-        modules_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 0)
-        modules_expand_widget.set_content_widget(modules_content)
+        addons_content = QtWidgets.QWidget(self)
+        addons_layout = QtWidgets.QVBoxLayout(addons_content)
+        addons_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 0)
+        addons_expand_widget.set_content_widget(addons_content)
 
-        modules_widget = LocalModulesWidgets(
-            self.global_settings, modules_content
+        addons_widget = LocalAddonsWidgets(
+            self.global_settings, addons_content
         )
-        modules_layout.addWidget(modules_widget)
+        addons_layout.addWidget(addons_widget)
 
-        self.main_layout.addWidget(modules_expand_widget)
+        self.main_layout.addWidget(addons_expand_widget)
 
-        self.modules_widget = modules_widget
+        self.addons_widget = addons_widget
 
     def _create_apps_ui(self):
         # Applications
@@ -196,7 +196,7 @@ class UserSettingsWidget(QtWidgets.QWidget):
         self.envs_widget.update_user_settings(
             value.get(ENV_SETTINGS_KEY)
         )
-        self.modules_widget.update_user_settings(
+        self.addons_widget.update_user_settings(
             value.get(ADDONS_SETTINGS_KEY)
         )
         self.apps_widget.update_user_settings(
@@ -219,9 +219,9 @@ class UserSettingsWidget(QtWidgets.QWidget):
         if envs_value:
             output[ENV_SETTINGS_KEY] = envs_value
 
-        modules_value = self.modules_widget.settings_value()
-        if modules_value:
-            output[ADDONS_SETTINGS_KEY] = modules_value
+        addons_value = self.addons_widget.settings_value()
+        if addons_value:
+            output[ADDONS_SETTINGS_KEY] = addons_value
 
         app_value = self.apps_widget.settings_value()
         if app_value:
