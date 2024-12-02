@@ -4,6 +4,7 @@ from quadpype.modules import QuadPypeModule, ITrayModule
 
 
 class AvalonModule(QuadPypeModule, ITrayModule):
+    label = "Loader"
     name = "avalon"
 
     def initialize(self, modules_settings):
@@ -60,7 +61,7 @@ class AvalonModule(QuadPypeModule, ITrayModule):
         from qtpy import QtWidgets
         # Actions
         action_library_loader = QtWidgets.QAction(
-            "Loader", tray_menu
+            self.label, tray_menu
         )
 
         action_library_loader.triggered.connect(self.show_library_loader)

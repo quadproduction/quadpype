@@ -9,18 +9,18 @@ from quadpype.modules import (
     IHostAddon,
 )
 
-STANDALONEPUBLISH_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+STANDALONE_PUBLISH_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class StandAlonePublishAddon(QuadPypeModule, ITrayAction, IHostAddon):
     label = "Publisher (legacy)"
-    name = "standalonepublisher"
+    name = "standalone_publisher"
     host_name = "standalonepublisher"
 
     def initialize(self, modules_settings):
-        self.enabled = modules_settings["standalonepublish_tool"]["enabled"]
+        self.enabled = modules_settings["standalone_publisher"]["enabled"]
         self.publish_paths = [
-            os.path.join(STANDALONEPUBLISH_ROOT_DIR, "plugins", "publish")
+            os.path.join(STANDALONE_PUBLISH_ROOT_DIR, "plugins", "publish")
         ]
 
     def tray_init(self):
@@ -45,14 +45,14 @@ class StandAlonePublishAddon(QuadPypeModule, ITrayAction, IHostAddon):
 
 @click_wrap.group(
     StandAlonePublishAddon.name,
-    help="StandalonePublisher related commands.")
+    help="Standalone Publisher related commands.")
 def cli_main():
     pass
 
 
 @cli_main.command()
 def launch():
-    """Launch StandalonePublisher tool UI."""
+    """Launch Standalone Publisher tool UI."""
 
     from quadpype.tools import standalonepublish
 

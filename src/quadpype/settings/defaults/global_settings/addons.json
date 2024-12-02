@@ -173,7 +173,7 @@
     "log_viewer": {
         "enabled": true
     },
-    "standalonepublish_tool": {
+    "standalone_publisher": {
         "enabled": false
     },
     "project_manager": {

@@ -14,7 +14,7 @@ TRAYPUBLISH_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class TrayPublishAddon(QuadPypeModule, IHostAddon, ITrayAction):
     label = "Publisher"
-    name = "traypublisher"
+    name = "tray_publisher"
     host_name = "traypublisher"
 
     def initialize(self, modules_settings):
@@ -27,14 +27,14 @@ class TrayPublishAddon(QuadPypeModule, IHostAddon, ITrayAction):
         return
 
     def on_action_trigger(self):
-        self.run_traypublisher()
+        self.run_tray_publisher()
 
     def connect_with_modules(self, enabled_modules):
         """Collect publish paths from other modules."""
         publish_paths = self.manager.collect_plugin_paths()["publish"]
         self.publish_paths.extend(publish_paths)
 
-    def run_traypublisher(self):
+    def run_tray_publisher(self):
         args = get_quadpype_execute_args(
             "module", self.name, "launch"
         )
@@ -46,7 +46,7 @@ class TrayPublishAddon(QuadPypeModule, IHostAddon, ITrayAction):
 
 @click_wrap.group(
     TrayPublishAddon.name,
-    help="TrayPublisher related commands.")
+    help="Tray Publisher related commands.")
 def cli_main():
     pass
 
