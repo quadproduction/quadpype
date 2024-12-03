@@ -183,7 +183,7 @@ class StandaloneCategoryWidget(QtWidgets.QWidget):
         self.set_state(PageState.Idle)
 
 
-class BaseControlPanelWidget(QtWidgets.QWidget):
+class BlankControlPanelWidget(QtWidgets.QWidget):
     state_changed = QtCore.Signal()
     saved = QtCore.Signal(QtWidgets.QWidget)
     restart_required_trigger = QtCore.Signal()
@@ -250,24 +250,143 @@ class BaseControlPanelWidget(QtWidgets.QWidget):
         return False
 
 
+class BaseControlPanelWidget(BlankControlPanelWidget):
+    def __init__(self, controller, parent=None):
+        super().__init__(controller, parent)
+
+        self.conf_wrapper_widget = None
+        self.scroll_widget = None
+
+        self.breadcrumbs_bar = None
+        self.breadcrumbs_model = None
+
+        self.main_layout = None
+
+        self.content_layout = None
+        self.content_widget = None
+
+        self.footer_widget = None
+        self.footer_layout = None
+        self.footer_left_label = None
+        self.footer_right_label = None
+
+        self._footer_btn_text = "Save"
+
+        self.footer_btn = None
+        self.refresh_btn = None
+
+        self._labels_alignment = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+
+    def _add_developer_ui(self):
+        pass
+
+    @abstractmethod
+    def _on_footer_button_pressed(self):
+        raise NotImplementedError("This method should have been implemented on the subclass")
+
+    @abstractmethod
+    def _on_refresh_button_pressed(self):
+        raise NotImplementedError("This method should have been implemented on the subclass")
+
+    @abstractmethod
+    def _on_path_edited(self, path):
+        raise NotImplementedError("This method should have been implemented on the subclass")
+
+    def create_ui(self):
+        self.conf_wrapper_widget = QtWidgets.QSplitter(self)
+        configurations_widget = QtWidgets.QWidget(self.conf_wrapper_widget)
+
+        # Breadcrumbs/Path widget
+        breadcrumbs_widget = QtWidgets.QWidget(self)
+        breadcrumbs_label = QtWidgets.QLabel("Path:", breadcrumbs_widget)
+        self.breadcrumbs_bar = BreadcrumbsAddressBar(breadcrumbs_widget)
+
+        refresh_icon = qtawesome.icon("fa.refresh", color="white")
+        self.refresh_btn = QtWidgets.QPushButton(breadcrumbs_widget)
+        self.refresh_btn.setIcon(refresh_icon)
+
+        breadcrumbs_layout = QtWidgets.QHBoxLayout(breadcrumbs_widget)
+        breadcrumbs_layout.setContentsMargins(5, 5, 5, 5)
+        breadcrumbs_layout.setSpacing(5)
+        breadcrumbs_layout.addWidget(breadcrumbs_label, 0)
+        breadcrumbs_layout.addWidget(self.breadcrumbs_bar, 1)
+        breadcrumbs_layout.addWidget(self.refresh_btn, 0)
+
+        # Widgets representing settings entities
+        self.scroll_widget = QtWidgets.QScrollArea(configurations_widget)
+        self.content_widget = QtWidgets.QWidget(self.scroll_widget)
+        self.scroll_widget.setWidgetResizable(True)
+        self.scroll_widget.setWidget(self.content_widget)
+
+        self.content_layout = QtWidgets.QVBoxLayout(self.content_widget)
+        self.content_layout.setContentsMargins(3, 3, 3, 3)
+        self.content_layout.setSpacing(5)
+        self.content_layout.setAlignment(QtCore.Qt.AlignTop)
+
+        # Footer widget
+        self.footer_widget = QtWidgets.QWidget(self)
+        self.footer_widget.setObjectName("SettingsFooter")
+
+        # Footer info labels
+        self.footer_left_label = QtWidgets.QLabel(self.footer_widget)
+        self.footer_left_label.setAlignment(self._labels_alignment)
+        self.footer_right_label = QtWidgets.QLabel(self.footer_widget)
+        self.footer_right_label.setAlignment(self._labels_alignment)
+
+        self.footer_btn = QtWidgets.QPushButton(self._footer_btn_text, self.footer_widget)
+
+        self.footer_layout = QtWidgets.QHBoxLayout(self.footer_widget)
+        self.footer_layout.setContentsMargins(5, 5, 5, 5)
+        if self._controller.user_role == "developer":
+            self._add_developer_ui()
+
+        self.footer_layout.addWidget(self.footer_left_label, 1)
+        self.footer_layout.addWidget(self.footer_right_label, 0)
+        self.footer_layout.addWidget(self.footer_btn, 0)
+
+        configurations_layout = QtWidgets.QVBoxLayout(configurations_widget)
+        configurations_layout.setContentsMargins(0, 0, 0, 0)
+        configurations_layout.setSpacing(0)
+
+        configurations_layout.addWidget(self.scroll_widget, 1)
+
+        self.conf_wrapper_widget.addWidget(configurations_widget)
+
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+        self.main_layout.addWidget(breadcrumbs_widget, 0)
+        self.main_layout.addWidget(self.conf_wrapper_widget, 1)
+        self.main_layout.addWidget(self.footer_widget, 0)
+
+        # Add callbacks / onclick events
+        self.footer_btn.clicked.connect(self._on_footer_button_pressed)
+        self.refresh_btn.clicked.connect(self._on_refresh_button_pressed)
+        self.breadcrumbs_bar.path_edited.connect(self._on_path_edited)
+
+
 class SettingsControlPanelWidget(BaseControlPanelWidget):
-    require_restart_label_text = (
-        "Your changes require restart of"
-        " all running QuadPype processes to take affect."
-    )
-    outdated_version_label_text = (
-        "Your settings are loaded from an older version."
-    )
-    protected_settings_label_text = (
-        "Current version is different from the production version."
-        " You cannot save the Global settings."
-    )
+    footer_label_data = {
+        "restart_required": {
+            "text": "Your changes require restart of all running QuadPype processes to take affect.",
+            "tooltip": "Please close all running QuadPype processes.",
+            "style_class": ""
+        },
+        "protected_settings": {
+            "text": "Running version is different from the production version. You cannot save the Global Settings.",
+            "tooltip": "This mandatory restriction is to avoid unwanted issues.",
+            "style_class": "SettingsSystemProtected",
+        },
+        "outdated_version": {
+            "text": "The settings are loaded from an older version.",
+            "tooltip": "Please check that all settings are still correct (blue colour\n"
+                       "indicates potential changes in the new version) and save your\n"
+                       "settings to update them to you current running QuadPype version.",
+            "style_class": "SettingsOutdatedSourceVersion",
+        }
+    }
+
     source_version_tooltip = "Using settings of current QuadPype version"
-    source_version_tooltip_outdated = (
-        "Please check that all settings are still correct (blue colour\n"
-        "indicates potential changes in the new version) and save your\n"
-        "settings to update them to you current running QuadPype version."
-    )
 
     def __init__(self, controller, parent=None):
         super().__init__(controller, parent)
@@ -295,25 +414,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
 
         # UI related members
         self.modify_defaults_checkbox = None
-
-        self._require_restart_label = None
-        self._outdated_version_label = None
-        self._protected_settings_label = None
-        self._source_version_label = None
-        self._empty_label = None
-
-        self._is_loaded_version_outdated = None
-
-        self.save_btn = None
-        self.refresh_btn = None
-
-        self.scroll_widget = None
-        self.main_layout = None
-        self.content_layout = None
-        self.content_widget = None
-        self.conf_wrapper_widget = None
-        self.breadcrumbs_bar = None
-        self.breadcrumbs_model = None
+        self._is_loaded_version_outdated = False
 
         self.initialize_attributes()
 
@@ -392,7 +493,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
         was_disabled = (self._edit_mode == EditMode.DISABLE)
         self._edit_mode = mode
 
-        self.save_btn.setEnabled(mode == EditMode.ENABLE and not self._reset_crashed)
+        self.footer_btn.setEnabled(mode == EditMode.ENABLE and not self._reset_crashed)
 
         self.set_read_only((mode != EditMode.ENABLE))
 
@@ -408,7 +509,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
         else:
             tooltip = "Save settings"
 
-        self.save_btn.setToolTip(tooltip)
+        self.footer_btn.setToolTip(tooltip)
 
         # Reset when last saved information has changed
         if was_disabled and not self._check_last_saved_info():
@@ -424,134 +525,19 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
         return self.modify_defaults_checkbox.isChecked()
 
     def create_ui(self):
-        self.modify_defaults_checkbox = None
+        super().create_ui()
 
-        conf_wrapper_widget = QtWidgets.QSplitter(self)
-        configurations_widget = QtWidgets.QWidget(conf_wrapper_widget)
-
-        # Breadcrumbs/Path widget
-        breadcrumbs_widget = QtWidgets.QWidget(self)
-        breadcrumbs_label = QtWidgets.QLabel("Path:", breadcrumbs_widget)
-        breadcrumbs_bar = BreadcrumbsAddressBar(breadcrumbs_widget)
-
-        refresh_icon = qtawesome.icon("fa.refresh", color="white")
-        refresh_btn = QtWidgets.QPushButton(breadcrumbs_widget)
-        refresh_btn.setIcon(refresh_icon)
-
-        breadcrumbs_layout = QtWidgets.QHBoxLayout(breadcrumbs_widget)
-        breadcrumbs_layout.setContentsMargins(5, 5, 5, 5)
-        breadcrumbs_layout.setSpacing(5)
-        breadcrumbs_layout.addWidget(breadcrumbs_label, 0)
-        breadcrumbs_layout.addWidget(breadcrumbs_bar, 1)
-        breadcrumbs_layout.addWidget(refresh_btn, 0)
-
-        # Widgets representing settings entities
-        scroll_widget = QtWidgets.QScrollArea(configurations_widget)
-        content_widget = QtWidgets.QWidget(scroll_widget)
-        scroll_widget.setWidgetResizable(True)
-        scroll_widget.setWidget(content_widget)
-
-        content_layout = QtWidgets.QVBoxLayout(content_widget)
-        content_layout.setContentsMargins(3, 3, 3, 3)
-        content_layout.setSpacing(5)
-        content_layout.setAlignment(QtCore.Qt.AlignTop)
-
-        # Footer widget
-        footer_widget = QtWidgets.QWidget(self)
-        footer_widget.setObjectName("SettingsFooter")
-
-        # Info labels
-        # TODO dynamic labels
-        labels_alignment = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
-        empty_label = QtWidgets.QLabel(footer_widget)
-
-        outdated_version_label = QtWidgets.QLabel(
-            self.outdated_version_label_text, footer_widget
-        )
-        outdated_version_label.setToolTip(self.source_version_tooltip_outdated)
-        outdated_version_label.setAlignment(labels_alignment)
-        outdated_version_label.setVisible(False)
-        outdated_version_label.setObjectName("SettingsOutdatedSourceVersion")
-
-        require_restart_label = QtWidgets.QLabel(
-            self.require_restart_label_text, footer_widget
-        )
-        require_restart_label.setAlignment(labels_alignment)
-        require_restart_label.setVisible(False)
-
-        protected_settings_label = QtWidgets.QLabel(
-            self.protected_settings_label_text, footer_widget
-        )
-        protected_settings_label.setAlignment(labels_alignment)
-        protected_settings_label.setVisible(False)
-        protected_settings_label.setObjectName("SettingsSystemProtected")
-
-        # Label showing source version of loaded settings
-        source_version_label = QtWidgets.QLabel("", footer_widget)
-        source_version_label.setObjectName("SourceVersionLabel")
-        set_style_property(source_version_label, "state", "")
-        source_version_label.setToolTip(self.source_version_tooltip)
-
-        save_btn = QtWidgets.QPushButton("Save", footer_widget)
-
-        footer_layout = QtWidgets.QHBoxLayout(footer_widget)
-        footer_layout.setContentsMargins(5, 5, 5, 5)
-        if self._controller.user_role == "developer":
-            self._add_developer_ui(footer_layout, footer_widget)
-
-        footer_layout.addWidget(empty_label, 1)
-        footer_layout.addWidget(outdated_version_label, 1)
-        footer_layout.addWidget(require_restart_label, 1)
-        footer_layout.addWidget(protected_settings_label, 1)
-        footer_layout.addWidget(source_version_label, 0)
-        footer_layout.addWidget(save_btn, 0)
-
-        configurations_layout = QtWidgets.QVBoxLayout(configurations_widget)
-        configurations_layout.setContentsMargins(0, 0, 0, 0)
-        configurations_layout.setSpacing(0)
-
-        configurations_layout.addWidget(scroll_widget, 1)
-
-        conf_wrapper_widget.addWidget(configurations_widget)
-
-        main_layout = QtWidgets.QVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
-        main_layout.addWidget(breadcrumbs_widget, 0)
-        main_layout.addWidget(conf_wrapper_widget, 1)
-        main_layout.addWidget(footer_widget, 0)
-
-        save_btn.clicked.connect(self._save)
-        refresh_btn.clicked.connect(self._on_refresh)
-        breadcrumbs_bar.path_edited.connect(self._on_path_edit)
-
-        self._require_restart_label = require_restart_label
-        self._outdated_version_label = outdated_version_label
-        self._protected_settings_label = protected_settings_label
-        self._empty_label = empty_label
-
-        self._is_loaded_version_outdated = False
-
-        self.save_btn = save_btn
-        self._source_version_label = source_version_label
-
-        self.scroll_widget = scroll_widget
-        self.content_layout = content_layout
-        self.content_widget = content_widget
-        self.breadcrumbs_bar = breadcrumbs_bar
-
-        self.breadcrumbs_model = None
-        self.refresh_btn = refresh_btn
-
-        self.conf_wrapper_widget = conf_wrapper_widget
-        self.main_layout = main_layout
+        # Using the footer_right_label to display the version of loaded settings
+        self.footer_right_label.setObjectName("SourceVersionLabel")
+        set_style_property(self.footer_right_label, "state", "")
+        self.footer_right_label.setToolTip(self.source_version_tooltip)
 
         self.ui_tweaks()
 
     def ui_tweaks(self):
         return
 
-    def _on_path_edit(self, path):
+    def _on_path_edited(self, path):
         for input_field in self.input_fields:
             if input_field.make_sure_is_visible(path, True):
                 break
@@ -597,15 +583,15 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
     def _on_modify_defaults(self):
         pass
 
-    def _add_developer_ui(self, footer_layout, footer_widget):
-        modify_defaults_checkbox = QtWidgets.QCheckBox(footer_widget)
+    def _add_developer_ui(self):
+        modify_defaults_checkbox = QtWidgets.QCheckBox(self.footer_widget)
         modify_defaults_checkbox.setChecked(self._hide_studio_overrides)
         label_widget = QtWidgets.QLabel(
-            "Modify defaults", footer_widget
+            "Modify defaults", self.footer_widget
         )
 
-        footer_layout.addWidget(label_widget, 0)
-        footer_layout.addWidget(modify_defaults_checkbox, 0)
+        self.footer_layout.addWidget(label_widget, 0)
+        self.footer_layout.addWidget(modify_defaults_checkbox, 0)
 
         modify_defaults_checkbox.stateChanged.connect(
             self._on_modify_defaults
@@ -796,16 +782,16 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
         if source_version:
             if source_version != self._current_version:
                 state_value = "different"
-                tooltip = self.source_version_tooltip_outdated
+                tooltip = self.footer_label_data["outdated_version"]["tooltip"]
                 outdated = True
             else:
                 state_value = "same"
                 tooltip = self.source_version_tooltip
 
         self._is_loaded_version_outdated = outdated
-        self._source_version_label.setText(source_version)
-        self._source_version_label.setToolTip(tooltip)
-        set_style_property(self._source_version_label, "state", state_value)
+        self.footer_right_label.setText(source_version)
+        self.footer_right_label.setToolTip(tooltip)
+        set_style_property(self.footer_right_label, "state", state_value)
         self._update_labels_visibility()
 
         self.set_state(PageState.Idle)
@@ -876,15 +862,15 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
 
     def _on_reset_crash(self):
         self._reset_crashed = True
-        self.save_btn.setEnabled(False)
+        self.footer_btn.setEnabled(False)
 
         if self.breadcrumbs_model is not None:
             self.breadcrumbs_model.set_entity(None)
 
     def _on_reset_success(self):
         self._reset_crashed = False
-        if not self.save_btn.isEnabled():
-            self.save_btn.setEnabled(self._edit_mode == EditMode.ENABLE)
+        if not self.footer_btn.isEnabled():
+            self.footer_btn.setEnabled(self._edit_mode == EditMode.ENABLE)
 
         if self.breadcrumbs_model is not None:
             path = self.breadcrumbs_bar.path()
@@ -930,11 +916,12 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
         return
 
     def _check_last_saved_info(self):
-        raise NotImplementedError((
-            "{} does not have implemented '_check_last_saved_info'"
-        ).format(self.__class__.__name__))
+        raise NotImplementedError(
+            "{} does not have implemented '_check_last_saved_info'".format(self.__class__.__name__)
+        )
 
-    def _save(self):
+    def _on_footer_button_pressed(self):
+        """For settings panels this means the save button has been pressed"""
         self._controller.update_last_opened_info()
         if not self._controller.opened_info:
             dialog = SettingsControlTaken(self._last_saved_info, self)
@@ -966,36 +953,33 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             self.restart_required_trigger.emit()
 
     def _update_labels_visibility(self):
-        labels = [
-            self._empty_label,
-            self._outdated_version_label,
-            self._require_restart_label,
-            self._protected_settings_label
-        ]
         if self.is_modifying_defaults or self.entity is None:
             require_restart = False
         else:
             require_restart = self.entity.require_restart
 
-        if self._edit_mode == EditMode.PROTECT:
-            visible_label = self._protected_settings_label
-        elif require_restart:
-            visible_label = self._require_restart_label
+        status = None
+        if require_restart:
+            status = "restart_required"
+        elif self._edit_mode == EditMode.PROTECT:
+            status = "protected_settings"
         elif self._is_loaded_version_outdated:
-            visible_label = self._outdated_version_label
-        else:
-            visible_label = self._empty_label
+            status = "outdated_version"
 
-        if visible_label.isVisible():
+        if not status:
+            self.footer_left_label.setText("")
             return
 
-        for label in labels:
-            if label is visible_label:
-                visible_label.setVisible(True)
-            else:
-                label.setVisible(False)
+        label_data = self.footer_label_data[status]
+        self.footer_left_label.setText(label_data["text"])
+        self.footer_left_label.setToolTip(label_data["tooltip"])
 
-    def _on_refresh(self):
+        label_object_name = label_data["style_class"]
+        if label_object_name:
+            self.footer_left_label.setObjectName(label_object_name)
+            self.footer_left_label.style().polish(self.footer_left_label)
+
+    def _on_refresh_button_pressed(self):
         self.reset()
 
     def _on_hide_studio_overrides(self, state):
@@ -1075,7 +1059,6 @@ class GlobalSettingsWidget(SettingsControlPanelWidget):
 
 class ProjectSettingsWidget(SettingsControlPanelWidget):
     def __init__(self, controller, parent=None):
-        self.breadcrumbs_model = None
         self.project_name = None
         self.protect_attrs = False
         self.project_list_widget = None
@@ -1248,4 +1231,42 @@ class ProjectManagerWidget(BaseControlPanelWidget):
         self.reset_finished.emit()
 
     def on_saved(self, saved_tab_widget):
+        pass
+
+
+class UserManagerWidget(BaseControlPanelWidget):
+    def __init__(self, controller, parent=None):
+        super().__init__(controller, parent)
+
+        self._footer_btn_text = "Enjoy!"
+
+        self.create_ui()
+
+    def _on_reset_start(self):
+        return
+
+    def _on_reset_success(self):
+        return
+
+    def _on_reset_crash(self):
+        return
+
+    def reset(self):
+        self.reset_started.emit()
+        self.set_state(PageState.Working)
+        self._on_reset_start()
+        self.set_state(PageState.Idle)
+        self._on_reset_success()
+        self.reset_finished.emit()
+
+    def on_saved(self, saved_tab_widget):
+        pass
+
+    def _on_path_edited(self, path):
+        pass
+
+    def _on_refresh_button_pressed(self):
+        pass
+
+    def _on_footer_button_pressed(self):
         pass

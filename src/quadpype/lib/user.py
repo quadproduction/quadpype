@@ -181,8 +181,10 @@ class MongoUserHandler(UserHandler):
             document = self.collection.find_one({
                 "user_id": self.user_id
             })
+            # Key renaming Required to work with the cache system
+            document["data"] = document.pop("settings")
 
-            self.user_settings_cache.update_from_document(document["settings"], None)
+            self.user_settings_cache.update_from_document(document, None)
 
         return self.user_settings_cache.data_copy()
 
