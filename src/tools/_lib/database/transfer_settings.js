@@ -98,7 +98,10 @@ function transferSettings(mongoSourceURI, mongoDestinationURI, sourceDbName, tar
         }
 
         if (document.type === "project_settings_versioned") {
-            if (document.last_saved_info && document.last_saved_info.timestamp && document.project_name) {
+            if (
+                (document.last_saved_info && document.last_saved_info.timestamp && document.project_name) ||
+                (document.is_default && document.last_saved_info.timestamp)
+            ) {
                 const projectName = document.project_name;
                 const timestamp = new Date(document.last_saved_info.timestamp);
 
@@ -130,24 +133,24 @@ function transferSettings(mongoSourceURI, mongoDestinationURI, sourceDbName, tar
         targetSettings.insert(latestDocument);
     });
 
-//    const sourceDbProjectsDb = connect(`${mongoSourceURI}/avalon`);
-//    const targetDbProjectsDb = connect(`${mongoDestinationURI}/${targetDbName}_projects`);
-//    collections = sourceDbProjectsDb.getCollectionNames();
-//    collections.forEach(collectionName => {
-//        sourceCollection = sourceDbProjectsDb.getCollection(collectionName);
-//        targetCollection = targetDbProjectsDb.getCollection(collectionName);
-//        // Drop the target collection if it already exists
-//        if (targetDbProjectsDb.getCollectionNames().includes(collectionName)) {
-//            targetCollection.drop();
-//            console.log("Collection ${collectionName} dropped from target database.");
-//        }
-//
-//        sourceCollection.find().forEach(document => {
-//            targetCollection.insert(document);
-//        });
-//        console.log("Collection $(collectionName) transferred to ${targetDbName}_projects database.");
-//    });
-//    console.log("Transfer completed!");
+    const sourceDbProjectsDb = connect(`${mongoSourceURI}/avalon`);
+    const targetDbProjectsDb = connect(`${mongoDestinationURI}/${targetDbName}_projects`);
+    collections = sourceDbProjectsDb.getCollectionNames();
+    collections.forEach(collectionName => {
+        sourceCollection = sourceDbProjectsDb.getCollection(collectionName);
+        targetCollection = targetDbProjectsDb.getCollection(collectionName);
+        // Drop the target collection if it already exists
+        if (targetDbProjectsDb.getCollectionNames().includes(collectionName)) {
+            targetCollection.drop();
+            console.log("Collection ${collectionName} dropped from target database.");
+        }
+
+        sourceCollection.find().forEach(document => {
+            targetCollection.insert(document);
+        });
+        console.log("Collection $(collectionName) transferred to ${targetDbName}_projects database.");
+    });
+    console.log("Transfer completed!");
 }
 
 transferSettings(MONGO_URI, MONGO_DESTINATION, 'openpype', 'quadpype');
