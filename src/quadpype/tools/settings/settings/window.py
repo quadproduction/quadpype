@@ -17,6 +17,7 @@ from .categories import (
     PageState,
     GlobalSettingsWidget,
     ProjectSettingsWidget,
+    ProjectManagerWidget,
     EditMode
 )
 from .widgets import (
@@ -135,9 +136,12 @@ class MainWidget(QtWidgets.QWidget):
 
         global_settings_widget = GlobalSettingsWidget(controller, header_tab_widget)
         project_settings_widget = ProjectSettingsWidget(controller, header_tab_widget)
+        #project_manager_widget = ProjectManagerWidget(controller, header_tab_widget)
+
         tab_widgets = [
             global_settings_widget,
             project_settings_widget
+            #project_manager_widget,
         ]
 
         current_settings = get_global_settings()
@@ -151,6 +155,7 @@ class MainWidget(QtWidgets.QWidget):
 
         header_tab_widget.addTab(global_settings_widget, "Global Setting")
         header_tab_widget.addTab(project_settings_widget, "Project Settings")
+        #header_tab_widget.addTab(project_manager_widget, "Project Manager")
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)

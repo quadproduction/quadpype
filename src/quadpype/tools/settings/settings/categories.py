@@ -126,7 +126,7 @@ class StandaloneCategoryWidget(QtWidgets.QWidget):
 
     @staticmethod
     def create_ui_for_entity(category_widget, entity, entity_widget):
-        return ControlPanelPageWidget.create_ui_for_entity(category_widget, entity, entity_widget)
+        return SettingsControlPanelWidget.create_ui_for_entity(category_widget, entity, entity_widget)
 
     @property
     def state(self):
@@ -183,7 +183,7 @@ class StandaloneCategoryWidget(QtWidgets.QWidget):
         self.set_state(PageState.Idle)
 
 
-class ControlPanelPageWidget(QtWidgets.QWidget):
+class BaseControlPanelWidget(QtWidgets.QWidget):
     state_changed = QtCore.Signal()
     saved = QtCore.Signal(QtWidgets.QWidget)
     restart_required_trigger = QtCore.Signal()
@@ -191,6 +191,66 @@ class ControlPanelPageWidget(QtWidgets.QWidget):
     reset_finished = QtCore.Signal()
     full_path_requested = QtCore.Signal(str, str)
 
+    def __init__(self, controller, parent=None):
+        super().__init__(parent)
+
+        self._controller = controller
+        self._state = PageState.Idle
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self.set_state(value)
+
+    def set_state(self, state):
+        if self._state == state:
+            return
+
+        self._state = state
+        self.state_changed.emit()
+
+        # Process events so emitted signal is processed
+        app = QtWidgets.QApplication.instance()
+        if app:
+            app.processEvents()
+
+    @abstractmethod
+    def _on_reset_start(self):
+        raise NotImplementedError("Abstract method not implemented")
+
+    @abstractmethod
+    def _on_reset_success(self):
+        raise NotImplementedError("Abstract method not implemented")
+
+    @abstractmethod
+    def _on_reset_crash(self):
+        raise NotImplementedError("Abstract method not implemented")
+
+    @abstractmethod
+    def reset(self):
+        raise NotImplementedError("Abstract method not implemented")
+
+    @abstractmethod
+    def on_saved(self, saved_tab_widget):
+        """Callback on any tab widget save."""
+        raise NotImplementedError("Abstract method not implemented")
+
+    def contain_category_key(self, category):
+        """Parent widget ask if category of full path lead to this widget.
+
+        Args:
+            category (str): The category name.
+
+        Returns:
+            bool: Passed category lead to this widget.
+        """
+        return False
+
+
+class SettingsControlPanelWidget(BaseControlPanelWidget):
     require_restart_label_text = (
         "Your changes require restart of"
         " all running QuadPype processes to take affect."
@@ -210,10 +270,9 @@ class ControlPanelPageWidget(QtWidgets.QWidget):
     )
 
     def __init__(self, controller, parent=None):
-        super().__init__(parent)
+        super().__init__(controller, parent)
 
-        self._controller = controller
-        controller.event_system.add_callback(
+        self._controller.event_system.add_callback(
             "edit.mode.changed",
             self._edit_mode_changed
         )
@@ -224,8 +283,6 @@ class ControlPanelPageWidget(QtWidgets.QWidget):
         self._reset_crashed = False
         self._read_only = False
 
-        self._state = PageState.Idle
-
         self._hide_studio_overrides = False
         self._updating_root = False
         self._use_version = None
@@ -235,6 +292,28 @@ class ControlPanelPageWidget(QtWidgets.QWidget):
 
         self.keys = []
         self.input_fields = []
+
+        # UI related members
+        self.modify_defaults_checkbox = None
+
+        self._require_restart_label = None
+        self._outdated_version_label = None
+        self._protected_settings_label = None
+        self._source_version_label = None
+        self._empty_label = None
+
+        self._is_loaded_version_outdated = None
+
+        self.save_btn = None
+        self.refresh_btn = None
+
+        self.scroll_widget = None
+        self.main_layout = None
+        self.content_layout = None
+        self.content_widget = None
+        self.conf_wrapper_widget = None
+        self.breadcrumbs_bar = None
+        self.breadcrumbs_model = None
 
         self.initialize_attributes()
 
@@ -334,26 +413,6 @@ class ControlPanelPageWidget(QtWidgets.QWidget):
         # Reset when last saved information has changed
         if was_disabled and not self._check_last_saved_info():
             self.reset()
-
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, value):
-        self.set_state(value)
-
-    def set_state(self, state):
-        if self._state == state:
-            return
-
-        self._state = state
-        self.state_changed.emit()
-
-        # Process events so emitted signal is processed
-        app = QtWidgets.QApplication.instance()
-        if app:
-            app.processEvents()
 
     def initialize_attributes(self):
         return
@@ -522,17 +581,6 @@ class ControlPanelPageWidget(QtWidgets.QWidget):
             path = "/".join(items[1:])
         self.full_path_requested.emit(category, path)
 
-    def contain_category_key(self, category):
-        """Parent widget ask if category of full path lead to this widget.
-
-        Args:
-            category (str): The category name.
-
-        Returns:
-            bool: Passed category lead to this widget.
-        """
-        return False
-
     def set_category_path(self, category, path):
         """Change path of widget based on category full path."""
         pass
@@ -650,13 +698,11 @@ class ControlPanelPageWidget(QtWidgets.QWidget):
             )
             dialog.exec_()
 
+    @abstractmethod
     def _create_root_entity(self):
         raise NotImplementedError(
             "`create_root_entity` method not implemented"
         )
-
-    def _on_reset_start(self):
-        return
 
     def _on_require_restart_change(self):
         self._update_labels_visibility()
@@ -956,11 +1002,11 @@ class ControlPanelPageWidget(QtWidgets.QWidget):
         self._hide_studio_overrides = (state == QtCore.Qt.Checked)
 
 
-class GlobalSettingsWidget(ControlPanelPageWidget):
-    def __init__(self, *args, **kwargs):
+class GlobalSettingsWidget(SettingsControlPanelWidget):
+    def __init__(self, controller, parent=None):
         self._actions = []
         self.breadcrumbs_model = None
-        super().__init__(*args, **kwargs)
+        super().__init__(controller, parent)
 
     def _check_last_saved_info(self):
         if self.is_modifying_defaults:
@@ -1023,14 +1069,17 @@ class GlobalSettingsWidget(ControlPanelPageWidget):
         for input_field in self.input_fields:
             input_field.set_read_only(self._read_only)
 
+    def _on_reset_start(self):
+        pass
 
-class ProjectSettingsWidget(ControlPanelPageWidget):
-    def __init__(self, *args, **kwargs):
+
+class ProjectSettingsWidget(SettingsControlPanelWidget):
+    def __init__(self, controller, parent=None):
         self.breadcrumbs_model = None
         self.project_name = None
         self.protect_attrs = False
         self.project_list_widget = None
-        super().__init__(*args, **kwargs)
+        super().__init__(controller, parent)
 
     def set_edit_mode(self, enabled):
         super(ProjectSettingsWidget, self).set_edit_mode(enabled)
@@ -1175,3 +1224,28 @@ class ProjectSettingsWidget(ControlPanelPageWidget):
             self._set_enabled_project_list(True)
             if not self.entity.is_in_studio_state():
                 self.reset()
+
+
+class ProjectManagerWidget(BaseControlPanelWidget):
+    def __init__(self, controller, parent=None):
+        super().__init__(controller, parent)
+
+    def _on_reset_start(self):
+        return
+
+    def _on_reset_success(self):
+        return
+
+    def _on_reset_crash(self):
+        return
+
+    def reset(self):
+        self.reset_started.emit()
+        self.set_state(PageState.Working)
+        self._on_reset_start()
+        self.set_state(PageState.Idle)
+        self._on_reset_success()
+        self.reset_finished.emit()
+
+    def on_saved(self, saved_tab_widget):
+        pass

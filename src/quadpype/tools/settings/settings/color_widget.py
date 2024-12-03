@@ -125,7 +125,7 @@ class ColorDialog(QtWidgets.QDialog):
     def __init__(self, color=None, use_alpha=True, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("QuadPype: Color picker dialog")
+        self.setWindowTitle("QuadPype: Color Picker")
         window_icon = QtGui.QIcon(get_app_icon_path())
         self.setWindowIcon(window_icon)
 
