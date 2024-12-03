@@ -40,30 +40,6 @@ def _get_attr(node, attr, default=None):
     return cmds.getAttr("{}.{}".format(node, attr))
 
 
-# Backwards compatibility: these functions has been moved to lib.
-def get_reference_node(*args, **kwargs):
-    """Get the reference node from the container members
-
-    Deprecated:
-        This function was moved and will be removed in 3.16.x.
-    """
-    msg = "Function 'get_reference_node' has been moved."
-    log.warning(msg)
-    cmds.warning(msg)
-    return lib.get_reference_node(*args, **kwargs)
-
-
-def get_reference_node_parents(*args, **kwargs):
-    """
-    Deprecated:
-        This function was moved and will be removed in 3.16.x.
-    """
-    msg = "Function 'get_reference_node_parents' has been moved."
-    log.warning(msg)
-    cmds.warning(msg)
-    return lib.get_reference_node_parents(*args, **kwargs)
-
-
 class MayaCreatorBase(ABC):
 
     @staticmethod

@@ -560,8 +560,6 @@ class ClassicExpandBtnLabel(ExpandBtnLabel):
             QtGui.QPainter.Antialiasing
             | QtGui.QPainter.SmoothPixmapTransform
         )
-        if hasattr(QtGui.QPainter, "HighQualityAntialiasing"):
-            render_hints |= QtGui.QPainter.HighQualityAntialiasing
         painter.setRenderHints(render_hints)
         painter.drawPixmap(QtCore.QPoint(pos_x, pos_y), pixmap)
         painter.end()
@@ -724,9 +722,6 @@ class PixmapButtonPainter(QtWidgets.QWidget):
             QtGui.QPainter.Antialiasing
             | QtGui.QPainter.SmoothPixmapTransform
         )
-        if hasattr(QtGui.QPainter, "HighQualityAntialiasing"):
-            render_hints |= QtGui.QPainter.HighQualityAntialiasing
-
         painter.setRenderHints(render_hints)
         if self._cached_pixmap is None:
             self._cache_pixmap()

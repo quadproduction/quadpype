@@ -5,8 +5,7 @@ from .host import (
 from .interfaces import (
     IWorkfileHost,
     ILoadHost,
-    IPublishHost,
-    INewPublisher,
+    IPublishHost
 )
 
 from .dirmap import HostDirmap
@@ -18,7 +17,6 @@ __all__ = (
     "IWorkfileHost",
     "ILoadHost",
     "IPublishHost",
-    "INewPublisher",
 
     "HostDirmap",
 )
