@@ -920,8 +920,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             "{} does not have implemented '_check_last_saved_info'".format(self.__class__.__name__)
         )
 
-    def _on_footer_button_pressed(self):
-        """For settings panels this means the save button has been pressed"""
+    def _save(self):
         self._controller.update_last_opened_info()
         if not self._controller.opened_info:
             dialog = SettingsControlTaken(self._last_saved_info, self)
@@ -951,6 +950,10 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
 
         if require_restart:
             self.restart_required_trigger.emit()
+
+    def _on_footer_button_pressed(self):
+        """For settings panels this means the save button has been pressed"""
+        self._save()
 
     def _update_labels_visibility(self):
         if self.is_modifying_defaults or self.entity is None:
@@ -1235,12 +1238,100 @@ class ProjectManagerWidget(BaseControlPanelWidget):
 
 
 class UserManagerWidget(BaseControlPanelWidget):
+    table_column_labels = [
+        "Username",
+        "ID",
+        "Role",
+        "Last Connection",
+        "Last Workstation Name"
+    ]
+
     def __init__(self, controller, parent=None):
         super().__init__(controller, parent)
 
         self._footer_btn_text = "Enjoy!"
+        self.table_widget = None
+
+        self._selected_user_id = None
 
         self.create_ui()
+
+    def update_column_widths(self):
+        available_width = self.parent().width()
+        self.table_widget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        columns_size = {}
+        columns_size_sum = 0
+        additional_width_column = 0
+        columns_count = self.table_widget.columnCount()
+        for column_index in range(columns_count):
+            min_size = self.table_widget.horizontalHeader().sectionSize(column_index)
+            columns_size[column_index] = min_size
+            columns_size_sum += min_size
+
+        if columns_size_sum < available_width:
+            additional_width_column = int((available_width - columns_size_sum) / columns_count)
+
+        for column_index in range(columns_count-1):
+            self.table_widget.horizontalHeader().setSectionResizeMode(column_index, QtWidgets.QHeaderView.Fixed)
+            self.table_widget.setColumnWidth(column_index, columns_size[column_index] + additional_width_column)
+
+        if additional_width_column:
+            # This means without adding width the sum of column wouldn't take the full width
+            # Stretching the last column to ensure the row will be fully filled
+            last_column_index = columns_count-1
+            self.table_widget.horizontalHeader().setSectionResizeMode(last_column_index, QtWidgets.QHeaderView.Stretch)
+
+    def add_user_row(self, user_data):
+        row_index = self.table_widget.rowCount()
+        self.table_widget.insertRow(row_index)
+
+        for column_index, cell_data in enumerate(user_data):
+            item = QtWidgets.QTableWidgetItem(cell_data)
+            item.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.table_widget.setItem(row_index, column_index, item)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.update_column_widths()
+
+    def on_cell_clicked(self, row, column):
+        cell_value = self.table_widget.item(row, column).text() if self.table_widget.item(row, column) else ""
+        print(f"Cell clicked at row {row}, column {column}: {cell_value}")
+
+    def on_selection_changed(self):
+        selected_items = self.table_widget.selectedItems()
+        if not selected_items:
+            self._selected_user_id = None
+        else:
+            # The full row is selected every time, the user_id is the index 1 element.
+            self._selected_user_id = selected_items[1].text()
+
+    def create_ui(self):
+        super().create_ui()
+
+        self.table_widget = QtWidgets.QTableWidget(self.content_widget)
+
+        self.table_widget.verticalHeader().hide()
+        self.table_widget.setColumnCount(len(self.table_column_labels))
+        self.table_widget.setHorizontalHeaderLabels(self.table_column_labels)
+
+        # Set selection mode to only allow single row selection
+        self.table_widget.setSelectionMode(QtWidgets.QTableWidget.SingleSelection)
+        self.table_widget.setSelectionBehavior(QtWidgets.QTableWidget.SelectRows)
+
+        self.table_widget.selectionModel().selectionChanged.connect(self.on_selection_changed)
+
+        self.table_widget.setSortingEnabled(True)
+
+        self.add_user_row(["placeholder", "wealthy-warm-kestrel", "administrator", "2024-12-03 13:52", "computer"])
+
+        # Initially sort by the "Username" column (index 0)
+        self.table_widget.sortItems(0)
+
+        # Select the first row by default (so there is always a row selected)
+        self.table_widget.selectRow(0)
+
+        self.content_layout.addWidget(self.table_widget, stretch=1)
 
     def _on_reset_start(self):
         return

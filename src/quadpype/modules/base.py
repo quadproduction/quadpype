@@ -199,7 +199,7 @@ def get_dynamic_modules_dirs():
     for package in get_packages("add_on"):
         dynamic_modules_dir_paths.append(package.running_version.path)
 
-    return []
+    return dynamic_modules_dir_paths
 
 def get_module_dirs():
     """List of paths where QuadPype modules can be found."""
