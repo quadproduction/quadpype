@@ -29,7 +29,7 @@ from .vendor_bin_utils import (
     get_oiio_tool_args,
     get_ffmpeg_tool_path,
     get_ffmpeg_tool_args,
-    is_oiio_supported,
+    is_oiio_supported
 )
 
 from .attribute_definitions import (
@@ -45,15 +45,17 @@ from .attribute_definitions import (
     EnumDef,
     BoolDef,
     FileDef,
-    FileDefItem,
+    FileDefItem
 )
 
 from .env_tools import (
     env_value_to_bool,
-    get_paths_from_environ,
+    get_paths_from_environ
 )
 
 from .terminal import Terminal
+from .log import Logger
+
 from .execute import (
     get_quadpype_execute_args,
     get_linux_launcher_args,
@@ -66,9 +68,6 @@ from .execute import (
     path_to_subprocess_arg,
     CREATE_NO_WINDOW
 )
-from .log import (
-    Logger,
-)
 
 from .path_templates import (
     merge_dict,
@@ -76,7 +75,7 @@ from .path_templates import (
     TemplateUnsolved,
     StringTemplate,
     TemplatesDict,
-    FormatObject,
+    FormatObject
 )
 
 from .dateutils import (
@@ -92,7 +91,7 @@ from .python_module_tools import (
     recursive_bases_from_class,
     classes_from_module,
     import_module_from_dirpath,
-    is_func_signature_supported,
+    is_func_signature_supported
 )
 
 from .profiles_filtering import (
@@ -111,12 +110,10 @@ from .transcoding import (
     get_ffmpeg_format_args,
     convert_ffprobe_fps_value,
     convert_ffprobe_fps_to_float,
-    get_rescaled_command_arguments,
+    get_rescaled_command_arguments
 )
 
-from .cache import (
-    CacheValues
-)
+from .cache import CacheValues
 
 from .registry import (
     IniSettingRegistry,
@@ -158,7 +155,7 @@ from .applications import (
 
 from .plugin_tools import (
     prepare_template_data,
-    source_hash,
+    source_hash
 )
 
 from .path_tools import (
@@ -168,7 +165,7 @@ from .path_tools import (
     create_symlink,
     version_up,
     get_version_from_path,
-    get_last_version_from_path,
+    get_last_version_from_path
 )
 
 from .version_utils import (

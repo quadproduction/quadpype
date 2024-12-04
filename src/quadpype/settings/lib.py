@@ -1432,8 +1432,8 @@ def get_global_settings_overrides_no_handler(collection, version_str):
 def get_expected_studio_version_str(staging=False, collection=None):
     """Expected QuadPype version that should be used at the moment.
 
-    If version is not defined in settings the latest found version is
-    used.
+    If the version is not defined in the settings, then the latest found
+    version is used.
 
     Using precached global settings is needed for usage inside QuadPype.
 
