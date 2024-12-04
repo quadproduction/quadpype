@@ -920,8 +920,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             "{} does not have implemented '_check_last_saved_info'".format(self.__class__.__name__)
         )
 
-    def _on_footer_button_pressed(self):
-        """For settings panels this means the save button has been pressed"""
+    def _save(self):
         self._controller.update_last_opened_info()
         if not self._controller.opened_info:
             dialog = SettingsControlTaken(self._last_saved_info, self)
@@ -951,6 +950,10 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
 
         if require_restart:
             self.restart_required_trigger.emit()
+
+    def _on_footer_button_pressed(self):
+        """For settings panels this means the save button has been pressed"""
+        self._save()
 
     def _update_labels_visibility(self):
         if self.is_modifying_defaults or self.entity is None:
