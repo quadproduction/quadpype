@@ -125,6 +125,9 @@ class MongoUserHandler(UserHandler):
 
         return user_profile
 
+    def get_all_user_profiles(self):
+        return self.collection.find({})
+
     def update_user_profile_on_startup(self):
         """Update user profile on startup"""
         user_profile = self.get_user_profile()
@@ -216,6 +219,11 @@ def get_user_settings():
 @require_user_handler
 def get_user_profile():
     return _USER_HANDLER.get_user_profile()
+
+
+@require_user_handler
+def get_all_user_profiles():
+    return _USER_HANDLER.get_all_user_profiles()
 
 
 @require_user_handler

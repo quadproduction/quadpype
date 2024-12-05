@@ -134,6 +134,7 @@ from .user import (
     get_user_settings,
     save_user_settings,
     get_user_profile,
+    get_all_user_profiles,
     get_user_workstation_info
 )
 
@@ -271,6 +272,7 @@ __all__ = [
     "get_user_settings",
     "save_user_settings",
     "get_user_profile",
+    "get_all_user_profiles",
     "get_user_workstation_info",
 
     "ApplicationLaunchFailed",
