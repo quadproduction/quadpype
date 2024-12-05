@@ -3,10 +3,15 @@ import traceback
 import contextlib
 from abc import abstractmethod
 from enum import Enum
+from datetime import datetime
+
 from qtpy import QtWidgets, QtCore
 import qtawesome
 
-from quadpype.lib import get_quadpype_version
+from quadpype.lib import (
+    get_quadpype_version,
+    get_all_user_profiles
+)
 from quadpype.tools.utils import set_style_property
 from quadpype.settings.entities import (
     GlobalSettingsEntity,
@@ -1238,13 +1243,14 @@ class ProjectManagerWidget(BaseControlPanelWidget):
 
 
 class UserManagerWidget(BaseControlPanelWidget):
-    table_column_labels = [
-        "Username",
-        "ID",
-        "Role",
-        "Last Connection",
-        "Last Workstation Name"
-    ]
+    _ws_profile_prefix = "last_workstation_profile/"
+    table_column_data = {
+        _ws_profile_prefix + "username": "Username",
+        "user_id": "ID",
+        "role": "Role",
+        "last_connection_timestamp": "Last Connection",
+        _ws_profile_prefix + "workstation_name": "Last Workstation Name"
+    }
 
     def __init__(self, controller, parent=None):
         super().__init__(controller, parent)
@@ -1276,7 +1282,7 @@ class UserManagerWidget(BaseControlPanelWidget):
             self.table_widget.setColumnWidth(column_index, columns_size[column_index] + additional_width_column)
 
         if additional_width_column:
-            # This means without adding width the sum of column wouldn't take the full width
+            # This means, without adding width, the sum of column wouldn't take the full width
             # Stretching the last column to ensure the row will be fully filled
             last_column_index = columns_count-1
             self.table_widget.horizontalHeader().setSectionResizeMode(last_column_index, QtWidgets.QHeaderView.Stretch)
@@ -1290,13 +1296,46 @@ class UserManagerWidget(BaseControlPanelWidget):
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.table_widget.setItem(row_index, column_index, item)
 
+    def _update_user_list(self):
+        # Remove all the rows (if any)
+        self.table_widget.setRowCount(0)
+
+        # Get the user profiles
+        user_profiles = get_all_user_profiles()
+
+        # Populate the table
+        for user_profile in user_profiles:
+            user_data = []
+
+            # Aggregate the user data
+            last_workstation_profile = \
+                user_profile["workstation_profiles"][user_profile["last_workstation_profile_index"]]
+            for user_profile_key in self.table_column_data:
+                if user_profile_key.startswith(self._ws_profile_prefix):
+                    user_profile_key = user_profile_key.removeprefix(self._ws_profile_prefix)
+                    cell_value = last_workstation_profile[user_profile_key]
+                else:
+                    cell_value = user_profile[user_profile_key]
+
+                if isinstance(cell_value, datetime):
+                    # Convert datetime to string (close to the ISO 8601 standard)
+                    cell_value = cell_value.strftime("%Y-%m-%d, %H:%M:%S")
+
+                user_data.append(cell_value)
+
+            self.add_user_row(user_data)
+
+        if user_profiles.retrieved == 0:
+            # No profile found, this should be impossible unless the
+            # collection has been cleared while QuadPype was running
+
+            # Inserting an empty row to avoid issues:
+            user_data = [""] * len(self.table_column_data)
+            self.add_user_row(user_data)
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.update_column_widths()
-
-    def on_cell_clicked(self, row, column):
-        cell_value = self.table_widget.item(row, column).text() if self.table_widget.item(row, column) else ""
-        print(f"Cell clicked at row {row}, column {column}: {cell_value}")
 
     def on_selection_changed(self):
         selected_items = self.table_widget.selectedItems()
@@ -1312,8 +1351,8 @@ class UserManagerWidget(BaseControlPanelWidget):
         self.table_widget = QtWidgets.QTableWidget(self.content_widget)
 
         self.table_widget.verticalHeader().hide()
-        self.table_widget.setColumnCount(len(self.table_column_labels))
-        self.table_widget.setHorizontalHeaderLabels(self.table_column_labels)
+        self.table_widget.setColumnCount(len(self.table_column_data))
+        self.table_widget.setHorizontalHeaderLabels(self.table_column_data.values())
 
         # Set selection mode to only allow single row selection
         self.table_widget.setSelectionMode(QtWidgets.QTableWidget.SingleSelection)
@@ -1323,7 +1362,7 @@ class UserManagerWidget(BaseControlPanelWidget):
 
         self.table_widget.setSortingEnabled(True)
 
-        self.add_user_row(["placeholder", "wealthy-warm-kestrel", "administrator", "2024-12-03 13:52", "computer"])
+        self._update_user_list()
 
         # Initially sort by the "Username" column (index 0)
         self.table_widget.sortItems(0)
@@ -1357,7 +1396,7 @@ class UserManagerWidget(BaseControlPanelWidget):
         pass
 
     def _on_refresh_button_pressed(self):
-        pass
+        self._update_user_list()
 
     def _on_footer_button_pressed(self):
         pass

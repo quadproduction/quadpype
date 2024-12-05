@@ -1,5 +1,5 @@
 import os
-from quadpype.lib.version_utils import is_running_staging, is_running_locally
+from quadpype.lib.version_utils import is_staging_enabled, is_running_locally
 
 RESOURCES_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -42,7 +42,7 @@ def get_liberation_font_path(bold=False, italic=False):
 def _get_app_image_variation_name():
     if is_running_locally():
         return "dev"
-    elif is_running_staging():
+    elif is_staging_enabled():
         return "staging"
 
     return "default"
