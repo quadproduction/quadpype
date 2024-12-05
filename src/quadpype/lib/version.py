@@ -775,8 +775,6 @@ class PackageManager:
 
     def add_package(self, package_instance):
         """Add package to manager."""
-        if not isinstance(package_instance, PackageHandler):
-            raise TypeError("Package must be a subclass of PackageHandler")
         self._packages[package_instance.name] = package_instance
 
     def remove_package(self, package_name):
@@ -785,7 +783,7 @@ class PackageManager:
             del self._packages[package_name]
 
 
-def create_package_manager() -> PackageManager:
+def retrieve_package_manager() -> PackageManager:
     global _PACKAGE_MANAGER
     if _PACKAGE_MANAGER is None:
         _PACKAGE_MANAGER = PackageManager()
@@ -798,9 +796,11 @@ def get_package_manager() -> PackageManager:
         raise RuntimeError("Package Manager is not initialized")
     return _PACKAGE_MANAGER
 
+
 def set_package_manager(package_manager: Any):
     global _PACKAGE_MANAGER
     _PACKAGE_MANAGER = package_manager
+
 
 def get_package(package_name: str) -> PackageHandler:
     global _PACKAGE_MANAGER

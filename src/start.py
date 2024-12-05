@@ -752,7 +752,7 @@ def _boot_print_versions(quadpype_package):
 
 def _initialize_package_manager(database_url, version_str):
     """Initialize the Package Manager and add the registered AddOns."""
-    from quadpype.lib.version import create_package_manager, PackageHandler
+    from quadpype.lib.version import retrieve_package_manager, PackageHandler
     from quadpype.settings.lib import (
         get_core_settings_no_handler,
         get_quadpype_local_dir_path,
@@ -761,7 +761,7 @@ def _initialize_package_manager(database_url, version_str):
 
     core_settings = get_core_settings_no_handler(database_url)
 
-    package_manager = create_package_manager()
+    package_manager = retrieve_package_manager()
 
     quadpype_package = PackageHandler(
         pkg_name="quadpype",
@@ -774,41 +774,6 @@ def _initialize_package_manager(database_url, version_str):
     package_manager.add_package(quadpype_package)
 
     return package_manager
-
-
-def _load_addons(package_manager, global_settings, use_staging):
-    from quadpype.lib.version import AddOnHandler, ADDONS_SETTINGS_KEY
-    from appdirs import user_data_dir
-
-    addon_settings = global_settings.get(ADDONS_SETTINGS_KEY, {}).get("custom_addons", {})
-    local_dir = Path(user_data_dir("quadpype", "quad")) / "addons"
-
-    if not local_dir.exists():
-        local_dir.mkdir(parents=True, exist_ok=True)
-
-    for addon_setting in addon_settings:
-        addon_package_name = addon_setting.get("package_name", "").strip()
-        if not addon_package_name:
-            _print("!!! A custom add-on package name is empty, add-on skipped.")
-            continue
-
-        addon_local_dir = local_dir / addon_package_name
-        if not addon_local_dir.exists():
-            local_dir.mkdir(parents=True, exist_ok=True)
-
-        version_key = "staging_version" if use_staging else "version"
-
-        remote_dir_paths = addon_setting.get("package_remote_dirs", {}).get(platform.system().lower(), [])
-        remote_dir_paths = [Path(curr_path_str) for curr_path_str in remote_dir_paths]
-
-        addon_package = AddOnHandler(
-            pkg_name=addon_setting.get("package_name"),
-            local_dir_path=addon_local_dir,
-            remote_dir_paths=remote_dir_paths,
-            running_version_str=addon_setting.get(version_key, ""),
-            retrieve_locally=addon_setting.get("retrieve_locally", False),
-        )
-        package_manager.add_package(addon_package)
 
 
 def boot():
@@ -878,7 +843,7 @@ def boot():
             os.environ["AVALON_DB"] = avalon_db + "_tests"
 
     from quadpype.settings.lib import (
-        get_global_settings_and_version_no_handler,
+        get_global_settings_no_handler,
         get_expected_studio_version_str,
     )
 
@@ -893,13 +858,10 @@ def boot():
     running_version = package_manager["quadpype"].running_version
 
     # Get the full settings with the final version that will be used
-    global_settings = get_global_settings_and_version_no_handler(
+    global_settings = get_global_settings_no_handler(
         quadpype_mongo,
         str(running_version)
     )
-
-    # Add the Add-ons to the Package Manager
-    _load_addons(package_manager, global_settings, use_staging)
 
     _print(">>> Run disk mapping command ...")
     run_disk_mapping_commands(global_settings)
