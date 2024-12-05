@@ -47,7 +47,7 @@ class BlenderApplication:
     def get_app(cls):
         if cls._instance is None:
             # If any other addon or plug-in may have initialed a Qt application
-            # before AYON then we should take the existing instance instead.
+            # before QuadPype then we should take the existing instance instead.
             application = QtWidgets.QApplication.instance()
             if application is None:
                 application = QtWidgets.QApplication(sys.argv)

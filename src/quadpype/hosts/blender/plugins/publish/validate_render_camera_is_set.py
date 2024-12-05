@@ -6,8 +6,6 @@ from quadpype.pipeline.publish import (
     OptionalPyblishPluginMixin,
     PublishValidationError
 )
-from ayon_blender.api import plugin
-
 
 class ValidateRenderCameraIsSet(
     plugin.BlenderInstancePlugin,
