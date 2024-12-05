@@ -35,7 +35,7 @@ from quadpype.settings.lib import (
 from quadpype.lib import (
     Logger,
     import_filepath,
-    is_running_staging,
+    is_staging_enabled,
     import_module_from_dirpath,
 )
 
@@ -229,7 +229,7 @@ def get_dynamic_modules_dirs():
         if not addon_local_dir.exists():
             local_dir.mkdir(parents=True, exist_ok=True)
 
-        version_key = "staging_version" if is_running_staging() else "version"
+        version_key = "staging_version" if is_staging_enabled() else "version"
 
         remote_dir_paths = addon_setting.get("package_remote_dirs", {}).get(platform.system().lower(), [])
         remote_dir_paths = [Path(curr_path_str) for curr_path_str in remote_dir_paths]

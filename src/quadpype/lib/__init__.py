@@ -175,6 +175,7 @@ from .version_utils import (
     is_running_from_build,
     is_running_locally,
     is_running_staging,
+    is_staging_enabled,
     is_current_version_studio_latest,
     is_current_version_higher_than_expected
 )
@@ -321,6 +322,7 @@ __all__ = [
     "is_running_from_build",
     "is_running_locally",
     "is_running_staging",
+    "is_staging_enabled",
     "is_current_version_studio_latest",
 
     "get_all_current_info",
