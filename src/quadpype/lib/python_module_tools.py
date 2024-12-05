@@ -176,7 +176,7 @@ def import_module_from_dirpath(dirpath, folder_name, dst_module_name=None):
     module = importlib.util.module_from_spec(spec)
 
     # Store module to destination module and `sys.modules`
-    # WARNING this mus be done before module execution
+    # WARNING this must be done before module execution
     if dst_module is not None:
         setattr(dst_module, folder_name, module)
 

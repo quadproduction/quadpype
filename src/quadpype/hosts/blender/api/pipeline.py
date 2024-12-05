@@ -19,7 +19,6 @@ from quadpype.host import (
     ILoadHost
 )
 from quadpype.client import get_asset_by_name
-from quadpype.lib import filter_profiles
 from quadpype.pipeline import (
     schema,
     get_current_asset_name,
@@ -29,7 +28,8 @@ from quadpype.pipeline import (
     deregister_creator_plugin_path,
     AVALON_CONTAINER_ID,
     Anatomy,
-    get_current_project_name
+    get_current_project_name,
+    get_current_task_name
 )
 
 from quadpype.pipeline.context_tools import get_template_data_from_session
@@ -284,19 +284,17 @@ def set_frame_range(data):
         fps = data.get("fps")
 
     # Should handles be included, defined by settings
+    task_name = get_current_task_name()
     settings = get_project_settings(get_current_project_name())
-    task_type = data.get("taskType")
     include_handles_settings = settings["blender"]["include_handles"]
+    current_task = data.get("tasks").get(task_name)
+
     include_handles = include_handles_settings["include_handles_default"]
-    profile = filter_profiles(
-        include_handles_settings["profiles"],
-        key_values={
-            "task_types": task_type,
-            "task_names": data["name"]
-        }
-    )
-    if profile:
-        include_handles = profile["include_handles"]
+    for item in include_handles_settings["profiles"]:
+        if current_task["type"] in item["task_type"]:
+            include_handles = item["include_handles"]
+            break
+
     if include_handles:
         frame_start -= int(data.get("handleStart", 0))
         frame_end += int(data.get("handleEnd", 0))
