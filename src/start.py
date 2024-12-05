@@ -87,6 +87,7 @@ Attributes:
 import os
 import re
 import sys
+import site
 import platform
 import traceback
 import subprocess
@@ -703,12 +704,18 @@ def _initialize_environment(quadpype_version: PackageVersion) -> None:
         raise ValueError("No path set in specified QuadPype version.")
     os.environ["QUADPYPE_VERSION"] = str(quadpype_version)
     # set QUADPYPE_REPOS_ROOT to point to currently used QuadPype version.
-    os.environ["QUADPYPE_REPOS_ROOT"] = os.path.normpath(
-        version_path.as_posix()
-    )
-    # Additional sys paths related to QUADPYPE_REPOS_ROOT directory
-    # TODO move additional paths to `boot` part when QUADPYPE_REPOS_ROOT will
-    # point to same hierarchy from code and from frozen QuadPype
+    quadpype_root = os.path.normpath(version_path.as_posix())
+    os.environ["QUADPYPE_REPOS_ROOT"] = quadpype_root
+
+    split_paths = os.getenv("PYTHONPATH", "").split(os.pathsep)
+
+    split_paths.insert(0, quadpype_root)
+    sys.path.insert(0, quadpype_root)
+
+    if not getattr(sys, 'frozen', False):
+        # The last one should be venv site-packages
+        split_paths.append(site.getsitepackages()[-1])
+
     additional_paths = [
         os.environ["QUADPYPE_REPOS_ROOT"],
         # add QuadPype tools
@@ -724,7 +731,6 @@ def _initialize_environment(quadpype_version: PackageVersion) -> None:
         )
     ]
 
-    split_paths = os.getenv("PYTHONPATH", "").split(os.pathsep)
     for path in additional_paths:
         split_paths.insert(0, path)
         sys.path.insert(0, path)
