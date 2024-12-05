@@ -1,21 +1,10 @@
+from qtpy import QtWidgets, QtCore, QtGui
+import sys
 import os
 import collections
 import uuid
 import json
-
-from qtpy import QtWidgets, QtCore, QtGui
-
-from quadpype.lib import FileDefItem
-from quadpype.tools.utils import (
-    paint_image_with_color,
-    ClickableLabel,
-)
-# TODO change imports
-from quadpype.tools.resources import get_image
-from quadpype.tools.utils import (
-    IconButton,
-    PixmapLabel
-)
+import clique
 
 ITEM_ID_ROLE = QtCore.Qt.UserRole + 1
 ITEM_LABEL_ROLE = QtCore.Qt.UserRole + 2
@@ -27,9 +16,51 @@ IS_SEQUENCE_ROLE = QtCore.Qt.UserRole + 7
 EXT_ROLE = QtCore.Qt.UserRole + 8
 
 
+def get_image(icon_name=None, filename=None):
+    """Load image from './images' as QImage."""
+    path = get_icon_path(icon_name, filename)
+    if path:
+        return QtGui.QImage(path)
+    return None
+
+def paint_image_with_color(image, color):
+    """Redraw image with single color using it's alpha.
+
+    It is expected that input image is singlecolor image with alpha.
+
+    Args:
+        image (QImage): Loaded image with alpha.
+        color (QColor): Color that will be used to paint image.
+    """
+    width = image.width()
+    height = image.height()
+
+    alpha_mask = image.createAlphaMask()
+    alpha_region = QtGui.QRegion(QtGui.QBitmap.fromImage(alpha_mask))
+
+    pixmap = QtGui.QPixmap(width, height)
+    pixmap.fill(QtCore.Qt.transparent)
+
+    painter = QtGui.QPainter(pixmap)
+    render_hints = (
+        QtGui.QPainter.Antialiasing
+        | QtGui.QPainter.SmoothPixmapTransform
+    )
+    # Deprecated since 5.14
+    if hasattr(QtGui.QPainter, "Antialiasing"):
+        render_hints |= QtGui.QPainter.Antialiasing
+    painter.setRenderHints(render_hints)
+
+    painter.setClipRegion(alpha_region)
+    painter.setPen(QtCore.Qt.NoPen)
+    painter.setBrush(color)
+    painter.drawRect(QtCore.QRect(0, 0, width, height))
+    painter.end()
+
+    return pixmap
+
 def convert_bytes_to_json(bytes_value):
     if isinstance(bytes_value, QtCore.QByteArray):
-        # Raw data are already QByteArray and we don't have to load them
         encoded_data = bytes_value
     else:
         encoded_data = QtCore.QByteArray.fromRawData(bytes_value)
@@ -48,10 +79,6 @@ def convert_data_to_bytes(data):
     return bytes_value
 
 
-class SupportLabel(QtWidgets.QLabel):
-    pass
-
-
 class DropEmpty(QtWidgets.QWidget):
     _empty_extensions = "Any file"
 
@@ -60,7 +87,7 @@ class DropEmpty(QtWidgets.QWidget):
 
         drop_label_widget = QtWidgets.QLabel("Drag & Drop files here", self)
 
-        items_label_widget = SupportLabel(self)
+        items_label_widget = QtWidgets.QLabel(self)
         items_label_widget.setWordWrap(True)
 
         layout = QtWidgets.QVBoxLayout(self)
@@ -219,13 +246,246 @@ class DropEmpty(QtWidgets.QWidget):
         painter.setPen(pen)
         painter.drawRect(new_rect)
 
+class FileDefItem(object):
+    def __init__(
+        self,
+        directory,
+        filenames,
+        frames = None,
+        template = None,
+    ):
+        self.directory: str = directory
 
-class ButtonStandardItem(QtGui.QStandardItemModel):
-    def __init__(self, icon_path, parent=None):
-        super().__init__(parent)
-        pixmap = paint_image_with_color(get_image(filename=icon_path), QtCore.Qt.white)
-        self.setIcon(QtGui.QIcon(pixmap))
+        self.filenames = []
+        self.is_sequence = False
+        self.template = None
+        self.frames = []
+        self.is_empty = True
 
+        self.set_filenames(filenames, frames, template)
+
+    def __str__(self):
+        return json.dumps(self.to_dict())
+
+    def __repr__(self):
+        if self.is_empty:
+            filename = "< empty >"
+        elif self.is_sequence:
+            filename = self.template
+        else:
+            filename = self.filenames[0]
+
+        return "<{}: \"{}\">".format(
+            self.__class__.__name__,
+            os.path.join(self.directory, filename)
+        )
+
+    @property
+    def label(self):
+        if self.is_empty:
+            return None
+
+        if not self.is_sequence:
+            return self.filenames[0]
+
+        frame_start = self.frames[0]
+        filename_template = os.path.basename(self.template)
+        if len(self.frames) == 1:
+            return "{} [{}]".format(filename_template, frame_start)
+
+        frame_end = self.frames[-1]
+        expected_len = (frame_end - frame_start) + 1
+        if expected_len == len(self.frames):
+            return "{} [{}-{}]".format(
+                filename_template, frame_start, frame_end
+            )
+
+        ranges = []
+        _frame_start = None
+        _frame_end = None
+        for frame in range(frame_start, frame_end + 1):
+            if frame not in self.frames:
+                add_to_ranges = _frame_start is not None
+            elif _frame_start is None:
+                _frame_start = _frame_end = frame
+                add_to_ranges = frame == frame_end
+            else:
+                _frame_end = frame
+                add_to_ranges = frame == frame_end
+
+            if add_to_ranges:
+                if _frame_start != _frame_end:
+                    _range = "{}-{}".format(_frame_start, _frame_end)
+                else:
+                    _range = str(_frame_start)
+                ranges.append(_range)
+                _frame_start = _frame_end = None
+        return "{} [{}]".format(
+            filename_template, ",".join(ranges)
+        )
+
+    def split_sequence(self):
+        if not self.is_sequence:
+            raise ValueError("Cannot split single file item")
+
+        paths = [
+            os.path.join(self.directory, filename)
+            for filename in self.filenames
+        ]
+        return self.from_paths(paths, False)
+
+    @property
+    def ext(self):
+        if self.is_empty:
+            return None
+        _, ext = os.path.splitext(self.filenames[0])
+        if ext:
+            return ext
+        return None
+
+    @property
+    def lower_ext(self):
+        ext = self.ext
+        if ext is not None:
+            return ext.lower()
+        return ext
+
+    @property
+    def is_dir(self) -> bool:
+        if self.is_empty:
+            return False
+
+        # QUESTION a better way how to define folder (in init argument?)
+        if self.ext:
+            return False
+        return True
+
+    def set_directory(self, directory: str):
+        self.directory = directory
+
+    def set_filenames(
+        self,
+        filenames,
+        frames= None,
+        template= None,
+    ):
+        if frames is None:
+            frames = []
+        is_sequence = False
+        if frames:
+            is_sequence = True
+
+        if is_sequence and not template:
+            raise ValueError("Missing template for sequence")
+
+        self.is_empty = len(filenames) == 0
+        self.filenames = filenames
+        self.template = template
+        self.frames = frames
+        self.is_sequence = is_sequence
+
+    @classmethod
+    def create_empty_item(cls):
+        return cls("", [])
+
+    @classmethod
+    def from_value(
+        cls,
+        value,
+        allow_sequences: bool
+    ):
+        """Convert passed value to FileDefItem objects.
+
+        Returns:
+            list: Created FileDefItem objects.
+        """
+
+        # Convert single item to iterable
+        if not isinstance(value, (list, tuple, set)):
+            value = [value]
+
+        output = []
+        str_filepaths = []
+        for item in value:
+            if isinstance(item, dict):
+                item = cls.from_dict(item)
+
+            if isinstance(item, FileDefItem):
+                if not allow_sequences and item.is_sequence:
+                    output.extend(item.split_sequence())
+                else:
+                    output.append(item)
+
+            elif isinstance(item, str):
+                str_filepaths.append(item)
+            else:
+                raise TypeError(
+                    "Unknown type \"{}\". Can't convert to {}".format(
+                        str(type(item)), cls.__name__
+                    )
+                )
+
+        if str_filepaths:
+            output.extend(cls.from_paths(str_filepaths, allow_sequences))
+
+        return output
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            data["directory"],
+            data["filenames"],
+            data.get("frames"),
+            data.get("template")
+        )
+
+    @classmethod
+    def from_paths(
+        cls,
+        paths,
+        allow_sequences: bool = False
+    ):
+        filenames_by_dir = collections.defaultdict(list)
+        for path in paths:
+            normalized = os.path.normpath(path)
+            directory, filename = os.path.split(normalized)
+            filenames_by_dir[directory].append(filename)
+
+        output = []
+        for directory, filenames in filenames_by_dir.items():
+            if allow_sequences:
+                cols, remainders = clique.assemble(filenames)
+            else:
+                cols = []
+                remainders = filenames
+
+            for remainder in remainders:
+                output.append(cls(directory, [remainder]))
+
+            for col in cols:
+                frames = list(col.indexes)
+                paths = [filename for filename in col]
+                template = col.format("{head}{padding}{tail}")
+
+                output.append(cls(
+                    directory, paths, frames, template
+                ))
+
+        return output
+
+    def to_dict(self):
+        output = {
+            "is_sequence": self.is_sequence,
+            "directory": self.directory,
+            "filenames": list(self.filenames),
+        }
+        if self.is_sequence:
+            output.update({
+                "template": self.template,
+                "frames": list(sorted(self.frames)),
+            })
+
+        return output
 
 class FilesModel(QtGui.QStandardItemModel):
     def __init__(self, single_item, allow_sequences):
@@ -437,7 +697,7 @@ class FilesProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._allow_folders = False
-        self._allowed_extensions = None
+        self._allowed_extensions = ['.jpg']
         self._multivalue = False
 
     def set_multivalue(self, multivalue):
@@ -524,78 +784,6 @@ class FilesProxyModel(QtCore.QSortFilterProxyModel):
         if sorted((left_comparison, right_comparison))[0] == left_comparison:
             return True
         return False
-
-
-class ItemWidget(QtWidgets.QWidget):
-    context_menu_requested = QtCore.Signal(QtCore.QPoint)
-
-    def __init__(self, item_id, label, pixmap_icon, is_sequence, multivalue, parent=None):
-        super().__init__(parent)
-        self._item_id = item_id
-
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-
-        icon_widget = PixmapLabel(pixmap_icon, self)
-        label_widget = QtWidgets.QLabel(label, self)
-
-        label_size_hint = label_widget.sizeHint()
-        height = label_size_hint.height()
-        actions_menu_pix = paint_image_with_color(
-            get_image(filename="menu.png"), QtCore.Qt.white
-        )
-
-        split_btn = ClickableLabel(self)
-        split_btn.setFixedSize(height, height)
-        split_btn.setPixmap(actions_menu_pix)
-        if multivalue:
-            split_btn.setVisible(False)
-        else:
-            split_btn.setVisible(is_sequence)
-
-        layout = QtWidgets.QHBoxLayout(self)
-        layout.setContentsMargins(5, 5, 5, 5)
-        layout.addWidget(icon_widget, 0)
-        layout.addWidget(label_widget, 1)
-        layout.addWidget(split_btn, 0)
-
-        split_btn.clicked.connect(self._on_actions_clicked)
-
-        self._icon_widget = icon_widget
-        self._label_widget = label_widget
-        self._split_btn = split_btn
-        self._actions_menu_pix = actions_menu_pix
-        self._last_scaled_pix_height = None
-
-    def _update_btn_size(self):
-        label_size_hint = self._label_widget.sizeHint()
-        height = label_size_hint.height()
-        if height == self._last_scaled_pix_height:
-            return
-        self._last_scaled_pix_height = height
-        self._split_btn.setFixedSize(height, height)
-        pix = self._actions_menu_pix.scaled(
-            height, height,
-            QtCore.Qt.KeepAspectRatio,
-            QtCore.Qt.SmoothTransformation
-        )
-        self._split_btn.setPixmap(pix)
-
-    def showEvent(self, event):
-        super(ItemWidget, self).showEvent(event)
-        self._update_btn_size()
-
-    def resizeEvent(self, event):
-        super(ItemWidget, self).resizeEvent(event)
-        self._update_btn_size()
-
-    def _on_actions_clicked(self):
-        pos = self._split_btn.rect().bottomLeft()
-        point = self._split_btn.mapToGlobal(pos)
-        self.context_menu_requested.emit(point)
-
-
-class InViewButton(IconButton):
-    pass
 
 
 class FilesView(QtWidgets.QTreeView):
@@ -981,3 +1169,55 @@ class FilesWidget(QtWidgets.QFrame):
         else:
             current_widget = self._empty_widget
         self._stacked_layout.setCurrentWidget(current_widget)
+
+
+class FilesDialog(QtWidgets.QDialog):
+    def __init__(self, single_item, allow_sequences, extensions_label, parent=None):
+        super().__init__(parent)
+
+        # Set up the dialog
+        self.setWindowTitle("Files Dialog")
+        self.setMinimumSize(600, 400)
+
+        # Create the FilesWidget instance
+        self.files_widget = FilesWidget(single_item, allow_sequences, extensions_label, self)
+
+        # Layout to hold the FilesWidget
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(self.files_widget)
+
+        # Buttons for additional functionality if necessary
+        button_layout = QtWidgets.QHBoxLayout()
+        ok_button = QtWidgets.QPushButton("OK", self)
+        cancel_button = QtWidgets.QPushButton("Cancel", self)
+
+        ok_button.clicked.connect(self.accept)
+        cancel_button.clicked.connect(self.reject)
+
+        button_layout.addWidget(ok_button)
+        button_layout.addWidget(cancel_button)
+
+        layout.addLayout(button_layout)
+
+
+def show_files_dialog():
+    app = QtWidgets.QApplication(sys.argv)
+
+    # Example parameters for FilesWidget
+    single_item = False
+    allow_sequences = True
+    extensions_label = "Allowed Extensions"
+
+    # Create the dialog
+    dialog = FilesDialog(single_item, allow_sequences, extensions_label)
+
+    if dialog.exec() == QtWidgets.QDialog.Accepted:
+        print("Dialog accepted!")
+    else:
+        print("Dialog canceled!")
+
+    sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    show_files_dialog()

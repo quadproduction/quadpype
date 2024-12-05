@@ -132,7 +132,7 @@ class AttributeDefinitionsWidget(QtWidgets.QWidget):
             widget = create_widget_for_attr_def(attr_def, self)
             self._widgets.append(widget)
 
-            if not attr_def.visible:
+            if attr_def.visible:
                 continue
 
             expand_cols = 2
