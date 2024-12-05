@@ -22,7 +22,6 @@ of server.
 
 import os
 import socket
-from time import sleep
 
 from quadpype import resources
 from quadpype.lib import get_app_registry

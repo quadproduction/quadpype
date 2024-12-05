@@ -16,8 +16,6 @@ try:
     from googleapiclient import errors
     from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 except (ImportError, SyntaxError) as e:
-    raise e
-
     # handle imports from Python 2 hosts - in those only basic methods are used
     log.warning("Import failed, imported from Python 2, operations will fail.")
 
