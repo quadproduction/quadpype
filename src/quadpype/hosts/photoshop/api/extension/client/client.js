@@ -28,7 +28,7 @@
     }
 
     /** main entry point **/
-    startUp("WEBSOCKET_URL");
+    startUp("QUADPYPE_WEBSOCKET_URL");
 
     // get websocket server url from environment value
     async function startUp(url){
@@ -67,7 +67,7 @@
     function main(websocket_url){
       // creates connection to 'websocket_url', registers routes
       log.warn("websocket_url", websocket_url);
-      var default_url = 'ws://localhost:8099/ws/';
+      var default_url = 'ws://localhost:8018/ws/';
 
       if  (websocket_url == ''){
            websocket_url = default_url;

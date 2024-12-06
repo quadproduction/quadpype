@@ -7,7 +7,7 @@ This implementation is using TVPaint plugin (C/C++) which can communicate with p
 
 Current implementation is based on websocket protocol, using json-rpc communication (specification 2.0). Project is in beta stage, tested only on Windows.
 
-To be able to load plugin, environment variable `WEBSOCKET_URL` must be set otherwise plugin won't load at all. Plugin should not affect TVPaint if python server crash, but buttons won't work.
+To be able to load plugin, environment variable `QUADPYPE_WEBSOCKET_URL` must be set otherwise plugin won't load at all. Plugin should not affect TVPaint if python server crash, but buttons won't work.
 
 ## Requirements - Python server
 - python >= 3.6

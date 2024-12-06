@@ -543,7 +543,7 @@ int FAR PASCAL PI_Open( PIFilter* iFilter )
     {
         PI_Parameters( iFilter, NULL ); // NULL as iArg means "open the requester"
     }
-    char *env_value = std::getenv("WEBSOCKET_URL");
+    char *env_value = std::getenv("QUADPYPE_WEBSOCKET_URL");
     if (env_value != NULL) {
         communication = new Communicator(env_value);
         communication->connect();

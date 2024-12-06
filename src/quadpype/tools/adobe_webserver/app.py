@@ -39,13 +39,13 @@ class WebServerTool:
 
         port = None
         host_name = "localhost"
-        websocket_url = os.getenv("WEBSOCKET_URL")
+        websocket_url = os.getenv("QUADPYPE_WEBSOCKET_URL")
         if websocket_url:
             parsed = urllib.parse.urlparse(websocket_url)
             port = parsed.port
             host_name = parsed.netloc.split(":")[0]
         if not port:
-            port = 8098  # fallback
+            port = 8016  # fallback
 
         self.port = port
         self.host_name = host_name
@@ -76,7 +76,7 @@ class WebServerTool:
             but one already running, without
             this publish would point to old context.
         """
-        client = WSRPCClient(os.getenv("WEBSOCKET_URL"),
+        client = WSRPCClient(os.getenv("QUADPYPE_WEBSOCKET_URL"),
                              loop=asyncio.get_event_loop())
         await client.connect()
 
