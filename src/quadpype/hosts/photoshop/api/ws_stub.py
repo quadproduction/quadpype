@@ -615,12 +615,6 @@ class PhotoshopServerStub:
             self.client.call('Photoshop.get_extension_version')
         )
 
-    def get_extension_bundle_id(self):
-        """Returns extension bundle id of installed extension."""
-        return self.websocketserver.call(
-            self.client.call('Photoshop.get_extension_bundle_id')
-        )
-
     def close(self):
         """Shutting down PS and process too.
 

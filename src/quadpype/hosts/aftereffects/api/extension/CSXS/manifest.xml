@@ -1,5 +1,6 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<ExtensionManifest Version="8.0" ExtensionBundleId="io.quad.AE.panel" ExtensionBundleVersion="1.0.1" ExtensionBundleName="io.quad.AE.panel">
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="8.0" ExtensionBundleId="io.quad.AE.panel" ExtensionBundleVersion="1.0.0"
+		ExtensionBundleName="io.quad.AE.panel" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<ExtensionList>
 		<Extension Id="io.quad.AE.panel" Version="1.0" />
 	</ExtensionList>
@@ -38,7 +39,7 @@
 	</ExecutionEnvironment>
 	<DispatchInfoList>
 		<Extension Id="io.quad.AE.panel">
-			<DispatchInfo>
+			<DispatchInfo >
 				<Resources>
 				<MainPath>./index.html</MainPath>
 				<ScriptPath>./jsx/hostscript.jsx</ScriptPath>
