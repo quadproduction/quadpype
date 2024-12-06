@@ -1,7 +1,7 @@
 $SCRIPT_DIR = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 
 function migrate_settings() {
-    $MIGRATE_DB_SCRIPT_PATH = Join-Path -Path (Split-Path $SCRIPT_DIR -Parent) -ChildPath "tools\_lib\database\transfer_settings.js"
+    $MIGRATE_DB_SCRIPT_PATH = Join-Path -Path $SCRIPT_DIR -ChildPath "_lib\database\transfer_settings.js"
     $MIGRATE_VAL =  mongosh --file $MIGRATE_DB_SCRIPT_PATH --eval "MONGO_URI='$MONGO_URI', MONGO_DESTINATION='$MONGO_DESTINATION'" --quiet
     return $MIGRATE_VAL
 }
