@@ -27,7 +27,11 @@ class CollectExtensionVersion(pyblish.api.ContextPlugin):
     active = True
 
     def process(self, context):
+        bundle_id = get_stub().get_extension_bundle_id()
         installed_version = get_stub().get_extension_version()
+        if not bundle_id:
+            raise ValueError("Thanks to use Quadpype by selecting Windows > Extensions (Legacy) > QuadPype ")
+
 
         if not installed_version:
             raise ValueError("Unknown version, probably old extension")
@@ -39,12 +43,22 @@ class CollectExtensionVersion(pyblish.api.ContextPlugin):
             return
 
         expected_version = None
+        expected_id = None
         with open(manifest_url) as fp:
             content = fp.read()
+            id_found = re.findall(r'(ExtensionBundleId=\")([a-zA-Z\.]+)(\")',content)
+            if id_found:
+                expected_id = id_found[0][1]
+
             found = re.findall(r'(ExtensionBundleVersion=")([0-9\.]+)(")',
                                content)
             if found:
                 expected_version = found[0][1]
+
+        if expected_id != bundle_id:
+            msg = "Expected id '{}' found '{}'\n".format(expected_id, bundle_id)
+            msg += "Thanks to use Quadpype by selecting Windows > Extensions (Legacy) > QuadPype  "
+            raise ValueError(msg)
 
         if expected_version != installed_version:
             msg = (

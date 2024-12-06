@@ -55,6 +55,35 @@ function get_extension_version(){
     return '{"result":"' + version + '"}'
 }
 
+
+function get_extension_bundle_id(){
+    /** Returns version number from extension manifest.xml **/
+    log.debug("get_extension_bundle_id")
+    var path = csInterface.getSystemPath(SystemPath.EXTENSION);
+    log.debug("extension path " + path);
+
+    var result = window.cep.fs.readFile(path + "/CSXS/manifest.xml");
+    var version = undefined;
+    if(result.err === 0){
+        if (window.DOMParser) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(result.data.toString(),
+                                                  'text/xml');
+            const children = xmlDoc.children;
+
+            for (let i = 0; i <= children.length; i++) {
+                if (children[i] &&
+                children[i].getAttribute('ExtensionBundleId')) {
+                    version =
+                        children[i].getAttribute('ExtensionBundleId');
+                }
+            }
+        }
+    }
+    return '{"result":"' + version + '"}'
+}
+
+
 function main(websocket_url){
     // creates connection to 'websocket_url', registers routes
     var default_url = 'ws://localhost:8099/ws/';
@@ -344,6 +373,11 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.get_extension_version', function (data) {
       log.warn('Server called client route "get_extension_version":', data);
       return get_extension_version();
+    });
+
+    RPC.addRoute('AfterEffects.get_extension_bundle_id', function (data) {
+      log.warn('Server called client route "get_extension_bundle_id":', data);
+      return get_extension_bundle_id();
     });
 
     RPC.addRoute('AfterEffects.get_app_version', function (data) {
