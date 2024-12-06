@@ -43,10 +43,6 @@ def main():
         repo_root = repo_root.parent
     repo_root.resolve()
 
-    print("#######################")
-    print(args_string)
-    print("#######################")
-
     if low_platform == "windows":
         pre_run_script_path = repo_root.joinpath("tools", "pre_run.ps1")
         p = subprocess.Popen(

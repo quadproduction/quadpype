@@ -57,7 +57,7 @@ function get_extension_version(){
 
 function main(websocket_url){
     // creates connection to 'websocket_url', registers routes
-    var default_url = 'ws://localhost:8099/ws/';
+    var default_url = 'ws://localhost:8017/ws/';
 
     if  (websocket_url == ''){
          websocket_url = default_url;
@@ -386,7 +386,7 @@ function main(websocket_url){
 }
 
 /** main entry point **/
-startUp("WEBSOCKET_URL");
+startUp("QUADPYPE_WEBSOCKET_URL");
 
 (function () {
     'use strict';
