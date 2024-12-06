@@ -626,7 +626,6 @@ def ls() -> Iterator:
     called containers.
     """
     container_ids = {
-        AYON_CONTAINER_ID,
         # Backwards compatibility
         AVALON_CONTAINER_ID
     }

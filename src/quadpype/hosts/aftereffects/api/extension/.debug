@@ -6,25 +6,25 @@
             <!-- Comment Host tags according to the apps you want your panel to support -->
 
             <!-- Photoshop -->
-            <Host Name="PHXS" Port="8088"/>
-
-            <!-- Illustrator -->
-            <Host Name="ILST" Port="8089"/>
-
-            <!-- InDesign -->
-            <Host Name="IDSN" Port="8090" />
-
-            <!-- Premiere -->
-            <Host Name="PPRO" Port="8091" />
+            <Host Name="PHXS" Port="8017"/>
 
             <!-- AfterEffects -->
-            <Host Name="AEFT" Port="8092" />
+            <Host Name="AEFT" Port="8018" />
+
+            <!-- Illustrator -->
+            <Host Name="ILST" Port="8019"/>
+
+            <!-- InDesign -->
+            <Host Name="IDSN" Port="8020" />
+
+            <!-- Premiere -->
+            <Host Name="PPRO" Port="8021" />
 
             <!-- PRELUDE -->
-            <Host Name="PRLD" Port="8093" />
+            <Host Name="PRLD" Port="8022" />
 
             <!-- FLASH Pro -->
-            <Host Name="FLPR" Port="8094" />
+            <Host Name="FLPR" Port="8023" />
 
         </HostList>
     </Extension>

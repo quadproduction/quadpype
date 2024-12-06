@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 """Module storing the class and logic of the QuadPype Events Handler."""
 import os
-import time
+import json
 import functools
 
+from time import sleep
 from typing import Optional
 from datetime import datetime, timezone, timedelta
 
 import pymongo
+import pymongo.errors
 import requests
 from qtpy import QtCore, QtWidgets
 
@@ -21,12 +23,11 @@ from quadpype.client.mongo import QuadPypeMongoConnection
 
 
 _EVENT_HANDLER = None
-CHECK_NEW_EVENTS_INTERVAL_SECONDS = 120
-MINIMUM_EVENT_EXPIRE_IN_SECONDS = CHECK_NEW_EVENTS_INTERVAL_SECONDS + 10
+
+DEFAULT_RESPONSES_WAITING_TIME_SECS = 3
 
 
 class EventHandlerWorker(QtCore.QThread):
-    task_completed = QtCore.Signal(int)
 
     def __init__(self, manager, parent=None):
         """Initialize the worker thread."""
@@ -38,6 +39,9 @@ class EventHandlerWorker(QtCore.QThread):
         self._manager = manager
 
         self._webserver_url = self._manager.webserver.url
+
+        # Store the amount of time an error occurred
+        self._error_count = 0
 
         # Get info about the timestamp of the last handled event
         self._last_handled_event_timestamp = self._manager.app_registry.get_item(
@@ -53,58 +57,106 @@ class EventHandlerWorker(QtCore.QThread):
                 self._last_handled_event_timestamp
             )
 
-    def run(self):
-        start_time = time.time()
+    def _respond_to_event(self, event_doc, response):
+        curr_user_id = self._manager.user_profile["user_id"]
+        response_data = {
+            "user_id": curr_user_id,
+            "content": ""
+        }
 
-        # Retrieve the new events to process
+        if response.text:
+            response_content = json.loads(response.text)
+            if "content" in response_content:
+                response_data["content"] = response_content["content"]
+            else:
+                response_data["content"] = response_content
+
+        try:
+            # Only push the response if the user_id hasn't already sent a response
+            self._manager.collection.update_one(
+                {"_id": event_doc["_id"], "responses.user_id": {"$ne": curr_user_id}},
+                {"$push": {"responses": response_data}}
+            )
+        except Exception as e:
+            print(f"Error updating event: {e}")
+
+    def _update_last_handled_event_timestamp(self):
+        # Update the local app registry
+        # To keep track and properly retrieve the next events after that
+        self._manager.app_registry.set_item(
+            "last_handled_event_timestamp",
+            get_timestamp_str(self._last_handled_event_timestamp))
+
+    def _process_event(self, event_doc):
+        current_timestamp = datetime.now()
+
+        if (event_doc["target_users"] and self._manager.user_profile["user_id"] not in event_doc["target_users"]) or \
+                (event_doc["target_groups"] and self._manager.user_profile["role"] not in event_doc["target_groups"]) or \
+                ("expire_at" in event_doc and current_timestamp > event_doc["expire_at"]):
+            # User is not targeted by this event OR
+            # This event is expired, so we skip it
+            self._last_handled_event_timestamp = event_doc["timestamp"]
+            return
+
+        route = event_doc["route"]
+        if not route.startswith("/"):
+            route = "/" + route
+
+        url_with_route = self._webserver_url + route
+
+        # Send the event to the webserver API
+        funct = getattr(requests, event_doc["type"])
+        if not event_doc["content"]:
+            response_obj = funct(url_with_route)
+        else:
+            response_obj = funct(url_with_route, **event_doc["content"])
+
+        if response_obj.status_code == 200 and "responses" in event_doc:
+            # A response is expected
+            self._respond_to_event(event_doc, response_obj)
+
+        # Update the last handled timestamp
+        self._last_handled_event_timestamp = event_doc["timestamp"]
+
+    def run(self):
+        # Reset the error count
+        self._error_count = 0
+
+        # Retrieve the new events that were added since the last connection
         db_cursor = self._manager.collection.find({
             "timestamp": {
                 "$gt": self._last_handled_event_timestamp
             }
         }).sort("timestamp", 1)
 
-        # Process the events
-        current_timestamp = datetime.now()
-        for doc in db_cursor:
+        # Process these events
+        for event_doc in db_cursor:
             if not self._manager.is_running:
-                break
-            if "expire_at" in doc and doc["expire_at"] > current_timestamp:
-                # This event is expired, skip
-                self._last_handled_event_timestamp = doc["timestamp"]
-                continue
-
-            route = doc["route"]
-            if not route.startwith("/"):
-                route = "/" + route
-
-            url_with_route = self._webserver_url + route
-
-            # Send the event to the webserver API
-            funct = getattr(requests, doc["type"])
-            if not doc["content"]:
-                response = funct(url_with_route)
-            else:
-                response = funct(url_with_route, **doc["content"])
-
-            # Update the last handled timestamp
-            self._last_handled_event_timestamp = doc["timestamp"]
+                self._update_last_handled_event_timestamp()
+                return
+            self._process_event(event_doc)
 
         if db_cursor.retrieved > 0:
-            # Update the local app registry
-            # To keep track and properly retrieve the next events after that
-            self._manager.app_registry.set_item(
-                "last_handled_event_timestamp",
-                get_timestamp_str(self._last_handled_event_timestamp))
+            self._update_last_handled_event_timestamp()
 
-        if not self._manager.is_running:
-            # Simply exit without emiting the signal
-            return
+        # Watch for new event documents directly on the collection
+        with self._manager.collection.watch([{"$match": {"operationType": "insert"}}]) as stream:
+            while self._manager.is_running:
+                try:
+                    # Non-blocking method to get the next change
+                    change = stream.try_next()
+                    if change:
+                        event_doc = change["fullDocument"]
+                        self._process_event(event_doc)
+                        self._update_last_handled_event_timestamp()
+                except pymongo.errors.PyMongoError as e:
+                    print(f"Error in change stream: {e}")
+                    self._error_count += 1
+                    if self._error_count > 4:
+                        print("Stopping the Event Handling due to the errors.")
+                        return
 
-        elapsed_time = round(time.time() - start_time)
-        waiting_time = max(0, CHECK_NEW_EVENTS_INTERVAL_SECONDS - elapsed_time)
-        waiting_time_msec = waiting_time * 1000
-
-        self.task_completed.emit(waiting_time_msec)
+                sleep(0.2)
 
 
 class EventsHandlerManager:
@@ -172,9 +224,6 @@ class EventsHandlerManager:
         self._is_running = True
         self._worker_thread.start(QtCore.QThread.HighestPriority)
 
-    def _restart_worker(self, waiting_time_msec):
-        self._timer.start(waiting_time_msec)
-
     def start(self):
         if self._worker_thread:
             raise RuntimeError("The Event Handler cannot be started multiple times.")
@@ -182,7 +231,6 @@ class EventsHandlerManager:
             raise RuntimeError("Webserver not set. Cannot start the event handler.")
 
         self._worker_thread = EventHandlerWorker(self)
-        self._worker_thread.task_completed.connect(self._restart_worker)
 
         if not self._webserver.is_running:
             # The webserver is not yet running, wait a bit before starting the loop
@@ -245,12 +293,14 @@ def _validate_event_values(event_route: str,
 
 
 @require_events_handler
-def register_event(event_route: str,
-                   event_type: str,
-                   content: Optional[dict],
-                   target_users: Optional[list] = None,
-                   target_groups: Optional[list] = None,
-                   expire_in: Optional[int] = None):
+def send_event(event_route: str,
+               event_type: str,
+               content: Optional[dict],
+               target_users: Optional[list] = None,
+               target_groups: Optional[list] = None,
+               expire_in: Optional[int] = None,
+               wait_for_responses: bool = False,
+               waiting_time_secs: int = DEFAULT_RESPONSES_WAITING_TIME_SECS):
     if target_users is None:
         target_users = []
     elif isinstance(target_users, str):
@@ -268,9 +318,10 @@ def register_event(event_route: str,
     if not is_valid:
         raise ValueError(invalid_msg)
 
-    timestamp = datetime.now()
+    timestamp = datetime.now(timezone.utc)
     event = {
         "timestamp": timestamp,
+        "user_id": _EVENT_HANDLER.user_profile["user_id"],
         "route": event_route,
         "type": event_type,
         "target_users": target_users,
@@ -279,7 +330,14 @@ def register_event(event_route: str,
     }
 
     if expire_in is not None:
-        expire_in += MINIMUM_EVENT_EXPIRE_IN_SECONDS
         event["expire_at"] = timestamp + timedelta(seconds=expire_in)
 
-    _EVENT_HANDLER.collection.insert_one(event)
+    if wait_for_responses:
+        event["responses"] = []
+
+    event_doc_id = _EVENT_HANDLER.collection.insert_one(event).inserted_id
+
+    if wait_for_responses:
+        sleep(waiting_time_secs)
+        event_doc = _EVENT_HANDLER.collection.find_one({"_id": event_doc_id})
+        return event_doc["responses"]
