@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Get configuration data."""
-import datetime
+from datetime import datetime, timezone
 
 
 def get_datetime_data(datetime_obj=None):
@@ -35,7 +35,7 @@ def get_datetime_data(datetime_obj=None):
     """
 
     if not datetime_obj:
-        datetime_obj = datetime.datetime.now()
+        datetime_obj = datetime.now()
 
     year = datetime_obj.strftime("%Y")
 
@@ -76,8 +76,8 @@ def get_datetime_data(datetime_obj=None):
     }
 
 
-def get_timestamp_str(datetime_obj=None):
-    """Get standardized timestamp from datetime object.
+def get_timestamp_str(datetime_obj=None, local_timezone=False):
+    """Get standardized timestamp string from a datetime object.
 
     Args:
         datetime_obj (datetime.datetime): Object of datetime. Current time
@@ -85,11 +85,19 @@ def get_timestamp_str(datetime_obj=None):
     """
 
     if datetime_obj is None:
-        datetime_obj = datetime.datetime.now()
-    return datetime_obj.astimezone().isoformat()
+        if local_timezone:
+            datetime_obj = datetime.now().astimezone()
+        else:
+            datetime_obj = datetime.now(timezone.utc)
+
+    if datetime_obj.tzinfo is None:
+        # If no timezone info passed, we assume it's UTC
+        datetime_obj = datetime_obj.replace(tzinfo=timezone.utc)
+    return datetime_obj.isoformat()
+
 
 def get_datetime_from_timestamp_str(timestamp_str):
-    return datetime.datetime.fromisoformat(timestamp_str)
+    return datetime.fromisoformat(timestamp_str)
 
 
 def get_formatted_current_time():

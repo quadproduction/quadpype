@@ -17,6 +17,7 @@ async def show_tray_message(message: str):
         tray_icon_widget.showMessage("Notification", message)
     return {"message": "Message displayed"}
 
+
 @router.post("/popup/", tags=["popup"])
 async def show_popup_message(message: str):
     tray_icon_widget: Optional[SystemTrayIcon] = get_tray_icon_widget()
