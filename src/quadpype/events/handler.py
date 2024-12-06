@@ -90,8 +90,11 @@ class EventHandlerWorker(QtCore.QThread):
     def _process_event(self, event_doc):
         current_timestamp = datetime.now()
 
-        if "expire_at" in event_doc and current_timestamp > event_doc["expire_at"]:
-            # This event is expired, skip
+        if (event_doc["target_users"] and self._manager.user_profile["user_id"] not in event_doc["target_users"]) or \
+                (event_doc["target_groups"] and self._manager.user_profile["role"] not in event_doc["target_groups"]) or \
+                ("expire_at" in event_doc and current_timestamp > event_doc["expire_at"]):
+            # User is not targeted by this event OR
+            # This event is expired, so we skip it
             self._last_handled_event_timestamp = event_doc["timestamp"]
             return
 
