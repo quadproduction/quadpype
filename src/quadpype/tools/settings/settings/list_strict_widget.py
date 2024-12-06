@@ -28,7 +28,7 @@ class ListStrictWidget(BaseWidget):
                 break
 
         self._any_children_has_label = any_children_has_label
-        # Change column stretch factor for vertical alignment
+        # Change the column stretch factor for vertical alignment
         if not self.entity.is_horizontal:
             col_index = 2 if any_children_has_label else 1
             content_layout.setColumnStretch(col_index, 1)
@@ -91,7 +91,7 @@ class ListStrictWidget(BaseWidget):
 
     def _add_child_horizontally(self, widget, label):
         col = self.content_layout.columnCount()
-        # Expand to whole grid if all children are without label
+        # Expand to whole grid if all children are without a label
         if not self._any_children_has_label:
             self.content_layout.addWidget(widget, 0, col, 1, 2)
         else:
@@ -118,7 +118,7 @@ class ListStrictWidget(BaseWidget):
                 widget.label_widget = label_widget
                 self.content_layout.addWidget(
                     label_widget, row, 0, 1, 1,
-                    alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignTop
+                    alignment=QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignTop
                 )
             self.content_layout.addWidget(widget, row, 1, 1, 1)
 

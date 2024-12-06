@@ -244,13 +244,13 @@ class BlankControlPanelWidget(QtWidgets.QWidget):
         raise NotImplementedError("Abstract method not implemented")
 
     def contain_category_key(self, category):
-        """Parent widget ask if category of full path lead to this widget.
+        """Parent widget ask if the category of the full path leads to this widget.
 
         Args:
             category (str): The category name.
 
         Returns:
-            bool: Passed category lead to this widget.
+            bool: Passed if the category leads to this widget.
         """
         return False
 
@@ -280,7 +280,7 @@ class BaseControlPanelWidget(BlankControlPanelWidget):
         self.footer_btn = None
         self.refresh_btn = None
 
-        self._labels_alignment = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        self._labels_alignment = QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter
 
     def _add_developer_ui(self):
         pass
@@ -326,7 +326,7 @@ class BaseControlPanelWidget(BlankControlPanelWidget):
         self.content_layout = QtWidgets.QVBoxLayout(self.content_widget)
         self.content_layout.setContentsMargins(3, 3, 3, 3)
         self.content_layout.setSpacing(5)
-        self.content_layout.setAlignment(QtCore.Qt.AlignTop)
+        self.content_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
 
         # Footer widget
         self.footer_widget = QtWidgets.QWidget(self)
@@ -573,11 +573,11 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
         self.full_path_requested.emit(category, path)
 
     def set_category_path(self, category, path):
-        """Change path of widget based on category full path."""
+        """Change the path of the widget based on the category full path."""
         pass
 
     def change_path(self, path):
-        """Change path and go to widget."""
+        """Change the path and go to the widget."""
         self.breadcrumbs_bar.change_path(path)
 
     def set_path(self, path):
@@ -641,7 +641,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             self._use_version = None
 
             # NOTE There are relations to previous entities and C++ callbacks
-            #   so it is easier to just use new entity and recreate UI but
+            #   so it is easier to just use new entity and recreate the UI but
             #   would be nice to change this and add cleanup part so this is
             #   not required.
             self.reset()
@@ -658,7 +658,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             dialog = QtWidgets.QMessageBox(self)
             dialog.setWindowTitle("Save warnings")
             dialog.setText(msg)
-            dialog.setIcon(QtWidgets.QMessageBox.Warning)
+            dialog.setIcon(QtWidgets.QMessageBox.Icon.Warning)
             dialog.exec_()
 
             self.reset()
@@ -670,18 +670,18 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             msg = "Unexpected error happened!\n\nError: {}".format(str(exc))
             dialog.setText(msg)
             dialog.setDetailedText("\n".join(formatted_traceback))
-            dialog.setIcon(QtWidgets.QMessageBox.Critical)
+            dialog.setIcon(QtWidgets.QMessageBox.Icon.Critical)
 
             line_widths = set()
             metrics = dialog.fontMetrics()
             for line in formatted_traceback:
-                line_widths.add(metrics.width(line))
+                line_widths.add(metrics.horizontalAdvance(line))
             max_width = max(line_widths)
 
             spacer = QtWidgets.QSpacerItem(
                 max_width, 0,
-                QtWidgets.QSizePolicy.Minimum,
-                QtWidgets.QSizePolicy.Expanding
+                QtWidgets.QSizePolicy.Policy.Minimum,
+                QtWidgets.QSizePolicy.Policy.Expanding
             )
             layout: QtWidgets.QGridLayout = dialog.layout()  # noqa
             layout.addItem(
@@ -744,14 +744,14 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
                 " don't have permissions to modify them."
                 " Please contact QuadPype team."
             ))
-            dialog.setIcon(QtWidgets.QMessageBox.Critical)
+            dialog.setIcon(QtWidgets.QMessageBox.Icon.Critical)
 
         except SchemaError as exc:
             dialog = QtWidgets.QMessageBox(self)
             dialog.setWindowTitle("Schema error")
             msg = "Implementation bug!\n\nError: {}".format(str(exc))
             dialog.setText(msg)
-            dialog.setIcon(QtWidgets.QMessageBox.Warning)
+            dialog.setIcon(QtWidgets.QMessageBox.Icon.Warning)
 
         except Exception as exc:
             formatted_traceback = traceback.format_exception(*sys.exc_info())
@@ -760,18 +760,18 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             msg = "Unexpected error happened!\n\nError: {}".format(str(exc))
             dialog.setText(msg)
             dialog.setDetailedText("\n".join(formatted_traceback))
-            dialog.setIcon(QtWidgets.QMessageBox.Critical)
+            dialog.setIcon(QtWidgets.QMessageBox.Icon.Critical)
 
             line_widths = set()
             metrics = dialog.fontMetrics()
             for line in formatted_traceback:
-                line_widths.add(metrics.width(line))
+                line_widths.add(metrics.horizontalAdvance(line))
             max_width = max(line_widths)
 
             spacer = QtWidgets.QSpacerItem(
                 max_width, 0,
-                QtWidgets.QSizePolicy.Minimum,
-                QtWidgets.QSizePolicy.Expanding
+                QtWidgets.QSizePolicy.Policy.Minimum,
+                QtWidgets.QSizePolicy.Policy.Expanding
             )
             layout: QtWidgets.QGridLayout = dialog.layout()  # noqa
             layout.addItem(
@@ -899,7 +899,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             return True
 
         msg_box = QtWidgets.QMessageBox(
-            QtWidgets.QMessageBox.Warning,
+            QtWidgets.QMessageBox.Icon.Warning,
             "Invalid input",
             (
                 "There is invalid value in one of inputs."
@@ -907,7 +907,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             ),
             parent=self
         )
-        msg_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg_box.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
         msg_box.exec_()
 
         first_invalid_item = invalid_items[0]
@@ -957,7 +957,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             self.restart_required_trigger.emit()
 
     def _on_footer_button_pressed(self):
-        """For settings panels this means the save button has been pressed"""
+        """For the settings panels, this means the save button has been pressed"""
         self._save()
 
     def _update_labels_visibility(self):
@@ -991,7 +991,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
         self.reset()
 
     def _on_hide_studio_overrides(self, state):
-        self._hide_studio_overrides = (state == QtCore.Qt.Checked)
+        self._hide_studio_overrides = (state == QtCore.Qt.CheckState.Checked)
 
 
 class GlobalSettingsWidget(SettingsControlPanelWidget):
@@ -1264,7 +1264,7 @@ class UserManagerWidget(BaseControlPanelWidget):
 
     def update_column_widths(self):
         available_width = self.parent().width()
-        self.table_widget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.table_widget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         columns_size = {}
         columns_size_sum = 0
         additional_width_column = 0
@@ -1278,14 +1278,16 @@ class UserManagerWidget(BaseControlPanelWidget):
             additional_width_column = int((available_width - columns_size_sum) / columns_count)
 
         for column_index in range(columns_count-1):
-            self.table_widget.horizontalHeader().setSectionResizeMode(column_index, QtWidgets.QHeaderView.Fixed)
+            self.table_widget.horizontalHeader().setSectionResizeMode(column_index,
+                                                                      QtWidgets.QHeaderView.ResizeMode.Fixed)
             self.table_widget.setColumnWidth(column_index, columns_size[column_index] + additional_width_column)
 
         if additional_width_column:
             # This means, without adding width, the sum of column wouldn't take the full width
             # Stretching the last column to ensure the row will be fully filled
             last_column_index = columns_count-1
-            self.table_widget.horizontalHeader().setSectionResizeMode(last_column_index, QtWidgets.QHeaderView.Stretch)
+            self.table_widget.horizontalHeader().setSectionResizeMode(last_column_index,
+                                                                      QtWidgets.QHeaderView.ResizeMode.Stretch)
 
     def add_user_row(self, user_data):
         row_index = self.table_widget.rowCount()
@@ -1293,7 +1295,7 @@ class UserManagerWidget(BaseControlPanelWidget):
 
         for column_index, cell_data in enumerate(user_data):
             item = QtWidgets.QTableWidgetItem(cell_data)
-            item.setTextAlignment(QtCore.Qt.AlignCenter)
+            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
             self.table_widget.setItem(row_index, column_index, item)
 
     def _update_user_list(self):
@@ -1352,11 +1354,11 @@ class UserManagerWidget(BaseControlPanelWidget):
 
         self.table_widget.verticalHeader().hide()
         self.table_widget.setColumnCount(len(self.table_column_data))
-        self.table_widget.setHorizontalHeaderLabels(self.table_column_data.values())
+        self.table_widget.setHorizontalHeaderLabels(list(self.table_column_data.values()))
 
         # Set selection mode to only allow single row selection
-        self.table_widget.setSelectionMode(QtWidgets.QTableWidget.SingleSelection)
-        self.table_widget.setSelectionBehavior(QtWidgets.QTableWidget.SelectRows)
+        self.table_widget.setSelectionMode(QtWidgets.QTableWidget.SelectionMode.SingleSelection)
+        self.table_widget.setSelectionBehavior(QtWidgets.QTableWidget.SelectionBehavior.SelectRows)
 
         self.table_widget.selectionModel().selectionChanged.connect(self.on_selection_changed)
 

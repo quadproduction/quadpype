@@ -298,9 +298,9 @@ class ModifiableDictItem(QtWidgets.QWidget):
         key_label_input.focusOutEvent = key_label_input_focused_out
 
         edit_btn = IconButton(
-            "fa.edit", QtCore.Qt.lightGray, QtCore.Qt.white
+            "fa.edit", QtCore.Qt.GlobalColor.lightGray, QtCore.Qt.GlobalColor.white
         )
-        edit_btn.setFocusPolicy(QtCore.Qt.ClickFocus)
+        edit_btn.setFocusPolicy(QtCore.Qt.FocusPolicy.ClickFocus)
         edit_btn.setObjectName("SettingsToolIconBtn")
         edit_btn.setFixedHeight(BTN_FIXED_SIZE)
 
@@ -661,7 +661,7 @@ class DictMutableKeysWidget(BaseWidget):
             elif not self.entity.collapsed:
                 body_widget.toggle_content()
 
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
 
         self.add_required_keys()
 
@@ -700,7 +700,7 @@ class DictMutableKeysWidget(BaseWidget):
             uuid_key = str(uuid4())
             entity_key = uuid_key
 
-        # Creating of new item will trigger entity change so input field is
+        # Creating a new item will trigger entity change so input field is
         #   created at this moment
         child_entity = self.entity.add_key(entity_key)
 
@@ -717,11 +717,11 @@ class DictMutableKeysWidget(BaseWidget):
 
         if key:
             # Happens when created from collapsible key items where key
-            #   must be entered to be able create new item.
+            #   must be entered to be able to create a new item.
             input_field.set_key_label(key, label)
 
         elif uuid_key:
-            # Happens when clicked on add button from non-collapsible item.
+            # Happens when clicked on the "add" button from non-collapsible item.
             input_field.uuid_key = uuid_key
             # Change key to empty string
             input_field.set_key("")
@@ -742,7 +742,7 @@ class DictMutableKeysWidget(BaseWidget):
             return
 
         child_obj = self.entity.get(new_key)
-        # Skip if same key is already stored under the key
+        # Skip if the same key is already stored under the key
         if child_obj is widget.entity:
             return
 
@@ -758,7 +758,7 @@ class DictMutableKeysWidget(BaseWidget):
                 break
 
         if not same_key_widget:
-            # Would mean that child entity does not have input field in
+            # Would mean that child entity does not have an input field in
             # this widget!
             raise KeyError("BUG: didn't find same key widget!")
 
@@ -873,13 +873,13 @@ class DictMutableKeysWidget(BaseWidget):
             self.remove_row(input_field)
 
         for key, child_entity in self.entity.items():
-            found = False
+            target_input_field = None
             for input_field in self.input_fields:
                 if input_field.entity is child_entity:
-                    found = True
+                    target_input_field = input_field
                     break
 
-            if not found:
+            if not target_input_field:
                 changed = True
 
                 _input_field = self.add_widget_for_child(child_entity)
@@ -890,19 +890,18 @@ class DictMutableKeysWidget(BaseWidget):
                     _input_field.origin_key_label = label
                     _input_field.set_label(label)
                 _input_field.set_entity_value()
-
             else:
                 if (
-                    not input_field.is_key_duplicated
-                    and input_field.key_value() != key
+                    not target_input_field.is_key_duplicated
+                    and target_input_field.key_value() != key
                 ):
                     changed = True
-                    input_field.set_key(key)
+                    target_input_field.set_key(key)
 
                 if self.entity.collapsible_key:
                     label = self.entity.get_child_label(child_entity)
-                    if input_field.key_label_value() != label:
-                        input_field.set_label(label)
+                    if target_input_field.key_label_value() != label:
+                        target_input_field.set_label(label)
 
         if changed:
             self.on_shuffle()

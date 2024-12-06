@@ -242,7 +242,7 @@ class DictImmutableKeysWidget(BaseWidget):
             self.scroll_to(self)
 
         elif self.body_widget and not self.body_widget.is_expanded():
-            # Expand widget if is callapsible
+            # Expand the widget if it is collapsible
             self.body_widget.toggle_content(True)
 
         return changed
@@ -408,7 +408,7 @@ class TextWidget(InputWidget):
 
         layout_kwargs = {}
         if multiline:
-            layout_kwargs["alignment"] = QtCore.Qt.AlignTop
+            layout_kwargs["alignment"] = QtCore.Qt.AlignmentFlag.AlignTop
 
         self.content_layout.addWidget(self.input_field, 1, **layout_kwargs)
 
@@ -418,7 +418,7 @@ class TextWidget(InputWidget):
         self._refresh_completer()
 
     def _refresh_completer(self):
-        # Multiline entity can't have completer
+        # Multiline entity can't have a completer
         #   - there is not space for this UI component
         if self.entity.multiline:
             return
@@ -457,7 +457,7 @@ class PasswordWidget(TextWidget):
 
     def _add_inputs_to_layout(self):
         input_field = SettingsLineEdit(self.content_widget)
-        input_field.setEchoMode(QtWidgets.QLineEdit.Password)
+        input_field.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
 
         input_field.setEnabled(not self.entity.disabled)
 
@@ -476,7 +476,7 @@ class PasswordWidget(TextWidget):
         show_password_btn = PressHoverBtn(input_field)
         show_password_btn.setObjectName("PasswordBtn")
         show_password_btn.setIcon(show_password_icon)
-        show_password_btn.setFocusPolicy(QtCore.Qt.ClickFocus)
+        show_password_btn.setFocusPolicy(QtCore.Qt.FocusPolicy.ClickFocus)
         show_password_btn.change_state.connect(self._on_show_password)
         self.content_layout.addWidget(show_password_btn, 0)
 
@@ -487,9 +487,9 @@ class PasswordWidget(TextWidget):
 
     def _on_show_password(self, show_password):
         if show_password:
-            echo_mode = QtWidgets.QLineEdit.Normal
+            echo_mode = QtWidgets.QLineEdit.EchoMode.Normal
         else:
-            echo_mode = QtWidgets.QLineEdit.Password
+            echo_mode = QtWidgets.QLineEdit.EchoMode.Password
         self.input_field.setEchoMode(echo_mode)
 
     def _refresh_completer(self):
@@ -639,7 +639,7 @@ class NumberWidget(InputWidget):
             # Slider can't handle float numbers so all decimals are converted
             #   to integer range.
             slider_multiplier = 10 ** self.entity.decimal
-            slider_widget = NiceSlider(QtCore.Qt.Horizontal, self)
+            slider_widget = NiceSlider(QtCore.Qt.Orientation.Horizontal, self)
             slider_widget.setRange(
                 int(self.entity.minimum * slider_multiplier),
                 int(self.entity.maximum * slider_multiplier)
@@ -735,7 +735,7 @@ class RawJsonInput(SettingsPlainTextEdit):
         if not isinstance(value, str):
             try:
                 value = json.dumps(value, indent=4)
-            except Exception:
+            except Exception:  # noqa
                 value = ""
         self.setPlainText(value)
 
@@ -746,7 +746,7 @@ class RawJsonInput(SettingsPlainTextEdit):
         try:
             value = self.json_value()
             return not isinstance(value, self.valid_type)
-        except Exception:
+        except Exception:  # noqa
             return True
 
     def resizeEvent(self, event):
@@ -762,13 +762,13 @@ class RawJsonWidget(InputWidget):
             valid_type = dict
         self.input_field = RawJsonInput(valid_type, self.content_widget)
         self.input_field.setSizePolicy(
-            QtWidgets.QSizePolicy.Minimum,
-            QtWidgets.QSizePolicy.MinimumExpanding
+            QtWidgets.QSizePolicy.Policy.Minimum,
+            QtWidgets.QSizePolicy.Policy.MinimumExpanding
         )
         self.setFocusProxy(self.input_field)
 
         self.content_layout.addWidget(
-            self.input_field, 1, alignment=QtCore.Qt.AlignTop
+            self.input_field, 1, alignment=QtCore.Qt.AlignmentFlag.AlignTop
         )
 
         self.input_field.focused_in.connect(self._on_input_focus)
@@ -858,7 +858,7 @@ class PathWidget(BaseWidget):
             self.content_layout.setColumnStretch(1, 1)
             self.body_widget = None
 
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
 
         self.input_field = self.create_ui_for_entity(
             self.category_widget, self.entity.child_obj, self
@@ -916,7 +916,7 @@ class PathWidget(BaseWidget):
         self.input_field.hierarchical_style_update()
 
     def _on_entity_change(self):
-        # No need to do anything. Styles will be updated from top hierarchy.
+        # No need to do anything. Styles will be updated from the top hierarchy.
         pass
 
     def update_style(self):
