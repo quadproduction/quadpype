@@ -7,7 +7,8 @@ from typing import Dict, List, Union, TYPE_CHECKING
 import bpy
 import addon_utils
 from quadpype.lib import Logger, NumberDef
-
+from quadpype.pipeline import get_current_project_name, get_current_asset_name
+from quadpype.client import get_asset_by_name
 if TYPE_CHECKING:
     from quadpype.pipeline.create import CreateContext  # noqa: F401
 
@@ -487,7 +488,7 @@ def attribute_overrides(
             setattr_deep(obj, key, value)
 
 
-def collect_animation_defs(create_context, step=True, fps=False):
+def collect_animation_defs(step=True, fps=False):
     """Get the basic animation attribute definitions for the publisher.
 
     Arguments:
@@ -504,18 +505,15 @@ def collect_animation_defs(create_context, step=True, fps=False):
 
     # get scene values as defaults
     scene = bpy.context.scene
-    # frame_start = scene.frame_start
-    # frame_end = scene.frame_end
-    # handle_start = 0
-    # handle_end = 0
 
     # use task entity attributes to set defaults based on current context
-    task_entity = create_context.get_current_task_entity()
-    attrib: dict = task_entity["attrib"]
-    frame_start = attrib["frameStart"]
-    frame_end = attrib["frameEnd"]
-    handle_start = attrib["handleStart"]
-    handle_end = attrib["handleEnd"]
+    project_name = get_current_project_name()
+    asset_name = get_current_asset_name()
+    attrib = get_asset_by_name(project_name, asset_name)
+    frame_start = attrib.get("frameStart", scene.frame_start)
+    frame_end = attrib.get("frameEnd", scene.frame_end)
+    handle_start = attrib.get("handleStart", 0)
+    handle_end = attrib.get("handleEnd", 0)
 
     # build attributes
     defs = [

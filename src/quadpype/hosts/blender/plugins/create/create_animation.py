@@ -32,6 +32,5 @@ class CreateAnimation(plugin.BlenderCreator):
         return collection
 
     def get_instance_attr_defs(self):
-        defs = lib.collect_animation_defs(self.create_context,
-                                          step=False)
+        defs = lib.collect_animation_defs(step=False)
         return defs
