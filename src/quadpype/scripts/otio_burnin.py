@@ -44,8 +44,8 @@ def _get_ffprobe_data(source):
     """
     command = get_ffmpeg_tool_args(
         "ffprobe",
-        "-v quiet",
-        "-print_format json",
+        "-v",  "quiet",
+        "-print_format", "json",
         "-show_format",
         "-show_streams",
         source
