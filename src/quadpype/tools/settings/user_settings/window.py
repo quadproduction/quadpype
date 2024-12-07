@@ -279,7 +279,7 @@ class UserSettingsWindow(QtWidgets.QWidget):
         # Do not create user settings widget in init phase as it's using
         #   settings objects that must be OK to be able to create this widget
         #   - we want to show dialog if anything goes wrong
-        #   - without resetting nothing is shown
+        #   - without resetting, nothing is shown
         self._settings_widget = None
         self._scroll_widget = scroll_widget
         self.reset_btn = reset_btn
@@ -322,7 +322,7 @@ class UserSettingsWindow(QtWidgets.QWidget):
         if not crashed:
             return
 
-        # Show message with error
+        # Show a popup with the error message
         title = "Something went wrong"
         msg = (
             "Bug: Loading of settings failed."
@@ -331,10 +331,10 @@ class UserSettingsWindow(QtWidgets.QWidget):
         ).format(error_msg)
 
         dialog = QtWidgets.QMessageBox(
-            QtWidgets.QMessageBox.Critical,
+            QtWidgets.QMessageBox.Icon.Critical,
             title,
             msg,
-            QtWidgets.QMessageBox.Ok,
+            QtWidgets.QMessageBox.StandardButton.Ok,
             self
         )
         dialog.exec_()

@@ -134,10 +134,10 @@ class AbcCameraLoader(plugin.BlenderLoader):
             "name": name,
             "namespace": namespace or "",
             "loader": str(self.__class__.__name__),
-            "representation": context["representation"]["_id"],
+            "representation": str(context["representation"]["_id"]),
             "libpath": libpath,
             "asset_name": asset_name,
-            "parent": context["representation"]["parent"],
+            "parent": str(context["representation"]["parent"]),
             "family": context["representation"]["context"]["family"],
             "objectName": group_name,
         }
@@ -160,7 +160,7 @@ class AbcCameraLoader(plugin.BlenderLoader):
         object_name = container["objectName"]
         asset_group = bpy.data.objects.get(object_name)
         libpath = Path(get_representation_path(representation))
-        prev_filename = os.path.basename(container["libpath"])        
+        prev_filename = os.path.basename(container["libpath"])
         extension = libpath.suffix.lower()
 
         self.log.info(

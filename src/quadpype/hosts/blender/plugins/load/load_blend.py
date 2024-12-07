@@ -129,13 +129,12 @@ class BlendLoader(plugin.BlenderLoader):
         libpath = self.filepath_from_context(context)
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
-
         try:
             family = context["representation"]["context"]["family"]
         except ValueError:
             family = "model"
 
-        representation = context["representation"]["id"]
+        representation = str(context["representation"]["_id"])
 
         asset_name = plugin.prepare_scene_name(asset, subset)
         unique_number = plugin.get_unique_number(asset, subset)
@@ -160,10 +159,10 @@ class BlendLoader(plugin.BlenderLoader):
             "name": name,
             "namespace": namespace or '',
             "loader": str(self.__class__.__name__),
-            "representation": context["representation"]["id"],
+            "representation": str(context["representation"]["_id"]),
             "libpath": libpath,
             "asset_name": asset_name,
-            "parent": context["representation"]["parent"],
+            "parent": str(context["representation"]["parent"]),
             "family": context["representation"]["context"]["family"],
             "objectName": group_name,
             "members": members,

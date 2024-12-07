@@ -22,7 +22,8 @@ class LocalEnvironmentsWidgets(QtWidgets.QWidget):
         self._content_layout = content_layout
         self._content_widget = content_widget
 
-    def _clear_layout(self, layout):
+    @staticmethod
+    def _clear_layout(layout):
         while layout.count() > 0:
             item = layout.itemAt(0)
             widget = item.widget()

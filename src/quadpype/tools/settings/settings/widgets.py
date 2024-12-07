@@ -37,7 +37,7 @@ class ControlPanelTabWidget(QtWidgets.QTabWidget):
 
     def mousePressEvent(self, event):
         super(ControlPanelTabWidget, self).mousePressEvent(event)
-        if event.button() == QtCore.Qt.RightButton:
+        if event.button() == QtCore.Qt.MouseButton.RightButton:
             tab_bar = self.tabBar()
             pos = tab_bar.mapFromGlobal(event.globalPos())
             tab_idx = tab_bar.tabAt(pos)
@@ -47,7 +47,7 @@ class ControlPanelTabWidget(QtWidgets.QTabWidget):
 
     def mouseReleaseEvent(self, event):
         super(ControlPanelTabWidget, self).mouseReleaseEvent(event)
-        if event.button() == QtCore.Qt.RightButton:
+        if event.button() == QtCore.Qt.MouseButton.RightButton:
             tab_bar = self.tabBar()
             pos = tab_bar.mapFromGlobal(event.globalPos())
             tab_idx = tab_bar.tabAt(pos)
@@ -60,7 +60,7 @@ class CompleterFilter(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.setFilterCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
 
         self._text_filter = ""
 
@@ -75,11 +75,10 @@ class CompleterFilter(QtCore.QSortFilterProxyModel):
             return True
         model = self.sourceModel()
         index = model.index(row, self.filterKeyColumn(), parent_index)
-        value = index.data(QtCore.Qt.DisplayRole)
-        if self._text_filter in value:
-            if self._text_filter == value:
-                return False
+        value = index.data(QtCore.Qt.ItemDataRole.DisplayRole)
+        if self._text_filter in value and self._text_filter != value:
             return True
+
         return False
 
 
@@ -90,13 +89,13 @@ class CompleterView(QtWidgets.QListView):
         super().__init__(parent)
 
         self.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint
-            | QtCore.Qt.Tool
+            QtCore.Qt.WindowType.FramelessWindowHint
+            | QtCore.Qt.WindowType.Tool
         )
 
         # Open the widget unactivated
-        self.setAttribute(QtCore.Qt.WA_ShowWithoutActivating)
-        self.setAttribute(QtCore.Qt.WA_NoMouseReplay)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_NoMouseReplay)
         delegate = QtWidgets.QStyledItemDelegate()
         self.setItemDelegate(delegate)
 
@@ -116,7 +115,7 @@ class CompleterView(QtWidgets.QListView):
 
     def _on_activated(self, index):
         if index.isValid():
-            value = index.data(QtCore.Qt.DisplayRole)
+            value = index.data(QtCore.Qt.ItemDataRole.DisplayRole)
             self.row_activated.emit(value)
 
     def set_text_filter(self, text):
@@ -150,9 +149,9 @@ class CompleterView(QtWidgets.QListView):
         existing_values = {}
         for row in reversed(range(root_item.rowCount())):
             child = root_item.child(row)
-            value = child.data(QtCore.Qt.DisplayRole)
+            value = child.data(QtCore.Qt.ItemDataRole.DisplayRole)
             if value not in values:
-                root_item.removeRows(child.row())
+                root_item.removeRows(row, 1)
             else:
                 existing_values[value] = child
 
@@ -325,11 +324,11 @@ class SettingsLineEdit(PlaceholderLineEdit):
             return
 
         key = event.key()
-        if key == QtCore.Qt.Key_Up:
+        if key == QtCore.Qt.Key.Key_Up:
             self._completer.move_up()
-        elif key == QtCore.Qt.Key_Down:
+        elif key == QtCore.Qt.Key.Key_Down:
             self._completer.move_down()
-        elif key in (QtCore.Qt.Key_Enter, QtCore.Qt.Key_Return):
+        elif key in (QtCore.Qt.Key.Key_Enter, QtCore.Qt.Key.Key_Return):
             self._completer.enter_pressed()
         else:
             super(SettingsLineEdit, self).keyPressEvent(event)
@@ -395,16 +394,16 @@ class SettingsToolBtn(ImageButton):
             icon = QtGui.QIcon(pixmap)
             hover_icon = QtGui.QIcon(hover_pixmap)
             icon.addPixmap(
-                disabled_pixmap, QtGui.QIcon.Disabled, QtGui.QIcon.On
+                disabled_pixmap, QtGui.QIcon.Mode.Disabled, QtGui.QIcon.State.On
             )
             icon.addPixmap(
-                disabled_pixmap, QtGui.QIcon.Disabled, QtGui.QIcon.Off
+                disabled_pixmap, QtGui.QIcon.Mode.Disabled, QtGui.QIcon.State.Off
             )
             hover_icon.addPixmap(
-                disabled_pixmap, QtGui.QIcon.Disabled, QtGui.QIcon.On
+                disabled_pixmap, QtGui.QIcon.Mode.Disabled, QtGui.QIcon.State.On
             )
             hover_icon.addPixmap(
-                disabled_pixmap, QtGui.QIcon.Disabled, QtGui.QIcon.Off
+                disabled_pixmap, QtGui.QIcon.Mode.Disabled, QtGui.QIcon.State.Off
             )
             cls._cached_icons[btn_type] = icon, hover_icon
         return cls._cached_icons[btn_type]
@@ -430,8 +429,8 @@ class SettingsToolBtn(ImageButton):
         scaled = self._get_mask_pixmap().scaled(
             size.width(),
             size.height(),
-            QtCore.Qt.IgnoreAspectRatio,
-            QtCore.Qt.SmoothTransformation
+            QtCore.Qt.AspectRatioMode.IgnoreAspectRatio,
+            QtCore.Qt.TransformationMode.SmoothTransformation
         )
         self.setMask(scaled.mask())
 
@@ -465,14 +464,14 @@ class ShadowWidget(QtWidgets.QWidget):
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
         painter.fillRect(
             event.rect(), QtGui.QBrush(QtGui.QColor(0, 0, 0, 127))
         )
         if self.message:
             painter.drawText(
                 event.rect(),
-                QtCore.Qt.AlignCenter | QtCore.Qt.AlignCenter,
+                QtCore.Qt.AlignmentFlag.AlignCenter | QtCore.Qt.AlignmentFlag.AlignCenter,
                 self.message
             )
         painter.end()
@@ -506,7 +505,7 @@ class NumberSpinBox(QtWidgets.QDoubleSpinBox):
         steps = kwargs.pop("steps", None)
 
         super().__init__(*args, **kwargs)
-        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
         self.setDecimals(decimals)
         self.setMinimum(min_value)
         self.setMaximum(max_value)
@@ -541,7 +540,7 @@ class SettingsComboBox(QtWidgets.QComboBox):
         self.setItemDelegate(delegate)
 
         self.currentIndexChanged.connect(self._on_change)
-        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
 
         self._delegate = delegate
 
@@ -558,20 +557,20 @@ class SettingsComboBox(QtWidgets.QComboBox):
 
     def set_value(self, value):
         for idx in range(self.count()):
-            _value = self.itemData(idx, role=QtCore.Qt.UserRole)
+            _value = self.itemData(idx, role=QtCore.Qt.ItemDataRole.UserRole)
             if _value == value:
                 self.setCurrentIndex(idx)
                 break
 
     def value(self):
-        return self.itemData(self.currentIndex(), role=QtCore.Qt.UserRole)
+        return self.itemData(self.currentIndex(), role=QtCore.Qt.ItemDataRole.UserRole)
 
 
 class ClickableWidget(QtWidgets.QWidget):
     clicked = QtCore.Signal()
 
     def mouseReleaseEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
             self.clicked.emit()
         super(ClickableWidget, self).mouseReleaseEvent(event)
 
@@ -592,7 +591,7 @@ class ExpandingWidget(QtWidgets.QWidget):
         button_toggle = QtWidgets.QToolButton(parent=side_line_widget)
         button_toggle.setObjectName("ExpandToggleBtn")
         button_toggle.setIconSize(button_size)
-        button_toggle.setArrowType(QtCore.Qt.RightArrow)
+        button_toggle.setArrowType(QtCore.Qt.ArrowType.RightArrow)
         button_toggle.setCheckable(True)
         button_toggle.setChecked(False)
 
@@ -619,10 +618,10 @@ class ExpandingWidget(QtWidgets.QWidget):
         top_part_layout.setContentsMargins(0, 0, 0, 0)
         top_part_layout.addWidget(side_line_widget)
 
-        before_label_widget.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        after_label_widget.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        label_widget.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        before_label_widget.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
+        after_label_widget.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
+        label_widget.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
 
         self.top_part_ending = None
         self.after_label_layout = after_label_layout
@@ -644,7 +643,7 @@ class ExpandingWidget(QtWidgets.QWidget):
         self.top_part = top_part
 
     def hide_toolbox(self, hide_content=False):
-        self.button_toggle.setArrowType(QtCore.Qt.NoArrow)
+        self.button_toggle.setArrowType(QtCore.Qt.ArrowType.NoArrow)
         self.toolbox_hidden = True
         if self.content_widget:
             self.content_widget.setVisible(not hide_content)
@@ -678,9 +677,9 @@ class ExpandingWidget(QtWidgets.QWidget):
             checked = args[0]
         else:
             checked = not self.button_toggle.isChecked()
-        arrow_type = QtCore.Qt.RightArrow
+        arrow_type = QtCore.Qt.ArrowType.RightArrow
         if checked:
-            arrow_type = QtCore.Qt.DownArrow
+            arrow_type = QtCore.Qt.ArrowType.DownArrow
         self.button_toggle.setChecked(checked)
         self.button_toggle.setArrowType(arrow_type)
         if self.content_widget:
@@ -789,7 +788,7 @@ class RestartDialog(QtWidgets.QDialog):
 class SpacerWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
 
 
 class GridLabelWidget(QtWidgets.QWidget):
@@ -804,13 +803,13 @@ class GridLabelWidget(QtWidgets.QWidget):
         label_widget.setObjectName("SettingsLabel")
         # Adding top and bottom margin to center the label vertically with the widget
         label_widget.setContentsMargins(0, 6, 0, 6)
-        label_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        label_widget.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
 
         label_proxy_layout = QtWidgets.QHBoxLayout()
         label_proxy_layout.setContentsMargins(0, 0, 0, 0)
         label_proxy_layout.setSpacing(0)
 
-        label_proxy_layout.addWidget(label_widget, 0, QtCore.Qt.AlignRight)
+        label_proxy_layout.addWidget(label_widget, 0, QtCore.Qt.AlignmentFlag.AlignRight)
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -820,7 +819,7 @@ class GridLabelWidget(QtWidgets.QWidget):
         # The stretch is for force widget(s) to snap to the top of the layout
         layout.addStretch(1)
 
-        label_widget.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        label_widget.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
 
         self.label_widget = label_widget
 
@@ -834,7 +833,7 @@ class GridLabelWidget(QtWidgets.QWidget):
 
     def mouseReleaseEvent(self, event):
         if self.input_field:
-            if event and event.button() == QtCore.Qt.LeftButton:
+            if event and event.button() == QtCore.Qt.MouseButton.LeftButton:
                 self.input_field.focused_in()
             return self.input_field.show_actions_menu(event)
         return super(GridLabelWidget, self).mouseReleaseEvent(event)
@@ -957,27 +956,27 @@ class ProjectModel(QtGui.QStandardItemModel):
             if thread.isFinished():
                 self._version_refresh_threads.remove(thread)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         if index.column() == 1:
-            if role == QtCore.Qt.TextAlignmentRole:
-                return QtCore.Qt.AlignRight
-            if role == QtCore.Qt.ForegroundRole:
+            if role == QtCore.Qt.ItemDataRole.TextAlignmentRole:
+                return QtCore.Qt.AlignmentFlag.AlignRight
+            if role == QtCore.Qt.ItemDataRole.ForegroundRole:
                 return self._version_font_color
             index = self.index(index.row(), 0, index.parent())
-            if role in (QtCore.Qt.DisplayRole, QtCore.Qt.EditRole):
+            if role in (QtCore.Qt.ItemDataRole.DisplayRole, QtCore.Qt.ItemDataRole.EditRole):
                 role = PROJECT_VERSION_ROLE
 
         return super(ProjectModel, self).data(index, role)
 
-    def setData(self, index, value, role=QtCore.Qt.EditRole):
+    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.EditRole):
         if index.column() == 1:
             index = self.index(index.row(), 0, index.parent())
-            if role in (QtCore.Qt.DisplayRole, QtCore.Qt.EditRole):
+            if role in (QtCore.Qt.ItemDataRole.DisplayRole, QtCore.Qt.ItemDataRole.EditRole):
                 role = PROJECT_VERSION_ROLE
         return super(ProjectModel, self).setData(index, value, role)
 
-    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
-        if role == QtCore.Qt.DisplayRole:
+    def headerData(self, section, orientation, role=QtCore.Qt.ItemDataRole.DisplayRole):
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if section == 0:
                 return "Project name"
 
@@ -1022,7 +1021,7 @@ class ProjectView(QtWidgets.QTreeView):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.setIndentation(0)
 
         # Do not allow editing
@@ -1030,15 +1029,15 @@ class ProjectView(QtWidgets.QTreeView):
             QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers
         )
         # Do not automatically handle selection
-        self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
-        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
+        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
 
     def mouseReleaseEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
             index = self.indexAt(event.pos())
             self.left_mouse_released_at.emit(index)
 
-        elif event.button() == QtCore.Qt.RightButton:
+        elif event.button() == QtCore.Qt.MouseButton.RightButton:
             index = self.indexAt(event.pos())
             self.right_mouse_released_at.emit(index)
 
@@ -1121,7 +1120,7 @@ class ProjectListWidget(QtWidgets.QWidget):
         inactive_chk = None
         if not only_active:
             checkbox_wrapper = QtWidgets.QWidget(content_frame)
-            checkbox_wrapper.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+            checkbox_wrapper.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
 
             inactive_chk = QtWidgets.QCheckBox(
                 "Show Inactive Projects", checkbox_wrapper
@@ -1136,7 +1135,7 @@ class ProjectListWidget(QtWidgets.QWidget):
             inactive_chk.stateChanged.connect(self.on_inactive_vis_changed)
 
         layout = QtWidgets.QVBoxLayout(self)
-        # Margins '3' are matching to configurables widget scroll area on right
+        # Margins '3' are matching to configurables widget scroll area on the right
         layout.setContentsMargins(5, 3, 3, 3)
         layout.addWidget(content_frame, 1)
 
@@ -1294,7 +1293,7 @@ class ProjectListWidget(QtWidgets.QWidget):
                 )
                 first = False
                 continue
-            selection_model.select(index, QtCore.QItemSelectionModel.Select)
+            selection_model.select(index, QtCore.QItemSelectionModel.SelectionFlag.Select)
 
     def get_project_names(self):
         output = []

@@ -110,7 +110,6 @@ class DictConditionalWidget(BaseWidget):
         self.input_fields.append(enum_input_field)
 
         for item_key, children in self.entity.children.items():
-            content_widget = self._content_by_enum_value[item_key]["widget"]
             for child_obj in children:
                 self.input_fields.append(
                     self.create_ui_for_entity(

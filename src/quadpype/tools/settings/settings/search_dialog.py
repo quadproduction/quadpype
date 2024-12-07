@@ -5,8 +5,8 @@ from qtpy import QtCore, QtWidgets, QtGui
 
 from quadpype.style import get_app_icon_path
 
-ENTITY_LABEL_ROLE = QtCore.Qt.UserRole + 1
-ENTITY_PATH_ROLE = QtCore.Qt.UserRole + 2
+ENTITY_LABEL_ROLE = QtCore.Qt.ItemDataRole.UserRole + 1
+ENTITY_PATH_ROLE = QtCore.Qt.ItemDataRole.UserRole + 2
 
 
 def get_entity_children(entity):
@@ -40,7 +40,7 @@ class RecursiveSortFilterProxyModel(QtCore.QSortFilterProxyModel):
             compiled_regex = re.compile(pattern, re.IGNORECASE)
             source_model = self.sourceModel()
 
-            # Check current index itself in all columns
+            # Check the current index itself in all columns
             source_index = source_model.index(row, 0, parent)
             if source_index.isValid():
                 for role in (ENTITY_PATH_ROLE, ENTITY_LABEL_ROLE):
@@ -137,10 +137,10 @@ class EntityTreeModel(QtGui.QStandardItemModel):
 
     def data(self, index, role=None):
         if role is None:
-            role = QtCore.Qt.DisplayRole
+            role = QtCore.Qt.ItemDataRole.DisplayRole
 
         col = index.column()
-        if role in (QtCore.Qt.DisplayRole, QtCore.Qt.EditRole):
+        if role in (QtCore.Qt.ItemDataRole.DisplayRole, QtCore.Qt.ItemDataRole.EditRole):
             if col == 0:
                 pass
             elif col == 1:
@@ -157,8 +157,8 @@ class EntityTreeModel(QtGui.QStandardItemModel):
             index = self.index(index.row(), 0, index.parent())
         return super(EntityTreeModel, self).flags(index)
 
-    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
-        if role == QtCore.Qt.DisplayRole:
+    def headerData(self, section, orientation, role=QtCore.Qt.ItemDataRole.DisplayRole):
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if section == 0:
                 return "Key"
             elif section == 1:
@@ -176,7 +176,7 @@ class EntityTreeModel(QtGui.QStandardItemModel):
         if not root_entity:
             return
 
-        # We don't want to see the root entity so we directly add its children
+        # We don't want to see the root entity, so we directly add its children
         fill_queue = collections.deque()
         fill_queue.append((root_entity, parent))
         cols = self.columnCount()

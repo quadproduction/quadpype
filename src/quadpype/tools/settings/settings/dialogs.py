@@ -68,7 +68,7 @@ class BaseInfoDialog(QtWidgets.QDialog):
         layout.addWidget(message_label, 0)
         layout.addWidget(separator_widget_1, 0)
         layout.addStretch(1)
-        layout.addWidget(other_information, 0, QtCore.Qt.AlignHCenter)
+        layout.addWidget(other_information, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
         layout.addStretch(1)
         layout.addWidget(separator_widget_2, 0)
         layout.addWidget(footer_widget, 0)

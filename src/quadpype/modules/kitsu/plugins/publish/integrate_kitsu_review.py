@@ -54,19 +54,19 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
                 continue
 
             export_frames = instance.data.get("exportFrames", [])
-            frame_start = instance.data["frameStart"]
-            frame_end = instance.data["frameEnd"]
+            frame_start = instance.data.get("frameStart")
+            frame_end = instance.data.get("frameEnd")
 
             # If only one frame force a list
             if not isinstance(filenames, list):
                 filenames = [filenames]
 
-            if not export_frames:
-                export_frames = list(range(frame_start, frame_end + 1))
+            if not export_frames and frame_start and frame_end:
+                export_frames = list(range(frame_start, frame_end+1))
 
             frame_padding = Anatomy().templates.get('frame_padding', 4)
             frame_file_format = f"{{:0{frame_padding}d}}.{{}}"
-            if "burnin" in representation.get("tags", []):
+            if "burnin" in representation.get("tags", []) and export_frames:
                 filenames = [frame_file_format.format(index, review_data_extension) for index in export_frames]
 
             subtract_pattern = rf"\d{{{frame_padding}}}\.{re.escape(review_data_extension)}"

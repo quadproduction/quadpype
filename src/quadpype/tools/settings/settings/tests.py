@@ -1,4 +1,4 @@
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, QtGui
 
 
 def indented_print(data, indent=0):
@@ -26,7 +26,7 @@ class SelectableMenu(QtWidgets.QMenu):
 
     def event(self, event):
         result = super(SelectableMenu, self).event(event)
-        if event.type() == QtCore.QEvent.Show:
+        if event.type() == QtCore.QEvent.Type.Show:
             parent = self.parent()
 
             move_point = parent.mapToGlobal(QtCore.QPoint(0, parent.height()))
@@ -34,10 +34,13 @@ class SelectableMenu(QtWidgets.QMenu):
                 move_point
                 + QtCore.QPoint(self.width(), self.height())
             )
-            visibility_check = (
-                QtWidgets.QApplication.desktop().rect().contains(check_point)
-            )
-            if not visibility_check:
+
+            screens = QtGui.QGuiApplication.screens()
+            combined_rect = QtCore.QRect()
+            for screen in screens:
+                combined_rect = combined_rect.united(screen.geometry())
+
+            if not combined_rect.contains(check_point):
                 move_point -= QtCore.QPoint(0, parent.height() + self.height())
             self.move(move_point)
 
@@ -61,8 +64,8 @@ class AddibleComboBox(QtWidgets.QComboBox):
 
         # Apply completer settings
         completer = self.completer()
-        completer.setCompletionMode(completer.PopupCompletion)
-        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        completer.setCompletionMode(completer.CompletionMode.PopupCompletion)
+        completer.setCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
 
     # def on_return_pressed(self):
     #     text = self.lineEdit().text().strip()
@@ -100,24 +103,24 @@ class MultiselectEnum(QtWidgets.QWidget):
 
     def __init__(self, title, parent=None):
         super().__init__(parent)
-        toolbutton = QtWidgets.QToolButton(self)
-        toolbutton.setText(title)
+        tool_button = QtWidgets.QToolButton(self)
+        tool_button.setText(title)
 
-        toolmenu = SelectableMenu(toolbutton)
+        tool_menu = SelectableMenu(tool_button)
 
-        toolbutton.setMenu(toolmenu)
-        toolbutton.setPopupMode(QtWidgets.QToolButton.MenuButtonPopup)
+        tool_button.setMenu(tool_menu)
+        tool_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
 
         layout = QtWidgets.QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(toolbutton)
+        layout.addWidget(tool_button)
 
         self.setLayout(layout)
 
-        toolmenu.selection_changed.connect(self.selection_changed)
+        tool_menu.selection_changed.connect(self.selection_changed)
 
-        self.toolbutton = toolbutton
-        self.toolmenu = toolmenu
+        self.toolbutton = tool_button
+        self.toolmenu = tool_menu
         self.main_layout = layout
 
     def populate(self, items):

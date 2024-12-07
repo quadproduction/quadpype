@@ -130,7 +130,7 @@ class BlendLookLoader(plugin.BlenderLoader):
         metadata["objects"] = objects
         metadata["materials"] = materials
 
-        metadata["parent"] = context["representation"]["parent"]
+        metadata["parent"] = str(context["representation"]["parent"])
         metadata["family"] = context["representation"]["context"]["family"]
 
         nodes = list(container.objects)

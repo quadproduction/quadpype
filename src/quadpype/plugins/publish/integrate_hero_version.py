@@ -19,7 +19,7 @@ from quadpype.client.operations import (
     prepare_hero_version_update_data,
     prepare_representation_update_data,
 )
-from quadpype.lib import create_hard_link
+from quadpype.lib import create_hardlink
 from quadpype.pipeline import (
     schema
 )
@@ -594,7 +594,7 @@ class IntegrateHeroVersion(pyblish.api.InstancePlugin):
 
         # First try hardlink and copy if paths are cross drive
         try:
-            create_hard_link(src_path, dst_path)
+            create_hardlink(src_path, dst_path)
             # Return when successful
             return
 

@@ -224,7 +224,7 @@ class ListWidget(InputWidget):
             elif self.entity.collapsed:
                 body_widget.toggle_content()
 
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
 
         self.empty_row = EmptyListItem(self, self.content_widget)
         self.content_layout.addWidget(self.empty_row)
@@ -270,17 +270,17 @@ class ListWidget(InputWidget):
 
     def _on_entity_change(self):
         # TODO do less inefficient
-        childen_order = []
+        children_order = []
         new_children = []
         for idx, child_entity in enumerate(self.entity):
             input_field = self._input_fields_by_entity_id.get(child_entity.id)
             if input_field is not None:
-                childen_order.append(input_field)
+                children_order.append(input_field)
             else:
                 new_children.append((idx, child_entity))
 
         order_changed = False
-        for idx, input_field in enumerate(childen_order):
+        for idx, input_field in enumerate(children_order):
             current_field = self.input_fields[idx]
             if current_field is input_field:
                 continue
@@ -291,7 +291,7 @@ class ListWidget(InputWidget):
             )
             self.content_layout.insertWidget(idx + 1, input_field)
 
-        kept_len = len(childen_order)
+        kept_len = len(children_order)
         fields_len = len(self.input_fields)
         if fields_len > kept_len:
             order_changed = True

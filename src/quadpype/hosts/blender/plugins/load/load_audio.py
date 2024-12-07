@@ -81,10 +81,10 @@ class AudioLoader(plugin.BlenderLoader):
             "name": name,
             "namespace": namespace or '',
             "loader": str(self.__class__.__name__),
-            "representation": context["representation"]["id"],
+            "representation": str(context["representation"]["_id"]),
             "libpath": libpath,
             "asset_name": asset_name,
-            "parent": context["representation"]["parent"],
+            "parent": str(context["representation"]["parent"]),
             "family": context["representation"]["context"]["family"],
             "objectName": group_name,
             "audio": audio

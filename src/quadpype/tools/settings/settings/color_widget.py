@@ -76,7 +76,7 @@ class ColorViewer(QtWidgets.QWidget):
         self._checkerboard = None
 
     def mouseReleaseEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
             self.clicked.emit()
         super(ColorViewer, self).mouseReleaseEvent(event)
 
@@ -104,7 +104,7 @@ class ColorViewer(QtWidgets.QWidget):
         rect = event.rect()
 
         painter = QtGui.QPainter(self)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
 
         radius = rect.height() / 2
         rounded_rect = QtGui.QPainterPath()
