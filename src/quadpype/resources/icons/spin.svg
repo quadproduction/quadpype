@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" width="100%" height="100%"
+ style="shape-rendering: auto; display: block; background: transparent;" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g>
+<animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="1s" repeatCount="indefinite"/>
+<g transform="translate(71.21320343559643,71.21320343559643)">
+<circle fill-opacity="0.125" fill="#d5d5d5" r="6.5" cy="0" cx="0">
+</circle>
+</g>
+<g transform="translate(50,80)">
+<circle fill-opacity="0.25" fill="#d5d5d5" r="6.5" cy="0" cx="0">
+</circle>
+</g>
+<g transform="translate(28.786796564403577,71.21320343559643)">
+<circle fill-opacity="0.375" fill="#d5d5d5" r="6.75" cy="0" cx="0">
+</circle>
+</g>
+<g transform="translate(20,50.00000000000001)">
+<circle fill-opacity="0.5" fill="#d5d5d5" r="7" cy="0" cx="0">
+</circle>
+</g>
+<g transform="translate(28.78679656440357,28.786796564403577)">
+<circle fill-opacity="0.625" fill="#d5d5d5" r="7.25" cy="0" cx="0">
+</circle>
+</g>
+<g transform="translate(49.99999999999999,20)">
+<circle fill-opacity="0.75" fill="#d5d5d5" r="7.5" cy="0" cx="0">
+</circle>
+</g>
+<g transform="translate(71.21320343559643,28.78679656440357)">
+<circle fill-opacity="0.875" fill="#d5d5d5" r="8" cy="0" cx="0">
+</circle>
+</g>
+<g transform="translate(80,50)">
+<circle fill-opacity="1" fill="#d5d5d5" r="8.75" cy="0" cx="0">
+</circle>
+</g>
+</g>
+</svg>

@@ -494,8 +494,6 @@ class ZXPUpdateWindow(QtWidgets.QDialog):
                 QtGui.QFontDatabase.addApplicationFont(filename)
 
         # Load logo
-        pixmap_app_logo = QtGui.QPixmap(icon_path)
-
         self._pixmap_app_logo = window_icon
 
         self._update_thread = None

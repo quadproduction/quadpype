@@ -1,13 +1,18 @@
 import sys
+import time
 import traceback
 import contextlib
+
 from abc import abstractmethod
 from enum import Enum
 from datetime import datetime
 
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtSvgWidgets, QtCore, QtGui
 import qtawesome
 
+from lib import get_user_id
+from quadpype import resources
+from quadpype.events import send_event, get_event_doc
 from quadpype.lib import (
     get_quadpype_version,
     get_all_user_profiles
@@ -1242,9 +1247,63 @@ class ProjectManagerWidget(BaseControlPanelWidget):
         pass
 
 
+class CheckUsersOnlineThread(QtCore.QThread):
+    apply_online_icon_to_user = QtCore.Signal(list, str)  # Signal to apply icon to users
+
+    def __init__(self, manager):
+        super(CheckUsersOnlineThread, self).__init__(manager)
+        self._manager = manager
+        self._wait_time_secs = 5.0
+        self._refresh_rate_secs = 0.5
+
+    def run(self):
+        not_yet_responded_users = list(self._manager.users_data.keys())
+        # Remove the current user from the list
+        not_yet_responded_users.remove(self._manager.current_user_id)
+
+        event_id = send_event(
+            "/ping",
+            "post",
+            expire_in_secs=5,
+            expect_responses=True,
+        )
+        start_time = time.monotonic()
+
+        while True:
+            if not self._manager.is_running:
+                return
+
+            time.sleep(self._refresh_rate_secs)
+
+            event_doc = get_event_doc(event_id)
+
+            new_responses_users = []
+            if event_doc["responses"]:
+                for response in event_doc["responses"]:
+                    curr_response_user_id = response["user_id"]
+                    if curr_response_user_id in not_yet_responded_users:
+                        # It's a new response!
+                        new_responses_users.append(curr_response_user_id)
+
+                        # Remove form the list of users that dit not yet responded
+                        not_yet_responded_users.remove(curr_response_user_id)
+
+                if new_responses_users:
+                    # Emit signal for users who responded
+                    self.apply_online_icon_to_user.emit(new_responses_users, "online_icon")
+
+            if time.monotonic() - start_time >= self._wait_time_secs:
+                break
+
+        if not_yet_responded_users:
+            # Emit signal for users who did not respond in the allowed response time
+            self.apply_online_icon_to_user.emit(not_yet_responded_users, "offline_icon")
+
+
 class UserManagerWidget(BaseControlPanelWidget):
     _ws_profile_prefix = "last_workstation_profile/"
     table_column_data = {
+        "_is_online": "Online",
         _ws_profile_prefix + "username": "Username",
         "user_id": "ID",
         "role": "Role",
@@ -1256,11 +1315,61 @@ class UserManagerWidget(BaseControlPanelWidget):
         super().__init__(controller, parent)
 
         self._footer_btn_text = "Enjoy!"
-        self.table_widget = None
 
+        self._curr_user_id = get_user_id()
+        self.users_data = {}
+
+        self.table_widget = None
+        self._is_running = True
         self._selected_user_id = None
+        self._current_sort_column = 1
+        self._current_sort_order = QtCore.Qt.SortOrder.AscendingOrder
+        self._column_count = len(self.table_column_data.keys())
+
+        self._spin_icon = resources.get_resource("icons", "spin.svg")
+
+        user_online_icon = QtGui.QPixmap(resources.get_resource("icons", "circle_green.png"))
+        self._user_online_icon = user_online_icon.scaled(24, 24,
+                                                         QtCore.Qt.KeepAspectRatio,
+                                                         QtCore.Qt.SmoothTransformation)
+        user_offline_icon = QtGui.QPixmap(resources.get_resource("icons", "circle_red.png"))
+        self._user_offline_icon = user_offline_icon.scaled(24, 24,
+                                                           QtCore.Qt.KeepAspectRatio,
+                                                           QtCore.Qt.SmoothTransformation)
+
+        self._check_users_online_thread = CheckUsersOnlineThread(self)
+        self._check_users_online_thread.apply_online_icon_to_user.connect(self._update_online_icon_for_users)
 
         self.create_ui()
+
+    @property
+    def current_user_id(self):
+        return self._curr_user_id
+
+    @property
+    def is_running(self):
+        return self._is_running
+
+    @property
+    def user_online_icon(self):
+        return self._user_online_icon
+
+    @property
+    def user_offline_icon(self):
+        return self._user_offline_icon
+
+    def create_loader_widget(self):
+        loader_container = QtWidgets.QWidget()
+        loader_layout = QtWidgets.QHBoxLayout(loader_container)
+        loader_layout.setContentsMargins(0, 0, 0, 0)
+        loader_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        # Add the SVG widget to the layout
+        loader_svg = QtSvgWidgets.QSvgWidget(self._spin_icon)
+        loader_svg.setFixedSize(24, 24)
+        loader_layout.addWidget(loader_svg)
+
+        return loader_container
 
     def update_column_widths(self):
         available_width = self.parent().width()
@@ -1277,7 +1386,7 @@ class UserManagerWidget(BaseControlPanelWidget):
         if columns_size_sum < available_width:
             additional_width_column = int((available_width - columns_size_sum) / columns_count)
 
-        for column_index in range(columns_count-1):
+        for column_index in range(columns_count - 1):
             self.table_widget.horizontalHeader().setSectionResizeMode(column_index,
                                                                       QtWidgets.QHeaderView.ResizeMode.Fixed)
             self.table_widget.setColumnWidth(column_index, columns_size[column_index] + additional_width_column)
@@ -1285,20 +1394,66 @@ class UserManagerWidget(BaseControlPanelWidget):
         if additional_width_column:
             # This means, without adding width, the sum of column wouldn't take the full width
             # Stretching the last column to ensure the row will be fully filled
-            last_column_index = columns_count-1
+            last_column_index = columns_count - 1
             self.table_widget.horizontalHeader().setSectionResizeMode(last_column_index,
                                                                       QtWidgets.QHeaderView.ResizeMode.Stretch)
 
-    def add_user_row(self, user_data):
-        row_index = self.table_widget.rowCount()
-        self.table_widget.insertRow(row_index)
+    @staticmethod
+    def _create_icon_widget(icon_pixmap):
+        online_icon_widget = QtWidgets.QLabel()
+        online_icon_widget.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        online_icon_widget.setPixmap(icon_pixmap)
 
-        for column_index, cell_data in enumerate(user_data):
-            item = QtWidgets.QTableWidgetItem(cell_data)
-            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-            self.table_widget.setItem(row_index, column_index, item)
+        return online_icon_widget
+
+    def _update_online_icon_for_users(self, user_list, icon_name):
+        if icon_name == "online_icon":
+            icon = self._user_online_icon
+        elif icon_name == "offline_icon":
+            icon = self._user_offline_icon
+        else:
+            return
+
+        for user_id in user_list:
+            user_row = self.users_data[user_id]["row_index"]
+
+            # Properly clean the cell icon (if present)
+            cell_widget = self.table_widget.cellWidget(user_row, 0)
+            if cell_widget:
+                self.table_widget.removeCellWidget(user_row, 0)
+                cell_widget.deleteLater()
+
+            self.table_widget.setCellWidget(user_row, 0, self._create_icon_widget(icon))
+
+    def _add_users_to_table(self):
+        for row_index, (user_id, user_data) in enumerate(self.users_data.items()):
+            self.table_widget.insertRow(row_index)
+
+            for column_index, (key, cell_data) in enumerate(user_data.items()):
+                if column_index >= self._column_count:
+                    # Skipping the extra data added for other purposes than table content
+                    continue
+
+                if isinstance(cell_data, str):
+                    item = QtWidgets.QTableWidgetItem(cell_data)
+                    item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                    self.table_widget.setItem(row_index, column_index, item)
+                else:
+                    self.table_widget.setCellWidget(row_index, column_index, cell_data)
 
     def _update_user_list(self):
+        if self._check_users_online_thread.isRunning():
+            # Stop the thread that updates the user online status
+            self._check_users_online_thread.quit()
+
+        self._current_sort_column = self.table_widget.horizontalHeader().sortIndicatorSection()
+        self._current_sort_order = self.table_widget.horizontalHeader().sortIndicatorOrder()
+
+        # Cleanup the stored data
+        self.users_data = {}
+
+        self.table_widget.setSortingEnabled(False)
+
         # Remove all the rows (if any)
         self.table_widget.setRowCount(0)
 
@@ -1306,14 +1461,21 @@ class UserManagerWidget(BaseControlPanelWidget):
         user_profiles = get_all_user_profiles()
 
         # Populate the table
-        for user_profile in user_profiles:
-            user_data = []
+        for index, user_profile in enumerate(user_profiles):
+            user_id = user_profile["user_id"]
+            user_data = {}
 
             # Aggregate the user data
             last_workstation_profile = \
                 user_profile["workstation_profiles"][user_profile["last_workstation_profile_index"]]
+
             for user_profile_key in self.table_column_data:
-                if user_profile_key.startswith(self._ws_profile_prefix):
+                if user_profile_key == "_is_online":
+                    if self._curr_user_id == user_id:
+                        cell_value = self._create_icon_widget(self._user_online_icon)
+                    else:
+                        cell_value = self.create_loader_widget()
+                elif user_profile_key.startswith(self._ws_profile_prefix):
                     user_profile_key = user_profile_key.removeprefix(self._ws_profile_prefix)
                     cell_value = last_workstation_profile[user_profile_key]
                 else:
@@ -1323,17 +1485,41 @@ class UserManagerWidget(BaseControlPanelWidget):
                     # Convert datetime to string (close to the ISO 8601 standard)
                     cell_value = cell_value.strftime("%Y-%m-%d, %H:%M:%S")
 
-                user_data.append(cell_value)
+                user_data[user_profile_key] = cell_value
 
-            self.add_user_row(user_data)
+            user_data["row_index"] = index
 
+            self.users_data[user_id] = user_data
+
+        check_online_status = True
         if user_profiles.retrieved == 0:
             # No profile found, this should be impossible unless the
             # collection has been cleared while QuadPype was running
 
-            # Inserting an empty row to avoid issues:
-            user_data = [""] * len(self.table_column_data)
-            self.add_user_row(user_data)
+            # Inserting an empty row to avoid issues
+            self.users_data["dummy"] = {curr_index: "" for curr_index in range(len(self.table_column_data))}
+
+            check_online_status = False
+
+        self._add_users_to_table()
+
+        # Re-apply the selection (selected row)
+        if self._selected_user_id:
+            current_row_index = self.users_data[self._selected_user_id]["row_index"]
+        else:
+            current_row_index = 0
+        self.table_widget.selectRow(current_row_index)
+
+        # Re-set the sorting
+        self.table_widget.horizontalHeader().setSortIndicator(
+            self._current_sort_column,
+            self._current_sort_order
+        )
+
+        self.table_widget.setSortingEnabled(True)
+
+        if check_online_status:
+            self._check_users_online_thread.start(QtCore.QThread.HighestPriority)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -1352,6 +1538,8 @@ class UserManagerWidget(BaseControlPanelWidget):
 
         self.table_widget = QtWidgets.QTableWidget(self.content_widget)
 
+        self.table_widget.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+
         self.table_widget.verticalHeader().hide()
         self.table_widget.setColumnCount(len(self.table_column_data))
         self.table_widget.setHorizontalHeaderLabels(list(self.table_column_data.values()))
@@ -1364,13 +1552,10 @@ class UserManagerWidget(BaseControlPanelWidget):
 
         self.table_widget.setSortingEnabled(True)
 
+        # Initially sort by the "Username" column (index 1)
+        self.table_widget.sortItems(1)
+
         self._update_user_list()
-
-        # Initially sort by the "Username" column (index 0)
-        self.table_widget.sortItems(0)
-
-        # Select the first row by default (so there is always a row selected)
-        self.table_widget.selectRow(0)
 
         self.content_layout.addWidget(self.table_widget, stretch=1)
 
@@ -1402,3 +1587,16 @@ class UserManagerWidget(BaseControlPanelWidget):
 
     def _on_footer_button_pressed(self):
         pass
+
+    def closeEvent(self, event):
+        # Clean up thread before the widget is removed / closed
+        self._is_running = False
+        if self._check_users_online_thread and self._check_users_online_thread.isRunning():
+            self._check_users_online_thread.wait()
+        super().closeEvent(event)
+
+    def __del__(self):
+        self._is_running = False
+        # Ensure thread cleanup in case the widget is destroyed
+        if self._check_users_online_thread and self._check_users_online_thread.isRunning():
+            self._check_users_online_thread.quit()
