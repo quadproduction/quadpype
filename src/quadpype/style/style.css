@@ -482,6 +482,10 @@ QAbstractItemView::item {
     border: none;
 }
 
+QAbstractItemView QWidget {
+    background: transparent;
+}
+
 QAbstractItemView:disabled{
     background: {color:bg-view-disabled};
     alternate-background-color: {color:bg-view-alternate-disabled};
@@ -509,6 +513,10 @@ QAbstractItemView::item:selected:!active {
 
 QAbstractItemView::item:selected:hover {
     background: {color:bg-view-selection-hover};
+}
+
+QSvgWidget {
+    background: transparent;
 }
 
 /* Row colors (alternate colors) are from left - right */

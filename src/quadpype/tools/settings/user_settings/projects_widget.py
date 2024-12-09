@@ -21,7 +21,7 @@ NOT_SET = type("NOT_SET", (), {})()
 
 class _ProjectListWidget(ProjectListWidget):
     def on_item_clicked(self, new_index):
-        new_project_name = new_index.data(QtCore.Qt.DisplayRole)
+        new_project_name = new_index.data(QtCore.Qt.ItemDataRole.DisplayRole)
         if new_project_name is None:
             return
 
@@ -107,7 +107,7 @@ class DynamicInputItem(QtCore.QObject):
         return self.origin_value != self.input_widget.text()
 
     def _mouse_release_callback(self, event):
-        if event.button() != QtCore.Qt.RightButton:
+        if event.button() != QtCore.Qt.MouseButton.RightButton:
             return
         self._show_actions()
         event.accept()
@@ -226,7 +226,7 @@ class SitesWidget(QtWidgets.QWidget):
 
         comboboxes_widget = QtWidgets.QWidget(self)
 
-        active_site_widget = AciveSiteCombo(
+        active_site_widget = ActiveSiteCombo(
             modules_manager, project_settings, comboboxes_widget
         )
         remote_site_widget = RemoteSiteCombo(
@@ -386,7 +386,7 @@ class SitesWidget(QtWidgets.QWidget):
             self.content_layout.addWidget(site_widget)
             self.input_objects[site_name] = site_input_objects
 
-        # Add spacer so other widgets are squeezed to top
+        # Add spacer so other widgets are squeezed to the top
         self.content_layout.addStretch(1)
 
     def _on_input_value_change(self, site_name, key):
@@ -533,7 +533,7 @@ class _SiteCombobox(QtWidgets.QWidget):
         self.label_widget.set_label_property("state", state)
 
     def _mouse_release_callback(self, event):
-        if event.button() != QtCore.Qt.RightButton:
+        if event.button() != QtCore.Qt.MouseButton.RightButton:
             return
         self._show_actions()
 
@@ -697,7 +697,7 @@ class _SiteCombobox(QtWidgets.QWidget):
         )
 
 
-class AciveSiteCombo(_SiteCombobox):
+class ActiveSiteCombo(_SiteCombobox):
     input_label = "Active site"
 
     def _get_project_sites(self):

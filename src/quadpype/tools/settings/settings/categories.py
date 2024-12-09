@@ -1,16 +1,21 @@
 import sys
+import time
 import traceback
 import contextlib
+
 from abc import abstractmethod
 from enum import Enum
 from datetime import datetime
 
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtSvgWidgets, QtCore, QtGui
 import qtawesome
 
+from quadpype import resources
+from quadpype.events import send_event, get_event_doc
 from quadpype.lib import (
     get_quadpype_version,
-    get_all_user_profiles
+    get_all_user_profiles,
+    get_user_id
 )
 from quadpype.tools.utils import set_style_property
 from quadpype.settings.entities import (
@@ -244,13 +249,13 @@ class BlankControlPanelWidget(QtWidgets.QWidget):
         raise NotImplementedError("Abstract method not implemented")
 
     def contain_category_key(self, category):
-        """Parent widget ask if category of full path lead to this widget.
+        """Parent widget ask if the category of the full path leads to this widget.
 
         Args:
             category (str): The category name.
 
         Returns:
-            bool: Passed category lead to this widget.
+            bool: Passed if the category leads to this widget.
         """
         return False
 
@@ -280,7 +285,7 @@ class BaseControlPanelWidget(BlankControlPanelWidget):
         self.footer_btn = None
         self.refresh_btn = None
 
-        self._labels_alignment = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        self._labels_alignment = QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter
 
     def _add_developer_ui(self):
         pass
@@ -326,7 +331,7 @@ class BaseControlPanelWidget(BlankControlPanelWidget):
         self.content_layout = QtWidgets.QVBoxLayout(self.content_widget)
         self.content_layout.setContentsMargins(3, 3, 3, 3)
         self.content_layout.setSpacing(5)
-        self.content_layout.setAlignment(QtCore.Qt.AlignTop)
+        self.content_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
 
         # Footer widget
         self.footer_widget = QtWidgets.QWidget(self)
@@ -573,11 +578,11 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
         self.full_path_requested.emit(category, path)
 
     def set_category_path(self, category, path):
-        """Change path of widget based on category full path."""
+        """Change the path of the widget based on the category full path."""
         pass
 
     def change_path(self, path):
-        """Change path and go to widget."""
+        """Change the path and go to the widget."""
         self.breadcrumbs_bar.change_path(path)
 
     def set_path(self, path):
@@ -641,7 +646,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             self._use_version = None
 
             # NOTE There are relations to previous entities and C++ callbacks
-            #   so it is easier to just use new entity and recreate UI but
+            #   so it is easier to just use new entity and recreate the UI but
             #   would be nice to change this and add cleanup part so this is
             #   not required.
             self.reset()
@@ -658,7 +663,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             dialog = QtWidgets.QMessageBox(self)
             dialog.setWindowTitle("Save warnings")
             dialog.setText(msg)
-            dialog.setIcon(QtWidgets.QMessageBox.Warning)
+            dialog.setIcon(QtWidgets.QMessageBox.Icon.Warning)
             dialog.exec_()
 
             self.reset()
@@ -670,18 +675,18 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             msg = "Unexpected error happened!\n\nError: {}".format(str(exc))
             dialog.setText(msg)
             dialog.setDetailedText("\n".join(formatted_traceback))
-            dialog.setIcon(QtWidgets.QMessageBox.Critical)
+            dialog.setIcon(QtWidgets.QMessageBox.Icon.Critical)
 
             line_widths = set()
             metrics = dialog.fontMetrics()
             for line in formatted_traceback:
-                line_widths.add(metrics.width(line))
+                line_widths.add(metrics.horizontalAdvance(line))
             max_width = max(line_widths)
 
             spacer = QtWidgets.QSpacerItem(
                 max_width, 0,
-                QtWidgets.QSizePolicy.Minimum,
-                QtWidgets.QSizePolicy.Expanding
+                QtWidgets.QSizePolicy.Policy.Minimum,
+                QtWidgets.QSizePolicy.Policy.Expanding
             )
             layout: QtWidgets.QGridLayout = dialog.layout()  # noqa
             layout.addItem(
@@ -744,14 +749,14 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
                 " don't have permissions to modify them."
                 " Please contact QuadPype team."
             ))
-            dialog.setIcon(QtWidgets.QMessageBox.Critical)
+            dialog.setIcon(QtWidgets.QMessageBox.Icon.Critical)
 
         except SchemaError as exc:
             dialog = QtWidgets.QMessageBox(self)
             dialog.setWindowTitle("Schema error")
             msg = "Implementation bug!\n\nError: {}".format(str(exc))
             dialog.setText(msg)
-            dialog.setIcon(QtWidgets.QMessageBox.Warning)
+            dialog.setIcon(QtWidgets.QMessageBox.Icon.Warning)
 
         except Exception as exc:
             formatted_traceback = traceback.format_exception(*sys.exc_info())
@@ -760,18 +765,18 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             msg = "Unexpected error happened!\n\nError: {}".format(str(exc))
             dialog.setText(msg)
             dialog.setDetailedText("\n".join(formatted_traceback))
-            dialog.setIcon(QtWidgets.QMessageBox.Critical)
+            dialog.setIcon(QtWidgets.QMessageBox.Icon.Critical)
 
             line_widths = set()
             metrics = dialog.fontMetrics()
             for line in formatted_traceback:
-                line_widths.add(metrics.width(line))
+                line_widths.add(metrics.horizontalAdvance(line))
             max_width = max(line_widths)
 
             spacer = QtWidgets.QSpacerItem(
                 max_width, 0,
-                QtWidgets.QSizePolicy.Minimum,
-                QtWidgets.QSizePolicy.Expanding
+                QtWidgets.QSizePolicy.Policy.Minimum,
+                QtWidgets.QSizePolicy.Policy.Expanding
             )
             layout: QtWidgets.QGridLayout = dialog.layout()  # noqa
             layout.addItem(
@@ -899,7 +904,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             return True
 
         msg_box = QtWidgets.QMessageBox(
-            QtWidgets.QMessageBox.Warning,
+            QtWidgets.QMessageBox.Icon.Warning,
             "Invalid input",
             (
                 "There is invalid value in one of inputs."
@@ -907,7 +912,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             ),
             parent=self
         )
-        msg_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg_box.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
         msg_box.exec_()
 
         first_invalid_item = invalid_items[0]
@@ -957,7 +962,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             self.restart_required_trigger.emit()
 
     def _on_footer_button_pressed(self):
-        """For settings panels this means the save button has been pressed"""
+        """For the settings panels, this means the save button has been pressed"""
         self._save()
 
     def _update_labels_visibility(self):
@@ -991,7 +996,7 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
         self.reset()
 
     def _on_hide_studio_overrides(self, state):
-        self._hide_studio_overrides = (state == QtCore.Qt.Checked)
+        self._hide_studio_overrides = (state == QtCore.Qt.CheckState.Checked)
 
 
 class GlobalSettingsWidget(SettingsControlPanelWidget):
@@ -1242,9 +1247,68 @@ class ProjectManagerWidget(BaseControlPanelWidget):
         pass
 
 
+class CheckUsersOnlineThread(QtCore.QThread):
+    apply_online_icon_to_user = QtCore.Signal(list, str)  # Signal to apply icon to users
+
+    def __init__(self, manager):
+        super(CheckUsersOnlineThread, self).__init__(manager)
+        self._manager = manager
+        self._wait_time_secs = 5.0
+        self._refresh_rate_secs = 0.5
+
+    def run(self):
+        not_yet_responded_users = list(self._manager.users_data.keys())
+        # Remove the current user from the list
+        not_yet_responded_users.remove(self._manager.current_user_id)
+
+        event_id = send_event(
+            "/ping",
+            "post",
+            expire_in_secs=5,
+            expect_responses=True,
+        )
+        start_time = time.monotonic()
+
+        while True:
+            if not self._manager.is_running:
+                return
+
+            time.sleep(self._refresh_rate_secs)
+
+            event_doc = get_event_doc(event_id)
+
+            new_responses_users = []
+            if event_doc["responses"]:
+                for response in event_doc["responses"]:
+                    curr_response_user_id = response["user_id"]
+                    if curr_response_user_id in not_yet_responded_users:
+                        # It's a new response!
+                        new_responses_users.append(curr_response_user_id)
+
+                        # Remove form the list of users that dit not yet responded
+                        not_yet_responded_users.remove(curr_response_user_id)
+
+                if new_responses_users:
+                    # Emit signal for users who responded
+                    self.apply_online_icon_to_user.emit(new_responses_users, "online_icon")
+
+            if time.monotonic() - start_time >= self._wait_time_secs:
+                break
+
+        if not_yet_responded_users:
+            # Emit signal for users who did not respond in the allowed response time
+            self.apply_online_icon_to_user.emit(not_yet_responded_users, "offline_icon")
+
+
+class SortUserRoleItem(QtWidgets.QTableWidgetItem):
+    def __lt__(self, other):
+        return str(self.data(QtCore.Qt.ItemDataRole.UserRole)) < str(other.data(QtCore.Qt.ItemDataRole.UserRole))
+
+
 class UserManagerWidget(BaseControlPanelWidget):
     _ws_profile_prefix = "last_workstation_profile/"
     table_column_data = {
+        "_is_online": "Online",
         _ws_profile_prefix + "username": "Username",
         "user_id": "ID",
         "role": "Role",
@@ -1256,15 +1320,65 @@ class UserManagerWidget(BaseControlPanelWidget):
         super().__init__(controller, parent)
 
         self._footer_btn_text = "Enjoy!"
-        self.table_widget = None
 
+        self._curr_user_id = get_user_id()
+        self.users_data = {}
+
+        self.table_widget = None
+        self._is_running = True
         self._selected_user_id = None
+        self._current_sort_column = 1
+        self._current_sort_order = QtCore.Qt.SortOrder.AscendingOrder
+        self._column_count = len(self.table_column_data.keys())
+
+        self._spin_icon = resources.get_resource("icons", "spin.svg")
+
+        user_online_icon = QtGui.QPixmap(resources.get_resource("icons", "circle_green.png"))
+        self._user_online_icon = user_online_icon.scaled(24, 24,
+                                                         QtCore.Qt.KeepAspectRatio,
+                                                         QtCore.Qt.SmoothTransformation)
+        user_offline_icon = QtGui.QPixmap(resources.get_resource("icons", "circle_red.png"))
+        self._user_offline_icon = user_offline_icon.scaled(24, 24,
+                                                           QtCore.Qt.KeepAspectRatio,
+                                                           QtCore.Qt.SmoothTransformation)
+
+        self._check_users_online_thread = CheckUsersOnlineThread(self)
+        self._check_users_online_thread.apply_online_icon_to_user.connect(self._update_online_icon_for_users)
 
         self.create_ui()
 
+    @property
+    def current_user_id(self):
+        return self._curr_user_id
+
+    @property
+    def is_running(self):
+        return self._is_running
+
+    @property
+    def user_online_icon(self):
+        return self._user_online_icon
+
+    @property
+    def user_offline_icon(self):
+        return self._user_offline_icon
+
+    def create_loader_widget(self):
+        loader_container = QtWidgets.QWidget()
+        loader_layout = QtWidgets.QHBoxLayout(loader_container)
+        loader_layout.setContentsMargins(0, 0, 0, 0)
+        loader_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        # Add the SVG widget to the layout
+        loader_svg = QtSvgWidgets.QSvgWidget(self._spin_icon)
+        loader_svg.setFixedSize(24, 24)
+        loader_layout.addWidget(loader_svg)
+
+        return loader_container
+
     def update_column_widths(self):
         available_width = self.parent().width()
-        self.table_widget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.table_widget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         columns_size = {}
         columns_size_sum = 0
         additional_width_column = 0
@@ -1277,26 +1391,113 @@ class UserManagerWidget(BaseControlPanelWidget):
         if columns_size_sum < available_width:
             additional_width_column = int((available_width - columns_size_sum) / columns_count)
 
-        for column_index in range(columns_count-1):
-            self.table_widget.horizontalHeader().setSectionResizeMode(column_index, QtWidgets.QHeaderView.Fixed)
+        for column_index in range(columns_count - 1):
+            self.table_widget.horizontalHeader().setSectionResizeMode(column_index,
+                                                                      QtWidgets.QHeaderView.ResizeMode.Fixed)
             self.table_widget.setColumnWidth(column_index, columns_size[column_index] + additional_width_column)
 
         if additional_width_column:
             # This means, without adding width, the sum of column wouldn't take the full width
             # Stretching the last column to ensure the row will be fully filled
-            last_column_index = columns_count-1
-            self.table_widget.horizontalHeader().setSectionResizeMode(last_column_index, QtWidgets.QHeaderView.Stretch)
+            last_column_index = columns_count - 1
+            self.table_widget.horizontalHeader().setSectionResizeMode(last_column_index,
+                                                                      QtWidgets.QHeaderView.ResizeMode.Stretch)
 
-    def add_user_row(self, user_data):
-        row_index = self.table_widget.rowCount()
-        self.table_widget.insertRow(row_index)
+    @staticmethod
+    def _create_icon_widget(icon_pixmap):
+        online_icon_widget = QtWidgets.QLabel()
+        online_icon_widget.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        online_icon_widget.setPixmap(icon_pixmap)
 
-        for column_index, cell_data in enumerate(user_data):
-            item = QtWidgets.QTableWidgetItem(cell_data)
-            item.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.table_widget.setItem(row_index, column_index, item)
+        return online_icon_widget
+
+    def get_row_index_by_user_id(self, user_id):
+        items = self.table_widget.findItems(user_id, QtCore.Qt.MatchExactly)
+        if items:
+            return items[0].row()
+        return -1
+
+    def _disable_sorting(self):
+        self._current_sort_column = self.table_widget.horizontalHeader().sortIndicatorSection()
+        self._current_sort_order = self.table_widget.horizontalHeader().sortIndicatorOrder()
+
+        self.table_widget.setSortingEnabled(False)
+
+    def _enable_sorting(self):
+        self.table_widget.horizontalHeader().setSortIndicator(
+            self._current_sort_column,
+            self._current_sort_order
+        )
+
+        self.table_widget.setSortingEnabled(True)
+
+    def _update_online_icon_for_users(self, user_list, icon_name):
+        self._disable_sorting()
+        if icon_name == "online_icon":
+            sorting_value_prefix = "0_"
+            icon = self._user_online_icon
+        elif icon_name == "offline_icon":
+            sorting_value_prefix = "2_"
+            icon = self._user_offline_icon
+        else:
+            return
+
+        for user_id in user_list:
+            user_row = self.get_row_index_by_user_id(user_id)
+
+            # Properly clean the cell icon (if present)
+            cell_widget = self.table_widget.cellWidget(user_row, 0)
+            if cell_widget:
+                self.table_widget.removeCellWidget(user_row, 0)
+                cell_widget.deleteLater()
+
+            self.table_widget.setCellWidget(user_row, 0, self._create_icon_widget(icon))
+
+            # Update the hidden sorting item
+            # this is to be able to sort by online status
+            sorting_value = sorting_value_prefix+self.users_data[user_id]["username"]
+
+            item = self.table_widget.item(user_row, 0)
+            item.setData(QtCore.Qt.ItemDataRole.UserRole, sorting_value)
+
+        self._enable_sorting()
+
+    def _add_users_to_table(self):
+        for row_index, (user_id, user_data) in enumerate(self.users_data.items()):
+            self.table_widget.insertRow(row_index)
+
+            for column_index, (key, cell_data) in enumerate(user_data.items()):
+                if column_index >= self._column_count:
+                    # Skipping the extra data added for other purposes than table content
+                    continue
+
+                if isinstance(cell_data, str):
+                    item = QtWidgets.QTableWidgetItem(cell_data)
+                    item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                else:
+                    sorting_value_prefix = "1_"
+                    if isinstance(cell_data, QtWidgets.QLabel):
+                        # This means this is the current user
+                        sorting_value_prefix = "0_"
+
+                    sorting_value = sorting_value_prefix+user_data["username"]
+
+                    item = SortUserRoleItem()
+                    item.setData(QtCore.Qt.ItemDataRole.UserRole, sorting_value)
+                    self.table_widget.setCellWidget(row_index, column_index, cell_data)
+
+                self.table_widget.setItem(row_index, column_index, item)
 
     def _update_user_list(self):
+        if self._check_users_online_thread.isRunning():
+            # Stop the thread that updates the user online status
+            self._check_users_online_thread.quit()
+
+        self._disable_sorting()
+
+        # Cleanup the stored data
+        self.users_data = {}
+
         # Remove all the rows (if any)
         self.table_widget.setRowCount(0)
 
@@ -1304,14 +1505,21 @@ class UserManagerWidget(BaseControlPanelWidget):
         user_profiles = get_all_user_profiles()
 
         # Populate the table
-        for user_profile in user_profiles:
-            user_data = []
+        for index, user_profile in enumerate(user_profiles):
+            user_id = user_profile["user_id"]
+            user_data = {}
 
             # Aggregate the user data
             last_workstation_profile = \
                 user_profile["workstation_profiles"][user_profile["last_workstation_profile_index"]]
+
             for user_profile_key in self.table_column_data:
-                if user_profile_key.startswith(self._ws_profile_prefix):
+                if user_profile_key == "_is_online":
+                    if self._curr_user_id == user_id:
+                        cell_value = self._create_icon_widget(self._user_online_icon)
+                    else:
+                        cell_value = self.create_loader_widget()
+                elif user_profile_key.startswith(self._ws_profile_prefix):
                     user_profile_key = user_profile_key.removeprefix(self._ws_profile_prefix)
                     cell_value = last_workstation_profile[user_profile_key]
                 else:
@@ -1321,17 +1529,33 @@ class UserManagerWidget(BaseControlPanelWidget):
                     # Convert datetime to string (close to the ISO 8601 standard)
                     cell_value = cell_value.strftime("%Y-%m-%d, %H:%M:%S")
 
-                user_data.append(cell_value)
+                user_data[user_profile_key] = cell_value
 
-            self.add_user_row(user_data)
+            self.users_data[user_id] = user_data
 
+        check_online_status = True
         if user_profiles.retrieved == 0:
             # No profile found, this should be impossible unless the
             # collection has been cleared while QuadPype was running
 
-            # Inserting an empty row to avoid issues:
-            user_data = [""] * len(self.table_column_data)
-            self.add_user_row(user_data)
+            # Inserting an empty row to avoid issues
+            self.users_data["dummy"] = {curr_index: "" for curr_index in range(len(self.table_column_data))}
+
+            check_online_status = False
+
+        self._add_users_to_table()
+
+        # Re-apply the selection (selected row)
+        if self._selected_user_id:
+            current_row_index = self.get_row_index_by_user_id(self._selected_user_id)
+        else:
+            current_row_index = 0
+        self.table_widget.selectRow(current_row_index)
+
+        self._enable_sorting()
+
+        if check_online_status:
+            self._check_users_online_thread.start(QtCore.QThread.HighestPriority)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -1350,25 +1574,24 @@ class UserManagerWidget(BaseControlPanelWidget):
 
         self.table_widget = QtWidgets.QTableWidget(self.content_widget)
 
+        self.table_widget.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+
         self.table_widget.verticalHeader().hide()
         self.table_widget.setColumnCount(len(self.table_column_data))
-        self.table_widget.setHorizontalHeaderLabels(self.table_column_data.values())
+        self.table_widget.setHorizontalHeaderLabels(list(self.table_column_data.values()))
 
         # Set selection mode to only allow single row selection
-        self.table_widget.setSelectionMode(QtWidgets.QTableWidget.SingleSelection)
-        self.table_widget.setSelectionBehavior(QtWidgets.QTableWidget.SelectRows)
+        self.table_widget.setSelectionMode(QtWidgets.QTableWidget.SelectionMode.SingleSelection)
+        self.table_widget.setSelectionBehavior(QtWidgets.QTableWidget.SelectionBehavior.SelectRows)
 
         self.table_widget.selectionModel().selectionChanged.connect(self.on_selection_changed)
 
         self.table_widget.setSortingEnabled(True)
 
+        # Initially sort by the "Username" column (index 1)
+        self.table_widget.sortItems(1)
+
         self._update_user_list()
-
-        # Initially sort by the "Username" column (index 0)
-        self.table_widget.sortItems(0)
-
-        # Select the first row by default (so there is always a row selected)
-        self.table_widget.selectRow(0)
 
         self.content_layout.addWidget(self.table_widget, stretch=1)
 
@@ -1400,3 +1623,16 @@ class UserManagerWidget(BaseControlPanelWidget):
 
     def _on_footer_button_pressed(self):
         pass
+
+    def closeEvent(self, event):
+        # Clean up thread before the widget is removed / closed
+        self._is_running = False
+        if self._check_users_online_thread and self._check_users_online_thread.isRunning():
+            self._check_users_online_thread.wait()
+        super().closeEvent(event)
+
+    def __del__(self):
+        self._is_running = False
+        # Ensure thread cleanup in case the widget is destroyed
+        if self._check_users_online_thread and self._check_users_online_thread.isRunning():
+            self._check_users_online_thread.quit()

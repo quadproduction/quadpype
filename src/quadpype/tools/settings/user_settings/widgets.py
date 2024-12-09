@@ -33,7 +33,7 @@ class ProxyLabelWidget(QtWidgets.QWidget):
         label_widget = QtWidgets.QLabel(label, self)
         layout.addWidget(label_widget)
 
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
 
         self.label_widget = label_widget
 

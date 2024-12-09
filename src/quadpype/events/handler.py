@@ -38,6 +38,8 @@ class EventHandlerWorker(QtCore.QThread):
 
         self._manager = manager
 
+        self._curr_user_id = self._manager.user_profile["user_id"]
+
         self._webserver_url = self._manager.webserver.url
 
         # Store the amount of time an error occurred
@@ -88,12 +90,14 @@ class EventHandlerWorker(QtCore.QThread):
             get_timestamp_str(self._last_handled_event_timestamp))
 
     def _process_event(self, event_doc):
-        current_timestamp = datetime.now()
+        current_timestamp = datetime.now(timezone.utc)
 
-        if (event_doc["target_users"] and self._manager.user_profile["user_id"] not in event_doc["target_users"]) or \
+        if (event_doc["user_id"] == self._curr_user_id) or\
+                (event_doc["target_users"] and self._curr_user_id not in event_doc["target_users"]) or \
                 (event_doc["target_groups"] and self._manager.user_profile["role"] not in event_doc["target_groups"]) or \
-                ("expire_at" in event_doc and current_timestamp > event_doc["expire_at"]):
-            # User is not targeted by this event OR
+                ("expire_at" in event_doc and current_timestamp > event_doc["expire_at"].replace(tzinfo=timezone.utc)):
+            # User is the one who emitted the event, OR
+            # User is not targeted by this event, OR
             # This event is expired, so we skip it
             self._last_handled_event_timestamp = event_doc["timestamp"]
             return
@@ -106,7 +110,7 @@ class EventHandlerWorker(QtCore.QThread):
 
         # Send the event to the webserver API
         funct = getattr(requests, event_doc["type"])
-        if not event_doc["content"]:
+        if not event_doc.get("content"):
             response_obj = funct(url_with_route)
         else:
             response_obj = funct(url_with_route, **event_doc["content"])
@@ -271,7 +275,7 @@ def _validate_event_values(event_route: str,
                            content: Optional[dict],
                            target_users: list,
                            target_groups: list,
-                           expire_in: Optional[int]):
+                           expire_in_secs: Optional[int]):
     """Function to validate event values before submitting the event."""
     if not isinstance(event_route, str) or not event_route.strip():
         return False, "The event 'route' need to be a not empty string."
@@ -288,19 +292,20 @@ def _validate_event_values(event_route: str,
     if not isinstance(target_groups, list):
         return False, "The event 'target_groups' can only be None or a list."
 
-    if expire_in is not None and not isinstance(expire_in, int) or expire_in <= 0:
+    if expire_in_secs is not None and (not isinstance(expire_in_secs, (int, float)) or expire_in_secs <= 0):
         return False, "The event 'expire_in' can only be None or a strictly positive integer."
+
+    return True, None
 
 
 @require_events_handler
 def send_event(event_route: str,
                event_type: str,
-               content: Optional[dict],
+               content: Optional[dict] = None,
                target_users: Optional[list] = None,
                target_groups: Optional[list] = None,
-               expire_in: Optional[int] = None,
-               wait_for_responses: bool = False,
-               waiting_time_secs: int = DEFAULT_RESPONSES_WAITING_TIME_SECS):
+               expire_in_secs: Optional[float] = None,
+               expect_responses: bool = False):
     if target_users is None:
         target_users = []
     elif isinstance(target_users, str):
@@ -313,7 +318,7 @@ def send_event(event_route: str,
 
     # Ensure the events values are correct before adding the event in the database
     is_valid, invalid_msg = _validate_event_values(
-        event_route, event_type, content, target_users, target_groups, expire_in)
+        event_route, event_type, content, target_users, target_groups, expire_in_secs)
 
     if not is_valid:
         raise ValueError(invalid_msg)
@@ -325,19 +330,23 @@ def send_event(event_route: str,
         "route": event_route,
         "type": event_type,
         "target_users": target_users,
-        "target_groups": target_groups,
-        "content": content,
+        "target_groups": target_groups
     }
 
-    if expire_in is not None:
-        event["expire_at"] = timestamp + timedelta(seconds=expire_in)
+    if content is not None:
+        event["content"] = content
 
-    if wait_for_responses:
+    if expire_in_secs is not None:
+        event["expire_at"] = timestamp + timedelta(seconds=expire_in_secs)
+
+    if expect_responses:
         event["responses"] = []
 
     event_doc_id = _EVENT_HANDLER.collection.insert_one(event).inserted_id
 
-    if wait_for_responses:
-        sleep(waiting_time_secs)
-        event_doc = _EVENT_HANDLER.collection.find_one({"_id": event_doc_id})
-        return event_doc["responses"]
+    return event_doc_id
+
+
+@require_events_handler
+def get_event_doc(event_doc_id: str) -> Optional[dict]:
+    return _EVENT_HANDLER.collection.find_one({"_id": event_doc_id})
