@@ -10,12 +10,12 @@ from datetime import datetime
 from qtpy import QtWidgets, QtSvgWidgets, QtCore, QtGui
 import qtawesome
 
-from lib import get_user_id
 from quadpype import resources
 from quadpype.events import send_event, get_event_doc
 from quadpype.lib import (
     get_quadpype_version,
-    get_all_user_profiles
+    get_all_user_profiles,
+    get_user_id
 )
 from quadpype.tools.utils import set_style_property
 from quadpype.settings.entities import (
@@ -1300,6 +1300,11 @@ class CheckUsersOnlineThread(QtCore.QThread):
             self.apply_online_icon_to_user.emit(not_yet_responded_users, "offline_icon")
 
 
+class SortUserRoleItem(QtWidgets.QTableWidgetItem):
+    def __lt__(self, other):
+        return str(self.data(QtCore.Qt.ItemDataRole.UserRole)) < str(other.data(QtCore.Qt.ItemDataRole.UserRole))
+
+
 class UserManagerWidget(BaseControlPanelWidget):
     _ws_profile_prefix = "last_workstation_profile/"
     table_column_data = {
@@ -1406,16 +1411,39 @@ class UserManagerWidget(BaseControlPanelWidget):
 
         return online_icon_widget
 
+    def get_row_index_by_user_id(self, user_id):
+        items = self.table_widget.findItems(user_id, QtCore.Qt.MatchExactly)
+        if items:
+            return items[0].row()
+        return -1
+
+    def _disable_sorting(self):
+        self._current_sort_column = self.table_widget.horizontalHeader().sortIndicatorSection()
+        self._current_sort_order = self.table_widget.horizontalHeader().sortIndicatorOrder()
+
+        self.table_widget.setSortingEnabled(False)
+
+    def _enable_sorting(self):
+        self.table_widget.horizontalHeader().setSortIndicator(
+            self._current_sort_column,
+            self._current_sort_order
+        )
+
+        self.table_widget.setSortingEnabled(True)
+
     def _update_online_icon_for_users(self, user_list, icon_name):
+        self._disable_sorting()
         if icon_name == "online_icon":
+            sorting_value_prefix = "0_"
             icon = self._user_online_icon
         elif icon_name == "offline_icon":
+            sorting_value_prefix = "2_"
             icon = self._user_offline_icon
         else:
             return
 
         for user_id in user_list:
-            user_row = self.users_data[user_id]["row_index"]
+            user_row = self.get_row_index_by_user_id(user_id)
 
             # Properly clean the cell icon (if present)
             cell_widget = self.table_widget.cellWidget(user_row, 0)
@@ -1424,6 +1452,15 @@ class UserManagerWidget(BaseControlPanelWidget):
                 cell_widget.deleteLater()
 
             self.table_widget.setCellWidget(user_row, 0, self._create_icon_widget(icon))
+
+            # Update the hidden sorting item
+            # this is to be able to sort by online status
+            sorting_value = sorting_value_prefix+self.users_data[user_id]["username"]
+
+            item = self.table_widget.item(user_row, 0)
+            item.setData(QtCore.Qt.ItemDataRole.UserRole, sorting_value)
+
+        self._enable_sorting()
 
     def _add_users_to_table(self):
         for row_index, (user_id, user_data) in enumerate(self.users_data.items()):
@@ -1437,22 +1474,29 @@ class UserManagerWidget(BaseControlPanelWidget):
                 if isinstance(cell_data, str):
                     item = QtWidgets.QTableWidgetItem(cell_data)
                     item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-                    self.table_widget.setItem(row_index, column_index, item)
                 else:
+                    sorting_value_prefix = "1_"
+                    if isinstance(cell_data, QtWidgets.QLabel):
+                        # This means this is the current user
+                        sorting_value_prefix = "0_"
+
+                    sorting_value = sorting_value_prefix+user_data["username"]
+
+                    item = SortUserRoleItem()
+                    item.setData(QtCore.Qt.ItemDataRole.UserRole, sorting_value)
                     self.table_widget.setCellWidget(row_index, column_index, cell_data)
+
+                self.table_widget.setItem(row_index, column_index, item)
 
     def _update_user_list(self):
         if self._check_users_online_thread.isRunning():
             # Stop the thread that updates the user online status
             self._check_users_online_thread.quit()
 
-        self._current_sort_column = self.table_widget.horizontalHeader().sortIndicatorSection()
-        self._current_sort_order = self.table_widget.horizontalHeader().sortIndicatorOrder()
+        self._disable_sorting()
 
         # Cleanup the stored data
         self.users_data = {}
-
-        self.table_widget.setSortingEnabled(False)
 
         # Remove all the rows (if any)
         self.table_widget.setRowCount(0)
@@ -1487,8 +1531,6 @@ class UserManagerWidget(BaseControlPanelWidget):
 
                 user_data[user_profile_key] = cell_value
 
-            user_data["row_index"] = index
-
             self.users_data[user_id] = user_data
 
         check_online_status = True
@@ -1505,18 +1547,12 @@ class UserManagerWidget(BaseControlPanelWidget):
 
         # Re-apply the selection (selected row)
         if self._selected_user_id:
-            current_row_index = self.users_data[self._selected_user_id]["row_index"]
+            current_row_index = self.get_row_index_by_user_id(self._selected_user_id)
         else:
             current_row_index = 0
         self.table_widget.selectRow(current_row_index)
 
-        # Re-set the sorting
-        self.table_widget.horizontalHeader().setSortIndicator(
-            self._current_sort_column,
-            self._current_sort_order
-        )
-
-        self.table_widget.setSortingEnabled(True)
+        self._enable_sorting()
 
         if check_online_status:
             self._check_users_online_thread.start(QtCore.QThread.HighestPriority)

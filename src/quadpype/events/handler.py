@@ -90,12 +90,12 @@ class EventHandlerWorker(QtCore.QThread):
             get_timestamp_str(self._last_handled_event_timestamp))
 
     def _process_event(self, event_doc):
-        current_timestamp = datetime.now()
+        current_timestamp = datetime.now(timezone.utc)
 
         if (event_doc["user_id"] == self._curr_user_id) or\
                 (event_doc["target_users"] and self._curr_user_id not in event_doc["target_users"]) or \
                 (event_doc["target_groups"] and self._manager.user_profile["role"] not in event_doc["target_groups"]) or \
-                ("expire_at" in event_doc and current_timestamp > event_doc["expire_at"]):
+                ("expire_at" in event_doc and current_timestamp > event_doc["expire_at"].replace(tzinfo=timezone.utc)):
             # User is the one who emitted the event, OR
             # User is not targeted by this event, OR
             # This event is expired, so we skip it
@@ -110,7 +110,7 @@ class EventHandlerWorker(QtCore.QThread):
 
         # Send the event to the webserver API
         funct = getattr(requests, event_doc["type"])
-        if not event_doc["content"]:
+        if not event_doc.get("content"):
             response_obj = funct(url_with_route)
         else:
             response_obj = funct(url_with_route, **event_doc["content"])
