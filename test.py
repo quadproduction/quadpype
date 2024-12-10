@@ -826,57 +826,38 @@ class FilesModel(QtGui.QStandardItemModel):
         mime_data.setData("files_widget/full_data", full_item_data)
         return mime_data
 
-    def dropMimeData(self, mime_data, action, row, col, index):
-        #TODO: fix this
-        print('-----------------------------')
-        print('mime_data', mime_data)
-        print('action', action)
-        print('row', row)
-        print('col', col)
-        print('index', index)
-        print('-----------------------------')
-        item_ids = convert_bytes_to_json(
-            mime_data.data("files_widget/internal_move")
-        )
+    def dropMimeData(self, mime_data, action, row, col, parent_index):
+        if action != QtCore.Qt.MoveAction:
+            return False
+
+        # Retrieve item IDs from mime data
+        item_ids = convert_bytes_to_json(mime_data.data("files_widget/internal_move"))
         if item_ids is None:
             return False
 
-        # Find matching item after which will be items moved
-        #   - store item before moved items are removed
-        root = self.invisibleRootItem()
-        print(root)
-        print('---------------------------')
-        if row >= 0:
-            src_item = self.item(row)
+        # Find the target parent item
+        if parent_index.isValid():
+            target_item = self.itemFromIndex(parent_index)
         else:
-            src_item_id = index.data(ITEM_ID_ROLE)
-            src_item = self._items_by_id.get(src_item_id)
+            target_item = self.invisibleRootItem()
 
-        src_row = None
-        if src_item:
-            src_row = src_item.row()
-
-        # Take out items that should be moved
-        items = []
+        # Collect items to move
+        items_to_move = []
         for item_id in item_ids:
             item = self._items_by_id.get(item_id)
             if item:
                 self.takeRow(item.row())
-                items.append(item)
+                items_to_move.append(item)
 
-        # Skip if there are not items that can be moved
-        if not items:
+        if not items_to_move:
             return False
 
-        # Calculate row where items should be inserted
-        row_count = root.rowCount()
-        if src_row is None:
-            src_row = row_count
+        # Insert items as children of the target item
+        for item in items_to_move:
+            target_item.appendRow(item)
+            # Update internal mappings for the new parent-child structure
+            self._items_by_id[item.data(ITEM_ID_ROLE)] = item
 
-        if src_row > row_count:
-            src_row = row_count
-
-        root.insertRow(src_row, items)
         return True
 
     def on_button_clicked(self):
