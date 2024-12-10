@@ -15,23 +15,39 @@ IS_DIR_ROLE = QtCore.Qt.UserRole + 6
 IS_SEQUENCE_ROLE = QtCore.Qt.UserRole + 7
 EXT_ROLE = QtCore.Qt.UserRole + 8
 
+# /***********************************************************************************/
+# /*********************************** UTILS *****************************************/
+# /***********************************************************************************/
+def get_icon_path(icon_name=None, filename=None):
+    """Path to image in './images' folder."""
+    if icon_name is None and filename is None:
+        return None
 
+    if filename is None:
+        filename = "{}.png".format(icon_name)
+
+    path = os.path.join(
+        r"C:\Users\ccaillot\quad\quadpype\src\quadpype\tools\resources\images",
+        filename
+    )
+    if os.path.exists(path):
+        return path
+    return None
 def get_image(icon_name=None, filename=None):
     """Load image from './images' as QImage."""
     path = get_icon_path(icon_name, filename)
     if path:
         return QtGui.QImage(path)
     return None
-
 def paint_image_with_color(image, color):
     """Redraw image with single color using it's alpha.
 
-    It is expected that input image is singlecolor image with alpha.
+        It is expected that input image is singlecolor image with alpha.
 
-    Args:
-        image (QImage): Loaded image with alpha.
-        color (QColor): Color that will be used to paint image.
-    """
+        Args:
+            image (QImage): Loaded image with alpha.
+            color (QColor): Color that will be used to paint image.
+        """
     width = image.width()
     height = image.height()
 
@@ -43,8 +59,8 @@ def paint_image_with_color(image, color):
 
     painter = QtGui.QPainter(pixmap)
     render_hints = (
-        QtGui.QPainter.Antialiasing
-        | QtGui.QPainter.SmoothPixmapTransform
+            QtGui.QPainter.Antialiasing
+            | QtGui.QPainter.SmoothPixmapTransform
     )
     # Deprecated since 5.14
     if hasattr(QtGui.QPainter, "Antialiasing"):
@@ -58,7 +74,6 @@ def paint_image_with_color(image, color):
     painter.end()
 
     return pixmap
-
 def convert_bytes_to_json(bytes_value):
     if isinstance(bytes_value, QtCore.QByteArray):
         encoded_data = bytes_value
@@ -70,13 +85,181 @@ def convert_bytes_to_json(bytes_value):
         return json.loads(text)
     except Exception:
         return None
-
-
 def convert_data_to_bytes(data):
     bytes_value = QtCore.QByteArray()
     stream = QtCore.QDataStream(bytes_value, QtCore.QIODevice.WriteOnly)
     stream.writeQString(json.dumps(data))
     return bytes_value
+# /***********************************************************************************/
+# /********************************** ItemWidget *************************************/
+# /***********************************************************************************/
+class ClickableLabel(QtWidgets.QLabel):
+    """Label that catch left mouse click and can trigger 'clicked' signal."""
+    clicked = QtCore.Signal()
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self._mouse_pressed = False
+
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            self._mouse_pressed = True
+        super(ClickableLabel, self).mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if self._mouse_pressed:
+            self._mouse_pressed = False
+            if self.rect().contains(event.pos()):
+                self.clicked.emit()
+
+        super(ClickableLabel, self).mouseReleaseEvent(event)
+class PixmapLabel(QtWidgets.QLabel):
+    """Label resizing image to height of font."""
+    def __init__(self, pixmap, parent):
+        super().__init__(parent)
+        self._empty_pixmap = QtGui.QPixmap(0, 0)
+        self._source_pixmap = pixmap
+
+        self._last_width = 0
+        self._last_height = 0
+
+    def set_source_pixmap(self, pixmap):
+        """Change source image."""
+        self._source_pixmap = pixmap
+        self._set_resized_pix()
+
+    def _get_pix_size(self):
+        size = self.fontMetrics().height()
+        size += size % 2
+        return size, size
+
+    def minimumSizeHint(self):
+        width, height = self._get_pix_size()
+        if width != self._last_width or height != self._last_height:
+            self._set_resized_pix()
+        return QtCore.QSize(width, height)
+
+    def _set_resized_pix(self):
+        if self._source_pixmap is None:
+            self.setPixmap(self._empty_pixmap)
+            return
+        width, height = self._get_pix_size()
+        self.setPixmap(
+            self._source_pixmap.scaled(
+                width,
+                height,
+                QtCore.Qt.KeepAspectRatio,
+                QtCore.Qt.SmoothTransformation
+            )
+        )
+        self._last_width = width
+        self._last_height = height
+
+    def resizeEvent(self, event):
+        self._set_resized_pix()
+        super(PixmapLabel, self).resizeEvent(event)
+
+
+class ItemWidget(QtWidgets.QWidget):
+    context_menu_requested = QtCore.Signal(QtCore.QPoint)
+    delete_requested = QtCore.Signal(list)
+
+    def __init__(self, item_id, label, pixmap_icon, is_sequence, multivalue, parent=None):
+        super().__init__(parent)
+        self._item_id = item_id
+
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+
+        icon_widget = PixmapLabel(pixmap_icon, self)
+        label_widget = QtWidgets.QLabel(label, self)
+
+        label_size_hint = label_widget.sizeHint()
+        height = label_size_hint.height()
+        actions_menu_pix = paint_image_with_color(get_image(filename="menu.png"), QtCore.Qt.white)
+        self._review_pix = paint_image_with_color(get_image(filename="review.png"),
+                                                  QtCore.Qt.white).scaledToHeight(height)
+        self._review_disabled_pix = paint_image_with_color(get_image(filename="review_disabled.png"),
+                                                           QtCore.Qt.white).scaledToHeight(height)
+        delete_pix = paint_image_with_color(get_image(filename="delete.png"), QtCore.Qt.white).scaledToHeight(height)
+
+        review_btn = ClickableLabel(self)
+        review_btn.setFixedSize(height, height)
+        review_btn.setPixmap(self._review_pix)
+
+        delete_btn = ClickableLabel(self)
+        delete_btn.setFixedSize(height, height)
+        delete_btn.setPixmap(delete_pix)
+
+        split_btn = ClickableLabel(self)
+        split_btn.setFixedSize(height, height)
+        split_btn.setPixmap(actions_menu_pix)
+        if multivalue:
+            split_btn.setVisible(False)
+        else:
+            split_btn.setVisible(is_sequence)
+
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.addWidget(icon_widget, 0)
+        layout.addWidget(label_widget, 1)
+        layout.addWidget(review_btn, 0)
+        layout.addWidget(delete_btn, 0)
+        layout.addWidget(split_btn, 0)
+
+        review_btn.clicked.connect(self._on_review_actions_clicked)
+        delete_btn.clicked.connect(self._on_delete_actions_clicked)
+        split_btn.clicked.connect(self._on_split_actions_clicked)
+
+        self._icon_widget = icon_widget
+        self._label_widget = label_widget
+        self._split_btn = split_btn
+        self._review_btn = review_btn
+        self._delete_btn = delete_btn
+        self._actions_menu_pix = actions_menu_pix
+        self._last_scaled_pix_height = None
+        self._is_review_enabled = True
+
+    def _update_btn_size(self):
+        label_size_hint = self._label_widget.sizeHint()
+        height = label_size_hint.height()
+        if height == self._last_scaled_pix_height:
+            return
+        self._last_scaled_pix_height = height
+        self._split_btn.setFixedSize(height, height)
+        pix = self._actions_menu_pix.scaled(
+            height, height,
+            QtCore.Qt.KeepAspectRatio,
+            QtCore.Qt.SmoothTransformation
+        )
+        self._split_btn.setPixmap(pix)
+
+    def showEvent(self, event):
+        super(ItemWidget, self).showEvent(event)
+        self._update_btn_size()
+
+    def resizeEvent(self, event):
+        super(ItemWidget, self).resizeEvent(event)
+        self._update_btn_size()
+
+    def _on_split_actions_clicked(self):
+        pos = self._split_btn.rect().bottomLeft()
+        point = self._split_btn.mapToGlobal(pos)
+        self.context_menu_requested.emit(point)
+
+    def _on_review_actions_clicked(self):
+        self._is_review_enabled = not self._is_review_enabled
+        if self._is_review_enabled:
+            self._review_btn.setPixmap(self._review_pix)
+        else:
+            self._review_btn.setPixmap(self._review_disabled_pix)
+
+    def _on_delete_actions_clicked(self):
+        self.delete_requested.emit([self._item_id])
+
+# /***********************************************************************************/
+# /***********************************************************************************/
+# /***********************************************************************************/
 
 
 class DropEmpty(QtWidgets.QWidget):
@@ -232,12 +415,12 @@ class DropEmpty(QtWidgets.QWidget):
             left_m,
             top_m,
             (
-                rect.width()
-                - (left_m + content_margins.right() + pen.width())
+                    rect.width()
+                    - (left_m + content_margins.right() + pen.width())
             ),
             (
-                rect.height()
-                - (top_m + content_margins.bottom() + pen.width())
+                    rect.height()
+                    - (top_m + content_margins.bottom() + pen.width())
             )
         )
 
@@ -487,6 +670,7 @@ class FileDefItem(object):
 
         return output
 
+
 class FilesModel(QtGui.QStandardItemModel):
     def __init__(self, single_item, allow_sequences):
         super().__init__()
@@ -568,8 +752,8 @@ class FilesModel(QtGui.QStandardItemModel):
 
         new_model_items = []
         for file_item in file_items:
-            item_id, model_item, review_item, delete_item = self._create_item(file_item)
-            new_model_items.append([model_item, review_item, delete_item])
+            item_id, model_item = self._create_item(file_item)
+            new_model_items.append([model_item])
             self._file_items_by_id[item_id] = file_item
             self._items_by_id[item_id] = model_item
 
@@ -618,11 +802,7 @@ class FilesModel(QtGui.QStandardItemModel):
         item.setData(file_item.is_dir, IS_DIR_ROLE)
         item.setData(file_item.is_sequence, IS_SEQUENCE_ROLE)
 
-        review_item = ButtonStandardItem("eye.png")
-        delete_item = ButtonStandardItem("delete.png")
-
-        return item_id, item, review_item, delete_item
-
+        return item_id, item
     def mimeData(self, indexes):
         item_ids = [
             index.data(ITEM_ID_ROLE)
@@ -647,6 +827,14 @@ class FilesModel(QtGui.QStandardItemModel):
         return mime_data
 
     def dropMimeData(self, mime_data, action, row, col, index):
+        #TODO: fix this
+        print('-----------------------------')
+        print('mime_data', mime_data)
+        print('action', action)
+        print('row', row)
+        print('col', col)
+        print('index', index)
+        print('-----------------------------')
         item_ids = convert_bytes_to_json(
             mime_data.data("files_widget/internal_move")
         )
@@ -656,6 +844,8 @@ class FilesModel(QtGui.QStandardItemModel):
         # Find matching item after which will be items moved
         #   - store item before moved items are removed
         root = self.invisibleRootItem()
+        print(root)
+        print('---------------------------')
         if row >= 0:
             src_item = self.item(row)
         else:
@@ -804,8 +994,8 @@ class FilesView(QtWidgets.QTreeView):
         self.customContextMenuRequested.connect(self._on_context_menu_request)
         self._multivalue = False
         self.header().hide()
+        self.setDropIndicatorShown(True)
         QtCore.QTimer.singleShot(0, self.resize_all_columns_to_contents)
-
 
     def setModel(self, model):
         """Override setModel to connect signals after model is set."""
@@ -987,6 +1177,9 @@ class FilesWidget(QtWidgets.QFrame):
             )
             widget.context_menu_requested.connect(
                 self._on_context_menu_requested
+            )
+            widget.delete_requested.connect(
+                self._remove_item_by_ids
             )
             self._files_view.setIndexWidget(index, widget)
             self._files_proxy_model.setData(
@@ -1199,8 +1392,59 @@ class FilesDialog(QtWidgets.QDialog):
 
         layout.addLayout(button_layout)
 
+    def showEvent(self, event):
+        super(FilesDialog, self).showEvent(event)
 
-def show_files_dialog():
+        stylesheet = self._load_stylesheet()
+        self.setStyleSheet(stylesheet)
+
+    def _load_stylesheet(self):
+        """Load strylesheet and trigger all related callbacks.
+
+        Style require more than a stylesheet string. Stylesheet string
+        contains paths to resources which must be registered into Qt application
+        and load fonts used in stylesheets.
+
+        Also replace values from stylesheet data into stylesheet text.
+        """
+        style_path = os.path.join(r'C:\Users\ccaillot\quad\quadpype\src\quadpype\style', "style.css")
+        with open(style_path, "r") as style_file:
+            stylesheet = style_file.read()
+
+        data = self._get_colors_raw_data()
+
+        data_deque = collections.deque()
+        for item in data.items():
+            data_deque.append(item)
+
+        fill_data = {}
+        while data_deque:
+            key, value = data_deque.popleft()
+            if isinstance(value, dict):
+                for sub_key, sub_value in value.items():
+                    new_key = "{}:{}".format(key, sub_key)
+                    data_deque.append((new_key, sub_value))
+                continue
+            fill_data[key] = value
+
+        for key, value in fill_data.items():
+            replacement_key = "{" + key + "}"
+            stylesheet = stylesheet.replace(replacement_key, value)
+        return stylesheet
+
+    def _get_colors_raw_data(self):
+        """Read data file with stylesheet fill values.
+
+        Returns:
+            dict: Loaded data for stylesheet.
+        """
+        data_path = os.path.join(r'C:\Users\ccaillot\quad\quadpype\src\quadpype\style', "data.json")
+        with open(data_path, "r") as data_stream:
+            data = json.load(data_stream)
+        return data
+
+
+if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
 
     # Example parameters for FilesWidget
@@ -1217,7 +1461,3 @@ def show_files_dialog():
         print("Dialog canceled!")
 
     sys.exit(app.exec())
-
-
-if __name__ == "__main__":
-    show_files_dialog()
