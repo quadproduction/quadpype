@@ -50,7 +50,7 @@ class ValidateDeadlinePublish(
         tree = bpy.context.scene.node_tree
         output_type = "CompositorNodeOutputFile"
         output_node = None
-        # Remove all output nodes that incude "QuadPype" in the name.
+        # Remove all output nodes that include "QuadPype" in the name.
         # There should be only one.
         for node in tree.nodes:
             if node.bl_idname == output_type and "QuadPype" in node.name:
@@ -63,7 +63,7 @@ class ValidateDeadlinePublish(
         filepath = bpy.data.filepath
         file = os.path.basename(filepath)
         filename, ext = os.path.splitext(file)
-        if filename not in output_node.base_path:
+        if output_node and filename not in output_node.base_path:
             msg = (
                 "Render output folder doesn't match the blender scene name! "
                 "Use Repair action to fix the folder file path."
