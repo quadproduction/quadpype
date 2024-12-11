@@ -485,16 +485,16 @@ static char* GetLocalString( PIFilter* iFilter, int iNum, char* iDefault )
 // numbers (like 10011) are IDs in the localized file.
 // strings are the default values to use when the ID is not found
 // in the localized file (or the localized file doesn't exist).
-std::string label_from_evn()
+std::string label_from_env()
 {
     std::string _plugin_label = "QuadPype";
-    if (std::getenv("AVALON_LABEL") && std::getenv("AVALON_LABEL") != "")
+    if (std::getenv("QUADPYPE_LABEL") && std::getenv("QUADPYPE_LABEL") != "")
     {
-        _plugin_label = std::getenv("AVALON_LABEL");
+        _plugin_label = std::getenv("QUADPYPE_LABEL");
     }
     return _plugin_label;
 }
-std::string plugin_label = label_from_evn();
+std::string plugin_label = label_from_env();
 
 #define TXT_REQUESTER               GetLocalString( iFilter, 100, "QuadPype Tools" )
 

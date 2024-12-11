@@ -87,10 +87,10 @@ def session_data_from_environment(context_keys=False):
             session_data[key] = None
 
     for key, default_value in (
-        # Name of Avalon in graphical user interfaces
-        # Use this to customise the visual appearance of Avalon
+        # Name of Quadpype in graphical user interfaces
+        # Use this to customise the visual appearance of QuadPype
         # to better integrate with your surrounding pipeline
-        ("AVALON_LABEL", "Avalon"),
+        ("QUADPYPE_LABEL", "QuadPype"),
 
         # Used during any connections to the outside world
         ("AVALON_TIMEOUT", "1000"),

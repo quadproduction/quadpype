@@ -1,4 +1,6 @@
-﻿$SCRIPT_DIR=Split-Path -Path $MyInvocation.MyCommand.Definition -Parent -Resolve
+﻿$PATH_ORIGINAL_LOCATION = Get-Location
+
+$SCRIPT_DIR=Split-Path -Path $MyInvocation.MyCommand.Definition -Parent -Resolve
 $PATH_QUADPYPE_ROOT = $SCRIPT_DIR
 while ((Split-Path $PATH_QUADPYPE_ROOT -Leaf) -ne "src") {
     $PATH_QUADPYPE_ROOT = (get-item $PATH_QUADPYPE_ROOT).Parent.FullName
@@ -108,8 +110,12 @@ foreach ($CURR_HOST in $HOSTS) {
         Remove-Item $HOST_ZXP_DEST -Force
     }
 
+    Set-Location -Path $PATH_QUADPYPE_ROOT
+
     # Bump XML version
     & "$($env:POETRY_HOME)\bin\poetry" run python "$($SCRIPT_DIR)\_lib\zxp\bump_xmp_version.py" --xml-filepath $HOST_ZXP_XML
+
+    Set-Location -Path "$($PATH_ORIGINAL_LOCATION)"
 
     # Generate and sign the ZXP file with the QuadPype certificate
     & $PATH_ZXP_SIGN_SOFTWARE -sign $HOST_ZXP_SOURCE $HOST_ZXP_DEST $PATH_ZXP_CERTIFICATE QuadPype

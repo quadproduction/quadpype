@@ -439,11 +439,11 @@ def set_avalon_environments():
         # Mongo DB name where avalon docs are stored
         "AVALON_DB": avalon_db,
         # Name of config
-        "AVALON_LABEL": "QuadPype"
+        "QUADPYPE_LABEL": "QuadPype"
     })
 
 
-def _update_zxp_extensions(running_version_str, running_version_fullpath, global_settings):
+def _update_zxp_extensions(running_version_fullpath, global_settings):
     zxp_hosts_to_update = get_zxp_extensions_to_update(running_version_fullpath, global_settings)
     if not zxp_hosts_to_update:
         return
@@ -452,7 +452,7 @@ def _update_zxp_extensions(running_version_str, running_version_fullpath, global
     if in_headless_mode:
         update_zxp_extensions(running_version_fullpath, zxp_hosts_to_update)
     else:
-        igniter.open_zxp_update_window(running_version_str, running_version_fullpath, zxp_hosts_to_update)
+        igniter.open_zxp_update_window(running_version_fullpath, zxp_hosts_to_update)
 
 
 def set_addons_environments():
@@ -941,7 +941,7 @@ def boot():
     running_version_fullpath = running_version.path.resolve()
     if not os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE"):
         _print(">>> Check ZXP extensions ...")
-        _update_zxp_extensions(str(running_version), running_version_fullpath, global_settings)
+        _update_zxp_extensions(running_version_fullpath, global_settings)
 
     # print info when not running scripts defined in 'silent commands'
     if all(arg not in silent_commands for arg in sys.argv):

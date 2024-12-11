@@ -19,7 +19,7 @@ class CollectFarmTarget(pyblish.api.InstancePlugin):
         farm_name = ""
         op_modules = context.data.get("quadpypeModules")
 
-        for farm_renderer in ["deadline", "royalrender"]:
+        for farm_renderer in ["deadline"]:
             op_module = op_modules.get(farm_renderer, False)
 
             if op_module and op_module.enabled:

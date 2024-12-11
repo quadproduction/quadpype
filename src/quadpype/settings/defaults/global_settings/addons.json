@@ -160,16 +160,6 @@
             "default": "http://127.0.0.1:8082"
         }
     },
-    "royalrender": {
-        "enabled": false,
-        "rr_paths": {
-            "default": {
-                "windows": "C:\\RR8",
-                "darwin": "/Volumes/share/RR8",
-                "linux": "/mnt/studio/RR8"
-            }
-        }
-    },
     "log_viewer": {
         "enabled": true
     },

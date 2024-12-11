@@ -60,7 +60,7 @@
     if (/^\w+:\/\//.test(url)) return url;
     if (typeof window == 'undefined' && window.location.host.length < 1) throw new Error("Can not construct absolute URL from ".concat(window.location));
     var scheme = window.location.protocol === "https:" ? "wss:" : "ws:";
-    var port = window.location.port === '' ? ":".concat(window.location.port) : '';
+    var port = window.location.port !== '' ? ":".concat(window.location.port) : '';
     var host = window.location.host;
     var path = url.replace(/^\/+/gm, '');
     return "".concat(scheme, "//").concat(host).concat(port, "/").concat(path);

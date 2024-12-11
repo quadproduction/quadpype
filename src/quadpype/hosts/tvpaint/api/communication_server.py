@@ -835,7 +835,7 @@ class BaseCommunicator:
 
 
 class QtCommunicator(BaseCommunicator):
-    label = os.getenv("AVALON_LABEL")
+    label = os.getenv("QUADPYPE_LABEL")
     if not label:
         label = "QuadPype"
     title = "{} Tools".format(label)

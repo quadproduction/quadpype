@@ -15,9 +15,9 @@ from .worker_job import ProcessTVPaintCommands
 
 
 class TVPaintWorkerCommunicator(BaseCommunicator):
-    """Modified commuicator which cares about processing jobs.
+    """Modified communicator which cares about processing jobs.
 
-    Received jobs are send to TVPaint by parsing 'ProcessTVPaintCommands'.
+    Received jobs are sent to TVPaint by parsing 'ProcessTVPaintCommands'.
     """
     def __init__(self, server_url):
         super().__init__()
@@ -27,7 +27,7 @@ class TVPaintWorkerCommunicator(BaseCommunicator):
         self._worker_connection = None
 
     def _start_webserver(self):
-        """Create connection to workers server before TVPaint server."""
+        """Create connection to the worker server before TVPaint server."""
         loop = self.websocket_server.loop
         self._worker_connection = WorkerJobsConnection(
             self._server_url, "tvpaint", loop
@@ -43,7 +43,7 @@ class TVPaintWorkerCommunicator(BaseCommunicator):
         """Open init TVPaint file.
 
         File triggers dialog missing path to audio file which must be closed
-        once and is ignored for rest of running process.
+        once and is ignored for the rest of the running process.
         """
         current_dir = os.path.dirname(os.path.abspath(__file__))
         init_filepath = os.path.join(current_dir, "init_file.tvpp")
@@ -95,7 +95,7 @@ class TVPaintWorkerCommunicator(BaseCommunicator):
         if job is None:
             return
 
-        # Prepare variables used for sendig
+        # Prepare variables used for sending
         success = False
         message = "Unknown function"
         data = None

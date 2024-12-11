@@ -54,11 +54,6 @@ class CollectAERender(publish.AbstractCollectRender):
 
         project_entity = context.data["projectEntity"]
         project_settings = get_project_settings(project_entity["name"])
-        try:
-            format_conversion_table = project_settings["quad_custom_settings"]["hosts"]["aftereffects"]["publish"]["CollectAERender"]["format_conversion"]
-        except KeyError:
-            self.log.warning("Can't retrieve format conversion table from after effects custom plugins.")
-            format_conversion_table = None
 
         compositions = CollectAERender.get_stub().get_items(True)
         compositions_by_id = {item.id: item for item in compositions}
@@ -112,10 +107,6 @@ class CollectAERender(publish.AbstractCollectRender):
                 name=subset_name,
                 resolutionWidth=render_item.width,
                 resolutionHeight=render_item.height,
-                format=[
-                    self._convert_format_label(item.format, format_conversion_table)
-                    for item in render_q
-                ],
                 pixelAspect=1,
                 tileRendering=False,
                 tilesX=0,
@@ -160,15 +151,6 @@ class CollectAERender(publish.AbstractCollectRender):
         for instance in instances_to_remove:
             context.remove(instance)
         return instances
-
-    def _convert_format_label(self, retrieved_format, format_conversion_table):
-        if not format_conversion_table:
-            return retrieved_format
-
-        return {
-            single_format['format'].lower(): single_format['converted_label'] for single_format in
-            format_conversion_table
-        }.get(retrieved_format.lower(), retrieved_format.lower())
 
     def get_expected_files(self, render_instance):
         """

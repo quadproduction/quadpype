@@ -99,7 +99,7 @@ class RenderCreator(Creator):
             stub.rename_item(comp.id, subset_name)
 
             if self.force_setting_values:
-                set_settings(True, True, [comp.id], print_msg=False, use_custom_settings=True)
+                set_settings(True, True, [comp.id], print_msg=False)
 
     def get_pre_create_attr_defs(self):
         output = [

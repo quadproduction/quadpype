@@ -1,7 +1,7 @@
 import bpy
 
 import pyblish.api
-from quadpype.hosts.blender.api.api import plugin
+from quadpype.hosts.blender.api import plugin
 
 
 class CollectReview(plugin.BlenderInstancePlugin):

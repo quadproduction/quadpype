@@ -626,8 +626,7 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
             "resolutionHeight": "resolution_height",
             "fps": "fps",
             "outputName": "output",
-            "originalBasename": "originalBasename",
-            "format": "format"
+            "originalBasename": "originalBasename"
         }.items():
             # Allow to take value from representation
             # if not found also consider instance.data

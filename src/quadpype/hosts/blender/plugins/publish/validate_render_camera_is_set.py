@@ -1,11 +1,12 @@
 import bpy
 
 import pyblish.api
-
+from quadpype.hosts.blender.api import plugin
 from quadpype.pipeline.publish import (
     OptionalPyblishPluginMixin,
     PublishValidationError
 )
+
 
 class ValidateRenderCameraIsSet(
     plugin.BlenderInstancePlugin,
