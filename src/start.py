@@ -439,7 +439,7 @@ def set_avalon_environments():
         # Mongo DB name where avalon docs are stored
         "AVALON_DB": avalon_db,
         # Name of config
-        "AVALON_LABEL": "QuadPype"
+        "QUADPYPE_LABEL": "QuadPype"
     })
 
 

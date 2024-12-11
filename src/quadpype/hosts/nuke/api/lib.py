@@ -59,10 +59,10 @@ from .utils import get_node_outputs
 
 log = Logger.get_logger(__name__)
 
-_NODE_TAB_NAME = "{}".format(os.getenv("AVALON_LABEL") or "Avalon")
-AVALON_LABEL = os.getenv("AVALON_LABEL") or "Avalon"
-AVALON_TAB = "{}".format(AVALON_LABEL)
-AVALON_DATA_GROUP = "{}DataGroup".format(AVALON_LABEL.capitalize())
+_NODE_TAB_NAME = "{}".format(os.getenv("QUADPYPE_LABEL") or "QuadPype")
+QUADPYPE_LABEL = os.getenv("QUADPYPE_LABEL") or "QuadPype"
+AVALON_TAB = "{}".format(QUADPYPE_LABEL)
+AVALON_DATA_GROUP = "{}DataGroup".format(QUADPYPE_LABEL.capitalize())
 EXCLUDED_KNOB_TYPE_ON_READ = (
     20,  # Tab Knob
     26,  # Text Knob (But for backward compatibility, still be read

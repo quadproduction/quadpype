@@ -73,7 +73,7 @@ LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
 CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 INVENTORY_PATH = os.path.join(PLUGINS_DIR, "inventory")
 
-MENU_LABEL = os.environ["AVALON_LABEL"]
+MENU_LABEL = os.environ["QUADPYPE_LABEL"]
 
 # registering pyblish gui regarding settings in presets
 if os.getenv("PYBLISH_GUI", None):

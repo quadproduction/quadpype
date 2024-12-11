@@ -194,6 +194,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(label, QtCore.Qt.ToolTipRole)
             item.setData(actions, ACTION_ROLE)
             item.setData(True, VARIANT_GROUP_ROLE)
+            item.setSizeHint(QtCore.QSize(90, 96))
             items_by_order[order].append(item)
 
         for action in single_actions:
@@ -202,6 +203,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item = QtGui.QStandardItem(icon, label)
             item.setData(label, QtCore.Qt.ToolTipRole)
             item.setData(action, ACTION_ROLE)
+            item.setSizeHint(QtCore.QSize(90, 96))
             items_by_order[action.order].append(item)
 
         for group_name, actions in grouped_actions.items():
@@ -222,7 +224,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item = QtGui.QStandardItem(icon, group_name)
             item.setData(actions, ACTION_ROLE)
             item.setData(True, GROUP_ROLE)
-
+            item.setSizeHint(QtCore.QSize(90, 96))
             items_by_order[order].append(item)
 
         self.beginResetModel()
