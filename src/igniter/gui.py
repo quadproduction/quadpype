@@ -466,9 +466,8 @@ class ZXPUpdateWindow(QtWidgets.QDialog):
     _width = 500
     _height = 100
 
-    def __init__(self, version_str, version_fullpath: Path, zxp_hosts: [ZXPExtensionData], parent=None):
+    def __init__(self, version_fullpath: Path, zxp_hosts: [ZXPExtensionData], parent=None):
         super().__init__(parent)
-        self._version_str = version_str
         self._version_fullpath = version_fullpath
         self._zxp_hosts = zxp_hosts
         self._log = log.getLogger(str(__class__))
@@ -485,7 +484,6 @@ class ZXPUpdateWindow(QtWidgets.QDialog):
         fonts_dir = Path(get_fonts_dir_path())
         roboto_font_path = str(fonts_dir.joinpath("RobotoMono-Regular.ttf"))
         poppins_font_path = str(fonts_dir.joinpath("Poppins"))
-        icon_path = get_app_icon_path()
 
         # Install fonts
         QtGui.QFontDatabase.addApplicationFont(roboto_font_path)
@@ -509,7 +507,7 @@ class ZXPUpdateWindow(QtWidgets.QDialog):
         # Main info
         # --------------------------------------------------------------------
         main_label = QtWidgets.QLabel(
-            f"<b>QuadPype</b> is updating to {self._version_str}", self)
+            f"<b>QuadPype</b> is updating ZXP extensions", self)
         main_label.setWordWrap(True)
         main_label.setObjectName("MainLabel")
 

@@ -329,9 +329,6 @@ class AfterEffectsRoute(WebSocketRoute):
     async def setresolution_route(self):
         self._settings_route(False, True)
 
-    async def setcustomresolution_route(self):
-        self._custom_settings_route(False, True, True)
-
     async def setframes_route(self):
         self._settings_route(True, False)
 
@@ -361,18 +358,6 @@ class AfterEffectsRoute(WebSocketRoute):
 
         # Required return statement.
         return "nothing"
-
-    def _custom_settings_route(self, frames, resolution, use_custom_settings):
-        partial_method = functools.partial(set_settings,
-                                           frames,
-                                           resolution,
-                                           use_custom_settings=use_custom_settings)
-
-        ProcessLauncher.execute_in_main_thread(partial_method)
-
-        # Required return statement.
-        return "nothing"
-
 
     def create_placeholder_route(self):
         from quadpype.hosts.aftereffects.api.workfile_template_builder import \
