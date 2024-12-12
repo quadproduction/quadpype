@@ -45,7 +45,7 @@ class WebServerTool:
             port = parsed.port
             host_name = parsed.netloc.split(":")[0]
         if not port:
-            port = 8016  # fallback
+            port = 8069  # fallback
 
         self.port = port
         self.host_name = host_name

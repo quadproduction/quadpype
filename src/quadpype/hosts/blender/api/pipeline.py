@@ -235,11 +235,11 @@ def get_asset_data():
     return asset_doc.get("data")
 
 
-def get_frame_range(task_entity=None) -> Union[Dict[str, int], None]:
-    """Get the task entity's frame range and handles
+def get_frame_range(asset_entity=None) -> Union[Dict[str, int], None]:
+    """Get the asset entity's frame range and handles
 
     Args:
-        task_entity (Optional[dict]): Task Entity.
+        asset_entity (Optional[dict]): Task Entity.
             When not provided defaults to current context task.
 
     Returns:
@@ -247,11 +247,11 @@ def get_frame_range(task_entity=None) -> Union[Dict[str, int], None]:
             frame start, frame end, handle start, handle end.
     """
     # Set frame start/end
-    task_attributes = task_entity["attrib"]
-    frame_start = int(task_attributes["frameStart"])
-    frame_end = int(task_attributes["frameEnd"])
-    handle_start = int(task_attributes["handleStart"])
-    handle_end = int(task_attributes["handleEnd"])
+    asset_attributes = asset_entity["data"]
+    frame_start = int(asset_attributes["frameStart"])
+    frame_end = int(asset_attributes["frameEnd"])
+    handle_start = int(asset_attributes["handleStart"])
+    handle_end = int(asset_attributes["handleEnd"])
     frame_start_handle = frame_start - handle_start
     frame_end_handle = frame_end + handle_end
 

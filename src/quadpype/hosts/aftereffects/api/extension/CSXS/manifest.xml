@@ -45,6 +45,11 @@
 				</Resources>
 				<Lifecycle>
 					<AutoVisible>true</AutoVisible>
+					 <StartOn>
+            			<!-- After Effects dispatches this event on startup -->
+            			<Event>applicationActivate</Event>
+            			<Event>com.adobe.csxs.events.ApplicationInitialized</Event>
+					 </StartOn>
 				</Lifecycle>
 				<UI>
 					<Type>Panel</Type>

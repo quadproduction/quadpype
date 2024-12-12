@@ -297,8 +297,8 @@ def set_node_tree(
         output.location = old_output_node.location
         tree.nodes.remove(old_output_node)
 
-    output.name = "File Output"
-    output.label = "File Output"
+    output.name = "QuadPype File Output"
+    output.label = "QuadPype File Output"
 
     return [] if multi_exr else aov_file_products
 

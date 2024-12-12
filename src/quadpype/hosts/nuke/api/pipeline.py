@@ -73,7 +73,7 @@ LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
 CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 INVENTORY_PATH = os.path.join(PLUGINS_DIR, "inventory")
 
-MENU_LABEL = os.environ["AVALON_LABEL"]
+MENU_LABEL = os.environ["QUADPYPE_LABEL"]
 
 # registering pyblish gui regarding settings in presets
 if os.getenv("PYBLISH_GUI", None):
@@ -175,10 +175,6 @@ def add_nuke_callbacks():
 
     # set apply all workfile settings on script load and save
     nuke.addOnScriptLoad(WorkfileSettings().set_context_settings)
-
-    # set apply all custom settings on script load and save
-    if workfile_settings._get_set_resolution_startup():
-        nuke.addOnScriptLoad(workfile_settings.set_custom_resolution)
 
     # Emit events
     nuke.addOnCreate(_on_scene_open, nodeClass="Root")
@@ -301,10 +297,6 @@ def _install_menu():
     menu.addCommand(
         "Set Resolution",
         lambda: WorkfileSettings().reset_resolution()
-    )
-    menu.addCommand(
-        "Set Custom Resolution",
-        lambda: WorkfileSettings().set_custom_resolution()
     )
     menu.addCommand(
         "Set Frame Range",

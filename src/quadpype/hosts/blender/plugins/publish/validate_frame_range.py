@@ -79,12 +79,7 @@ class ValidateFrameRange(pyblish.api.InstancePlugin,
         cls, instance: pyblish.api.Instance
     ) -> Dict[str, int]:
         """Get required frame range"""
-        entity = instance.data["taskEntity"]
-
-        # Task is not required for a publish instance, so we may need to
-        # validate against the folder entity
-        if not entity:
-            entity = instance.data["folderEntity"]
+        entity = instance.data["assetEntity"]
         return get_frame_range(entity)
 
     @classmethod

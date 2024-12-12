@@ -63,7 +63,7 @@ def menu_install():
 
     # here is the best place to add menu
 
-    menu_name = os.environ['AVALON_LABEL']
+    menu_name = os.environ['QUADPYPE_LABEL']
 
     context_label = get_context_label()
 

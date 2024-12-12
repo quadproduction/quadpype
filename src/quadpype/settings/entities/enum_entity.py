@@ -697,24 +697,6 @@ class DeadlinePoolsEnumEntity(DynamicEnumEntity):
         super(DeadlinePoolsEnumEntity, self).set_override_state(*args, **kwargs)
 
 
-class RoyalRenderRootEnumEntity(DynamicEnumEntity):
-    schema_types = ["rr_root-enum"]
-
-    def _get_enum_values(self):
-        rr_root_entity = self.get_entity_from_path(
-            "global_settings/addons/royalrender/rr_paths"
-        )
-
-        valid_keys = set()
-        enum_items_list = []
-        for server_name, url_entity in rr_root_entity.items():
-            enum_items_list.append(
-                {server_name: "{}: {}".format(server_name, url_entity.value)}
-            )
-            valid_keys.add(server_name)
-        return enum_items_list, valid_keys
-
-
 class ShotgridUrlEnumEntity(DynamicEnumEntity):
     schema_types = ["shotgrid_url-enum"]
 

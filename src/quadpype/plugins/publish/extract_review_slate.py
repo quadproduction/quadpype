@@ -4,14 +4,13 @@ import subprocess
 from pprint import pformat
 
 import pyblish.api
-
+from quadpype.lib.transcoding import get_video_metadata
 from quadpype.lib import (
     path_to_subprocess_arg,
     run_subprocess,
     get_ffmpeg_tool_args,
     get_ffprobe_data,
     get_ffprobe_streams,
-    get_video_metadata,
     get_ffmpeg_codec_args,
     get_ffmpeg_format_args,
 )
