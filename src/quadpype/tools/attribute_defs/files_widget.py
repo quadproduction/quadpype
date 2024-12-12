@@ -60,7 +60,7 @@ class DropEmpty(QtWidgets.QWidget):
 
         drop_label_widget = QtWidgets.QLabel("Drag & Drop files here", self)
 
-        items_label_widget = SupportLabel(self)
+        items_label_widget = QtWidgets.QLabel(self)
         items_label_widget.setWordWrap(True)
 
         layout = QtWidgets.QVBoxLayout(self)
@@ -205,12 +205,12 @@ class DropEmpty(QtWidgets.QWidget):
             left_m,
             top_m,
             (
-                rect.width()
-                - (left_m + content_margins.right() + pen.width())
+                    rect.width()
+                    - (left_m + content_margins.right() + pen.width())
             ),
             (
-                rect.height()
-                - (top_m + content_margins.bottom() + pen.width())
+                    rect.height()
+                    - (top_m + content_margins.bottom() + pen.width())
             )
         )
 
@@ -267,7 +267,7 @@ class FilesModel(QtGui.QStandardItemModel):
 
         Connected to '_on_about_to_be_removed'. Some items are not created
         using '_create_item' but are recreated using Qt. So the item is not in
-        mapping and if it would it would not lead to same item pointer.
+        mapping and if it would not lead to same item pointer.
         """
 
         for row in range(start, end + 1):
@@ -308,8 +308,8 @@ class FilesModel(QtGui.QStandardItemModel):
 
         new_model_items = []
         for file_item in file_items:
-            item_id, model_item, review_item, delete_item = self._create_item(file_item)
-            new_model_items.append([model_item, review_item, delete_item])
+            item_id, model_item = self._create_item(file_item)
+            new_model_items.append([model_item])
             self._file_items_by_id[item_id] = file_item
             self._items_by_id[item_id] = model_item
 
@@ -322,17 +322,16 @@ class FilesModel(QtGui.QStandardItemModel):
         if not item_ids:
             return
 
-        items = []
+        items_to_remove = []
         for item_id in set(item_ids):
-            if item_id not in self._items_by_id:
-                continue
-            item = self._items_by_id.pop(item_id)
-            self._file_items_by_id.pop(item_id)
-            items.append(item)
+            item = self._items_by_id.pop(item_id, None)
+            if item:
+                self._file_items_by_id.pop(item_id, None)
+                items_to_remove.append(item)
 
-        if items:
-            for item in items:
-                self.removeRows(item.row(), 1)
+        for item in items_to_remove:
+            parent_item = item.parent() or self.invisibleRootItem()
+            parent_item.removeRow(item.row())
 
     def get_file_item_by_id(self, item_id):
         return self._file_items_by_id.get(item_id)
@@ -358,10 +357,7 @@ class FilesModel(QtGui.QStandardItemModel):
         item.setData(file_item.is_dir, IS_DIR_ROLE)
         item.setData(file_item.is_sequence, IS_SEQUENCE_ROLE)
 
-        review_item = ButtonStandardItem("eye.png")
-        delete_item = ButtonStandardItem("delete.png")
-
-        return item_id, item, review_item, delete_item
+        return item_id, item
 
     def mimeData(self, indexes):
         item_ids = [
@@ -386,48 +382,47 @@ class FilesModel(QtGui.QStandardItemModel):
         mime_data.setData("files_widget/full_data", full_item_data)
         return mime_data
 
-    def dropMimeData(self, mime_data, action, row, col, index):
-        item_ids = convert_bytes_to_json(
-            mime_data.data("files_widget/internal_move")
-        )
+    def dropMimeData(self, mime_data, action, row, col, parent_index):
+        if action != QtCore.Qt.MoveAction:
+            return False
+
+        # Retrieve item IDs from mime data
+        item_ids = convert_bytes_to_json(mime_data.data("files_widget/internal_move"))
         if item_ids is None:
             return False
 
-        # Find matching item after which will be items moved
-        #   - store item before moved items are removed
-        root = self.invisibleRootItem()
-        if row >= 0:
-            src_item = self.item(row)
+        # Find the target parent item
+        if parent_index.isValid():
+            target_item = self.itemFromIndex(parent_index)
         else:
-            src_item_id = index.data(ITEM_ID_ROLE)
-            src_item = self._items_by_id.get(src_item_id)
+            target_item = self.invisibleRootItem()
 
-        src_row = None
-        if src_item:
-            src_row = src_item.row()
-
-        # Take out items that should be moved
-        items = []
+        # Collect and safely move items
+        items_to_move = []
         for item_id in item_ids:
             item = self._items_by_id.get(item_id)
             if item:
-                self.takeRow(item.row())
-                items.append(item)
+                row_items = self.takeRow(item.row())
+                if row_items:
+                    items_to_move.append(row_items[0])  # Assuming single column
 
-        # Skip if there are not items that can be moved
-        if not items:
+        if not items_to_move:
             return False
 
-        # Calculate row where items should be inserted
-        row_count = root.rowCount()
-        if src_row is None:
-            src_row = row_count
+        # Insert items into the target location
+        for item in items_to_move:
+            target_item.appendRow(item)
+            self._items_by_id[item.data(ITEM_ID_ROLE)] = item
 
-        if src_row > row_count:
-            src_row = row_count
-
-        root.insertRow(src_row, items)
         return True
+
+    def canDropMimeData(self, mime_data, action, row, col, parent_index):
+        # Allow only root-level drops
+        if parent_index.isValid():
+            target_item = self.itemFromIndex(parent_index)
+            if target_item.parent() is not None:
+                return False
+        return super().canDropMimeData(mime_data, action, row, col, parent_index)
 
     def on_button_clicked(self):
         print(f"Button clicked")
@@ -528,6 +523,7 @@ class FilesProxyModel(QtCore.QSortFilterProxyModel):
 
 class ItemWidget(QtWidgets.QWidget):
     context_menu_requested = QtCore.Signal(QtCore.QPoint)
+    delete_requested = QtCore.Signal(list)
 
     def __init__(self, item_id, label, pixmap_icon, is_sequence, multivalue, parent=None):
         super().__init__(parent)
@@ -540,9 +536,20 @@ class ItemWidget(QtWidgets.QWidget):
 
         label_size_hint = label_widget.sizeHint()
         height = label_size_hint.height()
-        actions_menu_pix = paint_image_with_color(
-            get_image(filename="menu.png"), QtCore.Qt.white
-        )
+        actions_menu_pix = paint_image_with_color(get_image(filename="menu.png"), QtCore.Qt.white)
+        self._review_pix = paint_image_with_color(get_image(filename="review.png"),
+                                                  QtCore.Qt.white).scaledToHeight(height)
+        self._review_disabled_pix = paint_image_with_color(get_image(filename="review_disabled.png"),
+                                                           QtCore.Qt.white).scaledToHeight(height)
+        delete_pix = paint_image_with_color(get_image(filename="delete.png"), QtCore.Qt.white).scaledToHeight(height)
+
+        review_btn = ClickableLabel(self)
+        review_btn.setFixedSize(height, height)
+        review_btn.setPixmap(self._review_pix)
+
+        delete_btn = ClickableLabel(self)
+        delete_btn.setFixedSize(height, height)
+        delete_btn.setPixmap(delete_pix)
 
         split_btn = ClickableLabel(self)
         split_btn.setFixedSize(height, height)
@@ -556,15 +563,22 @@ class ItemWidget(QtWidgets.QWidget):
         layout.setContentsMargins(5, 5, 5, 5)
         layout.addWidget(icon_widget, 0)
         layout.addWidget(label_widget, 1)
+        layout.addWidget(review_btn, 0)
+        layout.addWidget(delete_btn, 0)
         layout.addWidget(split_btn, 0)
 
-        split_btn.clicked.connect(self._on_actions_clicked)
+        review_btn.clicked.connect(self._on_review_actions_clicked)
+        delete_btn.clicked.connect(self._on_delete_actions_clicked)
+        split_btn.clicked.connect(self._on_split_actions_clicked)
 
         self._icon_widget = icon_widget
         self._label_widget = label_widget
         self._split_btn = split_btn
+        self._review_btn = review_btn
+        self._delete_btn = delete_btn
         self._actions_menu_pix = actions_menu_pix
         self._last_scaled_pix_height = None
+        self._is_review_enabled = True
 
     def _update_btn_size(self):
         label_size_hint = self._label_widget.sizeHint()
@@ -588,10 +602,20 @@ class ItemWidget(QtWidgets.QWidget):
         super(ItemWidget, self).resizeEvent(event)
         self._update_btn_size()
 
-    def _on_actions_clicked(self):
+    def _on_split_actions_clicked(self):
         pos = self._split_btn.rect().bottomLeft()
         point = self._split_btn.mapToGlobal(pos)
         self.context_menu_requested.emit(point)
+
+    def _on_review_actions_clicked(self):
+        self._is_review_enabled = not self._is_review_enabled
+        if self._is_review_enabled:
+            self._review_btn.setPixmap(self._review_pix)
+        else:
+            self._review_btn.setPixmap(self._review_disabled_pix)
+
+    def _on_delete_actions_clicked(self):
+        self.delete_requested.emit([self._item_id])
 
 
 class InViewButton(IconButton):
@@ -616,22 +640,11 @@ class FilesView(QtWidgets.QTreeView):
         self.customContextMenuRequested.connect(self._on_context_menu_request)
         self._multivalue = False
         self.header().hide()
-        QtCore.QTimer.singleShot(0, self.resize_all_columns_to_contents)
-
+        self.setDropIndicatorShown(True)
 
     def setModel(self, model):
         """Override setModel to connect signals after model is set."""
         super().setModel(model)
-        if model:
-            model.dataChanged.connect(self.resize_all_columns_to_contents)
-            model.modelReset.connect(self.resize_all_columns_to_contents)
-            model.rowsInserted.connect(self.resize_all_columns_to_contents)
-
-    def resize_all_columns_to_contents(self):
-        """Resize all columns to fit their contents."""
-        if self.header():
-            for column in range(self.header().count()):
-                self.resizeColumnToContents(column)
 
     def set_multivalue(self, multivalue):
         """Disable remove button on multivalue."""
@@ -800,6 +813,9 @@ class FilesWidget(QtWidgets.QFrame):
             widget.context_menu_requested.connect(
                 self._on_context_menu_requested
             )
+            widget.delete_requested.connect(
+                self._remove_item_by_ids
+            )
             self._files_view.setIndexWidget(index, widget)
             self._files_proxy_model.setData(
                 index, widget.sizeHint(), QtCore.Qt.SizeHintRole
@@ -826,7 +842,7 @@ class FilesWidget(QtWidgets.QFrame):
         for item_id in widget_ids:
             widget = self._widgets_by_id.pop(item_id)
             widget.setVisible(False)
-            widget.deleteLater()
+            widget.destroy()
 
         if not self._in_set_value:
             self.value_changed.emit()

@@ -711,7 +711,7 @@ class FilesModel(QtGui.QStandardItemModel):
 
         Connected to '_on_about_to_be_removed'. Some items are not created
         using '_create_item' but are recreated using Qt. So the item is not in
-        mapping and if it would it would not lead to same item pointer.
+        mapping and if it would not lead to same item pointer.
         """
 
         for row in range(start, end + 1):
@@ -766,17 +766,16 @@ class FilesModel(QtGui.QStandardItemModel):
         if not item_ids:
             return
 
-        items = []
+        items_to_remove = []
         for item_id in set(item_ids):
-            if item_id not in self._items_by_id:
-                continue
-            item = self._items_by_id.pop(item_id)
-            self._file_items_by_id.pop(item_id)
-            items.append(item)
+            item = self._items_by_id.pop(item_id, None)
+            if item:
+                self._file_items_by_id.pop(item_id, None)
+                items_to_remove.append(item)
 
-        if items:
-            for item in items:
-                self.removeRows(item.row(), 1)
+        for item in items_to_remove:
+            parent_item = item.parent() or self.invisibleRootItem()
+            parent_item.removeRow(item.row())
 
     def get_file_item_by_id(self, item_id):
         return self._file_items_by_id.get(item_id)
@@ -803,6 +802,7 @@ class FilesModel(QtGui.QStandardItemModel):
         item.setData(file_item.is_sequence, IS_SEQUENCE_ROLE)
 
         return item_id, item
+
     def mimeData(self, indexes):
         item_ids = [
             index.data(ITEM_ID_ROLE)
@@ -841,24 +841,32 @@ class FilesModel(QtGui.QStandardItemModel):
         else:
             target_item = self.invisibleRootItem()
 
-        # Collect items to move
+        # Collect and safely move items
         items_to_move = []
         for item_id in item_ids:
             item = self._items_by_id.get(item_id)
             if item:
-                self.takeRow(item.row())
-                items_to_move.append(item)
+                row_items = self.takeRow(item.row())
+                if row_items:
+                    items_to_move.append(row_items[0])  # Assuming single column
 
         if not items_to_move:
             return False
 
-        # Insert items as children of the target item
+        # Insert items into the target location
         for item in items_to_move:
             target_item.appendRow(item)
-            # Update internal mappings for the new parent-child structure
             self._items_by_id[item.data(ITEM_ID_ROLE)] = item
 
         return True
+
+    def canDropMimeData(self, mime_data, action, row, col, parent_index):
+        # Allow only root-level drops
+        if parent_index.isValid():
+            target_item = self.itemFromIndex(parent_index)
+            if target_item.parent() is not None:
+                return False
+        return super().canDropMimeData(mime_data, action, row, col, parent_index)
 
     def on_button_clicked(self):
         print(f"Button clicked")
@@ -976,21 +984,10 @@ class FilesView(QtWidgets.QTreeView):
         self._multivalue = False
         self.header().hide()
         self.setDropIndicatorShown(True)
-        QtCore.QTimer.singleShot(0, self.resize_all_columns_to_contents)
 
     def setModel(self, model):
         """Override setModel to connect signals after model is set."""
         super().setModel(model)
-        if model:
-            model.dataChanged.connect(self.resize_all_columns_to_contents)
-            model.modelReset.connect(self.resize_all_columns_to_contents)
-            model.rowsInserted.connect(self.resize_all_columns_to_contents)
-
-    def resize_all_columns_to_contents(self):
-        """Resize all columns to fit their contents."""
-        if self.header():
-            for column in range(self.header().count()):
-                self.resizeColumnToContents(column)
 
     def set_multivalue(self, multivalue):
         """Disable remove button on multivalue."""
@@ -1071,7 +1068,6 @@ class FilesWidget(QtWidgets.QFrame):
         files_view.context_menu_requested.connect(
             self._on_context_menu_requested
         )
-
         allowed_types_representations_label = QtWidgets.QLabel(f"Allowed File type for representations: jpeg, png")
         allowed_types_review_label = QtWidgets.QLabel(f"Allowed file types for review: mp4, mov ")
         main_layout.addWidget(allowed_types_representations_label)
@@ -1188,7 +1184,7 @@ class FilesWidget(QtWidgets.QFrame):
         for item_id in widget_ids:
             widget = self._widgets_by_id.pop(item_id)
             widget.setVisible(False)
-            widget.deleteLater()
+            widget.destroy()
 
         if not self._in_set_value:
             self.value_changed.emit()
