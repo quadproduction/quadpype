@@ -1,7 +1,8 @@
 import os
 import json
 import getpass
-from datetime import datetime
+
+from datetime import datetime, timezone
 
 import requests
 
@@ -72,7 +73,7 @@ class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin, DeadlineDefaultJob
         job_name = "{scene} [PUBLISH]".format(scene=scenename)
         batch_name = "{code} - {scene}".format(code=code, scene=scenename)
         if is_in_tests():
-            batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
+            batch_name += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
         deadline_user = context.data.get("deadlineUser", getpass.getuser())
 
         # Get only major.minor version of Houdini, ignore patch version

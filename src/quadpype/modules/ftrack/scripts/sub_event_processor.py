@@ -2,7 +2,8 @@ import os
 import sys
 import signal
 import socket
-import datetime
+
+from  datetime import datetime, timezone
 
 import ftrack_api
 
@@ -20,7 +21,7 @@ from quadpype.lib import (
     get_build_version
 )
 
-subprocess_started = datetime.datetime.now()
+subprocess_started = datetime.now(timezone.utc)
 
 
 class SessionFactory:

@@ -1,5 +1,4 @@
-import time
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import numbers
 
@@ -219,7 +218,7 @@ def pretty_date(t, now=None, strftime="%b %d %Y %H:%M"):
 
     assert isinstance(t, datetime)
     if now is None:
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
     assert isinstance(now, datetime)
     diff = now - t
 
@@ -245,6 +244,8 @@ def pretty_date(t, now=None, strftime="%b %d %Y %H:%M"):
             hours = second_diff // 3600
             return "{0}:{1:02d} hours ago".format(hours, minutes)
 
+    t = t.astimezone()
+
     return t.strftime(strftime)
 
 
@@ -268,23 +269,29 @@ def pretty_timestamp(t, now=None):
 
     if now is not None:
         try:
-            now = time.strptime(now, "%Y%m%dT%H%M%SZ")
-            now = datetime.fromtimestamp(time.mktime(now))
-        except ValueError as e:
-            log.warning("Can't parse 'now' time format: {0} {1}".format(t, e))
-            return None
+            # Retro-compatibility, for published elements before version 4.0.13
+            now = datetime.strptime(now, "%Y%m%dT%H%M%SZ")
+        except ValueError:
+            try:
+                now = datetime.fromisoformat(now)
+            except ValueError as e:
+                log.warning("Can't parse 'now' time format: {0} {1}".format(t, e))
+                return None
 
     if isinstance(t, float):
-        dt = datetime.fromtimestamp(t)
+        dt = datetime.fromtimestamp(t, tz=timezone.utc)
     else:
         # Parse the time format as if it is `str` result from
-        # `pyblish.lib.time()` which usually is stored in Avalon database.
+        # `pyblish.lib.time()` which usually is stored in QuadPype database.
         try:
-            t = time.strptime(t, "%Y%m%dT%H%M%SZ")
-        except ValueError as e:
-            log.warning("Can't parse time format: {0} {1}".format(t, e))
-            return None
-        dt = datetime.fromtimestamp(time.mktime(t))
+            # Retro-compatibility, for published elements before version 4.0.13
+            dt = datetime.strptime(t, "%Y%m%dT%H%M%SZ")
+        except ValueError:
+            try:
+                dt = datetime.fromisoformat(t)
+            except ValueError as e:
+                log.warning("Can't parse time format: {0} {1}".format(t, e))
+                return None
 
     # prettify
     return pretty_date(dt, now=now)

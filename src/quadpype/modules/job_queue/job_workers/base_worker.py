@@ -1,7 +1,8 @@
 import sys
-import datetime
 import asyncio
 import traceback
+
+from datetime import datetime, timezone
 
 from aiohttp_json_rpc import JsonRpcClient
 
@@ -94,9 +95,9 @@ class WorkerJobsConnection:
         self._is_running = True
 
         while not self._stopped:
-            start_time = datetime.datetime.now()
+            start_time = datetime.now(timezone.utc)
             await self._connection_loop(register_worker)
-            delta = datetime.datetime.now() - start_time
+            delta = datetime.now(timezone.utc) - start_time
             print("Connection loop took {}s".format(str(delta)))
             # Check if was stopped and stop while loop in that case
             if self._stopped:

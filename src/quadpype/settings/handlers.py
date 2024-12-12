@@ -1,8 +1,9 @@
 import os
 import copy
 import collections
-import datetime
 import platform
+
+from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 
 import quadpype.version
@@ -69,7 +70,7 @@ class SettingsStateInfo:
 
         timestamp_obj = None
         if timestamp:
-            timestamp_obj = datetime.datetime.strptime(
+            timestamp_obj = datetime.strptime(
                 timestamp, self.timestamp_format
             )
         self.timestamp = timestamp
@@ -91,7 +92,7 @@ class SettingsStateInfo:
 
         from quadpype.lib import get_user_workstation_info
 
-        now = datetime.datetime.now()
+        now = datetime.now(timezone.utc)
         workstation_info = get_user_workstation_info()
 
         return cls(
@@ -804,7 +805,7 @@ class MongoSettingsHandler(SettingsHandler):
             "workstation_name": host_info["workstation_name"],
             "host_ip": host_info["host_ip"],
             "system_name": host_info["system_name"],
-            "date_created": datetime.datetime.now(),
+            "date_created": datetime.now(timezone.utc),
             "project": project_name,
             "settings_type": settings_type,
             "changes": changes

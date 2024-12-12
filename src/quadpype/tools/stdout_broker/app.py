@@ -4,7 +4,7 @@ import threading
 import collections
 import websocket
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from quadpype.lib import Logger
 from quadpype_modules.webserver.host_console_listener import MsgAction
@@ -28,7 +28,7 @@ class StdOutBroker:
         self.original_stderr_write = None
         self.log_queue = collections.deque()
 
-        date_str = datetime.now().strftime("%d%m%Y%H%M%S")
+        date_str = datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
         self.host_id = "{}_{}".format(self.host_name, date_str)
 
         self._std_available = False

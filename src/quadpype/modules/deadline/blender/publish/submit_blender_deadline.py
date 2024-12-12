@@ -4,7 +4,8 @@
 import os
 import getpass
 import attr
-from datetime import datetime
+
+from datetime import datetime, timezone
 
 from quadpype.lib import (
     is_running_from_build,
@@ -58,7 +59,7 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         src_filename = os.path.basename(src_filepath)
 
         if is_in_tests():
-            src_filename += datetime.now().strftime("%d%m%Y%H%M%S")
+            src_filename += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
 
         job_info.Name = f"{src_filename} - {instance.name}"
         job_info.BatchName = src_filename

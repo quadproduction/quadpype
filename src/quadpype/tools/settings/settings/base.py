@@ -3,8 +3,8 @@ import sys
 import json
 import traceback
 import functools
-import datetime
 
+from  datetime import datetime, timezone
 from abc import abstractmethod
 
 from qtpy import QtWidgets, QtGui, QtCore
@@ -64,7 +64,7 @@ class ExtractHelper:
 
     @classmethod
     def extract_settings_to_json(cls, filepath, settings_data, project_name):
-        now = datetime.datetime.now()
+        now = datetime.now(timezone.utc)
         settings_data[SAVE_TIME_KEY] = now.strftime("%Y-%m-%d %H:%M:%S")
         if project_name != 0:
             settings_data[PROJECT_NAME_KEY] = project_name

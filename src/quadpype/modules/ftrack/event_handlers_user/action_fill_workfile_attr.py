@@ -3,7 +3,7 @@ import sys
 import json
 import collections
 import tempfile
-import datetime
+from datetime import datetime, timezone
 
 import ftrack_api
 
@@ -174,7 +174,7 @@ class FillWorkfileAttributeAction(BaseAction):
 
             component_name = "{}_{}".format(
                 "FillWorkfilesReport",
-                datetime.datetime.now().strftime("%y-%m-%d-%H%M")
+                datetime.now(timezone.utc).strftime("%y-%m-%d-%H%M")
             )
             self.add_file_component_to_job(
                 job_entity, session, temp_filepath, component_name

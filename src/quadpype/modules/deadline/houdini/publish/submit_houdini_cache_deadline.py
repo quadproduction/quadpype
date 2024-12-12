@@ -1,6 +1,7 @@
 import os
 import getpass
-from datetime import datetime
+
+from datetime import datetime, timezone
 
 import attr
 import pyblish.api
@@ -80,7 +81,7 @@ class HoudiniCacheSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline
         batch_name = "{code} - {scene}".format(code=project_name,
                                                scene=scenename)
         if is_in_tests():
-            batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
+            batch_name += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
 
         job_info.Name = job_name
         job_info.BatchName = batch_name

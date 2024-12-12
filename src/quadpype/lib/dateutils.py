@@ -35,7 +35,7 @@ def get_datetime_data(datetime_obj=None):
     """
 
     if not datetime_obj:
-        datetime_obj = datetime.now()
+        datetime_obj = datetime.now(timezone.utc)
 
     year = datetime_obj.strftime("%Y")
 
@@ -80,7 +80,7 @@ def get_timestamp_str(datetime_obj=None, local_timezone=False):
     """Get standardized timestamp string from a datetime object.
 
     Args:
-        datetime_obj (datetime.datetime): Object of datetime. Current time
+        datetime_obj (datetime): Object of datetime. Current time
             is used if not passed.
     """
 

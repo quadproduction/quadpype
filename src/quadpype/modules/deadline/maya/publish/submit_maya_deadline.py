@@ -22,7 +22,7 @@ import getpass
 import copy
 import re
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 import itertools
 from collections import OrderedDict
 
@@ -155,7 +155,7 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         )
 
         if is_in_tests():
-            batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
+            batch_name += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
 
         job_info.Name = job_name
         job_info.BatchName = "Group: " + batch_name
@@ -498,7 +498,7 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
                 output_dir,
                 "{}_config_{}.txt".format(
                     os.path.splitext(file)[0],
-                    datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+                    datetime.now(timezone.utc).strftime("%Y_%m_%d_%H_%M_%S")
                 )
             )
             config_files.append(config_file)

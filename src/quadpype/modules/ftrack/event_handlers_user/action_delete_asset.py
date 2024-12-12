@@ -1,6 +1,6 @@
 import collections
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from bson.objectid import ObjectId
 
@@ -181,7 +181,7 @@ class DeleteAssetSubset(BaseAction):
             if not created_at:
                 old_action_ids.append(action_id)
                 continue
-            cur_time = datetime.now()
+            cur_time = datetime.now(timezone.utc)
             existing_in_sec = (created_at - cur_time).total_seconds()
             if existing_in_sec > 60 * 2:
                 old_action_ids.append(action_id)
@@ -193,7 +193,7 @@ class DeleteAssetSubset(BaseAction):
         action_id = str(uuid.uuid1())
         self.action_data_by_id[action_id] = {
             "attempt": 1,
-            "created_at": datetime.now(),
+            "created_at": datetime.now(timezone.utc),
             "project_name": project_name,
             "subset_ids_by_name": {},
             "subset_ids_by_parent": {},

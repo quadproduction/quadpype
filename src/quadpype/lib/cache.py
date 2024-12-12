@@ -2,7 +2,8 @@
 """Module storing class for caching values, used for settings."""
 import json
 import copy
-import datetime
+
+from datetime import datetime, timezone
 
 
 class CacheValues:
@@ -21,7 +22,7 @@ class CacheValues:
 
     def update_data(self, data, version):
         self.data = data
-        self.creation_time = datetime.datetime.now()
+        self.creation_time = datetime.now(timezone.utc)
         self.version = version
 
     def update_last_saved_info(self, last_saved_info):
@@ -47,7 +48,7 @@ class CacheValues:
     def is_outdated(self):
         if self.creation_time is None:
             return True
-        delta = (datetime.datetime.now() - self.creation_time).seconds
+        delta = (datetime.now(timezone.utc) - self.creation_time).seconds
         return delta > self.cache_lifetime
 
     def set_outdated(self):

@@ -8,8 +8,10 @@ import importlib
 import functools
 import time
 import struct
-from datetime import datetime
 import threading
+
+from datetime import datetime, timezone
+
 from . import lib
 
 
@@ -170,18 +172,18 @@ class Server(threading.Thread):
         Waits for a connection on `self.port` before going into listen mode.
         """
         # Wait for a connection
-        timestamp = datetime.now().strftime("%H:%M:%S.%f")
+        timestamp = datetime.now(timezone.utc).strftime("%H:%M:%S.%f")
         self.log.debug(f"[{timestamp}] Waiting for a connection.")
         self.connection, client_address = self.socket.accept()
 
-        timestamp = datetime.now().strftime("%H:%M:%S.%f")
+        timestamp = datetime.now(timezone.utc).strftime("%H:%M:%S.%f")
         self.log.debug(f"[{timestamp}] Connection from: {client_address}")
 
         self.receive()
 
     def stop(self):
         """Shutdown socket server gracefully."""
-        timestamp = datetime.now().strftime("%H:%M:%S.%f")
+        timestamp = datetime.now(timezone.utc).strftime("%H:%M:%S.%f")
         self.log.debug(f"[{timestamp}] Shutting down server.")
         if self.connection is None:
             self.log.debug("Connect to shutdown.")
@@ -204,7 +206,7 @@ class Server(threading.Thread):
         while not self.connection:
             pass
 
-        timestamp = datetime.now().strftime("%H:%M:%S.%f")
+        timestamp = datetime.now(timezone.utc).strftime("%H:%M:%S.%f")
         encoded = message.encode("utf-8")
         coded_message = b"AH" + struct.pack('>I', len(encoded)) + encoded
         pretty = self._pretty(coded_message)
@@ -225,7 +227,7 @@ class Server(threading.Thread):
         request["message_id"] = self.message_id
         self._send(json.dumps(request))
         if request.get("reply"):
-            timestamp = datetime.now().strftime("%H:%M:%S.%f")
+            timestamp = datetime.now(timezone.utc).strftime("%H:%M:%S.%f")
             self.log.debug(
                 f"[{timestamp}] sent reply, not waiting for anything.")
             return None
@@ -235,7 +237,7 @@ class Server(threading.Thread):
         while True:
             time.sleep(0.1)
             if time.time() > current_time + 30:
-                timestamp = datetime.now().strftime("%H:%M:%S.%f")
+                timestamp = datetime.now(timezone.utc).strftime("%H:%M:%S.%f")
                 self.log.error((f"[{timestamp}][{self.message_id}] "
                                 "No reply from Harmony in 30s. "
                                 f"Retrying {try_index}"))
@@ -245,7 +247,7 @@ class Server(threading.Thread):
                 break
             try:
                 result = self.queue[request["message_id"]]
-                timestamp = datetime.now().strftime("%H:%M:%S.%f")
+                timestamp = datetime.now(timezone.utc).strftime("%H:%M:%S.%f")
                 self.log.debug((f"[{timestamp}] Got request "
                                 f"id {self.message_id}, "
                                 "removing from queue"))
@@ -276,4 +278,4 @@ class Server(threading.Thread):
             str: current timestamp.
 
         """
-        return datetime.now().strftime("%H:%M:%S.%f")
+        return datetime.now(timezone.utc).strftime("%H:%M:%S.%f")

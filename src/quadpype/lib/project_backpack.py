@@ -19,9 +19,10 @@ import json
 import platform
 import tempfile
 import shutil
-import datetime
-
 import zipfile
+
+from datetime import datetime, timezone
+
 from quadpype.client.mongo import (
     load_json_file,
     get_project_connection,
@@ -37,7 +38,7 @@ PROJECT_FILES_DIR = "project_files"
 def add_timestamp(filepath):
     """Add timestamp string to a file."""
     base, ext = os.path.splitext(filepath)
-    timestamp = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
+    timestamp = datetime.now(timezone.utc).strftime("%y%m%d_%H%M%S")
     new_base = "{}_{}".format(base, timestamp)
     return new_base + ext
 

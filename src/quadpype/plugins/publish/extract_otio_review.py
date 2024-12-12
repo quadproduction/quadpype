@@ -70,6 +70,10 @@ class ExtractOTIOReview(publish.Extractor):
         handle_end = instance.data["handleEnd"]
         otio_review_clips = instance.data["otioReviewClips"]
 
+        if otio_review_clips is None:
+            self.log.info(f"Instance `{instance}` has no otioReviewClips")
+            return
+
         # add plugin wide attributes
         self.representation_files = list()
         self.used_frames = list()
@@ -85,8 +89,7 @@ class ExtractOTIOReview(publish.Extractor):
         # skip instance if no reviewable data available
         if (not isinstance(otio_review_clips[0], otio.schema.Clip)) \
                 and (len(otio_review_clips) == 1):
-            self.log.warning(
-                "Instance `{}` has nothing to process".format(instance))
+            self.log.warning(f"Instance `{instance}` has nothing to process")
             return
         else:
             self.staging_dir = self.staging_dir(instance)

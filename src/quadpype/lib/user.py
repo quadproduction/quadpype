@@ -3,10 +3,11 @@
 import os
 import copy
 import getpass
-import datetime
 import functools
 import platform
 import socket
+
+from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 
 from .registry import get_app_registry
@@ -27,8 +28,8 @@ class UserHandler(ABC):
     user_profile_template = {
         "user_id": "",
         "role": "user",
-        "first_connection_timestamp": datetime.datetime.now(),
-        "last_connection_timestamp": datetime.datetime.now(),
+        "first_connection_timestamp": datetime.now(timezone.utc),
+        "last_connection_timestamp": datetime.now(timezone.utc),
         "last_workstation_profile_index": 0,
         "workstation_profiles": [],
         "settings": {}
@@ -103,7 +104,7 @@ class MongoUserHandler(UserHandler):
         user_profile["user_id"] = self.user_id
         user_profile["role"] = user_role
 
-        timestamp = datetime.datetime.now()
+        timestamp = datetime.now(timezone.utc)
         user_profile["first_connection_timestamp"] = timestamp
         user_profile["last_connection_timestamp"] = timestamp
 
@@ -131,7 +132,7 @@ class MongoUserHandler(UserHandler):
     def update_user_profile_on_startup(self):
         """Update user profile on startup"""
         user_profile = self.get_user_profile()
-        user_profile["last_connection_timestamp"] = datetime.datetime.now()
+        user_profile["last_connection_timestamp"] = datetime.now(timezone.utc)
 
         workstation_info = get_user_workstation_info()
 

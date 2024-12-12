@@ -1,6 +1,5 @@
 import os
 import signal
-import datetime
 import subprocess
 import socket
 import json
@@ -8,6 +7,8 @@ import getpass
 import atexit
 import time
 import uuid
+
+from datetime import datetime, timezone
 
 import ftrack_api
 import pymongo
@@ -109,7 +110,7 @@ def legacy_server(ftrack_url):
 
     subproc = None
     subproc_path = "{}/sub_legacy_server.py".format(scripts_dir)
-    subproc_last_failed = datetime.datetime.now()
+    subproc_last_failed = datetime.now(timezone.utc)
     subproc_failed_count = 0
 
     ftrack_accessible = False
@@ -122,7 +123,7 @@ def legacy_server(ftrack_url):
         # Run threads only if Ftrack is accessible
         if not ftrack_accessible and not printed_ftrack_error:
             print("Can't access Ftrack {} <{}>".format(
-                ftrack_url, str(datetime.datetime.now())
+                ftrack_url, str(datetime.now(timezone.utc))
             ))
             if subproc is not None:
                 if subproc.poll() is None:
@@ -150,7 +151,7 @@ def legacy_server(ftrack_url):
                 ).format(str(max_fail_count), str(wait_time_after_max_fail)))
                 subproc_failed_count += 1
             elif ((
-                datetime.datetime.now() - subproc_last_failed
+                datetime.now(timezone.utc) - subproc_last_failed
             ).seconds > wait_time_after_max_fail):
                 subproc_failed_count = 0
 
@@ -159,7 +160,7 @@ def legacy_server(ftrack_url):
             subproc = None
             ftrack_accessible = False
 
-            _subproc_last_failed = datetime.datetime.now()
+            _subproc_last_failed = datetime.now(timezone.utc)
             delta_time = (_subproc_last_failed - subproc_last_failed).seconds
             if delta_time < min_fail_seconds:
                 subproc_failed_count += 1
@@ -197,21 +198,21 @@ def main_loop(ftrack_url):
     storer_port = 10001
     storer_path = "{}/sub_event_storer.py".format(scripts_dir)
     storer_thread = None
-    storer_last_failed = datetime.datetime.now()
+    storer_last_failed = datetime.now(timezone.utc)
     storer_failed_count = 0
 
     processor_name = "ProcessorThread"
     processor_port = 10011
     processor_path = "{}/sub_event_processor.py".format(scripts_dir)
     processor_thread = None
-    processor_last_failed = datetime.datetime.now()
+    processor_last_failed = datetime.now(timezone.utc)
     processor_failed_count = 0
 
     statuser_name = "StorerThread"
     statuser_port = 10021
     statuser_path = "{}/sub_event_status.py".format(scripts_dir)
     statuser_thread = None
-    statuser_last_failed = datetime.datetime.now()
+    statuser_last_failed = datetime.now(timezone.utc)
     statuser_failed_count = 0
 
     ftrack_accessible = False
@@ -249,7 +250,7 @@ def main_loop(ftrack_url):
     host_ip = get_host_ip()
 
     main_info = [
-        ["created_at", datetime.datetime.now().strftime("%Y.%m.%d %H:%M:%S")],
+        ["created_at", datetime.now(timezone.utc).strftime("%Y.%m.%d %H:%M:%S")],
         ["Username", getpass.getuser()],
         ["Host Name", host_name],
         ["Host IP", host_ip or "N/A"],
@@ -311,7 +312,7 @@ def main_loop(ftrack_url):
                 statuser_failed_count += 1
 
             elif ((
-                datetime.datetime.now() - statuser_last_failed
+                datetime.now(timezone.utc) - statuser_last_failed
             ).seconds > wait_time_after_max_fail):
                 statuser_failed_count = 0
 
@@ -322,7 +323,7 @@ def main_loop(ftrack_url):
             ftrack_accessible = False
             mongo_accessible = False
 
-            _processor_last_failed = datetime.datetime.now()
+            _processor_last_failed = datetime.now(timezone.utc)
             delta_time = (
                 _processor_last_failed - statuser_last_failed
             ).seconds
@@ -354,7 +355,7 @@ def main_loop(ftrack_url):
                 ).format(str(max_fail_count), str(wait_time_after_max_fail)))
                 storer_failed_count += 1
             elif ((
-                datetime.datetime.now() - storer_last_failed
+                datetime.now(timezone.utc) - storer_last_failed
             ).seconds > wait_time_after_max_fail):
                 storer_failed_count = 0
 
@@ -367,7 +368,7 @@ def main_loop(ftrack_url):
             ftrack_accessible = False
             mongo_accessible = False
 
-            _storer_last_failed = datetime.datetime.now()
+            _storer_last_failed = datetime.now(timezone.utc)
             delta_time = (_storer_last_failed - storer_last_failed).seconds
             if delta_time < min_fail_seconds:
                 storer_failed_count += 1
@@ -391,7 +392,7 @@ def main_loop(ftrack_url):
                 processor_failed_count += 1
 
             elif ((
-                datetime.datetime.now() - processor_last_failed
+                datetime.now(timezone.utc) - processor_last_failed
             ).seconds > wait_time_after_max_fail):
                 processor_failed_count = 0
 
@@ -406,7 +407,7 @@ def main_loop(ftrack_url):
             ftrack_accessible = False
             mongo_accessible = False
 
-            _processor_last_failed = datetime.datetime.now()
+            _processor_last_failed = datetime.now(timezone.utc)
             delta_time = (
                 _processor_last_failed - processor_last_failed
             ).seconds

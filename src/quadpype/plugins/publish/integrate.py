@@ -1,7 +1,8 @@
 import os
 import logging
 import copy
-import datetime
+
+from datetime import datetime, timezone
 
 import clique
 from bson.objectid import ObjectId
@@ -328,7 +329,7 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
         if sync_server_module is None:
             sites = [{
                 "name": "studio",
-                "created_dt": datetime.datetime.now()
+                "created_dt": datetime.now(timezone.utc)
             }]
         else:
             sites = sync_server_module.compute_resource_sync_sites(

@@ -3,7 +3,8 @@ import re
 import json
 import getpass
 import platform
-from datetime import datetime
+
+from datetime import datetime, timezone
 
 import requests
 import pyblish.api
@@ -322,7 +323,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         )
 
         if is_in_tests():
-            batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
+            batch_name += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
 
         output_filename_0 = self.preview_fname(render_path)
 

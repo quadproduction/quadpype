@@ -1,7 +1,9 @@
 import os
-import datetime
 import copy
 import platform
+
+from datetime import datetime
+
 from qtpy import QtCore, QtWidgets, QtGui
 
 from quadpype.client import (
@@ -144,8 +146,8 @@ class SidePanelWidget(QtWidgets.QWidget):
 
         # Append html string
         datetime_format = "%b %d %Y %H:%M:%S"
-        creation_time = datetime.datetime.fromtimestamp(filestat.st_ctime)
-        modification_time = datetime.datetime.fromtimestamp(filestat.st_mtime)
+        creation_time = datetime.fromtimestamp(filestat.st_ctime)
+        modification_time = datetime.fromtimestamp(filestat.st_mtime)
         lines = (
             "<b>Size:</b>",
             size_value,

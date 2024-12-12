@@ -3,9 +3,10 @@ import re
 import copy
 import socket
 import itertools
-import datetime
 import sys
 import traceback
+
+from datetime import datetime, timezone
 
 from bson.objectid import ObjectId
 
@@ -1114,7 +1115,7 @@ class ProjectPushItemProcess:
         if sync_server_module is None or not sync_server_module.enabled:
             sites = [{
                 "name": "studio",
-                "created_dt": datetime.datetime.now()
+                "created_dt": datetime.now(timezone.utc)
             }]
         else:
             sites = sync_server_module.compute_resource_sync_sites(

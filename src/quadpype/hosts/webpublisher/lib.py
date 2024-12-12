@@ -1,7 +1,8 @@
 import os
-from datetime import datetime
 import collections
 import json
+
+from datetime import datetime, timezone
 
 from bson.objectid import ObjectId
 
@@ -125,7 +126,7 @@ def start_webpublish_log(dbcon, batch_id, user):
     """
     return dbcon.insert_one({
         "batch_id": batch_id,
-        "start_date": datetime.now(),
+        "start_date": datetime.now(timezone.utc),
         "user": user,
         "status": IN_PROGRESS_STATUS,
         "progress": 0  # integer 0-100, percentage
@@ -168,7 +169,7 @@ def publish_and_log(dbcon, _id, log, close_plugin_name=None, batch_id=None):
                 {"_id": _id},
                 {"$set":
                     {
-                        "finish_date": datetime.now(),
+                        "finish_date": datetime.now(timezone.utc),
                         "status": ERROR_STATUS,
                         "log": os.linesep.join(log_lines)
 
@@ -197,7 +198,7 @@ def publish_and_log(dbcon, _id, log, close_plugin_name=None, batch_id=None):
             {
                 "$set":
                     {
-                        "finish_date": datetime.now(),
+                        "finish_date": datetime.now(timezone.utc),
                         "status": FINISHED_REPROCESS_STATUS,
                     }
             }
@@ -208,7 +209,7 @@ def publish_and_log(dbcon, _id, log, close_plugin_name=None, batch_id=None):
         {
             "$set":
                 {
-                    "finish_date": datetime.now(),
+                    "finish_date": datetime.now(timezone.utc),
                     "status": FINISHED_OK_STATUS,
                     "progress": 100,
                     "log": os.linesep.join(log_lines)
@@ -227,7 +228,7 @@ def fail_batch(_id, dbcon, msg):
         {"_id": _id},
         {"$set":
             {
-                "finish_date": datetime.now(),
+                "finish_date": datetime.now(timezone.utc),
                 "status": ERROR_STATUS,
                 "log": msg
 

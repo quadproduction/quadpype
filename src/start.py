@@ -184,12 +184,6 @@ else:
     ssl_cert_file = certifi.where()
     os.environ["SSL_CERT_FILE"] = ssl_cert_file
 
-if "--zxp-ignore-update" in sys.argv:
-    os.environ["QUADPYPE_IGNORE_ZXP_UPDATE"] = "1"
-    sys.argv.remove("--zxp-ignore-update")
-elif os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE") != "1":
-    os.environ.pop("QUADPYPE_IGNORE_ZXP_UPDATE", None)
-
 if "--headless" in sys.argv:
     os.environ["QUADPYPE_HEADLESS_MODE"] = "1"
     sys.argv.remove("--headless")
@@ -939,9 +933,8 @@ def boot():
 
     running_version = package_manager["quadpype"].running_version
     running_version_fullpath = running_version.path.resolve()
-    if not os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE"):
-        _print(">>> Check ZXP extensions ...")
-        _update_zxp_extensions(running_version_fullpath, global_settings)
+    _print(">>> Check ZXP extensions ...")
+    _update_zxp_extensions(running_version_fullpath, global_settings)
 
     # print info when not running scripts defined in 'silent commands'
     if all(arg not in silent_commands for arg in sys.argv):

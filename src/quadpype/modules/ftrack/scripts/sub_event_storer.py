@@ -1,9 +1,10 @@
 import os
 import sys
-import datetime
 import signal
 import socket
 import pymongo
+
+from datetime import datetime, timezone
 
 import ftrack_api
 
@@ -23,7 +24,7 @@ from quadpype.lib import (
 )
 
 log = Logger.get_logger("Event storer")
-subprocess_started = datetime.datetime.now()
+subprocess_started = datetime.now(timezone.utc)
 
 
 class SessionFactory:
@@ -57,7 +58,7 @@ def launch(event):
     event_id = event["id"]
 
     event_data["pype_data"] = {
-        "stored": datetime.datetime.utcnow(),
+        "stored": datetime.now(timezone.utc),
         "is_processed": False
     }
 

@@ -1,10 +1,10 @@
 import os
 import sys
-import datetime
 import pprint
 import traceback
 import collections
 
+from datetime import datetime
 from qtpy import QtWidgets, QtCore, QtGui
 
 from quadpype.client import (
@@ -716,8 +716,14 @@ class VersionTextEdit(QtWidgets.QTextEdit):
 
         # Define readable creation timestamp
         created = version_doc["data"]["time"]
-        created = datetime.datetime.strptime(created, "%Y%m%dT%H%M%SZ")
-        created = datetime.datetime.strftime(created, "%b %d %Y %H:%M")
+        try:
+            # Retro-compatibility, for published elements before version 4.0.13
+            created = datetime.strptime(created, "%Y%m%dT%H%M%SZ")
+        except ValueError:
+            created = datetime.fromisoformat(created)
+
+        created = created.astimezone()
+        created = datetime.strftime(created, "%b %d %Y %H:%M")
 
         comment = version_doc["data"].get("comment", None) or "No comment"
 
@@ -747,7 +753,7 @@ class VersionTextEdit(QtWidgets.QTextEdit):
             "<b>Comment</b><br>"
             "{comment}<br><br>"
 
-            "<b>Created</b><br>"
+            "<b>Created (in local timezone)</b><br>"
             "{created}<br><br>"
 
             "<b>Source</b><br>"

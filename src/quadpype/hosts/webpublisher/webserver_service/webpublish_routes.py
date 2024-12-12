@@ -1,9 +1,11 @@
 """Routes and etc. for webpublisher API."""
 import os
 import json
-import datetime
 import collections
 import subprocess
+
+from datetime import datetime
+
 from bson.objectid import ObjectId
 from fastapi import Response, status
 
@@ -44,7 +46,7 @@ class JsonApiResource:
     """
     @staticmethod
     def json_dump_handler(value):
-        if isinstance(value, datetime.datetime):
+        if isinstance(value, datetime):
             return value.isoformat()
         if isinstance(value, ObjectId):
             return str(value)

@@ -1155,7 +1155,6 @@ class TrayModulesManager(ModulesManager):
         "clockify",                # Clockify
         "sync_server",             # Sync Queue
         # More Tools Submenu -----------------------------
-        "update_zxp_extensions",   # Update ZXP Extensions
         "log_viewer",              # Show Logs
         "python_interpreter",      # Console
         # Admin Submenu ----------------------------------
