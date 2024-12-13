@@ -42,8 +42,7 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 
 import calendar
 import collections.abc
-
-from datetime import datetime, timezone, timedelta
+import datetime
 
 from google.protobuf.descriptor import FieldDescriptor
 
@@ -161,8 +160,8 @@ class Timestamp(object):
       raise ValueError(
           'time data \'{0}\' does not match format \'%Y-%m-%dT%H:%M:%S\', '
           'lowercase \'t\' is not accepted'.format(second_value))
-    date_object = datetime.strptime(second_value, _TIMESTAMPFOMAT)
-    td = date_object - datetime(1970, 1, 1)
+    date_object = datetime.datetime.strptime(second_value, _TIMESTAMPFOMAT)
+    td = date_object - datetime.datetime(1970, 1, 1)
     seconds = td.seconds + td.days * _SECONDS_PER_DAY
     if len(nano_value) > 9:
       raise ValueError(
@@ -193,7 +192,7 @@ class Timestamp(object):
 
   def GetCurrentTime(self):
     """Get the current UTC into Timestamp."""
-    self.FromDatetime(datetime.now(timezone.utc))
+    self.FromDatetime(datetime.datetime.utcnow())
 
   def ToNanoseconds(self):
     """Converts Timestamp to nanoseconds since epoch."""
@@ -245,7 +244,7 @@ class Timestamp(object):
 
       Otherwise, returns a timezone-aware datetime in the input timezone.
     """
-    delta = timedelta(
+    delta = datetime.timedelta(
         seconds=self.seconds,
         microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND))
     if tzinfo is None:
@@ -383,7 +382,7 @@ class Duration(object):
 
   def ToTimedelta(self):
     """Converts Duration to timedelta."""
-    return timedelta(
+    return datetime.timedelta(
         seconds=self.seconds, microseconds=_RoundTowardZero(
             self.nanos, _NANOS_PER_MICROSECOND))
 
