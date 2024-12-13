@@ -780,14 +780,14 @@ def get_ffprobe_data(path_to_file, logger=None):
     ffprobe_args = get_ffmpeg_tool_args("ffprobe")
     args = ffprobe_args + [
         "-hide_banner",
-        "-loglevel fatal",
+        "-loglevel", "fatal",
         "-show_error",
         "-show_format",
         "-show_streams",
         "-show_programs",
         "-show_chapters",
         "-show_private_data",
-        "-print_format json",
+        "-print_format", "json",
         path_to_file
     ]
 
