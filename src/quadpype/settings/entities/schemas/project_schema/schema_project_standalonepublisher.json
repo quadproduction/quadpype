@@ -219,7 +219,7 @@
                     "type": "dict",
                     "collapsible": true,
                     "key": "ExtractThumbnailSP",
-                    "label": "ExtractThumbnailSP",
+                    "label": "Extract Thumbnail SP",
                     "is_group": true,
                     "children": [
                         {

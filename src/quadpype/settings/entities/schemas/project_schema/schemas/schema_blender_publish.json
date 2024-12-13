@@ -230,7 +230,7 @@
             "type": "dict",
             "collapsible": true,
             "key": "ExtractThumbnail",
-            "label": "ExtractThumbnail",
+            "label": "Extract Thumbnail",
             "checkbox_key": "enabled",
             "is_group": true,
             "children": [
