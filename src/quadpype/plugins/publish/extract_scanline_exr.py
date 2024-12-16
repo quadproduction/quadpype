@@ -63,8 +63,8 @@ class ExtractScanlineExr(pyblish.api.InstancePlugin):
                 # move original render to temp location
                 shutil.move(original_name, temp_name)
                 oiio_cmd = oiio_tool_args + [
-                    os.path.join(stagingdir, temp_name), "--scanline",
-                    f"-o {os.path.join(stagingdir, original_name)}"
+                    os.path.join(stagingdir, temp_name), "--scanline", "-o",
+                    os.path.join(stagingdir, original_name)
                 ]
 
                 subprocess_exr = " ".join(oiio_cmd)

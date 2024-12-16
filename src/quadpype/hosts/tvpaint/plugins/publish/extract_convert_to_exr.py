@@ -68,10 +68,10 @@ class ExtractConvertToEXR(pyblish.api.InstancePlugin):
 
                 args = oiio_args + [
                     src_filepath,
-                    f"--compression {self.exr_compression}",
+                    "--compression", self.exr_compression,
                     # TODO how to define color conversion?
-                    "--colorconvert sRGB linear",
-                    f"-o {dst_filepath}"
+                    "--colorconvert", "sRGB", "linear",
+                    "-o", dst_filepath
                 ]
                 run_subprocess(args)
 

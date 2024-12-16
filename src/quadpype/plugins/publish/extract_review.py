@@ -654,7 +654,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
         # Define which layer should be used
         if layer_name:
-            ffmpeg_input_args.append(f"-layer {layer_name}")
+            ffmpeg_input_args.extend(["-layer", layer_name])
 
         if temp_data["input_is_sequence"]:
             # Set start frame of input sequence (just frame in filename)
@@ -663,7 +663,9 @@ class ExtractReview(pyblish.api.InstancePlugin):
             start_number = temp_data["first_sequence_frame"]
             if temp_data["without_handles"] and temp_data["handles_are_set"]:
                 start_number += temp_data["handle_start"]
-            ffmpeg_input_args.append(f"-start_number {str(start_number)}")
+            ffmpeg_input_args.extend([
+                "-start_number", str(start_number)
+            ])
 
             # TODO add fps mapping `{fps: fraction}` ?
             # - e.g.: {
@@ -672,37 +674,49 @@ class ExtractReview(pyblish.api.InstancePlugin):
             #     "23.976": "24000/1001"
             # }
             # Add framerate to input when input is sequence
-            ffmpeg_input_args.append(f'-framerate {str(temp_data["fps"])}')
+            ffmpeg_input_args.extend([
+                "-framerate", str(temp_data["fps"])
+            ])
             # Add duration of an input sequence if output is video
             if not temp_data["output_is_sequence"]:
-                ffmpeg_input_args.append("-to {:0.10f}".format(duration_seconds))
+                ffmpeg_input_args.extend([
+                    "-to", "{:0.10f}".format(duration_seconds)
+                ])
 
         if temp_data["output_is_sequence"]:
             # Set start frame of output sequence (just frame in filename)
             # - this is definition of an output
-            ffmpeg_output_args.append(f'-start_number {str(temp_data["output_frame_start"])}')
+            ffmpeg_output_args.extend([
+                "-start_number", str(temp_data["output_frame_start"])
+            ])
 
         # Change output's duration and start point if should not contain
         # handles
         if temp_data["without_handles"] and temp_data["handles_are_set"]:
             # Set output duration in seconds
-            ffmpeg_output_args.append(
-                "-t {:0.10}".format(duration_seconds))
-
+            ffmpeg_output_args.extend([
+                "-t", "{:0.10}".format(duration_seconds)
+            ])
             # Add -ss (start offset in seconds) if input is not sequence
             if not temp_data["input_is_sequence"]:
                 start_sec = float(temp_data["handle_start"]) / temp_data["fps"]
                 # Set start time without handles
                 # - Skip if start sec is 0.0
                 if start_sec > 0.0:
-                    ffmpeg_input_args.append("-ss {:0.10f}".format(start_sec))
+                    ffmpeg_input_args.extend([
+                        "-ss", "{:0.10f}".format(start_sec)
+                    ])
 
         # Set frame range of output when input or output is sequence
         elif temp_data["output_is_sequence"]:
-            ffmpeg_output_args.append(f"-frames:v {str(output_frames_len)}")
+            ffmpeg_output_args.extend([
+                "-frames:v", str(output_frames_len)
+            ])
 
         # Add video/image input path
-        ffmpeg_input_args.append(f'-i {path_to_subprocess_arg(temp_data["full_input_path"])}')
+        ffmpeg_input_args.extend([
+            "-i", path_to_subprocess_arg(temp_data["full_input_path"])
+        ])
 
         # Add audio arguments if there are any. Skipped when output are images.
         if not temp_data["output_ext_is_image"] and temp_data["with_audio"]:

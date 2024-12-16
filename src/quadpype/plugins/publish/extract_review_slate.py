@@ -164,10 +164,10 @@ class ExtractReviewSlate(publish.Extractor):
                 input_args.extend(repre["outputDef"].get('input', []))
 
             input_args.extend([
-                "-loop 1",
-                f"-i {path_to_subprocess_arg(slate_path)}",
-                f"-r {str(input_frame_rate)}",
-                "-frames:v 1",
+                "-loop", "1",
+                "-i", path_to_subprocess_arg(slate_path),
+                "-r", str(input_frame_rate),
+                "-frames:v", "1",
             ])
 
             # add timecode from source to the slate, substract one frame
@@ -196,9 +196,9 @@ class ExtractReviewSlate(publish.Extractor):
 
             # make sure colors are correct
             output_args.extend([
-                "-color_primaries bt709",
-                "-color_trc bt709",
-                "-colorspace bt709",
+                "-color_primaries", "bt709",
+                "-color_trc", "bt709",
+                "-colorspace", "bt709",
             ])
 
             # scaling none square pixels and 1920 width
@@ -323,12 +323,12 @@ class ExtractReviewSlate(publish.Extractor):
             concat_args = get_ffmpeg_tool_args(
                 "ffmpeg",
                 "-y",
-                f"-i {slate_v_path}",
-                f"-i {input_path}",
+                "-i", slate_v_path,
+                "-i", input_path,
             )
             concat_args.extend(fmap)
             if offset_timecode:
-                concat_args.append(f"-timecode {offset_timecode}")
+                concat_args.extend(["-timecode", offset_timecode])
             # NOTE: Added because of QuadPype Atom demuxers
             # Add format arguments if there are any
             # - keep format of output
@@ -496,17 +496,17 @@ class ExtractReviewSlate(publish.Extractor):
 
         slate_silent_args = get_ffmpeg_tool_args(
             "ffmpeg",
-            f"-i {src_path}",
-            "-f lavfi", "-i",
+            "-i", src_path,
+            "-f", "lavfi", "-i",
             "anullsrc=r={}:cl={}:d={}".format(
                 audio_sample_rate,
                 audio_channel_layout,
                 one_frame_duration
             ),
-            "-c:v copy",
-            f"-c:a {audio_codec}",
-            "-map 0:v",
-            "-map 1:a",
+            "-c:v", "copy",
+            "-c:a", audio_codec,
+            "-map", "0:v",
+            "-map", "1:a",
             "-shortest",
             "-y",
             dst_path

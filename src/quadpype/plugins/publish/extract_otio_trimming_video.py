@@ -92,10 +92,10 @@ class ExtractOTIOTrimmingVideo(publish.Extractor):
 
         # form command for rendering gap files
         command.extend([
-            f"-ss {str(sec_start)}",
-            f"-t {str(sec_duration)}",
-            f"-i {video_path}",
-            "-c copy",
+            "-ss", str(sec_start),
+            "-t", str(sec_duration),
+            "-i", video_path,
+            "-c", "copy",
             output_path
         ])
 

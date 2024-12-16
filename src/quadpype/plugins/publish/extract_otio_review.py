@@ -371,8 +371,8 @@ class ExtractOTIOReview(publish.Extractor):
 
             # form command for rendering gap files
             command.extend([
-                f"-start_number {str(in_frame_start)}",
-                f"-i {input_path}"
+                "-start_number", str(in_frame_start),
+                "-i", input_path
             ])
 
         elif video:
@@ -388,9 +388,9 @@ class ExtractOTIOReview(publish.Extractor):
 
             # form command for rendering gap files
             command.extend([
-                f"-ss {str(sec_start)}",
-                f"-t {str(sec_duration)}",
-                f"-i {video_path}"
+                "-ss", str(sec_start),
+                "-t", str(sec_duration),
+                "-i", video_path
             ])
 
         elif gap:
@@ -398,24 +398,28 @@ class ExtractOTIOReview(publish.Extractor):
 
             # form command for rendering gap files
             command.extend([
-                f"-t {str(sec_duration)}",
-                f"-r {str(self.actual_fps)}",
-                "-f lavfi",
+                "-t", str(sec_duration),
+                "-r", str(self.actual_fps),
+                "-f", "lavfi",
                 "-i", "color=c=black:s={}x{}".format(
                     self.to_width, self.to_height
                 ),
-                "-tune stillimage"
+                "-tune", "stillimage"
             ])
 
         # add output attributes
-        command.append(f"-start_number {str(out_frame_start)}")
+        command.extend([
+            "-start_number", str(out_frame_start)
+        ])
 
         # add copying if extensions are matching
         if (
             input_extension
             and self.output_ext == input_extension
         ):
-            command.append("-c copy")
+            command.extend([
+                "-c", "copy"
+            ])
 
         # add output path at the end
         command.append(output_path)

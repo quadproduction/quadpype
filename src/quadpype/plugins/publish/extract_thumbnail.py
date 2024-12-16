@@ -488,8 +488,12 @@ class ExtractThumbnail(pyblish.api.InstancePlugin):
             if stream.get("codec_type") == "video"
         )
 
-        cmd_args = ["-y", "-ss", f"{str(duration * self.duration_split)}", "-i", f"{video_file_path}",
-                    "-analyzeduration", f"{max_int}", "-probesize", f"{max_int}", "-vframes",  "1", output_thumb_file_path]
+        cmd_args = ["-y",
+                    "-ss", f"{str(duration * self.duration_split)}",
+                    "-i", f"{video_file_path}",
+                    "-analyzeduration", f"{max_int}",
+                    "-probesize", f"{max_int}",
+                    "-vframes",  "1", output_thumb_file_path]
 
         # add output file path
 
