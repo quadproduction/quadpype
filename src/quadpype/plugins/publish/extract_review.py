@@ -793,17 +793,16 @@ class ExtractReview(pyblish.api.InstancePlugin):
         for arg in in_args:
             sub_args = arg.split(" -")
             if len(sub_args) == 1:
-                ignore_arg = True if (arg.startswith("-") and arg in splitted_args) else False
-                if arg and not ignore_arg:
+                if arg:
                     splitted_args.append(arg)
                 continue
 
-            for idx, arg in enumerate(sub_args):
+            for idx, sub_arg in enumerate(sub_args):
                 if idx != 0:
-                    arg = "-" + arg
+                    sub_arg = "-" + sub_arg
 
-                if arg and arg not in splitted_args:
-                    splitted_args.append(arg)
+                if sub_arg:
+                    splitted_args.append(sub_arg)
         return splitted_args
 
     def ffmpeg_full_args(
