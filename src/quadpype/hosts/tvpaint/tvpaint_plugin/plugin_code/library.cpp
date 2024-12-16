@@ -28,7 +28,7 @@
 // mReq Identification of the requester.  (=0 closed, !=0 requester ID)
 static struct {
     bool firstParams;
-    DWORD mReq;
+    INTPTR mReq;
     void* mLocalFile;
     PIFilter *current_filter;
     // Id counter for client requests
@@ -666,7 +666,7 @@ int FAR PASCAL PI_Parameters( PIFilter* iFilter, char* iArg )
         {
             // Create empty requester because menu items are defined with
             //  `define_menu` callback
-            DWORD  req = TVOpenFilterReqEx(
+            INTPTR  req = TVOpenFilterReqEx(
                     iFilter,
                     185,
                     20,
