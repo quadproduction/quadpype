@@ -60,27 +60,19 @@ class DropEmpty(QtWidgets.QWidget):
 
         drop_label_widget = QtWidgets.QLabel("Drag & Drop files here", self)
 
-        items_label_widget = QtWidgets.QLabel(self)
-        items_label_widget.setWordWrap(True)
-
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addSpacing(20)
         layout.addWidget(drop_label_widget, 0, alignment=QtCore.Qt.AlignCenter)
         layout.addSpacing(30)
         layout.addStretch(1)
-        layout.addWidget(items_label_widget, 0, alignment=QtCore.Qt.AlignCenter)
-        layout.addSpacing(10)
 
-        for widget in (drop_label_widget,items_label_widget,):
-            widget.setAlignment(QtCore.Qt.AlignCenter)
-            widget.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        drop_label_widget.setAlignment(QtCore.Qt.AlignCenter)
+        drop_label_widget.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
         update_size_timer = QtCore.QTimer()
         update_size_timer.setInterval(10)
         update_size_timer.setSingleShot(True)
-
-        update_size_timer.timeout.connect(self._on_update_size_timer)
 
         self._update_size_timer = update_size_timer
 
@@ -94,7 +86,6 @@ class DropEmpty(QtWidgets.QWidget):
         self._allow_folders = None
 
         self._drop_label_widget = drop_label_widget
-        self._items_label_widget = items_label_widget
 
         self.set_allow_folders(False)
 
@@ -132,62 +123,14 @@ class DropEmpty(QtWidgets.QWidget):
 
         if not allowed_items:
             self._drop_label_widget.setVisible(False)
-            self._items_label_widget.setText(
-                "It is not allowed to add anything here!"
-            )
             return
 
         self._drop_label_widget.setVisible(True)
-        items_label = "Multiple "
-        if self._single_item:
-            items_label = "Single "
-
-        if len(allowed_items) == 1:
-            extensions_label = allowed_items[0]
-        elif len(allowed_items) == 2:
-            extensions_label = " or ".join(allowed_items)
-        else:
-            last_item = allowed_items.pop(-1)
-            new_last_item = " or ".join([last_item, allowed_items.pop(-1)])
-            allowed_items.append(new_last_item)
-            extensions_label = ", ".join(allowed_items)
-
-        allowed_items_label = extensions_label
-
-        items_label += allowed_items_label
-        label_tooltip = None
-        if self._allowed_extensions:
-            items_label += " of\n{}".format(
-                ", ".join(sorted(self._allowed_extensions))
-            )
-
-        if self._extensions_label:
-            label_tooltip = items_label
-            items_label = self._extensions_label
-
-        if self._items_label_widget.text() == items_label:
-            return
-
-        self._items_label_widget.setToolTip(label_tooltip)
-        self._items_label_widget.setText(items_label)
         self._update_size_timer.start()
 
     def resizeEvent(self, event):
         super(DropEmpty, self).resizeEvent(event)
         self._update_size_timer.start()
-
-    def _on_update_size_timer(self):
-        """Recalculate height of label with extensions.
-
-        Dynamic QLabel with word wrap does not handle properly it's sizeHint
-        calculations on show. This way it is recalculated. It is good practice
-        to trigger this method with small offset using '_update_size_timer'.
-        """
-
-        width = self._items_label_widget.width()
-        height = self._items_label_widget.heightForWidth(width)
-        self._items_label_widget.setMinimumHeight(height)
-        self._items_label_widget.updateGeometry()
 
     def paintEvent(self, event):
         super(DropEmpty, self).paintEvent(event)
@@ -402,18 +345,25 @@ class FilesModel(QtGui.QStandardItemModel):
         for item_id in item_ids:
             item = self._items_by_id.get(item_id)
             if item:
-                row_items = self.takeRow(item.row())
+                parent_item = item.parent() or self.invisibleRootItem()
+                row_items = parent_item.takeRow(item.row())
                 if row_items:
                     items_to_move.append(row_items[0])  # Assuming single column
 
         if not items_to_move:
             return False
 
-        # Insert items into the target location
+        # Ensure no nested structures; flatten if necessary
         for item in items_to_move:
+            # If the item has children, flatten them to the root level
+            while item.hasChildren():
+                child = item.takeRow(0)[0]  # Take the first child
+                self.invisibleRootItem().appendRow(child)
+                self._items_by_id[child.data(ITEM_ID_ROLE)] = child
+
+            # Add the item to the new parent (or root if target is invisibleRootItem)
             target_item.appendRow(item)
             self._items_by_id[item.data(ITEM_ID_ROLE)] = item
-
         return True
 
     def canDropMimeData(self, mime_data, action, row, col, parent_index):
@@ -525,7 +475,7 @@ class ItemWidget(QtWidgets.QWidget):
     context_menu_requested = QtCore.Signal(QtCore.QPoint)
     delete_requested = QtCore.Signal(list)
 
-    def __init__(self, item_id, label, pixmap_icon, is_sequence, multivalue, parent=None):
+    def __init__(self, item_id, label, pixmap_icon, is_sequence, multivalue, reviewable_item=False, parent=None):
         super().__init__(parent)
         self._item_id = item_id
 
@@ -570,6 +520,9 @@ class ItemWidget(QtWidgets.QWidget):
         review_btn.clicked.connect(self._on_review_actions_clicked)
         delete_btn.clicked.connect(self._on_delete_actions_clicked)
         split_btn.clicked.connect(self._on_split_actions_clicked)
+
+        if reviewable_item:
+            review_btn.setVisible(False)
 
         self._icon_widget = icon_widget
         self._label_widget = label_widget
@@ -711,6 +664,7 @@ class FilesWidget(QtWidgets.QFrame):
         files_view.setModel(files_proxy_model)
 
         main_layout = QtWidgets.QVBoxLayout(self)
+        allowed_files_representation_layout = QtWidgets.QHBoxLayout()
         stacked_layout = QtWidgets.QStackedLayout()
         stacked_layout.setContentsMargins(0, 0, 0, 0)
         stacked_layout.setStackingMode(QtWidgets.QStackedLayout.StackAll)
@@ -722,14 +676,13 @@ class FilesWidget(QtWidgets.QFrame):
         files_proxy_model.rowsInserted.connect(self._on_rows_inserted)
         files_proxy_model.rowsRemoved.connect(self._on_rows_removed)
         files_view.remove_requested.connect(self._on_remove_requested)
-        files_view.context_menu_requested.connect(
-            self._on_context_menu_requested
-        )
+        files_view.context_menu_requested.connect(self._on_context_menu_requested)
+        representations_label = QtWidgets.QLabel(f"Allowed File type for representations:")
+        self.allowed_representations_label = QtWidgets.QLabel()
 
-        allowed_types_representations_label = QtWidgets.QLabel(f"Allowed File type for representations: jpeg, png")
-        allowed_types_review_label = QtWidgets.QLabel(f"Allowed file types for review: mp4, mov ")
-        main_layout.addWidget(allowed_types_representations_label)
-        main_layout.addWidget(allowed_types_review_label)
+        allowed_files_representation_layout.addWidget(representations_label)
+        allowed_files_representation_layout.addWidget(self.allowed_representations_label, 1)
+        main_layout.addLayout(allowed_files_representation_layout)
 
         self._in_set_value = False
         self._single_item = single_item
@@ -790,6 +743,7 @@ class FilesWidget(QtWidgets.QFrame):
     def set_filters(self, folders_allowed, exts_filter):
         self._files_proxy_model.set_allow_folders(folders_allowed)
         self._files_proxy_model.set_allowed_extensions(exts_filter)
+        self.allowed_representations_label.setText(", ".join(ext.strip('.') for ext in exts_filter))
         self._empty_widget.set_extensions(exts_filter)
         self._empty_widget.set_allow_folders(folders_allowed)
 
@@ -802,13 +756,17 @@ class FilesWidget(QtWidgets.QFrame):
             label = index.data(ITEM_LABEL_ROLE)
             pixmap_icon = index.data(ITEM_ICON_ROLE)
             is_sequence = index.data(IS_SEQUENCE_ROLE)
-
+            reviewable_item = False
+            if parent_index.isValid():
+                reviewable_item = True
             widget = ItemWidget(
                 item_id,
                 label,
                 pixmap_icon,
                 is_sequence,
-                self._multivalue
+                self._multivalue,
+                reviewable_item
+
             )
             widget.context_menu_requested.connect(
                 self._on_context_menu_requested
