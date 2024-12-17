@@ -1,5 +1,6 @@
 {
     "general": {
+        "set_resolution_startup": true,
         "menu": {
             "create": "ctrl+alt+c",
             "publish": "ctrl+alt+p",

@@ -1,7 +1,7 @@
 {
     "type": "dict",
     "key": "sync_server",
-    "label": "Site Sync (beta testing)",
+    "label": "Site Sync",
     "collapsible": true,
     "checkbox_key": "enabled",
     "children": [

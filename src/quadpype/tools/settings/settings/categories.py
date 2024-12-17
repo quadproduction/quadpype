@@ -1247,6 +1247,331 @@ class ProjectManagerWidget(BaseControlPanelWidget):
         pass
 
 
+class CustomDelegate(QtWidgets.QStyledItemDelegate):
+    def __init__(self, icon_text_spacing=10, parent=None):
+        super().__init__(parent)
+        self.icon_text_spacing = icon_text_spacing
+
+    def paint(self, painter, option, index):
+        """
+        Custom painting to support two-line word wrap with truncation.
+        """
+        # Get item data
+        model = index.model()
+        item = model.itemFromIndex(index)
+        if not item:
+            return
+
+        # Save the current pen color to restore later
+        original_pen_color = painter.pen().color()
+        original_brush = painter.brush()
+
+        # Check for hover state (hovering over item)
+        is_hovered = option.state & QtWidgets.QStyle.State_MouseOver
+
+        # Get icon and text
+        icon = item.icon()
+        text = item.text()
+
+        if is_hovered:
+            # Draw background color
+            painter.setBrush(QtCore.Qt.lightGray)
+            painter.drawRect(option.rect)
+
+            # Change text color on hover
+            painter.setPen(QtCore.Qt.red)
+
+        # Calculate icon rectangle (horizontally centered)
+        icon_width = option.decorationSize.width()
+        icon_height = option.decorationSize.height()
+        icon_x = option.rect.x() + (option.rect.width() - icon_width) // 2
+        icon_y = option.rect.y()
+        icon_rect = QtCore.QRect(icon_x, icon_y, icon_width, icon_height)
+
+        # Calculate text rectangle below the icon
+        text_x = option.rect.x()
+        text_y = icon_y + icon_height + self.icon_text_spacing
+        text_rect = QtCore.QRect(
+            text_x, text_y, option.rect.width(), option.rect.height() - icon_height - self.icon_text_spacing
+        )
+
+        # Draw the icon
+        if not icon.isNull():
+            icon.paint(painter, icon_rect, QtCore.Qt.AlignCenter)
+
+        # Prepare to render the text
+        font_metrics = painter.fontMetrics()
+        lines = self.word_wrap(text, font_metrics, text_rect.width(), max_lines=2)
+
+        # Draw each line
+        line_height = font_metrics.lineSpacing()
+        for i, line in enumerate(lines):
+            line_y = text_rect.y() + i * line_height
+            painter.drawText(
+                QtCore.QRect(text_rect.x(), line_y, text_rect.width(), line_height),
+                QtCore.Qt.AlignCenter, line
+            )
+
+        # Restore the original pen color
+        painter.setPen(original_pen_color)
+
+        # Restore the original brush after custom painting
+        painter.setBrush(original_brush)
+
+    @staticmethod
+    def word_wrap(text, font_metrics, max_width, max_lines=2):
+        """
+        Simulates word wrapping and returns a list of lines.
+
+        Parameters:
+            - text: The input string to wrap.
+            - font_metrics: QFontMetrics object for measuring text.
+            - max_width: Maximum width of each line.
+            - max_lines: Maximum number of lines allowed.
+
+        Returns:
+            A list of wrapped lines (up to max_lines).
+        """
+        if max_lines <= 1:
+            return font_metrics.elidedText(text, QtCore.Qt.ElideRight, max_width)
+
+        words = text.split()
+        lines = []
+        current_line = ""
+
+        for index, word in enumerate(words):
+            # Check if adding the next word exceeds the width
+            test_line = f"{current_line} {word}".strip()
+            if font_metrics.horizontalAdvance(test_line) <= max_width:
+                current_line = test_line
+            else:
+                # Push the current line if not empty
+                if current_line:
+                    lines.append(current_line)
+
+                if len(lines) == max_lines - 1:
+                    # Put everything remaining words on the last line
+                    current_line = " ".join(words[index:])
+
+                    # Elide the line if needed
+                    if font_metrics.horizontalAdvance(current_line) > max_width:
+                        current_line = font_metrics.elidedText(current_line, QtCore.Qt.ElideRight, max_width)
+
+                    break
+                else:
+                    # Start a new line
+                    current_line = word
+
+        # Add the last line
+        lines.append(current_line)
+
+        return lines
+
+    def sizeHint(self, option, index):
+        """
+        Adjust the size hint to accommodate icon, spacing, and text wrapping.
+        """
+        base_size = super().sizeHint(option, index)
+        font_metrics = option.fontMetrics
+        line_height = font_metrics.lineSpacing()  # Height of one text line
+        text_height = line_height * 2  # Two lines of text at most
+        total_height = base_size.height() + self.icon_text_spacing + text_height
+        return QtCore.QSize(base_size.width(), total_height)
+
+
+class CustomDeuxDelegate(QtWidgets.QStyledItemDelegate):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def initStyleOption(self, option, index):
+        lines = self.word_wrap(option.text, option.fontMetrics, option.rect.width(), max_lines=2)
+        if len(lines) == 1:
+            option.text = lines[0]
+        else:
+            option.text = "\n".join(lines)
+
+        super().initStyleOption(option, index)
+
+    @staticmethod
+    def word_wrap(text, font_metrics, max_width, max_lines=2):
+        """
+        Simulates word wrapping and returns a list of lines.
+
+        Parameters:
+            - text: The input string to wrap.
+            - font_metrics: QFontMetrics object for measuring text.
+            - max_width: Maximum width of each line.
+            - max_lines: Maximum number of lines allowed.
+
+        Returns:
+            A list of wrapped lines (up to max_lines).
+        """
+        if max_lines <= 1:
+            return font_metrics.elidedText(text, QtCore.Qt.ElideRight, max_width)
+
+        words = text.split()
+        lines = []
+        current_line = ""
+
+        for index, word in enumerate(words):
+            # Check if adding the next word exceeds the width
+            test_line = f"{current_line} {word}".strip()
+            if font_metrics.horizontalAdvance(test_line) <= max_width:
+                current_line = test_line
+            else:
+                # Push the current line if not empty
+                if current_line:
+                    lines.append(current_line)
+
+                if len(lines) == max_lines - 1:
+                    # Put everything remaining words on the last line
+                    current_line = " ".join(words[index:])
+
+                    # Elide the line if needed
+                    if font_metrics.horizontalAdvance(current_line) > max_width:
+                        current_line = font_metrics.elidedText(current_line, QtCore.Qt.ElideRight, max_width)
+
+                    break
+                else:
+                    # Start a new line
+                    current_line = word
+
+        # Add the last line
+        lines.append(current_line)
+
+        return lines
+
+    # def sizeHint(self, option, index):
+    #     """
+    #     Adjust the size hint to accommodate icon, spacing, and text wrapping.
+    #     """
+    #     base_size = super().sizeHint(option, index)
+    #     font_metrics = option.fontMetrics
+    #     line_height = font_metrics.lineSpacing()  # Height of one text line
+    #     text_height = line_height * 2  # Two lines of text at most
+    #     total_height = base_size.height() + self.icon_text_spacing + text_height
+    #     return QtCore.QSize(base_size.width(), total_height)
+
+
+class UserActionsModel(QtGui.QStandardItemModel):
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+
+        self.default_icon = qtawesome.icon("fa.cube", color="white")
+
+        self._registered_actions = list()
+        self.items_by_id = {}
+
+    def update_actions(self):
+        self.items_by_id.clear()
+        # Validate actions based on compatibility
+        self.clear()
+
+        action_popup = {
+            "name": "display_popup",
+        }
+        toto1 = QtGui.QStandardItem(self.default_icon, "Send Popup Message")
+        toto1.setData("Display a popup message on the user screen", QtCore.Qt.ToolTipRole)
+        toto1.setData(action_popup, QtCore.Qt.UserRole)
+        toto1.setSizeHint(QtCore.QSize(90, 100))
+        self.items_by_id["toto1"] = toto1
+
+        action_display = {
+            "name": "display_notification",
+        }
+        tata1 = QtGui.QStandardItem(self.default_icon, "Send Tray Notification")
+        tata1.setData("Display a tray notification on the user screen", QtCore.Qt.ToolTipRole)
+        tata1.setData(action_display, QtCore.Qt.UserRole)
+        tata1.setSizeHint(QtCore.QSize(90, 100))
+        self.items_by_id["tata1"] = tata1
+
+        action_change_role = {
+            "name": "change_role",
+        }
+        toto2 = QtGui.QStandardItem(self.default_icon, "Change Role")
+        toto2.setData("Change the role of the user", QtCore.Qt.ToolTipRole)
+        toto2.setData(action_change_role, QtCore.Qt.UserRole)
+        toto2.setSizeHint(QtCore.QSize(90, 100))
+        self.items_by_id["toto2"] = toto2
+
+        action_delete = {
+            "name": "delete_user",
+        }
+        tata2 = QtGui.QStandardItem(self.default_icon, "Delete User")
+        tata2.setData("Delete the user", QtCore.Qt.ToolTipRole)
+        tata2.setData(action_delete, QtCore.Qt.UserRole)
+        tata2.setSizeHint(QtCore.QSize(90, 100))
+        self.items_by_id["tata2"] = tata2
+
+        self.beginResetModel()
+
+        for item in self.items_by_id.values():
+            self.appendRow(item)
+
+        self.endResetModel()
+
+
+class UserActionsListView(QtWidgets.QListView):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def wheelEvent(self, event):
+        event.ignore()
+
+
+class UserActionsWidget(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setFixedHeight(120)
+
+        view = UserActionsListView(self)
+        view.setProperty("mode", "icon")
+        view.setObjectName("IconView")
+        view.setViewMode(QtWidgets.QListView.IconMode)
+        view.setResizeMode(QtWidgets.QListView.Fixed)
+        view.setSelectionMode(QtWidgets.QListView.NoSelection)
+        view.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        # Force horizontal layout with no wrapping
+        view.setFlow(QtWidgets.QListView.LeftToRight)  # Horizontal layout
+        view.setWrapping(False)
+
+        # Set horizontal scroll only
+        view.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        view.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+
+        view.setGridSize(QtCore.QSize(90, 100))
+        view.setIconSize(QtCore.QSize(40, 40))
+        view.setWordWrap(True)
+
+        self.model = UserActionsModel(self)
+        view.setModel(self.model)
+
+        # Set custom delegate
+        view.setItemDelegate(CustomDeuxDelegate(self))
+
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(view)
+
+        self.view = view
+
+        self.view.clicked.connect(self.on_item_clicked)
+
+    def on_item_clicked(self, index):
+        if not index or not index.isValid():
+            return
+
+        action = index.data(QtCore.Qt.UserRole)
+        print(action["name"])
+
+    def update_actions(self):
+        self.model.update_actions()
+
+
 class CheckUsersOnlineThread(QtCore.QThread):
     apply_online_icon_to_user = QtCore.Signal(list, str)  # Signal to apply icon to users
 
@@ -1325,6 +1650,7 @@ class UserManagerWidget(BaseControlPanelWidget):
         self.users_data = {}
 
         self.table_widget = None
+        self.actions_widget = None
         self._is_running = True
         self._selected_user_id = None
         self._current_sort_column = 1
@@ -1569,9 +1895,15 @@ class UserManagerWidget(BaseControlPanelWidget):
             # The full row is selected every time, the user_id is the index 1 element.
             self._selected_user_id = selected_items[1].text()
 
+        self.actions_widget.update_actions()
+
     def create_ui(self):
         super().create_ui()
 
+        # First creating the actions widget
+        self.actions_widget = UserActionsWidget(self.content_widget)
+
+        # Then the table user list widget
         self.table_widget = QtWidgets.QTableWidget(self.content_widget)
 
         self.table_widget.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -1593,7 +1925,11 @@ class UserManagerWidget(BaseControlPanelWidget):
 
         self._update_user_list()
 
+        # Add the user list widget to the layout
         self.content_layout.addWidget(self.table_widget, stretch=1)
+
+        # Then add the actions widget to the layout
+        self.content_layout.addWidget(self.actions_widget)
 
     def _on_reset_start(self):
         return

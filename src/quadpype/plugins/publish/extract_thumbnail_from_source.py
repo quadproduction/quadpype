@@ -153,9 +153,9 @@ class ExtractThumbnailFromSource(pyblish.api.InstancePlugin):
         self.log.debug("Outputting thumbnail with OIIO: {}".format(dst_path))
         oiio_cmd = get_oiio_tool_args(
             "oiiotool",
-            f"-a {src_path}",
-            "--ch R,G,B",
-            f"-o {dst_path}"
+            "-a", src_path,
+            "--ch", "R,G,B",
+            "-o", dst_path
         )
         self.log.debug("Running: {}".format(" ".join(oiio_cmd)))
         try:
@@ -173,10 +173,10 @@ class ExtractThumbnailFromSource(pyblish.api.InstancePlugin):
         ffmpeg_cmd = get_ffmpeg_tool_args(
             "ffmpeg",
             "-y",
-            f"-analyzeduration {max_int}",
-            f"-probesize {max_int}",
-            f"-i {src_path}",
-            "-vframes 1",
+            "-analyzeduration", max_int,
+            "-probesize", max_int,
+            "-i", src_path,
+            "-vframes", "1",
             dst_path
         )
 
