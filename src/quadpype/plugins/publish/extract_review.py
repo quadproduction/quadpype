@@ -783,7 +783,8 @@ class ExtractReview(pyblish.api.InstancePlugin):
             ffmpeg_output_args
         )
 
-    def split_ffmpeg_args(self, in_args):
+    @staticmethod
+    def split_ffmpeg_args(in_args):
         """Makes sure all entered arguments are separated in individual items.
 
         Split each argument string with " -" to identify if string contains
@@ -791,18 +792,19 @@ class ExtractReview(pyblish.api.InstancePlugin):
         """
         splitted_args = []
         for arg in in_args:
+            if not arg:
+                continue
+
             sub_args = arg.split(" -")
             if len(sub_args) == 1:
-                if arg:
-                    splitted_args.append(arg)
+                splitted_args.append(arg)
                 continue
 
             for idx, sub_arg in enumerate(sub_args):
                 if idx != 0:
                     sub_arg = "-" + sub_arg
+                splitted_args.append(sub_arg)
 
-                if sub_arg:
-                    splitted_args.append(sub_arg)
         return splitted_args
 
     def ffmpeg_full_args(
@@ -810,9 +812,9 @@ class ExtractReview(pyblish.api.InstancePlugin):
     ):
         """Post processing of collected FFmpeg arguments.
 
-        Just verify that output arguments does not contain video or audio
+        Just verify that output arguments do not contain video or audio
         filters which may cause issues because of duplicated argument entry.
-        Filters found in output arguments are moved to list they belong to.
+        Filters found in output arguments are moved to the list they belong to.
 
         Args:
             input_args (list): All collected ffmpeg arguments with inputs.
@@ -1070,22 +1072,20 @@ class ExtractReview(pyblish.api.InstancePlugin):
             audio_duration = duration_seconds + offset_seconds
 
             # Set audio duration
-            audio_in_args.append("-to {:0.10f}".format(audio_duration))
+            audio_in_args.extend(["-to", "{:0.10f}".format(audio_duration)])
 
             # Ignore video data from audio input
             audio_in_args.append("-vn")
 
             # Add audio input path
-            audio_in_args.append("-i {}".format(
-                path_to_subprocess_arg(audio["filename"])
-            ))
+            audio_in_args.extend(["-i", "{}".format(path_to_subprocess_arg(audio["filename"]))])
 
         # NOTE: These were changed from input to output arguments.
         # NOTE: value in "-ac" was hardcoded to 2, changed to audio inputs len.
         # Need to merge audio if there are more than 1 input.
         if len(audio_inputs) > 1:
-            audio_out_args.append("-filter_complex amerge")
-            audio_out_args.append("-ac {}".format(len(audio_inputs)))
+            audio_out_args.extend(["-filter_complex", "amerge"])
+            audio_out_args.extend(["-ac", "{}".format(len(audio_inputs))])
 
         return audio_in_args, audio_filters, audio_out_args
 

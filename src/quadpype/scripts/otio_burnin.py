@@ -792,7 +792,7 @@ def burnins_from_data(
     if codec_data:
         # Use codec definition from method arguments
         ffmpeg_args = codec_data
-        ffmpeg_args.append("-g 1")
+        ffmpeg_args.extend(["-g", "1"])
 
     else:
         ffmpeg_args.extend(
