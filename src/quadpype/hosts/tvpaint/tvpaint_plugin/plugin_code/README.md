@@ -28,6 +28,15 @@ Edit the CMakeLists.txt to edit:
 
 Then, follow the steps from [this tutorial](https://github.com/BenSouchet/compile-tvpaint-plugin).
 
+The compilation lines, after editing the `CmakeLists.txt`, are:
+
+```
+cmake -G "Visual Studio 17 2022" -A Win32 -S . -B "build32"
+cmake -G "Visual Studio 17 2022" -A x64 -S . -B "build64"
+cmake --build build32 --config Release
+cmake --build build64 --config Release
+```
+
 To ensure the `./dependencies/` folder is properly found, execute the cmake command from the `plugin_code` directory (use `cd` to navigate to that location before execution the commands).
 
 ## TODO

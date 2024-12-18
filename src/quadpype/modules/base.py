@@ -1141,12 +1141,10 @@ class ModulesManager:
 class TrayModulesManager(ModulesManager):
     # Define order of modules in menu
     modules_menu_order = (
-        # Menu ------------------------------------------
-        # QuadPype: STUDIO_NAME
-        # USERNAME
-        # VERSION
+        # QuadPype : STUDIO_NAME
+        # WORKSTATION USERNAME
+        # QUADPYPE VERSION
         "ftrack",                  # ftrack
-        "kitsu",                   # Kitsu
         "muster",                  # Muster
         "launcher_tool",           # Launcher
         "avalon",                  # Loader
@@ -1154,15 +1152,17 @@ class TrayModulesManager(ModulesManager):
         "standalone_publisher",    # Publisher (legacy)
         "clockify",                # Clockify
         "sync_server",             # Sync Queue
-        # More Tools Submenu -----------------------------
-        "log_viewer",              # Show Logs
-        "python_interpreter",      # Console
-        # Admin Submenu ----------------------------------
-        "project_manager",         # Project Manager (beta)
-        # User Settings ----------------------------------
-        "user_settings",           # User Settings
-        # Services Submenu -------------------------------
+        # Submenu : More Tools  --------------------------
+            "log_viewer",          # Show Logs
+            "python_interpreter",  # Console
+        # Admin Submenu (Will be merged in the Studio Control Panel)
+            "project_manager",     # Project Manager (beta)
         "control_panel",           # Studio Control Panel
+        "user_settings",           # User Settings
+        # Submenu : Services ----------------------------
+        "kitsu",                   # Kitsu
+        "event_handler",           # Events Handler
+        "webserver"                # Web Server
     )
 
     def __init__(self):

@@ -2598,7 +2598,7 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
 
     def set_context_settings(self):
         os.environ["QUADPYPE_NUKE_SKIP_SAVE_EVENT"] = "True"
-        if get_project_settings(Context.project_name)["nuke"].get("set_resolution_startup", True):
+        if get_project_settings(Context.project_name)["nuke"]["general"].get("set_resolution_startup", True):
             self.reset_resolution()
         self.reset_frame_range_handles()
         # add colorspace menu item

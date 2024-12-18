@@ -18,6 +18,11 @@ from quadpype.lib import (
     get_user_id
 )
 from quadpype.tools.utils import set_style_property
+
+from quadpype.settings import (
+    ADDONS_SETTINGS_KEY,
+    get_global_settings,
+)
 from quadpype.settings.entities import (
     GlobalSettingsEntity,
     ProjectSettingsEntity,
@@ -429,6 +434,10 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
         self.initialize_attributes()
 
         self.create_ui()
+
+    @property
+    def current_version(self):
+        return self._current_version
 
     @staticmethod
     def create_ui_for_entity(category_widget, entity, entity_widget):
@@ -1632,14 +1641,16 @@ class SortUserRoleItem(QtWidgets.QTableWidgetItem):
 
 class UserManagerWidget(BaseControlPanelWidget):
     _ws_profile_prefix = "last_workstation_profile/"
-    table_column_data = {
-        "_is_online": "Online",
-        _ws_profile_prefix + "username": "Username",
-        "user_id": "ID",
-        "role": "Role",
-        "last_connection_timestamp": "Last Connection",
-        _ws_profile_prefix + "workstation_name": "Last Workstation Name"
-    }
+    _tracker_login_prefix = "tracker_logins/"
+    _table_column_data = [
+        ("_is_online", "Online"),
+        (_ws_profile_prefix + "username", "Username"),
+        ("user_id", "ID"),
+        ("role", "Role"),
+        ("_tracker_logins", "Generated in constructor"),
+        ("last_connection_timestamp", "Last Connection"),
+        (_ws_profile_prefix + "workstation_name", "Last Workstation Name")
+    ]
 
     def __init__(self, controller, parent=None):
         super().__init__(controller, parent)
@@ -1655,7 +1666,6 @@ class UserManagerWidget(BaseControlPanelWidget):
         self._selected_user_id = None
         self._current_sort_column = 1
         self._current_sort_order = QtCore.Qt.SortOrder.AscendingOrder
-        self._column_count = len(self.table_column_data.keys())
 
         self._spin_icon = resources.get_resource("icons", "spin.svg")
 
@@ -1671,7 +1681,37 @@ class UserManagerWidget(BaseControlPanelWidget):
         self._check_users_online_thread = CheckUsersOnlineThread(self)
         self._check_users_online_thread.apply_online_icon_to_user.connect(self._update_online_icon_for_users)
 
+        # Generate the column template
+        self.table_column_data = {}
+        for (column_id, column_display_name) in self._table_column_data:
+            if column_id == "_tracker_logins":
+                # Handle special column
+                active_trackers = self._get_active_trackers()
+                for tracker_name in active_trackers:
+                    tracker_column_id = self._tracker_login_prefix + tracker_name
+                    self.table_column_data[tracker_column_id] = f"{tracker_name.capitalize()} Login"
+
+                continue  # To skip adding this placeholder column_id
+
+            self.table_column_data[column_id] = column_display_name
+
+        self._column_count = len(self.table_column_data.keys())
+
         self.create_ui()
+
+    @staticmethod
+    def _get_active_trackers():
+        # Currently no proper function to do that in a lib module
+        active_trackers = []
+        global_settings = get_global_settings()
+
+        tracker_names = ["ftrack", "kitsu"]
+        for tracker_name in tracker_names:
+            if global_settings[ADDONS_SETTINGS_KEY][tracker_name]["enabled"] and \
+                    global_settings[ADDONS_SETTINGS_KEY][tracker_name]["server"]:
+                active_trackers.append(tracker_name)
+
+        return active_trackers
 
     @property
     def current_user_id(self):
@@ -1849,7 +1889,14 @@ class UserManagerWidget(BaseControlPanelWidget):
                     user_profile_key = user_profile_key.removeprefix(self._ws_profile_prefix)
                     cell_value = last_workstation_profile[user_profile_key]
                 else:
-                    cell_value = user_profile[user_profile_key]
+                    splitted = user_profile_key.split("/")
+                    cell_value = user_profile
+                    for curr_key in splitted:
+                        if curr_key not in cell_value:
+                            # Protection to avoid crash if a key isn't in the user profile
+                            cell_value = ""
+                            break
+                        cell_value = cell_value[curr_key]
 
                 if isinstance(cell_value, datetime):
                     # Convert datetime to string (close to the ISO 8601 standard)
