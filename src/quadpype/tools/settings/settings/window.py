@@ -155,7 +155,7 @@ class MainWidget(QtWidgets.QWidget):
             latest_version = get_latest_version()
             production_version = str(latest_version)
 
-        if production_version != global_settings_widget._current_version:
+        if production_version != global_settings_widget.current_version:
             # The global settings can only be edited in the production version
             # This is mandatory to avoid weird situations and issues from user perspectives
             self._protect_global_settings = True

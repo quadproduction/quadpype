@@ -292,9 +292,25 @@ class ITrayService(ITrayModule):
     @staticmethod
     def services_submenu(tray_menu):
         if ITrayService._services_submenu is None:
-            from qtpy import QtWidgets
+            from qtpy import QtWidgets, QtCore
 
-            services_submenu = QtWidgets.QMenu("Services", tray_menu)
+            class SubMenu(QtWidgets.QMenu):
+                # Class that did not close the menu and submenu if
+                # the action isn't connected to function
+
+                def __init__(self, title: str, parent=None):
+                    super().__init__(title, parent)
+                    self.installEventFilter(self)
+
+                def mouseReleaseEvent(self, event):
+                    # Get the active action (the one under the cursor)
+                    action = self.activeAction()
+
+                    if action and action.isEnabled():
+                        if action.receivers(QtCore.SIGNAL("triggered()")) > 0:
+                            super().mouseReleaseEvent(event)
+
+            services_submenu = SubMenu("Services", tray_menu)
             services_submenu.menuAction().setVisible(False)
             ITrayService._services_submenu = services_submenu
         return ITrayService._services_submenu
@@ -347,6 +363,11 @@ class ITrayService(ITrayModule):
         self.menu_action = action
 
         self.add_service_action(action)
+
+        if hasattr(self, "on_action_trigger") and callable(self.on_action_trigger):
+            action.triggered.connect(self.on_action_trigger)
+        else:
+            action.triggered.disconnect()
 
         self.set_service_running_icon()
 
