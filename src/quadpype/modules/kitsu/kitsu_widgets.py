@@ -15,6 +15,7 @@ from quadpype.settings import (
 )
 
 from quadpype.tools.utils import PressHoverButton
+from quadpype.lib.user import set_tracker_login_to_user_profile
 
 
 class KitsuPasswordDialog(QtWidgets.QDialog):
@@ -33,7 +34,6 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
 
         global_settings = get_global_settings()
         user_login, user_pwd = load_credentials()
-        remembered = bool(user_login or user_pwd)
 
         self._final_result = None
         self._connectable = bool(
@@ -58,7 +58,7 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
 
         login_input = QtWidgets.QLineEdit(
             login_widget,
-            text=user_login if remembered else None,
+            text=user_login,
         )
         login_input.setPlaceholderText("Your Kitsu account login...")
 
@@ -74,7 +74,7 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
 
         password_input = QtWidgets.QLineEdit(
             password_widget,
-            text=user_pwd if remembered else None,
+            text=user_pwd,
         )
         password_input.setPlaceholderText("Your password...")
         password_input.setEchoMode(QtWidgets.QLineEdit.Password)
@@ -100,7 +100,7 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
 
         remember_checkbox = QtWidgets.QCheckBox("Remember", buttons_widget)
         remember_checkbox.setObjectName("RememberCheckbox")
-        remember_checkbox.setChecked(remembered)
+        remember_checkbox.setChecked(True)
 
         ok_btn = QtWidgets.QPushButton("Ok", buttons_widget)
         cancel_btn = QtWidgets.QPushButton("Cancel", buttons_widget)
@@ -170,6 +170,7 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         # Remember password cases
         if remember:
             save_credentials(login_value, pwd_value)
+            set_tracker_login_to_user_profile("kitsu", login_value)
         else:
             # Clear user settings
             clear_credentials()

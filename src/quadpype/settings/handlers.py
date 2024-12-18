@@ -50,7 +50,7 @@ class SettingsStateInfo:
     To create current machine and time information use 'create_new' method.
     """
 
-    timestamp_format = "%Y-%m-%d %H:%M:%S.%f"
+    timestamp_format = "%Y-%m-%d %H:%M:%S.%f%z"
 
     def __init__(
         self,
@@ -70,6 +70,10 @@ class SettingsStateInfo:
 
         timestamp_obj = None
         if timestamp:
+            if "+" not in timestamp:
+                # Ensure an UTC offset is set
+                timestamp += "+0000"
+
             timestamp_obj = datetime.strptime(
                 timestamp, self.timestamp_format
             )
