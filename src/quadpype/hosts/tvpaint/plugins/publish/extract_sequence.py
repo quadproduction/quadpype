@@ -139,6 +139,8 @@ class ExtractSequence(pyblish.api.Extractor):
                 tempfile.mkdtemp(prefix="tvpaint_render_")
             ).replace("\\", "/")
             instance.data["stagingDir"] = output_dir
+        else:
+            output_dir = output_dir.replace("\\", "/")
 
         self.log.debug(
             "Files will be rendered to folder: {}".format(output_dir)
