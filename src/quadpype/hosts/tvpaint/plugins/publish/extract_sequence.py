@@ -193,6 +193,7 @@ class ExtractSequence(pyblish.api.Extractor):
         )
 
         # Fill tags and new families from project settings
+        #instance_families = get_publish_instance_families(instance)
         tags = []
         custom_tags = []
         if "review" in instance.data["families"]:
@@ -493,7 +494,7 @@ class ExtractSequence(pyblish.api.Extractor):
 
             opacity_by_layer_id[layer_id] = self._convert_opacity_range(layer["opacity"])
 
-        # filter the layers to compose to remove those who didn't have a render
+            # filter the layers to compose to remove those who didn't have a render
         filtered_layers = [layer for layer in layers if layer['layer_id'] in output_used_layers_id]
 
         # Prepare bg image if apply_background enabled
