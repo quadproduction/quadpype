@@ -132,7 +132,7 @@ class ExtractSequence(pyblish.api.Extractor):
             mark_out = export_frames_without_offset[-1]
 
         # Save to staging dir
-        output_dir = instance.data.get("stagingDir").replace("\\", "/")
+        output_dir = instance.data.get("stagingDir")
         if not output_dir:
             # Create temp folder if staging dir is not set
             output_dir = (
@@ -193,7 +193,6 @@ class ExtractSequence(pyblish.api.Extractor):
         )
 
         # Fill tags and new families from project settings
-        #instance_families = get_publish_instance_families(instance)
         tags = []
         custom_tags = []
         if "review" in instance.data["families"]:
@@ -384,36 +383,34 @@ class ExtractSequence(pyblish.api.Extractor):
             output_filepaths_by_frame_index[frame_index] = filepath
 
             # Ensure the frame has been properly created
-            if os.path.exists(filepath):
-                continue
-
-            if export_type == "camera" and frame_index == mark_out:
-                # There is a bug in TVPaint, it seems to NOT render the last frame in camera mode sometimes
-
-                # TODO: We should recreate a clean george_script_lines with only info to render the last frame
-                # Replace the export filepath
-                last_frame_filename = filename_template.format(frame=mark_out)
-                george_script_lines = re.sub(origin_first_filename, last_frame_filename, george_script_lines)
-
-                # set the mark in to mark_out
-                if "tv_markin" not in george_script_lines:
-                    george_script_lines = "{}\n{}".format("tv_markin {}".format(mark_out), george_script_lines)
-                    george_script_lines = "{}\n{}".format(george_script_lines,
-                                                          "tv_markin {}".format(origin_mark_in))
-                else:
-                    george_script_lines = re.sub("tv_markin {}".format(mark_in),
-                                                 "tv_markin {}".format(mark_out),
-                                                 george_script_lines, count=1)
-
-                george_script_lines = re.sub(tv_export, tv_export.replace(str(export_lenght), "0"),
-                                             george_script_lines)
-
-                execute_george_through_file(george_script_lines)
-
-            # If the frame has still not been generated,
-            # this is a true issue we need to crash and notify the user
             if not os.path.exists(filepath):
-                raise KnownPublishError("Output ('{}') was not rendered and exported to disk.".format(filepath))
+                if export_type == "camera" and frame_index == mark_out:
+                    # There is a bug in TVPaint, it seems to NOT render the last frame in camera mode sometimes
+
+                    # TODO: We should recreate a clean george_script_lines with only info to render the last frame
+                    # Replace the export filepath
+                    last_frame_filename = filename_template.format(frame=mark_out)
+                    george_script_lines = re.sub(origin_first_filename, last_frame_filename, george_script_lines)
+
+                    # set the mark in to mark_out
+                    if "tv_markin" not in george_script_lines:
+                        george_script_lines = "{}\n{}".format("tv_markin {}".format(mark_out), george_script_lines)
+                        george_script_lines = "{}\n{}".format(george_script_lines,
+                                                              "tv_markin {}".format(origin_mark_in))
+                    else:
+                        george_script_lines = re.sub("tv_markin {}".format(mark_in),
+                                                     "tv_markin {}".format(mark_out),
+                                                     george_script_lines, count=1)
+
+                    george_script_lines = re.sub(tv_export, tv_export.replace(str(export_lenght), "0"),
+                                                 george_script_lines)
+
+                    execute_george_through_file(george_script_lines)
+
+                # If the frame has still not been generated,
+                # this is a true issue we need to crash and notify the user
+                if not os.path.exists(filepath):
+                    raise KnownPublishError("Output ('{}') was not rendered and exported to disk.".format(filepath))
 
         thumbnail_filepath = None
         if output_filepaths_by_frame_index:
@@ -494,7 +491,7 @@ class ExtractSequence(pyblish.api.Extractor):
 
             opacity_by_layer_id[layer_id] = self._convert_opacity_range(layer["opacity"])
 
-            # filter the layers to compose to remove those who didn't have a render
+        # filter the layers to compose to remove those who didn't have a render
         filtered_layers = [layer for layer in layers if layer['layer_id'] in output_used_layers_id]
 
         # Prepare bg image if apply_background enabled
