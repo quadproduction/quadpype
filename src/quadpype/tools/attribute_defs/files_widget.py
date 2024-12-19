@@ -19,7 +19,6 @@ from quadpype.tools.utils import (
 
 ITEM_ID_ROLE = QtCore.Qt.UserRole + 1
 ITEM_LABEL_ROLE = QtCore.Qt.UserRole + 2
-ITEM_ICON_ROLE = QtCore.Qt.UserRole + 3
 FILENAMES_ROLE = QtCore.Qt.UserRole + 4
 DIRPATH_ROLE = QtCore.Qt.UserRole + 5
 IS_DIR_ROLE = QtCore.Qt.UserRole + 6
@@ -280,22 +279,12 @@ class FilesModel(QtGui.QStandardItemModel):
         return self._file_items_by_id.get(item_id)
 
     def _create_item(self, file_item):
-        if file_item.is_dir:
-            icon_pixmap = paint_image_with_color(
-                get_image(filename="folder.png"), QtCore.Qt.white
-            )
-        else:
-            icon_pixmap = paint_image_with_color(
-                get_image(filename="file.png"), QtCore.Qt.white
-            )
-
         item = QtGui.QStandardItem()
         item_id = str(uuid.uuid4())
         item.setData(item_id, ITEM_ID_ROLE)
         item.setData(file_item.label or "< empty >", ITEM_LABEL_ROLE)
         item.setData(file_item.filenames, FILENAMES_ROLE)
         item.setData(file_item.directory, DIRPATH_ROLE)
-        item.setData(icon_pixmap, ITEM_ICON_ROLE)
         item.setData(file_item.lower_ext, EXT_ROLE)
         item.setData(file_item.is_dir, IS_DIR_ROLE)
         item.setData(file_item.is_sequence, IS_SEQUENCE_ROLE)
@@ -475,23 +464,26 @@ class ItemWidget(QtWidgets.QWidget):
     context_menu_requested = QtCore.Signal(QtCore.QPoint)
     delete_requested = QtCore.Signal(list)
 
-    def __init__(self, item_id, label, pixmap_icon, is_sequence, multivalue, reviewable_item=False, parent=None):
+    def __init__(self, item_id, label, is_sequence, multivalue, reviewable_item=False, parent=None):
         super().__init__(parent)
         self._item_id = item_id
 
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
-        icon_widget = PixmapLabel(pixmap_icon, self)
         label_widget = QtWidgets.QLabel(label, self)
 
         label_size_hint = label_widget.sizeHint()
         height = label_size_hint.height()
+        self._representation_pix = paint_image_with_color(get_image(filename="folder.png"), QtCore.Qt.white).scaledToHeight(height)
+        self._representation_disabled_pix = paint_image_with_color(get_image(filename="file.png"), QtCore.Qt.white).scaledToHeight(height)
         actions_menu_pix = paint_image_with_color(get_image(filename="menu.png"), QtCore.Qt.white)
-        self._review_pix = paint_image_with_color(get_image(filename="review.png"),
-                                                  QtCore.Qt.white).scaledToHeight(height)
-        self._review_disabled_pix = paint_image_with_color(get_image(filename="review_disabled.png"),
-                                                           QtCore.Qt.white).scaledToHeight(height)
+        self._review_pix = paint_image_with_color(get_image(filename="review.png"), QtCore.Qt.white).scaledToHeight(height)
+        self._review_disabled_pix = paint_image_with_color(get_image(filename="review_disabled.png"), QtCore.Qt.white).scaledToHeight(height)
         delete_pix = paint_image_with_color(get_image(filename="delete.png"), QtCore.Qt.white).scaledToHeight(height)
+
+        representation_btn = ClickableLabel(self)
+        representation_btn.setFixedSize(height, height)
+        representation_btn.setPixmap(self._representation_pix)
 
         review_btn = ClickableLabel(self)
         review_btn.setFixedSize(height, height)
@@ -511,27 +503,32 @@ class ItemWidget(QtWidgets.QWidget):
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
-        layout.addWidget(icon_widget, 0)
         layout.addWidget(label_widget, 1)
+        layout.addWidget(representation_btn, 0)
         layout.addWidget(review_btn, 0)
         layout.addWidget(delete_btn, 0)
         layout.addWidget(split_btn, 0)
 
+        representation_btn.clicked.connect(self._on_representations_actions_clicked)
         review_btn.clicked.connect(self._on_review_actions_clicked)
         delete_btn.clicked.connect(self._on_delete_actions_clicked)
         split_btn.clicked.connect(self._on_split_actions_clicked)
 
-        if reviewable_item:
+        if not reviewable_item:
             review_btn.setVisible(False)
+        else:
+            representation_btn.setVisible(False)
 
-        self._icon_widget = icon_widget
+        self.reviewable_item = reviewable_item
         self._label_widget = label_widget
         self._split_btn = split_btn
+        self._representation_btn = representation_btn
         self._review_btn = review_btn
         self._delete_btn = delete_btn
         self._actions_menu_pix = actions_menu_pix
         self._last_scaled_pix_height = None
         self._is_review_enabled = True
+        self._is_representation_enabled = True
 
     def _update_btn_size(self):
         label_size_hint = self._label_widget.sizeHint()
@@ -559,6 +556,13 @@ class ItemWidget(QtWidgets.QWidget):
         pos = self._split_btn.rect().bottomLeft()
         point = self._split_btn.mapToGlobal(pos)
         self.context_menu_requested.emit(point)
+
+    def _on_representations_actions_clicked(self):
+        self._is_representation_enabled = not self._is_representation_enabled
+        if self._is_representation_enabled:
+            self._representation_btn.setPixmap(self._representation_pix)
+        else:
+            self._representation_btn.setPixmap(self._representation_disabled_pix)
 
     def _on_review_actions_clicked(self):
         self._is_review_enabled = not self._is_review_enabled
@@ -754,7 +758,6 @@ class FilesWidget(QtWidgets.QFrame):
             if item_id in self._widgets_by_id:
                 continue
             label = index.data(ITEM_LABEL_ROLE)
-            pixmap_icon = index.data(ITEM_ICON_ROLE)
             is_sequence = index.data(IS_SEQUENCE_ROLE)
             reviewable_item = False
             if parent_index.isValid():
@@ -762,7 +765,6 @@ class FilesWidget(QtWidgets.QFrame):
             widget = ItemWidget(
                 item_id,
                 label,
-                pixmap_icon,
                 is_sequence,
                 self._multivalue,
                 reviewable_item

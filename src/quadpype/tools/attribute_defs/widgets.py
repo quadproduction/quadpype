@@ -656,3 +656,13 @@ class FileAttrWidget(_BaseAttrDefWidget):
 
     def set_value(self, value, multivalue=False):
         self._input_widget.set_value(value, multivalue)
+
+# Traceback (most recent call last):
+#   File "C:\Users\ccaillot\quad\quadpype\src\quadpype\tools\attribute_defs\files_widget.py", line 764, in _on_rows_inserted
+#     self._files_view.setIndexWidget(index, widget)
+#   File "C:\Users\ccaillot\quad\quadpype\src\quadpype\tools\utils\widgets.py", line 656, in minimumSizeHint
+#     self._set_resized_pix()
+#   File "C:\Users\ccaillot\quad\quadpype\src\quadpype\tools\utils\widgets.py", line 665, in _set_resized_pix
+#     self._source_pixmap.scaled(
+# AttributeError: 'bool' object has no attribute 'scaled'
+# AttributeError: Slot 'FilesWidget::_on_rows_inserted(QModelIndex,int,int)' not found.
