@@ -132,13 +132,15 @@ class ExtractSequence(pyblish.api.Extractor):
             mark_out = export_frames_without_offset[-1]
 
         # Save to staging dir
-        output_dir = instance.data.get("stagingDir").replace("\\", "/")
+        output_dir = instance.data.get("stagingDir")
         if not output_dir:
             # Create temp folder if staging dir is not set
             output_dir = (
                 tempfile.mkdtemp(prefix="tvpaint_render_")
             ).replace("\\", "/")
             instance.data["stagingDir"] = output_dir
+        else:
+            output_dir = output_dir.replace("\\", "/")
 
         self.log.debug(
             "Files will be rendered to folder: {}".format(output_dir)
