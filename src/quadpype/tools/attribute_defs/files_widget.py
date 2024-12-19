@@ -363,10 +363,6 @@ class FilesModel(QtGui.QStandardItemModel):
                 return False
         return super().canDropMimeData(mime_data, action, row, col, parent_index)
 
-    def on_button_clicked(self):
-        print(f"Button clicked")
-
-
 class FilesProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -464,7 +460,7 @@ class ItemWidget(QtWidgets.QWidget):
     context_menu_requested = QtCore.Signal(QtCore.QPoint)
     delete_requested = QtCore.Signal(list)
 
-    def __init__(self, item_id, label, is_sequence, multivalue, reviewable_item=False, parent=None):
+    def __init__(self, item_id, label, is_sequence, multivalue, model_index, parent=None):
         super().__init__(parent)
         self._item_id = item_id
 
@@ -514,12 +510,7 @@ class ItemWidget(QtWidgets.QWidget):
         delete_btn.clicked.connect(self._on_delete_actions_clicked)
         split_btn.clicked.connect(self._on_split_actions_clicked)
 
-        if not reviewable_item:
-            review_btn.setVisible(False)
-        else:
-            representation_btn.setVisible(False)
-
-        self.reviewable_item = reviewable_item
+        self._item = model_index
         self._label_widget = label_widget
         self._split_btn = split_btn
         self._representation_btn = representation_btn
@@ -529,6 +520,23 @@ class ItemWidget(QtWidgets.QWidget):
         self._last_scaled_pix_height = None
         self._is_review_enabled = True
         self._is_representation_enabled = True
+
+        self.update_visibility()
+
+    def update_visibility(self):
+        """Update visibility of the buttons based on the rules."""
+        parent_is_valid = self._item.parent().isValid()
+        has_children = self._item.model().hasChildren(self._item)
+
+        if parent_is_valid:
+            self._review_btn.setVisible(True)
+            self._representation_btn.setVisible(False)
+        else:
+            self._representation_btn.setVisible(True)
+            if not has_children:
+                self._review_btn.setVisible(True)
+            else:
+                self._review_btn.setVisible(False)
 
     def _update_btn_size(self):
         label_size_hint = self._label_widget.sizeHint()
@@ -678,6 +686,7 @@ class FilesWidget(QtWidgets.QFrame):
         main_layout.addLayout(stacked_layout)
 
         files_proxy_model.rowsInserted.connect(self._on_rows_inserted)
+        files_proxy_model.dataChanged.connect(self._update_visibility)
         files_proxy_model.rowsRemoved.connect(self._on_rows_removed)
         files_view.remove_requested.connect(self._on_remove_requested)
         files_view.context_menu_requested.connect(self._on_context_menu_requested)
@@ -759,15 +768,12 @@ class FilesWidget(QtWidgets.QFrame):
                 continue
             label = index.data(ITEM_LABEL_ROLE)
             is_sequence = index.data(IS_SEQUENCE_ROLE)
-            reviewable_item = False
-            if parent_index.isValid():
-                reviewable_item = True
             widget = ItemWidget(
                 item_id,
                 label,
                 is_sequence,
                 self._multivalue,
-                reviewable_item
+                index
 
             )
             widget.context_menu_requested.connect(
@@ -954,6 +960,11 @@ class FilesWidget(QtWidgets.QFrame):
         files_exists = self._files_proxy_model.rowCount() > 0
         if files_exists:
             current_widget = self._files_view
+            for row in range(self._files_proxy_model.rowCount()):
+                index = self._files_proxy_model.index(row, 0)
+                widget = self._files_view.indexWidget(index)
+                if isinstance(widget, ItemWidget):
+                    widget.update_visibility()
         else:
             current_widget = self._empty_widget
         self._stacked_layout.setCurrentWidget(current_widget)
