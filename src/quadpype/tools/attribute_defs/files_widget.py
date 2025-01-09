@@ -231,7 +231,7 @@ class FilesModel(QtGui.QStandardItemModel):
             return
         self._multivalue = multivalue
 
-    def add_filepaths(self, items):
+    def add_filepaths(self, items, parent_item_index=None):
         if not items:
             return
 
@@ -262,9 +262,15 @@ class FilesModel(QtGui.QStandardItemModel):
             self._items_by_id[item_id] = model_item
 
         if new_model_items:
-            root_item = self.invisibleRootItem()
+            if parent_item_index is None or not parent_item_index.isValid():
+                parent_item = self.invisibleRootItem()
+            else:
+                parent_item = self.itemFromIndex(parent_item_index)
+                if parent_item is None:
+                    parent_item = self.invisibleRootItem()
+
             for items in new_model_items:
-                root_item.appendRow(items)
+                parent_item.appendRow(items)
 
     def remove_item_by_ids(self, item_ids):
         if not item_ids:
@@ -461,6 +467,9 @@ class FilesProxyModel(QtCore.QSortFilterProxyModel):
         if sorted((left_comparison, right_comparison))[0] == left_comparison:
             return True
         return False
+
+    def mapToSourceIndex(self, proxyIndex):
+        return self.mapToSource(proxyIndex)
 
 
 class ItemWidget(QtWidgets.QWidget):
@@ -878,11 +887,11 @@ class FilesWidget(QtWidgets.QFrame):
             # Filter filepaths before passing it to model
             filepaths = self._files_proxy_model.filter_valid_files(filepaths)
             if filepaths:
-                self._add_filepaths(filepaths)
+                parent_index = self._files_view.indexAt(event.pos())
+                parent_index_source = self._files_proxy_model.mapToSourceIndex(parent_index)
+                self._files_model.add_filepaths(filepaths, parent_index_source)
 
-        if self._handle_full_data_drop(
-            mime_data.data("files_widget/full_data")
-        ):
+        if self._handle_full_data_drop( mime_data.data("files_widget/full_data")):
             event.setDropAction(QtCore.Qt.CopyAction)
             event.accept()
 
@@ -932,8 +941,8 @@ class FilesWidget(QtWidgets.QFrame):
             return True
         return False
 
-    def _add_filepaths(self, filepaths):
-        self._files_model.add_filepaths(filepaths)
+    def _add_filepaths(self, filepaths, parent_item=None):
+        self._files_model.add_filepaths(filepaths, parent_item)
 
     def _remove_item_by_ids(self, item_ids):
         self._files_model.remove_item_by_ids(item_ids)
