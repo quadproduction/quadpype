@@ -190,6 +190,12 @@ class FilesModel(QtGui.QStandardItemModel):
     def id(self):
         return self._id
 
+    def get_file_items(self):
+        files_items = []
+        for item_id, file_item in self._file_items_by_id.items():
+            files_items.append(file_item)
+        return files_items
+
     def _on_about_to_be_removed(self, parent_index, start, end):
         """Make sure that removed items are removed from items mapping.
 
@@ -363,6 +369,7 @@ class FilesModel(QtGui.QStandardItemModel):
                 return False
         return super().canDropMimeData(mime_data, action, row, col, parent_index)
 
+
 class FilesProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -462,6 +469,7 @@ class ItemWidget(QtWidgets.QWidget):
 
     def __init__(self, item_id, label, is_sequence, multivalue, model_index, parent=None):
         super().__init__(parent)
+        self.setAcceptDrops(True)
         self._item_id = item_id
 
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -470,20 +478,14 @@ class ItemWidget(QtWidgets.QWidget):
 
         label_size_hint = label_widget.sizeHint()
         height = label_size_hint.height()
-        self._representation_pix = paint_image_with_color(get_image(filename="folder.png"), QtCore.Qt.white).scaledToHeight(height)
-        self._representation_disabled_pix = paint_image_with_color(get_image(filename="file.png"), QtCore.Qt.white).scaledToHeight(height)
         actions_menu_pix = paint_image_with_color(get_image(filename="menu.png"), QtCore.Qt.white)
         self._review_pix = paint_image_with_color(get_image(filename="review.png"), QtCore.Qt.white).scaledToHeight(height)
         self._review_disabled_pix = paint_image_with_color(get_image(filename="review_disabled.png"), QtCore.Qt.white).scaledToHeight(height)
         delete_pix = paint_image_with_color(get_image(filename="delete.png"), QtCore.Qt.white).scaledToHeight(height)
 
-        representation_btn = ClickableLabel(self)
-        representation_btn.setFixedSize(height, height)
-        representation_btn.setPixmap(self._representation_pix)
-
         review_btn = ClickableLabel(self)
         review_btn.setFixedSize(height, height)
-        review_btn.setPixmap(self._review_pix)
+        review_btn.setPixmap(self._review_disabled_pix)
 
         delete_btn = ClickableLabel(self)
         delete_btn.setFixedSize(height, height)
@@ -500,12 +502,10 @@ class ItemWidget(QtWidgets.QWidget):
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
         layout.addWidget(label_widget, 1)
-        layout.addWidget(representation_btn, 0)
         layout.addWidget(review_btn, 0)
         layout.addWidget(delete_btn, 0)
         layout.addWidget(split_btn, 0)
 
-        representation_btn.clicked.connect(self._on_representations_actions_clicked)
         review_btn.clicked.connect(self._on_review_actions_clicked)
         delete_btn.clicked.connect(self._on_delete_actions_clicked)
         split_btn.clicked.connect(self._on_split_actions_clicked)
@@ -513,12 +513,11 @@ class ItemWidget(QtWidgets.QWidget):
         self._item = model_index
         self._label_widget = label_widget
         self._split_btn = split_btn
-        self._representation_btn = representation_btn
         self._review_btn = review_btn
         self._delete_btn = delete_btn
         self._actions_menu_pix = actions_menu_pix
         self._last_scaled_pix_height = None
-        self._is_review_enabled = True
+        self._is_review_enabled = False
         self._is_representation_enabled = True
 
         self.update_visibility()
@@ -530,9 +529,7 @@ class ItemWidget(QtWidgets.QWidget):
 
         if parent_is_valid:
             self._review_btn.setVisible(True)
-            self._representation_btn.setVisible(False)
         else:
-            self._representation_btn.setVisible(True)
             if not has_children:
                 self._review_btn.setVisible(True)
             else:
@@ -564,13 +561,6 @@ class ItemWidget(QtWidgets.QWidget):
         pos = self._split_btn.rect().bottomLeft()
         point = self._split_btn.mapToGlobal(pos)
         self.context_menu_requested.emit(point)
-
-    def _on_representations_actions_clicked(self):
-        self._is_representation_enabled = not self._is_representation_enabled
-        if self._is_representation_enabled:
-            self._representation_btn.setPixmap(self._representation_pix)
-        else:
-            self._representation_btn.setPixmap(self._representation_disabled_pix)
 
     def _on_review_actions_clicked(self):
         self._is_review_enabled = not self._is_review_enabled
@@ -733,22 +723,14 @@ class FilesWidget(QtWidgets.QFrame):
         self._in_set_value = False
 
     def current_value(self):
-        model = self._files_proxy_model
-        item_ids = set()
-        for row in range(model.rowCount()):
-            index = model.index(row, 0)
-            item_ids.add(index.data(ITEM_ID_ROLE))
+        file_items = self._files_model.get_file_items()
 
-        file_items = []
-        for item_id in item_ids:
-            file_item = self._files_model.get_file_item_by_id(item_id)
-            if file_item is not None:
-                file_items.append(file_item.to_dict())
+        file_items_data = []
+        for file_item in file_items:
+            file_items_data.append(file_item.to_dict())
 
-        if not self._single_item:
-            return file_items
         if file_items:
-            return file_items[0]
+            return file_items
 
         empty_item = FileDefItem.create_empty_item()
         return empty_item.to_dict()
