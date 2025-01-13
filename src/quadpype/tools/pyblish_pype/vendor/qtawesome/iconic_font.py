@@ -45,7 +45,7 @@ SYSTEM_FONTS = False
 if os.name == 'nt':
     from ctypes import wintypes
     import winreg
-    
+
     user32 = ctypes.WinDLL('user32', use_last_error=True)
     gdi32 = ctypes.WinDLL('gdi32', use_last_error=True)
 
@@ -595,7 +595,7 @@ class IconicFont(QObject):
     def _install_fonts(self, fonts_directory):
         """
         Copy the fonts to the user Fonts folder.
-        
+
         Based on https://stackoverflow.com/a/41841088/15954282
         """
         # Try to get LOCALAPPDATA path
@@ -662,7 +662,7 @@ class IconicFont(QObject):
                         # Needed to support older Windows version where
                         # font installation per user is not possible/related registry
                         # entry is not available
-                        # See spyder-ide/qtawesome#214 
+                        # See spyder-ide/qtawesome#214
                         return fonts_directory
 
         return user_fonts_dir
