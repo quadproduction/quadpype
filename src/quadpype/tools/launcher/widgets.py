@@ -411,7 +411,7 @@ class ActionHistory(QtWidgets.QPushButton):
         self.setFixedWidth(25)
         self.setFixedHeight(25)
 
-        self.setIcon(qtawesome.icon("fa.history", color="#CCCCCC"))
+        self.setIcon(qtawesome.icon("fa5s.history", color="#CCCCCC"))
         self.setIconSize(QtCore.QSize(15, 15))
 
         self._history = []

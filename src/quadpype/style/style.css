@@ -1456,14 +1456,20 @@ CreateNextPageOverlay {
     font-size: 9pt;
 }
 
+#BreadcrumbsPathInput[style="error"] {
+    background: red;
+    color: green;
+}
+
+#BreadcrumbsPathInput[style="warning"] {
+    background: orange;
+    color: green;
+}
+
 #BreadcrumbsButton {
     padding-right: 12px;
     font-size: 9pt;
     background: transparent;
-}
-
-#BreadcrumbsButton[empty="1"] {
-    padding-right: 0px;
 }
 
 #BreadcrumbsButton::menu-button {
@@ -1566,4 +1572,10 @@ InViewButton:hover {
 }
 SupportLabel {
     color: {color:font-disabled};
+}
+
+/* User Manager Panel */
+
+.user-row-cell {
+    background: red;
 }
