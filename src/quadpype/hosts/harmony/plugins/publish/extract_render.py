@@ -117,7 +117,7 @@ class ExtractRender(pyblish.api.InstancePlugin):
         self.log.debug(output.decode("utf-8", errors="backslashreplace"))
 
         # Generate representations.
-        extension = collection.tail[1:]
+        extension = collection.tail[1:].lower()
         representation = {
             "name": extension,
             "ext": extension,

@@ -88,7 +88,7 @@ class CollectTextures(pyblish.api.ContextPlugin):
 
             processed_instance = False
             for repre in instance.data["representations"]:
-                ext = repre["ext"].replace('.', '')
+                ext = repre["ext"].replace('.', '').lower()
                 asset_build = None
 
                 if isinstance(repre["files"], list):
@@ -506,7 +506,7 @@ class CollectTextures(pyblish.api.ContextPlugin):
 
             # ignore unique name from SP, use extension instead
             # SP enforces unique name, here different subsets >> unique repres
-            repre["name"] = repre["ext"].replace('.', '')
+            repre["name"] = repre["ext"].replace('.', '').lower()
 
             files = repre.get("files", [])
             if not isinstance(files, list):

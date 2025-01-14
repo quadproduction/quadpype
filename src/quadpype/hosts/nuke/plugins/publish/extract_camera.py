@@ -50,6 +50,8 @@ class ExtractCamera(publish.Extractor):
                 "Bad config for extension in presets. "
                 "Talk to your supervisor or pipeline admin")
 
+        extension = extension.lower()
+
         # create file name and path
         filename = subset + ".{}".format(extension)
         jsonname = "{0}.json".format(instance.name)

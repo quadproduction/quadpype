@@ -89,7 +89,7 @@ class ValidateRenderPasses(OptionalPyblishPluginMixin,
             instance, beauty_name)
         invalid.extend(invalid_filenames)
         invalid_image_format = cls.get_invalid_image_format(
-            instance, ext.lstrip("."))
+            instance, ext.lstrip(".").lower())
         invalid.extend(invalid_image_format)
         renderer = instance.data["renderer"]
         if renderer in [
@@ -169,7 +169,7 @@ class ValidateRenderPasses(OptionalPyblishPluginMixin,
         invalid = []
         settings = instance.context.data["project_settings"].get("max")
         image_format = settings["RenderSettings"]["image_format"]
-        ext = ext.lstrip(".")
+        ext = ext.lstrip(".").lower()
         if ext != image_format:
             msg = (
                 f"Invalid image format {ext} for render outputs.\n"

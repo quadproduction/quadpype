@@ -46,7 +46,7 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
             if not review_data_extension:
                 raise ValueError("No extension specified in representation ('{}')".format(review_path))
 
-            if f".{review_data_extension}" in VIDEO_EXTENSIONS:
+            if f".{review_data_extension}".lower() in VIDEO_EXTENSIONS:
                 gazu.task.add_preview(
                     task_id, comment_id, review_path, normalize_movie=getattr(self, 'normalize', True)
                 )

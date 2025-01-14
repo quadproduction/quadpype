@@ -32,7 +32,7 @@ class ExtractFrames(publish.Extractor):
                 track_item.mapTimelineToSource(frame) +
                 track_item.source().mediaSource().startTime()
             )
-            output_ext = instance.data["format"]
+            output_ext = instance.data["format"].lower()
             output_path = output_template
             output_path += ".{:04d}.{}".format(int(frame), output_ext)
 

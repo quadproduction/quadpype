@@ -201,7 +201,7 @@ class ExtractSubsetResources(publish.Extractor):
                 continue
 
             # get all presets attributes
-            extension = preset_config["ext"]
+            extension = preset_config["ext"].lower()
             preset_file = preset_config["xml_preset_file"]
             preset_dir = preset_config["xml_preset_dir"]
             export_type = preset_config["export_type"]

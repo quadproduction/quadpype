@@ -1288,7 +1288,7 @@ def create_write_node(
 
     data.update({
         "imageio_writes": imageio_writes,
-        "ext": ext
+        "ext": ext.lower()
     })
     anatomy_filled = format_anatomy(data)
 

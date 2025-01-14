@@ -177,7 +177,7 @@ class CollectInstanceResources(pyblish.api.InstancePlugin):
         collection_head_name = None
         # loop through collections and create representations
         for _collection in collections:
-            ext = _collection.tail[1:]
+            ext = _collection.tail[1:].lower()
             collection_head_name = _collection.head
             frame_start = list(_collection.indexes)[0]
             frame_end = list(_collection.indexes)[-1]

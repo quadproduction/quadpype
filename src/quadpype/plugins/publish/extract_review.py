@@ -174,7 +174,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
             input_ext = repre["ext"]
             if input_ext.startswith("."):
-                input_ext = input_ext[1:]
+                input_ext = input_ext[1:].lower()
 
             if input_ext not in self.supported_exts:
                 self.log.info(

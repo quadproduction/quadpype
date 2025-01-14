@@ -1910,7 +1910,7 @@ def _prepare_last_workfile(data, workdir, modules_manager):
             workdir_data.update({
                 "version": 1,
                 "user": get_quadpype_username(),
-                "ext": extensions[0]
+                "ext": extensions[0].lower()
             })
 
             last_workfile_path = get_last_workfile(

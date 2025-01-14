@@ -59,7 +59,7 @@ class CollectColorspaceLook(pyblish.api.InstancePlugin,
         lut_repre = {
             "name": lut_repre_name,
             "output": output_name,
-            "ext": ext.lstrip("."),
+            "ext": ext.lstrip(".").lower(),
             "files": file_name,
             "stagingDir": os.path.dirname(file_url),
             "tags": []
@@ -71,7 +71,7 @@ class CollectColorspaceLook(pyblish.api.InstancePlugin,
             "ocioLookItems": [
                 {
                     "name": lut_repre_name,
-                    "ext": ext.lstrip("."),
+                    "ext": ext.lstrip(".").lower(),
                     "input_colorspace": converted_color_data[
                         "input_colorspace"],
                     "output_colorspace": converted_color_data[

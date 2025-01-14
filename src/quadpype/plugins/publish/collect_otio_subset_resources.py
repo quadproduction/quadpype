@@ -221,8 +221,8 @@ class CollectOtioSubsetResources(pyblish.api.InstancePlugin):
             files = list(collection)
             ext = collection.format("{tail}")
             representation_data.update({
-                "name": ext[1:],
-                "ext": ext[1:],
+                "name": ext[1:].lower(),
+                "ext": ext[1:].lower(),
                 "files": files,
                 "frameStart": start,
                 "frameEnd": end,
@@ -232,8 +232,8 @@ class CollectOtioSubsetResources(pyblish.api.InstancePlugin):
             file = kwargs.get("file")
             ext = os.path.splitext(file)[-1]
             representation_data.update({
-                "name": ext[1:],
-                "ext": ext[1:],
+                "name": ext[1:].lower(),
+                "ext": ext[1:].lower(),
                 "files": file,
                 "frameStart": start,
                 "frameEnd": end,

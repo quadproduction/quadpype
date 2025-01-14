@@ -221,7 +221,7 @@ class StoreThumbnailsToAvalon(BaseAction):
                 continue
 
             # Get thumbnail extension
-            file_ext = thumbnail_ent["file_type"]
+            file_ext = thumbnail_ent["file_type"].lower()
             if not file_ext.startswith("."):
                 file_ext = ".{}".format(file_ext)
 

@@ -29,8 +29,8 @@ class CollectMovieBatch(
         _, ext = os.path.splitext(file_name)
 
         repre = {
-            "name": ext[1:],
-            "ext": ext[1:],
+            "name": ext[1:].lower(),
+            "ext": ext[1:].lower(),
             "files": file_name,
             "stagingDir": os.path.dirname(file_url),
             "tags": []
