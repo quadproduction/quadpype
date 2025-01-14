@@ -36,8 +36,6 @@ class IntegrateThumbnails(pyblish.api.ContextPlugin):
     ]
 
     def process(self, context):
-        return
-
         # Filter instances which can be used for integration
         filtered_instance_items = self._prepare_instances(context)
         if not filtered_instance_items:
@@ -265,7 +263,7 @@ class IntegrateThumbnails(pyblish.api.ContextPlugin):
             template_data = copy.deepcopy(instance.data["anatomyData"])
             template_data.update({
                 "_id": str(thumbnail_id),
-                "ext": file_extension[1:],
+                "ext": file_extension[1:].lower(),
                 "name": "thumbnail",
                 "thumbnail_root": thumbnail_root,
                 "thumbnail_type": "thumbnail"
