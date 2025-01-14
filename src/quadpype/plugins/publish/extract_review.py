@@ -498,8 +498,16 @@ class ExtractReview(pyblish.api.InstancePlugin):
                 with values may be added.
         """
 
+        input_is_sequence = self.input_is_sequence(repre)
+
         frame_start = instance.data["frameStart"]
         frame_end = instance.data["frameEnd"]
+        if frame_end == 0:
+            # Special case: This means we need to take the file count
+            if input_is_sequence:
+                frame_end = len(repre["files"])
+            else:
+                frame_end = 1
 
         # Try to get handles from instance
         handle_start = instance.data.get("handleStart")
@@ -533,7 +541,6 @@ class ExtractReview(pyblish.api.InstancePlugin):
         ):
             with_audio = False
 
-        input_is_sequence = self.input_is_sequence(repre)
         input_allow_bg = False
         first_sequence_frame = None
         if input_is_sequence and repre["files"]:

@@ -54,7 +54,7 @@ class PublisherWindow(BaseToolDialog):
 
         self.setObjectName("PublishWindow")
 
-        self.setWindowTitle("{} publisher".format("QuadPype"))
+        self.setWindowTitle("{} Publisher".format("QuadPype"))
 
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)

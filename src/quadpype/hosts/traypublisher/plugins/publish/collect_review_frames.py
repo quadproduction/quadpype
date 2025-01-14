@@ -36,4 +36,11 @@ class CollectReviewInfo(pyblish.api.InstancePlugin):
             value = asset_data[key]
             collected_data[key] = value
             instance.data[key] = value
+
+        if asset_entity["type"] == "asset":
+            # For asset frameEnd need to be computed based on the file count of each representation
+            # Setting 0 to specify this need to be computed
+            collected_data["frameEnd"] = 0
+            instance.data["frameEnd"] = 0
+
         self.log.debug("Collected data: {}".format(str(collected_data)))
