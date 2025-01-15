@@ -60,7 +60,9 @@ class CreateTaskPath(LauncherAction):
         popup.setIcon(QMessageBox.Information)
         popup.setStandardButtons(QMessageBox.Ok)
 
-        popup.exec()
+        response = popup.exec()
+        if response == QMessageBox.Ok:
+            return True
 
 
     def _find_first_filled_path(self, path):
