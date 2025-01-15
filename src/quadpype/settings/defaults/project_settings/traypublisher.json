@@ -350,6 +350,10 @@
             "enabled": true,
             "optional": true,
             "active": true
+        },
+        "ExtractConvertAudioRepresentations": {
+            "enabled": false,
+            "output_file_type": "wav"
         }
     }
 }
