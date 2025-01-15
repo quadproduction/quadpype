@@ -389,6 +389,8 @@ class LauncherWindow(QtWidgets.QDialog):
     def on_action_clicked(self, action):
         self.echo("Running action: {}".format(get_action_label(action)))
         self.run_action(action)
+        # Update the Action plug-ins available for the current project
+        self.discover_actions()
 
     def on_history_action(self, history_data):
         action, session = history_data
