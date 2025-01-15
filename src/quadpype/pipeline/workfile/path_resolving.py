@@ -77,7 +77,7 @@ def get_workfile_template_key(
             ["Workfiles"]
             ["workfile_template_profiles"]
         )
-    except Exception:
+    except Exception:  # noqa
         profiles = []
 
     if not profiles:
@@ -85,8 +85,11 @@ def get_workfile_template_key(
 
     profile_filter = {
         "task_types": task_type,
-        "hosts": host_name
     }
+
+    if host_name:
+        profile_filter["hosts"] = host_name
+
     profile = filter_profiles(profiles, profile_filter)
     if profile:
         return profile["workfile_template"] or default
