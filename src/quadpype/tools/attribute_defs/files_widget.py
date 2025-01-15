@@ -14,8 +14,9 @@ from quadpype.tools.utils import (
 from quadpype.tools.resources import get_image
 from quadpype.tools.utils import (
     IconButton,
-    PixmapLabel
 )
+
+from quadpype.plugins.publish.extract_review import IMAGE_EXTS, VIDEO_EXTS
 
 ITEM_ID_ROLE = QtCore.Qt.UserRole + 1
 ITEM_LABEL_ROLE = QtCore.Qt.UserRole + 2
@@ -25,6 +26,9 @@ IS_DIR_ROLE = QtCore.Qt.UserRole + 6
 IS_SEQUENCE_ROLE = QtCore.Qt.UserRole + 7
 EXT_ROLE = QtCore.Qt.UserRole + 8
 
+PURPLE_BG = "rgba(128, 0, 128, 0.5);"
+ORANGE_BG = "rgba(255, 165, 0, 0.5);"
+YELLOW_BG = "rgba(255, 255, 0, 0.5);"
 
 def convert_bytes_to_json(bytes_value):
     if isinstance(bytes_value, QtCore.QByteArray):
@@ -190,11 +194,8 @@ class FilesModel(QtGui.QStandardItemModel):
     def id(self):
         return self._id
 
-    def get_file_items(self):
-        files_items = []
-        for item_id, file_item in self._file_items_by_id.items():
-            files_items.append(file_item)
-        return files_items
+    def get_root_items(self):
+        return [item for item in self._all_items if item.is_root()]
 
     def _on_about_to_be_removed(self, parent_index, start, end):
         """Make sure that removed items are removed from items mapping.
@@ -535,14 +536,26 @@ class ItemWidget(QtWidgets.QWidget):
         """Update visibility of the buttons based on the rules."""
         parent_is_valid = self._item.parent().isValid()
         has_children = self._item.model().hasChildren(self._item)
+        source_model = self._item.model().sourceModel()
 
         if parent_is_valid:
             self._review_btn.setVisible(True)
+            self._review_btn.setPixmap(self._review_pix)
+            source_model.get_file_item_by_id(self._item_id).set_review(True)
+            source_model.get_file_item_by_id(self._item_id).set_representation(False)
+            self.setStyleSheet(f"background-color: {YELLOW_BG};")
         else:
             if not has_children:
                 self._review_btn.setVisible(True)
+                self._review_btn.setPixmap(self._review_pix)
+                source_model.get_file_item_by_id(self._item_id).set_review(True)
+                source_model.get_file_item_by_id(self._item_id).set_representation(True)
+                self.setStyleSheet(f"background-color: {PURPLE_BG};")
             else:
                 self._review_btn.setVisible(False)
+                source_model.get_file_item_by_id(self._item_id).set_review(False)
+                source_model.get_file_item_by_id(self._item_id).set_representation(True)
+                self.setStyleSheet(f"background-color: {ORANGE_BG};")
 
     def _update_btn_size(self):
         label_size_hint = self._label_widget.sizeHint()
@@ -676,6 +689,8 @@ class FilesWidget(QtWidgets.QFrame):
 
         main_layout = QtWidgets.QVBoxLayout(self)
         allowed_files_representation_layout = QtWidgets.QHBoxLayout()
+        allowed_files_review_layout = QtWidgets.QHBoxLayout()
+        color_legend_layout = QtWidgets.QHBoxLayout()
         stacked_layout = QtWidgets.QStackedLayout()
         stacked_layout.setContentsMargins(0, 0, 0, 0)
         stacked_layout.setStackingMode(QtWidgets.QStackedLayout.StackAll)
@@ -691,10 +706,21 @@ class FilesWidget(QtWidgets.QFrame):
         files_view.context_menu_requested.connect(self._on_context_menu_requested)
         representations_label = QtWidgets.QLabel(f"Allowed File type for representations:")
         self.allowed_representations_label = QtWidgets.QLabel()
+        review_label = QtWidgets.QLabel(f"Allowed File type for reviews:")
+        self.allowed_reviews_label = QtWidgets.QLabel(', '.join(IMAGE_EXTS+VIDEO_EXTS))
 
         allowed_files_representation_layout.addWidget(representations_label)
         allowed_files_representation_layout.addWidget(self.allowed_representations_label, 1)
         main_layout.addLayout(allowed_files_representation_layout)
+
+        allowed_files_review_layout.addWidget(review_label)
+        allowed_files_review_layout.addWidget(self.allowed_reviews_label, 1)
+        main_layout.addLayout(allowed_files_review_layout)
+
+        color_legend_label = QtWidgets.QLabel()
+        color_legend_label.setPixmap(self._create_legend_pixmap())
+        color_legend_layout.addWidget(color_legend_label)
+        main_layout.addLayout(color_legend_layout)
 
         self._in_set_value = False
         self._single_item = single_item
@@ -709,6 +735,48 @@ class FilesWidget(QtWidgets.QFrame):
 
         self._layout = main_layout
         self._stacked_layout = stacked_layout
+
+    @staticmethod
+    def _create_legend_pixmap():
+        def _rgba_to_qcolor(rgba_str):
+            """Convert an RGBA string into a QColor object."""
+            rgba_str = rgba_str.rstrip(";")  # Remove the trailing semicolon
+            rgba_values = rgba_str.replace("rgba(", "").replace(")", "").split(",")
+            r, g, b, a = map(float, rgba_values)
+            return QtGui.QColor(r, g, b, int(a * 255))  # Convert alpha to 0-255
+        width, height = 300, 150
+
+        pixmap = QtGui.QPixmap(width, height)
+        pixmap.fill(QtCore.Qt.transparent)
+        painter = QtGui.QPainter(pixmap)
+
+        items = [
+            (PURPLE_BG, "Representation elements"),
+            (ORANGE_BG, "Representation & Review elements"),
+            (YELLOW_BG, "Review elements"),
+        ]
+
+        font = QtGui.QFont("Poppins", 10)
+        painter.setFont(font)
+
+        x_offset, y_offset = 10, 10
+        rect_size = 20
+
+        for color, label in items:
+            qcolor = _rgba_to_qcolor(color)
+
+            # Draw color box
+            painter.setBrush(qcolor)
+            painter.setPen(QtGui.QColor("#bfccd6"))
+            painter.drawRect(x_offset, y_offset, rect_size, rect_size)
+
+            # Draw label text
+            painter.setPen(QtGui.QColor("#bfccd6"))
+            painter.drawText(x_offset + rect_size + 10, y_offset + rect_size - 5, label)
+            y_offset += rect_size + 10
+
+        painter.end()
+        return pixmap
 
     def _set_multivalue(self, multivalue):
         if self._multivalue is multivalue:
@@ -732,14 +800,35 @@ class FilesWidget(QtWidgets.QFrame):
         self._in_set_value = False
 
     def current_value(self):
-        file_items = self._files_model.get_file_items()
-
         file_items_data = []
-        for file_item in file_items:
-            file_items_data.append(file_item.to_dict())
 
-        if file_items:
-            return file_items
+        # Iterate over all rows in the model
+        for row in range(self._files_proxy_model.rowCount()):
+            index = self._files_proxy_model.index(row, 0)
+
+            # Check if the current item is a root item (no parent)
+            parent_index = self._files_proxy_model.parent(index)
+            if not parent_index.isValid():  # This is a root item
+                item = self._files_model.get_file_item_by_id(index.data(ITEM_ID_ROLE))  # Get the corresponding file item
+
+                if item:
+                    item_dict = item.to_dict()
+
+                    # Check if the item has children (reviewable)
+                    if self._files_proxy_model.rowCount(index) > 0:  # Has children
+                        children_data = []
+                        for child_row in range(self._files_proxy_model.rowCount(index)):
+                            child_index = self._files_proxy_model.index(child_row, 0, index)
+                            child_item_id = child_index.data(ITEM_ID_ROLE)
+                            child_item = self._files_model.get_file_item_by_id(child_item_id)
+                            if child_item:
+                                children_data.append(child_item.to_dict())
+                        item_dict['reviewable'] = children_data
+
+                    file_items_data.append(item_dict)
+        # Return the data or an empty item if no root items exist
+        if file_items_data:
+            return file_items_data
 
         empty_item = FileDefItem.create_empty_item()
         return empty_item.to_dict()

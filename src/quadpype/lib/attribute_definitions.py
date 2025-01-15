@@ -48,6 +48,9 @@ class FileDefItemDict(TypedDict):
     frames: Optional[List[int]]
     template: Optional[str]
     is_sequence: Optional[bool]
+    is_representation: Optional[bool]
+    is_review: Optional[bool]
+
 
 
 class AbstractAttrDefMeta(ABCMeta):
@@ -672,6 +675,8 @@ class FileDefItem(object):
         filenames: List[str],
         frames: Optional[List[int]] = None,
         template: Optional[str] = None,
+        is_representation: bool = False,
+        is_review: bool = False,
     ):
         self.directory: str = directory
 
@@ -680,6 +685,8 @@ class FileDefItem(object):
         self.template = None
         self.frames = []
         self.is_empty = True
+        self.is_representation = is_representation
+        self.is_review = is_review
 
         self.set_filenames(filenames, frames, template)
 
@@ -803,6 +810,12 @@ class FileDefItem(object):
         self.frames = frames
         self.is_sequence = is_sequence
 
+    def set_representation(self, is_representation=False):
+        self.is_representation = is_representation
+
+    def set_review(self, is_review=False):
+        self.is_review = is_review
+
     @classmethod
     def create_empty_item(cls):
         return cls("", [])
@@ -855,7 +868,9 @@ class FileDefItem(object):
             data["directory"],
             data["filenames"],
             data.get("frames"),
-            data.get("template")
+            data.get("template"),
+            data.get("is_representation"),
+            data.get("is_review")
         )
 
     @classmethod
@@ -897,6 +912,8 @@ class FileDefItem(object):
             "is_sequence": self.is_sequence,
             "directory": self.directory,
             "filenames": list(self.filenames),
+            "is_representation": self.is_representation,
+            "is_review": self.is_review,
         }
         if self.is_sequence:
             output.update({

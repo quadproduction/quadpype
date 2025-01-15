@@ -786,7 +786,7 @@ class CreateWidget(QtWidgets.QWidget):
 
     def _on_create(self):
         indexes = self._creators_view.selectedIndexes()
-        if not indexes or len(indexes) > 1:
+        if not indexes:
             return
 
         if not self._create_btn.isEnabled():
@@ -805,33 +805,34 @@ class CreateWidget(QtWidgets.QWidget):
             asset_name = self._get_asset_name()
             task_name = self._get_task_name()
 
-        pre_create_data = self._pre_create_widget.current_value()
-        if index.data(CREATOR_THUMBNAIL_ENABLED_ROLE):
-            pre_create_data[PRE_CREATE_THUMBNAIL_KEY] = (
-                self._last_thumbnail_path
+        pre_create_datas = self._pre_create_widget.current_value()
+        for pre_create_data in pre_create_datas:
+            if index.data(CREATOR_THUMBNAIL_ENABLED_ROLE):
+                pre_create_data[PRE_CREATE_THUMBNAIL_KEY] = (
+                    self._last_thumbnail_path
+                )
+
+            # Where to define these data?
+            # - what data show be stored?
+            asset_key = "asset"
+
+            instance_data = {
+                asset_key: asset_name,
+                "task": task_name,
+                "variant": variant,
+                "family": family
+            }
+
+            success = self._controller.create(
+                creator_identifier,
+                subset_name,
+                instance_data,
+                pre_create_data
             )
 
-        # Where to define these data?
-        # - what data show be stored?
-        asset_key = "asset"
-
-        instance_data = {
-            asset_key: asset_name,
-            "task": task_name,
-            "variant": variant,
-            "family": family
-        }
-
-        success = self._controller.create(
-            creator_identifier,
-            subset_name,
-            instance_data,
-            pre_create_data
-        )
-
-        if success:
-            self._set_creator(self._selected_creator)
-            self.variant_input.setText(variant)
-            self._controller.emit_card_message("Creation finished...")
-            self._last_thumbnail_path = None
-            self._thumbnail_widget.set_current_thumbnails()
+            if success:
+                self._set_creator(self._selected_creator)
+                self.variant_input.setText(variant)
+                self._controller.emit_card_message("Creation finished...")
+                self._last_thumbnail_path = None
+                self._thumbnail_widget.set_current_thumbnails()
