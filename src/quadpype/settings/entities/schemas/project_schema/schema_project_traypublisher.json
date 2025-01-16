@@ -379,6 +379,30 @@
                             "label": "Validate Existing Version"
                         }
                     ]
+                },
+                {
+                    "type": "dict",
+                    "collapsible": true,
+                    "checkbox_key": "enabled",
+                    "key": "ExtractConvertAudioRepresentations",
+                    "label": "Convert Audio Representations",
+                    "is_group": true,
+                    "children": [
+                        {
+                            "type": "boolean",
+                            "key": "enabled",
+                            "label": "Enabled"
+                        },
+                        {
+                            "type": "enum",
+                            "key": "output_file_type",
+                            "label": "Convert to",
+                            "enum_items": [
+                                {"wav": "wav"},
+                                {"mp3": "mp3"}
+                            ]
+                        }
+                    ]
                 }
             ]
         }
