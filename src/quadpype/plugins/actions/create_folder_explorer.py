@@ -9,7 +9,6 @@ class CreateTaskPath(LauncherTaskAction):
     name = "create_task_path"
     label = "Create Folder"
     icon = "plus-square"
-    color = "#008000"
     order = 600
 
     def is_compatible(self, session):
