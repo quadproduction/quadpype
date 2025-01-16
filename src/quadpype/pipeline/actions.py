@@ -86,10 +86,6 @@ class LauncherAction(BaseLauncherAction, ABC):
 
 
 class LauncherTaskAction(LauncherAction, ABC):
-    _required_session_keys = (
-        "AVALON_PROJECT",
-        "AVALON_ASSET"
-    )
 
     def get_workdir(self, session):
         project_name = session["AVALON_PROJECT"]

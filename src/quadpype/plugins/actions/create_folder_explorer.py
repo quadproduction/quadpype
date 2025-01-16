@@ -21,7 +21,7 @@ class CreateTaskPath(LauncherTaskAction):
 
         # Return True if the path doesn't exist
         # Since the goal of this action is to create the workdir
-        return not path.exists()
+        return path and not path.exists()
 
     def process(self, session, **kwargs):
         path = self.get_workdir(session)
