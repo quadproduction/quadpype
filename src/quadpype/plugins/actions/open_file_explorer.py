@@ -29,6 +29,10 @@ class OpenTaskPath(LauncherTaskAction):
                                   "Cannot properly determine the work directory.\nDirectory not created.")
             return
 
+        if not path.exists():
+            # Create work directory
+            path.mkdir(parents=True, exist_ok=True)
+
         app = QtWidgets.QApplication.instance()
         ctrl_pressed = QtCore.Qt.ControlModifier & app.keyboardModifiers()
         if ctrl_pressed:

@@ -86,22 +86,15 @@ class LauncherAction(BaseLauncherAction, ABC):
 
 
 class LauncherTaskAction(LauncherAction, ABC):
-
-    def is_compatible(self, session):
-        """Return whether the action is compatible with the session"""
-        is_compatible = super(LauncherTaskAction, self).is_compatible(session)
-        if not is_compatible:
-            return False
-
-        return bool(session.get("AVALON_ASSET"))
+    _required_session_keys = (
+        "AVALON_PROJECT",
+        "AVALON_ASSET"
+    )
 
     def get_workdir(self, session):
         project_name = session["AVALON_PROJECT"]
         asset_name = session["AVALON_ASSET"]
         task_name = session.get("AVALON_TASK", None)
-
-        if task_name is None:
-            return None
 
         project = get_project(project_name)
         asset = get_asset_by_name(project_name, asset_name)
@@ -109,7 +102,6 @@ class LauncherTaskAction(LauncherAction, ABC):
         workdir_data = get_template_data(project, asset, task_name)
 
         anatomy = Anatomy(project_name)
-        template_obj = anatomy.templates_obj["work"]["folder"]
         try:
             workdir_path = anatomy.templates_obj["work"]["folder"].format_strict(workdir_data)
         except TemplateUnsolved as e:

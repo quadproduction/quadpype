@@ -33,7 +33,7 @@ class CreateTaskPath(LauncherTaskAction):
             return
 
         # Create work directory
-        path.mkdir()
+        path.mkdir(parents=True, exist_ok=True)
 
         # Copy to clipboard
         self.copy_path_to_clipboard(path)
