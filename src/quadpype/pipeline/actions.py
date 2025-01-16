@@ -1,4 +1,3 @@
-import os
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -72,8 +71,10 @@ class BaseLauncherAction(ABC):
         dialog.setStyleSheet(style.load_stylesheet())
         dialog.setWindowTitle("QuadPype: " + title)
         dialog.setText(message)
+
         if details:
             dialog.setDetailedText(details)
+
         return dialog.exec_()
 
     @abstractmethod
@@ -108,14 +109,13 @@ class LauncherTaskAction(LauncherAction, ABC):
 
     @staticmethod
     def copy_path_to_clipboard(path):
-        path = path.replace("\\", "/")
-        print(f"Copied to clipboard: {path}")
+        print(f"Copied to clipboard: {str(path)}")
         app = QtWidgets.QApplication.instance()
         assert app, "Must have running QApplication instance"
 
         # Set to Clipboard
         clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.setText(os.path.normpath(path))
+        clipboard.setText(str(path.resolve()))
 
 
 class ApplicationAction(BaseLauncherAction):

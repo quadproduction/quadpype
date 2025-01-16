@@ -40,3 +40,6 @@ class OpenTaskPath(LauncherTaskAction):
             self.copy_path_to_clipboard(path)
         else:
             open_in_explorer(path)
+
+        # Returning True to force an action discovery update
+        return True

@@ -41,12 +41,12 @@ class CreateTaskPath(LauncherTaskAction):
         # Display popup
         asset_name = session["AVALON_ASSET"]
         task_name = session.get("AVALON_TASK", None)
-        popup_msg = "Work directory for {}".format(asset_name)
+        popup_msg = f"Work directory for {asset_name}"
         if task_name:
-            popup_msg += " / {}".format(popup_msg, task_name)
+            popup_msg += f"/{task_name}"
         popup_msg += " has been created.\nPath copied into clipboard."
 
-        popup_ret_code = self.show_message_box("Work Directory Created", popup_msg)
+        self.show_message_box("Work Directory Created", popup_msg)
 
-        if popup_ret_code == QtWidgets.QMessageBox.Ok:
-            return True
+        # Returning True to force an action discovery update
+        return True
