@@ -341,6 +341,11 @@
             "optional": true,
             "active": false
         },
+        "CollectInheritedFrameRange": {
+            "enabled": true,
+            "optional": true,
+            "active": true
+        },
         "ValidateFrameRange": {
             "enabled": true,
             "optional": true,

@@ -500,8 +500,8 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
         input_is_sequence = self.input_is_sequence(repre)
 
-        frame_start = instance.data["frameStart"]
-        frame_end = instance.data["frameEnd"]
+        frame_start = instance.data.get("frameStart", 0)
+        frame_end = instance.data.get("frameEnd", 0)
         if frame_end == 0:
             # Special case: This means we need to take the file count
             if input_is_sequence:
@@ -515,8 +515,8 @@ class ExtractReview(pyblish.api.InstancePlugin):
         # If even one of handle values is not set on instance use
         # handles from context
         if handle_start is None or handle_end is None:
-            handle_start = instance.context.data["handleStart"]
-            handle_end = instance.context.data["handleEnd"]
+            handle_start = instance.context.data.get("handleStart", 0)
+            handle_end = instance.context.data.get("handleEnd", 0)
 
         frame_start_handle = frame_start - handle_start
         frame_end_handle = frame_end + handle_end
