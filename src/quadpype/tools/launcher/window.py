@@ -388,7 +388,12 @@ class LauncherWindow(QtWidgets.QDialog):
 
     def on_action_clicked(self, action):
         self.echo("Running action: {}".format(get_action_label(action)))
-        self.run_action(action)
+        return_action = self.run_action(action)
+        # Update the Action plug-ins available for the current project
+        # Only if click on an action that return something
+        # like the create folder action
+        if return_action:
+            self.discover_actions()
 
     def on_history_action(self, history_data):
         action, session = history_data
@@ -417,7 +422,7 @@ class LauncherWindow(QtWidgets.QDialog):
 
         # Process the Action
         try:
-            action().process(filtered_session)
+            return action().process(filtered_session)
         except Exception as exc:
             self.log.warning("Action launch failed.", exc_info=True)
             self.echo("Failed: {}".format(str(exc)))

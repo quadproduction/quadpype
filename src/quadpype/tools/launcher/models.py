@@ -20,7 +20,7 @@ from quadpype.lib.applications import (
     ApplicationManager
 )
 from quadpype.settings import get_project_settings, APPS_SETTINGS_KEY
-from quadpype.pipeline import discover_launcher_actions
+from quadpype.pipeline import discover_launcher_actions, ApplicationAction
 from quadpype.tools.utils.lib import (
     DynamicQThread,
     get_project_icon,
@@ -44,7 +44,6 @@ from .constants import (
     ACTION_ID_ROLE,
     FORCE_NOT_OPEN_WORKFILE_ROLE
 )
-from .actions import ApplicationAction
 
 log = logging.getLogger(__name__)
 

@@ -1,4 +1,18 @@
 import logging
+from abc import ABC, abstractmethod
+from pathlib import Path
+
+from qtpy import QtWidgets, QtGui
+
+from quadpype import style
+from quadpype import resources
+from quadpype.lib import (
+    ApplicationExecutableNotFound,
+    ApplicationLaunchFailed,
+    TemplateUnsolved
+)
+from quadpype.pipeline import Anatomy
+from quadpype.pipeline.template_data import get_template_data
 from quadpype.pipeline.plugin_discover import (
     discover,
     register_plugin,
@@ -6,20 +20,36 @@ from quadpype.pipeline.plugin_discover import (
     deregister_plugin,
     deregister_plugin_path
 )
+from quadpype.client import (
+    get_project,
+    get_asset_by_name,
+)
 
 from .load.utils import get_representation_path_from_context
 
 
-class LauncherAction(object):
-    """A custom action available"""
+class BaseLauncherAction(ABC):
+    """Base class to define a Launcher action"""
     name = None
     label = None
     icon = None
     color = None
     order = 0
 
-    log = logging.getLogger("LauncherAction")
-    log.propagate = True
+    _log = None
+
+    _required_session_keys = (
+        "AVALON_PROJECT",
+        "AVALON_ASSET",
+        "AVALON_TASK"
+    )
+
+    @property
+    def log(self):
+        if self._log is None:
+            self._log = logging.getLogger("LauncherAction")
+            self._log.propagate = True
+        return self._log
 
     def is_compatible(self, session):
         """Return whether the class is compatible with the Session.
@@ -28,11 +58,120 @@ class LauncherAction(object):
             session (dict[str, Union[str, None]]): Session data with
                 AVALON_PROJECT, AVALON_ASSET and AVALON_TASK.
         """
-
+        for key in self._required_session_keys:
+            if key not in session:
+                return False
         return True
 
+    @staticmethod
+    def show_message_box(title, message, details=None, icon_type="info"):
+        dialog = QtWidgets.QMessageBox()
+
+        # Window icon
+        window_icon = QtGui.QIcon(resources.get_app_icon_filepath())
+        dialog.setWindowIcon(window_icon)
+
+        # Content icon
+        message_icon = QtWidgets.QMessageBox.Information
+        if type == "error":
+            message_icon = QtWidgets.QMessageBox.Critical
+        elif type == "warning":
+            message_icon = QtWidgets.QMessageBox.Warning
+
+        dialog.setIcon(QtWidgets.QMessageBox.Information)
+
+        dialog.setStyleSheet(style.load_stylesheet())
+        dialog.setWindowTitle("QuadPype: " + title)
+        dialog.setText(message)
+
+        if details:
+            dialog.setDetailedText(details)
+
+        return dialog.exec_()
+
+    @abstractmethod
     def process(self, session, **kwargs):
-        pass
+        raise NotImplementedError("This method needs to be implemented by the subclass")
+
+
+class LauncherAction(BaseLauncherAction, ABC):
+    """Class use to define a Launcher action"""
+
+
+class LauncherTaskAction(LauncherAction, ABC):
+
+    def get_workdir(self, session):
+        project_name = session["AVALON_PROJECT"]
+        asset_name = session["AVALON_ASSET"]
+        task_name = session.get("AVALON_TASK", None)
+
+        project = get_project(project_name)
+        asset = get_asset_by_name(project_name, asset_name)
+
+        workdir_data = get_template_data(project, asset, task_name)
+
+        anatomy = Anatomy(project_name)
+        try:
+            workdir_path = anatomy.templates_obj["work"]["folder"].format_strict(workdir_data)
+        except TemplateUnsolved as e:
+            self.log.error(e)
+            return None
+
+        return Path(workdir_path.normalized())
+
+    @staticmethod
+    def copy_path_to_clipboard(path):
+        print(f"Copied to clipboard: {str(path)}")
+        app = QtWidgets.QApplication.instance()
+        assert app, "Must have running QApplication instance"
+
+        # Set to Clipboard
+        clipboard = QtWidgets.QApplication.clipboard()
+        clipboard.setText(str(path.resolve()))
+
+
+class ApplicationAction(BaseLauncherAction):
+    """QuadPype's application launcher
+
+    Application action based on QuadPype's ApplicationManager system.
+    """
+
+    # Application object
+    application = None
+    # Action attributes
+    label_variant = None
+    group = None
+    data = {}
+
+    def process(self, session, **kwargs):
+        """Process the full Application action"""
+
+        project_name = session["AVALON_PROJECT"]
+        asset_name = session["AVALON_ASSET"]
+        task_name = session["AVALON_TASK"]
+        try:
+            self.application.launch(
+                project_name=project_name,
+                asset_name=asset_name,
+                task_name=task_name,
+                **self.data
+            )
+
+        except ApplicationExecutableNotFound as exc:
+            details = exc.details
+            msg = exc.msg
+            log_msg = str(msg)
+            if details:
+                log_msg += "\n" + details
+            self.log.warning(log_msg)
+            self.show_message_box(
+                "Application executable not found", msg, details
+            )
+
+        except ApplicationLaunchFailed as exc:
+            msg = str(exc)
+            self.log.warning(msg, exc_info=True)
+            self.show_message_box("Application launch failed", msg)
 
 
 class InventoryAction(object):
