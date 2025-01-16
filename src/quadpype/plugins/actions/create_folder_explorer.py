@@ -27,8 +27,11 @@ class CreateTaskPath(LauncherTaskAction):
 
         if not path:
             # An error occurs while retrieving the workdir path
-            self.show_message_box("Creation Failed",
-                                  "Cannot properly determine the work directory.\nDirectory not created.")
+            self.show_message_box(
+                "Work Directory Creation",
+                "Creation Failed!\nCannot properly determine the work directory.\n\nDirectory not created.",
+                icon_type="error"
+            )
             return
 
         # Create work directory
@@ -40,12 +43,12 @@ class CreateTaskPath(LauncherTaskAction):
         # Display popup
         asset_name = session["AVALON_ASSET"]
         task_name = session.get("AVALON_TASK", None)
-        popup_msg = f"Work directory for {asset_name}"
+        popup_msg = f"Directory creation performed.\nWork directory for \"{asset_name}"
         if task_name:
             popup_msg += f"/{task_name}"
-        popup_msg += " has been created.\nPath copied into clipboard."
+        popup_msg += "\" has been created.\n\nPath copied into clipboard."
 
-        self.show_message_box("Work Directory Created", popup_msg)
+        self.show_message_box("Work Directory Creation", popup_msg)
 
         # Returning True to force an action discovery update
         return True

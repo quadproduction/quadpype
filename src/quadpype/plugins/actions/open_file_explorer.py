@@ -25,8 +25,10 @@ class OpenTaskPath(LauncherTaskAction):
         path = self.get_workdir(session)
         if not path:
             # An error occurs while retrieving the workdir path
-            self.show_message_box("Open Operation Failed",
-                                  "Cannot properly determine the work directory.\nDirectory not created.")
+            self.show_message_box(
+                "Open Work Directory",
+                "Operation Failed\nCannot properly determine the work directory.\n\nDirectory not created.",
+                icon_type="error")
             return
 
         if not path.exists():

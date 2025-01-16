@@ -64,10 +64,22 @@ class BaseLauncherAction(ABC):
         return True
 
     @staticmethod
-    def show_message_box(title, message, details=None):
+    def show_message_box(title, message, details=None, icon_type="info"):
         dialog = QtWidgets.QMessageBox()
-        icon = QtGui.QIcon(resources.get_app_icon_filepath())
-        dialog.setWindowIcon(icon)
+
+        # Window icon
+        window_icon = QtGui.QIcon(resources.get_app_icon_filepath())
+        dialog.setWindowIcon(window_icon)
+
+        # Content icon
+        message_icon = QtWidgets.QMessageBox.Information
+        if type == "error":
+            message_icon = QtWidgets.QMessageBox.Critical
+        elif type == "warning":
+            message_icon = QtWidgets.QMessageBox.Warning
+
+        dialog.setIcon(QtWidgets.QMessageBox.Information)
+
         dialog.setStyleSheet(style.load_stylesheet())
         dialog.setWindowTitle("QuadPype: " + title)
         dialog.setText(message)
