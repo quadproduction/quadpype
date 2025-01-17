@@ -252,7 +252,7 @@ def save_project_anatomy(project_name, anatomy_data):
     if project_name:
         old_data = get_anatomy_settings(project_name)
 
-        studio_overrides = get_studio_project_settings_overrides()
+        studio_overrides = get_studio_project_anatomy_overrides()
         studio_values = apply_overrides(default_values, studio_overrides)
         clear_metadata_from_settings(studio_values)
         new_data = apply_overrides(studio_values, copy.deepcopy(anatomy_data))
