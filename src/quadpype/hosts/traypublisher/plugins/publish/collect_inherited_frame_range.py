@@ -22,8 +22,10 @@ class CollectInheritedFrameRange(pyblish.api.InstancePlugin, OptionalPyblishPlug
     hosts = ["traypublisher"]
     optional = True
 
+    disabled_for_tasks = []
+
     def process(self, instance):
-        if not self.is_active(instance.data):
+        if not self.is_active(instance.data) or instance.data["task"] in self.disabled_for_tasks:
             return
 
         asset_entity = instance.data.get("assetEntity")
