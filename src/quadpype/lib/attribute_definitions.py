@@ -822,9 +822,9 @@ class FileDefItem(object):
 
     @classmethod
     def from_value(
-        cls,
-        value: Union[List[FileDefItemDict], FileDefItemDict],
-        allow_sequences: bool
+            cls,
+            value: Union[List[FileDefItemDict], FileDefItemDict],
+            allow_sequences: bool
     ) -> List:
         """Convert passed value to FileDefItem objects.
 
@@ -838,24 +838,36 @@ class FileDefItem(object):
 
         output = []
         str_filepaths = []
-        for item in value:
+
+        # Recursive function to process reviewable items
+        def process_item(item):
             if isinstance(item, dict):
-                item = cls.from_dict(item)
-
-            if isinstance(item, FileDefItem):
-                if not allow_sequences and item.is_sequence:
-                    output.extend(item.split_sequence())
-                else:
-                    output.append(item)
-
+                file_item = cls.from_dict(item)
+                reviewables = item.get("reviewable", [])
+            elif isinstance(item, FileDefItem):
+                file_item = item
+                reviewables = getattr(item, "reviewable", [])
             elif isinstance(item, str):
                 str_filepaths.append(item)
+                return
             else:
                 raise TypeError(
-                    "Unknown type \"{}\". Can't convert to {}".format(
-                        str(type(item)), cls.__name__
-                    )
+                    f"Unknown type \"{type(item).__name__}\". Can't convert to {cls.__name__}"
                 )
+
+            # Process the FileDefItem
+            if not allow_sequences and file_item.is_sequence:
+                output.extend(file_item.split_sequence())
+            else:
+                output.append(file_item)
+
+            # Process reviewables
+            if isinstance(reviewables, list):
+                for review_item in reviewables:
+                    process_item(review_item)
+
+        for item in value:
+            process_item(item)
 
         if str_filepaths:
             output.extend(cls.from_paths(str_filepaths, allow_sequences))

@@ -816,15 +816,11 @@ class FilesWidget(QtWidgets.QFrame):
 
                     # Check if the item has children (reviewable)
                     if self._files_proxy_model.rowCount(index) > 0:  # Has children
-                        children_data = []
-                        for child_row in range(self._files_proxy_model.rowCount(index)):
-                            child_index = self._files_proxy_model.index(child_row, 0, index)
-                            child_item_id = child_index.data(ITEM_ID_ROLE)
-                            child_item = self._files_model.get_file_item_by_id(child_item_id)
-                            if child_item:
-                                children_data.append(child_item.to_dict())
-                        item_dict['reviewable'] = children_data
-
+                        child_index = self._files_proxy_model.index(0, 0, index)
+                        child_item_id = child_index.data(ITEM_ID_ROLE)
+                        child_item = self._files_model.get_file_item_by_id(child_item_id)
+                        if child_item:
+                            item_dict['reviewable'] = child_item.to_dict()
                     file_items_data.append(item_dict)
         # Return the data or an empty item if no root items exist
         if file_items_data:
@@ -965,6 +961,7 @@ class FilesWidget(QtWidgets.QFrame):
             return
 
         mime_data = event.mimeData()
+
         if mime_data.hasUrls():
             event.accept()
             filepaths = []
@@ -973,14 +970,20 @@ class FilesWidget(QtWidgets.QFrame):
                 if os.path.exists(filepath):
                     filepaths.append(filepath)
 
-            # Filter filepaths before passing it to model
             filepaths = self._files_proxy_model.filter_valid_files(filepaths)
+
             if filepaths:
                 parent_index = self._files_view.indexAt(event.pos())
                 parent_index_source = self._files_proxy_model.mapToSourceIndex(parent_index)
+
+                # This is a child item, so we reject the drop
+                if parent_index_source.isValid() and parent_index_source.parent().isValid():
+                    event.ignore()
+                    return
+
                 self._files_model.add_filepaths(filepaths, parent_index_source)
 
-        if self._handle_full_data_drop( mime_data.data("files_widget/full_data")):
+        if self._handle_full_data_drop(mime_data.data("files_widget/full_data")):
             event.setDropAction(QtCore.Qt.CopyAction)
             event.accept()
 
