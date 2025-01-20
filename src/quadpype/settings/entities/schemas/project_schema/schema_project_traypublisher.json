@@ -392,10 +392,6 @@
                             "label": "Collect Original Sequence Frame Data"
                         },
                         {
-                            "key": "CollectInheritedFrameRange",
-                            "label": "Collect Inherited Frame Range"
-                        },
-                        {
                             "key": "ValidateFrameRange",
                             "label": "Validate frame range"
                         },
