@@ -1866,7 +1866,6 @@ class UserManagerWidget(BaseControlPanelWidget):
                     item.setData(QtCore.Qt.ItemDataRole.UserRole, sorting_value)
                     self.table_widget.setCellWidget(row_index, column_index, cell_data)
 
-                item.setProperty("class", "user-row-cell")
                 self.table_widget.setItem(row_index, column_index, item)
 
     def _update_user_list(self):

@@ -1573,9 +1573,3 @@ InViewButton:hover {
 SupportLabel {
     color: {color:font-disabled};
 }
-
-/* User Manager Panel */
-
-.user-row-cell {
-    background: red;
-}
