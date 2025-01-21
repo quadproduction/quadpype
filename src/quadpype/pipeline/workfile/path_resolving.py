@@ -66,7 +66,7 @@ def get_workfile_template_key(
     """
 
     default = "work"
-    if not task_type or not host_name:
+    if not task_type:
         return default
 
     if not project_settings:
