@@ -80,8 +80,8 @@ class ExtractImage(pyblish.api.ContextPlugin):
                     representations = []
                     for extension, filename in files.items():
                         representations.append({
-                            "name": extension,
-                            "ext": extension,
+                            "name": extension.lower(),
+                            "ext": extension.lower(),
                             "files": filename,
                             "stagingDir": staging_dir
                         })

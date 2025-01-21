@@ -18,7 +18,7 @@ class ExtractReviewData(publish.Extractor):
 
     def process(self, instance):
         fpath = instance.data["path"]
-        ext = os.path.splitext(fpath)[-1][1:]
+        ext = os.path.splitext(fpath)[-1][1:].lower()
 
         representations = instance.data.get("representations", [])
 

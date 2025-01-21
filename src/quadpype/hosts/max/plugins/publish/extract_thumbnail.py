@@ -14,7 +14,7 @@ class ExtractThumbnail(publish.Extractor):
     families = ["review"]
 
     def process(self, instance):
-        ext = instance.data.get("imageFormat")
+        ext = instance.data.get("imageFormat").lower()
         frame = int(instance.data["frameStart"])
         staging_dir = self.staging_dir(instance)
         filepath = os.path.join(

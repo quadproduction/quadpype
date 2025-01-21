@@ -1049,7 +1049,7 @@ class ProjectPushItemProcess:
             repre_format_data["representation"] = repre_name
             for src_file in repre_item.src_files:
                 ext = os.path.splitext(src_file.path)[-1]
-                repre_format_data["ext"] = ext[1:]
+                repre_format_data["ext"] = ext[1:].lower()
                 break
 
             # Re-use 'output' from source representation

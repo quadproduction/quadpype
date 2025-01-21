@@ -183,7 +183,7 @@ class ExtractUSDLayered(publish.Extractor):
             return False
 
         representation = get_representation_by_name(
-            project_name, ext.lstrip("."), version["_id"]
+            project_name, ext.lstrip(".").lower(), version["_id"]
         )
         if not representation:
             self.log.debug("No existing representation..")

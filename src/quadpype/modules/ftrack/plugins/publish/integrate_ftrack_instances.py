@@ -699,5 +699,5 @@ class IntegrateFtrackInstance(pyblish.api.InstancePlugin):
         return metadata
 
     def _is_repre_video(self, repre):
-        repre_ext = ".{}".format(repre["ext"])
+        repre_ext = ".{}".format(repre["ext"]).lower()
         return repre_ext in VIDEO_EXTENSIONS

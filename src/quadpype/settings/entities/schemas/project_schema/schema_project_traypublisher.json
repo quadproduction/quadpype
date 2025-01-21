@@ -363,6 +363,26 @@
             "label": "Publish plugins",
             "children": [
                 {
+                    "type": "dict",
+                    "collapsible": true,
+                    "checkbox_key": "enabled",
+                    "key": "CollectInheritedFrameRange",
+                    "label": "Collect Inherited Frame Range",
+                    "is_group": true,
+                    "children": [
+                        {
+                            "type": "boolean",
+                            "key": "enabled",
+                            "label": "Enabled"
+                        },
+                        {
+                            "key": "disabled_for_tasks",
+                            "label": "Disabled for task types",
+                            "type": "task-types-enum"
+                        }
+                    ]
+                },
+                {
                     "type": "schema_template",
                     "name": "template_validate_plugin",
                     "template_data": [

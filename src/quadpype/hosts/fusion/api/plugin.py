@@ -133,7 +133,7 @@ class GenericCreateSaver(Creator):
         frame_padding = self.project_anatomy.templates["frame_padding"]
 
         # get output format
-        ext = data["creator_attributes"]["image_format"]
+        ext = data["creator_attributes"]["image_format"].lower()
 
         # Subset change detected
         workdir = os.path.normpath(legacy_io.Session["AVALON_WORKDIR"])

@@ -168,7 +168,7 @@ class LoadOcioLookNodes(load.LoaderPlugin):
                 node = nuke.createNode("OCIOFileTransform")
 
                 # file path from lut representation
-                extension = ocio_item["ext"]
+                extension = ocio_item["ext"].lower()
                 item_name = ocio_item["name"]
 
                 item_lut_file = next(

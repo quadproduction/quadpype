@@ -49,8 +49,8 @@ class ExtractOpenRVAnnotatedFrames(publish.Extractor):
             filename, ext = os.path.splitext(file)
 
         representation = {
-            "name": ext.lstrip("."),
-            "ext": ext.lstrip("."),
+            "name": ext.lstrip(".").lower(),
+            "ext": ext.lstrip(".").lower(),
             "files": export_annotated_filepath,
             "stagingDir": folder,
         }

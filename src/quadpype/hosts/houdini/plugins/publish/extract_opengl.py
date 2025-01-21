@@ -35,8 +35,8 @@ class ExtractOpenGL(publish.Extractor):
             tags.append("delete")
 
         representation = {
-            "name": instance.data["imageFormat"],
-            "ext": instance.data["imageFormat"],
+            "name": instance.data["imageFormat"].lower(),
+            "ext": instance.data["imageFormat"].lower(),
             "files": output,
             "stagingDir": staging_dir,
             "frameStart": instance.data["frameStartHandle"],

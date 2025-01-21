@@ -87,7 +87,7 @@ class FramesLoader(load.LoaderPlugin):
         representation = context.get("representation", {})
 
         # Only images may be sequences, not videos
-        ext = representation.get("ext", representation.get("name"))
+        ext = representation.get("ext", representation.get("name")).lower()
         if f".{ext}" not in IMAGE_EXTENSIONS:
             return
 

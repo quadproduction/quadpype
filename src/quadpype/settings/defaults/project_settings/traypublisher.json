@@ -336,6 +336,12 @@
         }
     },
     "publish": {
+        "CollectInheritedFrameRange": {
+            "enabled": true,
+            "optional": true,
+            "active": true,
+            "disabled_for_tasks": []
+        },
         "CollectSequenceFrameData": {
             "enabled": true,
             "optional": true,

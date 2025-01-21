@@ -24,7 +24,7 @@ class ExtractWorkfileUrl(pyblish.api.ContextPlugin):
             if instance.data["family"] == 'workfile':
                 anatomy = context.data['anatomy']
                 template_data = instance.data.get("anatomyData")
-                rep_name = instance.data.get("representations")[0].get("name")
+                rep_name = instance.data.get("representations")[0].get("name").lower()
                 template_data["representation"] = rep_name
                 template_data["ext"] = rep_name
                 template_obj = anatomy.templates_obj["publish"]["path"]

@@ -174,7 +174,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
             input_ext = repre["ext"]
             if input_ext.startswith("."):
-                input_ext = input_ext[1:]
+                input_ext = input_ext[1:].lower()
 
             if input_ext not in self.supported_exts:
                 self.log.info(
@@ -498,8 +498,16 @@ class ExtractReview(pyblish.api.InstancePlugin):
                 with values may be added.
         """
 
-        frame_start = instance.data["frameStart"]
-        frame_end = instance.data["frameEnd"]
+        input_is_sequence = self.input_is_sequence(repre)
+
+        frame_start = instance.data.get("frameStart", 0)
+        frame_end = instance.data.get("frameEnd", 0)
+        if frame_end == 0:
+            # Special case: This means we need to take the file count
+            if input_is_sequence:
+                frame_end = len(repre["files"])
+            else:
+                frame_end = 1
 
         # Try to get handles from instance
         handle_start = instance.data.get("handleStart")
@@ -507,8 +515,8 @@ class ExtractReview(pyblish.api.InstancePlugin):
         # If even one of handle values is not set on instance use
         # handles from context
         if handle_start is None or handle_end is None:
-            handle_start = instance.context.data["handleStart"]
-            handle_end = instance.context.data["handleEnd"]
+            handle_start = instance.context.data.get("handleStart", 0)
+            handle_end = instance.context.data.get("handleEnd", 0)
 
         frame_start_handle = frame_start - handle_start
         frame_end_handle = frame_end + handle_end
@@ -533,7 +541,6 @@ class ExtractReview(pyblish.api.InstancePlugin):
         ):
             with_audio = False
 
-        input_is_sequence = self.input_is_sequence(repre)
         input_allow_bg = False
         first_sequence_frame = None
         if input_is_sequence and repre["files"]:

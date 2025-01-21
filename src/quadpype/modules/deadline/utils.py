@@ -102,7 +102,7 @@ def set_custom_deadline_name(instance, filename, setting):
         "comment": instance.data.get("comment"),
         "subversion": subversion,
         "inst_name": instance.data.get("name"),
-        "ext": ext[1:]
+        "ext": ext[1:].lower()
     }
 
     custom_name_settings = get_current_project_settings()["deadline"][setting]  # noqa

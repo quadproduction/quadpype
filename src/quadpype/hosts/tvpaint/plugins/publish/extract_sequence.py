@@ -247,7 +247,7 @@ class ExtractSequence(pyblish.api.Extractor):
 
         thumbnail_ext = os.path.splitext(
             thumbnail_fullpath
-        )[1].replace(".", "")
+        )[1].replace(".", "").lower()
         # Create thumbnail representation
         thumbnail_repre = {
             "name": "thumbnail",

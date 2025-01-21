@@ -26,7 +26,7 @@ class CollectNukeReads(pyblish.api.InstancePlugin):
         if len(items) < 2:
             raise ValueError
 
-        ext = items[-1]
+        ext = items[-1].lower()
 
         # Get frame range
         handle_start = instance.context.data["handleStart"]

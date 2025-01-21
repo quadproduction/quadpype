@@ -46,7 +46,7 @@ class ExtractBGEO(publish.Extractor):
 
         representation = {
             "name": "bgeo",
-            "ext": ext.lstrip("."),
+            "ext": ext.lstrip(".").lower(),
             "files": output,
             "stagingDir": staging_dir,
             "frameStart": instance.data["frameStartHandle"],

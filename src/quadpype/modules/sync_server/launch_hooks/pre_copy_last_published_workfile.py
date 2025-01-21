@@ -178,7 +178,7 @@ class CopyLastPublishedWorkfile(PreLaunchHook):
             project_doc, asset_doc, task_name, host_name
         )
 
-        extension = last_published_workfile_path.split(".")[-1]
+        extension = last_published_workfile_path.split(".")[-1].lower()
         workfile_data["version"] = (
                 workfile_representation["context"]["version"] + 1)
         workfile_data["ext"] = extension
