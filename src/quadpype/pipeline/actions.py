@@ -8,11 +8,8 @@ from quadpype import style
 from quadpype import resources
 from quadpype.lib import (
     ApplicationExecutableNotFound,
-    ApplicationLaunchFailed,
-    TemplateUnsolved
+    ApplicationLaunchFailed
 )
-from quadpype.pipeline import Anatomy
-from quadpype.pipeline.template_data import get_template_data
 from quadpype.pipeline.plugin_discover import (
     discover,
     register_plugin,
@@ -20,10 +17,7 @@ from quadpype.pipeline.plugin_discover import (
     deregister_plugin,
     deregister_plugin_path
 )
-from quadpype.client import (
-    get_project,
-    get_asset_by_name,
-)
+from .context_tools import get_workdir_from_session
 
 from .load.utils import get_representation_path_from_context
 
@@ -73,12 +67,12 @@ class BaseLauncherAction(ABC):
 
         # Content icon
         message_icon = QtWidgets.QMessageBox.Information
-        if type == "error":
+        if icon_type == "error":
             message_icon = QtWidgets.QMessageBox.Critical
-        elif type == "warning":
+        elif icon_type == "warning":
             message_icon = QtWidgets.QMessageBox.Warning
 
-        dialog.setIcon(QtWidgets.QMessageBox.Information)
+        dialog.setIcon(message_icon)
 
         dialog.setStyleSheet(style.load_stylesheet())
         dialog.setWindowTitle("QuadPype: " + title)
@@ -100,24 +94,13 @@ class LauncherAction(BaseLauncherAction, ABC):
 
 class LauncherTaskAction(LauncherAction, ABC):
 
-    def get_workdir(self, session):
-        project_name = session["AVALON_PROJECT"]
-        asset_name = session["AVALON_ASSET"]
-        task_name = session.get("AVALON_TASK", None)
-
-        project = get_project(project_name)
-        asset = get_asset_by_name(project_name, asset_name)
-
-        workdir_data = get_template_data(project, asset, task_name)
-
-        anatomy = Anatomy(project_name)
-        try:
-            workdir_path = anatomy.templates_obj["work"]["folder"].format_strict(workdir_data)
-        except TemplateUnsolved as e:
-            self.log.error(e)
+    @staticmethod
+    def get_workdir(session):
+        workdir_path_str = get_workdir_from_session(session)
+        if not workdir_path_str:
             return None
 
-        return Path(workdir_path.normalized())
+        return Path(workdir_path_str)
 
     @staticmethod
     def copy_path_to_clipboard(path):

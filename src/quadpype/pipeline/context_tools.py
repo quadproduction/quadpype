@@ -18,6 +18,7 @@ from quadpype.client import (
     get_asset_by_name,
     version_is_latest
 )
+from quadpype.lib import TemplateUnsolved
 from quadpype.lib.events import emit_event
 from quadpype.modules import load_modules, ModulesManager
 from quadpype.settings import get_project_settings
@@ -486,10 +487,10 @@ def get_template_data_from_session(session=None, global_settings=None):
     if session is None:
         session = legacy_io.Session
 
-    project_name = session["AVALON_PROJECT"]
-    asset_name = session["AVALON_ASSET"]
-    task_name = session["AVALON_TASK"]
-    host_name = session["AVALON_APP"]
+    project_name = session.get("AVALON_PROJECT")
+    asset_name = session.get("AVALON_ASSET")
+    task_name = session.get("AVALON_TASK")
+    host_name = session.get("AVALON_APP")
 
     return get_template_data_with_names(
         project_name, asset_name, task_name, host_name, global_settings
@@ -546,10 +547,13 @@ def get_workdir_from_session(session=None, template_key=None):
 
     anatomy = Anatomy(project_name)
     template_obj = anatomy.templates_obj[template_key]["folder"]
-    path = template_obj.format_strict(template_data)
-    if path:
-        path = os.path.normpath(path)
-    return path
+    try:
+        path = template_obj.format_strict(template_data)
+    except TemplateUnsolved as e:
+        print(e)
+        return None
+
+    return os.path.normpath(path)
 
 
 def get_custom_workfile_template_from_session(
