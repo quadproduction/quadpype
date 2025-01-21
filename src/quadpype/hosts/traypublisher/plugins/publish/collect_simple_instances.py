@@ -172,7 +172,7 @@ class CollectSettingsSimpleInstances(pyblish.api.InstancePlugin):
             return
 
         creator_attributes = instance.data["creator_attributes"]
-        review_file_item = creator_attributes["representation_files"]["reviewable"]
+        review_file_item = creator_attributes["representation_files"].get("reviewable", {})
         filenames = review_file_item.get("filenames")
         if not filenames:
             self.log.debug((
