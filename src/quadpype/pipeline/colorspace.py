@@ -777,7 +777,7 @@ def get_imageio_config(
     anatomy = anatomy or Anatomy(project_name)
 
     if not anatomy_data:
-        from quadpype.pipeline.context_tools import (
+        from quadpype.pipeline.workfile import (
             get_template_data_from_session)
         anatomy_data = get_template_data_from_session()
 

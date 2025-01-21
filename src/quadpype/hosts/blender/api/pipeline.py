@@ -32,7 +32,7 @@ from quadpype.pipeline import (
     get_current_task_name
 )
 
-from quadpype.pipeline.context_tools import get_template_data_from_session
+from quadpype.pipeline.workfile import get_template_data_from_session
 from quadpype.lib import (
     Logger,
     register_event_callback,
