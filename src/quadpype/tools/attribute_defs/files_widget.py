@@ -26,9 +26,10 @@ IS_DIR_ROLE = QtCore.Qt.UserRole + 6
 IS_SEQUENCE_ROLE = QtCore.Qt.UserRole + 7
 EXT_ROLE = QtCore.Qt.UserRole + 8
 
-PURPLE_BG = "rgba(128, 0, 128, 0.5);"
-ORANGE_BG = "rgba(255, 165, 0, 0.5);"
-YELLOW_BG = "rgba(255, 255, 0, 0.5);"
+PURPLE_BG = QtGui.QColor(128, 0, 128, int(0.5 * 255))
+ORANGE_BG = QtGui.QColor(255, 165, 0, int(0.5 * 255))
+YELLOW_BG = QtGui.QColor(255, 255, 0, int(0.5 * 255))
+
 
 def convert_bytes_to_json(bytes_value):
     if isinstance(bytes_value, QtCore.QByteArray):
@@ -270,8 +271,13 @@ class FilesModel(QtGui.QStandardItemModel):
                 if parent_item is None:
                     parent_item = self.invisibleRootItem()
 
-            for items in new_model_items:
-                parent_item.appendRow(items)
+            # Ensure the first item is the parent, and others are children
+            for idx, items in enumerate(new_model_items):
+                if idx == 0:
+                    parent_item.appendRow(items)
+                else:
+                    first_model_item = new_model_items[0][0]
+                    first_model_item.appendRow(items)
 
     def remove_item_by_ids(self, item_ids):
         if not item_ids:
@@ -539,23 +545,33 @@ class ItemWidget(QtWidgets.QWidget):
         source_model = self._item.model().sourceModel()
 
         if parent_is_valid:
-            self._review_btn.setVisible(True)
-            self._review_btn.setPixmap(self._review_pix)
-            source_model.get_file_item_by_id(self._item_id).set_review(True)
+            self._review_btn.setVisible(False)
             source_model.get_file_item_by_id(self._item_id).set_representation(False)
-            self.setStyleSheet(f"background-color: {YELLOW_BG};")
         else:
             if not has_children:
                 self._review_btn.setVisible(True)
-                self._review_btn.setPixmap(self._review_pix)
-                source_model.get_file_item_by_id(self._item_id).set_review(True)
                 source_model.get_file_item_by_id(self._item_id).set_representation(True)
-                self.setStyleSheet(f"background-color: {PURPLE_BG};")
             else:
                 self._review_btn.setVisible(False)
-                source_model.get_file_item_by_id(self._item_id).set_review(False)
                 source_model.get_file_item_by_id(self._item_id).set_representation(True)
-                self.setStyleSheet(f"background-color: {ORANGE_BG};")
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        rect = self.rect()
+
+        parent_is_valid = self._item.parent().isValid() if self._item else False
+        has_children = self._item.model().hasChildren(self._item) if self._item else False
+
+        if parent_is_valid:
+            color = QtGui.QColor(YELLOW_BG)
+        elif not has_children:
+            color = QtGui.QColor(PURPLE_BG)
+        else:
+            color = QtGui.QColor(ORANGE_BG)
+
+        # Paint the background
+        painter.fillRect(rect, color)
+        super().paintEvent(event)
 
     def _update_btn_size(self):
         label_size_hint = self._label_widget.sizeHint()
@@ -585,10 +601,13 @@ class ItemWidget(QtWidgets.QWidget):
         self.context_menu_requested.emit(point)
 
     def _on_review_actions_clicked(self):
+        source_model = self._item.model().sourceModel()
         self._is_review_enabled = not self._is_review_enabled
         if self._is_review_enabled:
+            source_model.get_file_item_by_id(self._item_id).set_review(True)
             self._review_btn.setPixmap(self._review_pix)
         else:
+            source_model.get_file_item_by_id(self._item_id).set_review(False)
             self._review_btn.setPixmap(self._review_disabled_pix)
 
     def _on_delete_actions_clicked(self):
@@ -738,12 +757,6 @@ class FilesWidget(QtWidgets.QFrame):
 
     @staticmethod
     def _create_legend_pixmap():
-        def _rgba_to_qcolor(rgba_str):
-            """Convert an RGBA string into a QColor object."""
-            rgba_str = rgba_str.rstrip(";")  # Remove the trailing semicolon
-            rgba_values = rgba_str.replace("rgba(", "").replace(")", "").split(",")
-            r, g, b, a = map(float, rgba_values)
-            return QtGui.QColor(r, g, b, int(a * 255))  # Convert alpha to 0-255
         width, height = 300, 150
 
         pixmap = QtGui.QPixmap(width, height)
@@ -762,9 +775,7 @@ class FilesWidget(QtWidgets.QFrame):
         x_offset, y_offset = 10, 10
         rect_size = 20
 
-        for color, label in items:
-            qcolor = _rgba_to_qcolor(color)
-
+        for qcolor, label in items:
             # Draw color box
             painter.setBrush(qcolor)
             painter.setPen(QtGui.QColor("#bfccd6"))
@@ -821,6 +832,9 @@ class FilesWidget(QtWidgets.QFrame):
                         child_item = self._files_model.get_file_item_by_id(child_item_id)
                         if child_item:
                             item_dict['reviewable'] = child_item.to_dict()
+                    elif item.is_review:
+                        item_dict['reviewable'] = item.to_dict()
+
                     file_items_data.append(item_dict)
         # Return the data or an empty item if no root items exist
         if file_items_data:

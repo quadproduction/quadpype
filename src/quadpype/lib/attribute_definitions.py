@@ -843,7 +843,10 @@ class FileDefItem(object):
         def process_item(item):
             if isinstance(item, dict):
                 file_item = cls.from_dict(item)
+                # TODO: Make the TrayPublisherPlugin able to manage multiple review ?
                 reviewables = item.get("reviewable", [])
+                if isinstance(reviewables, dict):
+                    reviewables = [reviewables]
             elif isinstance(item, FileDefItem):
                 file_item = item
                 reviewables = getattr(item, "reviewable", [])
@@ -862,9 +865,8 @@ class FileDefItem(object):
                 output.append(file_item)
 
             # Process reviewables
-            if isinstance(reviewables, list):
-                for review_item in reviewables:
-                    process_item(review_item)
+            for review_item in reviewables:
+                process_item(review_item)
 
         for item in value:
             process_item(item)
