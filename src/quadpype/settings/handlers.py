@@ -834,7 +834,7 @@ class MongoSettingsHandler(SettingsHandler):
         # Project's data
         update_dict_data = {}
         project_doc_data = project_doc.get("data") or {}
-        attributes = new_data.pop("attributes")
+        attributes = new_data.pop("attributes", {})
         _applications = attributes.pop(APPS_SETTINGS_KEY, None) or []
         for key, value in attributes.items():
             if (

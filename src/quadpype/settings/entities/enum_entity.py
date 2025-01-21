@@ -465,8 +465,13 @@ class TaskTypeEnumEntity(BaseEnumEntity):
         if self.multiselection:
             new_value = []
             for key in self._current_value:
-                if key in self.valid_keys:
-                    new_value.append(key)
+                if isinstance(key, list):
+                    for sub_key in key:
+                        if sub_key in self.valid_keys:
+                            new_value.append(sub_key)
+                elif isinstance(key, STRING_TYPE):
+                    if key in self.valid_keys:
+                        new_value.append(key)
 
             if self._current_value != new_value:
                 self.set(new_value)

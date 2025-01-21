@@ -328,7 +328,7 @@ def prepare_representations(skeleton_data, exp_files, anatomy, aov_filter,
 
     # create representation for every collected sequence
     for collection in collections:
-        ext = collection.tail.lstrip(".")
+        ext = collection.tail.lstrip(".").lower()
         preview = False
         # TODO 'useSequenceForReview' is temporary solution which does
         #   not work for 100% of cases. We must be able to tell what
@@ -862,7 +862,7 @@ def prepare_cache_representations(skeleton_data, exp_files, anatomy):
 
     # create representation for every collected sequence
     for collection in collections:
-        ext = collection.tail.lstrip(".")
+        ext = collection.tail.lstrip(".").lower()
 
         staging = os.path.dirname(list(collection)[0])
         success, rootless_staging_dir = (

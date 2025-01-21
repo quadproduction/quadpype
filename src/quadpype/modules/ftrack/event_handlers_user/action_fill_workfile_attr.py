@@ -274,7 +274,7 @@ class FillWorkfileAttributeAction(BaseAction):
 
         # Keep placeholders in the template unfilled
         host_name = "{app}"
-        extension = "{ext}"
+        extension = "{ext}".lower()
         project_doc = get_project(project_name)
         project_settings = get_project_settings(project_name)
         global_settings = get_global_settings()

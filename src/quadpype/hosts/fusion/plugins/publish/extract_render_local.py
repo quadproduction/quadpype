@@ -151,8 +151,8 @@ class FusionRenderLocal(
             files = files[0]
 
         repre = {
-            "name": ext[1:],
-            "ext": ext[1:],
+            "name": ext[1:].lower(),
+            "ext": ext[1:].lower(),
             "frameStart": f"%0{padding}d" % start,
             "files": files,
             "stagingDir": staging_dir,

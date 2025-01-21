@@ -191,8 +191,8 @@ class CollectPublishedFiles(pyblish.api.ContextPlugin):
         _, ext = os.path.splitext(files[0])
         ext = ext.lower()
         repre_data = {
-            "name": ext[1:],
-            "ext": ext[1:],
+            "name": ext[1:].lower(),
+            "ext": ext[1:].lower(),
             "files": files[0],
             "stagingDir": task_dir,
             "tags": tags
@@ -213,8 +213,8 @@ class CollectPublishedFiles(pyblish.api.ContextPlugin):
         repre_data = {
             "frameStart": frame_start,
             "frameEnd": frame_end,
-            "name": ext[1:],
-            "ext": ext[1:],
+            "name": ext[1:].lower(),
+            "ext": ext[1:].lower(),
             "files": files,
             "stagingDir": task_dir,
             "tags": tags  # configurable tags from Settings

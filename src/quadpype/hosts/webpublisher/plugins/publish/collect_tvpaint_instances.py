@@ -194,8 +194,8 @@ class CollectTVPaintInstances(pyblish.api.ContextPlugin):
             "families": [],
             "stagingDir": staging_dir,
             "representations": [{
-                "name": ext.lstrip("."),
-                "ext": ext.lstrip("."),
+                "name": ext.lstrip(".").lower(),
+                "ext": ext.lstrip(".").lower(),
                 "files": filename,
                 "stagingDir": staging_dir
             }]

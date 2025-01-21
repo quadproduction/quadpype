@@ -58,7 +58,7 @@ class CommentMatcher(object):
         # Create a regex group for extensions
         extensions = registered_host().file_extensions()
         any_extension = "(?:{})".format(
-            "|".join(re.escape(ext.lstrip(".")) for ext in extensions)
+            "|".join(re.escape(ext.lstrip(".").lower()) for ext in extensions)
         )
 
         # Use placeholders that will never be in the filename
@@ -391,7 +391,7 @@ class SaveAsDialog(QtWidgets.QDialog):
         self.refresh()
 
     def on_extension_changed(self):
-        ext = self.ext_combo.currentText()
+        ext = self.ext_combo.currentText().lower()
         if ext == self.data["ext"]:
             return
         self.data["ext"] = ext
@@ -412,7 +412,7 @@ class SaveAsDialog(QtWidgets.QDialog):
         if not data["comment"]:
             data.pop("comment", None)
 
-        data["ext"] = data["ext"].lstrip(".")
+        data["ext"] = data["ext"].lstrip(".").lower()
 
         template_obj = self.anatomy.templates_obj[self.template_key]["file"]
         return template_obj.format_strict(data)
@@ -453,7 +453,7 @@ class SaveAsDialog(QtWidgets.QDialog):
             if not data["comment"]:
                 data.pop("comment", None)
 
-            data["ext"] = data["ext"].lstrip(".")
+            data["ext"] = data["ext"].lstrip(".").lower()
 
             version = get_last_workfile_with_version(
                 self.root, template, data, extensions

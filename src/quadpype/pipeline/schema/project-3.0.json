@@ -51,7 +51,7 @@
         "config": {
             "type": "object",
             "description": "Document metadata",
-            "$ref": "config-2.0.json"
+            "$ref": "config-2.1.json"
         }
     },
 

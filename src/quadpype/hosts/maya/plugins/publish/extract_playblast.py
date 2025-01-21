@@ -124,8 +124,8 @@ class ExtractPlayblast(publish.Extractor):
             instance.data["representations"] = []
 
         representation = {
-            "name": capture_preset["Codec"]["compression"],
-            "ext": capture_preset["Codec"]["compression"],
+            "name": capture_preset["Codec"]["compression"].lower(),
+            "ext": capture_preset["Codec"]["compression"].lower(),
             "files": collected_files,
             "stagingDir": stagingdir,
             "frameStart": int(start),

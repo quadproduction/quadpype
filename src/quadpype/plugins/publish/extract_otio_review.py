@@ -260,8 +260,8 @@ class ExtractOTIOReview(publish.Extractor):
         files = [f for f in collection]
         ext = collection.format("{tail}")
         representation_data.update({
-            "name": ext[1:],
-            "ext": ext[1:],
+            "name": ext[1:].lower(),
+            "ext": ext[1:].lower(),
             "files": files,
             "frameStart": start,
             "frameEnd": end,

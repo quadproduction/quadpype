@@ -104,8 +104,8 @@ class ExtractTrimVideoAudio(publish.Extractor):
             )
 
             repre = {
-                "name": ext[1:],
-                "ext": ext[1:],
+                "name": ext[1:].lower(),
+                "ext": ext[1:].lower(),
                 "files": os.path.basename(clip_trimed_path),
                 "stagingDir": staging_dir,
                 "frameStart": frame_start,

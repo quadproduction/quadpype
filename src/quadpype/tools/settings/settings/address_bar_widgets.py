@@ -1,4 +1,5 @@
 from qtpy import QtWidgets, QtGui, QtCore
+import qtawesome
 
 PREFIX_ROLE = QtCore.Qt.ItemDataRole.UserRole + 1
 LAST_SEGMENT_ROLE = QtCore.Qt.ItemDataRole.UserRole + 2
@@ -208,17 +209,12 @@ class BreadcrumbsHintMenu(QtWidgets.QMenu):
 
         self._model.set_path_prefix(self._path_prefix)
 
-        row_count = self._model.rowCount()
-        if row_count == 0:
-            action = self.addAction("* Nothing")
-            action.setData(".")
-        else:
-            for row in range(self._model.rowCount()):
-                index = self._model.index(row, 0)
-                label = index.data(LAST_SEGMENT_ROLE)
-                value = index.data(QtCore.Qt.ItemDataRole.EditRole)
-                action = self.addAction(label)
-                action.setData(value)
+        for row in range(self._model.rowCount()):
+            index = self._model.index(row, 0)
+            label = index.data(LAST_SEGMENT_ROLE)
+            value = index.data(QtCore.Qt.ItemDataRole.EditRole)
+            action = self.addAction(label)
+            action.setData(value)
 
         super(BreadcrumbsHintMenu, self).showEvent(event)
 
@@ -233,6 +229,7 @@ class ClickableWidget(QtWidgets.QWidget):
 
 
 class BreadcrumbsPathInput(QtWidgets.QLineEdit):
+    focus_in = QtCore.Signal()
     cancelled = QtCore.Signal()
     confirmed = QtCore.Signal()
 
@@ -292,6 +289,10 @@ class BreadcrumbsPathInput(QtWidgets.QLineEdit):
 
         super(BreadcrumbsPathInput, self).keyPressEvent(event)
 
+    def focusInEvent(self, event):
+        self.focus_in.emit()
+        super(BreadcrumbsPathInput, self).focusInEvent(event)
+
     def focusOutEvent(self, event):
         if not self._context_menu_visible:
             self.cancelled.emit()
@@ -310,10 +311,10 @@ class BreadcrumbsPathInput(QtWidgets.QLineEdit):
         self._proxy_model.set_path_prefix(path)
 
 
-class BreadcrumbsButton(QtWidgets.QToolButton):
+class BreadcrumbButton(QtWidgets.QPushButton):
     path_selected = QtCore.Signal(str)
 
-    def __init__(self, path, model, parent):
+    def __init__(self, path, parent):
         super().__init__(parent)
 
         self.setObjectName("BreadcrumbsButton")
@@ -322,19 +323,10 @@ class BreadcrumbsButton(QtWidgets.QToolButton):
         if path:
             path_prefix += "/"
 
-        self.setAutoRaise(True)
-        self.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
-
         self.setMouseTracking(True)
 
         if path:
             self.setText(path.split("/")[-1])
-        else:
-            self.setProperty("empty", "1")
-
-        menu = BreadcrumbsHintMenu(model, path_prefix, self)
-
-        self.setMenu(menu)
 
         # fixed size breadcrumbs
         self.setMinimumSize(self.minimumSizeHint())
@@ -342,7 +334,51 @@ class BreadcrumbsButton(QtWidgets.QToolButton):
         size_policy.setVerticalPolicy(QtWidgets.QSizePolicy.Policy.Minimum)
         self.setSizePolicy(size_policy)
 
-        menu.triggered.connect(self._on_menu_click)
+        # Don't allow going to root with mouse click
+        if path:
+            self.clicked.connect(self._on_click)
+
+        self._path = path
+        self._path_prefix = path_prefix
+
+    def _on_click(self):
+        self.path_selected.emit(self._path)
+
+
+class BreadcrumbMenuButton(QtWidgets.QToolButton):
+    path_selected = QtCore.Signal(str)
+
+    def __init__(self, path, model, parent):
+        super().__init__(parent)
+
+        self.setObjectName("BreadcrumbsButton")
+
+        if isinstance(path, QtGui.QIcon):
+            self.setIcon(path)
+            path = ""
+
+        path_prefix = path
+        if path:
+            path_prefix += "/"
+
+        self.setAutoRaise(True)
+        self.setMouseTracking(True)
+
+        if path:
+            self.setText(path.split("/")[-1])
+
+        if model.rowCount() > 0:
+            self.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
+            self._menu = BreadcrumbsHintMenu(model, path_prefix, self)
+            self.setMenu(self._menu)
+            self._menu.triggered.connect(self._on_menu_click)
+
+        # fixed size breadcrumbs
+        self.setMinimumSize(self.minimumSizeHint())
+        size_policy = self.sizePolicy()
+        size_policy.setVerticalPolicy(QtWidgets.QSizePolicy.Policy.Minimum)
+        self.setSizePolicy(size_policy)
+
         # Don't allow going to root with mouse click
         if path:
             self.clicked.connect(self._on_click)
@@ -350,7 +386,6 @@ class BreadcrumbsButton(QtWidgets.QToolButton):
         self._path = path
         self._path_prefix = path_prefix
         self._model = model
-        self._menu = menu
 
     def _on_click(self):
         self.path_selected.emit(self._path)
@@ -360,8 +395,9 @@ class BreadcrumbsButton(QtWidgets.QToolButton):
         self.path_selected.emit(item)
 
 
-class BreadcrumbsAddressBar(QtWidgets.QFrame):
-    """Windows Explorer-like address bar"""
+class AddressBar(QtWidgets.QFrame):
+    """Simple address bar"""
+    path_focus_in = QtCore.Signal()
     path_changed = QtCore.Signal(str)
     path_edited = QtCore.Signal(str)
 
@@ -374,10 +410,72 @@ class BreadcrumbsAddressBar(QtWidgets.QFrame):
         # Edit the presented path textually
         proxy_model = BreadcrumbsProxy()
         path_input = BreadcrumbsPathInput(None, proxy_model, self)
-        path_input.setVisible(False)
 
+        path_input.focus_in.connect(self._on_input_focus_in)
         path_input.cancelled.connect(self._on_input_cancel)
         path_input.confirmed.connect(self._on_input_confirm)
+
+        self.layout = QtWidgets.QHBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
+        self.layout.addWidget(path_input)
+
+        self.setMaximumHeight(path_input.height())
+
+        self.path_input = path_input
+
+        self._model = None
+        self._proxy_model = proxy_model
+
+        self._current_path = None
+
+    def set_model(self, model):
+        self._model = model
+        self.path_input.set_model(model)
+        self._proxy_model.setSourceModel(model)
+
+    def _on_input_focus_in(self):
+        self.path_focus_in.emit()
+
+    def _on_input_confirm(self):
+        self.change_path(self.path_input.text())
+
+    def _on_input_cancel(self):
+        self._cancel_edit()
+
+    def change_path(self, path):
+        self.set_path(path)
+        self.path_edited.emit(path)
+
+    def set_path(self, path):
+        if path is None or path == ".":
+            path = self._current_path
+
+        self._current_path = path
+        self.path_input.setText(path)
+
+        self.path_changed.emit(self._current_path)
+
+    def _cancel_edit(self):
+        """Set edit line text back to the current path and switch to view mode"""
+        # revert path
+        self.path_input.setText(self.path())
+
+    def path(self):
+        """Get the path displayed in this BreadcrumbsAddressBar"""
+        return self._current_path
+
+    def minimumSizeHint(self):
+        result = super(AddressBar, self).minimumSizeHint()
+        result.setHeight(self.path_input.minimumSizeHint().height())
+        return result
+
+
+class BreadcrumbsAddressBar(AddressBar):
+    """Windows Explorer-like address bar"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
         # Container for `crumbs_panel`
         crumbs_container = QtWidgets.QWidget(self)
@@ -406,44 +504,27 @@ class BreadcrumbsAddressBar(QtWidgets.QFrame):
 
         switch_space.clicked.connect(self.switch_space_mouse_up)
 
-        layout = QtWidgets.QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-        layout.addWidget(path_input)
-        layout.addWidget(crumbs_container)
-
-        self.setMaximumHeight(path_input.height())
+        self.layout.addWidget(crumbs_container)
 
         self.crumbs_layout = crumbs_layout
         self.crumbs_panel = crumbs_panel
         self.switch_space = switch_space
-        self.path_input = path_input
         self.crumbs_container = crumbs_container
 
-        self._model = None
-        self._proxy_model = proxy_model
-
-        self._current_path = None
-
-    def set_model(self, model):
-        self._model = model
-        self.path_input.set_model(model)
-        self._proxy_model.setSourceModel(model)
-
-    def _on_input_confirm(self):
-        self.change_path(self.path_input.text())
-
-    def _on_input_cancel(self):
-        self._cancel_edit()
-
     def _clear_crumbs(self):
-        while self.crumbs_layout.count():
-            widget = self.crumbs_layout.takeAt(0).widget()
-            if widget:
-                widget.deleteLater()
+        for index in reversed(range(self.crumbs_layout.count())):
+            widget = self.crumbs_layout.takeAt(index).widget()
+            if widget is not None:
+                widget.setParent(None)
 
     def _insert_crumb(self, path):
-        btn = BreadcrumbsButton(path, self._proxy_model, self.crumbs_panel)
+        if not path and self._proxy_model.rowCount() == 0:
+            return
+
+        if path == self._current_path:
+            btn = BreadcrumbButton(path, self.crumbs_panel)
+        else:
+            btn = BreadcrumbMenuButton(path, self._proxy_model, self.crumbs_panel)
 
         self.crumbs_layout.insertWidget(0, btn)
 
@@ -454,7 +535,9 @@ class BreadcrumbsAddressBar(QtWidgets.QFrame):
         self.change_path(path)
 
     def change_path(self, path):
-        path = self._model.get_valid_path(path)
+        if self._model:
+            path = self._model.get_valid_path(path)
+
         if self._model and not self._model.is_valid_path(path):
             self._show_address_field()
         else:
@@ -462,38 +545,29 @@ class BreadcrumbsAddressBar(QtWidgets.QFrame):
             self.path_edited.emit(path)
 
     def set_path(self, path):
-        if path is None or path == ".":
-            path = self._current_path
-
         # exit edit mode
         self._cancel_edit()
 
         self._clear_crumbs()
-        self._current_path = path
-        self.path_input.setText(path)
+        super(BreadcrumbsAddressBar, self).set_path(path)
+
         path_items = [
             item
-            for item in path.split("/")
+            for item in self._current_path.split("/")
             if item
         ]
         while path_items:
             item = "/".join(path_items)
             self._insert_crumb(item)
             path_items.pop(-1)
-        self._insert_crumb("")
-
-        self.path_changed.emit(self._current_path)
+        self._insert_crumb(qtawesome.icon("fa5s.home", color="white"))
 
     def _cancel_edit(self):
         """Set edit line text back to the current path and switch to view mode"""
-        # revert path
-        self.path_input.setText(self.path())
+        super(BreadcrumbsAddressBar, self)._cancel_edit()
+
         # switch back to breadcrumbs view
         self._show_address_field(False)
-
-    def path(self):
-        """Get the path displayed in this BreadcrumbsAddressBar"""
-        return self._current_path
 
     def switch_space_mouse_up(self):
         """EVENT: switch_space mouse clicked"""
@@ -506,8 +580,3 @@ class BreadcrumbsAddressBar(QtWidgets.QFrame):
         if show:
             self.path_input.setFocus()
             self.path_input.selectAll()
-
-    def minimumSizeHint(self):
-        result = super(BreadcrumbsAddressBar, self).minimumSizeHint()
-        result.setHeight(self.path_input.minimumSizeHint().height())
-        return result

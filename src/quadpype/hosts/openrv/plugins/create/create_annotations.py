@@ -61,7 +61,7 @@ class AnnotationCreator(AutoCreator):
             filepath = source[0]
             source, ext = os.path.splitext(filepath)
             source = os.path.dirname(source)
-            ext = ext[1:]
+            ext = ext[1:].lower()
 
             context = {}
             context.update(get_current_context())

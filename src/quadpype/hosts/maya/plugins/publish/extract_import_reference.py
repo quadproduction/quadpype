@@ -144,8 +144,8 @@ print("*** Done")
             instance.data["representations"] = []
 
         ref_representation = {
-            "name": self.scene_type,
-            "ext": self.scene_type,
+            "name": self.scene_type.lower(),
+            "ext": self.scene_type.lower(),
             "files": ref_scene_name,
             "stagingDir": os.path.dirname(current_name),
             "outputName": "imported"

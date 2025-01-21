@@ -171,7 +171,7 @@ class CollectNukeWrites(pyblish.api.InstancePlugin,
             "versionData": version_data,
             "path": write_file_path,
             "outputDir": output_dir,
-            "ext": ext,
+            "ext": ext.lower(),
             "colorspace": colorspace
         })
 
@@ -262,8 +262,8 @@ class CollectNukeWrites(pyblish.api.InstancePlugin,
         ext = write_node["file_type"].value()
 
         representation = {
-            "name": ext,
-            "ext": ext,
+            "name": ext.lower(),
+            "ext": ext.lower(),
             "stagingDir": output_dir,
             "tags": []
         }

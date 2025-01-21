@@ -5,6 +5,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 
 from quadpype.style import get_app_icon_path
+from quadpype.pipeline import ApplicationAction
 from quadpype.tools.flickcharm import FlickCharm
 from quadpype.tools.utils.assets_widget import SingleSelectAssetsWidget
 from quadpype.tools.utils.tasks_widget import TasksWidget
@@ -19,7 +20,6 @@ from .models import (
     LauncherTaskModel,
     LauncherTasksProxyModel
 )
-from .actions import ApplicationAction
 from .constants import (
     ACTION_ROLE,
     GROUP_ROLE,
@@ -411,7 +411,7 @@ class ActionHistory(QtWidgets.QPushButton):
         self.setFixedWidth(25)
         self.setFixedHeight(25)
 
-        self.setIcon(qtawesome.icon("fa.history", color="#CCCCCC"))
+        self.setIcon(qtawesome.icon("fa5s.history", color="#CCCCCC"))
         self.setIconSize(QtCore.QSize(15, 15))
 
         self._history = []

@@ -186,8 +186,8 @@ class CollectFusionRender(
         _, padding, ext = get_frame_path(basename)
 
         repre = {
-            "name": ext[1:],
-            "ext": ext[1:],
+            "name": ext[1:].lower(),
+            "ext": ext[1:].lower(),
             "frameStart": f"%0{padding}d" % start,
             "files": [os.path.basename(f) for f in expected_files],
             "stagingDir": staging_dir,

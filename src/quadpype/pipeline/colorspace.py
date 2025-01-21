@@ -256,7 +256,7 @@ def get_imageio_file_rules_colorspace_from_filepath(
     colorspace_name = None
     for file_rule in file_rules.values():
         pattern = file_rule["pattern"]
-        extension = file_rule["ext"]
+        extension = file_rule["ext"].lower()
         ext_match = re.match(
             r".*(?=.{})".format(extension), filepath
         )

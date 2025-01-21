@@ -7,100 +7,41 @@ from quadpype.client import (
 )
 from quadpype.pipeline import (
     Anatomy,
-    LauncherAction,
+    LauncherTaskAction,
 )
 from quadpype.pipeline.template_data import get_template_data
 from quadpype.lib import open_in_explorer
 
 
-class OpenTaskPath(LauncherAction):
+class OpenTaskPath(LauncherTaskAction):
     name = "open_task_path"
     label = "Explore here"
     icon = "folder-open"
     order = 500
 
-    def is_compatible(self, session):
-        """Return whether the action is compatible with the session"""
-        return bool(session.get("AVALON_ASSET"))
-
     def process(self, session, **kwargs):
         from qtpy import QtCore, QtWidgets
 
-        project_name = session["AVALON_PROJECT"]
-        asset_name = session["AVALON_ASSET"]
-        task_name = session.get("AVALON_TASK", None)
-
-        path = self._get_workdir(project_name, asset_name, task_name)
+        path = self.get_workdir(session)
         if not path:
+            # An error occurs while retrieving the workdir path
+            self.show_message_box(
+                "Open Work Directory",
+                "Operation Failed\nCannot properly determine the work directory.\n\nDirectory not created.",
+                icon_type="error")
             return
+
+        if not path.exists():
+            # Create work directory
+            path.mkdir(parents=True, exist_ok=True)
 
         app = QtWidgets.QApplication.instance()
         ctrl_pressed = QtCore.Qt.ControlModifier & app.keyboardModifiers()
         if ctrl_pressed:
-            # Copy path to clipboard
+            # Copy the path to clipboard
             self.copy_path_to_clipboard(path)
         else:
             open_in_explorer(path)
 
-    def _find_first_filled_path(self, path):
-        if not path:
-            return ""
-
-        fields = set()
-        for item in Formatter().parse(path):
-            _, field_name, format_spec, conversion = item
-            if not field_name:
-                continue
-            conversion = "!{}".format(conversion) if conversion else ""
-            format_spec = ":{}".format(format_spec) if format_spec else ""
-            orig_key = "{{{}{}{}}}".format(
-                field_name, conversion, format_spec)
-            fields.add(orig_key)
-
-        for field in fields:
-            path = path.split(field, 1)[0]
-        return path
-
-    def _get_workdir(self, project_name, asset_name, task_name):
-        project = get_project(project_name)
-        asset = get_asset_by_name(project_name, asset_name)
-
-        data = get_template_data(project, asset, task_name)
-
-        anatomy = Anatomy(project_name)
-        workdir = anatomy.templates_obj["work"]["folder"].format(data)
-
-        # Remove any potential un-formatted parts of the path
-        valid_workdir = self._find_first_filled_path(workdir)
-
-        # Path is not filled at all
-        if not valid_workdir:
-            raise AssertionError("Failed to calculate workdir.")
-
-        # Normalize
-        valid_workdir = os.path.normpath(valid_workdir)
-        if os.path.exists(valid_workdir):
-            return valid_workdir
-
-        data.pop("task", None)
-        workdir = anatomy.templates_obj["work"]["folder"].format(data)
-        valid_workdir = self._find_first_filled_path(workdir)
-        if valid_workdir:
-            # Normalize
-            valid_workdir = os.path.normpath(valid_workdir)
-            if os.path.exists(valid_workdir):
-                return valid_workdir
-        raise AssertionError("Folder does not exist.")
-
-    @staticmethod
-    def copy_path_to_clipboard(path):
-        from qtpy import QtWidgets
-
-        path = path.replace("\\", "/")
-        print(f"Copied to clipboard: {path}")
-        app = QtWidgets.QApplication.instance()
-        assert app, "Must have running QApplication instance"
-
-        # Set to Clipboard
-        clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.setText(os.path.normpath(path))
+        # Returning True to force an action discovery update
+        return True

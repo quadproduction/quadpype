@@ -550,16 +550,16 @@ class ExtractLook(publish.Extractor):
 
         instance.data["representations"].append(
             {
-                "name": self.scene_type,
-                "ext": self.scene_type,
+                "name": self.scene_type.lower(),
+                "ext": self.scene_type.lower(),
                 "files": os.path.basename(maya_fname),
                 "stagingDir": os.path.dirname(maya_fname),
             }
         )
         instance.data["representations"].append(
             {
-                "name": self.look_data_type,
-                "ext": self.look_data_type,
+                "name": self.look_data_type.lower(),
+                "ext": self.look_data_type.lower(),
                 "files": os.path.basename(json_fname),
                 "stagingDir": os.path.dirname(json_fname),
             }

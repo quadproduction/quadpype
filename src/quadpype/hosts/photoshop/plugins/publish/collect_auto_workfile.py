@@ -22,8 +22,8 @@ class CollectAutoWorkfile(pyblish.api.ContextPlugin):
         staging_dir = os.path.dirname(file_path)
         base_name = os.path.basename(file_path)
         workfile_representation = {
-            "name": ext[1:],
-            "ext": ext[1:],
+            "name": ext[1:].lower(),
+            "ext": ext[1:].lower(),
             "files": base_name,
             "stagingDir": staging_dir,
         }

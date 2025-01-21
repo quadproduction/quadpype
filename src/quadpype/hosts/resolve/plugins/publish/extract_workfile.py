@@ -36,8 +36,8 @@ class ExtractWorkfile(publish.Extractor):
 
         # create drp workfile representation
         representation_drp = {
-            'name': resolve_workfile_ext[1:],
-            'ext': resolve_workfile_ext[1:],
+            'name': resolve_workfile_ext[1:].lower(),
+            'ext': resolve_workfile_ext[1:].lower(),
             'files': drp_file_name,
             "stagingDir": staging_dir,
         }

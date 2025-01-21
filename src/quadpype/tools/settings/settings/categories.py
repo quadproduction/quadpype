@@ -68,7 +68,8 @@ from .widgets import (
     ProjectListWidget,
     VersionAction
 )
-from .breadcrumbs_widget import (
+from .address_bar_widgets import (
+    AddressBar,
     BreadcrumbsAddressBar,
     GlobalSettingsBreadcrumbs,
     ProjectSettingsBreadcrumbs
@@ -266,13 +267,16 @@ class BlankControlPanelWidget(QtWidgets.QWidget):
 
 
 class BaseControlPanelWidget(BlankControlPanelWidget):
+    address_bar_class = BreadcrumbsAddressBar
+
     def __init__(self, controller, parent=None):
         super().__init__(controller, parent)
 
         self.conf_wrapper_widget = None
         self.scroll_widget = None
 
-        self.breadcrumbs_bar = None
+        self.address_bar_label = None
+        self.address_bar = None
         self.breadcrumbs_model = None
 
         self.main_layout = None
@@ -304,6 +308,10 @@ class BaseControlPanelWidget(BlankControlPanelWidget):
         raise NotImplementedError("This method should have been implemented on the subclass")
 
     @abstractmethod
+    def _on_path_focus_in(self):
+        raise NotImplementedError("This method should have been implemented on the subclass")
+
+    @abstractmethod
     def _on_path_edited(self, path):
         raise NotImplementedError("This method should have been implemented on the subclass")
 
@@ -313,8 +321,8 @@ class BaseControlPanelWidget(BlankControlPanelWidget):
 
         # Breadcrumbs/Path widget
         breadcrumbs_widget = QtWidgets.QWidget(self)
-        breadcrumbs_label = QtWidgets.QLabel("Path:", breadcrumbs_widget)
-        self.breadcrumbs_bar = BreadcrumbsAddressBar(breadcrumbs_widget)
+        self.address_bar_label = QtWidgets.QLabel("Path:", breadcrumbs_widget)
+        self.address_bar = self.address_bar_class(breadcrumbs_widget)
 
         refresh_icon = qtawesome.icon("fa.refresh", color="white")
         self.refresh_btn = QtWidgets.QPushButton(breadcrumbs_widget)
@@ -323,8 +331,8 @@ class BaseControlPanelWidget(BlankControlPanelWidget):
         breadcrumbs_layout = QtWidgets.QHBoxLayout(breadcrumbs_widget)
         breadcrumbs_layout.setContentsMargins(5, 5, 5, 5)
         breadcrumbs_layout.setSpacing(5)
-        breadcrumbs_layout.addWidget(breadcrumbs_label, 0)
-        breadcrumbs_layout.addWidget(self.breadcrumbs_bar, 1)
+        breadcrumbs_layout.addWidget(self.address_bar_label, 0)
+        breadcrumbs_layout.addWidget(self.address_bar, 1)
         breadcrumbs_layout.addWidget(self.refresh_btn, 0)
 
         # Widgets representing settings entities
@@ -377,7 +385,8 @@ class BaseControlPanelWidget(BlankControlPanelWidget):
         # Add callbacks / onclick events
         self.footer_btn.clicked.connect(self._on_footer_button_pressed)
         self.refresh_btn.clicked.connect(self._on_refresh_button_pressed)
-        self.breadcrumbs_bar.path_edited.connect(self._on_path_edited)
+        self.address_bar.path_focus_in.connect(self._on_path_focus_in)
+        self.address_bar.path_edited.connect(self._on_path_edited)
 
 
 class SettingsControlPanelWidget(BaseControlPanelWidget):
@@ -556,6 +565,9 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
     def ui_tweaks(self):
         return
 
+    def _on_path_focus_in(self):
+        return
+
     def _on_path_edited(self, path):
         for input_field in self.input_fields:
             if input_field.make_sure_is_visible(path, True):
@@ -592,11 +604,11 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
 
     def change_path(self, path):
         """Change the path and go to the widget."""
-        self.breadcrumbs_bar.change_path(path)
+        self.address_bar.change_path(path)
 
     def set_path(self, path):
         """Called from clicked widget."""
-        self.breadcrumbs_bar.set_path(path)
+        self.address_bar.set_path(path)
 
     @abstractmethod
     def _on_modify_defaults(self):
@@ -892,10 +904,10 @@ class SettingsControlPanelWidget(BaseControlPanelWidget):
             self.footer_btn.setEnabled(self._edit_mode == EditMode.ENABLE)
 
         if self.breadcrumbs_model is not None:
-            path = self.breadcrumbs_bar.path()
-            self.breadcrumbs_bar.set_path("")
+            path = self.address_bar.path()
+            self.address_bar.set_path("")
             self.breadcrumbs_model.set_entity(self.entity)
-            self.breadcrumbs_bar.change_path(path)
+            self.address_bar.change_path(path)
 
     def add_children_gui(self):
         for child_obj in self.entity.children:
@@ -1027,7 +1039,7 @@ class GlobalSettingsWidget(SettingsControlPanelWidget):
         return False
 
     def set_category_path(self, category, path):
-        self.breadcrumbs_bar.change_path(path)
+        self.address_bar.change_path(path)
 
     def _create_root_entity(self):
         entity = GlobalSettingsEntity(
@@ -1057,7 +1069,7 @@ class GlobalSettingsWidget(SettingsControlPanelWidget):
 
     def ui_tweaks(self):
         self.breadcrumbs_model = GlobalSettingsBreadcrumbs()
-        self.breadcrumbs_bar.set_model(self.breadcrumbs_model)
+        self.address_bar.set_model(self.breadcrumbs_model)
 
     def _on_modify_defaults(self):
         if self.is_modifying_defaults:
@@ -1110,14 +1122,14 @@ class ProjectSettingsWidget(SettingsControlPanelWidget):
         else:
             path = category
 
-        self.breadcrumbs_bar.change_path(path)
+        self.address_bar.change_path(path)
 
     def initialize_attributes(self):
         self.project_name = None
 
     def ui_tweaks(self):
         self.breadcrumbs_model = ProjectSettingsBreadcrumbs()
-        self.breadcrumbs_bar.set_model(self.breadcrumbs_model)
+        self.address_bar.set_model(self.breadcrumbs_model)
 
         project_list_widget = ProjectListWidget(self)
 
@@ -1640,6 +1652,8 @@ class SortUserRoleItem(QtWidgets.QTableWidgetItem):
 
 
 class UserManagerWidget(BaseControlPanelWidget):
+    address_bar_class = AddressBar
+
     _ws_profile_prefix = "last_workstation_profile/"
     _tracker_login_prefix = "tracker_logins/"
     _table_column_data = [
@@ -1821,7 +1835,7 @@ class UserManagerWidget(BaseControlPanelWidget):
 
             # Update the hidden sorting item
             # this is to be able to sort by online status
-            sorting_value = sorting_value_prefix+self.users_data[user_id]["username"]
+            sorting_value = sorting_value_prefix+self.users_data[user_id][self._ws_profile_prefix+"username"]
 
             item = self.table_widget.item(user_row, 0)
             item.setData(QtCore.Qt.ItemDataRole.UserRole, sorting_value)
@@ -1846,7 +1860,7 @@ class UserManagerWidget(BaseControlPanelWidget):
                         # This means this is the current user
                         sorting_value_prefix = "0_"
 
-                    sorting_value = sorting_value_prefix+user_data["username"]
+                    sorting_value = sorting_value_prefix+user_data[self._ws_profile_prefix+"username"]
 
                     item = SortUserRoleItem()
                     item.setData(QtCore.Qt.ItemDataRole.UserRole, sorting_value)
@@ -1886,8 +1900,7 @@ class UserManagerWidget(BaseControlPanelWidget):
                     else:
                         cell_value = self.create_loader_widget()
                 elif user_profile_key.startswith(self._ws_profile_prefix):
-                    user_profile_key = user_profile_key.removeprefix(self._ws_profile_prefix)
-                    cell_value = last_workstation_profile[user_profile_key]
+                    cell_value = last_workstation_profile[user_profile_key.removeprefix(self._ws_profile_prefix)]
                 else:
                     splitted = user_profile_key.split("/")
                     cell_value = user_profile
@@ -1947,6 +1960,8 @@ class UserManagerWidget(BaseControlPanelWidget):
     def create_ui(self):
         super().create_ui()
 
+        self.address_bar_label.setText("Search:")
+
         # First creating the actions widget
         self.actions_widget = UserActionsWidget(self.content_widget)
 
@@ -1998,8 +2013,101 @@ class UserManagerWidget(BaseControlPanelWidget):
     def on_saved(self, saved_tab_widget):
         pass
 
+    def find_users_from_input(self, input_text):
+        users = []
+
+        if not input_text:
+            # Nothing
+            return users
+
+        search_column_id = "user_id"
+        search_term = input_text
+        if ":" in input_text:
+            # Advance search
+            column_input, search_term = input_text.split(":", maxsplit=1)
+            if not column_input or not search_term:
+                # Invalid
+                return None
+
+            search_column_id = None
+            search_term = search_term.strip()
+
+            column_input = column_input.strip().lower()
+            for column_id, column_name in self.table_column_data.items():
+                column_name_with_underscores = column_name.lower().replace(" ", "_")
+                column_name_with_dashes = column_name.lower().replace(" ", "-")
+                column_name_without_spaces = column_name.lower().replace(" ", "")
+
+                valid_column_names = [
+                    column_id,
+                    column_name.lower(),
+                    column_name_with_underscores,
+                    column_name_with_dashes,
+                    column_name_without_spaces
+                ]
+                if column_input in valid_column_names:
+                    search_column_id = column_id
+                    break
+
+            if not search_column_id:
+                # Invalid column identifier
+                return None
+
+        for user_id, user_data in self.users_data.items():
+            if search_column_id == "user_id" and search_term == user_id:
+                users.append(user_id)
+                break
+            for key, cell_data in user_data.items():
+                if search_column_id == key and search_term == cell_data:
+                    users.append(user_id)
+                    break
+
+        return users
+
+    def _on_path_focus_in(self):
+        self.address_bar.path_input.setProperty("style", "normal")
+        self.address_bar.path_input.style().polish(self.address_bar.path_input)
+
+    def select_user(self, user_id):
+        if user_id:
+            user_row_index = self.get_row_index_by_user_id(user_id)
+            self._selected_user_id = user_id
+            self.table_widget.selectRow(user_row_index)
+        else:
+            self.table_widget.clearSelection()
+
+        self.actions_widget.update_actions()
+
     def _on_path_edited(self, path):
-        pass
+        address_bar_style = "normal"
+        users = self.find_users_from_input(path)
+
+        if users is None:
+            address_bar_style = "error"
+        elif not users:
+            address_bar_style = "warning"
+
+        self.address_bar.path_input.setProperty("style", address_bar_style)
+        self.address_bar.path_input.style().unpolish(self.address_bar.path_input)
+        self.address_bar.path_input.style().polish(self.address_bar.path_input)
+
+        if not users:
+            # No match
+            return
+
+        if len(users) == 1:
+            # A single match
+            self.select_user(users[0])
+            return
+
+        # Multiple matches
+        self.select_user(None)
+        # TODO: Handle this case
+        # for matching_user_id in users:
+        #     user_row_index = self.get_row_index_by_user_id(matching_user_id)
+        #     for column_index in range(self._column_count):
+        #         table_item = self.table_widget.item(user_row_index, column_index)
+        #         table_item.setProperty("style", "highlighted")
 
     def _on_refresh_button_pressed(self):
         self._update_user_list()

@@ -256,7 +256,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
             # Get workfile extension
             repre_file = representation["files"]
             self.log.info(repre_file)
-            ext = os.path.splitext(repre_file)[1].lstrip(".")
+            ext = os.path.splitext(repre_file)[1].lstrip(".").lower()
 
             # Fill template data
             template_data["representation"] = representation["name"]

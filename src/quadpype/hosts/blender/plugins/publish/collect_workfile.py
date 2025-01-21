@@ -36,8 +36,8 @@ class CollectWorkfile(plugin.BlenderInstancePlugin):
                 "handledEnd": context.data.get("handleEnd", 1),
                 "representations": [
                     {
-                        "name": ext.lstrip("."),
-                        "ext": ext.lstrip("."),
+                        "name": ext.lstrip(".").lower(),
+                        "ext": ext.lstrip(".").lower(),
                         "files": filepath.name,
                         "stagingDir": filepath.parent,
                     }

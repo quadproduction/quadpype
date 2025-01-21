@@ -47,8 +47,8 @@ class ExtractReviewAnimation(publish.Extractor):
         self.log.debug("Performing Extraction ...")
 
         representation = {
-            "name": instance.data["imageFormat"],
-            "ext": instance.data["imageFormat"],
+            "name": instance.data["imageFormat"].lower(),
+            "ext": instance.data["imageFormat"].lower(),
             "files": filenames,
             "stagingDir": staging_dir,
             "frameStart": instance.data["frameStartHandle"],
