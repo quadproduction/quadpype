@@ -8,11 +8,14 @@ from quadpype.settings import get_project_settings
 from quadpype.lib import (
     filter_profiles,
     Logger,
-    StringTemplate
+    StringTemplate,
+    TemplateUnsolved
 )
-from quadpype.pipeline import version_start, Anatomy
-from quadpype.pipeline.template_data import get_template_data
-
+from quadpype.pipeline import version_start, Anatomy, legacy_io
+from quadpype.pipeline.template_data import (
+    get_template_data,
+    get_template_data_with_names
+)
 
 def get_workfile_template_key_from_context(
     asset_name, task_name, host_name, project_name, project_settings=None
@@ -537,3 +540,67 @@ def create_workdir_extra_folders(
         fullpath = os.path.join(workdir, subfolder)
         if not os.path.exists(fullpath):
             os.makedirs(fullpath)
+
+
+def get_template_data_from_session(session=None, global_settings=None):
+    """Template data for template fill from session keys.
+
+    Args:
+        session (Union[Dict[str, str], None]): The Session to use. If not
+            provided use the currently active global Session.
+        global_settings (Union[Dict[str, Any], Any]): Prepared global settings.
+            Optional are auto received if not passed.
+
+    Returns:
+        Dict[str, Any]: All available data from session.
+    """
+
+    if session is None:
+        session = legacy_io.Session
+
+    project_name = session.get("AVALON_PROJECT")
+    asset_name = session.get("AVALON_ASSET")
+    task_name = session.get("AVALON_TASK")
+    host_name = session.get("AVALON_APP")
+
+    return get_template_data_with_names(
+        project_name, asset_name, task_name, host_name, global_settings
+    )
+
+
+def get_workdir_from_session(session=None, template_key=None):
+    """Template data for template fill from session keys.
+
+    Args:
+        session (Union[Dict[str, str], None]): The Session to use. If not
+            provided use the currently active global Session.
+        template_key (str): Prepared template key from which workdir is
+            calculated.
+
+    Returns:
+        str: Workdir path.
+    """
+
+    if session is None:
+        session = legacy_io.Session
+    project_name = session["AVALON_PROJECT"]
+    host_name = session.get("AVALON_APP")
+    template_data = get_template_data_from_session(session)
+
+    if not template_key:
+        task_type = template_data["task"]["type"]
+        template_key = get_workfile_template_key(
+            task_type,
+            host_name,
+            project_name=project_name
+        )
+
+    anatomy = Anatomy(project_name)
+    template_obj = anatomy.templates_obj[template_key]["folder"]
+    try:
+        path = template_obj.format_strict(template_data)
+    except TemplateUnsolved as e:
+        print(e)
+        return None
+
+    return os.path.normpath(path)

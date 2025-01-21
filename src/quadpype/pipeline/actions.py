@@ -17,7 +17,7 @@ from quadpype.pipeline.plugin_discover import (
     deregister_plugin,
     deregister_plugin_path
 )
-from .context_tools import get_workdir_from_session
+from .workfile import get_workdir_from_session
 
 from .load.utils import get_representation_path_from_context
 
