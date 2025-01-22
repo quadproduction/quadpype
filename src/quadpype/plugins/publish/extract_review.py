@@ -572,10 +572,6 @@ class ExtractReview(pyblish.api.InstancePlugin):
                 ):
                     first_sequence_frame += handle_start
 
-        self.log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-        self.log.info(input_allow_bg)
-        self.log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-
         return {
             "fps": float(instance.data["fps"]),
             "frame_start": frame_start,
