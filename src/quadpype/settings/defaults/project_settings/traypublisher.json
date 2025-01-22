@@ -24,6 +24,7 @@
             "allow_sequences": false,
             "allow_multiple_items": false,
             "allow_version_control": false,
+            "allow_reviews": true,
             "extensions": [
                 ".ma",
                 ".mb",
@@ -59,6 +60,7 @@
             "allow_sequences": false,
             "allow_multiple_items": true,
             "allow_version_control": false,
+            "allow_reviews": true,
             "extensions": [
                 ".ma",
                 ".mb",
@@ -85,6 +87,7 @@
             "allow_sequences": true,
             "allow_multiple_items": true,
             "allow_version_control": false,
+            "allow_reviews": true,
             "extensions": [
                 ".abc",
                 ".bgeo",
@@ -109,6 +112,7 @@
             "allow_sequences": true,
             "allow_multiple_items": true,
             "allow_version_control": false,
+            "allow_reviews": true,
             "extensions": [
                 ".exr",
                 ".png",
@@ -132,6 +136,7 @@
             "allow_sequences": true,
             "allow_multiple_items": true,
             "allow_version_control": false,
+            "allow_reviews": true,
             "extensions": [
                 ".exr",
                 ".png",
@@ -156,6 +161,7 @@
             "allow_sequences": false,
             "allow_multiple_items": true,
             "allow_version_control": false,
+            "allow_reviews": true,
             "extensions": [
                 ".abc",
                 ".ma",
@@ -181,6 +187,7 @@
             "allow_sequences": false,
             "allow_multiple_items": true,
             "allow_version_control": false,
+            "allow_reviews": true,
             "extensions": [
                 ".exr",
                 ".jpg",
@@ -205,6 +212,7 @@
             "allow_sequences": true,
             "allow_multiple_items": true,
             "allow_version_control": false,
+            "allow_reviews": true,
             "extensions": [
                 ".vdb"
             ]
@@ -224,6 +232,7 @@
             "allow_sequences": false,
             "allow_multiple_items": true,
             "allow_version_control": false,
+            "allow_reviews": false,
             "extensions": []
         },
         {
@@ -237,6 +246,7 @@
             "allow_sequences": false,
             "allow_multiple_items": false,
             "allow_version_control": false,
+            "allow_reviews": true,
             "extensions": [
                 ".ma",
                 ".blend",
@@ -257,6 +267,7 @@
             "allow_sequences": false,
             "allow_multiple_items": false,
             "allow_version_control": false,
+            "allow_reviews": false,
             "extensions": [
                 ".wav"
             ]

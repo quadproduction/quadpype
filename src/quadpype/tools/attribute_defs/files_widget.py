@@ -175,13 +175,14 @@ class ButtonStandardItem(QtGui.QStandardItemModel):
 
 
 class FilesModel(QtGui.QStandardItemModel):
-    def __init__(self, single_item, allow_sequences):
+    def __init__(self, single_item, allow_sequences, allow_reviews):
         super().__init__()
 
         self._id = str(uuid.uuid4())
         self._single_item = single_item
         self._multivalue = False
         self._allow_sequences = allow_sequences
+        self._allow_reviews = allow_reviews
 
         self._items_by_id = {}
         self._file_items_by_id = {}
@@ -410,6 +411,8 @@ class FilesProxyModel(QtCore.QSortFilterProxyModel):
     def set_allowed_extensions(self, extensions=None):
         if extensions is not None:
             _extensions = set()
+            if self.sourceModel()._allow_reviews:
+                extensions = extensions.union(IMAGE_EXTS).union(VIDEO_EXTS)
             for ext in set(extensions):
                 if not ext.startswith("."):
                     ext = ".{}".format(ext)
@@ -692,7 +695,7 @@ class FilesView(QtWidgets.QTreeView):
 class FilesWidget(QtWidgets.QFrame):
     value_changed = QtCore.Signal()
 
-    def __init__(self, single_item, allow_sequences, extensions_label, parent):
+    def __init__(self, single_item, allow_sequences, extensions_label, allow_reviews, parent):
         super().__init__(parent)
         self.setAcceptDrops(True)
 
@@ -700,7 +703,7 @@ class FilesWidget(QtWidgets.QFrame):
             single_item, allow_sequences, extensions_label, self
         )
 
-        files_model = FilesModel(single_item, allow_sequences)
+        files_model = FilesModel(single_item, allow_sequences, allow_reviews)
         files_proxy_model = FilesProxyModel()
         files_proxy_model.setSourceModel(files_model)
         files_view = FilesView(self)
@@ -732,9 +735,10 @@ class FilesWidget(QtWidgets.QFrame):
         allowed_files_representation_layout.addWidget(self.allowed_representations_label, 1)
         main_layout.addLayout(allowed_files_representation_layout)
 
-        allowed_files_review_layout.addWidget(review_label)
-        allowed_files_review_layout.addWidget(self.allowed_reviews_label, 1)
-        main_layout.addLayout(allowed_files_review_layout)
+        if allow_reviews:
+            allowed_files_review_layout.addWidget(review_label)
+            allowed_files_review_layout.addWidget(self.allowed_reviews_label, 1)
+            main_layout.addLayout(allowed_files_review_layout)
 
         color_legend_label = QtWidgets.QLabel()
         color_legend_label.setPixmap(self._create_legend_pixmap())

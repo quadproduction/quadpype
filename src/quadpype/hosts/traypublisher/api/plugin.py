@@ -295,6 +295,7 @@ class SettingsCreator(TrayPublishCreator):
                 allow_sequences=self.allow_sequences,
                 single_item=not self.allow_multiple_items,
                 label="Representations",
+                allow_reviews=self.allow_reviews
             )
         ]
 
@@ -316,6 +317,7 @@ class SettingsCreator(TrayPublishCreator):
                 "detailed_description": item_data["detailed_description"],
                 "extensions": item_data["extensions"],
                 "allow_sequences": item_data["allow_sequences"],
+                "allow_reviews": item_data["allow_reviews"],
                 "allow_multiple_items": item_data["allow_multiple_items"],
                 "allow_version_control": item_data.get(
                     "allow_version_control", False),
