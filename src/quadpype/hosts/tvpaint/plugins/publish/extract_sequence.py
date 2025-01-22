@@ -346,19 +346,15 @@ class ExtractSequence(pyblish.api.Extractor):
             tv_export
         ])
 
-        change_background_back = False
-        if apply_background:
-            bg_color = self._get_settings_bg_color(review=True)
-            # Change bg color to color from settings
-            george_script_lines.insert(0, "tv_background \"color\" {} {} {}".format(*bg_color)),
-            change_background_back= True
+        if apply_background or apply_alpha_background:
+            background_change_line = "tv_background \"color\""
 
-        if apply_alpha_background:
-            # Change bg color to color from settings
-            george_script_lines.insert(0, "tv_background \"color\""),
-            change_background_back = True
+            if apply_background:
+                bg_color = self._get_settings_bg_color(review=True)
+                background_change_line = "{} {} {} {}".format(background_change_line, *bg_color)
 
-        if change_background_back:
+            george_script_lines.insert(0, background_change_line)
+
             # Change bg color back to previous scene bg color
             _scene_bg_color = copy.deepcopy(scene_bg_color)
             bg_type = _scene_bg_color.pop(0)
