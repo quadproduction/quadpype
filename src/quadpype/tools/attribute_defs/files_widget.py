@@ -931,6 +931,7 @@ class FilesWidget(QtWidgets.QFrame):
             new_items = file_item.split_sequence()
             self._add_filepaths(new_items)
         self._remove_item_by_ids(item_ids)
+        self._update_visibility()
 
     def _on_remove_requested(self):
         if self._multivalue:
