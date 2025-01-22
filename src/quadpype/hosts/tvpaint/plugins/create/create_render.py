@@ -1210,6 +1210,11 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
                 label="Apply BG Color (as defined in settings)",
                 default=self.apply_background
             ),
+            BoolDef(
+                "apply_alpha_background",
+                label="Disable BG (make it transparent)",
+                default=self.apply_background
+            ),
             TextDef("export_frames_selection",
                     label="Frames to Export",
                     placeholder="[1-15], 18, 20"
