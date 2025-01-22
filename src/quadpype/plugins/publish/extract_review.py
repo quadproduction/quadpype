@@ -543,24 +543,38 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
         input_allow_bg = False
         first_sequence_frame = None
-        if input_is_sequence and repre["files"]:
-            # Calculate first frame that should be used
-            cols, _ = clique.assemble(repre["files"])
-            input_frames = list(sorted(cols[0].indexes))
-            first_sequence_frame = input_frames[0]
-            # WARNING: This is an issue as we don't know if first frame
-            #   is with or without handles!
-            # - handle start is added but how do not know if we should
-            output_duration = (output_frame_end - output_frame_start) + 1
-            if (
-                without_handles
-                and len(input_frames) - handle_start >= output_duration
-            ):
-                first_sequence_frame += handle_start
 
-            ext = os.path.splitext(repre["files"][0])[1].replace(".", "")
+        if repre["files"]:
+
+            # get the extension depending on the repre["files"] type
+            # if list
+            if isinstance(repre["files"], list):
+                ext = os.path.splitext(repre["files"][0])[1].replace(".", "")
+            # if string (only one single file)
+            else:
+                ext = os.path.splitext(repre["files"])[1].replace(".", "")
+
             if ext.lower() in self.alpha_exts:
                 input_allow_bg = True
+
+            if input_is_sequence:
+                # Calculate first frame that should be used
+                cols, _ = clique.assemble(repre["files"])
+                input_frames = list(sorted(cols[0].indexes))
+                first_sequence_frame = input_frames[0]
+                # WARNING: This is an issue as we don't know if first frame
+                #   is with or without handles!
+                # - handle start is added but how do not know if we should
+                output_duration = (output_frame_end - output_frame_start) + 1
+                if (
+                    without_handles
+                    and len(input_frames) - handle_start >= output_duration
+                ):
+                    first_sequence_frame += handle_start
+
+        self.log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        self.log.info(input_allow_bg)
+        self.log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
         return {
             "fps": float(instance.data["fps"]),
