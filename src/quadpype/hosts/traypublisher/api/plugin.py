@@ -296,15 +296,6 @@ class SettingsCreator(TrayPublishCreator):
                 single_item=not self.allow_multiple_items,
                 label="Representations",
             )
-            # FileDef(
-            #     "reviewable",
-            #     folders=False,
-            #     extensions=REVIEW_EXTENSIONS,
-            #     allow_sequences=True,
-            #     single_item=True,
-            #     label="Reviewable representations",
-            #     extensions_label="Single reviewable item"
-            # )
         ]
 
     @classmethod
