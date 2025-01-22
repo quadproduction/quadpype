@@ -172,58 +172,65 @@ class CollectSettingsSimpleInstances(pyblish.api.InstancePlugin):
             return
 
         creator_attributes = instance.data["creator_attributes"]
-        review_file_item = creator_attributes["representation_files"].get("reviewable", {})
-        filenames = review_file_item.get("filenames")
-        if not filenames:
+        review_items = creator_attributes["representation_files"].get("reviewable", [])
+
+        if not review_items or not isinstance(review_items, list):
             self.log.debug((
-                "Filepath for review is not defined."
+                "No valid reviewable items found."
                 " Skipping review representation creation."
             ))
             return
 
-        item_dir = review_file_item["directory"]
-        first_filepath = os.path.join(item_dir, filenames[0])
+        for review_file_item in review_items:
+            filenames = review_file_item.get("filenames")
+            if not filenames:
+                self.log.debug((
+                    "Filepath for review is not defined."
+                    " Skipping review representation creation for item."
+                ))
+                continue
 
-        filepaths = {
-            os.path.join(item_dir, filename)
-            for filename in filenames
-        }
-        source_filepaths.extend(filepaths)
-        # First try to find out representation with same filepaths
-        #   so it's not needed to create new representation just for review
-        review_representation = None
-        # Review path (only for logging)
-        review_path = None
-        for item in representation_files_mapping:
-            _filepaths, representation, repre_path = item
-            if _filepaths == filepaths:
-                review_representation = representation
-                review_path = repre_path
-                break
+            item_dir = review_file_item["directory"]
+            first_filepath = os.path.join(item_dir, filenames[0])
 
-        if review_representation is None:
-            self.log.debug("Creating new review representation")
-            review_path = self._calculate_source(filepaths)
-            review_representation = self._create_representation_data(
-                review_file_item, repre_names_counter, repre_names
-            )
-            instance.data["representations"].append(review_representation)
+            filepaths = {
+                os.path.join(item_dir, filename)
+                for filename in filenames
+            }
+            source_filepaths.extend(filepaths)
+            # First try to find out representation with same filepaths
+            #   so it's not needed to create new representation just for review
+            review_representation = None
+            # Review path (only for logging)
+            review_path = None
 
-        if "review" not in instance.data["families"]:
-            instance.data["families"].append("review")
+            for item in representation_files_mapping:
+                _filepaths, representation, repre_path = item
+                if _filepaths == filepaths:
+                    review_representation = representation
+                    review_path = repre_path
+                    break
 
-        if not instance.data.get("thumbnailSource"):
-            instance.data["thumbnailSource"] = first_filepath
+            if review_representation is None:
+                self.log.debug("Creating new review representation")
+                review_path = self._calculate_source(filepaths)
+                review_representation = self._create_representation_data(
+                    review_file_item, repre_names_counter, repre_names
+                )
+                instance.data["representations"].append(review_representation)
 
-        review_representation["tags"].append("review")
+            if "review" not in instance.data["families"]:
+                instance.data["families"].append("review")
 
-        # Adding "review" to representation name since it can clash with main
-        # representation if they share the same extension.
-        review_representation["outputName"] = "review"
+            if not instance.data.get("thumbnailSource"):
+                instance.data["thumbnailSource"] = first_filepath
 
-        self.log.debug("Representation {} was marked for review. {}".format(
-            review_representation["name"], review_path
-        ))
+            review_representation["tags"].append("review")
+            review_representation["outputName"] = "review"
+
+            self.log.debug("Representation {} was marked for review. {}".format(
+                review_representation["name"], review_path
+            ))
 
     def _create_representation_data(
         self, filepath_item, repre_names_counter, repre_names

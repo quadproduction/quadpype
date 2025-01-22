@@ -824,16 +824,17 @@ class FilesWidget(QtWidgets.QFrame):
 
                 if item:
                     item_dict = item.to_dict()
-
-                    # Check if the item has children (reviewable)
+                    children_data = []
                     if self._files_proxy_model.rowCount(index) > 0:  # Has children
-                        child_index = self._files_proxy_model.index(0, 0, index)
-                        child_item_id = child_index.data(ITEM_ID_ROLE)
-                        child_item = self._files_model.get_file_item_by_id(child_item_id)
-                        if child_item:
-                            item_dict['reviewable'] = child_item.to_dict()
+                        for child_row in range(self._files_proxy_model.rowCount(index)):
+                            child_index = self._files_proxy_model.index(child_row, 0, index)
+                            child_item_id = child_index.data(ITEM_ID_ROLE)
+                            child_item = self._files_model.get_file_item_by_id(child_item_id)
+                            if child_item:
+                                children_data.append(child_item.to_dict())
                     elif item.is_review:
-                        item_dict['reviewable'] = item.to_dict()
+                        children_data.append(item.to_dict())
+                    item_dict['reviewable'] = children_data
 
                     file_items_data.append(item_dict)
         # Return the data or an empty item if no root items exist
