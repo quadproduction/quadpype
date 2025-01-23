@@ -1049,9 +1049,9 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
         self.default_pass_name = plugin_settings["default_pass_name"]
         self.extract_psd = plugin_settings.get("extract_psd", True)
 
-        self.apply_background = False
         self.keep_frame_index = False
         self.exports_types = ['scene', 'camera']
+        self.apply_background = ['No Operation', 'Color From Settings', 'Transparent']
         self.review_types = [el.name for el in TVPaintReviewType]
 
         # A global value to ignore transparency for the subsets exists, this option here adds the ability
@@ -1205,15 +1205,11 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
                 label="All Layers are Full Opaque",
                 default=self.ignore_layers_transparency
             ),
-            BoolDef(
+            EnumDef(
                 "apply_background",
-                label="Apply BG Color (as defined in settings)",
-                default=self.apply_background
-            ),
-            BoolDef(
-                "apply_alpha_background",
-                label="Disable BG (make it transparent)",
-                default=self.apply_background
+                self.apply_background,
+                label="Apply BG",
+                default=self.apply_background[0]
             ),
             TextDef("export_frames_selection",
                     label="Frames to Export",

@@ -97,8 +97,6 @@ class ExtractSequence(pyblish.api.Extractor):
         # Handles are not stored per instance but on Context
         handle_start = instance.context.data["handleStart"]
 
-        scene_bg_color = instance.context.data["sceneBgColor"]
-
         # Prepare output frames
         output_frame_start = frame_start - handle_start
 
@@ -148,13 +146,22 @@ class ExtractSequence(pyblish.api.Extractor):
 
         make_playblast = instance.data["creator_attributes"].get("make_playblast", False)
         export_type = instance.data["creator_attributes"].get("export_type", "scene")
-        apply_background = instance.data["creator_attributes"].get("apply_background", True)
-        apply_alpha_background = instance.data["creator_attributes"].get("apply_alpha_background", False)
         is_review = instance.data["family"] == "review"
 
-        if apply_background and apply_alpha_background:
-            raise ValueError("The options \"Disable BG\" and \"Apply BG Color\" are BOTH activated \n"
-                             "Please disable one of them to proceed")
+        # Prepare scene BG changes
+        apply_background = instance.data["creator_attributes"].get("apply_background", "No Operation")
+
+        self.apply_bg_command = "tv_background \"none\""
+        self.apply_bg_back_command = ""
+        self.settings_bg_color = []
+
+        if apply_background != 'No Operation':
+            self.apply_bg_back_command = self._get_bg_rollback_command(instance.context.data["sceneBgColor"])
+
+        if apply_background == 'Color From Settings':
+            self.settings_bg_color = self._get_settings_bg_color(review=True)
+            self.apply_bg_command = "tv_background \"color\" {} {} {}".format(*self.settings_bg_color)
+
 
         if is_review or make_playblast:
             result = self.render_review(
@@ -162,9 +169,7 @@ class ExtractSequence(pyblish.api.Extractor):
                 export_type,
                 mark_in,
                 mark_out,
-                scene_bg_color,
-                apply_background,
-                apply_alpha_background,
+                self.apply_bg_back_command,
                 ignore_layers_transparency,
                 layers,
                 export_frames_without_offset,
@@ -179,7 +184,7 @@ class ExtractSequence(pyblish.api.Extractor):
                 mark_out,
                 filtered_layers,
                 ignore_layers_transparency,
-                apply_background,
+                self.apply_bg_back_command if self.settings_bg_color else "",
                 resolution,
                 export_frames_without_offset
             )
@@ -283,7 +288,7 @@ class ExtractSequence(pyblish.api.Extractor):
         return repre_filenames
 
     def render_review(
-        self, output_dir, export_type, mark_in, mark_out, scene_bg_color, apply_background, apply_alpha_background,
+        self, output_dir, export_type, mark_in, mark_out, apply_bg_back_command,
         ignore_layers_transparency, layers, export_frames_without_offset, origin_mark_in, origin_mark_out
     ):
         """ Export images from TVPaint using `tv_savesequence` command.
@@ -292,10 +297,7 @@ class ExtractSequence(pyblish.api.Extractor):
             output_dir (str): Directory where files will be stored.
             mark_in (int): Starting frame index from which export will begin.
             mark_out (int): On which frame index export will end.
-            scene_bg_color (list): Bg color set in scene. Result of george
-                script command `tv_background`.
-            apply_background: will apply background color from pype settings
-            apply_alpha_background: will deactivate the background temporary for publish to create alpha BG
+            apply_bg_back_command (str): George script command to put the BG back as set in current scene.
             ignore_layers_transparency (bool): Layer's opacity will be ignored.
             layers (list): List of layers to be exported.
             export_frames_without_offset (list): List of frame indexes to process, if any is given
@@ -346,25 +348,12 @@ class ExtractSequence(pyblish.api.Extractor):
             tv_export
         ])
 
-        if apply_background or apply_alpha_background:
-            background_change_line = "tv_background \"color\""
-
-            if apply_background:
-                bg_color = self._get_settings_bg_color(review=True)
-                background_change_line = "{} {} {} {}".format(background_change_line, *bg_color)
-
-            george_script_lines.insert(0, background_change_line)
+        if apply_bg_back_command:
+            # Change bg color to color from settings
+            george_script_lines.insert(0, self.apply_bg_command)
 
             # Change bg color back to previous scene bg color
-            _scene_bg_color = copy.deepcopy(scene_bg_color)
-            bg_type = _scene_bg_color.pop(0)
-            orig_color_command = [
-                "tv_background",
-                "\"{}\"".format(bg_type)
-            ]
-            orig_color_command.extend(_scene_bg_color)
-
-            george_script_lines.append(" ".join(orig_color_command))
+            george_script_lines.append(apply_bg_back_command)
 
         # Put back the origin opacity on each layer
         if ignore_layers_transparency:
@@ -440,7 +429,7 @@ class ExtractSequence(pyblish.api.Extractor):
         return output_filepaths_by_frame_index, thumbnail_filepath
 
     def render(
-        self, output_dir, mark_in, mark_out, layers, ignore_layers_transparency, apply_background, resolution, export_frames
+        self, output_dir, mark_in, mark_out, layers, ignore_layers_transparency, apply_bg_back_command, resolution, export_frames
     ):
         """ Export images from TVPaint.
 
@@ -450,7 +439,7 @@ class ExtractSequence(pyblish.api.Extractor):
             mark_out (int): On which frame index export will end.
             layers (list): List of layers to be exported.
             ignore_layers_transparency (bool): Layer's opacity will be ignored.
-            apply_background (bool): Apply a bg color to the render set in settings of OP.
+            apply_bg_back_command (str): George script command to put the BG back as set in current scene.
             resolution (tuple): Resolution of the tvpaint project (Width, Height).
             export_frames (list)
 
@@ -511,8 +500,8 @@ class ExtractSequence(pyblish.api.Extractor):
             # filter the layers to compose to remove those who didn't have a render
         filtered_layers = [layer for layer in layers if layer['layer_id'] in output_used_layers_id]
 
-        # Prepare bg image if apply_background enabled
-        if apply_background:
+        # Prepare bg image if apply_bg_back_command
+        if apply_bg_back_command:
             # Create and add to Layers
             bg_layer = {}
             layer_positions = []
@@ -748,3 +737,22 @@ class ExtractSequence(pyblish.api.Extractor):
             Int: New value between 0-255
         """
         return max(0, min(int(round(value * 2.55)), 255))
+
+    @staticmethod
+    def _get_bg_rollback_command(scene_bg_color):
+        """Will produce a tvpaint command that correspond to the current BG mode in opened scene
+        Args:
+            scene_bg_color (list): Information from current BG settings.
+
+        Returns:
+            str: A george script command to apply current BG settings.
+        """
+        _scene_bg_color = copy.deepcopy(scene_bg_color)
+        bg_type = _scene_bg_color.pop(0)
+
+        if bg_type == "check":
+            return "tv_background \"{}\" {} {} {} {} {} {} ".format(bg_type, *_scene_bg_color)
+        elif bg_type == "color" and _scene_bg_color:
+            return "tv_background \"{}\" {} {} {}".format(bg_type, *_scene_bg_color)
+        else:
+            return "tv_background \"{}\"".format(bg_type)
