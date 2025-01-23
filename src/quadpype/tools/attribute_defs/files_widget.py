@@ -594,6 +594,16 @@ class ItemWidget(QtWidgets.QWidget):
         )
         self._split_btn.setPixmap(pix)
 
+    def activate_review_btn(self):
+        source_model = self._item.model().sourceModel()
+        source_model.get_file_item_by_id(self._item_id).set_review(True)
+        self._review_btn.setPixmap(self._review_pix)
+
+    def desactivate_review_btn(self):
+        source_model = self._item.model().sourceModel()
+        source_model.get_file_item_by_id(self._item_id).set_review(False)
+        self._review_btn.setPixmap(self._review_disabled_pix)
+
     def showEvent(self, event):
         super(ItemWidget, self).showEvent(event)
         self._update_btn_size()
@@ -608,14 +618,11 @@ class ItemWidget(QtWidgets.QWidget):
         self.context_menu_requested.emit(point)
 
     def _on_review_actions_clicked(self):
-        source_model = self._item.model().sourceModel()
         self._is_review_enabled = not self._is_review_enabled
         if self._is_review_enabled:
-            source_model.get_file_item_by_id(self._item_id).set_review(True)
-            self._review_btn.setPixmap(self._review_pix)
+            self.activate_review_btn()
         else:
-            source_model.get_file_item_by_id(self._item_id).set_review(False)
-            self._review_btn.setPixmap(self._review_disabled_pix)
+            self.desactivate_review_btn()
 
     def _on_delete_actions_clicked(self):
         self.delete_requested.emit([self._item_id])
@@ -882,8 +889,10 @@ class FilesWidget(QtWidgets.QFrame):
                 is_sequence,
                 self._multivalue,
                 index
-
             )
+            file_item = self._files_model.get_file_item_by_id(item_id)
+            if file_item.is_review:
+                widget.activate_review_btn()
             widget.context_menu_requested.connect(
                 self._on_context_menu_requested
             )

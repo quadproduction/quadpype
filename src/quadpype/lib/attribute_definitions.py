@@ -843,6 +843,9 @@ class FileDefItem(object):
         def process_item(item):
             if isinstance(item, dict):
                 file_item = cls.from_dict(item)
+                if item.get("is_representation") and item.get("is_review"):
+                    output.append(file_item)
+                    return
                 reviewables = item.get("reviewable", [])
                 if isinstance(reviewables, dict):
                     reviewables = [reviewables]
