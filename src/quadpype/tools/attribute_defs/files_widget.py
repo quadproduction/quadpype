@@ -731,16 +731,25 @@ class FilesWidget(QtWidgets.QFrame):
         files_view.remove_requested.connect(self._on_remove_requested)
         files_view.context_menu_requested.connect(self._on_context_menu_requested)
         representations_label = QtWidgets.QLabel(f"Allowed File type for representations:")
+        representations_label.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         self.allowed_representations_label = QtWidgets.QLabel()
-        review_label = QtWidgets.QLabel(f"Allowed File type for reviews:")
-        self.allowed_reviews_label = QtWidgets.QLabel(', '.join(IMAGE_EXTS+VIDEO_EXTS))
+        self.allowed_representations_label.setWordWrap(True)
+        self.allowed_representations_label.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                                         QtWidgets.QSizePolicy.Preferred)
 
-        allowed_files_representation_layout.addWidget(representations_label)
+        review_label = QtWidgets.QLabel(f"Allowed File type for reviews:")
+        review_label.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
+        self.allowed_reviews_label = QtWidgets.QLabel(', '.join(IMAGE_EXTS+VIDEO_EXTS))
+        self.allowed_reviews_label.setWordWrap(True)
+        self.allowed_reviews_label.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                                 QtWidgets.QSizePolicy.Preferred)
+
+        allowed_files_representation_layout.addWidget(representations_label, 0, alignment=QtGui.Qt.AlignTop | QtGui.Qt.AlignLeft)
         allowed_files_representation_layout.addWidget(self.allowed_representations_label, 1)
         main_layout.addLayout(allowed_files_representation_layout)
 
         if allow_reviews:
-            allowed_files_review_layout.addWidget(review_label)
+            allowed_files_review_layout.addWidget(review_label, 0, alignment=QtGui.Qt.AlignTop | QtGui.Qt.AlignLeft)
             allowed_files_review_layout.addWidget(self.allowed_reviews_label, 1)
             main_layout.addLayout(allowed_files_review_layout)
 
@@ -765,7 +774,7 @@ class FilesWidget(QtWidgets.QFrame):
 
     @staticmethod
     def _create_legend_pixmap():
-        width, height = 300, 150
+        width, height = 200, 100
 
         pixmap = QtGui.QPixmap(width, height)
         pixmap.fill(QtCore.Qt.transparent)
