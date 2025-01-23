@@ -676,7 +676,7 @@ class FileDefItem(object):
         frames: Optional[List[int]] = None,
         template: Optional[str] = None,
         is_representation: bool = False,
-        is_review: bool = False,
+        is_review: bool = True,
     ):
         self.directory: str = directory
 

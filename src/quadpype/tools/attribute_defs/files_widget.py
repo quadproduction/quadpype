@@ -503,7 +503,7 @@ class ItemWidget(QtWidgets.QWidget):
         review_btn = ClickableLabel(self)
         review_btn.setFixedSize(height, height)
         if self._allow_reviews:
-            review_btn.setPixmap(self._review_disabled_pix)
+            review_btn.setPixmap(self._review_pix)
 
         delete_btn = ClickableLabel(self)
         delete_btn.setFixedSize(height, height)
@@ -536,7 +536,7 @@ class ItemWidget(QtWidgets.QWidget):
         self._delete_btn = delete_btn
         self._actions_menu_pix = actions_menu_pix
         self._last_scaled_pix_height = None
-        self._is_review_enabled = False
+        self._is_review_enabled = True
         self._is_representation_enabled = True
 
         self.update_visibility()
