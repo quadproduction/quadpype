@@ -269,8 +269,6 @@ class FilesModel(QtGui.QStandardItemModel):
                 parent_item = self.invisibleRootItem()
             else:
                 parent_item = self.itemFromIndex(parent_item_index)
-                if parent_item is None:
-                    parent_item = self.invisibleRootItem()
 
             # Ensure the first item is the parent, and others are children
             for idx, items in enumerate(new_model_items):
@@ -531,7 +529,7 @@ class ItemWidget(QtWidgets.QWidget):
         delete_btn.clicked.connect(self._on_delete_actions_clicked)
         split_btn.clicked.connect(self._on_split_actions_clicked)
 
-        self._item = model_index
+        self._item = QtCore.QPersistentModelIndex(model_index)
         self._label_widget = label_widget
         self._split_btn = split_btn
         self._review_btn = review_btn or None
