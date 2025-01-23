@@ -571,7 +571,7 @@ class ItemWidget(QtWidgets.QWidget):
 
         if parent_is_valid:
             color = QtGui.QColor(YELLOW_BG)
-        elif not has_children:
+        elif not has_children and not self._item.model().sourceModel().get_file_item_by_id(self._item_id).is_review:
             color = QtGui.QColor(PURPLE_BG)
         else:
             color = QtGui.QColor(ORANGE_BG)
@@ -623,6 +623,7 @@ class ItemWidget(QtWidgets.QWidget):
             self.activate_review_btn()
         else:
             self.desactivate_review_btn()
+        self.update()
 
     def _on_delete_actions_clicked(self):
         self.delete_requested.emit([self._item_id])
