@@ -1,6 +1,6 @@
 import os
 import json
-import datetime
+from datetime import datetime, timezone
 
 from .execute import get_quadpype_execute_args
 from .user import get_user_id, get_user_profile
@@ -58,7 +58,7 @@ def extract_pype_info_to_file(dir_path):
     filename = "{}_{}_{}.json".format(
         get_quadpype_version(),
         get_user_id(),
-        datetime.datetime.now().strftime("%y%m%d%H%M%S")
+        datetime.now(timezone.utc).strftime("%y%m%d%H%M%S")
     )
     filepath = os.path.join(dir_path, filename)
     data = get_all_current_info()

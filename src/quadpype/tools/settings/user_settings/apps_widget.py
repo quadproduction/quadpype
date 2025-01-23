@@ -115,8 +115,8 @@ class AppGroupWidget(QtWidgets.QWidget):
             if "enabled" not in entity or entity["enabled"].value:
                 valid_variants[key] = entity
 
-        expading_widget = ExpandingWidget(group_label, self)
-        content_widget = QtWidgets.QWidget(expading_widget)
+        expanding_widget = ExpandingWidget(group_label, self)
+        content_widget = QtWidgets.QWidget(expanding_widget)
         content_layout = QtWidgets.QVBoxLayout(content_widget)
         content_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 0)
 
@@ -139,11 +139,11 @@ class AppGroupWidget(QtWidgets.QWidget):
             widgets_by_variant_name[variant_name] = variant_widget
             content_layout.addWidget(variant_widget)
 
-        expading_widget.set_content_widget(content_widget)
+        expanding_widget.set_content_widget(content_widget)
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(expading_widget)
+        layout.addWidget(expanding_widget)
 
         self.widgets_by_variant_name = widgets_by_variant_name
 
@@ -178,11 +178,12 @@ class LocalApplicationsWidgets(QtWidgets.QWidget):
 
         self.content_layout = layout
 
-    def _filter_group_entity(self, entity):
+    @staticmethod
+    def _filter_group_entity(entity):
         if not entity["enabled"].value:
             return False
 
-        # Check if has enabled any variant
+        # Check if it has enabled any variant
         for variant_entity in entity["variants"].values():
             if (
                 "enabled" not in variant_entity
@@ -228,7 +229,7 @@ class LocalApplicationsWidgets(QtWidgets.QWidget):
                 if not group_label:
                     group_label = key
 
-            # Create App group specific widget and store it by the key
+            # Create an "App group" specific widget and store it by the key
             group_widget = AppGroupWidget(entity, group_label, self, dynamic)
             if group_widget.widgets_by_variant_name:
                 self.widgets_by_group_name[key] = group_widget

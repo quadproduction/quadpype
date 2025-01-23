@@ -4,7 +4,9 @@ import pkgutil
 from fastapi import APIRouter
 
 from .handler import (
-    get_event_handler
+    get_event_handler,
+    send_event,
+    get_event_doc
 )
 
 from .notification import (
@@ -32,6 +34,9 @@ def get_web_api_routers():
 
 __all__ = (
     "get_event_handler",
+    "send_event",
+    "get_event_doc",
+
     "get_web_api_routers",
 
     "show_tray_message"

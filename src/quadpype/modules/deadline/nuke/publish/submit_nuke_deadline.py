@@ -3,7 +3,8 @@ import re
 import json
 import getpass
 import platform
-from datetime import datetime
+
+from datetime import datetime, timezone
 
 import requests
 import pyblish.api
@@ -255,7 +256,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
             # Get workfile extension
             repre_file = representation["files"]
             self.log.info(repre_file)
-            ext = os.path.splitext(repre_file)[1].lstrip(".")
+            ext = os.path.splitext(repre_file)[1].lstrip(".").lower()
 
             # Fill template data
             template_data["representation"] = representation["name"]
@@ -322,7 +323,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         )
 
         if is_in_tests():
-            batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
+            batch_name += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
 
         output_filename_0 = self.preview_fname(render_path)
 

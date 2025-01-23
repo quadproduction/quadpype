@@ -1,6 +1,7 @@
-import datetime
 import collections
 from uuid import uuid4
+
+from datetime import datetime, timezone
 
 
 class Job:
@@ -16,7 +17,7 @@ class Job:
             job_id = str(uuid4())
         self._id = job_id
         if created_time is None:
-            created_time = datetime.datetime.now()
+            created_time = datetime.now(timezone.utc)
         self._created_time = created_time
         self._started_time = None
         self._done_time = None
@@ -36,7 +37,7 @@ class Job:
         if self._done_time is None:
             return True
 
-        now = datetime.datetime.now()
+        now = datetime.now(timezone.utc)
         delta = now - self._done_time
         return delta.days < self.keep_in_memory_days
 
@@ -82,12 +83,12 @@ class Job:
             worker.set_current_job(self)
 
     def set_started(self):
-        self._started_time = datetime.datetime.now()
+        self._started_time = datetime.now(timezone.utc)
         self._started = True
 
     def set_done(self, success=True, message=None, data=None):
         self._done = True
-        self._done_time = datetime.datetime.now()
+        self._done_time = datetime.now(timezone.utc)
         self._errored = not success
         self._message = message
         self._result_data = data
@@ -130,7 +131,7 @@ class JobQueue:
     old_jobs_check_minutes_interval = 30
 
     def __init__(self):
-        self._last_old_jobs_check = datetime.datetime.now()
+        self._last_old_jobs_check = datetime.now(timezone.utc)
         self._jobs_by_id = {}
         self._job_queue_by_host_name = collections.defaultdict(
             collections.deque
@@ -214,7 +215,7 @@ class JobQueue:
 
     def _remove_old_jobs(self):
         """Once in specific time look if should remove old finished jobs."""
-        delta = datetime.datetime.now() - self._last_old_jobs_check
+        delta = datetime.now(timezone.utc) - self._last_old_jobs_check
         if delta.seconds < self.old_jobs_check_minutes_interval:
             return
 

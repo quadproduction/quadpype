@@ -27,8 +27,8 @@ class CollectWorkfileData(pyblish.api.InstancePlugin):
         }
 
         data['representations'] = [{
-            'name': ext.lstrip("."),
-            'ext': ext.lstrip("."),
+            'name': ext.lstrip(".").lower(),
+            'ext': ext.lstrip(".").lower(),
             'files': file,
             "stagingDir": folder,
         }]

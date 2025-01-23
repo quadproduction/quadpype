@@ -115,7 +115,7 @@ class SFTPHandler(AbstractProvider):
             {
                 'key': "sftp_pass",
                 'label': "SFTP password",
-                'type': 'text'
+                'type': 'password'
             },
             {
                 'key': "sftp_key",

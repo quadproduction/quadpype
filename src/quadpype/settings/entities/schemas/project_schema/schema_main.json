@@ -30,7 +30,7 @@
                 {
                     "type": "dict-modifiable",
                     "key": "tasks",
-                    "label": "Task types",
+                    "label": "Task Declarations",
                     "is_file": true,
                     "is_group": true,
                     "object_type": {
@@ -43,10 +43,6 @@
                             }
                         ]
                     }
-                },
-                {
-                    "type": "schema",
-                    "name": "schema_anatomy_imageio"
                 }
             ]
         },
@@ -73,10 +69,6 @@
                 {
                     "type": "schema",
                     "name": "schema_project_deadline"
-                },
-                {
-                    "type": "schema",
-                    "name": "schema_project_royalrender"
                 },
                 {
                     "type": "schema",

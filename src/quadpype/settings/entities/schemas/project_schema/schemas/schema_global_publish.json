@@ -194,7 +194,7 @@
             "collapsible": true,
             "checkbox_key": "enabled",
             "key": "ExtractThumbnail",
-            "label": "ExtractThumbnail",
+            "label": "Extract Thumbnail",
             "is_group": true,
             "children": [
                 {

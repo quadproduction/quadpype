@@ -31,7 +31,7 @@ class ExtractComposite(publish.Extractor):
 
         output = instance.data["frames"]
         _, ext = splitext(output[0], [])
-        ext = ext.lstrip(".")
+        ext = ext.lstrip(".").lower()
 
         if "representations" not in instance.data:
             instance.data["representations"] = []

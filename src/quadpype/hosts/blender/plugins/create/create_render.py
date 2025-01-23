@@ -2,7 +2,6 @@
 import bpy
 
 from quadpype.lib import version_up
-from quadpype.pipeline.context_tools import version_up_current_workfile
 from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.render_lib import prepare_rendering
 from quadpype.hosts.blender.api.workio import save_file
@@ -40,15 +39,13 @@ class CreateRenderlayer(plugin.BlenderCreator):
         # settings. Even the validator to check that the file is saved will
         # detect the file as saved, even if it isn't. The only solution for
         # now it is to force the file to be saved.
-        if not bpy.data.filepath:
-            version_up_current_workfile()
-        else:
+        if bpy.data.filepath:
             filepath = version_up(bpy.data.filepath)
             save_file(filepath, copy=False)
 
         return collection
 
     def get_instance_attr_defs(self):
-        defs = lib.collect_animation_defs(self.create_context)
+        defs = lib.collect_animation_defs()
 
         return defs

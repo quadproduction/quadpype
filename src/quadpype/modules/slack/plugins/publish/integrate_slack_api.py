@@ -2,7 +2,7 @@ import os
 import re
 import pyblish.api
 import copy
-from datetime import datetime
+from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 import time
 
@@ -82,7 +82,7 @@ class IntegrateSlackAPI(pyblish.api.InstancePlugin):
                     "msg_id": msg_id,
                     "file_ids": file_ids,
                     "project": project,
-                    "created_dt": datetime.now()
+                    "created_dt": datetime.now(timezone.utc)
                 }
                 mongo_client = QuadPypeMongoConnection.get_mongo_client()
                 database_name = os.environ["QUADPYPE_DATABASE_NAME"]

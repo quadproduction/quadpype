@@ -237,7 +237,7 @@ class PackageHandler:
             )
 
         if not running_version_str:
-            # If no version specified get the latest version
+            # If no version specified gets the latest version
             latest_version = self.get_latest_version()
             is_local_more_recent = local_version and local_version >= latest_version
             if latest_version and not is_local_more_recent:
@@ -246,6 +246,7 @@ class PackageHandler:
                 running_version_str = str(local_version)
 
         if not running_version_str:
+            # TODO: The caller should catch this and this and should display an error dialog to the user
             raise ValueError("Cannot find a version to run, neither locally or remotely.")
 
         if not isinstance(running_version_str, str):
@@ -502,13 +503,14 @@ class PackageHandler:
         # Iterate over directory at the first level
         for item in dir_path.iterdir():
             # If the item is a directory with a major.minor version format, dive deeper
-            if item.is_dir() and re.match(r"^\d+\.\d+$", item.name) and parent_version is None:
+            if item.is_dir() and re.match(r"^v?\d+\.\d+$", item.name) and parent_version is None:
+                parent_version_str = f"{item.name.removeprefix('v')}.0"
                 detected_versions = cls.get_versions_from_dir(
                     pkg_name,
                     item,
                     priority_to_archives,
                     excluded_str_versions,
-                    PackageVersion(version=f"{item.name}.0")
+                    PackageVersion(version=parent_version_str)
                 )
 
                 if detected_versions:
@@ -775,8 +777,6 @@ class PackageManager:
 
     def add_package(self, package_instance):
         """Add package to manager."""
-        if not isinstance(package_instance, PackageHandler):
-            raise TypeError("Package must be a subclass of PackageHandler")
         self._packages[package_instance.name] = package_instance
 
     def remove_package(self, package_name):
@@ -785,7 +785,7 @@ class PackageManager:
             del self._packages[package_name]
 
 
-def create_package_manager() -> PackageManager:
+def retrieve_package_manager() -> PackageManager:
     global _PACKAGE_MANAGER
     if _PACKAGE_MANAGER is None:
         _PACKAGE_MANAGER = PackageManager()
@@ -798,9 +798,11 @@ def get_package_manager() -> PackageManager:
         raise RuntimeError("Package Manager is not initialized")
     return _PACKAGE_MANAGER
 
+
 def set_package_manager(package_manager: Any):
     global _PACKAGE_MANAGER
     _PACKAGE_MANAGER = package_manager
+
 
 def get_package(package_name: str) -> PackageHandler:
     global _PACKAGE_MANAGER

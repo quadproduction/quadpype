@@ -1,11 +1,15 @@
 cmake_minimum_required(VERSION 3.17)
+
 project(QuadPypePlugin C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(IP_ENABLE_UNICODE OFF)
 set(IP_ENABLE_DOCTEST OFF)
+
+set(CMAKE_CONFIGURATION_TYPES "Release" CACHE STRING "" FORCE)
 
 if(MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -20,15 +24,13 @@ if(MSVC)
     endif()
 endif()
 
-# TODO better options
-option(BOOST_ROOT "Path to root of Boost" "")
-
-option(OPENSSL_INCLUDE "OpenSSL include path" "")
-option(OPENSSL_LIB_DIR "OpenSSL lib path" "")
-
-option(WEBSOCKETPP_INCLUDE "Websocketpp include path" "")
-
-option(JSONRPCPP_INCLUDE "Jsonrpcpp include path" "")
+set(BOOST_ROOT "C:/Boost")
+set(OPENSSL_INCLUDE "C:/Program Files/OpenSSL-Win64/include")
+set(OPENSSL_LIB_DIR "C:/Program Files/OpenSSL-Win64/lib")
+set(WEBSOCKETPP_INCLUDE "./dependencies/websocketpp-0.8.2/")
+set(JSONRPCPP_INCLUDE "./dependencies/jsonrpcpp-1.4.0/include")
+set(TVPAINT_SDK_INCLUDE "ADD_YOUR_PATH_TO_THE/TVPaint_SDK/include")
+set(TVPAINT_SDK_LIB "ADD_YOUR_PATH_TO_THE/TVPaint_SDK/lib")
 
 # Use static boost libraries
 set(Boost_USE_STATIC_LIBS ON)

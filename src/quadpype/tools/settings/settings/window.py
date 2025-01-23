@@ -4,6 +4,7 @@ from quadpype import style
 
 from quadpype.lib import get_user_id
 from quadpype.lib.events import EventSystem
+from quadpype.lib.version_utils import get_latest_version
 
 from quadpype.settings import get_global_settings, CORE_SETTINGS_KEY
 from quadpype.settings.lib import (
@@ -138,28 +139,32 @@ class MainWidget(QtWidgets.QWidget):
         global_settings_widget = GlobalSettingsWidget(controller, header_tab_widget)
         project_settings_widget = ProjectSettingsWidget(controller, header_tab_widget)
         # project_manager_widget = ProjectManagerWidget(controller, header_tab_widget)
-        # user_manager_widget = UserManagerWidget(controller, header_tab_widget)
+        user_manager_widget = UserManagerWidget(controller, header_tab_widget)
 
         tab_widgets = [
             global_settings_widget,
             project_settings_widget,
             # project_manager_widget,
-            # user_manager_widget,
+            user_manager_widget,
         ]
 
         current_settings = get_global_settings()
         production_version = current_settings.get(CORE_SETTINGS_KEY).get("production_version")
-        # TODO: Get latest and then compare
-        # If production_version is empty, this means no version can be found
-        # Avoid blocking the global settings in that case
-        if production_version and production_version != global_settings_widget._current_version:
+        if not production_version:
+            # This means production use latest
+            latest_version = get_latest_version()
+            production_version = str(latest_version)
+
+        if production_version != global_settings_widget.current_version:
+            # The global settings can only be edited in the production version
+            # This is mandatory to avoid weird situations and issues from user perspectives
             self._protect_global_settings = True
             self._controller.set_edit_mode(EditMode.PROTECT)
 
         header_tab_widget.addTab(global_settings_widget, "Global Setting")
         header_tab_widget.addTab(project_settings_widget, "Project Settings")
         # header_tab_widget.addTab(project_manager_widget, "Projects")
-        # header_tab_widget.addTab(user_manager_widget, "Users")
+        header_tab_widget.addTab(user_manager_widget, "Users")
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)

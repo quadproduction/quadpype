@@ -115,7 +115,7 @@ class WriteNodeKnobSettingPanel(nukescripts.PythonPanel):
                 "work": os.getenv("AVALON_WORKDIR"),
                 "subset": write_node["name"].value(),
                 "frame": "#" * frame_padding,
-                "ext": ext
+                "ext": ext.lower()
             }
             file_path = temp_rendering_path_template.format(**data)
             file_path = file_path.replace("\\", "/")

@@ -84,7 +84,7 @@ class CelactionSubmitDeadline(pyblish.api.InstancePlugin, DeadlineDefaultJobAttr
                 assert item.data["publish"] is True, msg
 
                 template_data = item.data.get("anatomyData")
-                rep = item.data.get("representations")[0].get("name")
+                rep = item.data.get("representations")[0].get("name").lower()
                 template_data["representation"] = rep
                 template_data["ext"] = rep
                 template_data["comment"] = None

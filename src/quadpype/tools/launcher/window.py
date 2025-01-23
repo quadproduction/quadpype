@@ -42,9 +42,14 @@ class ProjectIconView(QtWidgets.QListView):
         # toggling between the two visual modes
         self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.setObjectName("IconView")
+        self.setSelectionMode(QtWidgets.QListView.NoSelection)
 
         self._mode = None
         self.set_mode(mode)
+
+    @property
+    def mode(self):
+        return self._mode
 
     def set_mode(self, mode):
         if mode == self._mode:
@@ -57,8 +62,8 @@ class ProjectIconView(QtWidgets.QListView):
             self.setResizeMode(QtWidgets.QListView.Adjust)
             self.setWrapping(True)
             self.setWordWrap(True)
-            self.setGridSize(QtCore.QSize(151, 90))
-            self.setIconSize(QtCore.QSize(50, 50))
+            self.setGridSize(QtCore.QSize(225, 100))
+            self.setIconSize(QtCore.QSize(40, 40))
             self.setSpacing(0)
             self.setAlternatingRowColors(False)
 
@@ -85,6 +90,8 @@ class ProjectIconView(QtWidgets.QListView):
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.RightButton:
             self.set_mode(int(not self._mode))
+            self.model().set_display_mode(self._mode)
+            self.model().full_refresh()
         return super(ProjectIconView, self).mousePressEvent(event)
 
 
@@ -94,10 +101,10 @@ class ProjectsPanel(QtWidgets.QWidget):
         super().__init__(parent=parent)
 
         view = ProjectIconView(parent=self)
-        view.setSelectionMode(QtWidgets.QListView.NoSelection)
+
         flick = FlickCharm(parent=self)
         flick.activateOn(view)
-        model = ProjectModel(launcher_model)
+        model = ProjectModel(launcher_model, self)
         view.setModel(model)
 
         layout = QtWidgets.QVBoxLayout(self)
@@ -159,8 +166,8 @@ class AssetsPanel(QtWidgets.QWidget):
         body.setOrientation(QtCore.Qt.Horizontal)
         body.addWidget(assets_widget)
         body.addWidget(tasks_widget)
-        body.setStretchFactor(0, 100)
-        body.setStretchFactor(1, 65)
+        body.setStretchFactor(0, 52)
+        body.setStretchFactor(1, 48)
 
         # main layout
         layout = QtWidgets.QVBoxLayout(self)
@@ -291,7 +298,7 @@ class LauncherWindow(QtWidgets.QDialog):
         # for the pages so that is the only one that
         # stretches on UI resize.
         body.setStretchFactor(0, 10)
-        body.setSizes([580, 160])
+        body.setSizes([540, 200])
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(body)
@@ -311,7 +318,8 @@ class LauncherWindow(QtWidgets.QDialog):
         asset_panel.back_clicked.connect(self.on_back_clicked)
         asset_panel.session_changed.connect(self.on_session_changed)
 
-        self.resize(520, 740)
+        self.setMinimumSize(404, 578)
+        self.resize(494, 740)
 
         self._page = 0
 
@@ -380,7 +388,12 @@ class LauncherWindow(QtWidgets.QDialog):
 
     def on_action_clicked(self, action):
         self.echo("Running action: {}".format(get_action_label(action)))
-        self.run_action(action)
+        return_action = self.run_action(action)
+        # Update the Action plug-ins available for the current project
+        # Only if click on an action that return something
+        # like the create folder action
+        if return_action:
+            self.discover_actions()
 
     def on_history_action(self, history_data):
         action, session = history_data
@@ -409,7 +422,7 @@ class LauncherWindow(QtWidgets.QDialog):
 
         # Process the Action
         try:
-            action().process(filtered_session)
+            return action().process(filtered_session)
         except Exception as exc:
             self.log.warning("Action launch failed.", exc_info=True)
             self.echo("Failed: {}".format(str(exc)))

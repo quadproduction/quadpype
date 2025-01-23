@@ -32,6 +32,12 @@ WEB_API = FastAPI(
 
 templates = Jinja2Templates(directory=Path(__file__).parent.joinpath("templates"))
 
+
+@WEB_API.post("/ping/", tags=["ping"])
+async def ping():
+    return {"message": "pong"}
+
+
 @WEB_API.get('/favicon.ico', include_in_schema=False)
 async def favicon():
     return FileResponse(get_app_favicon_filepath())

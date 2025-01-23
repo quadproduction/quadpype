@@ -1,6 +1,8 @@
 import os
 import json
-import datetime
+
+from datetime import datetime, timezone
+
 import requests
 from .constants import (
     CLOCKIFY_ENDPOINT,
@@ -221,7 +223,7 @@ class ClockifyAPI:
         return all_tasks[task_name]
 
     def get_current_time(self):
-        return str(datetime.datetime.utcnow().isoformat()) + "Z"
+        return datetime.now(timezone.utc).isoformat()
 
     def start_time_entry(
         self,

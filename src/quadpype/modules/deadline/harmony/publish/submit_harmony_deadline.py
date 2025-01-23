@@ -5,7 +5,8 @@ from pathlib import Path
 from collections import OrderedDict
 from zipfile import ZipFile, is_zipfile
 import re
-from datetime import datetime
+
+from datetime import datetime, timezone
 
 import attr
 import pyblish.api
@@ -276,7 +277,7 @@ class HarmonySubmitDeadline(
             "deadline_batch_name"
         )
         if is_in_tests():
-            batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
+            batch_name += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
         job_info.BatchName = "Group: " + batch_name
         job_info.Name = job_name
         job_info.BatchName = batch_name

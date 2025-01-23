@@ -59,7 +59,7 @@ Expected deployed extension location on default Windows:
 For easier debugging of Javascript:
 https://community.adobe.com/t5/download-install/adobe-extension-debuger-problem/td-p/10911704?page=1
 Add (optional) --enable-blink-features=ShadowDOMV0,CustomElementsV0 when starting Chrome
-then localhost:8092
+then localhost:8018
 
 Or use Visual Studio Code https://medium.com/adobetech/extendscript-debugger-for-visual-studio-code-public-release-a2ff6161fa01
 ## Resources

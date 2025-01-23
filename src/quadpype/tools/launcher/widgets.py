@@ -5,6 +5,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 
 from quadpype.style import get_app_icon_path
+from quadpype.pipeline import ApplicationAction
 from quadpype.tools.flickcharm import FlickCharm
 from quadpype.tools.utils.assets_widget import SingleSelectAssetsWidget
 from quadpype.tools.utils.tasks_widget import TasksWidget
@@ -19,7 +20,6 @@ from .models import (
     LauncherTaskModel,
     LauncherTasksProxyModel
 )
-from .actions import ApplicationAction
 from .constants import (
     ACTION_ROLE,
     GROUP_ROLE,
@@ -37,10 +37,10 @@ class ProjectBar(QtWidgets.QWidget):
         super().__init__(parent)
 
         project_combobox = QtWidgets.QComboBox(self)
-        # Change delegate so stylysheets are applied
+        # Change delegate so stylesheets are applied
         project_delegate = QtWidgets.QStyledItemDelegate(project_combobox)
         project_combobox.setItemDelegate(project_delegate)
-        model = ProjectModel(launcher_model)
+        model = ProjectModel(launcher_model, self)
         project_combobox.setModel(model)
         project_combobox.setRootModelIndex(QtCore.QModelIndex())
 
@@ -176,16 +176,15 @@ class ActionBar(QtWidgets.QWidget):
         view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         view.setWrapping(True)
-        view.setGridSize(QtCore.QSize(70, 75))
-        view.setIconSize(QtCore.QSize(30, 30))
-        view.setSpacing(0)
+        view.setGridSize(QtCore.QSize(90, 96))
+        view.setIconSize(QtCore.QSize(40, 40))
         view.setWordWrap(True)
 
         model = ActionModel(self.dbcon, self)
         view.setModel(model)
 
-        # TODO better group delegate
         delegate = ActionDelegate(
+            QtCore.QMargins(6, 6, 0, 0),
             [GROUP_ROLE, VARIANT_GROUP_ROLE],
             self
         )
@@ -233,7 +232,7 @@ class ActionBar(QtWidgets.QWidget):
         self.model.filter_actions()
 
     def set_row_height(self, rows):
-        self.setMinimumHeight(rows * 75)
+        self.setMinimumHeight(rows * 96)
 
     def _on_projects_refresh(self):
         self.discover_actions()
@@ -283,10 +282,8 @@ class ActionBar(QtWidgets.QWidget):
         if index.data(FORCE_NOT_OPEN_WORKFILE_ROLE):
             checkbox.setChecked(True)
 
-        action_id = index.data(ACTION_ID_ROLE)
-        checkbox.stateChanged.connect(
-            lambda: self.on_checkbox_changed(checkbox.isChecked(),
-                                             action_id))
+        checkbox.checkStateChanged.connect(
+            lambda check_state: self.on_checkbox_changed(check_state, index))
         action = QtWidgets.QWidgetAction(menu)
         action.setDefaultWidget(checkbox)
 
@@ -300,10 +297,12 @@ class ActionBar(QtWidgets.QWidget):
             self._discover_on_menu = False
             self.discover_actions()
 
-    def on_checkbox_changed(self, is_checked, action_id):
+    def on_checkbox_changed(self, check_state, index):
+        is_checked = True if check_state == QtCore.Qt.Checked else False
+        action_id = index.data(ACTION_ID_ROLE)
         self.model.update_force_not_open_workfile_settings(is_checked,
                                                            action_id)
-        self.view.update()
+        self.view.update(index)
         if self._context_menu is not None:
             self._context_menu.close()
 
@@ -412,7 +411,7 @@ class ActionHistory(QtWidgets.QPushButton):
         self.setFixedWidth(25)
         self.setFixedHeight(25)
 
-        self.setIcon(qtawesome.icon("fa.history", color="#CCCCCC"))
+        self.setIcon(qtawesome.icon("fa5s.history", color="#CCCCCC"))
         self.setIconSize(QtCore.QSize(15, 15))
 
         self._history = []

@@ -59,10 +59,10 @@ from .utils import get_node_outputs
 
 log = Logger.get_logger(__name__)
 
-_NODE_TAB_NAME = "{}".format(os.getenv("AVALON_LABEL") or "Avalon")
-AVALON_LABEL = os.getenv("AVALON_LABEL") or "Avalon"
-AVALON_TAB = "{}".format(AVALON_LABEL)
-AVALON_DATA_GROUP = "{}DataGroup".format(AVALON_LABEL.capitalize())
+_NODE_TAB_NAME = "{}".format(os.getenv("QUADPYPE_LABEL") or "QuadPype")
+QUADPYPE_LABEL = os.getenv("QUADPYPE_LABEL") or "QuadPype"
+AVALON_TAB = "{}".format(QUADPYPE_LABEL)
+AVALON_DATA_GROUP = "{}DataGroup".format(QUADPYPE_LABEL.capitalize())
 EXCLUDED_KNOB_TYPE_ON_READ = (
     20,  # Tab Knob
     26,  # Text Knob (But for backward compatibility, still be read
@@ -1288,7 +1288,7 @@ def create_write_node(
 
     data.update({
         "imageio_writes": imageio_writes,
-        "ext": ext
+        "ext": ext.lower()
     })
     anatomy_filled = format_anatomy(data)
 
@@ -2598,92 +2598,12 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
 
     def set_context_settings(self):
         os.environ["QUADPYPE_NUKE_SKIP_SAVE_EVENT"] = "True"
-        # replace reset resolution from avalon core to pype's
-        if self._get_set_resolution_startup():
+        if get_project_settings(Context.project_name)["nuke"]["general"].get("set_resolution_startup", True):
             self.reset_resolution()
-        # replace reset resolution from avalon core to pype's
         self.reset_frame_range_handles()
         # add colorspace menu item
         self.set_colorspace()
         del os.environ["QUADPYPE_NUKE_SKIP_SAVE_EVENT"]
-
-    def _get_set_resolution_startup(self):
-        custom_settings = self.get_custom_settings()
-        return custom_settings.get("hosts", {}).get("nuke", {}).get("set_resolution_startup", True)
-
-    def set_custom_resolution(self):
-        custom_settings = self.get_custom_settings()
-        if not custom_settings:
-            log.warning("Can't access to quad custom settings. Custom settings will not be applied.")
-            return
-
-        self.set_workfile_overrides(
-            custom_settings=custom_settings
-        )
-
-    def get_custom_settings(self):
-        project_name = get_current_project_name()
-        project_settings = get_project_settings(project_name)
-
-        return project_settings.get('quad_custom_settings')
-
-    def set_workfile_overrides(self, custom_settings):
-        project_name = get_current_project_name()
-        resolution_overrides = custom_settings.get(GENERAL_SETTINGS_KEY, {}).get("working_resolution_overrides", None)
-        if not resolution_overrides:
-            log.warning("Can't retrieve resolution overrides for workfiles. Will not be applied.")
-            return
-
-        host_name = get_current_host_name()
-        overrides_group = self._get_override_group(resolution_overrides, host_name)
-
-        if not overrides_group:
-            log.warning("Can't find overrides group that fit application. Abort.")
-
-        asset_data = self._asset_entity["data"]
-        format_data = {
-            "width": int(overrides_group.get('working_resolution_width')),
-            "height": int(overrides_group.get('working_resolution_height')),
-            "pixel_aspect": asset_data.get(
-                'pixelAspect',
-                asset_data.get('pixel_aspect', 1)),
-            "name": f"{project_name}_{host_name}"
-        }
-
-        if any(x_ for x_ in format_data.values() if x_ is None):
-            msg = ("Missing override from custom settings."
-                   "\nContact your supervisor!."
-                   "\n\nWidth: `{width}`"
-                   "\nHeight: `{height}`"
-                   "\nPixel Aspect: `{pixel_aspect}`").format(**format_data)
-            log.error(msg)
-            nuke.message(msg)
-
-        existing_format = None
-        for format in nuke.formats():
-            if format_data["name"] == format.name():
-                existing_format = format
-                break
-
-        if existing_format:
-            # Enforce existing format to be correct.
-            existing_format.setWidth(format_data["width"])
-            existing_format.setHeight(format_data["height"])
-            existing_format.setPixelAspect(format_data["pixel_aspect"])
-        else:
-            format_string = self.make_format_string(**format_data)
-            log.info("Creating new format: {}".format(format_string))
-            nuke.addFormat(format_string)
-
-        nuke.root()["format"].setValue(format_data["name"])
-        log.info(f"Format is set with values : {format_data}")
-
-    def _get_override_group(self, resolution_overrides, host_name):
-        for resolution_overrides_set in resolution_overrides:
-            if host_name in resolution_overrides_set.get('hosts', []):
-                return resolution_overrides_set
-
-        return None
 
     def set_favorites(self):
         from .utils import set_context_favorites

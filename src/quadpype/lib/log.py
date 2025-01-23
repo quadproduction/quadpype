@@ -10,9 +10,6 @@ See :func:`_mongo_settings`
 
 Best place for it is in ``repos/pype-config/environments/global.json``
 """
-
-
-import datetime
 import getpass
 import logging
 import os
@@ -23,6 +20,8 @@ import time
 import traceback
 import threading
 import copy
+
+from datetime import datetime, timezone
 
 from quadpype.client.mongo import (
     MongoEnvNotSet,
@@ -131,7 +130,7 @@ class MongoFormatter(logging.Formatter):
         """Formats LogRecord into python dictionary."""
         # Standard document
         document = {
-            'timestamp': datetime.datetime.now(),
+            'timestamp': datetime.now(timezone.utc),
             'level': record.levelname,
             'thread': record.thread,
             'threadName': record.threadName,

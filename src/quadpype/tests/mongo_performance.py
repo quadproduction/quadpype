@@ -1,7 +1,7 @@
 import pymongo
 import bson
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 
 
@@ -267,7 +267,7 @@ class TestPerformance():
             site = {'name': "local_{}".format(i)}
             # do not create null 'created_dt' field, Mongo doesnt like it
             if i == 0:
-                site['created_dt'] = datetime.now()
+                site['created_dt'] = datetime.now(timezone.utc)
 
             sites.append(site)
 

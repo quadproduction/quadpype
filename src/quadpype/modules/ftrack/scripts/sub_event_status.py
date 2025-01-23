@@ -5,7 +5,8 @@ import threading
 import collections
 import signal
 import socket
-import datetime
+
+from datetime import datetime, timezone
 
 import appdirs
 
@@ -61,7 +62,7 @@ class Status:
         self.last_update = None
 
     def update(self, info):
-        self.last_update = datetime.datetime.now()
+        self.last_update = datetime.now(timezone.utc)
         self.info = info
 
     def get_delta_string(self, delta):
@@ -87,7 +88,7 @@ class Status:
         items = []
         last_update = "N/A"
         if self.last_update:
-            delta = datetime.datetime.now() - self.last_update
+            delta = datetime.now(timezone.utc) - self.last_update
             last_update = "{} ago".format(
                 self.get_delta_string(delta)
             )
@@ -114,10 +115,10 @@ class Status:
                 info[key] = value
                 continue
 
-            datetime_value = datetime.datetime.strptime(
+            datetime_value = datetime.strptime(
                 value, "%Y.%m.%d %H:%M:%S"
             )
-            delta = datetime.datetime.now() - datetime_value
+            delta = datetime.now(timezone.utc) - datetime_value
 
             running_for = self.get_delta_string(delta)
             info["Started at"] = "{} [running: {}]".format(value, running_for)
@@ -358,7 +359,7 @@ def server_activity(event):
 
 def trigger_info_get():
     if ObjectFactory.last_trigger:
-        delta = datetime.datetime.now() - ObjectFactory.last_trigger
+        delta = datetime.now(timezone.utc) - ObjectFactory.last_trigger
         if delta.seconds() < 5:
             return
 

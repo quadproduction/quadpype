@@ -84,7 +84,7 @@ class LoadWorkfile(plugin.Loader):
             # Fall back to the first extension supported for this host.
             extension = extensions[0]
 
-        data["ext"] = extension
+        data["ext"] = extension.lower()
 
         folder_template = anatomy.templates[template_key]["folder"]
         work_root = StringTemplate.format_strict_template(

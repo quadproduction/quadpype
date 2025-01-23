@@ -21,7 +21,7 @@ class ExtractThumbnail(plugin.BlenderExtractor):
     hosts = ["blender"]
     families = ["review"]
     order = pyblish.api.ExtractorOrder + 0.01
-    presets = "{}"
+    presets = {}
 
     def process(self, instance):
         self.log.info("Extracting capture..")
@@ -44,7 +44,12 @@ class ExtractThumbnail(plugin.BlenderExtractor):
         family = instance.data.get("family")
         isolate = instance.data("isolate", None)
 
-        presets = json.loads(self.presets)
+        presets = self.presets
+        if isinstance(self.presets, str):
+            presets = json.loads(self.presets)
+        elif not isinstance(self.presets, dict):
+            raise ValueError("presets must be a dict")
+
         preset = presets.get(family, {})
 
         preset.update({

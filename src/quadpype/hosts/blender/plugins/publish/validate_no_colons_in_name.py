@@ -4,10 +4,11 @@ import bpy
 
 
 import quadpype.hosts.blender.api.action
-from ayon_core.pipeline.publish import (
-    ValidateContentsOrder,
-    OptionalPyblishPluginMixin,
-    PublishValidationError
+from quadpype.pipeline import OptionalPyblishPluginMixin
+from quadpype.hosts.blender.api import plugin
+from quadpype.pipeline.publish import (
+    PublishValidationError,
+    ValidateContentsOrder
 )
 
 

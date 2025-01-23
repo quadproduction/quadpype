@@ -1,7 +1,8 @@
 import os
 import attr
 import getpass
-from datetime import datetime
+
+from datetime import datetime, timezone
 
 import pyblish.api
 
@@ -182,7 +183,7 @@ class HoudiniSubmitDeadline(
             "deadlineUser", getpass.getuser())
 
         if is_in_tests():
-            job_info.BatchName += datetime.now().strftime("%d%m%Y%H%M%S")
+            job_info.BatchName += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
 
         # Deadline requires integers in frame range
         start = instance.data["frameStartHandle"]

@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 import os
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 import subprocess
 import json
 import platform
 import uuid
 import re
+
 from Deadline.Scripting import (
     RepositoryUtils,
     FileUtils,
-    DirectoryUtils,
-    ProcessUtils,
+    DirectoryUtils
 )
 
 VERSION_REGEX = re.compile(
@@ -323,7 +323,7 @@ def inject_quadpype_environment(deadlinePlugin):
 
         # tempfile.TemporaryFile cannot be used because of locking
         temp_file_name = "{}_{}.json".format(
-            datetime.utcnow().strftime('%Y%m%d%H%M%S%f'),
+            datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S%f'),
             str(uuid.uuid1())
         )
         export_url = os.path.join(tempfile.gettempdir(), temp_file_name)

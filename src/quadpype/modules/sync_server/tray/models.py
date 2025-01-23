@@ -1,8 +1,9 @@
 import os
+
+from datetime import datetime, timezone
+
 import attr
 from bson.objectid import ObjectId
-import datetime
-
 from qtpy import QtCore
 import qtawesome
 
@@ -577,7 +578,7 @@ class SyncRepresentationSummaryModel(_SyncRepresentationModel):
         remote_provider = lib.translate_provider_for_icon(self.sync_server,
                                                           self.project,
                                                           remote_site)
-        current_date = datetime.datetime.now()
+        current_date = datetime.now(timezone.utc)
         for repre in result.get("paginatedResults"):
             files = repre.get("files", [])
             if isinstance(files, dict):  # aggregate returns dictionary
@@ -659,7 +660,7 @@ class SyncRepresentationSummaryModel(_SyncRepresentationModel):
             limit = SyncRepresentationSummaryModel.PAGE_SIZE
 
         # replace null with value in the future for better sorting
-        dummy_max_date = datetime.datetime(2099, 1, 1)
+        dummy_max_date = datetime(2099, 1, 1, tzinfo=timezone.utc)
         aggr = [
             {"$match": self.get_match_part()},
             {'$unwind': '$files'},
@@ -1053,7 +1054,7 @@ class SyncRepresentationDetailModel(_SyncRepresentationModel):
                                                           self.project,
                                                           remote_site)
 
-        current_date = datetime.datetime.now()
+        current_date = datetime.now(timezone.utc)
         for repre in result.get("paginatedResults"):
             # log.info("!!! repre:: {}".format(repre))
             files = repre.get("files", [])
@@ -1115,7 +1116,7 @@ class SyncRepresentationDetailModel(_SyncRepresentationModel):
         if limit == 0:
             limit = SyncRepresentationSummaryModel.PAGE_SIZE
 
-        dummy_max_date = datetime.datetime(2099, 1, 1)
+        dummy_max_date = datetime(2099, 1, 1, tzinfo=timezone.utc)
         aggr = [
             {"$match": self.get_match_part()},
             {"$unwind": "$files"},

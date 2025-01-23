@@ -23,7 +23,7 @@ class ValidateTextureBatchWorkfiles(pyblish.api.InstancePlugin):
         if instance.data["family"] != "workfile":
             return
 
-        ext = instance.data["representations"][0]["ext"]
+        ext = instance.data["representations"][0]["ext"].lower()
         main_workfile_extensions = self.get_main_workfile_extensions(
             instance
         )

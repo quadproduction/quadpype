@@ -4,12 +4,13 @@ import logging
 import getpass
 import atexit
 import threading
-import datetime
 import time
 import queue
 import collections
 import appdirs
 import socket
+
+from datetime import datetime, timezone, timedelta
 
 import pymongo
 import requests
@@ -186,7 +187,7 @@ class ProcessEventHub(SocketBaseEventHub):
 
     def load_events(self):
         """Load not processed events sorted by stored date"""
-        ago_date = datetime.datetime.now() - datetime.timedelta(days=3)
+        ago_date = datetime.now(timezone.utc) - timedelta(days=3)
         self.dbcon.delete_many({
             "pype_data.stored": {"$lte": ago_date},
             "pype_data.is_processed": True

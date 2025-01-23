@@ -15,7 +15,7 @@ class PhotoshopAddon(QuadPypeModule, IHostAddon):
         """Modify environments to contain all required for implementation."""
         defaults = {
             "QUADPYPE_LOG_NO_COLORS": "True",
-            "WEBSOCKET_URL": "ws://localhost:8099/ws/"
+            "QUADPYPE_WEBSOCKET_URL": "ws://localhost:8070/ws/"
         }
         for key, value in defaults.items():
             if not env.get(key):

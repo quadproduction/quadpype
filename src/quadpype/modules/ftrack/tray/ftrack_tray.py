@@ -1,7 +1,8 @@
 import os
 import time
-import datetime
 import threading
+
+from datetime import datetime, timezone
 
 import ftrack_api
 from qtpy import QtCore, QtWidgets, QtGui
@@ -136,7 +137,7 @@ class FtrackTrayWrapper:
             self.thread_socket_server.join()
             self.thread_socket_server = None
 
-        last_failed = datetime.datetime.now()
+        last_failed = datetime.now(timezone.utc)
         failed_count = 0
 
         ftrack_accessible = False
@@ -193,7 +194,7 @@ class FtrackTrayWrapper:
                     failed_count += 1
 
                 elif ((
-                    datetime.datetime.now() - last_failed
+                    datetime.now(timezone.utc) - last_failed
                 ).seconds > wait_time_after_max_fail):
                     failed_count = 0
 
@@ -206,7 +207,7 @@ class FtrackTrayWrapper:
                 self.bool_action_thread_running = False
                 self.set_menu_visibility()
 
-                _last_failed = datetime.datetime.now()
+                _last_failed = datetime.now(timezone.utc)
                 delta_time = (_last_failed - last_failed).seconds
                 if delta_time < min_fail_seconds:
                     failed_count += 1

@@ -252,7 +252,7 @@ def save_project_anatomy(project_name, anatomy_data):
     if project_name:
         old_data = get_anatomy_settings(project_name)
 
-        studio_overrides = get_studio_project_settings_overrides()
+        studio_overrides = get_studio_project_anatomy_overrides()
         studio_values = apply_overrides(default_values, studio_overrides)
         clear_metadata_from_settings(studio_values)
         new_data = apply_overrides(studio_values, copy.deepcopy(anatomy_data))
@@ -1432,8 +1432,8 @@ def get_global_settings_overrides_no_handler(collection, version_str):
 def get_expected_studio_version_str(staging=False, collection=None):
     """Expected QuadPype version that should be used at the moment.
 
-    If version is not defined in settings the latest found version is
-    used.
+    If the version is not defined in the settings, then the latest found
+    version is used.
 
     Using precached global settings is needed for usage inside QuadPype.
 
@@ -1462,11 +1462,10 @@ def get_expected_studio_version_str(staging=False, collection=None):
     return core_document.get("data", {}).get(key, "")
 
 
-def get_global_settings_and_version_no_handler(url: str, version_str: str) -> dict:
-    """Load global settings from Mongo database.
+def get_global_settings_no_handler(url: str, version_str: str) -> dict:
+    """Load global settings from the database.
 
-    We are loading data from database `quadpype` and collection `settings`.
-    There we expect document type `global_settings`.
+    We are loading data from the database `quadpype` and collection `settings`.
 
     Args:
         url (str): MongoDB url.
@@ -1474,7 +1473,6 @@ def get_global_settings_and_version_no_handler(url: str, version_str: str) -> di
 
     Returns:
         dict: With settings data. Empty dictionary is returned if not found.
-        str: version string.
     """
     kwargs = {}
     if should_add_certificate_path_to_mongo_url(url):

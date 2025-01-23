@@ -2,9 +2,10 @@ import collections
 import copy
 import json
 import time
-import datetime
 import atexit
 import traceback
+
+from datetime import datetime, timezone
 
 from bson.objectid import ObjectId
 from pymongo import UpdateOne
@@ -85,7 +86,7 @@ class SyncToAvalonEvent(BaseEvent):
         # - time expiration in seconds
         self.debug_print_time_expiration = 5 * 60
         # - store current time
-        self.debug_print_time = datetime.datetime.now()
+        self.debug_print_time = datetime.now(timezone.utc)
         # - store synchronize entity types to be able to use
         #   only entityTypes in interest instead of filtering by ignored
         self.debug_sync_types = collections.defaultdict(list)
@@ -97,7 +98,7 @@ class SyncToAvalonEvent(BaseEvent):
 
     def debug_logs(self):
         """This is debug method for printing small debugs messages. """
-        now_datetime = datetime.datetime.now()
+        now_datetime = datetime.now(timezone.utc)
         delta = now_datetime - self.debug_print_time
         if delta.total_seconds() < self.debug_print_time_expiration:
             return

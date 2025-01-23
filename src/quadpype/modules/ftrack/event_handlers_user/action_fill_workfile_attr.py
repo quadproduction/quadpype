@@ -3,7 +3,7 @@ import sys
 import json
 import collections
 import tempfile
-import datetime
+from datetime import datetime, timezone
 
 import ftrack_api
 
@@ -174,7 +174,7 @@ class FillWorkfileAttributeAction(BaseAction):
 
             component_name = "{}_{}".format(
                 "FillWorkfilesReport",
-                datetime.datetime.now().strftime("%y-%m-%d-%H%M")
+                datetime.now(timezone.utc).strftime("%y-%m-%d-%H%M")
             )
             self.add_file_component_to_job(
                 job_entity, session, temp_filepath, component_name
@@ -274,7 +274,7 @@ class FillWorkfileAttributeAction(BaseAction):
 
         # Keep placeholders in the template unfilled
         host_name = "{app}"
-        extension = "{ext}"
+        extension = "{ext}".lower()
         project_doc = get_project(project_name)
         project_settings = get_project_settings(project_name)
         global_settings = get_global_settings()

@@ -1,4 +1,15 @@
 import logging
+from abc import ABC, abstractmethod
+from pathlib import Path
+
+from qtpy import QtWidgets, QtGui
+
+from quadpype import style
+from quadpype import resources
+from quadpype.lib import (
+    ApplicationExecutableNotFound,
+    ApplicationLaunchFailed
+)
 from quadpype.pipeline.plugin_discover import (
     discover,
     register_plugin,
@@ -6,20 +17,33 @@ from quadpype.pipeline.plugin_discover import (
     deregister_plugin,
     deregister_plugin_path
 )
+from .workfile import get_workdir_from_session
 
 from .load.utils import get_representation_path_from_context
 
 
-class LauncherAction(object):
-    """A custom action available"""
+class BaseLauncherAction(ABC):
+    """Base class to define a Launcher action"""
     name = None
     label = None
     icon = None
     color = None
     order = 0
 
-    log = logging.getLogger("LauncherAction")
-    log.propagate = True
+    _log = None
+
+    _required_session_keys = (
+        "AVALON_PROJECT",
+        "AVALON_ASSET",
+        "AVALON_TASK"
+    )
+
+    @property
+    def log(self):
+        if self._log is None:
+            self._log = logging.getLogger("LauncherAction")
+            self._log.propagate = True
+        return self._log
 
     def is_compatible(self, session):
         """Return whether the class is compatible with the Session.
@@ -28,11 +52,109 @@ class LauncherAction(object):
             session (dict[str, Union[str, None]]): Session data with
                 AVALON_PROJECT, AVALON_ASSET and AVALON_TASK.
         """
-
+        for key in self._required_session_keys:
+            if key not in session:
+                return False
         return True
 
+    @staticmethod
+    def show_message_box(title, message, details=None, icon_type="info"):
+        dialog = QtWidgets.QMessageBox()
+
+        # Window icon
+        window_icon = QtGui.QIcon(resources.get_app_icon_filepath())
+        dialog.setWindowIcon(window_icon)
+
+        # Content icon
+        message_icon = QtWidgets.QMessageBox.Information
+        if icon_type == "error":
+            message_icon = QtWidgets.QMessageBox.Critical
+        elif icon_type == "warning":
+            message_icon = QtWidgets.QMessageBox.Warning
+
+        dialog.setIcon(message_icon)
+
+        dialog.setStyleSheet(style.load_stylesheet())
+        dialog.setWindowTitle("QuadPype: " + title)
+        dialog.setText(message)
+
+        if details:
+            dialog.setDetailedText(details)
+
+        return dialog.exec_()
+
+    @abstractmethod
     def process(self, session, **kwargs):
-        pass
+        raise NotImplementedError("This method needs to be implemented by the subclass")
+
+
+class LauncherAction(BaseLauncherAction, ABC):
+    """Class use to define a Launcher action"""
+
+
+class LauncherTaskAction(LauncherAction, ABC):
+
+    @staticmethod
+    def get_workdir(session):
+        workdir_path_str = get_workdir_from_session(session)
+        if not workdir_path_str:
+            return None
+
+        return Path(workdir_path_str)
+
+    @staticmethod
+    def copy_path_to_clipboard(path):
+        print(f"Copied to clipboard: {str(path)}")
+        app = QtWidgets.QApplication.instance()
+        assert app, "Must have running QApplication instance"
+
+        # Set to Clipboard
+        clipboard = QtWidgets.QApplication.clipboard()
+        clipboard.setText(str(path.resolve()))
+
+
+class ApplicationAction(BaseLauncherAction):
+    """QuadPype's application launcher
+
+    Application action based on QuadPype's ApplicationManager system.
+    """
+
+    # Application object
+    application = None
+    # Action attributes
+    label_variant = None
+    group = None
+    data = {}
+
+    def process(self, session, **kwargs):
+        """Process the full Application action"""
+
+        project_name = session["AVALON_PROJECT"]
+        asset_name = session["AVALON_ASSET"]
+        task_name = session["AVALON_TASK"]
+        try:
+            self.application.launch(
+                project_name=project_name,
+                asset_name=asset_name,
+                task_name=task_name,
+                **self.data
+            )
+
+        except ApplicationExecutableNotFound as exc:
+            details = exc.details
+            msg = exc.msg
+            log_msg = str(msg)
+            if details:
+                log_msg += "\n" + details
+            self.log.warning(log_msg)
+            self.show_message_box(
+                "Application executable not found", msg, details
+            )
+
+        except ApplicationLaunchFailed as exc:
+            msg = str(exc)
+            self.log.warning(msg, exc_info=True)
+            self.show_message_box("Application launch failed", msg)
 
 
 class InventoryAction(object):

@@ -27,6 +27,6 @@ class IncrementWorkfile(pyblish.api.InstancePlugin):
 
         scene_path = version_up(instance.context.data["currentFile"])
         _, ext = os.path.splitext(scene_path)
-        photoshop.stub().saveAs(scene_path, ext[1:], True)
+        photoshop.stub().saveAs(scene_path, ext[1:].lower(), True)
 
         self.log.info("Incremented workfile to: {}".format(scene_path))

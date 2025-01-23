@@ -11,7 +11,7 @@ WSRPC.DEBUG = false;
 WSRPC.TRACE = false;
 
 // get websocket server url from environment value
-async function startUp(url){
+async function startUp(url) {
     promis = runEvalScript("getEnv('" + url + "')");
 
     var res = await promis;
@@ -20,7 +20,7 @@ async function startUp(url){
     promis = runEvalScript("getEnv('QUADPYPE_DEBUG')");
     var debug = await promis;
     log.warn("debug: " + debug);
-    if (debug && debug.toString() == '3'){
+    if (debug && debug.toString() == '3') {
         WSRPC.DEBUG = true;
         WSRPC.TRACE = true;
     }
@@ -28,7 +28,7 @@ async function startUp(url){
     main(res);
 }
 
-function get_extension_version(){
+function get_extension_version() {
     /** Returns version number from extension manifest.xml **/
     log.debug("get_extension_version")
     var path = csInterface.getSystemPath(SystemPath.EXTENSION);
@@ -36,16 +36,16 @@ function get_extension_version(){
 
     var result = window.cep.fs.readFile(path + "/CSXS/manifest.xml");
     var version = undefined;
-    if(result.err === 0){
+    if (result.err === 0) {
         if (window.DOMParser) {
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(result.data.toString(),
-                                                  'text/xml');
+                'text/xml');
             const children = xmlDoc.children;
 
             for (let i = 0; i <= children.length; i++) {
                 if (children[i] &&
-                children[i].getAttribute('ExtensionBundleVersion')) {
+                    children[i].getAttribute('ExtensionBundleVersion')) {
                     version =
                         children[i].getAttribute('ExtensionBundleVersion');
                 }
@@ -55,14 +55,15 @@ function get_extension_version(){
     return '{"result":"' + version + '"}'
 }
 
-function main(websocket_url){
+function main(websocket_url) {
     // creates connection to 'websocket_url', registers routes
-    var default_url = 'ws://localhost:8099/ws/';
 
-    if  (websocket_url == ''){
-         websocket_url = default_url;
+    if (websocket_url === undefined || websocket_url === null || websocket_url === '' || websocket_url === 'null') {
+        return;
     }
-    RPC = new WSRPC(websocket_url, 5000); // spin connection
+
+    log.warn("connecting to:", websocket_url);
+    RPC = new WSRPC(websocket_url, 5001); // spin connection
 
     RPC.connect();
 
@@ -71,8 +72,8 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.open', function (data) {
         log.warn('Server called client route "open":', data);
         var escapedPath = EscapeStringForJSX(data.path);
-        return runEvalScript("fileOpen('" + escapedPath +"')")
-            .then(function(result){
+        return runEvalScript("fileOpen('" + escapedPath + "')")
+            .then(function (result) {
                 log.warn("open: " + result);
                 return result;
             });
@@ -81,7 +82,7 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.get_metadata', function (data) {
         log.warn('Server called client route "get_metadata":', data);
         return runEvalScript("getMetadata()")
-            .then(function(result){
+            .then(function (result) {
                 log.warn("getMetadata: " + result);
                 return result;
             });
@@ -91,17 +92,17 @@ function main(websocket_url){
         log.warn('Server called client route ' +
             '"get_active_document_name":', data);
         return runEvalScript("getActiveDocumentName()")
-            .then(function(result){
+            .then(function (result) {
                 log.warn("get_active_document_name: " + result);
                 return result;
             });
     });
 
-    RPC.addRoute('AfterEffects.get_active_document_full_name', function (data){
+    RPC.addRoute('AfterEffects.get_active_document_full_name', function (data) {
         log.warn('Server called client route ' +
             '"get_active_document_full_name":', data);
         return runEvalScript("getActiveDocumentFullName()")
-            .then(function(result){
+            .then(function (result) {
                 log.warn("get_active_document_full_name: " + result);
                 return result;
             });
@@ -110,9 +111,9 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.add_item', function (data) {
         log.warn('Server called client route "add_item":', data);
         var escapedName = EscapeStringForJSX(data.name);
-        return runEvalScript("addItem('" + escapedName +"', " +
-                                     "'" + data.item_type + "')")
-            .then(function(result){
+        return runEvalScript("addItem('" + escapedName + "', " +
+            "'" + data.item_type + "')")
+            .then(function (result) {
                 log.warn("get_items: " + result);
                 return result;
             });
@@ -120,10 +121,10 @@ function main(websocket_url){
 
     RPC.addRoute('AfterEffects.get_items', function (data) {
         log.warn('Server called client route "get_items":', data);
-        return runEvalScript("getItems("  + data.comps + "," +
-                                            data.folders + "," +
-                                            data.footages + ")")
-            .then(function(result){
+        return runEvalScript("getItems(" + data.comps + "," +
+            data.folders + "," +
+            data.footages + ")")
+            .then(function (result) {
                 log.warn("get_items: " + result);
                 return result;
             });
@@ -131,8 +132,8 @@ function main(websocket_url){
 
     RPC.addRoute('AfterEffects.select_items', function (data) {
         log.warn('Server called client route "select_items":', data);
-        return runEvalScript("selectItems("  + JSON.stringify(data.items) + ")")
-            .then(function(result){
+        return runEvalScript("selectItems(" + JSON.stringify(data.items) + ")")
+            .then(function (result) {
                 log.warn("select_items: " + result);
                 return result;
             });
@@ -142,9 +143,9 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.get_selected_items', function (data) {
         log.warn('Server called client route "get_selected_items":', data);
         return runEvalScript("getSelectedItems(" + data.comps + "," +
-                                                   data.folders + "," +
-                                                   data.footages  + ")")
-            .then(function(result){
+            data.folders + "," +
+            data.footages + ")")
+            .then(function (result) {
                 log.warn("get_items: " + result);
                 return result;
             });
@@ -153,11 +154,11 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.import_file', function (data) {
         log.warn('Server called client route "import_file":', data);
         var escapedPath = EscapeStringForJSX(data.path);
-        return runEvalScript("importFile('" + escapedPath +"', " +
-                                         "'" + data.item_name + "'," +
-                                         "'" + JSON.stringify(
-                                         data.import_options) + "')")
-            .then(function(result){
+        return runEvalScript("importFile('" + escapedPath + "', " +
+            "'" + data.item_name + "'," +
+            "'" + JSON.stringify(
+                data.import_options) + "')")
+            .then(function (result) {
                 log.warn("importFile: " + result);
                 return result;
             });
@@ -166,11 +167,11 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.import_file_with_dialog', function (data) {
         log.warn('Server called client route "import_file_with_dialog":', data);
         var escapedPath = EscapeStringForJSX(data.path);
-        return runEvalScript("importFileWithDialog('" + escapedPath +"', " +
-                                         "'" + data.item_name + "'," +
-                                         "'" + JSON.stringify(
-                                         data.import_options) + "')")
-            .then(function(result){
+        return runEvalScript("importFileWithDialog('" + escapedPath + "', " +
+            "'" + data.item_name + "'," +
+            "'" + JSON.stringify(
+                data.import_options) + "')")
+            .then(function (result) {
                 log.warn("importFileWithDialog: " + result);
                 return result;
             });
@@ -180,9 +181,9 @@ function main(websocket_url){
         log.warn('Server called client route "replace_item":', data);
         var escapedPath = EscapeStringForJSX(data.path);
         return runEvalScript("replaceItem(" + data.item_id + ", " +
-                                     "'" + escapedPath + "', " +
-                                     "'" + data.item_name + "')")
-            .then(function(result){
+            "'" + escapedPath + "', " +
+            "'" + data.item_name + "')")
+            .then(function (result) {
                 log.warn("replaceItem: " + result);
                 return result;
             });
@@ -191,8 +192,8 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.rename_item', function (data) {
         log.warn('Server called client route "rename_item":', data);
         return runEvalScript("renameItem(" + data.item_id + ", " +
-                                         "'" + data.item_name + "')")
-            .then(function(result){
+            "'" + data.item_name + "')")
+            .then(function (result) {
                 log.warn("renameItem: " + result);
                 return result;
             });
@@ -201,7 +202,7 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.delete_item', function (data) {
         log.warn('Server called client route "delete_item":', data);
         return runEvalScript("deleteItem(" + data.item_id + ")")
-            .then(function(result){
+            .then(function (result) {
                 log.warn("deleteItem: " + result);
                 return result;
             });
@@ -210,8 +211,8 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.imprint', function (data) {
         log.warn('Server called client route "imprint":', data);
         var escaped = data.payload.replace(/\n/g, "\\n");
-        return runEvalScript("imprint('" + escaped +"')")
-            .then(function(result){
+        return runEvalScript("imprint('" + escaped + "')")
+            .then(function (result) {
                 log.warn("imprint: " + result);
                 return result;
             });
@@ -220,8 +221,8 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.set_label_color', function (data) {
         log.warn('Server called client route "set_label_color":', data);
         return runEvalScript("setLabelColor(" + data.item_id + "," +
-                                                data.color_idx + ")")
-            .then(function(result){
+            data.color_idx + ")")
+            .then(function (result) {
                 log.warn("imprint: " + result);
                 return result;
             });
@@ -230,7 +231,7 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.get_comp_properties', function (data) {
         log.warn('Server called client route "get_comp_properties":', data);
         return runEvalScript("getCompProperties(" + data.item_id + ")")
-            .then(function(result){
+            .then(function (result) {
                 log.warn("get_comp_properties: " + result);
                 return result;
             });
@@ -239,12 +240,12 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.set_comp_properties', function (data) {
         log.warn('Server called client route "set_work_area":', data);
         return runEvalScript("setCompProperties(" + data.item_id + ',' +
-                                              data.start + ',' +
-                                              data.duration + ',' +
-                                              data.frame_rate + ',' +
-                                              data.width + ',' +
-                                              data.height + ")")
-            .then(function(result){
+            data.start + ',' +
+            data.duration + ',' +
+            data.frame_rate + ',' +
+            data.width + ',' +
+            data.height + ")")
+            .then(function (result) {
                 log.warn("set_comp_properties: " + result);
                 return result;
             });
@@ -254,8 +255,8 @@ function main(websocket_url){
         log.warn('Server called client route "saveAs":', data);
         var escapedPath = EscapeStringForJSX(data.image_path);
         return runEvalScript("saveAs('" + escapedPath + "', " +
-                                     data.as_copy + ")")
-            .then(function(result){
+            data.as_copy + ")")
+            .then(function (result) {
                 log.warn("saveAs: " + result);
                 return result;
             });
@@ -264,7 +265,7 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.save', function (data) {
         log.warn('Server called client route "save":', data);
         return runEvalScript("save()")
-            .then(function(result){
+            .then(function (result) {
                 log.warn("save: " + result);
                 return result;
             });
@@ -272,8 +273,8 @@ function main(websocket_url){
 
     RPC.addRoute('AfterEffects.get_render_info', function (data) {
         log.warn('Server called client route "get_render_info":', data);
-        return runEvalScript("getRenderInfo(" + data.comp_id +")")
-            .then(function(result){
+        return runEvalScript("getRenderInfo(" + data.comp_id + ")")
+            .then(function (result) {
                 log.warn("get_render_info: " + result);
                 return result;
             });
@@ -282,7 +283,7 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.get_audio_url', function (data) {
         log.warn('Server called client route "get_audio_url":', data);
         return runEvalScript("getAudioUrlForComp(" + data.item_id + ")")
-            .then(function(result){
+            .then(function (result) {
                 log.warn("getAudioUrlForComp: " + result);
                 return result;
             });
@@ -291,9 +292,9 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.import_background', function (data) {
         log.warn('Server called client route "import_background":', data);
         return runEvalScript("importBackground(" + data.comp_id + ", " +
-                                               "'" + data.comp_name + "', " +
-                                               JSON.stringify(data.files) + ")")
-            .then(function(result){
+            "'" + data.comp_name + "', " +
+            JSON.stringify(data.files) + ")")
+            .then(function (result) {
                 log.warn("importBackground: " + result);
                 return result;
             });
@@ -302,54 +303,54 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.reload_background', function (data) {
         log.warn('Server called client route "reload_background":', data);
         return runEvalScript("reloadBackground(" + data.comp_id + ", " +
-                                               "'" + data.comp_name + "', " +
-                                               JSON.stringify(data.files) + ")")
-            .then(function(result){
+            "'" + data.comp_name + "', " +
+            JSON.stringify(data.files) + ")")
+            .then(function (result) {
                 log.warn("reloadBackground: " + result);
                 return result;
             });
     });
 
-   RPC.addRoute('AfterEffects.add_item_as_layer', function (data) {
-       log.warn('Server called client route "add_item_as_layer":', data);
-       return runEvalScript("addItemAsLayerToComp(" + data.comp_id + ", " +
-                                                      data.item_id + "," +
-                                                  " null )")
-           .then(function(result){
-               log.warn("addItemAsLayerToComp: " + result);
-               return result;
-           });
-   });
+    RPC.addRoute('AfterEffects.add_item_as_layer', function (data) {
+        log.warn('Server called client route "add_item_as_layer":', data);
+        return runEvalScript("addItemAsLayerToComp(" + data.comp_id + ", " +
+            data.item_id + "," +
+            " null )")
+            .then(function (result) {
+                log.warn("addItemAsLayerToComp: " + result);
+                return result;
+            });
+    });
 
-   RPC.addRoute('AfterEffects.add_item_instead_placeholder', function (data) {
-    log.warn('Server called client route "add_item_instead_placeholder":', data);
-    return runEvalScript("addItemInstead(" + data.placeholder_item_id + ", " +
-                                             data.item_id + ")")
-        .then(function(result){
-            log.warn("add_item_instead_placeholder: " + result);
-            return result;
-        });
-});
+    RPC.addRoute('AfterEffects.add_item_instead_placeholder', function (data) {
+        log.warn('Server called client route "add_item_instead_placeholder":', data);
+        return runEvalScript("addItemInstead(" + data.placeholder_item_id + ", " +
+            data.item_id + ")")
+            .then(function (result) {
+                log.warn("add_item_instead_placeholder: " + result);
+                return result;
+            });
+    });
 
-   RPC.addRoute('AfterEffects.render', function (data) {
-    log.warn('Server called client route "render":', data);
-    var escapedPath = EscapeStringForJSX(data.folder_url);
-    return runEvalScript("render('" + escapedPath +"', " + data.comp_id + ")")
-        .then(function(result){
-            log.warn("render: " + result);
-            return result;
-        });
+    RPC.addRoute('AfterEffects.render', function (data) {
+        log.warn('Server called client route "render":', data);
+        var escapedPath = EscapeStringForJSX(data.folder_url);
+        return runEvalScript("render('" + escapedPath + "', " + data.comp_id + ")")
+            .then(function (result) {
+                log.warn("render: " + result);
+                return result;
+            });
     });
 
     RPC.addRoute('AfterEffects.get_extension_version', function (data) {
-      log.warn('Server called client route "get_extension_version":', data);
-      return get_extension_version();
+        log.warn('Server called client route "get_extension_version":', data);
+        return get_extension_version();
     });
 
     RPC.addRoute('AfterEffects.get_app_version', function (data) {
         log.warn('Server called client route "get_app_version":', data);
         return runEvalScript("getAppVersion()")
-            .then(function(result){
+            .then(function (result) {
                 log.warn("get_app_version: " + result);
                 return result;
             });
@@ -358,18 +359,18 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.add_placeholder', function (data) {
         log.warn('Server called client route "add_placeholder":', data);
         var escapedName = EscapeStringForJSX(data.name);
-        return runEvalScript("addPlaceholder('" + escapedName +"',"+
-                                              data.width + ',' +
-                                              data.height + ',' +
-                                              data.fps + ',' +
-                                              data.duration + ")")
-            .then(function(result){
+        return runEvalScript("addPlaceholder('" + escapedName + "'," +
+            data.width + ',' +
+            data.height + ',' +
+            data.fps + ',' +
+            data.duration + ")")
+            .then(function (result) {
                 log.warn("add_placeholder: " + result);
                 return result;
             });
     });
 
-     RPC.addRoute('AfterEffects.close', function (data) {
+    RPC.addRoute('AfterEffects.close', function (data) {
         log.warn('Server called client route "close":', data);
         return runEvalScript("close()");
     });
@@ -377,8 +378,8 @@ function main(websocket_url){
     RPC.addRoute('AfterEffects.print_msg', function (data) {
         log.warn('Server called client route "print_msg":', data);
         var escaped_msg = EscapeStringForJSX(data.msg);
-        return runEvalScript("printMsg('" + escaped_msg +"')")
-            .then(function(result){
+        return runEvalScript("printMsg('" + escaped_msg + "')")
+            .then(function (result) {
                 log.warn("print_msg: " + result);
                 return result;
             });
@@ -386,7 +387,7 @@ function main(websocket_url){
 }
 
 /** main entry point **/
-startUp("WEBSOCKET_URL");
+startUp("QUADPYPE_WEBSOCKET_URL");
 
 (function () {
     'use strict';
@@ -407,19 +408,19 @@ startUp("WEBSOCKET_URL");
 
 }());
 
-function EscapeStringForJSX(str){
+function EscapeStringForJSX(str) {
     // Replaces:
     //  \ with \\
     //  ' with \'
     //  " with \"
     // See: https://stackoverflow.com/a/3967927/5285364
-    return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g,'\\"');
+    return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
 }
 
 function runEvalScript(script) {
     // because of asynchronous nature of functions in jsx
     // this waits for response
-    return new Promise(function(resolve, reject){
+    return new Promise(function (resolve, reject) {
         csInterface.evalScript(script, resolve);
     });
 }

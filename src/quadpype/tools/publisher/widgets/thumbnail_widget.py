@@ -583,9 +583,9 @@ def _convert_thumbnail_oiio(src_path, dst_path):
 
     oiio_cmd = get_oiio_tool_args(
         "oiiotool",
-        f"-i {src_path}",
-        "--subimage 0",
-        f"-o {dst_path}"
+        "-i", src_path,
+        "--subimage", "0",
+        "-o", dst_path
     )
     try:
         _run_silent_subprocess(oiio_cmd)
@@ -598,7 +598,7 @@ def _convert_thumbnail_ffmpeg(src_path, dst_path):
     ffmpeg_cmd = get_ffmpeg_tool_args(
         "ffmpeg",
         "-y",
-        f"-i {src_path}",
+        "-i", src_path,
         dst_path
     )
     try:

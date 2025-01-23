@@ -895,7 +895,7 @@ class MediaInfoFile(object):
         """
         # in case sequence file
         found = re.findall(
-            r"(.*)[._][\d]*(?=.{})".format(extension),
+            r"(.*)[._][\d]*(?=.{})".format(extension.lower()),
             basename,
         )
         if found:
@@ -904,7 +904,7 @@ class MediaInfoFile(object):
         # in case single file
         name, ext = os.path.splitext(basename)
 
-        if extension == ext[1:]:
+        if extension.lower() == ext[1:].lower():
             return name
 
     def _separate_number(self, basename, extension):
@@ -1009,8 +1009,8 @@ class MediaInfoFile(object):
         # Create cmd arguments for gettig xml file info file
         cmd_args = [
             self.MEDIA_SCRIPT_PATH,
-            f"-e {feed_ext}",
-            f"-o {fpath}",
+            "-e", f"{feed_ext}",
+            "-o", f"{fpath}",
             feed_dir
         ]
 

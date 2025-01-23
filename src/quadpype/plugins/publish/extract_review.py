@@ -175,7 +175,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
             input_ext = repre["ext"]
             if input_ext.startswith("."):
-                input_ext = input_ext[1:]
+                input_ext = input_ext[1:].lower()
 
             if input_ext not in self.supported_exts:
                 self.log.info(
@@ -499,8 +499,16 @@ class ExtractReview(pyblish.api.InstancePlugin):
                 with values may be added.
         """
 
-        frame_start = instance.data["frameStart"]
-        frame_end = instance.data["frameEnd"]
+        input_is_sequence = self.input_is_sequence(repre)
+
+        frame_start = instance.data.get("frameStart", 0)
+        frame_end = instance.data.get("frameEnd", 0)
+        if frame_end == 0:
+            # Special case: This means we need to take the file count
+            if input_is_sequence:
+                frame_end = len(repre["files"])
+            else:
+                frame_end = 1
 
         # Try to get handles from instance
         handle_start = instance.data.get("handleStart")
@@ -508,8 +516,8 @@ class ExtractReview(pyblish.api.InstancePlugin):
         # If even one of handle values is not set on instance use
         # handles from context
         if handle_start is None or handle_end is None:
-            handle_start = instance.context.data["handleStart"]
-            handle_end = instance.context.data["handleEnd"]
+            handle_start = instance.context.data.get("handleStart", 0)
+            handle_end = instance.context.data.get("handleEnd", 0)
 
         frame_start_handle = frame_start - handle_start
         frame_end_handle = frame_end + handle_end
@@ -534,7 +542,6 @@ class ExtractReview(pyblish.api.InstancePlugin):
         ):
             with_audio = False
 
-        input_is_sequence = self.input_is_sequence(repre)
         input_allow_bg = False
         first_sequence_frame = None
         if input_is_sequence and repre["files"]:
@@ -655,7 +662,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
         # Define which layer should be used
         if layer_name:
-            ffmpeg_input_args.append(f"-layer {layer_name}")
+            ffmpeg_input_args.extend(["-layer", layer_name])
 
         if temp_data["input_is_sequence"]:
             # Set start frame of input sequence (just frame in filename)
@@ -664,7 +671,9 @@ class ExtractReview(pyblish.api.InstancePlugin):
             start_number = temp_data["first_sequence_frame"]
             if temp_data["without_handles"] and temp_data["handles_are_set"]:
                 start_number += temp_data["handle_start"]
-            ffmpeg_input_args.append(f"-start_number {str(start_number)}")
+            ffmpeg_input_args.extend([
+                "-start_number", str(start_number)
+            ])
 
             # TODO add fps mapping `{fps: fraction}` ?
             # - e.g.: {
@@ -673,37 +682,49 @@ class ExtractReview(pyblish.api.InstancePlugin):
             #     "23.976": "24000/1001"
             # }
             # Add framerate to input when input is sequence
-            ffmpeg_input_args.append(f'-framerate {str(temp_data["fps"])}')
+            ffmpeg_input_args.extend([
+                "-framerate", str(temp_data["fps"])
+            ])
             # Add duration of an input sequence if output is video
             if not temp_data["output_is_sequence"]:
-                ffmpeg_input_args.append("-to {:0.10f}".format(duration_seconds))
+                ffmpeg_input_args.extend([
+                    "-to", "{:0.10f}".format(duration_seconds)
+                ])
 
         if temp_data["output_is_sequence"]:
             # Set start frame of output sequence (just frame in filename)
             # - this is definition of an output
-            ffmpeg_output_args.append(f'-start_number {str(temp_data["output_frame_start"])}')
+            ffmpeg_output_args.extend([
+                "-start_number", str(temp_data["output_frame_start"])
+            ])
 
         # Change output's duration and start point if should not contain
         # handles
         if temp_data["without_handles"] and temp_data["handles_are_set"]:
             # Set output duration in seconds
-            ffmpeg_output_args.append(
-                "-t {:0.10}".format(duration_seconds))
-
+            ffmpeg_output_args.extend([
+                "-t", "{:0.10}".format(duration_seconds)
+            ])
             # Add -ss (start offset in seconds) if input is not sequence
             if not temp_data["input_is_sequence"]:
                 start_sec = float(temp_data["handle_start"]) / temp_data["fps"]
                 # Set start time without handles
                 # - Skip if start sec is 0.0
                 if start_sec > 0.0:
-                    ffmpeg_input_args.append("-ss {:0.10f}".format(start_sec))
+                    ffmpeg_input_args.extend([
+                        "-ss", "{:0.10f}".format(start_sec)
+                    ])
 
         # Set frame range of output when input or output is sequence
         elif temp_data["output_is_sequence"]:
-            ffmpeg_output_args.append(f"-frames:v {str(output_frames_len)}")
+            ffmpeg_output_args.extend([
+                "-frames:v", str(output_frames_len)
+            ])
 
         # Add video/image input path
-        ffmpeg_input_args.append(f'-i {path_to_subprocess_arg(temp_data["full_input_path"])}')
+        ffmpeg_input_args.extend([
+            "-i", path_to_subprocess_arg(temp_data["full_input_path"])
+        ])
 
         # Add audio arguments if there are any. Skipped when output are images.
         if not temp_data["output_ext_is_image"] and temp_data["with_audio"]:
@@ -770,7 +791,8 @@ class ExtractReview(pyblish.api.InstancePlugin):
             ffmpeg_output_args
         )
 
-    def split_ffmpeg_args(self, in_args):
+    @staticmethod
+    def split_ffmpeg_args(in_args):
         """Makes sure all entered arguments are separated in individual items.
 
         Split each argument string with " -" to identify if string contains
@@ -778,19 +800,19 @@ class ExtractReview(pyblish.api.InstancePlugin):
         """
         splitted_args = []
         for arg in in_args:
-            sub_args = arg.split(" -")
-            if len(sub_args) == 1:
-                ignore_arg = True if (arg.startswith("-") and arg in splitted_args) else False
-                if arg and not ignore_arg:
-                    splitted_args.append(arg)
+            if not arg:
                 continue
 
-            for idx, arg in enumerate(sub_args):
-                if idx != 0:
-                    arg = "-" + arg
+            sub_args = arg.split(" -")
+            if len(sub_args) == 1:
+                splitted_args.append(arg)
+                continue
 
-                if arg and arg not in splitted_args:
-                    splitted_args.append(arg)
+            for idx, sub_arg in enumerate(sub_args):
+                if idx != 0:
+                    sub_arg = "-" + sub_arg
+                splitted_args.append(sub_arg)
+
         return splitted_args
 
     def ffmpeg_full_args(
@@ -798,9 +820,9 @@ class ExtractReview(pyblish.api.InstancePlugin):
     ):
         """Post processing of collected FFmpeg arguments.
 
-        Just verify that output arguments does not contain video or audio
+        Just verify that output arguments do not contain video or audio
         filters which may cause issues because of duplicated argument entry.
-        Filters found in output arguments are moved to list they belong to.
+        Filters found in output arguments are moved to the list they belong to.
 
         Args:
             input_args (list): All collected ffmpeg arguments with inputs.
@@ -1058,22 +1080,20 @@ class ExtractReview(pyblish.api.InstancePlugin):
             audio_duration = duration_seconds + offset_seconds
 
             # Set audio duration
-            audio_in_args.append("-to {:0.10f}".format(audio_duration))
+            audio_in_args.extend(["-to", "{:0.10f}".format(audio_duration)])
 
             # Ignore video data from audio input
             audio_in_args.append("-vn")
 
             # Add audio input path
-            audio_in_args.append("-i {}".format(
-                path_to_subprocess_arg(audio["filename"])
-            ))
+            audio_in_args.extend(["-i", "{}".format(path_to_subprocess_arg(audio["filename"]))])
 
         # NOTE: These were changed from input to output arguments.
         # NOTE: value in "-ac" was hardcoded to 2, changed to audio inputs len.
         # Need to merge audio if there are more than 1 input.
         if len(audio_inputs) > 1:
-            audio_out_args.append("-filter_complex amerge")
-            audio_out_args.append("-ac {}".format(len(audio_inputs)))
+            audio_out_args.extend(["-filter_complex", "amerge"])
+            audio_out_args.extend(["-ac", "{}".format(len(audio_inputs))])
 
         return audio_in_args, audio_filters, audio_out_args
 

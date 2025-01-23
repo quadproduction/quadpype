@@ -26,9 +26,9 @@ class ExtractLocalRender(publish.Extractor):
 
         representations = []
         format = instance.data.get("format", None)
-        for file_name in instance.data["file_names"]:
+        for file_number, file_name in enumerate(instance.data["file_names"]):
             _, ext = os.path.splitext(os.path.basename(file_name))
-            ext = ext[1:]
+            ext = ext[1:].lower()
 
             first_file_path = None
             files = []

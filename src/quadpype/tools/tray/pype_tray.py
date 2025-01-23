@@ -441,6 +441,7 @@ class TrayManager:
 
         header_widget = QtWidgets.QWidgetAction(self.tray_widget.menu)
         header_widget.setDefaultWidget(header_label)
+        setattr(header_widget, "ignore_pointer_events", True)
 
         self.tray_widget.menu.addAction(header_widget)
 
@@ -451,6 +452,7 @@ class TrayManager:
 
         username_widget = QtWidgets.QWidgetAction(self.tray_widget.menu)
         username_widget.setDefaultWidget(username_label)
+        setattr(username_widget, "ignore_pointer_events", True)
 
         self.tray_widget.menu.addAction(username_widget)
 
@@ -657,6 +659,25 @@ class TrayManager:
         self.pype_info_widget.activateWindow()
 
 
+class QuadPypeTrayMenu(QtWidgets.QMenu):
+    # Class that did not close the menu onclick if
+    # the action pointed isn't connected to function
+    # OR the action has the attribute ignore_pointer_events
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.installEventFilter(self)
+
+    def mouseReleaseEvent(self, event):
+        # Get the active action (the one under the cursor)
+        action = self.activeAction()
+
+        if action and action.isEnabled():
+            if action.receivers(QtCore.SIGNAL("triggered()")) > 0 and \
+                    not hasattr(action, "ignore_pointer_events"):
+                super().mouseReleaseEvent(event)
+
+
 class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     """Tray widget.
 
@@ -677,7 +698,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self.parent = parent
 
         # Setup menu in Tray
-        self.menu = QtWidgets.QMenu()
+        self.menu = QuadPypeTrayMenu()
         self.menu.setStyleSheet(style.load_stylesheet())
 
         # Set modules

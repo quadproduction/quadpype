@@ -19,7 +19,6 @@ from quadpype.host import (
     ILoadHost
 )
 from quadpype.client import get_asset_by_name
-from quadpype.lib import filter_profiles
 from quadpype.pipeline import (
     schema,
     get_current_asset_name,
@@ -29,10 +28,11 @@ from quadpype.pipeline import (
     deregister_creator_plugin_path,
     AVALON_CONTAINER_ID,
     Anatomy,
-    get_current_project_name
+    get_current_project_name,
+    get_current_task_name
 )
 
-from quadpype.pipeline.context_tools import get_template_data_from_session
+from quadpype.pipeline.workfile import get_template_data_from_session
 from quadpype.lib import (
     Logger,
     register_event_callback,
@@ -235,11 +235,11 @@ def get_asset_data():
     return asset_doc.get("data")
 
 
-def get_frame_range(task_entity=None) -> Union[Dict[str, int], None]:
-    """Get the task entity's frame range and handles
+def get_frame_range(asset_entity=None) -> Union[Dict[str, int], None]:
+    """Get the asset entity's frame range and handles
 
     Args:
-        task_entity (Optional[dict]): Task Entity.
+        asset_entity (Optional[dict]): Task Entity.
             When not provided defaults to current context task.
 
     Returns:
@@ -247,11 +247,11 @@ def get_frame_range(task_entity=None) -> Union[Dict[str, int], None]:
             frame start, frame end, handle start, handle end.
     """
     # Set frame start/end
-    task_attributes = task_entity["attrib"]
-    frame_start = int(task_attributes["frameStart"])
-    frame_end = int(task_attributes["frameEnd"])
-    handle_start = int(task_attributes["handleStart"])
-    handle_end = int(task_attributes["handleEnd"])
+    asset_attributes = asset_entity["data"]
+    frame_start = int(asset_attributes["frameStart"])
+    frame_end = int(asset_attributes["frameEnd"])
+    handle_start = int(asset_attributes["handleStart"])
+    handle_end = int(asset_attributes["handleEnd"])
     frame_start_handle = frame_start - handle_start
     frame_end_handle = frame_end + handle_end
 
@@ -284,19 +284,17 @@ def set_frame_range(data):
         fps = data.get("fps")
 
     # Should handles be included, defined by settings
+    task_name = get_current_task_name()
     settings = get_project_settings(get_current_project_name())
-    task_type = data.get("taskType")
     include_handles_settings = settings["blender"]["include_handles"]
+    current_task = data.get("tasks").get(task_name)
+
     include_handles = include_handles_settings["include_handles_default"]
-    profile = filter_profiles(
-        include_handles_settings["profiles"],
-        key_values={
-            "task_types": task_type,
-            "task_names": data["name"]
-        }
-    )
-    if profile:
-        include_handles = profile["include_handles"]
+    for item in include_handles_settings["profiles"]:
+        if current_task["type"] in item["task_type"]:
+            include_handles = item["include_handles"]
+            break
+
     if include_handles:
         frame_start -= int(data.get("handleStart", 0))
         frame_end += int(data.get("handleEnd", 0))
@@ -628,7 +626,6 @@ def ls() -> Iterator:
     called containers.
     """
     container_ids = {
-        AYON_CONTAINER_ID,
         # Backwards compatibility
         AVALON_CONTAINER_ID
     }

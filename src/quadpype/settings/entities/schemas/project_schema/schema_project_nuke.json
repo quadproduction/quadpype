@@ -12,6 +12,12 @@
             "label": "General",
             "children": [
                 {
+                    "type": "boolean",
+                    "key": "set_resolution_startup",
+                    "label": "Set Resolution On Startup",
+                    "default": true
+                },
+                {
                     "type": "dict",
                     "collapsible": true,
                     "key": "menu",

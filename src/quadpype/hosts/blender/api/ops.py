@@ -47,7 +47,7 @@ class BlenderApplication:
     def get_app(cls):
         if cls._instance is None:
             # If any other addon or plug-in may have initialed a Qt application
-            # before AYON then we should take the existing instance instead.
+            # before QuadPype then we should take the existing instance instead.
             application = QtWidgets.QApplication.instance()
             if application is None:
                 application = QtWidgets.QApplication(sys.argv)
@@ -354,8 +354,19 @@ class LaunchWorkFiles(LaunchQtApp):
     _tool_name = "workfiles"
 
     def execute(self, context):
-        return super().execute(context)
+        result = super().execute(context)
+        self._window.set_context({
+            "asset": get_current_asset_name(),
+            "task": get_current_task_name()
+        })
+        return result
 
+    def before_window_show(self):
+        self._window.root = str(Path(
+            os.environ.get("AVALON_WORKDIR", ""),
+            os.environ.get("AVALON_SCENEDIR", ""),
+        ))
+        self._window.refresh()
 
 class SetFrameRange(bpy.types.Operator):
     bl_idname = "wm.set_frame_range"
@@ -394,7 +405,7 @@ class TOPBAR_MT_avalon(bpy.types.Menu):
     """Avalon menu."""
 
     bl_idname = "TOPBAR_MT_avalon"
-    bl_label = os.getenv("AVALON_LABEL")
+    bl_label = os.getenv("QUADPYPE_LABEL") or "QuadPype"
 
     def draw(self, context):
         """Draw the menu in the UI."""

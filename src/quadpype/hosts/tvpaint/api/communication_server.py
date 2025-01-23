@@ -717,12 +717,12 @@ class BaseCommunicator:
 
         self._create_routes()
 
-        os.environ["WEBSOCKET_URL"] = "ws://localhost:{}".format(
+        os.environ["QUADPYPE_WEBSOCKET_URL"] = "ws://localhost:{}".format(
             self.websocket_server.port
         )
 
         log.info("Added request handler for url: {}".format(
-            os.environ["WEBSOCKET_URL"]
+            os.environ["QUADPYPE_WEBSOCKET_URL"]
         ))
 
         self._start_webserver()
@@ -835,7 +835,7 @@ class BaseCommunicator:
 
 
 class QtCommunicator(BaseCommunicator):
-    label = os.getenv("AVALON_LABEL")
+    label = os.getenv("QUADPYPE_LABEL")
     if not label:
         label = "QuadPype"
     title = "{} Tools".format(label)

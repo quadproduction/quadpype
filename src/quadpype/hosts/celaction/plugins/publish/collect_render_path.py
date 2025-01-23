@@ -22,8 +22,8 @@ class CollectRenderPath(pyblish.api.InstancePlugin):
         anatomy_data.update({
             "frame": f"%0{padding}d",
             "family": "render",
-            "representation": self.output_extension,
-            "ext": self.output_extension
+            "representation": self.output_extension.lower(),
+            "ext": self.output_extension.lower()
         })
 
         anatomy_filled = anatomy.format(anatomy_data)

@@ -44,8 +44,8 @@ def _get_ffprobe_data(source):
     """
     command = get_ffmpeg_tool_args(
         "ffprobe",
-        "-v quiet",
-        "-print_format json",
+        "-v",  "quiet",
+        "-print_format", "json",
         "-show_format",
         "-show_streams",
         source
@@ -792,7 +792,7 @@ def burnins_from_data(
     if codec_data:
         # Use codec definition from method arguments
         ffmpeg_args = codec_data
-        ffmpeg_args.append("-g 1")
+        ffmpeg_args.extend(["-g", "1"])
 
     else:
         ffmpeg_args.extend(

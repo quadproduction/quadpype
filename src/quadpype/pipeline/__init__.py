@@ -60,6 +60,9 @@ from .publish import (
 
 from .actions import (
     LauncherAction,
+    LauncherTaskAction,
+
+    ApplicationAction,
 
     InventoryAction,
 
@@ -175,6 +178,9 @@ __all__ = (
 
     # --- Actions ---
     "LauncherAction",
+    "LauncherTaskAction",
+
+    "ApplicationAction",
     "InventoryAction",
 
     "discover_launcher_actions",

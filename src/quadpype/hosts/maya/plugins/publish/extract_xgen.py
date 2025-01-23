@@ -145,8 +145,8 @@ class ExtractXgen(publish.Extractor):
         instance.data["representations"].append(representation)
 
         representation = {
-            "name": self.scene_type,
-            "ext": self.scene_type,
+            "name": self.scene_type.lower(),
+            "ext": self.scene_type.lower(),
             "files": maya_filename,
             "stagingDir": staging_dir
         }

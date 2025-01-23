@@ -1,7 +1,8 @@
 import threading
-import datetime
 import copy
 import collections
+
+from datetime import datetime, timezone, timedelta
 
 import ftrack_api
 
@@ -46,7 +47,7 @@ class CreateDailyReviewSessionServerAction(ServerAction):
 
         self._cycle_timer = None
         self._last_cyle_time = None
-        self._day_delta = datetime.timedelta(days=1)
+        self._day_delta = timedelta(days=1)
 
     def discover(self, session, entities, event):
         """Show action only on AssetVersions."""
@@ -99,11 +100,9 @@ class CreateDailyReviewSessionServerAction(ServerAction):
         # Create threading timer which will trigger creation of report
         #   at the 00:00:01 of next day
         # - callback will trigger another timer which will have 1 day offset
-        now = datetime.datetime.now()
+        now = datetime.now(timezone.utc)
         # Create object of today morning
-        expected_next_trigger = datetime.datetime(
-            now.year, now.month, now.day, h, m, s
-        )
+        expected_next_trigger = datetime(now.year, now.month, now.day, h, m, s, tzinfo=timezone.utc)
         if expected_next_trigger > now:
             seconds = (expected_next_trigger - now).total_seconds()
         else:
@@ -199,10 +198,8 @@ class CreateDailyReviewSessionServerAction(ServerAction):
             review_sessions_by_project_id[project_id].append(review_session)
 
         # Prepare fill data for today's review sesison and yesterdays
-        now = datetime.datetime.now()
-        today_obj = datetime.datetime(
-            now.year, now.month, now.day, 0, 0, 0
-        )
+        now = datetime.now(timezone.utc)
+        today_obj = datetime(now.year, now.month, now.day, 0, 0, 0, tzinfo=timezone.utc)
         yesterday_obj = today_obj - self._day_delta
 
         today_fill_data = get_datetime_data(today_obj)

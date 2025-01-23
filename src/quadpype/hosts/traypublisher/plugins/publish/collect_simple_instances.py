@@ -254,7 +254,7 @@ class CollectSettingsSimpleInstances(pyblish.api.InstancePlugin):
         if len(filenames) == 1:
             filenames = filenames[0]
 
-        repre_name = repre_ext = ext[1:]
+        repre_name = repre_ext = ext[1:].lower()
         if repre_name not in repre_names_counter:
             repre_names_counter[repre_name] = 2
         else:

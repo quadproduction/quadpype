@@ -62,7 +62,7 @@ class DiscoverResult:
                     lines.append("- {}".format(cls.__name__))
 
         # Abstract classes
-        if self.abstract_plugins or full_report:
+        if (not only_errors and self.abstract_plugins) or full_report:
             lines.append("*** Discovered {} abstract plugins".format(len(
                 self.abstract_plugins
             )))

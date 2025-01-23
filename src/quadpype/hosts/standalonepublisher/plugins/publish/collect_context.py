@@ -88,7 +88,7 @@ class CollectContextDataSAPublish(pyblish.api.ContextPlugin):
         representations = in_data.pop("representations")
         for repr in representations:
             in_data_copy = copy.deepcopy(in_data)
-            ext = repr["ext"][1:]
+            ext = repr["ext"][1:].lower()
             subset = in_data_copy["subset"]
             # filter out non editorial files
             if ext not in self.batch_extensions:
@@ -155,7 +155,7 @@ class CollectContextDataSAPublish(pyblish.api.ContextPlugin):
             self.log.debug("Processing representation with files {}".format(
                 str(repre["files"])
             ))
-            ext = repre["ext"][1:]
+            ext = repre["ext"][1:].lower()
 
             # Rename representation name
             repre_name = repre["name"]
@@ -260,7 +260,7 @@ class CollectContextDataSAPublish(pyblish.api.ContextPlugin):
 
             ext = component["ext"]
             if ext.startswith("."):
-                component["ext"] = ext[1:]
+                component["ext"] = ext[1:].lower()
 
             # Remove 'preview' key from representation data
             preview = component.pop("preview")

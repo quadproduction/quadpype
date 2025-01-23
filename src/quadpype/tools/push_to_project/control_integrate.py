@@ -3,9 +3,10 @@ import re
 import copy
 import socket
 import itertools
-import datetime
 import sys
 import traceback
+
+from datetime import datetime, timezone
 
 from bson.objectid import ObjectId
 
@@ -1048,7 +1049,7 @@ class ProjectPushItemProcess:
             repre_format_data["representation"] = repre_name
             for src_file in repre_item.src_files:
                 ext = os.path.splitext(src_file.path)[-1]
-                repre_format_data["ext"] = ext[1:]
+                repre_format_data["ext"] = ext[1:].lower()
                 break
 
             # Re-use 'output' from source representation
@@ -1114,7 +1115,7 @@ class ProjectPushItemProcess:
         if sync_server_module is None or not sync_server_module.enabled:
             sites = [{
                 "name": "studio",
-                "created_dt": datetime.datetime.now()
+                "created_dt": datetime.now(timezone.utc)
             }]
         else:
             sites = sync_server_module.compute_resource_sync_sites(

@@ -1,7 +1,7 @@
 import collections
 import time
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 import requests
 import json
 import subprocess
@@ -147,7 +147,7 @@ def reprocess_failed(upload_dir, webserver_url):
                 {"_id": batch["_id"]},
                 {"$set":
                     {
-                        "finish_date": datetime.now(),
+                        "finish_date": datetime.now(timezone.utc),
                         "status": ERROR_STATUS,
                         "progress": 100,
                         "log": batch.get("log") + msg
@@ -166,7 +166,7 @@ def reprocess_failed(upload_dir, webserver_url):
             },
             {
                 "$set": {
-                    "finish_date": datetime.now(),
+                    "finish_date": datetime.now(timezone.utc),
                     "status": SENT_REPROCESSING_STATUS,
                     "progress": 100
                 }

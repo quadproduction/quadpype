@@ -12,14 +12,20 @@ def main():
         description='Mandatory script that will execute the platform dependant code before QuadPype run'
     )
     parser.add_argument("-d", "--dev", action="store_true")
+    parser.add_argument("-p", "--prod", action="store_true")
     parser.add_argument("-m", "--mongo-uri", help='Format should be like: mongodb://uri.to.my.mongo-db:27017')
 
     args = parser.parse_args()
 
-    # Build the arguments string for the platform dependant script
+    # Build the argument string for the platform dependant script
     args_string = ""
     if args.dev:
         args_string += "-d"
+
+    if args.prod and not args.dev:
+        # If the used add the flags for dev and prod,
+        # we start in dev, to avoid potential mistakes or issues
+        args_string += "-p"
 
     if args.mongo_uri:
         # First, check MongoDB connection string format validity

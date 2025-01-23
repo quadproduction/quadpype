@@ -469,7 +469,7 @@ class LoadClip(plugin.NukeLoader):
             "asset": repre_cont["asset"],
             "subset": repre_cont["subset"],
             "representation": representation["name"],
-            "ext": repre_cont["representation"],
+            "ext": repre_cont["representation"].lower(),
             "id": representation["_id"],
             "class_name": self.__class__.__name__
         }

@@ -36,9 +36,9 @@ class LocalGeneralWidgets(QtWidgets.QWidget):
         if self.windows_can_stay_on_top_input.isChecked() != windows_can_stay_on_top:
             # Use state as `stateChanged` is connected to callbacks
             if windows_can_stay_on_top:
-                state = QtCore.Qt.Checked
+                state = QtCore.Qt.CheckState.Checked
             else:
-                state = QtCore.Qt.Unchecked
+                state = QtCore.Qt.CheckState.Unchecked
             self.windows_can_stay_on_top_input.setCheckState(state)
 
         self._loading_user_settings = False

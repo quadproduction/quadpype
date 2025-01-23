@@ -1,6 +1,7 @@
 import os
 import attr
-from datetime import datetime
+
+from datetime import datetime, timezone
 
 from quadpype.settings import PROJECT_SETTINGS_KEY
 from quadpype.pipeline import legacy_io, PublishXmlValidationError
@@ -90,7 +91,7 @@ class MayaSubmitRemotePublishDeadline(
         )
 
         if is_in_tests():
-            batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
+            batch_name += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
 
         job_info = DeadlineJobInfo(Plugin="MayaBatch")
         job_info.BatchName = "Group: " + batch_name,

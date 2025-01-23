@@ -70,6 +70,10 @@ class ExtractOTIOReview(publish.Extractor):
         handle_end = instance.data["handleEnd"]
         otio_review_clips = instance.data["otioReviewClips"]
 
+        if otio_review_clips is None:
+            self.log.info(f"Instance `{instance}` has no otioReviewClips")
+            return
+
         # add plugin wide attributes
         self.representation_files = list()
         self.used_frames = list()
@@ -85,8 +89,7 @@ class ExtractOTIOReview(publish.Extractor):
         # skip instance if no reviewable data available
         if (not isinstance(otio_review_clips[0], otio.schema.Clip)) \
                 and (len(otio_review_clips) == 1):
-            self.log.warning(
-                "Instance `{}` has nothing to process".format(instance))
+            self.log.warning(f"Instance `{instance}` has nothing to process")
             return
         else:
             self.staging_dir = self.staging_dir(instance)
@@ -257,8 +260,8 @@ class ExtractOTIOReview(publish.Extractor):
         files = [f for f in collection]
         ext = collection.format("{tail}")
         representation_data.update({
-            "name": ext[1:],
-            "ext": ext[1:],
+            "name": ext[1:].lower(),
+            "ext": ext[1:].lower(),
             "files": files,
             "frameStart": start,
             "frameEnd": end,
@@ -368,8 +371,8 @@ class ExtractOTIOReview(publish.Extractor):
 
             # form command for rendering gap files
             command.extend([
-                f"-start_number {str(in_frame_start)}",
-                f"-i {input_path}"
+                "-start_number", str(in_frame_start),
+                "-i", input_path
             ])
 
         elif video:
@@ -385,9 +388,9 @@ class ExtractOTIOReview(publish.Extractor):
 
             # form command for rendering gap files
             command.extend([
-                f"-ss {str(sec_start)}",
-                f"-t {str(sec_duration)}",
-                f"-i {video_path}"
+                "-ss", str(sec_start),
+                "-t", str(sec_duration),
+                "-i", video_path
             ])
 
         elif gap:
@@ -395,24 +398,28 @@ class ExtractOTIOReview(publish.Extractor):
 
             # form command for rendering gap files
             command.extend([
-                f"-t {str(sec_duration)}",
-                f"-r {str(self.actual_fps)}",
-                "-f lavfi",
+                "-t", str(sec_duration),
+                "-r", str(self.actual_fps),
+                "-f", "lavfi",
                 "-i", "color=c=black:s={}x{}".format(
                     self.to_width, self.to_height
                 ),
-                "-tune stillimage"
+                "-tune", "stillimage"
             ])
 
         # add output attributes
-        command.append(f"-start_number {str(out_frame_start)}")
+        command.extend([
+            "-start_number", str(out_frame_start)
+        ])
 
         # add copying if extensions are matching
         if (
             input_extension
             and self.output_ext == input_extension
         ):
-            command.append("-c copy")
+            command.extend([
+                "-c", "copy"
+            ])
 
         # add output path at the end
         command.append(output_path)

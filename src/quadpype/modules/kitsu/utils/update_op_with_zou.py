@@ -151,36 +151,37 @@ def update_op_assets(
             item_data["resolutionHeight"] = int(match_res.group(2))
         else:
             item_data["resolutionWidth"] = int(
-                project_doc["data"].get("resolutionWidth")
+                project_doc["data"].get("resolutionWidth", 0)
             )
             item_data["resolutionHeight"] = int(
-                project_doc["data"].get("resolutionHeight")
+                project_doc["data"].get("resolutionHeight", 0)
             )
         # Properties that doesn't fully exist in Kitsu.
         # Guessing those property names below:
         # Pixel Aspect Ratio
         item_data["pixelAspect"] = float(
             item_data.get(
-                "pixel_aspect", project_doc["data"].get("pixelAspect")
+                "pixel_aspect", project_doc["data"].get("pixelAspect", 1.0)
             )
         )
+
         # Handle Start
         item_data["handleStart"] = int(
             item_data.get(
-                "handle_start", project_doc["data"].get("handleStart")
+                "handle_start", project_doc["data"].get("handleStart", 0)
             )
         )
         # Handle End
         item_data["handleEnd"] = int(
-            item_data.get("handle_end", project_doc["data"].get("handleEnd"))
+            item_data.get("handle_end", project_doc["data"].get("handleEnd", 0))
         )
         # Clip In
         item_data["clipIn"] = int(
-            item_data.get("clip_in", project_doc["data"].get("clipIn"))
+            item_data.get("clip_in", project_doc["data"].get("clipIn", 0))
         )
         # Clip Out
         item_data["clipOut"] = int(
-            item_data.get("clip_out", project_doc["data"].get("clipOut"))
+            item_data.get("clip_out", project_doc["data"].get("clipOut", 0))
         )
 
         # Tasks

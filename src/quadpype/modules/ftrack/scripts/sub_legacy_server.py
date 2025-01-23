@@ -1,8 +1,9 @@
 import sys
 import time
-import datetime
 import signal
 import threading
+
+from datetime import datetime, timezone
 
 import ftrack_api
 from quadpype.lib import Logger
@@ -26,7 +27,7 @@ class TimerChecker(threading.Thread):
         self.is_running = False
 
     def run(self):
-        start = datetime.datetime.now()
+        start = datetime.now(timezone.utc)
         self.is_running = True
         connected = False
 
@@ -37,7 +38,7 @@ class TimerChecker(threading.Thread):
             if not self.session.event_hub.connected:
                 if not connected:
                     if (
-                        (datetime.datetime.now() - start).seconds >
+                        (datetime.now(timezone.utc) - start).seconds >
                         self.max_time_out
                     ):
                         log.error((

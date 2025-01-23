@@ -2,7 +2,8 @@ import os
 import attr
 import getpass
 import pyblish.api
-from datetime import datetime
+
+from datetime import datetime, timezone
 
 from quadpype.lib import (
     env_value_to_bool,
@@ -65,7 +66,7 @@ class AfterEffectsSubmitDeadline(
         )
 
         if is_in_tests():
-            batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
+            batch_name += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
         dln_job_info.Name = job_name
         dln_job_info.BatchName = "Group: " + batch_name
         dln_job_info.Plugin = "AfterEffects"

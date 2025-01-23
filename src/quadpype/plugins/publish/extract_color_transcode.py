@@ -227,6 +227,8 @@ class ExtractOIIOTranscode(publish.Extractor):
         if not output_extension:
             return
 
+        output_extension = output_extension.lower()
+
         new_repre["ext"] = output_extension
 
         renamed_files = []
@@ -253,6 +255,8 @@ class ExtractOIIOTranscode(publish.Extractor):
             new_repre["name"] = output_name
         if not output_extension:
             return
+
+        output_extension = output_extension.lower()
 
         new_repre["ext"] = output_extension
 

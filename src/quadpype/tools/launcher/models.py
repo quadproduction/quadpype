@@ -20,7 +20,7 @@ from quadpype.lib.applications import (
     ApplicationManager
 )
 from quadpype.settings import get_project_settings, APPS_SETTINGS_KEY
-from quadpype.pipeline import discover_launcher_actions
+from quadpype.pipeline import discover_launcher_actions, ApplicationAction
 from quadpype.tools.utils.lib import (
     DynamicQThread,
     get_project_icon,
@@ -44,7 +44,6 @@ from .constants import (
     ACTION_ID_ROLE,
     FORCE_NOT_OPEN_WORKFILE_ROLE
 )
-from .actions import ApplicationAction
 
 log = logging.getLogger(__name__)
 
@@ -194,6 +193,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(label, QtCore.Qt.ToolTipRole)
             item.setData(actions, ACTION_ROLE)
             item.setData(True, VARIANT_GROUP_ROLE)
+            item.setSizeHint(QtCore.QSize(90, 96))
             items_by_order[order].append(item)
 
         for action in single_actions:
@@ -202,6 +202,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item = QtGui.QStandardItem(icon, label)
             item.setData(label, QtCore.Qt.ToolTipRole)
             item.setData(action, ACTION_ROLE)
+            item.setSizeHint(QtCore.QSize(90, 96))
             items_by_order[action.order].append(item)
 
         for group_name, actions in grouped_actions.items():
@@ -222,7 +223,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item = QtGui.QStandardItem(icon, group_name)
             item.setData(actions, ACTION_ROLE)
             item.setData(True, GROUP_ROLE)
-
+            item.setSizeHint(QtCore.QSize(90, 96))
             items_by_order[order].append(item)
 
         self.beginResetModel()
@@ -853,10 +854,22 @@ class ProjectModel(QtGui.QStandardItemModel):
 
         self._launcher_model = launcher_model
         self._project_names = set()
+        self._display_mode = 1
 
         launcher_model.projects_refreshed.connect(self._on_refresh)
 
-    def _on_refresh(self):
+    @property
+    def display_mode(self):
+        return self._display_mode
+
+    def set_display_mode(self, display_mode):
+        self._display_mode = display_mode
+
+    def _on_refresh(self, full=False):
+        if full:
+            self.setRowCount(0)
+            self._project_names = set()
+
         project_names = set(self._launcher_model.project_names)
         origin_project_names = set(self._project_names)
         self._project_names = project_names
@@ -901,6 +914,11 @@ class ProjectModel(QtGui.QStandardItemModel):
                 )
                 icon = get_project_icon(project_doc)
                 item = QtGui.QStandardItem(icon, project_name)
+                item_height = 20 if self.display_mode == 1 else 100
+                item.setSizeHint(QtCore.QSize(225, item_height))
                 items.append(item)
 
             self.invisibleRootItem().insertRows(row, items)
+
+    def full_refresh(self):
+        self._on_refresh(True)

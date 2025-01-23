@@ -1,14 +1,15 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
 import os
 import sys
 import subprocess
 import json
+
+from __future__ import absolute_import
 import xml.dom.minidom as minidom
 from copy import deepcopy
-import datetime
+from datetime import datetime, timezone
+
 from libwiretapPythonClientAPI import (  # noqa
     WireTapClientInit,
     WireTapClientUninit,
@@ -261,7 +262,7 @@ class WireTapCom(object):
             return filtered_users.pop()
 
         # create new user name with date in suffix
-        now = datetime.datetime.now()  # current date and time
+        now = datetime.now(timezone.utc)  # current date and time
         date = now.strftime("%Y%m%d")
         new_user_name = "{}_{}".format(user_name, date)
         print(new_user_name)

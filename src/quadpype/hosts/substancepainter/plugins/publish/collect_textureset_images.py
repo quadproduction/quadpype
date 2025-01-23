@@ -58,7 +58,7 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
         first_filepath = outputs[0]["filepath"]
         fnames = [os.path.basename(output["filepath"]) for output in outputs]
         ext = os.path.splitext(first_filepath)[1]
-        assert ext.lstrip("."), f"No extension: {ext}"
+        assert ext.lstrip(".").lower(), f"No extension: {ext}"
 
         always_include_texture_set_name = False  # todo: make this configurable
         all_texture_sets = substance_painter.textureset.all_texture_sets()
@@ -94,8 +94,8 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
 
         # Prepare representation
         representation = {
-            "name": ext.lstrip("."),
-            "ext": ext.lstrip("."),
+            "name": ext.lstrip(".").lower(),
+            "ext": ext.lstrip(".").lower(),
             "files": fnames if len(fnames) > 1 else fnames[0],
         }
 

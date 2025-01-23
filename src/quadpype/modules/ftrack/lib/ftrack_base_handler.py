@@ -3,9 +3,11 @@ import tempfile
 import json
 import functools
 import uuid
-import datetime
 import traceback
 import time
+
+from datetime import datetime, timezone
+
 from quadpype.lib import Logger
 from quadpype.settings import get_project_settings, PROJECT_SETTINGS_KEY
 
@@ -670,7 +672,7 @@ class BaseHandler(object):
         if not component_name:
             component_name = "{}_{}".format(
                 cls.__name__,
-                datetime.datetime.now().strftime("%y-%m-%d-%H%M")
+                datetime.now(timezone.utc).strftime("%y-%m-%d-%H%M")
             )
         cls.add_file_component_to_job(
             job, session, temp_filepath, component_name

@@ -6,14 +6,14 @@ from quadpype.modules import (
     click_wrap,
     QuadPypeModule,
     IPluginPaths,
-    ITrayAction,
+    ITrayService,
 )
 
 
-class KitsuModule(QuadPypeModule, IPluginPaths, ITrayAction):
+class KitsuModule(QuadPypeModule, IPluginPaths, ITrayService):
     """Kitsu module class."""
 
-    label = "Kitsu Connect"
+    label = "Kitsu"
     name = "kitsu"
 
     def initialize(self, settings):
@@ -61,6 +61,9 @@ class KitsuModule(QuadPypeModule, IPluginPaths, ITrayAction):
             set_credentials_envs(login, password)
         else:
             self.show_dialog()
+
+    def tray_exit(self):
+        return
 
     def get_global_environments(self):
         """Kitsu's global environments."""

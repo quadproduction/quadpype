@@ -87,6 +87,7 @@ Attributes:
 import os
 import re
 import sys
+import site
 import platform
 import traceback
 import subprocess
@@ -182,12 +183,6 @@ if os.getenv("SSL_CERT_FILE") and \
 else:
     ssl_cert_file = certifi.where()
     os.environ["SSL_CERT_FILE"] = ssl_cert_file
-
-if "--zxp-ignore-update" in sys.argv:
-    os.environ["QUADPYPE_IGNORE_ZXP_UPDATE"] = "1"
-    sys.argv.remove("--zxp-ignore-update")
-elif os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE") != "1":
-    os.environ.pop("QUADPYPE_IGNORE_ZXP_UPDATE", None)
 
 if "--headless" in sys.argv:
     os.environ["QUADPYPE_HEADLESS_MODE"] = "1"
@@ -438,11 +433,11 @@ def set_avalon_environments():
         # Mongo DB name where avalon docs are stored
         "AVALON_DB": avalon_db,
         # Name of config
-        "AVALON_LABEL": "QuadPype"
+        "QUADPYPE_LABEL": "QuadPype"
     })
 
 
-def _update_zxp_extensions(running_version_str, running_version_fullpath, global_settings):
+def _update_zxp_extensions(running_version_fullpath, global_settings):
     zxp_hosts_to_update = get_zxp_extensions_to_update(running_version_fullpath, global_settings)
     if not zxp_hosts_to_update:
         return
@@ -451,7 +446,7 @@ def _update_zxp_extensions(running_version_str, running_version_fullpath, global
     if in_headless_mode:
         update_zxp_extensions(running_version_fullpath, zxp_hosts_to_update)
     else:
-        igniter.open_zxp_update_window(running_version_str, running_version_fullpath, zxp_hosts_to_update)
+        igniter.open_zxp_update_window(running_version_fullpath, zxp_hosts_to_update)
 
 
 def set_addons_environments():
@@ -703,12 +698,18 @@ def _initialize_environment(quadpype_version: PackageVersion) -> None:
         raise ValueError("No path set in specified QuadPype version.")
     os.environ["QUADPYPE_VERSION"] = str(quadpype_version)
     # set QUADPYPE_REPOS_ROOT to point to currently used QuadPype version.
-    os.environ["QUADPYPE_REPOS_ROOT"] = os.path.normpath(
-        version_path.as_posix()
-    )
-    # Additional sys paths related to QUADPYPE_REPOS_ROOT directory
-    # TODO move additional paths to `boot` part when QUADPYPE_REPOS_ROOT will
-    # point to same hierarchy from code and from frozen QuadPype
+    quadpype_root = os.path.normpath(version_path.as_posix())
+    os.environ["QUADPYPE_REPOS_ROOT"] = quadpype_root
+
+    split_paths = os.getenv("PYTHONPATH", "").split(os.pathsep)
+
+    split_paths.insert(0, quadpype_root)
+    sys.path.insert(0, quadpype_root)
+
+    if not getattr(sys, 'frozen', False):
+        # The last one should be venv site-packages
+        split_paths.append(site.getsitepackages()[-1])
+
     additional_paths = [
         os.environ["QUADPYPE_REPOS_ROOT"],
         # add QuadPype tools
@@ -724,7 +725,6 @@ def _initialize_environment(quadpype_version: PackageVersion) -> None:
         )
     ]
 
-    split_paths = os.getenv("PYTHONPATH", "").split(os.pathsep)
     for path in additional_paths:
         split_paths.insert(0, path)
         sys.path.insert(0, path)
@@ -752,7 +752,7 @@ def _boot_print_versions(quadpype_package):
 
 def _initialize_package_manager(database_url, version_str):
     """Initialize the Package Manager and add the registered AddOns."""
-    from quadpype.lib.version import create_package_manager, PackageHandler
+    from quadpype.lib.version import retrieve_package_manager, PackageHandler
     from quadpype.settings.lib import (
         get_core_settings_no_handler,
         get_quadpype_local_dir_path,
@@ -761,7 +761,7 @@ def _initialize_package_manager(database_url, version_str):
 
     core_settings = get_core_settings_no_handler(database_url)
 
-    package_manager = create_package_manager()
+    package_manager = retrieve_package_manager()
 
     quadpype_package = PackageHandler(
         pkg_name="quadpype",
@@ -774,41 +774,6 @@ def _initialize_package_manager(database_url, version_str):
     package_manager.add_package(quadpype_package)
 
     return package_manager
-
-
-def _load_addons(package_manager, global_settings, use_staging):
-    from quadpype.lib.version import AddOnHandler, ADDONS_SETTINGS_KEY
-    from appdirs import user_data_dir
-
-    addon_settings = global_settings.get(ADDONS_SETTINGS_KEY, {}).get("custom_addons", {})
-    local_dir = Path(user_data_dir("quadpype", "quad")) / "addons"
-
-    if not local_dir.exists():
-        local_dir.mkdir(parents=True, exist_ok=True)
-
-    for addon_setting in addon_settings:
-        addon_package_name = addon_setting.get("package_name", "").strip()
-        if not addon_package_name:
-            _print("!!! A custom add-on package name is empty, add-on skipped.")
-            continue
-
-        addon_local_dir = local_dir / addon_package_name
-        if not addon_local_dir.exists():
-            local_dir.mkdir(parents=True, exist_ok=True)
-
-        version_key = "staging_version" if use_staging else "version"
-
-        remote_dir_paths = addon_setting.get("package_remote_dirs", {}).get(platform.system().lower(), [])
-        remote_dir_paths = [Path(curr_path_str) for curr_path_str in remote_dir_paths]
-
-        addon_package = AddOnHandler(
-            pkg_name=addon_setting.get("package_name"),
-            local_dir_path=addon_local_dir,
-            remote_dir_paths=remote_dir_paths,
-            running_version_str=addon_setting.get(version_key, ""),
-            retrieve_locally=addon_setting.get("retrieve_locally", False),
-        )
-        package_manager.add_package(addon_package)
 
 
 def boot():
@@ -878,7 +843,7 @@ def boot():
             os.environ["AVALON_DB"] = avalon_db + "_tests"
 
     from quadpype.settings.lib import (
-        get_global_settings_and_version_no_handler,
+        get_global_settings_no_handler,
         get_expected_studio_version_str,
     )
 
@@ -893,13 +858,10 @@ def boot():
     running_version = package_manager["quadpype"].running_version
 
     # Get the full settings with the final version that will be used
-    global_settings = get_global_settings_and_version_no_handler(
+    global_settings = get_global_settings_no_handler(
         quadpype_mongo,
         str(running_version)
     )
-
-    # Add the Add-ons to the Package Manager
-    _load_addons(package_manager, global_settings, use_staging)
 
     _print(">>> Run disk mapping command ...")
     run_disk_mapping_commands(global_settings)
@@ -971,9 +933,8 @@ def boot():
 
     running_version = package_manager["quadpype"].running_version
     running_version_fullpath = running_version.path.resolve()
-    if not os.getenv("QUADPYPE_IGNORE_ZXP_UPDATE"):
-        _print(">>> Check ZXP extensions ...")
-        _update_zxp_extensions(str(running_version), running_version_fullpath, global_settings)
+    _print(">>> Check ZXP extensions ...")
+    _update_zxp_extensions(running_version_fullpath, global_settings)
 
     # print info when not running scripts defined in 'silent commands'
     if all(arg not in silent_commands for arg in sys.argv):

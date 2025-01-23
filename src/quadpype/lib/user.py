@@ -3,10 +3,11 @@
 import os
 import copy
 import getpass
-import datetime
 import functools
 import platform
 import socket
+
+from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 
 from .registry import get_app_registry
@@ -27,10 +28,11 @@ class UserHandler(ABC):
     user_profile_template = {
         "user_id": "",
         "role": "user",
-        "first_connection_timestamp": datetime.datetime.now(),
-        "last_connection_timestamp": datetime.datetime.now(),
+        "first_connection_timestamp": datetime.now(timezone.utc),
+        "last_connection_timestamp": datetime.now(timezone.utc),
         "last_workstation_profile_index": 0,
         "workstation_profiles": [],
+        "tracker_logins": {},
         "settings": {}
     }
 
@@ -61,6 +63,11 @@ class UserHandler(ABC):
     @abstractmethod
     def update_user_profile_on_startup(self):
         """Update the user profile on startup."""
+        pass
+
+    @abstractmethod
+    def set_tracker_login_to_user_profile(self, tracker_name, login_value):
+        """Set the user login for a specific tracker in his profile."""
         pass
 
 
@@ -103,7 +110,7 @@ class MongoUserHandler(UserHandler):
         user_profile["user_id"] = self.user_id
         user_profile["role"] = user_role
 
-        timestamp = datetime.datetime.now()
+        timestamp = datetime.now(timezone.utc)
         user_profile["first_connection_timestamp"] = timestamp
         user_profile["last_connection_timestamp"] = timestamp
 
@@ -125,10 +132,13 @@ class MongoUserHandler(UserHandler):
 
         return user_profile
 
+    def get_all_user_profiles(self):
+        return self.collection.find({})
+
     def update_user_profile_on_startup(self):
         """Update user profile on startup"""
         user_profile = self.get_user_profile()
-        user_profile["last_connection_timestamp"] = datetime.datetime.now()
+        user_profile["last_connection_timestamp"] = datetime.now(timezone.utc)
 
         workstation_info = get_user_workstation_info()
 
@@ -149,6 +159,20 @@ class MongoUserHandler(UserHandler):
         )
 
         return user_profile
+
+    def set_tracker_login_to_user_profile(self, tracker_name, login_value):
+        user_profile = self.get_user_profile()
+
+        if "tracker_logins" not in user_profile:
+            # Ensure the dict exists in the user profile
+            user_profile["tracker_logins"] = {}
+
+        user_profile["tracker_logins"][tracker_name] = login_value
+
+        self.collection.replace_one(
+            {"user_id": self.user_id},
+            user_profile, upsert=True
+        )
 
     def save_user_settings(self, data):
         """Save user settings.
@@ -219,8 +243,18 @@ def get_user_profile():
 
 
 @require_user_handler
+def get_all_user_profiles():
+    return _USER_HANDLER.get_all_user_profiles()
+
+
+@require_user_handler
 def update_user_profile_on_startup():
     return _USER_HANDLER.update_user_profile_on_startup()
+
+
+@require_user_handler
+def set_tracker_login_to_user_profile(tracker_name, login_value):
+    return _USER_HANDLER.set_tracker_login_to_user_profile(tracker_name, login_value)
 
 
 def _create_user_id(registry=None):

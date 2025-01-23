@@ -762,7 +762,7 @@ class RootsDictEntity(DictImmutableKeysEntity):
 
 
 class SyncServerSites(DictImmutableKeysEntity):
-    """Dictionary enity for sync sites.
+    """Dictionary entity for sync sites.
 
     Can be used only in project settings.
 
@@ -770,7 +770,7 @@ class SyncServerSites(DictImmutableKeysEntity):
     provider loads project settings schemas calling method
     `get_project_settings_schema` on provider.
 
-    Each provider have `enabled` boolean entity to be able know if site should
+    Each provider has an `enabled` boolean entity to be able to know if site should
     be enabled for the project. Enabled is by default set to False.
     """
     schema_types = ["sync-server-sites"]
@@ -906,7 +906,9 @@ class SyncServerSites(DictImmutableKeysEntity):
                 child_value = value.get(key, NOT_SET)
                 child_obj.update_project_value(child_value)
 
-            if state is OverrideState.PROJECT:
+            # Only in this case check if value is not empty
+            # Since the settings are runtime generated (based on "sync-server-providers")
+            if state is OverrideState.PROJECT and value:
                 value_keys = set(value.keys())
                 self._sites_changed = value_keys != current_site_names
 

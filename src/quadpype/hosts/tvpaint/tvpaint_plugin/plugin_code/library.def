@@ -1,4 +1,4 @@
-LIBRARY      Avalonplugin
+LIBRARY      QuadPypePlugin
 EXPORTS
   PI_Msg
   PI_Open

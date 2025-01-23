@@ -6,13 +6,17 @@ import json
 import time
 import inspect
 import logging
+import platform
 import threading
 import collections
 import traceback
 from enum import IntEnum
 
 from uuid import uuid4
+from pathlib import Path
 from abc import ABC, abstractmethod
+
+from appdirs import user_data_dir
 
 from quadpype.settings import (
     get_global_settings,
@@ -25,15 +29,22 @@ from quadpype.settings import (
 
 from quadpype.settings.lib import (
     load_json_file,
+    get_studio_global_settings_overrides
 )
 
 from quadpype.lib import (
     Logger,
     import_filepath,
+    is_staging_enabled,
     import_module_from_dirpath,
 )
 
-from quadpype.lib.version import get_packages
+from quadpype.lib.version import (
+    retrieve_package_manager,
+    get_package,
+    get_packages,
+    AddOnHandler
+)
 
 from .interfaces import (
     QuadPypeInterface,
@@ -195,11 +206,49 @@ def get_dynamic_modules_dirs():
     Returns:
         list: Paths loaded from studio overrides.
     """
+    global_settings = get_studio_global_settings_overrides()
+    addon_settings = global_settings.get(ADDONS_SETTINGS_KEY, {}).get("custom_addons", {})
+    local_dir = Path(user_data_dir("quadpype", "quad")) / "addons"
+
+    if not local_dir.exists():
+        local_dir.mkdir(parents=True, exist_ok=True)
+
+    package_manager = retrieve_package_manager()
+
+    for addon_setting in addon_settings:
+        addon_package_name = addon_setting.get("package_name", "").strip()
+        if not addon_package_name:
+            # The add-on package name is empty, skip.
+            continue
+
+        if get_package(addon_package_name):
+            # The package already exists in the package manager, skip.
+            continue
+
+        addon_local_dir = local_dir / addon_package_name
+        if not addon_local_dir.exists():
+            local_dir.mkdir(parents=True, exist_ok=True)
+
+        version_key = "staging_version" if is_staging_enabled() else "version"
+
+        remote_dir_paths = addon_setting.get("package_remote_dirs", {}).get(platform.system().lower(), [])
+        remote_dir_paths = [Path(curr_path_str) for curr_path_str in remote_dir_paths]
+
+        addon_package = AddOnHandler(
+            pkg_name=addon_setting.get("package_name"),
+            local_dir_path=addon_local_dir,
+            remote_dir_paths=remote_dir_paths,
+            running_version_str=addon_setting.get(version_key, ""),
+            retrieve_locally=addon_setting.get("retrieve_locally", False),
+        )
+        package_manager.add_package(addon_package)
+
+    # Now retrieve the add-ons paths
     dynamic_modules_dir_paths = []
     for package in get_packages("add_on"):
         dynamic_modules_dir_paths.append(package.running_version.path)
 
-    return []
+    return dynamic_modules_dir_paths
 
 def get_module_dirs():
     """List of paths where QuadPype modules can be found."""
@@ -1092,12 +1141,10 @@ class ModulesManager:
 class TrayModulesManager(ModulesManager):
     # Define order of modules in menu
     modules_menu_order = (
-        # Menu ------------------------------------------
-        # QuadPype: STUDIO_NAME
-        # USERNAME
-        # VERSION
+        # QuadPype : STUDIO_NAME
+        # WORKSTATION USERNAME
+        # QUADPYPE VERSION
         "ftrack",                  # ftrack
-        "kitsu",                   # Kitsu
         "muster",                  # Muster
         "launcher_tool",           # Launcher
         "avalon",                  # Loader
@@ -1105,16 +1152,17 @@ class TrayModulesManager(ModulesManager):
         "standalone_publisher",    # Publisher (legacy)
         "clockify",                # Clockify
         "sync_server",             # Sync Queue
-        # More Tools Submenu -----------------------------
-        "update_zxp_extensions",   # Update ZXP Extensions
-        "log_viewer",              # Show Logs
-        "python_interpreter",      # Console
-        # Admin Submenu ----------------------------------
-        "project_manager",         # Project Manager (beta)
-        # User Settings ----------------------------------
-        "user_settings",           # User Settings
-        # Services Submenu -------------------------------
+        # Submenu : More Tools  --------------------------
+            "log_viewer",          # Show Logs
+            "python_interpreter",  # Console
+        # Admin Submenu (Will be merged in the Studio Control Panel)
+            "project_manager",     # Project Manager (beta)
         "control_panel",           # Studio Control Panel
+        "user_settings",           # User Settings
+        # Submenu : Services ----------------------------
+        "kitsu",                   # Kitsu
+        "event_handler",           # Events Handler
+        "webserver"                # Web Server
     )
 
     def __init__(self):

@@ -3,7 +3,9 @@ import sys
 import json
 import traceback
 import functools
-import datetime
+
+from  datetime import datetime, timezone
+from abc import abstractmethod
 
 from qtpy import QtWidgets, QtGui, QtCore
 
@@ -44,8 +46,8 @@ class ExtractHelper:
             "Values (*.json)"
         )
         # dialog.setOption(dialog.DontUseNativeDialog)
-        dialog.setAcceptMode(dialog.AcceptSave)
-        if dialog.exec() != dialog.Accepted:
+        dialog.setAcceptMode(dialog.AcceptMode.AcceptSave)
+        if dialog.exec() != dialog.DialogCode.Accepted:
             return
 
         selected_urls = dialog.selectedUrls()
@@ -62,7 +64,7 @@ class ExtractHelper:
 
     @classmethod
     def extract_settings_to_json(cls, filepath, settings_data, project_name):
-        now = datetime.datetime.now()
+        now = datetime.now(timezone.utc)
         settings_data[SAVE_TIME_KEY] = now.strftime("%Y-%m-%d %H:%M:%S")
         if project_name != 0:
             settings_data[PROJECT_NAME_KEY] = project_name
@@ -82,6 +84,8 @@ class BaseWidget(QtWidgets.QWidget):
         self.entity = entity
         self.entity_widget = entity_widget
 
+        self.input_field = None
+
         self.ignore_input_changes = entity_widget.ignore_input_changes
 
         self._read_only = False
@@ -98,9 +102,13 @@ class BaseWidget(QtWidgets.QWidget):
         self.label_widget = None
         self.create_ui()
 
+    @abstractmethod
+    def create_ui(self):
+        raise NotImplementedError("Method create_ui need to be implemented by subclasses")
+
     @staticmethod
     def set_style_property(obj, property_name, property_value):
-        """Change QWidget property and polish it's style."""
+        """Change QWidget property and polish its style."""
         if obj.property(property_name) == property_value:
             return
 
@@ -124,14 +132,14 @@ class BaseWidget(QtWidgets.QWidget):
         self.setFocus()
 
     def make_sure_is_visible(self, path, scroll_to):
-        """Make a widget of entity visible by it's path.
+        """Make a widget of entity visible by its path.
 
         Args:
             path(str): Path to entity.
             scroll_to(bool): Should be scrolled to entity.
 
         Returns:
-            bool: Entity with path was found.
+            bool: Entity from which the path was found.
         """
         raise NotImplementedError(
             "{} not implemented `make_sure_is_visible`".format(
@@ -153,7 +161,7 @@ class BaseWidget(QtWidgets.QWidget):
     def get_style_state(
         is_invalid, is_modified, has_project_override, has_studio_override
     ):
-        """Return stylesheet state by intered booleans."""
+        """Return stylesheet state based on the input booleans."""
         if is_invalid:
             return "invalid"
         if is_modified:
@@ -232,7 +240,7 @@ class BaseWidget(QtWidgets.QWidget):
 
         def add_to_project_override():
             with self.category_widget.working_state_context():
-                self.entity.add_to_project_override
+                self.entity.add_to_project_override()
 
         action = QtWidgets.QAction("Add to project override")
         actions_mapping[action] = add_to_project_override
@@ -277,20 +285,20 @@ class BaseWidget(QtWidgets.QWidget):
             settings_data = self._get_mime_data_from_entity()
             settings_encoded_data = QtCore.QByteArray()
             settings_stream = QtCore.QDataStream(
-                settings_encoded_data, QtCore.QIODevice.WriteOnly
+                settings_encoded_data, QtCore.QIODevice.OpenModeFlag.WriteOnly
             )
             settings_stream.writeQString(json.dumps(settings_data))
             mime_data.setData(
                 "application/copy_settings_value", settings_encoded_data
             )
 
-            # Copy as json
+            # Copy as JSON
             value = settings_data[VALUE_KEY]
             json_encoded_data = None
             if isinstance(value, (dict, list)):
                 json_encoded_data = QtCore.QByteArray()
                 json_stream = QtCore.QDataStream(
-                    json_encoded_data, QtCore.QIODevice.WriteOnly
+                    json_encoded_data, QtCore.QIODevice.OpenModeFlag.WriteOnly
                 )
                 json_stream.writeQString(json.dumps(value))
 
@@ -330,7 +338,8 @@ class BaseWidget(QtWidgets.QWidget):
             (extract_action, self._extract_to_file)
         ]
 
-    def _parse_source_data_for_paste(self, data):
+    @staticmethod
+    def _parse_source_data_for_paste(data):
         settings_path = None
         root_key = None
         if isinstance(data, dict):
@@ -352,7 +361,7 @@ class BaseWidget(QtWidgets.QWidget):
         app_value = mime_data.data("application/copy_settings_value")
         if app_value:
             settings_stream = QtCore.QDataStream(
-                app_value, QtCore.QIODevice.ReadOnly
+                app_value, QtCore.QIODevice.OpenModeFlag.ReadOnly
             )
             mime_data_value_str = settings_stream.readQString()
             return json.loads(mime_data_value_str)
@@ -363,7 +372,7 @@ class BaseWidget(QtWidgets.QWidget):
                 try:
                     with open(local_file, "r") as stream:
                         value = json.load(stream)
-                except Exception:
+                except Exception:  # noqa
                     continue
                 if value:
                     return self._parse_source_data_for_paste(value)
@@ -372,10 +381,10 @@ class BaseWidget(QtWidgets.QWidget):
             text = mime_data.text()
             try:
                 value = json.loads(text)
-            except Exception:
+            except Exception:  # noqa
                 try:
                     value = self.entity.convert_to_valid_type(text)
-                except Exception:
+                except Exception:  # noqa
                     return None
             return self._parse_source_data_for_paste(value)
 
@@ -391,24 +400,24 @@ class BaseWidget(QtWidgets.QWidget):
         path = mime_data_value[SETTINGS_PATH_KEY]
         root_key = mime_data_value[ROOT_KEY]
 
-        # Try to find matching entity to be able paste values to same spot
-        # - entity can't by dynamic or in dynamic item
-        # - must be in same root entity as source copy
+        # Try to find matching entity to be able to paste values to the same spot
+        # - entity can't be dynamic or in dynamic item
+        # - must be in the same root entity as source copy
         #       Can't copy global settings <-> project settings
         matching_entity = None
         if path and root_key == self.entity.root_key:
             try:
                 matching_entity = self.entity.get_entity_from_path(path)
-            except Exception:
+            except Exception:  # noqa
                 pass
 
         def _set_entity_value(_entity, _value):
             try:
                 _entity.set(_value)
-            except Exception:
+            except Exception:  # noqa
                 dialog = QtWidgets.QMessageBox(self)
                 dialog.setWindowTitle("Value does not match settings schema")
-                dialog.setIcon(QtWidgets.QMessageBox.Warning)
+                dialog.setIcon(QtWidgets.QMessageBox.Icon.Warning)
                 dialog.setText((
                     "Pasted value does not seem to match schema of destination"
                     " settings entity."
@@ -478,7 +487,7 @@ class BaseWidget(QtWidgets.QWidget):
                     entity = entity[key]
                 self.entity.set(entity.value)
 
-            except Exception:
+            except Exception:  # noqa
                 if project_name is None:
                     project_name = DEFAULT_PROJECT_LABEL
 
@@ -492,7 +501,7 @@ class BaseWidget(QtWidgets.QWidget):
                 )
                 dialog = QtWidgets.QMessageBox(self)
                 dialog.setWindowTitle(title)
-                dialog.setIcon(QtWidgets.QMessageBox.Warning)
+                dialog.setIcon(QtWidgets.QMessageBox.Icon.Warning)
                 dialog.setText(msg)
                 dialog.setDetailedText(detail_msg)
                 dialog.exec_()
@@ -501,7 +510,7 @@ class BaseWidget(QtWidgets.QWidget):
         if self._read_only:
             return
 
-        if event and event.button() != QtCore.Qt.RightButton:
+        if event and event.button() != QtCore.Qt.MouseButton.RightButton:
             return
 
         if not self.allow_actions:
@@ -554,11 +563,11 @@ class BaseWidget(QtWidgets.QWidget):
             self.set_path(self.entity.path)
 
     def mouseReleaseEvent(self, event):
-        if self.allow_actions and event.button() == QtCore.Qt.RightButton:
+        if self.allow_actions and event.button() == QtCore.Qt.MouseButton.RightButton:
             return self.show_actions_menu()
 
         focused_in = False
-        if event.button() == QtCore.Qt.LeftButton:
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
             focused_in = True
             self.focused_in()
 
@@ -585,7 +594,7 @@ class InputWidget(BaseWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Input widgets have always timer available (but may not be used).
+        # Input widgets always have timer available (but may not be used).
         self._value_change_timer = create_deffered_value_change_timer(
             self._on_value_change_timer
         )
@@ -635,7 +644,8 @@ class InputWidget(BaseWidget):
         self.content_widget = content_widget
         self.content_layout = content_layout
 
-    def _create_layout(self, parent_widget):
+    @staticmethod
+    def _create_layout(parent_widget):
         layout = QtWidgets.QHBoxLayout(parent_widget)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(5)
@@ -671,8 +681,10 @@ class InputWidget(BaseWidget):
 
         self._style_state = style_state
 
-        self.input_field.setProperty("input-state", style_state)
-        self.input_field.style().polish(self.input_field)
+        if self.input_field:
+            self.input_field.setProperty("input-state", style_state)
+            self.input_field.style().polish(self.input_field)
+
         if self.label_widget:
             self.label_widget.setProperty("state", style_state)
             self.label_widget.style().polish(self.label_widget)
@@ -725,7 +737,7 @@ class GUIWidget(BaseWidget):
         word_wrap = self.entity.schema_data.get("word_wrap", False)
         label_widget = QtWidgets.QLabel(label, self)
         label_widget.setWordWrap(word_wrap)
-        label_widget.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
+        label_widget.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextBrowserInteraction)
         label_widget.setObjectName("SettingsLabel")
         label_widget.linkActivated.connect(self._on_link_activate)
 

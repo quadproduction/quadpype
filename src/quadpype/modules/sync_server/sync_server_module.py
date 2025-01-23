@@ -1,10 +1,11 @@
 import os
 import sys
 import time
-from datetime import datetime
 import threading
 import copy
 import signal
+
+from datetime import datetime, timezone
 from collections import deque, defaultdict
 
 from bson.objectid import ObjectId
@@ -303,7 +304,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         [
             {
                 'name': '42abbc09-d62a-44a4-815c-a12cd679d2d7',
-                'created_dt': datetime.datetime(2022, 3, 30, 12, 16, 9, 778637)
+                'created_dt': datetime(2022, 3, 30, 12, 16, 9, 778637)
             },
             {'name': 'studio'},
             {'name': 'SFTP'}
@@ -316,7 +317,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             """Create sync site metadata for site with `name`"""
             metadata = {"name": name}
             if created:
-                metadata["created_dt"] = datetime.now()
+                metadata["created_dt"] = datetime.now(timezone.utc)
             return metadata
 
         if (
@@ -528,7 +529,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                                                            repre_id))
 
                         created_dt = datetime.fromtimestamp(
-                            os.path.getmtime(local_file_path))
+                            os.path.getmtime(local_file_path), tz=timezone.utc)
                         elem = {"name": site_name,
                                 "created_dt": created_dt}
                         self._add_site(project_name, repre, elem,
@@ -1275,7 +1276,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
         for alt_site in alternate_sites:
             elem = {"name": alt_site,
-                    "created_dt": datetime.now(),
+                    "created_dt": datetime.now(timezone.utc),
                     "id": synced_file_id}
 
             self.log.debug("Adding alternate {} to {}".format(
@@ -2308,7 +2309,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             (dictionary)
         """
         val = {"files.$[f].sites.$[s].id": new_file_id,
-               "files.$[f].sites.$[s].created_dt": datetime.now()}
+               "files.$[f].sites.$[s].created_dt": datetime.now(timezone.utc)}
         return val
 
     def _get_error_dict(self, error="", tries="", progress=""):
@@ -2321,7 +2322,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Returns:
             (dictionary)
         """
-        val = {"files.$[f].sites.$[s].last_failed_dt": datetime.now(),
+        val = {"files.$[f].sites.$[s].last_failed_dt": datetime.now(timezone.utc),
                "files.$[f].sites.$[s].error": error,
                "files.$[f].sites.$[s].tries": tries,
                "files.$[f].sites.$[s].progress": progress

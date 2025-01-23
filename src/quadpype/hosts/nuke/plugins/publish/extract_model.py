@@ -50,6 +50,8 @@ class ExtractModel(publish.Extractor):
                 "Bad config for extension in presets. "
                 "Talk to your supervisor or pipeline admin")
 
+        extension = extension.lower()
+
         # create file name and path
         filename = subset + ".{}".format(extension)
         file_path = os.path.join(staging_dir, filename).replace("\\", "/")

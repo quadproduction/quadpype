@@ -16,7 +16,7 @@ from .version import (
     PackageVersion,
     get_package
 )
-from igniter.settings import (
+from quadpype.settings.lib import (
     get_expected_studio_version_str
 )
 
@@ -147,7 +147,7 @@ def get_remote_versions():
 
 
 def get_latest_version(from_local=None, from_remote=None):
-    """Get latest version from repository path."""
+    """Get the latest version from the repository path."""
     return get_package("quadpype").get_latest_version(from_local=from_local,from_remote=from_remote)
 
 
@@ -155,7 +155,7 @@ def get_expected_version(staging=None):
     expected_version_str = get_expected_studio_version_str(staging)
     expected_version = PackageVersion(version=expected_version_str) if expected_version_str else None
     if expected_version is None:
-        # Look for latest if expected version is not set in settings
+        # Look for the latest if the expected version is not set in settings
         expected_version = get_latest_version(
             from_local=False,
             from_remote=True
