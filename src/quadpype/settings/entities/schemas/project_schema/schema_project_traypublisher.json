@@ -92,6 +92,12 @@
                         "default": false
                     },
                     {
+                        "type": "boolean",
+                        "key": "allow_reviews",
+                        "label": "Allow Reviews",
+                        "default": true
+                    },
+                    {
                         "type": "list",
                         "key": "extensions",
                         "label": "Extensions",

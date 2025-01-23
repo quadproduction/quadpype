@@ -132,7 +132,7 @@ class AttributeDefinitionsWidget(QtWidgets.QWidget):
             widget = create_widget_for_attr_def(attr_def, self)
             self._widgets.append(widget)
 
-            if attr_def.visible:
+            if not attr_def.visible:
                 continue
 
             expand_cols = 2
@@ -631,6 +631,7 @@ class FileAttrWidget(_BaseAttrDefWidget):
             self.attr_def.single_item,
             self.attr_def.allow_sequences,
             self.attr_def.extensions_label,
+            self.attr_def.allow_reviews,
             self
         )
 

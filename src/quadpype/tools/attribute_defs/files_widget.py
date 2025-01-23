@@ -175,13 +175,14 @@ class ButtonStandardItem(QtGui.QStandardItemModel):
 
 
 class FilesModel(QtGui.QStandardItemModel):
-    def __init__(self, single_item, allow_sequences):
+    def __init__(self, single_item, allow_sequences, allow_reviews):
         super().__init__()
 
         self._id = str(uuid.uuid4())
         self._single_item = single_item
         self._multivalue = False
         self._allow_sequences = allow_sequences
+        self._allow_reviews = allow_reviews
 
         self._items_by_id = {}
         self._file_items_by_id = {}
@@ -264,12 +265,10 @@ class FilesModel(QtGui.QStandardItemModel):
             self._items_by_id[item_id] = model_item
 
         if new_model_items:
-            if parent_item_index is None or not parent_item_index.isValid():
+            if parent_item_index is None or not parent_item_index.isValid() or not self._allow_reviews:
                 parent_item = self.invisibleRootItem()
             else:
                 parent_item = self.itemFromIndex(parent_item_index)
-                if parent_item is None:
-                    parent_item = self.invisibleRootItem()
 
             # Ensure the first item is the parent, and others are children
             for idx, items in enumerate(new_model_items):
@@ -343,7 +342,7 @@ class FilesModel(QtGui.QStandardItemModel):
             return False
 
         # Find the target parent item
-        if parent_index.isValid():
+        if parent_index.isValid() and self._allow_reviews:
             target_item = self.itemFromIndex(parent_index)
         else:
             target_item = self.invisibleRootItem()
@@ -410,6 +409,8 @@ class FilesProxyModel(QtCore.QSortFilterProxyModel):
     def set_allowed_extensions(self, extensions=None):
         if extensions is not None:
             _extensions = set()
+            if self.sourceModel()._allow_reviews:
+                extensions = extensions.union(IMAGE_EXTS).union(VIDEO_EXTS)
             for ext in set(extensions):
                 if not ext.startswith("."):
                     ext = ".{}".format(ext)
@@ -487,7 +488,7 @@ class ItemWidget(QtWidgets.QWidget):
         super().__init__(parent)
         self.setAcceptDrops(True)
         self._item_id = item_id
-
+        self._allow_reviews = model_index.model().sourceModel()._allow_reviews
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
         label_widget = QtWidgets.QLabel(label, self)
@@ -501,7 +502,8 @@ class ItemWidget(QtWidgets.QWidget):
 
         review_btn = ClickableLabel(self)
         review_btn.setFixedSize(height, height)
-        review_btn.setPixmap(self._review_disabled_pix)
+        if self._allow_reviews:
+            review_btn.setPixmap(self._review_disabled_pix)
 
         delete_btn = ClickableLabel(self)
         delete_btn.setFixedSize(height, height)
@@ -518,18 +520,19 @@ class ItemWidget(QtWidgets.QWidget):
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
         layout.addWidget(label_widget, 1)
-        layout.addWidget(review_btn, 0)
+        if self._allow_reviews:
+            layout.addWidget(review_btn, 0)
+            review_btn.clicked.connect(self._on_review_actions_clicked)
         layout.addWidget(delete_btn, 0)
         layout.addWidget(split_btn, 0)
 
-        review_btn.clicked.connect(self._on_review_actions_clicked)
         delete_btn.clicked.connect(self._on_delete_actions_clicked)
         split_btn.clicked.connect(self._on_split_actions_clicked)
 
-        self._item = model_index
+        self._item = QtCore.QPersistentModelIndex(model_index)
         self._label_widget = label_widget
         self._split_btn = split_btn
-        self._review_btn = review_btn
+        self._review_btn = review_btn or None
         self._delete_btn = delete_btn
         self._actions_menu_pix = actions_menu_pix
         self._last_scaled_pix_height = None
@@ -543,17 +546,21 @@ class ItemWidget(QtWidgets.QWidget):
         parent_is_valid = self._item.parent().isValid()
         has_children = self._item.model().hasChildren(self._item)
         source_model = self._item.model().sourceModel()
+        file_item = source_model.get_file_item_by_id(self._item_id)
 
         if parent_is_valid:
-            self._review_btn.setVisible(False)
-            source_model.get_file_item_by_id(self._item_id).set_representation(False)
-        else:
-            if not has_children:
-                self._review_btn.setVisible(True)
-                source_model.get_file_item_by_id(self._item_id).set_representation(True)
-            else:
+            if self._allow_reviews:
                 self._review_btn.setVisible(False)
-                source_model.get_file_item_by_id(self._item_id).set_representation(True)
+            file_item.set_representation(False)
+            return
+
+        if not has_children:
+            if self._allow_reviews:
+                self._review_btn.setVisible(True)
+        else:
+            if self._allow_reviews:
+                self._review_btn.setVisible(False)
+        file_item.set_representation(True)
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -692,7 +699,7 @@ class FilesView(QtWidgets.QTreeView):
 class FilesWidget(QtWidgets.QFrame):
     value_changed = QtCore.Signal()
 
-    def __init__(self, single_item, allow_sequences, extensions_label, parent):
+    def __init__(self, single_item, allow_sequences, extensions_label, allow_reviews, parent):
         super().__init__(parent)
         self.setAcceptDrops(True)
 
@@ -700,7 +707,7 @@ class FilesWidget(QtWidgets.QFrame):
             single_item, allow_sequences, extensions_label, self
         )
 
-        files_model = FilesModel(single_item, allow_sequences)
+        files_model = FilesModel(single_item, allow_sequences, allow_reviews)
         files_proxy_model = FilesProxyModel()
         files_proxy_model.setSourceModel(files_model)
         files_view = FilesView(self)
@@ -732,9 +739,10 @@ class FilesWidget(QtWidgets.QFrame):
         allowed_files_representation_layout.addWidget(self.allowed_representations_label, 1)
         main_layout.addLayout(allowed_files_representation_layout)
 
-        allowed_files_review_layout.addWidget(review_label)
-        allowed_files_review_layout.addWidget(self.allowed_reviews_label, 1)
-        main_layout.addLayout(allowed_files_review_layout)
+        if allow_reviews:
+            allowed_files_review_layout.addWidget(review_label)
+            allowed_files_review_layout.addWidget(self.allowed_reviews_label, 1)
+            main_layout.addLayout(allowed_files_review_layout)
 
         color_legend_label = QtWidgets.QLabel()
         color_legend_label.setPixmap(self._create_legend_pixmap())
@@ -921,6 +929,7 @@ class FilesWidget(QtWidgets.QFrame):
             new_items = file_item.split_sequence()
             self._add_filepaths(new_items)
         self._remove_item_by_ids(item_ids)
+        self._update_visibility()
 
     def _on_remove_requested(self):
         if self._multivalue:

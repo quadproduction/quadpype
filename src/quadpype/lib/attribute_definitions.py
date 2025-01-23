@@ -843,7 +843,6 @@ class FileDefItem(object):
         def process_item(item):
             if isinstance(item, dict):
                 file_item = cls.from_dict(item)
-                # TODO: Make the TrayPublisherPlugin able to manage multiple review ?
                 reviewables = item.get("reviewable", [])
                 if isinstance(reviewables, dict):
                     reviewables = [reviewables]
@@ -958,6 +957,7 @@ class FileDef(AbstractAttrDef):
         "extensions",
         "allow_sequences",
         "extensions_label",
+        "allow_reviews"
     ]
 
     def __init__(
@@ -968,6 +968,7 @@ class FileDef(AbstractAttrDef):
         extensions: Optional[Iterable[str]] = None,
         allow_sequences: Optional[bool] = True,
         extensions_label: Optional[str] = None,
+        allow_reviews: Optional[bool] = True,
         default: Optional[Union[FileDefItemDict, List[str]]] = None,
         **kwargs
     ):
@@ -1010,6 +1011,7 @@ class FileDef(AbstractAttrDef):
         self.extensions: Set[str] = set(extensions)
         self.allow_sequences: bool = allow_sequences
         self.extensions_label: Optional[str] = extensions_label
+        self.allow_reviews: bool = allow_reviews
         super().__init__(key, default=default, **kwargs)
 
     def __eq__(self, other):
@@ -1021,6 +1023,7 @@ class FileDef(AbstractAttrDef):
             and self.folders == other.folders
             and self.extensions == other.extensions
             and self.allow_sequences == other.allow_sequences
+            and self.allow_reviews == other.allow_reviews
         )
 
     def is_value_valid(self, value: Any) -> bool:
