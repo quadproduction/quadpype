@@ -569,12 +569,16 @@ class ItemWidget(QtWidgets.QWidget):
 
         parent_is_valid = self._item.parent().isValid() if self._item else False
         has_children = self._item.model().hasChildren(self._item) if self._item else False
+        is_review = self._item.model().sourceModel().get_file_item_by_id(self._item_id).is_review
+        is_representation = self._item.model().sourceModel().get_file_item_by_id(self._item_id).is_representation
 
-        if parent_is_valid:
-            color = QtGui.QColor(YELLOW_BG)
-        elif not has_children and not self._item.model().sourceModel().get_file_item_by_id(self._item_id).is_review:
+        if is_representation:
             color = QtGui.QColor(PURPLE_BG)
-        else:
+
+        if parent_is_valid and is_review:
+            color = QtGui.QColor(YELLOW_BG)
+
+        if is_representation and is_review and not has_children:
             color = QtGui.QColor(ORANGE_BG)
 
         # Paint the background
@@ -785,7 +789,7 @@ class FilesWidget(QtWidgets.QFrame):
 
     @staticmethod
     def _create_legend_pixmap():
-        width, height = 200, 100
+        width, height = 300, 100
 
         pixmap = QtGui.QPixmap(width, height)
         pixmap.fill(QtCore.Qt.transparent)
@@ -793,7 +797,7 @@ class FilesWidget(QtWidgets.QFrame):
 
         items = [
             (PURPLE_BG, "Representation elements"),
-            (ORANGE_BG, "Representation & Review elements"),
+            (ORANGE_BG, "Representation with attached review(s)"),
             (YELLOW_BG, "Review elements"),
         ]
 
