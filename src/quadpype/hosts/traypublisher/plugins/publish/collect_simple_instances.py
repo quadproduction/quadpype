@@ -172,7 +172,16 @@ class CollectSettingsSimpleInstances(pyblish.api.InstancePlugin):
             return
 
         creator_attributes = instance.data["creator_attributes"]
-        review_items = creator_attributes["representation_files"].get("reviewable", [])
+        representation_files = creator_attributes["representation_files"]
+
+        if isinstance(representation_files, dict):
+            review_items = representation_files.get("reviewable", [])
+        elif isinstance(representation_files, list):
+            review_items = []
+            for representation in representation_files:
+                review_items.extend(representation.get("reviewable", []))
+        else:
+            review_items = []
 
         if not review_items or not isinstance(review_items, list):
             self.log.debug((
