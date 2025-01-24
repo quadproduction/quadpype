@@ -30,6 +30,7 @@ from quadpype.pipeline.publish import (
     get_publish_instance_label,
 )
 from quadpype.pipeline.publish.lib import add_repre_files_for_cleanup
+from pathlib import Path
 
 
 class ExtractReview(pyblish.api.InstancePlugin):
@@ -546,14 +547,11 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
         if repre["files"]:
 
-            # get the extension depending on the repre["files"] type
-            # if list
+            first_file_path = repre["files"]  # Directly the file path if it's a single element
             if isinstance(repre["files"], list):
-                ext = os.path.splitext(repre["files"][0])[1].replace(".", "")
-            # if string (only one single file)
-            else:
-                ext = os.path.splitext(repre["files"])[1].replace(".", "")
+                first_file_path = first_file_path[0]
 
+            ext = Path(first_file_path).suffix.removeprefix(".")
             if ext.lower() in self.alpha_exts:
                 input_allow_bg = True
 
