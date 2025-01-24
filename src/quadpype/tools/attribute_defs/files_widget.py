@@ -745,6 +745,11 @@ class FilesWidget(QtWidgets.QFrame):
         files_proxy_model.rowsRemoved.connect(self._on_rows_removed)
         files_view.remove_requested.connect(self._on_remove_requested)
         files_view.context_menu_requested.connect(self._on_context_menu_requested)
+
+        instruction_label = QtWidgets.QLabel("<i>Drag & drop to add or re-organize elements</i>")
+        instruction_label.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        main_layout.addWidget(instruction_label, alignment=QtGui.Qt.AlignCenter)
+
         representations_label = QtWidgets.QLabel(f"Allowed File type for representations:")
         representations_label.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         self.allowed_representations_label = QtWidgets.QLabel()
@@ -797,7 +802,7 @@ class FilesWidget(QtWidgets.QFrame):
 
         items = [
             (PURPLE_BG, "Representation elements"),
-            (ORANGE_BG, "Representation with attached review(s)"),
+            (ORANGE_BG, "Representation & review (same file) elements"),
             (YELLOW_BG, "Review elements"),
         ]
 
