@@ -137,11 +137,6 @@ class BatchMovieCreator(TrayPublishCreator):
                 extensions=self.extensions,
                 allow_sequences=False,
                 label="Filepath"
-            ),
-            BoolDef(
-                "add_review_family",
-                default=True,
-                label="Review"
             )
         ]
 
