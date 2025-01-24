@@ -561,6 +561,7 @@ class ItemWidget(QtWidgets.QWidget):
         else:
             if self._allow_reviews:
                 self._review_btn.setVisible(False)
+            file_item.set_review(False)
         file_item.set_representation(True)
 
     def paintEvent(self, event):
