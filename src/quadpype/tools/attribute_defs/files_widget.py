@@ -483,6 +483,7 @@ class FilesProxyModel(QtCore.QSortFilterProxyModel):
 class ItemWidget(QtWidgets.QWidget):
     context_menu_requested = QtCore.Signal(QtCore.QPoint)
     delete_requested = QtCore.Signal(list)
+    review_value_changed = QtCore.Signal()
 
     def __init__(self, item_id, label, is_sequence, multivalue, model_index, parent=None):
         super().__init__(parent)
@@ -536,7 +537,7 @@ class ItemWidget(QtWidgets.QWidget):
         self._delete_btn = delete_btn
         self._actions_menu_pix = actions_menu_pix
         self._last_scaled_pix_height = None
-        self._is_review_enabled = True
+        self._review_state = True
         self._is_representation_enabled = True
 
         self.update_visibility()
@@ -598,11 +599,13 @@ class ItemWidget(QtWidgets.QWidget):
         source_model = self._item.model().sourceModel()
         source_model.get_file_item_by_id(self._item_id).set_review(True)
         self._review_btn.setPixmap(self._review_pix)
+        self._review_state = False
 
     def desactivate_review_btn(self):
         source_model = self._item.model().sourceModel()
         source_model.get_file_item_by_id(self._item_id).set_review(False)
         self._review_btn.setPixmap(self._review_disabled_pix)
+        self._review_state = True
 
     def showEvent(self, event):
         super(ItemWidget, self).showEvent(event)
@@ -618,12 +621,12 @@ class ItemWidget(QtWidgets.QWidget):
         self.context_menu_requested.emit(point)
 
     def _on_review_actions_clicked(self):
-        self._is_review_enabled = not self._is_review_enabled
-        if self._is_review_enabled:
+        if self._review_state:
             self.activate_review_btn()
         else:
             self.desactivate_review_btn()
         self.update()
+        self.review_value_changed.emit()
 
     def _on_delete_actions_clicked(self):
         self.delete_requested.emit([self._item_id])
@@ -891,9 +894,12 @@ class FilesWidget(QtWidgets.QFrame):
                 self._multivalue,
                 index
             )
+            widget.review_value_changed.connect(self.value_changed.emit)
             file_item = self._files_model.get_file_item_by_id(item_id)
             if file_item.is_review:
                 widget.activate_review_btn()
+            else:
+                widget.desactivate_review_btn()
             widget.context_menu_requested.connect(
                 self._on_context_menu_requested
             )

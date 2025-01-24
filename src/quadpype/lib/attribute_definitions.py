@@ -296,6 +296,7 @@ class UnknownDef(AbstractAttrDef):
     def __init__(self, key, default=None, **kwargs):
         kwargs["default"] = default
         super().__init__(key, **kwargs)
+        self.visible = False
 
     def is_value_valid(self, value: Any) -> bool:
         return True
