@@ -42,9 +42,9 @@ eval "$(pyenv virtualenv-init -)"
 unset VIRTUAL_ENV
 
 # 1.D Install the right Python version for the pipeline to run
-pyenv install 3.9.16
-pyenv global 3.9.16
-pyenv local 3.9.16
+pyenv install 3.9.19
+pyenv global 3.9.13
+pyenv local 3.9.13
 
 # 1.E Update PIP for the pyenv Python
 python3 -m pip install --upgrade --force-reinstall pip
