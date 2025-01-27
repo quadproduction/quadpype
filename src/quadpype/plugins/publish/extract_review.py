@@ -4,6 +4,7 @@ import copy
 import json
 import shutil
 import subprocess
+from pathlib import Path
 from abc import ABC, abstractmethod
 
 import clique
@@ -30,7 +31,6 @@ from quadpype.pipeline.publish import (
     get_publish_instance_label,
 )
 from quadpype.pipeline.publish.lib import add_repre_files_for_cleanup
-from pathlib import Path
 
 
 class ExtractReview(pyblish.api.InstancePlugin):
