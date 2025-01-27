@@ -92,11 +92,6 @@ class OnlineCreator(TrayPublishCreator):
                 allow_sequences=True,
                 single_item=True,
                 label="Representation",
-            ),
-            BoolDef(
-                "add_review_family",
-                default=True,
-                label="Review"
             )
         ]
 

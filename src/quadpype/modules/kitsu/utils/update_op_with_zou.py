@@ -1,7 +1,7 @@
 """Functions to update QuadPype data using Kitsu DB (a.k.a Zou)."""
 from copy import deepcopy
 import re
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from pymongo import DeleteOne, UpdateOne
 import gazu
@@ -73,7 +73,7 @@ def update_op_assets(
     project_doc: dict,
     entities_list: List[dict],
     asset_doc_ids: Dict[str, dict],
-) -> List[Dict[str, dict]]:
+) -> List[Tuple[str, dict]]:
     """Update QuadPype assets.
     Set 'data' and 'parent' fields.
 
@@ -85,14 +85,14 @@ def update_op_assets(
         asset_doc_ids (Dict[str, dict]): Dicts of [{zou_id: asset_doc}, ...]
 
     Returns:
-        List[Dict[str, dict]]: List of (doc_id, update_dict) tuples
+        List[Tuple[str, dict]]: List of (doc_id, update_dict) tuples
     """
+    assets_with_update = []
     if not project_doc:
-        return
+        return assets_with_update
 
     project_name = project_doc["name"]
 
-    assets_with_update = []
     for item in entities_list:
         # Check asset exists
         item_doc = asset_doc_ids.get(item["id"])
@@ -225,6 +225,8 @@ def update_op_assets(
             entity_root_asset_name = "Assets"
         elif item_type in ["Episode", "Sequence", "Shot"]:
             entity_root_asset_name = "Shots"
+        else:
+            raise ValueError(f"Unknown entity type {item_type}")
 
         # Root parent folder if exist
         visual_parent_doc_id = None
@@ -299,13 +301,12 @@ def update_op_assets(
     return assets_with_update
 
 
-def write_project_to_op(project: dict, dbcon: AvalonMongoDB) -> UpdateOne:
+def write_project_to_op(project: dict) -> UpdateOne:
     """Write gazu project to QuadPype database.
     Create project if doesn't exist.
 
     Args:
         project (dict): Gazu project
-        dbcon (AvalonMongoDB): DB to create project in
 
     Returns:
         UpdateOne: Update instance for the project
@@ -365,21 +366,19 @@ def write_project_to_op(project: dict, dbcon: AvalonMongoDB) -> UpdateOne:
 def sync_all_projects(
     login: str,
     password: str,
-    ignore_projects: list = None,
-    filter_projects: tuple = None,
+    ignore_projects: set = None,
+    include_projects: set = None,
 ):
     """Update all QuadPype projects in DB with Zou data.
 
     Args:
         login (str): Kitsu user login
         password (str): Kitsu user password
-        ignore_projects (list): List of unsynced project names
-        filter_projects (tuple): Tuple of filter project names to sync with
+        ignore_projects (list): List of project names to ignore (not sync)
+        include_projects (list): List of project names to sync (only sync them)
     Raises:
         gazu.exception.AuthFailedException: Wrong user login and/or password
     """
-    # Set default to an empty list to reduce the number of checks
-    ignore_projects = []
 
     # Authenticate
     if not validate_credentials(login, password):
@@ -395,18 +394,22 @@ def sync_all_projects(
     project_to_sync = []
     all_kitsu_projects = {p["name"]: p for p in all_projects}
 
-    if filter_projects:
-        for proj_name in filter_projects:
-            if proj_name in all_kitsu_projects:
-                project_to_sync.append(all_kitsu_projects[proj_name])
-            else:
-                log.info(
-                    f"`{proj_name}` project does not exist in Kitsu."
-                    f" Please make sure the project is spelled correctly."
-                )
+    if not include_projects:
+        include_projects = set(all_kitsu_projects.keys())
     else:
-        # all project
-        project_to_sync = all_projects
+        include_projects = set(include_projects)
+
+    if ignore_projects:
+        include_projects -= set(ignore_projects)
+
+    for proj_name in include_projects:
+        if proj_name in all_kitsu_projects:
+            project_to_sync.append(all_kitsu_projects[proj_name])
+        else:
+            log.info(
+                f"`{proj_name}` project does not exist in Kitsu."
+                f" Please make sure the project is spelled correctly."
+            )
 
     # Iterate over MongoDB projects and if it's not present in Kitsu project, deactivate it on MongoDB
     for project in dbcon.projects():
@@ -416,8 +419,6 @@ def sync_all_projects(
         update_project_state_in_db(dbcon, project, active=False)
 
     for project in project_to_sync:
-        if project["name"] in ignore_projects:
-            continue
         sync_project_from_kitsu(dbcon, project)
 
 
@@ -506,7 +507,7 @@ def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict):
     if not project_dict:
         log.info("Project created: {}".format(project_name))
 
-    bulk_writes.append(write_project_to_op(project, dbcon))
+    bulk_writes.append(write_project_to_op(project))
 
     if not project_dict:
         # Try to find the newly created project document on QuadPype DB
@@ -565,8 +566,8 @@ def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict):
     # Update
     bulk_writes.extend(
         [
-            UpdateOne({"_id": id}, update)
-            for id, update in update_op_assets(
+            UpdateOne({"_id": _id}, update)
+            for (_id, update) in update_op_assets(
                 dbcon,
                 project,
                 project_dict,

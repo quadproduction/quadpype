@@ -48,6 +48,9 @@ class FileDefItemDict(TypedDict):
     frames: Optional[List[int]]
     template: Optional[str]
     is_sequence: Optional[bool]
+    is_representation: Optional[bool]
+    is_review: Optional[bool]
+
 
 
 class AbstractAttrDefMeta(ABCMeta):
@@ -293,6 +296,7 @@ class UnknownDef(AbstractAttrDef):
     def __init__(self, key, default=None, **kwargs):
         kwargs["default"] = default
         super().__init__(key, **kwargs)
+        self.visible = False
 
     def is_value_valid(self, value: Any) -> bool:
         return True
@@ -672,6 +676,8 @@ class FileDefItem(object):
         filenames: List[str],
         frames: Optional[List[int]] = None,
         template: Optional[str] = None,
+        is_representation: bool = False,
+        is_review: bool = True,
     ):
         self.directory: str = directory
 
@@ -680,6 +686,8 @@ class FileDefItem(object):
         self.template = None
         self.frames = []
         self.is_empty = True
+        self.is_representation = is_representation
+        self.is_review = is_review
 
         self.set_filenames(filenames, frames, template)
 
@@ -803,15 +811,21 @@ class FileDefItem(object):
         self.frames = frames
         self.is_sequence = is_sequence
 
+    def set_representation(self, is_representation=False):
+        self.is_representation = is_representation
+
+    def set_review(self, is_review=False):
+        self.is_review = is_review
+
     @classmethod
     def create_empty_item(cls):
         return cls("", [])
 
     @classmethod
     def from_value(
-        cls,
-        value: Union[List[FileDefItemDict], FileDefItemDict],
-        allow_sequences: bool
+            cls,
+            value: Union[List[FileDefItemDict], FileDefItemDict],
+            allow_sequences: bool
     ) -> List:
         """Convert passed value to FileDefItem objects.
 
@@ -825,24 +839,40 @@ class FileDefItem(object):
 
         output = []
         str_filepaths = []
-        for item in value:
+
+        # Recursive function to process reviewable items
+        def process_item(item):
             if isinstance(item, dict):
-                item = cls.from_dict(item)
-
-            if isinstance(item, FileDefItem):
-                if not allow_sequences and item.is_sequence:
-                    output.extend(item.split_sequence())
-                else:
-                    output.append(item)
-
+                file_item = cls.from_dict(item)
+                if item.get("is_representation") and item.get("is_review"):
+                    output.append(file_item)
+                    return
+                reviewables = item.get("reviewable", [])
+                if isinstance(reviewables, dict):
+                    reviewables = [reviewables]
+            elif isinstance(item, FileDefItem):
+                file_item = item
+                reviewables = getattr(item, "reviewable", [])
             elif isinstance(item, str):
                 str_filepaths.append(item)
+                return
             else:
                 raise TypeError(
-                    "Unknown type \"{}\". Can't convert to {}".format(
-                        str(type(item)), cls.__name__
-                    )
+                    f"Unknown type \"{type(item).__name__}\". Can't convert to {cls.__name__}"
                 )
+
+            # Process the FileDefItem
+            if not allow_sequences and file_item.is_sequence:
+                output.extend(file_item.split_sequence())
+            else:
+                output.append(file_item)
+
+            # Process reviewables
+            for review_item in reviewables:
+                process_item(review_item)
+
+        for item in value:
+            process_item(item)
 
         if str_filepaths:
             output.extend(cls.from_paths(str_filepaths, allow_sequences))
@@ -855,7 +885,9 @@ class FileDefItem(object):
             data["directory"],
             data["filenames"],
             data.get("frames"),
-            data.get("template")
+            data.get("template"),
+            data.get("is_representation"),
+            data.get("is_review")
         )
 
     @classmethod
@@ -897,6 +929,8 @@ class FileDefItem(object):
             "is_sequence": self.is_sequence,
             "directory": self.directory,
             "filenames": list(self.filenames),
+            "is_representation": self.is_representation,
+            "is_review": self.is_review,
         }
         if self.is_sequence:
             output.update({
@@ -927,6 +961,7 @@ class FileDef(AbstractAttrDef):
         "extensions",
         "allow_sequences",
         "extensions_label",
+        "allow_reviews"
     ]
 
     def __init__(
@@ -937,6 +972,7 @@ class FileDef(AbstractAttrDef):
         extensions: Optional[Iterable[str]] = None,
         allow_sequences: Optional[bool] = True,
         extensions_label: Optional[str] = None,
+        allow_reviews: Optional[bool] = True,
         default: Optional[Union[FileDefItemDict, List[str]]] = None,
         **kwargs
     ):
@@ -979,6 +1015,7 @@ class FileDef(AbstractAttrDef):
         self.extensions: Set[str] = set(extensions)
         self.allow_sequences: bool = allow_sequences
         self.extensions_label: Optional[str] = extensions_label
+        self.allow_reviews: bool = allow_reviews
         super().__init__(key, default=default, **kwargs)
 
     def __eq__(self, other):
@@ -990,6 +1027,7 @@ class FileDef(AbstractAttrDef):
             and self.folders == other.folders
             and self.extensions == other.extensions
             and self.allow_sequences == other.allow_sequences
+            and self.allow_reviews == other.allow_reviews
         )
 
     def is_value_valid(self, value: Any) -> bool:

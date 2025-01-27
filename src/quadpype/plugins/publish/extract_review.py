@@ -4,6 +4,7 @@ import copy
 import json
 import shutil
 import subprocess
+from pathlib import Path
 from abc import ABC, abstractmethod
 
 import clique
@@ -30,6 +31,9 @@ from quadpype.pipeline.publish import (
     get_publish_instance_label,
 )
 from quadpype.pipeline.publish.lib import add_repre_files_for_cleanup
+
+IMAGE_EXTS = ["exr", "jpg", "jpeg", "png", "dpx", "tga"]
+VIDEO_EXTS = ["mov", "mp4"]
 
 
 class ExtractReview(pyblish.api.InstancePlugin):
@@ -67,9 +71,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
     ]
 
     # Supported extensions
-    image_exts = ["exr", "jpg", "jpeg", "png", "dpx", "tga"]
-    video_exts = ["mov", "mp4"]
-    supported_exts = image_exts + video_exts
+    supported_exts = IMAGE_EXTS + VIDEO_EXTS
 
     alpha_exts = ["exr", "png", "dpx"]
 
@@ -543,24 +545,31 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
         input_allow_bg = False
         first_sequence_frame = None
-        if input_is_sequence and repre["files"]:
-            # Calculate first frame that should be used
-            cols, _ = clique.assemble(repre["files"])
-            input_frames = list(sorted(cols[0].indexes))
-            first_sequence_frame = input_frames[0]
-            # WARNING: This is an issue as we don't know if first frame
-            #   is with or without handles!
-            # - handle start is added but how do not know if we should
-            output_duration = (output_frame_end - output_frame_start) + 1
-            if (
-                without_handles
-                and len(input_frames) - handle_start >= output_duration
-            ):
-                first_sequence_frame += handle_start
 
-            ext = os.path.splitext(repre["files"][0])[1].replace(".", "")
+        if repre["files"]:
+
+            first_file_path = repre["files"]  # Directly the file path if it's a single element
+            if isinstance(repre["files"], list):
+                first_file_path = first_file_path[0]
+
+            ext = Path(first_file_path).suffix.removeprefix(".")
             if ext.lower() in self.alpha_exts:
                 input_allow_bg = True
+
+            if input_is_sequence:
+                # Calculate first frame that should be used
+                cols, _ = clique.assemble(repre["files"])
+                input_frames = list(sorted(cols[0].indexes))
+                first_sequence_frame = input_frames[0]
+                # WARNING: This is an issue as we don't know if first frame
+                #   is with or without handles!
+                # - handle start is added but how do not know if we should
+                output_duration = (output_frame_end - output_frame_start) + 1
+                if (
+                    without_handles
+                    and len(input_frames) - handle_start >= output_duration
+                ):
+                    first_sequence_frame += handle_start
 
         return {
             "fps": float(instance.data["fps"]),
@@ -983,7 +992,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
         self.log.debug("New representation ext: `{}`".format(output_ext))
 
         # Output is image file sequence witht frames
-        output_ext_is_image = bool(output_ext in self.image_exts)
+        output_ext_is_image = bool(output_ext in IMAGE_EXTS)
         output_is_sequence = bool(
             output_ext_is_image
             and "sequence" in output_def["tags"]
@@ -1637,7 +1646,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
         # Check if files is a string (single file) or a list (potentially multiple files)
         is_single_file = isinstance(files, str)
-        is_multi_file = file_extension in self.video_exts or isinstance(files, list) and len(files) > 1
+        is_multi_file = file_extension in VIDEO_EXTS or isinstance(files, list) and len(files) > 1
         is_single_file_in_list = isinstance(files, list) and len(files) == 1
 
         for output_def in outputs:

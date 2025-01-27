@@ -1,7 +1,7 @@
 from qtpy import QtWidgets, QtCore
 
 from quadpype.tools.attribute_defs import create_widget_for_attr_def
-
+from quadpype.lib.attribute_definitions import FileDef
 from ..constants import INPUTS_LAYOUT_HSPACING, INPUTS_LAYOUT_VSPACING
 
 
@@ -91,11 +91,23 @@ class AttributesWidget(QtWidgets.QWidget):
         self._widgets = []
 
     def current_value(self):
-        output = {}
+        output = []
         for widget in self._widgets:
             attr_def = widget.attr_def
-            if attr_def.is_value_def:
-                output[attr_def.key] = widget.current_value()
+            if not attr_def.is_value_def:
+                continue
+
+            output_data = {attr_def.key: None}
+            if isinstance(attr_def, FileDef):
+                for data_dict in widget.current_value():
+                    output_data_copy = output_data.copy()
+                    output_data_copy[attr_def.key] = data_dict
+                    output_data_copy['reviewable'] = data_dict.get('reviewable', {})
+                    output.append(output_data_copy)
+            else:
+                output_data[attr_def.key] = widget.current_value()
+                output.append(output_data)
+
         return output
 
     def clear_attr_defs(self):

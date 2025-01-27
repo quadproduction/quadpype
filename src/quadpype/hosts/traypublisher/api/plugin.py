@@ -295,15 +295,7 @@ class SettingsCreator(TrayPublishCreator):
                 allow_sequences=self.allow_sequences,
                 single_item=not self.allow_multiple_items,
                 label="Representations",
-            ),
-            FileDef(
-                "reviewable",
-                folders=False,
-                extensions=REVIEW_EXTENSIONS,
-                allow_sequences=True,
-                single_item=True,
-                label="Reviewable representations",
-                extensions_label="Single reviewable item"
+                allow_reviews=self.allow_reviews
             )
         ]
 
@@ -325,6 +317,7 @@ class SettingsCreator(TrayPublishCreator):
                 "detailed_description": item_data["detailed_description"],
                 "extensions": item_data["extensions"],
                 "allow_sequences": item_data["allow_sequences"],
+                "allow_reviews": item_data.get("allow_reviews", True),
                 "allow_multiple_items": item_data["allow_multiple_items"],
                 "allow_version_control": item_data.get(
                     "allow_version_control", False),
