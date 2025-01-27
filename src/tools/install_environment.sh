@@ -24,17 +24,19 @@ fi
 rm -rf "$PATH_PYENV_DIR"
 
 # 1.A Download PyEnv, Install PyEnv and clean downloaded file
-curl -fsSL "https://raw.githubusercontent.com/pyenv-win/pyenv-win/master/pyenv-win/install-pyenv-win.sh" -o "$PATH_PYENV_INSTALL_FILE"
-bash "$PATH_PYENV_INSTALL_FILE"
-rm -f "$PATH_PYENV_INSTALL_FILE"
+curl https://pyenv.run | bash
 
 # 1.B Set the requiered environment variables related to PyEnv
-export PYENV="$PATH_PYENV_BIN_DIR"
-export PYENV_ROOT="$PATH_PYENV_BIN_DIR"
-export PYENV_HOME="$PATH_PYENV_BIN_DIR"
-if [[ ":$PATH:" != *":$PYENV_BIN_DIR/bin:"* ]]; then
-  export PATH="$PYENV_BIN_DIR/bin:$PYENV_BIN_DIR/shims:$PATH"
+if ! grep -q 'export PYENV_ROOT="$HOME/.pyenv"' ~/.bashrc; then
+  echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+  echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+  echo 'eval "$(pyenv init --path)"' >> ~/.bashrc
+  echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
 fi
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init --path)"
+eval "$(pyenv virtualenv-init -)"
 
 # 1.C Ensure the VIRTUAL_ENV variable isn't present in the User env variables
 unset VIRTUAL_ENV
