@@ -153,14 +153,13 @@ class ExtractSequence(pyblish.api.Extractor):
 
         self.apply_bg_command = "tv_background \"none\""
         self.apply_bg_back_command = False
-        self.settings_bg_color = []
 
         if apply_background != 'No Operation':
             self.apply_bg_back_command = self._get_bg_rollback_command(instance.context.data["sceneBgColor"])
 
         if apply_background == 'Color From Settings':
-            self.settings_bg_color = self._get_settings_bg_color(review=True)
-            self.apply_bg_command = "tv_background \"color\" {} {} {}".format(*self.settings_bg_color)
+            settings_bg_color = self._get_settings_bg_color(review=True)
+            self.apply_bg_command = "tv_background \"color\" {} {} {}".format(*settings_bg_color)
 
 
         if is_review or make_playblast:
