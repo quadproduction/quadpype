@@ -132,12 +132,20 @@ def push_to_zou(login, password):
     "-p", "--password", envvar="KITSU_PWD", help="Password for kitsu username"
 )
 @click_wrap.option(
-    "-prj",
-    "--project",
-    "projects",
+    "-exl",
+    "--exclude-project",
+    "exclude_projects",
     multiple=True,
     default=[],
-    help="Sync specific kitsu projects",
+    help="List of kitsu project names to exclude from the sync",
+)
+@click_wrap.option(
+    "-inc",
+    "--include-project",
+    "include_projects",
+    multiple=True,
+    default=[],
+    help="List of kitsu project names to include from the sync, by default all projects are synced",
 )
 @click_wrap.option(
     "-lo",
@@ -147,19 +155,23 @@ def push_to_zou(login, password):
     default=False,
     help="Listen to events only without any syncing",
 )
-def sync_service(login, password, projects, listen_only):
+def sync_service(login, password, exclude_projects, include_projects, listen_only):
     """Synchronize QuadPype database from Zou sever database.
 
     Args:
         login (str): Kitsu user login
         password (str): Kitsu user password
-        projects (tuple): specific kitsu projects
+        exclude_projects (tuple): List of kitsu project names to exclude from the sync
+        include_projects (tuple): List of kitsu project names to include from the sync, by default all projects are synced
         listen_only (bool): run listen only without any syncing
     """
     from .utils.update_op_with_zou import sync_all_projects
     from .utils.sync_service import start_listeners
 
+    exclude_projects = set(exclude_projects)
+    include_projects = set(include_projects)
+
     if not listen_only:
-        sync_all_projects(login, password, filter_projects=projects)
+        sync_all_projects(login, password, exclude_projects, include_projects)
 
     start_listeners(login, password)
