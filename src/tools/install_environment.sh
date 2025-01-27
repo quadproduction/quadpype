@@ -76,7 +76,8 @@ echo ">>> Installing Poetry ..."
 POETRY_HOME="$PATH_QUADPYPE_ROOT/.poetry"
 POETRY_VERSION="1.8.4"
 rm -rf "$POETRY_HOME"
-curl -sSL https://install.python-poetry.org | python -
+curl -sSL https://install.python-poetry.org | POETRY_HOME="$PATH_QUADPYPE_ROOT/.poetry" python -
+
 
 # 2.E Remove the potentially existing .venv
 rm -rf "$PATH_QUADPYPE_ROOT/.venv"
