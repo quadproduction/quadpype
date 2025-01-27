@@ -26,7 +26,7 @@ rm -rf "$PATH_PYENV_DIR"
 # 1.A Download PyEnv, Install PyEnv and clean downloaded file
 curl https://pyenv.run | bash
 
-# 1.B Set the requiered environment variables related to PyEnv
+# 1.B Set the required environment variables related to PyEnv
 if ! grep -q 'export PYENV_ROOT="$HOME/.pyenv"' ~/.bashrc; then
   echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
   echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
