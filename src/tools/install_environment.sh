@@ -77,6 +77,9 @@ POETRY_HOME="$PATH_QUADPYPE_ROOT/.poetry"
 POETRY_VERSION="1.8.4"
 rm -rf "$POETRY_HOME"
 curl -sSL https://install.python-poetry.org | python3 -
+export PATH="$HOME/.local/bin:$PATH"
+# Reload shell configuration:
+source ~/.bashrc
 
 # 2.E Remove the potentially existing .venv
 rm -rf "$PATH_QUADPYPE_ROOT/.venv"
