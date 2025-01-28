@@ -501,7 +501,7 @@ def _validate_thirdparty_binaries():
     binary_vendors_dir = Path(os.environ["QUADPYPE_ROOT"]).joinpath("vendor", "bin")
 
     ext_list = [""]  # Add no extension (for linux)
-    ext_list.extend(os.environ['PATHEXT'].lower().split(os.pathsep))
+    ext_list.extend(os.environ.get("PATHEXT", "").lower().split(os.pathsep))
 
     error_msg = (
         "Missing binary dependency {}. Please fetch thirdparty dependencies."
