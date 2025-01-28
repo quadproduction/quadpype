@@ -2,4 +2,4 @@
 in-project = true
 
 [repositories.pype]
-url = "https://distribute.openpype.io/wheels/"
+url = "https://distribute.ynput.io/wheels/"

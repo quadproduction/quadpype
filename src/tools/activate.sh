@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_DIR=$(dirname "$(realpath "$0")")
+SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
 PATH_QUADPYPE_ROOT=$SCRIPT_DIR
 
 while [[ $(basename "$PATH_QUADPYPE_ROOT") != "src" ]]; do

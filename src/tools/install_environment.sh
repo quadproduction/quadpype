@@ -2,7 +2,7 @@
 
 PATH_ORIGINAL_LOCATION=$(pwd)
 
-SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
 PATH_QUADPYPE_ROOT=$SCRIPT_DIR
 while [ "$(basename "$PATH_QUADPYPE_ROOT")" != "src" ]; do
   PATH_QUADPYPE_ROOT=$(dirname "$PATH_QUADPYPE_ROOT")
@@ -83,8 +83,8 @@ echo ">>> Python version OK [ $PYTHON_VERSION ]"
 
 # 2.D Clear and re-install Poetry
 echo ">>> Installing Poetry ..."
-POETRY_HOME="$PATH_QUADPYPE_ROOT/.poetry"
-POETRY_VERSION="1.8.4"
+export POETRY_HOME="$PATH_QUADPYPE_ROOT/.poetry"
+export POETRY_VERSION="1.8.4"
 rm -rf "$POETRY_HOME"
 curl -sSL https://install.python-poetry.org | POETRY_HOME="$PATH_QUADPYPE_ROOT/.poetry" python -
 
@@ -124,6 +124,7 @@ source "$SCRIPT_DIR/activate.sh"
 
 # 6. Download and install all the required dependencies
 #######################################################
+"$POETRY_HOME/bin/poetry" run python -m pip install distro
 "$POETRY_HOME/bin/poetry" run python "$SCRIPT_DIR/_lib/install/install_additional_dependencies.py"
 
 # 7. Set back the current location to the current script folder
