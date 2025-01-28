@@ -9,11 +9,17 @@ while [ "$(basename "$PATH_QUADPYPE_ROOT")" != "src" ]; do
 done
 
 PATH_PYENV_DIR="$HOME/.pyenv"
-PATH_PYENV_BIN_DIR="$HOME/.pyenv/pyenv-win/"
-PATH_PYENV_INSTALL_FILE="$SCRIPT_DIR/install-pyenv-win.sh"
 
+# Add path to the source directory into the user PATH
 if [[ ":$PATH:" != *":$PATH_QUADPYPE_ROOT:"* ]]; then
   export PATH="$PATH_QUADPYPE_ROOT:$PATH"
+fi
+
+
+wget -q --spider http://www.google.com
+if [ $? -ne 0 ]; then
+  echo "No Internet connection, aborting."
+  exit 1
 fi
 
 # 0. Install PyEnv, Python, and update PIP
@@ -27,14 +33,18 @@ rm -rf "$PATH_PYENV_DIR"
 curl https://pyenv.run | bash
 
 # 1.B Set the required environment variables related to PyEnv
-if ! grep -q 'export PYENV_ROOT="$HOME/.pyenv"' ~/.bashrc; then
-  echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
-  echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+if ! grep -q "export PYENV_ROOT=\"${PATH_PYENV_DIR}\"" ~/.bashrc; then
+  echo "export PYENV=\"${PATH_PYENV_DIR}\"" >> ~/.bashrc
+  echo "export PYENV_ROOT=\"${PATH_PYENV_DIR}\"" >> ~/.bashrc
+  echo "export PYENV_HOME=\"${PATH_PYENV_DIR}\"" >> ~/.bashrc
+  echo "export PATH=\"${PATH_PYENV_DIR}/bin:${PATH_PYENV_DIR}/shims:$PATH\"" >> ~/.bashrc
   echo 'eval "$(pyenv init --path)"' >> ~/.bashrc
   echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
 fi
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
+export PYENV=$PATH_PYENV_DIR
+export PYENV_ROOT=$PATH_PYENV_DIR
+export PYENV_HOME=$PATH_PYENV_DIR
+export PATH="$PATH_PYENV_DIR/bin:$PATH_PYENV_DIR/shims:$PATH"
 eval "$(pyenv init --path)"
 eval "$(pyenv virtualenv-init -)"
 
@@ -77,7 +87,6 @@ POETRY_HOME="$PATH_QUADPYPE_ROOT/.poetry"
 POETRY_VERSION="1.8.4"
 rm -rf "$POETRY_HOME"
 curl -sSL https://install.python-poetry.org | POETRY_HOME="$PATH_QUADPYPE_ROOT/.poetry" python -
-
 
 # 2.E Remove the potentially existing .venv
 rm -rf "$PATH_QUADPYPE_ROOT/.venv"
