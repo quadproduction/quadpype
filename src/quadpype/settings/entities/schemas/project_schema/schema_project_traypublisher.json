@@ -382,6 +382,16 @@
                             "label": "Enabled"
                         },
                         {
+                            "type": "boolean",
+                            "key": "optional",
+                            "label": "Optional"
+                        },
+                        {
+                            "type": "boolean",
+                            "key": "active",
+                            "label": "Active"
+                        },
+                        {
                             "key": "disabled_for_tasks",
                             "label": "Disabled for task types",
                             "type": "task-types-enum"
