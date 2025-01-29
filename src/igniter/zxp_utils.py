@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 import zipfile
+import platform
 
 from pathlib import Path
 from typing import List
@@ -84,6 +85,14 @@ def update_zxp_extensions(running_version_fullpath: Path, extensions: [ZXPExtens
 def get_zxp_extensions_to_update(running_version_fullpath, global_settings, force=False) -> List[ZXPExtensionData]:
     # List of all Adobe software ids (named hosts) handled by QuadPype
     # TODO: where and how to store the list of Adobe software ids
+    low_platform = platform.system().lower()
+    if low_platform == "linux":
+        # ZXP skipped for Linux
+        return []
+    elif low_platform == "darwin":
+        # TODO: implement this function for macOS
+        raise NotImplementedError(f"MacOS not implemented, implementation need before the first macOS release")
+
     zxp_host_ids = ["photoshop", "aftereffects"]
 
     # Determine the user-specific Adobe extensions directory
