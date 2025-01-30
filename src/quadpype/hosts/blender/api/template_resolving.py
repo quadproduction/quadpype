@@ -54,7 +54,7 @@ def _get_app_name_by_data(data):
         app_name = data["project"]["app"]
     elif data.get("anatomyData"):
         is_from_anatomy = True
-        app_name=  data["anatomyData"]["app"]
+        app_name = data["anatomyData"]["app"]
 
     return app_name, is_from_anatomy
 
@@ -132,7 +132,7 @@ def update_parent_data_with_entity_prefix(data):
     parent_prefix, is_anatomy = _get_entity_prefix(data)
 
     if not parent_prefix:
-        return None
+        return
 
     if is_anatomy:
         data["anatomyData"]["parent"] = parent_prefix
@@ -175,7 +175,4 @@ def get_task_collection_template(data):
     if data.get("variant", None) == "Main":
         return profile["main_template"]
 
-    elif data.get("variant", None) != "Main":
-        return profile["variant_template"]
-
-    return None
+    return profile["variant_template"]
