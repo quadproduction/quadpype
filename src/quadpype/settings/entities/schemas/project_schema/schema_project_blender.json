@@ -301,18 +301,9 @@
                         "type": "dict",
                         "children": [
                             {
-                                "type": "enum",
+                                "type": "text",
                                 "key":"entity_types",
-                                "label":"Entity Types",
-                                "multiselection": true,
-                                "enum_items": [
-                                    {"3D_Character": "3D_Character"},
-                                    {"3D_Prop": "3D_Prop"},
-                                    {"3D_Environment": "3D_Environment"},
-                                    {"CHARA": "CHARA"},
-                                    {"PROPS": "PROPS"},
-                                    {"3D_ENV": "3D_ENV"}
-                                ]
+                                "label":"Entity Types"
                             },
                             {
                                 "type": "text",
@@ -338,18 +329,9 @@
                         "type": "dict",
                         "children": [
                             {
-                                "type": "enum",
+                                "type": "text",
                                 "key":"entity_types",
-                                "label":"Entity Types",
-                                "multiselection": true,
-                                "enum_items": [
-                                    {"3D_Character": "3D_Character"},
-                                    {"3D_Prop": "3D_Prop"},
-                                    {"3D_Environment": "3D_Environment"},
-                                    {"CHARA": "CHARA"},
-                                    {"PROPS": "PROPS"},
-                                    {"3D_ENV": "3D_ENV"}
-                                ]
+                                "label":"Entity Types"
                             },
                             {
                                 "type": "text",
