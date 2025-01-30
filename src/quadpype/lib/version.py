@@ -552,7 +552,97 @@ class PackageHandler:
         return list(sorted(versions_correlation.values()))
 
     @classmethod
-    def get_versions_from_dirs(cls, pkg_name: str, dir_paths: List[Path], priority_to_archives = False, excluded_str_versions: Optional[List[str]] = None) -> List:
+    def get_versions_from_url(
+        cls,
+        pkg_name: str,
+        url: str,
+        priority_to_archives: bool = False,
+        excluded_str_versions: Optional[List[str]] = None,
+        parent_version: Optional['PackageVersion'] = None,
+    ) -> List['PackageVersion']:
+        """Get all detected PackageVersions from a URL using htmllistparse.
+
+        Args:
+            pkg_name (str): Name of the package.
+            url (str): URL to scan for versions.
+            priority_to_archives (bool, optional): If True, look for archives in priority.
+            excluded_str_versions (List[str]): List of excluded versions as strings.
+            parent_version (PackageVersion): Parent version to use for nested directories.
+
+        Returns:
+            List[PackageVersion]: List of detected PackageVersions.
+        """
+        import requests
+        from htmllistparse import fetch_listing
+
+        if excluded_str_versions is None:
+            excluded_str_versions = []
+
+        if isinstance(url, Path):
+            url = url.as_posix()
+        url = url.replace("http:/", "http://").replace("https:/", "https://")
+
+        versions = []
+
+        # Fetch the HTML listing
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+        except requests.RequestException as e:
+            raise RuntimeError(f"Failed to fetch URL {url}: {e}")
+
+        # Parse the HTML content to extract links using htmllistparse
+        listing = fetch_listing(url)
+
+        # Look for version directories (e.g., "4.0/")
+        version_dir_link = None
+        for url_entries in listing:
+            if isinstance(url_entries, list):
+                for url_entry in url_entries:
+                    if url_entry.name.endswith('/'):
+                        match = re.match(r'(\d+\.\d+)/', url_entry.name)
+                        if match:
+                            version_dir_link = match.group(0)
+                            break
+
+        if not version_dir_link:
+            raise ValueError(f"No version directory found in URL: {url}")
+
+        version_dir_url = url + '/' + version_dir_link
+
+        try:
+            response = requests.get(version_dir_url)
+            response.raise_for_status()
+        except requests.RequestException as e:
+            raise RuntimeError(f"Failed to fetch version directory URL {version_dir_url}: {e}")
+
+        listing = fetch_listing(version_dir_url)
+
+        for url_entries in listing:
+            if isinstance(url_entries, list):
+                for url_entry in url_entries:
+                    if url_entry.name.endswith(".zip") and pkg_name in url_entry.name:
+                        version_str = re.search(r'v?(\d+\.\d+\.\d+)', url_entry.name)
+                        if version_str:
+                            version_str = version_str.group(1)
+                            if version_str not in excluded_str_versions:
+                                version = PackageVersion(version=version_str, path=version_dir_url + '/' + url_entry.name)
+                                version.is_archive = True
+                                versions.append(version)
+
+        versions_correlation = {}
+        for curr_version in versions:
+            if str(curr_version) not in versions_correlation:
+                versions_correlation[str(curr_version)] = curr_version
+            else:
+                favorite_version = versions_correlation[str(curr_version)]
+                if (priority_to_archives and not favorite_version.is_archive and curr_version.is_archive) or \
+                        (not priority_to_archives and favorite_version.is_archive and not curr_version.is_archive):
+                    versions_correlation[str(curr_version)] = curr_version
+
+        return list(sorted(versions_correlation.values()))
+    @classmethod
+    def get_versions_from_sources(cls, pkg_name: str, dir_paths: List[Path], priority_to_archives = False, excluded_str_versions: Optional[List[str]] = None) -> List:
         versions_set = set()
         for dir_path in dir_paths:
             if not dir_path:
@@ -561,7 +651,10 @@ class PackageHandler:
             if isinstance(dir_path, str):
                 dir_path = Path(dir_path)
 
-            found_versions = cls.get_versions_from_dir(pkg_name, dir_path, priority_to_archives, excluded_str_versions)
+            if str(dir_path).startswith('http'):
+                found_versions = cls.get_versions_from_url(pkg_name, dir_path, priority_to_archives, excluded_str_versions)
+            else:
+                found_versions = cls.get_versions_from_dir(pkg_name, dir_path, priority_to_archives, excluded_str_versions)
             versions_set.update(found_versions)
 
         return sorted(versions_set)
@@ -619,7 +712,7 @@ class PackageHandler:
         # If the goal is to retrieve the code, we want archives
         priority_to_archives = self.retrieve_locally
 
-        return self.get_versions_from_dirs(
+        return self.get_versions_from_sources(
             self._name,
             self._remote_dir_paths,
             priority_to_archives=priority_to_archives,

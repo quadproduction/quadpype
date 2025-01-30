@@ -582,7 +582,7 @@ class PackageVersionWidget(TextWidget):
             if remote_dirs_entity:
                 remote_dir_paths = remote_dirs_entity.value.get(platform.system().lower())
                 if remote_dir_paths:
-                    versions = PackageHandler.get_versions_from_dirs(package_name, remote_dir_paths)
+                    versions = PackageHandler.get_versions_from_sources(package_name, remote_dir_paths)
 
         self.entity.value_hints = [str(version) for version in versions]
         if self.entity.value_hints:
