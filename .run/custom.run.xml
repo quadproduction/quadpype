@@ -1,29 +1,28 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="custom_pre" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="custom" type="PythonConfigurationType" factoryName="Python">
     <module name="quadpype" />
     <selectedOptions>
+      <option name="environmentVariables" visible="false" />
       <option name="envPaths" visible="false" />
     </selectedOptions>
     <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
-    <envs>
-      <env name="PYTHONUNBUFFERED" value="1" />
-      <env name="_INSIDE_QUADPYPE_TOOL" value="1" />
-    </envs>
     <option name="SDK_HOME" value="" />
-    <option name="WORKING_DIRECTORY" value="" />
+    <option name="WORKING_DIRECTORY" value="$ProjectFileDir$/src" />
     <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/tools/_lib/run/pre_run.py" />
-    <option name="PARAMETERS" value="-m &quot;mongodb+srv://username:password@your-cluster-url.com/&quot;" />
+    <option name="SCRIPT_NAME" value="$ProjectFileDir$/src/start.py" />
+    <option name="PARAMETERS" value="tray --debug --additional-env-file $ProjectFileDir$/src/tools/.env" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="true" />
     <option name="MODULE_MODE" value="false" />
     <option name="REDIRECT_INPUT" value="false" />
     <option name="INPUT_FILE" value="" />
-    <method v="2" />
+    <method v="2">
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="custom_pre" run_configuration_type="PythonConfigurationType" />
+    </method>
   </configuration>
 </component>

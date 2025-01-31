@@ -112,7 +112,7 @@ install-pyenv-win.ps1
 #  Developer tools
 src/tools/dev_*
 .github_changelog_generator
-
+.run/custom_pre.run.xml
 
 # Addons
 ########
