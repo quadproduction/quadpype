@@ -8,8 +8,10 @@ import platform
 from pathlib import Path
 from zipfile import ZipFile, BadZipFile
 from typing import Union, List, Tuple, Any, Optional, Dict
+from htmllistparse import fetch_listing
 
 import semver
+import requests
 
 
 ADDONS_SETTINGS_KEY = "addons"
@@ -45,7 +47,15 @@ class PackageVersion(semver.VersionInfo):
 
         """
         self.path = None
+        self.url = None
         self.is_archive = False
+        self.is_url = False
+
+        if "is_url" in kwargs:
+            self.is_url = kwargs.pop("is_url")
+
+        if "is_archive" in kwargs:
+            self.is_archive = kwargs.pop("is_archive")
 
         if "version" in kwargs:
             version_value = kwargs.pop("version")
@@ -60,6 +70,7 @@ class PackageVersion(semver.VersionInfo):
 
         if "path" in kwargs:
             path_value = kwargs.pop("path")
+            self.url = path_value
             if isinstance(path_value, str):
                 path_value = Path(path_value)
             self.path = path_value
@@ -558,7 +569,6 @@ class PackageHandler:
         url: str,
         priority_to_archives: bool = False,
         excluded_str_versions: Optional[List[str]] = None,
-        parent_version: Optional['PackageVersion'] = None,
     ) -> List['PackageVersion']:
         """Get all detected PackageVersions from a URL using htmllistparse.
 
@@ -572,9 +582,6 @@ class PackageHandler:
         Returns:
             List[PackageVersion]: List of detected PackageVersions.
         """
-        import requests
-        from htmllistparse import fetch_listing
-
         if excluded_str_versions is None:
             excluded_str_versions = []
 
@@ -626,8 +633,10 @@ class PackageHandler:
                         if version_str:
                             version_str = version_str.group(1)
                             if version_str not in excluded_str_versions:
-                                version = PackageVersion(version=version_str, path=version_dir_url + '/' + url_entry.name)
-                                version.is_archive = True
+                                version = PackageVersion(version=version_str,
+                                                         is_archive=True,
+                                                         is_url=True,
+                                                         path=version_dir_url + url_entry.name)
                                 versions.append(version)
 
         versions_correlation = {}
@@ -759,7 +768,18 @@ class PackageHandler:
 
         if remote_version.path.suffix == ".zip":
             # Copy locally first
-            shutil.copy2(remote_version.path, destination_dir, follow_symlinks=True)
+            if remote_version.is_url:
+                response = requests.get(remote_version.url, stream=True)
+                zip_file_path = destination_dir.joinpath(remote_version.path.name)
+
+                if response.status_code == 200:
+                    with open(zip_file_path, "wb") as file:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            file.write(chunk)
+                else:
+                    raise Exception(f"Failed to download {remote_version.path}. HTTP Status: {response.status_code}")
+            else:
+                shutil.copy2(remote_version.path, destination_dir, follow_symlinks=True)
 
             # Unzip the local copy
             with ZipFile(destination_dir.joinpath(remote_version.path.name), 'r') as zip_ref:
