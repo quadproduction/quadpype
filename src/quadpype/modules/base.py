@@ -231,13 +231,13 @@ def get_dynamic_modules_dirs():
 
         version_key = "staging_version" if is_staging_enabled() else "version"
 
-        remote_dir_paths = addon_setting.get("package_remote_dirs", {}).get(platform.system().lower(), [])
-        remote_dir_paths = [Path(curr_path_str) for curr_path_str in remote_dir_paths]
+        remote_sources = addon_setting.get("package_remote_sources", {}).get(platform.system().lower(), [])
+        remote_sources = [Path(curr_source_str) for curr_source_str in remote_sources]
 
         addon_package = AddOnHandler(
             pkg_name=addon_setting.get("package_name"),
             local_dir_path=addon_local_dir,
-            remote_dir_paths=remote_dir_paths,
+            remote_sources=remote_sources,
             running_version_str=addon_setting.get(version_key, ""),
             retrieve_locally=addon_setting.get("retrieve_locally", False),
         )
@@ -246,9 +246,10 @@ def get_dynamic_modules_dirs():
     # Now retrieve the add-ons paths
     dynamic_modules_dir_paths = []
     for package in get_packages("add_on"):
-        dynamic_modules_dir_paths.append(package.running_version.path)
+        dynamic_modules_dir_paths.append(package.running_version.location)
 
     return dynamic_modules_dir_paths
+
 
 def get_module_dirs():
     """List of paths where QuadPype modules can be found."""

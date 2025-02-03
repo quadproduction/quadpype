@@ -1541,7 +1541,7 @@ def get_quadpype_local_dir_path(settings: dict) -> Union[Path, None]:
     return path if path else Path(user_data_dir("quadpype", "quad"))
 
 
-def get_quadpype_remote_dir_paths(settings: dict) -> List[str]:
+def get_quadpype_remote_sources(settings: dict) -> List[str]:
     """Get QuadPype path from global settings.
 
     Args:
@@ -1552,7 +1552,7 @@ def get_quadpype_remote_dir_paths(settings: dict) -> List[str]:
     """
     paths = (
         settings
-        .get("remote_versions_dirs", {})
+        .get("remote_sources", {})
         .get(platform.system().lower())
     ) or []
     # For cases when it's a single path

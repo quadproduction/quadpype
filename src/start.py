@@ -692,13 +692,13 @@ def _determine_mongodb() -> str:
 
 
 def _initialize_environment(quadpype_version: PackageVersion) -> None:
-    version_path = quadpype_version.path
-    if not version_path:
+    version_location = quadpype_version.location
+    if not version_location:
         _print(f"!!! Version {quadpype_version} doesn't have path set.")
         raise ValueError("No path set in specified QuadPype version.")
     os.environ["QUADPYPE_VERSION"] = str(quadpype_version)
     # set QUADPYPE_REPOS_ROOT to point to currently used QuadPype version.
-    quadpype_root = os.path.normpath(version_path.as_posix())
+    quadpype_root = os.path.normpath(version_location.as_posix())
     os.environ["QUADPYPE_REPOS_ROOT"] = quadpype_root
 
     split_paths = os.getenv("PYTHONPATH", "").split(os.pathsep)
@@ -756,7 +756,7 @@ def _initialize_package_manager(database_url, version_str):
     from quadpype.settings.lib import (
         get_core_settings_no_handler,
         get_quadpype_local_dir_path,
-        get_quadpype_remote_dir_paths
+        get_quadpype_remote_sources
     )
 
     core_settings = get_core_settings_no_handler(database_url)
@@ -766,7 +766,7 @@ def _initialize_package_manager(database_url, version_str):
     quadpype_package = PackageHandler(
         pkg_name="quadpype",
         local_dir_path=get_quadpype_local_dir_path(core_settings),
-        remote_dir_paths=get_quadpype_remote_dir_paths(core_settings),
+        remote_sources=get_quadpype_remote_sources(core_settings),
         running_version_str=version_str,
         retrieve_locally=True,
         install_dir_path=os.getenv("QUADPYPE_ROOT")
@@ -880,11 +880,11 @@ def boot():
         valid = package_manager["quadpype"].validate_checksums(QUADPYPE_ROOT)[0]
         sys.exit(0 if valid else 1)
 
-    if not package_manager["quadpype"].remote_dir_paths:
+    if not package_manager["quadpype"].remote_sources:
         _print("*** Cannot get QuadPype patches directory path from database.")
 
-    if not os.getenv("QUADPYPE_PATH") and package_manager["quadpype"].remote_dir_paths:
-        os.environ["QUADPYPE_PATH"] = str(package_manager["quadpype"].get_accessible_remote_dir_path())
+    if not os.getenv("QUADPYPE_PATH") and package_manager["quadpype"].remote_sources:
+        os.environ["QUADPYPE_PATH"] = str(package_manager["quadpype"].get_accessible_remote_source())
 
     if "print_versions" in commands:
         _boot_print_versions(package_manager["quadpype"])
@@ -932,7 +932,7 @@ def boot():
     set_addons_environments()
 
     running_version = package_manager["quadpype"].running_version
-    running_version_fullpath = running_version.path.resolve()
+    running_version_fullpath = running_version.location.resolve()
     _print(">>> Check ZXP extensions ...")
     _update_zxp_extensions(running_version_fullpath, global_settings)
 
