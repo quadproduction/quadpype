@@ -14,7 +14,7 @@
         "protect_anatomy_attributes": false
     },
     "local_env_white_list": [],
-    "remote_versions_dirs": {
+    "remote_sources": {
         "windows": [],
         "darwin": [],
         "linux": []

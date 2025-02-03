@@ -577,12 +577,12 @@ class PackageVersionWidget(TextWidget):
             versions = package.get_available_versions()
         else:
             # Could not find a loaded package with this name yet
-            # Try to get the versions directly from the remote dir paths
-            remote_dirs_entity = self.entity_widget.entity.non_gui_children.get("package_remote_dirs")
-            if remote_dirs_entity:
-                remote_dir_paths = remote_dirs_entity.value.get(platform.system().lower())
-                if remote_dir_paths:
-                    versions = PackageHandler.get_versions_from_dirs(package_name, remote_dir_paths)
+            # Try to get the versions directly from the remote source paths
+            remote_sources_entity = self.entity_widget.entity.non_gui_children.get("package_remote_sources")
+            if remote_sources_entity:
+                remote_sources = remote_sources_entity.value.get(platform.system().lower())
+                if remote_sources:
+                    versions = PackageHandler.get_versions_from_sources(package_name, remote_sources)
 
         self.entity.value_hints = [str(version) for version in versions]
         if self.entity.value_hints:

@@ -61,7 +61,7 @@ function transferSettings(mongoSourceURI, mongoDestinationURI, sourceDbName, tar
             document.type = "core_settings";
             document.data.production_version = "";
             document.data.staging_version = "";
-            document.data.remote_versions_dirs = document.data.openpype_path;
+            document.data.remote_sources = document.data.openpype_path;
             delete document.data.openpype_path;
             targetSettings.insert(document);
             return

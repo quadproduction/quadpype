@@ -176,7 +176,7 @@
                 },
                 {
                     "type": "path",
-                    "key": "remote_versions_dirs",
+                    "key": "remote_sources",
                     "label": "Versions Repository",
                     "multiplatform": true,
                     "multipath": true,

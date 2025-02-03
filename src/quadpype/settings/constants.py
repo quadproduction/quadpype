@@ -50,7 +50,7 @@ DATABASE_PROJECT_ANATOMY_VERSIONED_KEY = PROJECT_ANATOMY_KEY + _DATABASE_SUFFIX
 
 
 CORE_KEYS = {
-    "remote_versions_dirs",
+    "remote_sources",
     "local_versions_dir",
     "log_to_server",
     "disk_mapping",

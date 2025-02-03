@@ -926,7 +926,7 @@ class MongoSettingsHandler(SettingsHandler):
 
         # Keys to monitor
         keys_to_check = [
-            ("remote_versions_dirs", package.change_remote_dir_paths),
+            ("remote_sources", package.change_remote_sources),
             ("local_versions_dir", package.change_local_dir_path)
         ]
 
