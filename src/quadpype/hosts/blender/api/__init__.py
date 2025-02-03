@@ -41,6 +41,13 @@ from .capture import capture
 
 from .render_lib import prepare_rendering
 
+from .template_resolving import (
+    get_resolved_name,
+    get_entity_collection_template,
+    get_task_collection_template,
+    update_parent_data_with_entity_prefix
+)
+
 
 __all__ = [
     "install",
@@ -71,4 +78,10 @@ __all__ = [
     "capture",
     # "unique_name",
     "prepare_rendering",
+
+    #Templates for working:
+    "get_resolved_name",
+    "get_entity_collection_template",
+    "get_task_collection_template",
+    "update_parent_data_with_entity_prefix"
 ]

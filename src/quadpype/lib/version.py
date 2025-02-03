@@ -4,12 +4,15 @@ import sys
 import shutil
 import hashlib
 import platform
+import tempfile
+
+import semver
+import requests
+from htmllistparse import fetch_listing
 
 from pathlib import Path
 from zipfile import ZipFile, BadZipFile
 from typing import Union, List, Tuple, Any, Optional, Dict
-
-import semver
 
 
 ADDONS_SETTINGS_KEY = "addons"
@@ -21,16 +24,15 @@ VERSION_REGEX = re.compile(r"(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<p
 _PACKAGE_MANAGER = None
 
 
+class SourceURL(str):
+    """Simple subclass of the str class to detect type with ease"""
+
+
 class PackageVersion(semver.VersionInfo):
-    """Class for storing information about version.
-
-    Attributes:
-        path (str): path
-
-    """
+    """Class for storing information about a version."""
 
     def __init__(self, *args, **kwargs):
-        """Create version.
+        """Create a version instance.
 
         Args:
             major (int): version when you make incompatible API changes.
@@ -41,10 +43,12 @@ class PackageVersion(semver.VersionInfo):
             build (str): an optional build string
             version (str): if set, it will be parsed and will override
                 parameters like `major`, `minor` and so on.
-            path (Path): path to version location.
+            location (Path, SourceURL): location to the version.
 
         """
-        self.path = None
+
+        self.location = None
+        self.download_required = False
         self.is_archive = False
 
         if "version" in kwargs:
@@ -58,36 +62,48 @@ class PackageVersion(semver.VersionInfo):
             kwargs["prerelease"] = v.prerelease
             kwargs["build"] = v.build
 
-        if "path" in kwargs:
-            path_value = kwargs.pop("path")
-            if isinstance(path_value, str):
-                path_value = Path(path_value)
-            self.path = path_value
+        if "location" in kwargs:
+            location_value = kwargs.pop("location")
+            if isinstance(location_value, (SourceURL, Path)):
+                self.set_location(location_value)
+            else:
+                raise ValueError("Invalid location type, can only be Path or SourceURL")
 
         if args or kwargs:
             super().__init__(*args, **kwargs)
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}: {str(self)} - path={self.path}>"
+        return f"<{self.__class__.__name__}: {str(self)} - path={str(self.location)}>"
 
     def __lt__(self, other):
         result = super().__lt__(other)
-        # prefer path over no path
-        if self == other and not self.path and other.path:
+        # prefer the one with a specified location over no location
+        if self == other and not self.location and other.location:
             return True
 
-        if self == other and self.path and other.path and \
-                other.path.is_dir() and self.path.is_file():
-            return True
-
-        if self.finalize_version() == other.finalize_version() and \
-                self.prerelease == other.prerelease:
-            return True
+        if self == other and self.location and other.location:
+            if isinstance(other.location, Path) and isinstance(self.location, SourceURL):
+                return True
+            elif isinstance(other.location, Path) and isinstance(other.location, Path) \
+                    and other.location.is_dir() and self.location.is_file():
+                return True
 
         return result
 
     def __hash__(self):
-        return hash(self.path) if self.path else hash(str(self))
+        return hash(str(self.location)) if self.location else hash(str(self))
+
+    def set_location(self, location):
+        self.location = location
+        self.is_archive = False
+        self.download_required = False
+
+        if self.location:
+            if str(self.location).endswith(".zip"):
+                self.is_archive = True
+
+            if isinstance(self.location, SourceURL):
+                self.download_required = True
 
     def compare_major_minor_patch(self, other) -> bool:
         return self.finalize_version() == other.finalize_version()
@@ -109,7 +125,7 @@ class PackageVersion(semver.VersionInfo):
 
 
 class PackageVersionExists(Exception):
-    """Exception for handling existing package version."""
+    """Exception for handling a not existing package version."""
     pass
 
 
@@ -157,7 +173,7 @@ def sanitize_long_path(path):
 
 
 def sha256sum(filename):
-    """Calculate sha256 for content of the file.
+    """Calculate sha256 for the content of the file.
 
     Args:
          filename (str): Path to file.
@@ -189,7 +205,7 @@ class PackageHandler:
     def __init__(self,
                  pkg_name: str,
                  local_dir_path: Union[str, Path, None],
-                 remote_dir_paths: List[Union[str, Path]],
+                 remote_sources: List[Union[str, Path]],
                  running_version_str: str,
                  retrieve_locally: bool = True,
                  install_dir_path: Union[str, Path, None] = None):
@@ -199,14 +215,8 @@ class PackageHandler:
         if isinstance(local_dir_path, str):
             local_dir_path = Path(local_dir_path)
 
-        if isinstance(remote_dir_paths, str):
-            remote_dir_paths = [Path(remote_dir_paths)]
-
-        # Ensure paths are Path objects
-        remote_dir_paths = [Path(curr_path) for curr_path in remote_dir_paths]
-
         if retrieve_locally and not local_dir_path:
-            raise ValueError("local_dir_path cannot be None if retrieve_locally = True")
+            raise ValueError("local_dir_path cannot be None if retrieve_locally is set to True")
 
         self._local_dir_path = local_dir_path
 
@@ -216,9 +226,9 @@ class PackageHandler:
             except Exception:  # noqa
                 raise RuntimeError(f"Local directory path for package \"{pkg_name}\" is not accessible.")
 
-        self._remote_dir_paths = remote_dir_paths
-        # remote_dir_paths can be None in case the path to package version isn't specified
-        # This can happen only for the QuadPype app package
+        if not remote_sources:
+            remote_sources = [self._local_dir_path]
+        self._remote_sources = self._conform_remote_sources(pkg_name, remote_sources)
 
         self._running_version = None
 
@@ -233,7 +243,7 @@ class PackageHandler:
                     self._name,
                     self._install_dir_path
                 ),
-                path=self._install_dir_path
+                location=self._install_dir_path
             )
 
         if not running_version_str:
@@ -267,10 +277,11 @@ class PackageHandler:
                 running_version = self.find_version(running_version_str)
                 if not running_version:
                     if self._install_dir_path:
-                        self.get_package_version_from_dir(self._name, self._install_dir_path)
-                    raise ValueError(f"Specified version \"{running_version_str}\" is not available locally and on the remote path directory.")
+                        running_version_str = self.get_package_version_from_dir(self._name, self._install_dir_path)
+                    raise ValueError(
+                        f"Specified version \"{running_version_str}\" is not available locally and on the remote path directory.")
 
-                if retrieve_locally:
+                if retrieve_locally or running_version.download_required:
                     self._running_version = self.retrieve_version_locally(running_version_str)
                 else:
                     # We are about to use a remote version
@@ -307,30 +318,70 @@ class PackageHandler:
         return self._local_dir_path and isinstance(self._local_dir_path, Path) and self._local_dir_path.exists()
 
     @property
-    def remote_dir_paths(self):
-        return self._remote_dir_paths
+    def remote_sources(self):
+        return self._remote_sources
 
-    def change_remote_dir_paths(self, remote_dir_paths: Union[List[Union[str, Path]], None]):
+    @staticmethod
+    def conform_remote_source(remote_source):
+        if isinstance(remote_source, str):
+            if remote_source.startswith("http"):
+                # Yes, there is no complex url validator
+                conform_source = SourceURL(remote_source)
+            else:
+                conform_source = Path(remote_source)
+        elif isinstance(remote_source, Path):
+            conform_source = remote_source
+        else:
+            raise ValueError(f"All the remote source path must be a string or a Path object.")
+
+        return conform_source
+
+    @staticmethod
+    def _conform_remote_sources(pkg_name, remote_sources):
+        conformed_remote_sources = []
+
+        if not remote_sources:
+            # remote_sources_paths can be None in case the path to package version isn't specified
+            # This can happen only for the QuadPype app package
+            if pkg_name.lower() != "quadpype":
+                raise ValueError("remote_sources cannot be empty.")
+            return conformed_remote_sources
+
+        if isinstance(remote_sources, (str, Path)):
+            # A single string source has been passed
+            remote_sources = [remote_sources]
+
+        for remote_source in remote_sources:
+            conformed_remote_sources.append(
+                PackageHandler.conform_remote_source(remote_source)
+            )
+
+        return conformed_remote_sources
+
+    def change_remote_sources(self, remote_sources: Union[List[Union[str, Path]], None]):
         """Set the remote directory path."""
-        if isinstance(remote_dir_paths, str):
-            remote_dir_paths = [Path(remote_dir_paths)]
-        elif not remote_dir_paths:
-            # If the remote_dir-path is unset we use the local_dir_path
-            remote_dir_paths = [self._local_dir_path]
+        if not remote_sources:
+            remote_sources = [self._local_dir_path]
+        self._remote_sources = self._conform_remote_sources(self._name, remote_sources)
 
-        # Ensure paths are Path objects
-        remote_dir_paths = [Path(curr_path) for curr_path in remote_dir_paths]
-
-        self._remote_dir_paths = remote_dir_paths
-
-    def get_accessible_remote_dir_path(self):
-        """Get the first accessible remote directory path (if any)."""
-        if not self._remote_dir_paths:
+    def get_accessible_remote_source(self):
+        """Get the first accessible remote source path (if any)."""
+        if not self._remote_sources:
             return None
 
-        for remote_dir_path in self._remote_dir_paths:
-            if remote_dir_path and isinstance(remote_dir_path, Path) and remote_dir_path.exists():
-                return remote_dir_path
+        for remote_source in self._remote_sources:
+            if not remote_source:
+                continue
+
+            if isinstance(remote_source, Path) and remote_source.exists():
+                return remote_source
+            elif isinstance(remote_source, SourceURL):
+                try:
+                    response = requests.head(remote_source)
+                    if response.ok:
+                        return remote_source
+                except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError):
+                    continue
 
         return None
 
@@ -339,7 +390,7 @@ class PackageHandler:
         return self._running_version
 
     @classmethod
-    def validate_version_str(cls, version_str:str) -> Union[str, None]:
+    def validate_version_str(cls, version_str: str) -> Union[str, None]:
         # Strip the .zip extension (if present)
         input_string = re.sub(r"\.zip$", "", version_str, flags=re.IGNORECASE)
 
@@ -392,7 +443,7 @@ class PackageHandler:
         return version['__version__']
 
     @classmethod
-    def compare_version_with_package_dir(cls, pkg_name:str, dir_path: Path, version_obj) -> Tuple[bool, str]:
+    def compare_version_with_package_dir(cls, pkg_name: str, dir_path: Path, version_obj) -> Tuple[bool, str]:
         if not dir_path or not isinstance(dir_path, Path) or not dir_path.exists() or not dir_path.is_dir():
             raise ValueError("Invalid directory path")
 
@@ -408,8 +459,8 @@ class PackageHandler:
                            "doesn't match. Skipping.")
         return True, "Versions match"
 
-    @ classmethod
-    def compare_version_with_package_zip(cls, pkg_name:str, zip_path: Path, version_obj) -> Tuple[bool, str]:
+    @classmethod
+    def compare_version_with_package_zip(cls, pkg_name: str, zip_path: Path, version_obj) -> Tuple[bool, str]:
         if not zip_path or not isinstance(zip_path, Path) or not zip_path.exists() or not zip_path.is_file():
             raise ValueError("Invalid ZIP file path.")
 
@@ -473,14 +524,16 @@ class PackageHandler:
         return sorted(list(versions.values()))
 
     @classmethod
-    def get_versions_from_dir(cls, pkg_name: str, dir_path: Path, priority_to_archives = False, excluded_str_versions: Optional[List[str]] = None, parent_version: Optional[PackageVersion] = None) -> List:
+    def get_versions_from_dir(cls, pkg_name: str, source_path: Path, priority_to_archives=False,
+                              excluded_str_versions: Optional[List[str]] = None,
+                              parent_version: Optional[PackageVersion] = None) -> List:
         """Get all detected PackageVersions in directory.
 
         Args:
-            pkg_name (str):  Name of the package.
-            dir_path (Path): Directory to scan.
+            pkg_name (str): Name of the package.
+            source_path (Path): Directory to scan.
             priority_to_archives (bool, optional): If True, look for archives in priority.
-                (if only a dir exists it will still be added).
+                (if only a dir exists, it will still be added).
             excluded_str_versions (List[str]): List of excluded versions as strings.
             parent_version (PackageVersion): Parent version to use for nested directories.
 
@@ -488,7 +541,7 @@ class PackageHandler:
             List[PackageVersion]: List of detected PackageVersions.
 
         Throws:
-            ValueError: if invalid path is specified.
+            ValueError: if an invalid path is specified.
 
         """
         if excluded_str_versions is None:
@@ -497,11 +550,11 @@ class PackageHandler:
         versions = []
 
         # Ensure the directory exists and is valid
-        if not dir_path or not dir_path.exists() or not dir_path.is_dir():
+        if not source_path or not source_path.exists() or not source_path.is_dir():
             return versions
 
         # Iterate over directory at the first level
-        for item in dir_path.iterdir():
+        for item in source_path.iterdir():
             # If the item is a directory with a major.minor version format, dive deeper
             if item.is_dir() and re.match(r"^v?\d+\.\d+$", item.name) and parent_version is None:
                 parent_version_str = f"{item.name.removeprefix('v')}.0"
@@ -516,11 +569,14 @@ class PackageHandler:
                 if detected_versions:
                     versions.extend(detected_versions)
 
+                continue
+
             # If it's a file, process its name (stripped of extension)
             name = item.name if item.is_dir() else item.stem
             version = cls.get_version_from_str(name)
 
-            if not version or (parent_version and (version.major != parent_version.major or version.minor != parent_version.minor)):
+            if not version or (parent_version and (
+                    version.major != parent_version.major or version.minor != parent_version.minor)):
                 continue
 
             # If it's a directory, check if version is valid within it
@@ -531,8 +587,7 @@ class PackageHandler:
             if item.is_file() and not cls.compare_version_with_package_zip(pkg_name, item, version)[0]:
                 continue
 
-            version.path = item.resolve()
-            version.is_archive = item.is_file()
+            version.set_location(item.resolve())
             if str(version) not in excluded_str_versions:
                 versions.append(version)
 
@@ -552,16 +607,125 @@ class PackageHandler:
         return list(sorted(versions_correlation.values()))
 
     @classmethod
-    def get_versions_from_dirs(cls, pkg_name: str, dir_paths: List[Path], priority_to_archives = False, excluded_str_versions: Optional[List[str]] = None) -> List:
-        versions_set = set()
-        for dir_path in dir_paths:
-            if not dir_path:
+    def get_versions_from_url(cls, pkg_name: str, source_url: SourceURL, priority_to_archives=False,
+                              excluded_str_versions: Optional[List[str]] = None,
+                              parent_version: Optional[PackageVersion] = None) -> List:
+        """Get all detected PackageVersions in directory.
+
+        Args:
+            pkg_name (str): Name of the package.
+            source_url (SourceURL): Web page to scan.
+            priority_to_archives (bool, optional): If True, look for archives in priority.
+                (if only a dir exists, it will still be added).
+            excluded_str_versions (List[str]): List of excluded versions as strings.
+            parent_version (PackageVersion): Parent version to use for nested directories.
+
+        Returns:
+            List[PackageVersion]: List of detected PackageVersions.
+
+        Throws:
+            ValueError: if an invalid path is specified.
+
+        """
+        if excluded_str_versions is None:
+            excluded_str_versions = []
+
+        versions = []
+
+        # Ensure the web location is valid
+        if not source_url:
+            return versions
+
+        response = requests.head(source_url)
+        page_content_type = "text/html"
+        allowed_content_type = [
+            "application/zip",
+            "application/x-zip-compressed",
+            "application/octet-stream"
+        ]
+        if not response.status_code != 200 or not response.headers.get("content-type") == page_content_type:
+            return versions
+
+        # Parse the HTML content to extract links using htmllistparse
+        cwd: str
+        cwd, listing = fetch_listing(source_url)
+        if not cwd.endswith("/"):
+            cwd = cwd + "/"
+
+        # Iterate over webpage at the first level
+        for item in listing:
+            item_full_url = SourceURL(f"{cwd}{item.name}")
+
+            # If the item is a directory with a major.minor version format, dive deeper
+            if item.name.endswith("/") and re.match(r"^v?\d+\.\d+/$", item.name) and parent_version is None:
+                parent_version_str = f"{item.name.removeprefix('v')[:-1]}.0"
+                detected_versions = cls.get_versions_from_url(
+                    pkg_name,
+                    item_full_url,
+                    priority_to_archives,
+                    excluded_str_versions,
+                    PackageVersion(version=parent_version_str)
+                )
+
+                if detected_versions:
+                    versions.extend(detected_versions)
+
                 continue
 
-            if isinstance(dir_path, str):
-                dir_path = Path(dir_path)
+            response = requests.head(item_full_url)
+            if not response.status_code != 200 or not response.headers.get("content-type") == allowed_content_type:
+                continue
 
-            found_versions = cls.get_versions_from_dir(pkg_name, dir_path, priority_to_archives, excluded_str_versions)
+            # If it's a file, process its name (stripped of extension)
+            name = Path(item.name).stem
+            version = cls.get_version_from_str(name)
+
+            if not version or (parent_version and (
+                    version.major != parent_version.major or version.minor != parent_version.minor)):
+                continue
+
+            version.set_location(item_full_url)
+            if str(version) not in excluded_str_versions:
+                versions.append(version)
+
+        # Correlation dict (key is version str, value is version obj)
+        versions_correlation = {}
+
+        # Loop to get in priority what was requested (archives or dir)
+        for curr_version in versions:
+            if str(curr_version) not in versions_correlation:
+                versions_correlation[str(curr_version)] = curr_version
+
+        return list(sorted(versions_correlation.values()))
+
+    @classmethod
+    def get_versions_from_sources(cls, pkg_name: str, source_locations: List[Union[SourceURL, Path, str]],
+                                  priority_to_archives=False,
+                                  excluded_str_versions: Optional[List[str]] = None) -> List:
+        versions_set = set()
+        dir_source_locations = []
+        web_source_locations = []
+
+        for source_location in source_locations:
+            if not source_location:
+                continue
+
+            if isinstance(source_location, str):
+                source_location = PackageHandler.conform_remote_source(source_location)
+
+            if isinstance(source_location, SourceURL):
+                web_source_locations.append(source_location)
+            else:
+                dir_source_locations.append(source_location)
+
+        for dir_source_location in dir_source_locations:
+            found_versions = cls.get_versions_from_dir(pkg_name, dir_source_location, priority_to_archives,
+                                                       excluded_str_versions)
+            versions_set.update(found_versions)
+
+        for web_source_location in web_source_locations:
+            found_versions = cls.get_versions_from_url(pkg_name, web_source_location, priority_to_archives,
+                                                       excluded_str_versions)
             versions_set.update(found_versions)
 
         return sorted(versions_set)
@@ -619,14 +783,15 @@ class PackageHandler:
         # If the goal is to retrieve the code, we want archives
         priority_to_archives = self.retrieve_locally
 
-        return self.get_versions_from_dirs(
+        return self.get_versions_from_sources(
             self._name,
-            self._remote_dir_paths,
+            self._remote_sources,
             priority_to_archives=priority_to_archives,
             excluded_str_versions=excluded_str_versions
         )
 
-    def find_version(self, version: Union[PackageVersion, str], from_local: bool = False) -> Union[PackageVersion, None]:
+    def find_version(self, version: Union[PackageVersion, str], from_local: bool = False) -> Union[
+            PackageVersion, None]:
         """Get a specific version from the local or remote dir if available."""
         if isinstance(version, str):
             version = PackageVersion(version=version)
@@ -638,6 +803,17 @@ class PackageHandler:
                     return curr_version
 
         return None
+
+    @staticmethod
+    def _download_version(remote_version: PackageVersion, dest_archive_path: Path):
+        response = requests.get(remote_version.location, stream=True)
+
+        if response.status_code == 200:
+            with open(dest_archive_path, "wb") as file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    file.write(chunk)
+        else:
+            raise Exception(f"Failed to download {remote_version.location}. HTTP status code: {response.status_code}")
 
     def retrieve_version_locally(self, version: Union[str, PackageVersion, None] = None):
         """Retrieve the version specified available from remote."""
@@ -664,17 +840,26 @@ class PackageHandler:
         destination_path = destination_dir.joinpath(str(remote_version))
         destination_path.mkdir(parents=True, exist_ok=True)
 
-        if remote_version.path.suffix == ".zip":
-            # Copy locally first
-            shutil.copy2(remote_version.path, destination_dir, follow_symlinks=True)
+        if remote_version.download_required:
+            archive_temp_path = Path(tempfile.gettempdir()).joinpath(f"{str(remote_version)}.zip")
+            self._download_version(remote_version, archive_temp_path)
+            remote_version.set_location(archive_temp_path)
+
+        if remote_version.is_archive:
+            archive_local_path = destination_dir.joinpath(remote_version.location.name)
+            if remote_version.location != archive_local_path:
+                # Copy locally first (delete existing archive if present)
+                if archive_local_path.exists():
+                    archive_local_path.unlink()
+                shutil.copy2(remote_version.location, destination_dir, follow_symlinks=True)
 
             # Unzip the local copy
-            with ZipFile(destination_dir.joinpath(remote_version.path.name), 'r') as zip_ref:
+            with ZipFile(archive_local_path, 'r') as zip_ref:
                 zip_ref.extractall(destination_path)
         else:
-            shutil.copytree(remote_version.path, destination_path, dirs_exist_ok=True)
+            shutil.copytree(remote_version.location, destination_path, dirs_exist_ok=True)
 
-        return PackageVersion(version=str(version), path=destination_path)
+        return PackageVersion(version=str(version), location=destination_path)
 
     def validate_checksums(self, base_version_path: Union[str, None] = None) -> tuple:
         """Validate checksums in a given path.
@@ -684,7 +869,7 @@ class PackageHandler:
                 and str in a tuple.
 
         """
-        dir_path = self._running_version.path
+        dir_path = self._running_version.location
         if base_version_path:
             dir_path = base_version_path
 
@@ -703,7 +888,7 @@ class PackageHandler:
             for line in checksums_data.split("\n") if line
         ]
 
-        # compare content of the package / folder against list of files from checksum file.
+        # Compare the content of the package / folder against the list of files from the checksum file.
         # If difference exists, something is wrong and we invalidate directly
         package_path = dir_path.joinpath(self._name)
         files_in_dir = set(
@@ -736,11 +921,12 @@ class PackageHandler:
         return True, "All ok"
 
     def _add_package_path_to_env(self):
-        """Add package path to environment."""
-        if not self._running_version.path:
-            raise ValueError("Installation dir path not specified in running_version. Please call first retrieve_version_locally.")
+        """Add the package path to the environment."""
+        if not self._running_version.location:
+            raise ValueError(
+                "Installation dir path not specified in running_version. Please call first retrieve_version_locally.")
 
-        version_path = self._running_version.path.resolve().as_posix()
+        version_path = self._running_version.location.resolve().as_posix()
         sys.path.insert(0, version_path)
 
     @staticmethod
@@ -748,12 +934,15 @@ class PackageHandler:
         if not version_obj.is_archive:
             return version_obj
 
+        if version_obj.download_required:
+            raise RuntimeError("Cannot unzip package version that is stored on a web server.")
+
         # Unzip
-        destination_path = version_obj.path.parent.joinpath(str(version_obj))
-        with ZipFile(version_obj.path, 'r') as zip_ref:
+        destination_path = version_obj.location.parent.joinpath(str(version_obj))
+        with ZipFile(version_obj.location, 'r') as zip_ref:
             zip_ref.extractall(destination_path)
 
-        version_obj.path = destination_path
+        version_obj.set_location(destination_path)
         return version_obj
 
 
@@ -811,7 +1000,7 @@ def get_package(package_name: str) -> PackageHandler:
     return _PACKAGE_MANAGER[package_name]
 
 
-def get_packages(package_type: Union[str, None]=None) -> List[PackageHandler]:
+def get_packages(package_type: Union[str, None] = None) -> List[PackageHandler]:
     global _PACKAGE_MANAGER
     if _PACKAGE_MANAGER is None:
         raise RuntimeError("Package Manager is not initialized")

@@ -84,6 +84,7 @@ opentimelineio = "^0.15.0"
 colorama = "0.4.6"
 fastapi = ">=0.112.0,<0.113.0"
 uvicorn = "^0.30.6"
+htmllistparse = "^0.6.1"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^6.0"
