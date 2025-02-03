@@ -89,6 +89,7 @@ if IS_WINDOWS:
 # In a perfect world, the install_requires should probably be the exact
 # same as the poetry dependency list in pyproject.toml
 install_requires = [
+    "htmllistparse",
     "fastapi",
     "uvicorn",
     "appdirs",

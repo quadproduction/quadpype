@@ -246,6 +246,7 @@ class PackageHandler:
                 location=self._install_dir_path
             )
 
+        running_version_str = ""
         if not running_version_str:
             # If no version specified gets the latest version
             latest_version = self.get_latest_version()
@@ -643,18 +644,18 @@ class PackageHandler:
             "application/x-zip-compressed",
             "application/octet-stream"
         ]
-        if not response.status_code != 200 or not response.headers.get("content-type") == page_content_type:
+        if response.status_code != 200 or page_content_type not in response.headers.get("content-type"):
             return versions
 
         # Parse the HTML content to extract links using htmllistparse
         cwd: str
         cwd, listing = fetch_listing(source_url)
-        if not cwd.endswith("/"):
-            cwd = cwd + "/"
+        if not source_url.endswith("/"):
+            source_url = source_url + "/"
 
         # Iterate over webpage at the first level
         for item in listing:
-            item_full_url = SourceURL(f"{cwd}{item.name}")
+            item_full_url = SourceURL(f"{source_url}{item.name}")
 
             # If the item is a directory with a major.minor version format, dive deeper
             if item.name.endswith("/") and re.match(r"^v?\d+\.\d+/$", item.name) and parent_version is None:
@@ -673,7 +674,7 @@ class PackageHandler:
                 continue
 
             response = requests.head(item_full_url)
-            if not response.status_code != 200 or not response.headers.get("content-type") == allowed_content_type:
+            if response.status_code != 200 or response.headers.get("content-type") not in allowed_content_type:
                 continue
 
             # If it's a file, process its name (stripped of extension)
