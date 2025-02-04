@@ -250,7 +250,7 @@ class PackageHandler:
         if not running_version_str:
             # If no version specified gets the latest version
             latest_version = self.get_latest_version()
-            is_local_more_recent = local_version and local_version >= latest_version
+            is_local_more_recent = local_version and latest_version and local_version >= latest_version
             if latest_version and not is_local_more_recent:
                 running_version_str = str(latest_version)
             elif local_version:

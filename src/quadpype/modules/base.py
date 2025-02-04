@@ -43,7 +43,8 @@ from quadpype.lib.version import (
     retrieve_package_manager,
     get_package,
     get_packages,
-    AddOnHandler
+    AddOnHandler,
+    PackageHandler
 )
 
 from .interfaces import (
@@ -231,8 +232,10 @@ def get_dynamic_modules_dirs():
 
         version_key = "staging_version" if is_staging_enabled() else "version"
 
-        remote_sources = addon_setting.get("package_remote_sources", {}).get(platform.system().lower(), [])
-        remote_sources = [Path(curr_source_str) for curr_source_str in remote_sources]
+        remote_sources_settings = addon_setting.get("package_remote_sources", {}).get(platform.system().lower(), [])
+        remote_sources = []
+        for remote_source in remote_sources_settings:
+            remote_sources.append(PackageHandler.conform_remote_source(remote_source))
 
         addon_package = AddOnHandler(
             pkg_name=addon_setting.get("package_name"),
