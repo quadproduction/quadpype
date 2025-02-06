@@ -53,14 +53,14 @@ class ValidateImagesPaths(pyblish.api.ContextPlugin,
 
         return invalid
 
-    def get_root_paths(self, context):
+    @classmethod
+    def get_root_paths(cls, context):
         """Retrieve and solve all roots from Anatomy() with context data
         Will create a list of pathlib.Path"""
         anatomy = Anatomy()
-        for root in anatomy.roots:
-            template = str(anatomy.roots.get(root))
-            resolved_path = get_resolved_name(context.data.get('anatomyData', {}), template)
-            self.root_paths.append(Path(resolved_path).resolve())
+        for root_name, root_val in anatomy.roots.items():
+            resolved_path = get_resolved_name(context.data.get('anatomyData', {}), str(root_val))
+            cls.root_paths.append(Path(resolved_path).resolve())
 
     def process(self, context):
         if not self.is_active(context.data):
@@ -107,7 +107,7 @@ class ValidateImagesPaths(pyblish.api.ContextPlugin,
 
         invalid = set(invalid)
 
-        invalid_materials= list()
+        invalid_materials = list()
 
         for mat in bpy.data.materials:
             if not mat.use_nodes:
@@ -118,7 +118,7 @@ class ValidateImagesPaths(pyblish.api.ContextPlugin,
                 if any(node.image == img for img in invalid):
                     invalid_materials.append(mat)
 
-        if not  invalid_materials:
+        if not invalid_materials:
             return
 
         bpy.ops.object.select_all(action='DESELECT')
