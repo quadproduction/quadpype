@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import time
 import subprocess
@@ -12,7 +13,10 @@ import tempfile
 import threading
 import shutil
 
+from pathlib import Path
 from contextlib import closing
+
+import semver
 
 from aiohttp import web
 from aiohttp_json_rpc import JsonRpc
@@ -540,6 +544,18 @@ class BaseCommunicator:
         # Remove temp folder
         shutil.rmtree(tmp_dir)
 
+    @staticmethod
+    def _get_host_version(executable_filename):
+        version_dict = {'major': 0, 'minor': 0, 'patch': 0}
+        regex_match = re.search(r"([\d.]+)", executable_filename)
+        version_elem_list = regex_match.group(1).split(".")
+        for index, version_elem_key in enumerate(version_dict):
+            if index >= len(version_elem_list):
+                break
+            version_dict[version_elem_key] = int(version_elem_list[index])
+
+        return version_dict
+
     def _prepare_windows_plugin(self, launch_args):
         """Copy plugin to TVPaint plugins and set PATH to dependencies.
 
@@ -549,17 +565,14 @@ class BaseCommunicator:
         to PATH variable.
         """
 
-        host_executable = launch_args[0]
-        executable_file = os.path.basename(host_executable)
+        host_executable = Path(launch_args[0])
+        executable_file = host_executable.name
+
+        subfolder = "windows_x64"
         if "64bit" in executable_file:
             subfolder = "windows_x64"
         elif "32bit" in executable_file:
             subfolder = "windows_x86"
-        else:
-            raise ValueError(
-                "Can't determine if executable "
-                "leads to 32-bit or 64-bit TVPaint!"
-            )
 
         plugin_files_path = get_plugin_files_path()
         # Folder for right windows plugin files
@@ -580,10 +593,13 @@ class BaseCommunicator:
             os.environ["PATH"] += (os.pathsep + additional_libs_folder)
 
         # Path to TVPaint's plugins folder (where we want to add our plugin)
-        host_plugins_path = os.path.join(
-            os.path.dirname(host_executable),
-            "plugins"
-        )
+        host_exe_dir = host_executable.parent
+        host_exe_version = self._get_host_version(executable_file)
+
+        if host_exe_version >= semver.VersionInfo(major=12, minor=0, patch=0):
+            host_plugins_path = host_exe_dir.joinpath("Resources", "plugins")
+        else:
+            host_plugins_path = host_exe_dir.joinpath("plugins")
 
         # Files that must be copied to TVPaint's plugin folder
         plugin_dir = os.path.join(source_plugins_dir, "plugin")
