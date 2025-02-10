@@ -13,26 +13,26 @@ function reset_db() {
 }
 
 
-function dump_mongo_settings($HOST_NAME, $PORT_NUM) {
+function dump_mongo_settings($MONGO_URI) {
     $TMP_FOLDER_PATH = Join-Path -Path $env:TEMP -ChildPath "mongo_dump\settings"
     if (!(Test-Path -Path $TMP_FOLDER_PATH)) {
         new-item $TMP_FOLDER_PATH -ItemType Directory > $null
     } else {
         Remove-Item "${TMP_FOLDER_PATH}\*" -Recurse -Force
     }
-    $RET_VAL = mongodump --uri="${HOST_NAME}":"${PORT_NUM}" --db=quadpype --collection=settings --out $TMP_FOLDER_PATH --quiet | mongorestore --uri="${HOST_NAME}":"${PORT_NUM}" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
+    $RET_VAL = mongodump --uri="${MONGO_URI}" --db=quadpype --collection=settings --out $TMP_FOLDER_PATH --quiet | mongorestore --uri="mongodb://localhost:27017" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
     return $RET_VAL
 }
 
 
-function dump_projects($HOST_NAME, $PORT_NUM) {
+function dump_projects($MONGO_URI) {
     $TMP_FOLDER_PATH = Join-Path -Path $env:TEMP -ChildPath "mongo_dump\projects"
     if (!(Test-Path -Path $TMP_FOLDER_PATH)) {
         new-item $TMP_FOLDER_PATH -ItemType Directory > $null
     } else {
         Remove-Item "${TMP_FOLDER_PATH}\*" -Recurse -Force
     }
-    $RET_VAL = mongodump --uri="${HOST_NAME}":"${PORT_NUM}" --db=avalon --out $TMP_FOLDER_PATH --quiet | mongorestore --uri="${HOST_NAME}":"${PORT_NUM}" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
+    $RET_VAL = mongodump --uri="${MONGO_URI}" --db=avalon --out $TMP_FOLDER_PATH --quiet | mongorestore --uri="mongodb://localhost:27017" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
     return $RET_VAL
 }
 
@@ -124,19 +124,15 @@ function main {
 
     # No else statement since the previous if can clear the variable
     if (!$MONGO_URI) {
-        $MONGO_URI = (Read-Host -Prompt "Enter the MongoDB URI (port included) : ").ToLower()
-        if (!$MONGO_URI -Or !($MONGO_URI -match "(mongodb://)?[\w.-]+:\d{1,5}")) {
-            write-output "The MongoDB connection URI seems invalid."
-            write-output "The format should be like: mongodb://uri.to.my.mongo-db:27017"
-            write-output "operation aborted."
-            return 1
-        }
+        $MONGO_URI = (Read-Host -Prompt "Enter the MongoDB URI")
     }
 
-    # Split the URI
-    $HOST_NAME, $PORT_NUM = $MONGO_URI -split ":", 2
-    # Remove prefix if present
-    $HOST_NAME = ($HOST_NAME -split "mongodb://")[-1]
+    if (!$MONGO_URI -Or !($MONGO_URI -match '^mongodb(\+srv)?://([\w.%-]+:[\w.%-]+@)?[\w.%-]+(:\d{1,5})?/?$')) {
+        write-output "The MongoDB connection URI seems invalid."
+        write-output "The format should be match the following regex: ^mongodb(\+srv)?://([\w.%-]+:[\w.%-]+@)?[\w.%-]+(:\d{1,5})?/?$"
+        write-output "operation aborted."
+        return 1
+    }
 
     write-output "Resetting local db ..."
     if (!(reset_db)) {
@@ -146,8 +142,8 @@ function main {
         return 1
     }
 
-    write-output "Fetching QuadPype settings from : ${HOST_NAME}:${PORT_NUM} ... "
-    if (!(dump_mongo_settings $HOST_NAME $PORT_NUM)) {
+    write-output "Fetching QuadPype settings from : ${MONGO_URI} ... "
+    if (!(dump_mongo_settings $MONGO_URI)) {
         write-output "OK"
     } else {
         write-output "FAILED"
@@ -167,8 +163,8 @@ function main {
     }
 
     if ($ALSO_FETCH_PROJECTS) {
-        write-output "Fetching QuadPype projects from : ${HOST_NAME}:${PORT_NUM} ... "
-        if (!(dump_projects $HOST_NAME $PORT_NUM)) {
+        write-output "Fetching QuadPype projects from : ${MONGO_URI} ... "
+        if (!(dump_projects $MONGO_URI)) {
             write-output "OK"
         } else {
             write-output "FAILED"
@@ -209,7 +205,7 @@ function main {
         return 1
     }
 
-    write-output "Your QuadPype local MongoDB connection string is mongodb:$PORT_NUM ..."
+    write-output "Your QuadPype local MongoDB connection string is mongodb://localhost:27017"
 }
 
 
