@@ -62,7 +62,7 @@ python3 -m pip install --upgrade --force-reinstall pip
 # 2. Re-apply the previously saved terminal encoding
 ####################################################
 # 2.A Set the current location to the QuadPype source directory
-cd "$PATH_QUADPYPE_ROOT"
+cd "$PATH_QUADPYPE_ROOT" || return > /dev/null
 
 # 2.B Check validity of the QuadPype version
 PATH_QUADPYPE_VERSION_FILE="$PATH_QUADPYPE_ROOT/quadpype/version.py"
@@ -129,4 +129,4 @@ source "$SCRIPT_DIR/activate.sh"
 
 # 7. Set back the current location to the current script folder
 ###############################################################
-cd "$PATH_ORIGINAL_LOCATION"
+cd "$PATH_ORIGINAL_LOCATION" || return > /dev/null
