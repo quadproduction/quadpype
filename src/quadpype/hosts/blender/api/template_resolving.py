@@ -51,7 +51,7 @@ def _get_app_name_by_data(data):
     is_from_anatomy = False
 
     if data.get("app"):
-        app_name = data["project"]["app"]
+        app_name = data["app"]
     elif data.get("anatomyData"):
         is_from_anatomy = True
         app_name = data["anatomyData"]["app"]
@@ -119,6 +119,8 @@ def _get_entity_prefix(data):
 
     profile_key = {"entity_types": parent}
     profile = filter_profiles(profiles, profile_key)
+    if not profile:
+        return None, is_anatomy
     # If a profile is found, return the prefix
     return profile.get("entity_prefix"), is_anatomy
 
@@ -132,7 +134,7 @@ def update_parent_data_with_entity_prefix(data):
     parent_prefix, is_anatomy = _get_entity_prefix(data)
 
     if not parent_prefix:
-        return
+        return None
 
     if is_anatomy:
         data["anatomyData"]["parent"] = parent_prefix
@@ -152,6 +154,8 @@ def get_entity_collection_template(data):
     parent, is_anatomy = _get_parent_by_data(data)
     profile_key = {"entity_types": parent}
     profile = filter_profiles(profiles, profile_key)
+    if not profile:
+        return None
     # If a profile is found, return the template
     return profile.get("template")
 

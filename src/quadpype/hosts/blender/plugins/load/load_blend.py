@@ -2,6 +2,7 @@ from typing import Dict, List, Optional
 from pathlib import Path
 
 import bpy
+from copy import deepcopy
 
 from quadpype.pipeline import (
     get_representation_path,
@@ -11,6 +12,11 @@ from quadpype.pipeline import (
 from quadpype.pipeline.create import CreateContext
 from quadpype.hosts.blender.api import plugin
 from quadpype.hosts.blender.api.lib import imprint
+from quadpype.hosts.blender.api import (
+    update_parent_data_with_entity_prefix,
+    get_entity_collection_template,
+    get_resolved_name
+)
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
     AVALON_PROPERTY,
@@ -28,10 +34,13 @@ class BlendLoader(plugin.BlenderLoader):
     color = "orange"
 
     @staticmethod
-    def _get_asset_container(objects):
-        empties = [obj for obj in objects if obj.type == 'EMPTY']
+    def _get_asset_container(objects, collections):
+        for coll in collections:
+            parents = [c for c in collections if c.user_of_id(coll)]
+            if coll.get(AVALON_PROPERTY) and not parents:
+                return coll
 
-        for empty in empties:
+        for empty in [obj for obj in objects if obj.type == 'EMPTY']:
             if empty.get(AVALON_PROPERTY) and empty.parent is None:
                 return empty
 
@@ -91,14 +100,16 @@ class BlendLoader(plugin.BlenderLoader):
                 data.name = f"{group_name}:{data.name}"
                 members.append(data)
 
-        container = self._get_asset_container(data_to.objects)
+        container = self._get_asset_container(data_to.objects, data_to.collections)
+
         assert container, "No asset group found"
 
         container.name = group_name
-        container.empty_display_type = 'SINGLE_ARROW'
 
-        # Link the collection to the scene
-        bpy.context.scene.collection.objects.link(container)
+        if isinstance(container, type(bpy.data.objects)):
+            container.empty_display_type = 'SINGLE_ARROW'
+            # Link the container to the scene
+            bpy.context.scene.collection.objects.link(container)
 
         # Link all the container children to the collection
         for obj in container.children_recursive:
@@ -129,6 +140,9 @@ class BlendLoader(plugin.BlenderLoader):
         libpath = self.filepath_from_context(context)
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
+        parent = context["representation"]["context"]["parent"]
+        context["representation"]["context"]["app"] = "blender"
+
         try:
             family = context["representation"]["context"]["family"]
         except ValueError:
@@ -146,12 +160,46 @@ class BlendLoader(plugin.BlenderLoader):
             avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
             bpy.context.scene.collection.children.link(avalon_container)
 
+        #Retrieve the data for template resolving.
+        #First, check the entity type prefix.
+        data_for_template = deepcopy(context["representation"]["context"])
+        update_parent_data_with_entity_prefix(data_for_template)
+
+        asset_type_collection = None
+        #If a difference, then it means a settings was found.
+        #Get the corresponding collection then
+        if data_for_template["parent"] != parent:
+            asset_type_collection = self.get_asset_type_collection(data_for_template)
+
+        asset_collection = None
+        asset_collection_template = get_entity_collection_template(context["representation"]["context"])
+        # If a difference, then it means a settings was found.
+        # Get the corresponding collection then
+        if asset_collection_template:
+            asset_collection = self.get_asset_numbered_collection(data_for_template,
+                                                                  asset_collection_template,
+                                                                  unique_number)
+
         container, members = self._process_data(libpath, group_name)
+
+        #If there's both an asset_type and asset_collection, then link them
+        if asset_type_collection and asset_collection:
+            asset_type_collection.children.link(asset_collection)
+
+        #if only asset collection is found, then link it to scene
+        elif not asset_type_collection and asset_collection:
+            bpy.context.scene.collection.children.link(asset_collection)
+
+        if asset_collection:
+            [asset_collection.objects.link(member) for member in members if isinstance(member, bpy.types.Object)]
 
         if family == "layout":
             self._post_process_layout(container, asset, representation)
 
-        avalon_container.objects.link(container)
+        if isinstance(container, bpy.types.Object):
+            avalon_container.objects.link(container)
+        elif isinstance(container, bpy.types.Collection):
+            avalon_container.children.link(container)
 
         data = {
             "schema": "quadpype:container-2.0",
@@ -177,6 +225,32 @@ class BlendLoader(plugin.BlenderLoader):
 
         self[:] = objects
         return objects
+
+    @staticmethod
+    def get_asset_type_collection(context_data):
+        """Search for the asset_type collection based on template and setting
+        If None is found, create one"""
+
+        asset_type_name = context_data["parent"]
+        asset_type_collection = bpy.data.collections.get(asset_type_name)
+        if not asset_type_collection:
+            asset_type_collection = bpy.data.collections.new(name=asset_type_name)
+            bpy.context.scene.collection.children.link(asset_type_collection)
+
+        return asset_type_collection
+
+    @staticmethod
+    def get_asset_numbered_collection(context_data, template, unique_number):
+        """Search for the asset collection based on template and setting
+        If None is found, create one"""
+
+        asset_collection_name = get_resolved_name(context_data, template)
+        asset_collection_name = f"{asset_collection_name}-{unique_number}"
+        asset_collection = bpy.data.collections.get(asset_collection_name)
+        if not asset_collection:
+            asset_collection = bpy.data.collections.new(name=asset_collection_name)
+
+        return asset_collection
 
     def exec_update(self, container: Dict, representation: Dict):
         """

@@ -74,7 +74,10 @@ class ValidateModelContents(plugin.BlenderInstancePlugin):
             raise RuntimeError ("No instance object found for {}".format(instance.name))
 
         for object in invalid:
-            object.parent = instance_object
+            if isinstance(instance_object, bpy.types.Object):
+                object.parent = instance_object
+                continue
+            instance_object.objects.link(object)
 
     def get_description(self):
         return inspect.cleandoc(
