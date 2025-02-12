@@ -25,9 +25,6 @@ if ($DEV) {
 if (($QUADPYPE_MONGO -eq "")) {
 	write-output "The MongoDB Connection String isn't set in the user environment variables or passed with --mongo-uri (-m) check usage."
     exit 1
-} elseIf (!(Test-Path -Path "$PATH_QUADPYPE_ROOT")) {
-    write-output "The value passed in --path-quadpype (-p) doesnt point to a valid existing directory."
-    exit 1
 }
 
 if (($QUADPYPE_MONGO -ne "IGNORED")) {
@@ -50,13 +47,12 @@ if (Test-Path -Path $PATH_ADDITIONAL_ENV_FILE) {
 $ENV_FILE_CONTENT = ""
 
 if (($QUADPYPE_MONGO -ne "IGNORED")) {
-    $ENV_FILE_CONTENT = [string]::Concat($ENV_FILE_CONTENT,"QUADPYPE_MONGO=$QUADPYPE_MONGO$([Environment]::NewLine)")
+    $ENV_FILE_CONTENT = "QUADPYPE_MONGO=$QUADPYPE_MONGO$([Environment]::NewLine)"
 }
 
 $ENV_FILE_CONTENT = [string]::Concat($ENV_FILE_CONTENT,"QUADPYPE_ROOT=$PATH_QUADPYPE_ROOT$([Environment]::NewLine)")
 
 New-Item "$($PATH_ADDITIONAL_ENV_FILE)" -ItemType File -Value "${ENV_FILE_CONTENT}" | Out-Null
-
 
 # Launch the activate script
 . "$($SCRIPT_DIR)\activate.ps1"
