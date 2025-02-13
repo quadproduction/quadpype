@@ -21,8 +21,6 @@ while [ "$(basename "$PATH_QUADPYPE_ROOT")" != "src" ]; do
   PATH_QUADPYPE_ROOT=$(dirname "$PATH_QUADPYPE_ROOT")
 done
 
-PATH_PYENV_DIR="$HOME/.pyenv"
-
 # Add path to the source directory into the user PATH
 if [[ ":$PATH:" != *":$PATH_QUADPYPE_ROOT:"* ]]; then
   export PATH="$PATH_QUADPYPE_ROOT:$PATH"
@@ -41,36 +39,11 @@ fi
 # 0. Install PyEnv, Python, and update PIP
 ##########################################
 
-# 1. Delete the PyEnv directory
-###############################
-rm -rf "$PATH_PYENV_DIR"
-
-# 1.A Download PyEnv, Install PyEnv and clean downloaded file
-curl https://pyenv.run | bash
-
-# 1.B Set the required environment variables related to PyEnv
-if ! grep -q "export PYENV_ROOT=\"${PATH_PYENV_DIR}\"" ~/.bashrc; then
-  echo "export PYENV=\"${PATH_PYENV_DIR}\"" >> ~/.bashrc
-  echo "export PYENV_ROOT=\"${PATH_PYENV_DIR}\"" >> ~/.bashrc
-  echo "export PYENV_HOME=\"${PATH_PYENV_DIR}\"" >> ~/.bashrc
-  echo "export PATH=\"${PATH_PYENV_DIR}/bin:${PATH_PYENV_DIR}/shims:$PATH\"" >> ~/.bashrc
-  echo 'eval "$(pyenv init --path)"' >> ~/.bashrc
-  echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
-fi
-export PYENV=$PATH_PYENV_DIR
-export PYENV_ROOT=$PATH_PYENV_DIR
-export PYENV_HOME=$PATH_PYENV_DIR
-export PATH="$PATH_PYENV_DIR/bin:$PATH_PYENV_DIR/shims:$PATH"
-eval "$(pyenv init --path)"
-eval "$(pyenv virtualenv-init -)"
 
 # 1.C Ensure the VIRTUAL_ENV variable isn't present in the User env variables
 unset VIRTUAL_ENV
 
 # 1.D Install the right Python version for the pipeline to run
-pyenv install 3.9.13
-pyenv global 3.9.13
-pyenv local 3.9.13
 
 # 1.E Update PIP for the pyenv Python
 python3 -m pip install --upgrade --force-reinstall pip

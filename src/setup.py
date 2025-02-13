@@ -151,7 +151,7 @@ icon_path = icons_dir_path.joinpath("quadpype.ico")
 mac_icon_path = icons_dir_path.joinpath("quadpype.icns")
 
 build_exe_options = dict(
-    build_exe="build\exe_quadpype",
+    build_exe=str(Path("build", "exe_quadpype")),
     packages=install_requires,
     includes=includes,
     excludes=excludes,

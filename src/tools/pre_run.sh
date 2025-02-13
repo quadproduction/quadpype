@@ -1,5 +1,18 @@
 #!/bin/bash
 
+realpath() (
+  OURPWD=$PWD
+  cd "$(dirname "$1")"
+  LINK=$(readlink "$(basename "$1")")
+  while [ "$LINK" ]; do
+    cd "$(dirname "$LINK")"
+    LINK=$(readlink "$(basename "$1")")
+  done
+  REALPATH="$PWD/$(basename "$1")"
+  cd "$OURPWD"
+  echo "$REALPATH"
+)
+
 DEV=false
 PROD=false
 MONGO_URI=""
@@ -37,13 +50,12 @@ fi
 
 echo >> ~/.bashrc
 echo >> ~/.zshrc
+sed -i '' -e '/^export QUADPYPE_MONGO=/d' ~/.bashrc
+sed -i '' -e '/^export QUADPYPE_MONGO=/d' ~/.zshrc
 if [ "$QUADPYPE_MONGO" != "IGNORED" ]; then
   export QUADPYPE_MONGO
   echo "export QUADPYPE_MONGO=\"${QUADPYPE_MONGO}\"" >> ~/.bashrc
   echo "export QUADPYPE_MONGO=\"${QUADPYPE_MONGO}\"" >> ~/.zshrc
-else
-  sed -i '/^export QUADPYPE_MONGO=/d' ~/.bashrc
-  sed -i '/^export QUADPYPE_MONGO=/d' ~/.zshrc
 fi
 
 export QUADPYPE_ROOT="$PATH_QUADPYPE_ROOT"

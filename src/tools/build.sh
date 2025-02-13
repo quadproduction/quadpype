@@ -10,6 +10,19 @@ CYAN='\033[0;36m'         # Cyan
 WHITE='\033[0;37m'        # White
 
 
+realpath() (
+  OURPWD=$PWD
+  cd "$(dirname "$1")"
+  LINK=$(readlink "$(basename "$1")")
+  while [ "$LINK" ]; do
+    cd "$(dirname "$LINK")"
+    LINK=$(readlink "$(basename "$1")")
+  done
+  REALPATH="$PWD/$(basename "$1")"
+  cd "$OURPWD"
+  echo "$REALPATH"
+)
+
 PATH_ORIGINAL_LOCATION=$(pwd)
 
 SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
@@ -26,6 +39,8 @@ _INSIDE_QUADPYPE_TOOL="1"
 if [[ -z $POETRY_HOME ]]; then
   export POETRY_HOME="$PATH_QUADPYPE_ROOT/.poetry"
 fi
+
+export QUADPYPE_ROOT="${PATH_QUADPYPE_ROOT}"
 
 QUADPYPE_VERSION="$(python <<< "import os;import re;version={};exec(open(os.path.join('$PATH_QUADPYPE_ROOT', 'quadpype', 'version.py')).read(), version);print(re.search(r'(\d+\.\d+.\d+).*', version['__version__'])[1]);")"
 echo -e "${GREEN}>>>${RST} QuadPype [ ${CYAN}${QUADPYPE_VERSION}${RST} ]"
@@ -48,17 +63,17 @@ echo -e "${GREEN}OK${RST}"
 
 echo -e "${GREEN}>>>${RST} Building QuadPype ..."
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  "$POETRY_HOME/bin/poetry" run python "$PATH_QUADPYPE_ROOT/setup.py" build &> "$PATH_QUADPYPE_ROOT/build/build.log" || { echo -e "${RED}------------------------------------------${RST}"; cat "$PATH_QUADPYPE_ROOT/build/build.log"; echo -e "${RED}------------------------------------------${RST}"; echo -e "${RED}!!!${RST} Build failed, see the build log."; return 1; }
+  "$POETRY_HOME/bin/poetry" run python "$PATH_QUADPYPE_ROOT/setup.py" build &> "$PATH_QUADPYPE_ROOT/build/build.log" || { echo -e "${RED}------------------------------------------${RST}"; cat "$PATH_QUADPYPE_ROOT/build/build.log"; echo -e "${RED}------------------------------------------${RST}"; echo -e "${RED}!!!${RST} Build failed, see the build log."; exit 1; }
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-  "$POETRY_HOME/bin/poetry" run python "$PATH_QUADPYPE_ROOT/setup.py" bdist_mac &> "$PATH_QUADPYPE_ROOT/build/build.log" || { echo -e "${RED}------------------------------------------${RST}"; cat "$PATH_QUADPYPE_ROOT/build/build.log"; echo -e "${RED}------------------------------------------${RST}"; echo -e "${RED}!!!${RST} Build failed, see the build log."; return 1; }
+  "$POETRY_HOME/bin/poetry" run python "$PATH_QUADPYPE_ROOT/setup.py" bdist_mac &> "$PATH_QUADPYPE_ROOT/build/build.log" || { echo -e "${RED}------------------------------------------${RST}"; cat "$PATH_QUADPYPE_ROOT/build/build.log"; echo -e "${RED}------------------------------------------${RST}"; echo -e "${RED}!!!${RST} Build failed, see the build log."; exit 1; }
 fi
 
-"$POETRY_HOME/bin/poetry" run python "$PATH_QUADPYPE_ROOT/tools/build_dependencies.py" || { echo -e "${RED}!!!${RST} ${YELLOW}Failed to process dependencies${RST}"; return 1; }
+"$POETRY_HOME/bin/poetry" run python "$PATH_QUADPYPE_ROOT/tools/_lib/build/build_dependencies.py" || { echo -e "${RED}!!!${RST} ${YELLOW}Failed to process dependencies${RST}"; exit 1; }
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
   # fix cx_Freeze libs issue
   echo -e "${GREEN}>>>${RST} Fixing libs for macOS ..."
-  mv "$PATH_QUADPYPE_ROOT/build/QuadPype $PATH_QUADPYPE_ROOT.app/Contents/MacOS/dependencies/cx_Freeze" "$PATH_QUADPYPE_ROOT/build/QuadPype $QUADPYPE_VERSION.app/Contents/MacOS/lib/"  || { echo -e "${RED}!!!>${RST} ${YELLOW}Can't move cx_Freeze libs${RST}"; return 1; }
+  mv "$PATH_QUADPYPE_ROOT/build/QuadPype $QUADPYPE_VERSION.app/Contents/MacOS/dependencies/cx_Freeze" "$PATH_QUADPYPE_ROOT/build/QuadPype $QUADPYPE_VERSION.app/Contents/MacOS/lib/"  || { echo -e "${RED}!!!>${RST} ${YELLOW}Can't move cx_Freeze libs${RST}"; exit 1; }
 
   # force hide icon from Dock
   defaults write "$PATH_QUADPYPE_ROOT/build/QuadPype $QUADPYPE_VERSION.app/Contents/Info" LSUIElement 1
