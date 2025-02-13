@@ -3,15 +3,15 @@ from collections import OrderedDict
 from quadpype.settings import get_project_settings
 from quadpype.lib import (
     filter_profiles,
-    Logger,
     StringTemplate,
 )
+
 
 def get_resolved_name(data, template):
     """Resolve template_collections_naming with entered data.
     Args:
         data (Dict[str, Any]): Data to fill template_collections_naming.
-        template (list): template to solve
+        template (str): template to solve
     Returns:
         str: Resolved template
     """
@@ -19,6 +19,7 @@ def get_resolved_name(data, template):
     # Resolve the template
     output = template_obj.format_strict(data)
     return output.normalized()
+
 
 def _get_project_name_by_data(data):
     """
@@ -39,6 +40,7 @@ def _get_project_name_by_data(data):
 
     return project_name, is_from_anatomy
 
+
 def _get_app_name_by_data(data):
     """
     Retrieve the app name depending on given data
@@ -58,6 +60,7 @@ def _get_app_name_by_data(data):
 
     return app_name, is_from_anatomy
 
+
 def _get_parent_by_data(data):
     """
     Retrieve the parent asset name depending on given data
@@ -76,6 +79,7 @@ def _get_parent_by_data(data):
         parent_name = data["anatomyData"]["parent"]
 
     return parent_name, is_from_anatomy
+
 
 def _get_profiles(setting_key, data, project_settings=None):
 
@@ -104,6 +108,7 @@ def _get_profiles(setting_key, data, project_settings=None):
 
     return profiles
 
+
 def _get_entity_prefix(data):
     """Retrieve the asset_type (entity_type) short name for proper blender naming
     Args:
@@ -122,6 +127,7 @@ def _get_entity_prefix(data):
     # If a profile is found, return the prefix
     return profile.get("entity_prefix"), is_anatomy
 
+
 def update_parent_data_with_entity_prefix(data):
     """
     Will update the input data dict to change the value of the ["parent"] key
@@ -138,6 +144,7 @@ def update_parent_data_with_entity_prefix(data):
         data["anatomyData"]["parent"] = parent_prefix
     else:
         data["parent"] = parent_prefix
+
 
 def get_entity_collection_template(data):
     """Retrieve the template for the collection depending on the entity type
