@@ -220,6 +220,9 @@ def pretty_date(t, now=None, strftime="%b %d %Y %H:%M"):
     if now is None:
         now = datetime.now(timezone.utc)
     assert isinstance(now, datetime)
+
+    if not t.tzinfo:
+        t = t.replace(tzinfo=timezone.utc)
     diff = now - t
 
     second_diff = diff.seconds
