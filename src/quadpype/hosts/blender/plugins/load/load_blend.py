@@ -138,9 +138,15 @@ class BlendLoader(plugin.BlenderLoader):
             options: Additional settings dictionary
         """
         libpath = self.filepath_from_context(context)
+
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
-        parent = context["representation"]["context"]["parent"]
+
+        parent = self.get_parent(context)
+        if not parent:
+            self.log.warning(f"Can not retrieve parent from asset {asset} / subset {subset}")
+
+        context["representation"]["context"]["parent"] = parent
         context["representation"]["context"]["app"] = "blender"
 
         try:
@@ -168,7 +174,7 @@ class BlendLoader(plugin.BlenderLoader):
         asset_type_collection = None
         #If a difference, then it means a settings was found.
         #Get the corresponding collection then
-        if data_for_template["parent"] != parent:
+        if parent and data_for_template["parent"] != parent:
             asset_type_collection = self.get_asset_type_collection(data_for_template)
 
         asset_collection = None
@@ -179,7 +185,6 @@ class BlendLoader(plugin.BlenderLoader):
             asset_collection = self.get_asset_numbered_collection(data_for_template,
                                                                   asset_collection_template,
                                                                   unique_number)
-
         container, members = self._process_data(libpath, group_name)
 
         #If there's both an asset_type and asset_collection, then link them
@@ -190,8 +195,26 @@ class BlendLoader(plugin.BlenderLoader):
         elif not asset_type_collection and asset_collection:
             bpy.context.scene.collection.children.link(asset_collection)
 
-        if asset_collection:
-            [asset_collection.objects.link(member) for member in members if isinstance(member, bpy.types.Object)]
+        # if asset_collection:
+        #     [asset_collection.objects.link(member) for member in members if isinstance(member, bpy.types.Object)]
+
+        for blender_object in members:
+            collections = list(filter(None, blender_object.get('original_hierarchy', '').split('/')))
+            collections = [f'{collection_name}-{unique_number}' for collection_name in collections]
+            for collection_level, collection_name in enumerate(collections):
+                collection = bpy.data.collections.get(collection_name, None)
+                if collection:
+                    continue
+
+                collection = bpy.data.collections.new(collection_name)
+
+                if collection_level == 0:
+                    asset_collection.children.link(collection)
+                else:
+                    bpy.data.collections[collections[collection_level - 1]].children.link(collection)
+
+            if collections:
+                bpy.data.collections[collections[-1]].objects.link(blender_object)
 
         if family == "layout":
             self._post_process_layout(container, asset, representation)
@@ -225,6 +248,19 @@ class BlendLoader(plugin.BlenderLoader):
 
         self[:] = objects
         return objects
+
+    @staticmethod
+    def get_parent(context):
+        parent = context["representation"]["context"].get('parent', None)
+        if not parent:
+            hierarchy = context["representation"]["context"].get('hierarchy')
+
+            if not hierarchy:
+                return
+
+            return hierarchy.split('/')[-1]
+
+        return parent
 
     @staticmethod
     def get_asset_type_collection(context_data):

@@ -30,13 +30,22 @@ class ExtractBlend(
         instance_name = f"{asset_name}_{subset}"
         filename = f"{instance_name}.blend"
         filepath = os.path.join(stagingdir, filename)
-
         # Perform extraction
         self.log.info("Performing extraction..")
 
         data_blocks = set()
 
+        hierarchies = {}
+        self.retrieve_objects_hierarchy(
+            collections=self.scene_collections(),
+            selection=self.get_blender_objects_from(instance),
+            result=hierarchies
+        )
         for data in instance:
+            object_hierarchy = hierarchies.get(data.name, None)
+            if object_hierarchy:
+                data['original_hierarchy'] = object_hierarchy
+
             data_blocks.add(data)
             # Pack used images in the blend files.
             if not (
@@ -73,3 +82,36 @@ class ExtractBlend(
 
         self.log.info("Extracted instance '%s' to: %s",
                        instance.name, representation)
+
+
+    @staticmethod
+    def scene_collections():
+        return [coll for coll in bpy.context.scene.collection.children if coll.objects and not 'AVALON' in coll.name]
+
+
+    @staticmethod
+    def get_blender_objects_from(instance):
+        return [
+            data for data in instance if
+            isinstance(data, bpy.types.Object) or
+            (hasattr(data, "type") and data.type == "CAMERA")
+        ]
+
+    def retrieve_objects_hierarchy(self, collections, selection, result, hierarchy=None):
+
+        def _format_hierarchy_label(collection, hierarchy):
+            return f'{hierarchy}/{collection.name}' if hierarchy else f'{collection.name}'
+
+        for collection in collections:
+            if collection.children:
+                self.retrieve_objects_hierarchy(
+                    collections=collection.children,
+                    selection=selection,
+                    result=result,
+                    hierarchy=_format_hierarchy_label(collection, hierarchy),
+                )
+            for obj in collection.objects:
+                if obj not in selection:
+                    continue
+
+                result[obj.name] = _format_hierarchy_label(collection, hierarchy)

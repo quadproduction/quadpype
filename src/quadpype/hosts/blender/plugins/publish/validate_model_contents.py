@@ -39,7 +39,6 @@ class ValidateModelContents(plugin.BlenderInstancePlugin):
             raise RuntimeError("No collection found with name :"
                                "{}".format(asset_model_coll))
 
-        objects = [obj for obj in instance]
         asset_model_list = asset_model_coll.objects
 
         # Get objects in instance

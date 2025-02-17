@@ -20,9 +20,8 @@ class ValidateCameraContents(pyblish.api.InstancePlugin):
 
     @staticmethod
     def get_invalid(instance):
-
         # get cameras
-        cameras = [obj for obj in instance if obj.type == "CAMERA"]
+        cameras = _retrieve_cameras(instance)
 
         invalid = []
         if len(cameras) != 1:
@@ -38,3 +37,22 @@ class ValidateCameraContents(pyblish.api.InstancePlugin):
         if invalid:
             raise RuntimeError("Invalid camera contents, Camera instance must have a single camera: "
                                "Found {0}: {1}".format(len(invalid), invalid))
+
+
+def _retrieve_cameras(instance):
+    cameras_objects = [obj for obj in instance if _is_camera(obj)]
+    cameras_from_collection = [
+        obj for collection in instance
+        for obj in collection.children
+        if _is_collection(collection) and _is_camera(obj)
+    ]
+
+    return cameras_objects + cameras_from_collection
+
+
+def _is_camera(obj):
+    return isinstance(obj, bpy.types.Object) and obj.type == "CAMERA"
+
+
+def _is_collection(obj):
+    return isinstance(obj, bpy.types.Collection)

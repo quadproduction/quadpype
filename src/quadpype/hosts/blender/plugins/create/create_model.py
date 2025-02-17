@@ -1,6 +1,7 @@
 """Create a model asset."""
 from quadpype.hosts.blender.api import plugin, lib
 
+
 class CreateModel(plugin.BlenderCreator):
     """Polygonal static geometry."""
 
@@ -14,7 +15,6 @@ class CreateModel(plugin.BlenderCreator):
     def create(
         self, subset_name: str, instance_data: dict, pre_create_data: dict
     ):
-
         self.create_as_asset_group = pre_create_data.get("create_as_asset_group", False)
 
         asset_group = super().create(subset_name,
