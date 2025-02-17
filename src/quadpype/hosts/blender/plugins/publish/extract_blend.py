@@ -41,6 +41,7 @@ class ExtractBlend(
             selection=self.get_blender_objects_from(instance),
             result=hierarchies
         )
+
         for data in instance:
             object_hierarchy = hierarchies.get(data.name, None)
             if object_hierarchy:
@@ -86,7 +87,7 @@ class ExtractBlend(
 
     @staticmethod
     def scene_collections():
-        return [coll for coll in bpy.context.scene.collection.children if coll.objects and not 'AVALON' in coll.name]
+        return [coll for coll in bpy.context.scene.collection.children if not 'AVALON' in coll.name]
 
 
     @staticmethod
