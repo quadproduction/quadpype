@@ -38,8 +38,7 @@ class ExtractCameraABC(
 
         asset_group = instance.data["transientData"]["instance_node"]
 
-        # Need to cast to list because children is a tuple
-        selected = list(asset_group.children)
+        selected = self.get_asset_children(asset_group)
 
         if not selected:
             self.log.error("Extraction failed: No child objects found in the asset group.")
@@ -120,3 +119,7 @@ class ExtractCameraABC(
 
         self.log.info("Extracted instance '%s' to: %s\nExtracted instance '%s' to: %s",
                       instance.name, representation, jsonname, json_representation)
+
+    @staticmethod
+    def get_asset_children(asset):
+        return list(asset.objects) if isinstance(asset, bpy.types.Collection) else list(list(asset.children))

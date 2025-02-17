@@ -35,7 +35,6 @@ class CreateCamera(plugin.BlenderCreator):
                 continue
             asset_group.objects.link(camera)
 
-
         return asset_group
 
     def get_instance_attr_defs(self):

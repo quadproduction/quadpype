@@ -174,7 +174,7 @@ class BlendLoader(plugin.BlenderLoader):
         asset_type_collection = None
         #If a difference, then it means a settings was found.
         #Get the corresponding collection then
-        if parent and data_for_template["parent"] != parent:
+        if data_for_template.get("parent", None) != parent:
             asset_type_collection = self.get_asset_type_collection(data_for_template)
 
         asset_collection = None
@@ -195,6 +195,7 @@ class BlendLoader(plugin.BlenderLoader):
         elif not asset_type_collection and asset_collection:
             bpy.context.scene.collection.children.link(asset_collection)
 
+        # TODO : Check if it is always working without using collections
         # if asset_collection:
         #     [asset_collection.objects.link(member) for member in members if isinstance(member, bpy.types.Object)]
 
