@@ -1,9 +1,23 @@
 import os
+from copy import copy
 
 import bpy
 
 from quadpype.pipeline import publish
-from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api import (
+    plugin,
+    get_task_collection_templates,
+    get_resolved_name
+)
+from quadpype.hosts.blender.api.pipeline import (
+    AVALON_CONTAINERS,
+    AVALON_INSTANCES,
+    AVALON_PROPERTY,
+)
+
+
+DEFAULT_VARIANT_NAME = "Main"
+
 
 class ExtractBlend(
     plugin.BlenderExtractor, publish.OptionalPyblishPluginMixin
@@ -23,29 +37,42 @@ class ExtractBlend(
             return
 
         # Define extract output file path
-
         stagingdir = self.staging_dir(instance)
         asset_name = instance.data["assetEntity"]["name"]
         subset = instance.data["subset"]
         instance_name = f"{asset_name}_{subset}"
         filename = f"{instance_name}.blend"
         filepath = os.path.join(stagingdir, filename)
+
+        parent = instance.data.get('parent')
+        if not parent:
+            parent = instance.data.get('anatomyData', []).get('parent', None)
+
+        # We remove variant data if equal to Main to avoid the info in the final name
+        variant = instance.data.get('variant')
+        if variant == 'Main':
+            variant = None
+
         # Perform extraction
         self.log.info("Performing extraction..")
 
         data_blocks = set()
 
-        hierarchies = {}
-        self.retrieve_objects_hierarchy(
-            collections=self.scene_collections(),
-            selection=self.get_blender_objects_from(instance),
-            result=hierarchies
-        )
+        templates = get_task_collection_templates(instance.data)
+
+        for template in templates:
+            task_hierarchy = get_resolved_name(
+                data=instance.data,
+                template=template,
+                parent=parent,
+                variant=variant
+            )
+            parent_collection_name = task_hierarchy.replace('\\', '/').split('/')[-1]
+            self.assign_hierarchy_to_objects_in(
+                collection=bpy.data.collections[parent_collection_name]
+            )
 
         for data in instance:
-            object_hierarchy = hierarchies.get(data.name, None)
-            if object_hierarchy:
-                data['original_hierarchy'] = object_hierarchy
 
             data_blocks.add(data)
             # Pack used images in the blend files.
@@ -84,35 +111,9 @@ class ExtractBlend(
         self.log.info("Extracted instance '%s' to: %s",
                        instance.name, representation)
 
+    def assign_hierarchy_to_objects_in(self, collection):
+        for obj in collection.objects:
+            obj['original_collection_parent'] = collection.name
 
-    @staticmethod
-    def scene_collections():
-        return [coll for coll in bpy.context.scene.collection.children if not 'AVALON' in coll.name]
-
-
-    @staticmethod
-    def get_blender_objects_from(instance):
-        return [
-            data for data in instance if
-            isinstance(data, bpy.types.Object) or
-            (hasattr(data, "type") and data.type == "CAMERA")
-        ]
-
-    def retrieve_objects_hierarchy(self, collections, selection, result, hierarchy=None):
-
-        def _format_hierarchy_label(collection, hierarchy):
-            return f'{hierarchy}/{collection.name}' if hierarchy else f'{collection.name}'
-
-        for collection in collections:
-            if collection.children:
-                self.retrieve_objects_hierarchy(
-                    collections=collection.children,
-                    selection=selection,
-                    result=result,
-                    hierarchy=_format_hierarchy_label(collection, hierarchy),
-                )
-            for obj in collection.objects:
-                if obj not in selection:
-                    continue
-
-                result[obj.name] = _format_hierarchy_label(collection, hierarchy)
+        for child_collections in collection.children:
+            self.assign_hierarchy_to_objects_in(child_collections)

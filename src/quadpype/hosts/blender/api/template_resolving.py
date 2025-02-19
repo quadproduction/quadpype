@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from quadpype.settings import get_project_settings
+from copy import deepcopy
 from quadpype.lib import (
     filter_profiles,
     Logger,
@@ -8,7 +9,7 @@ from quadpype.lib import (
 )
 
 
-def get_resolved_name(data, template):
+def get_resolved_name(data, template, **additional_data):
     """Resolve template_collections_naming with entered data.
     Args:
         data (Dict[str, Any]): Data to fill template_collections_naming.
@@ -18,6 +19,10 @@ def get_resolved_name(data, template):
     """
     template_obj = StringTemplate(template)
     # Resolve the template
+    if additional_data:
+        from copy import copy
+        for key, value in additional_data.items():
+            data[key] = value
     output = template_obj.format_strict(data)
     return output.normalized()
 
@@ -149,7 +154,7 @@ def update_parent_data_with_entity_prefix(data):
         data["parent"] = parent_prefix
 
 
-def get_entity_collection_template(data):
+def get_entity_collection_templates(data):
     """Retrieve the template for the collection depending on the entity type
     Args:
         data (Dict[str, Any]): Data to fill template_collections_naming.
@@ -157,18 +162,17 @@ def get_entity_collection_template(data):
         str: A template that can be solved later
     """
 
-    # Get Entity Type Name Matcher Profiles
     profiles = _get_profiles("collections_templates_by_entity_type", data)
     parent, is_anatomy = _get_parent_by_data(data)
     profile_key = {"entity_types": parent}
     profile = filter_profiles(profiles, profile_key)
     if not profile:
         return None
-    # If a profile is found, return the template
-    return profile.get("template")
+
+    return profile.get("templates")
 
 
-def get_task_collection_template(data):
+def get_task_collection_templates(data):
     """Retrieve the template for the collection depending on the task type
     Args:
         data (Dict[str, Any]): Data to fill template_collections_naming.
@@ -176,15 +180,11 @@ def get_task_collection_template(data):
         str: A template that can be solved later
     """
 
-    # Get Entity Type Name Matcher Profiles
     profiles = _get_profiles("working_collections_templates_by_tasks", data)
     profile_key = {"task_types": data["task"]}
     profile = filter_profiles(profiles, profile_key)
 
     if not profile:
         return None
-    # If a profile is found, return the template
-    if data.get("variant", None) == "Main":
-        return profile["main_template"]
 
-    return profile["variant_template"]
+    return profile["templates"]

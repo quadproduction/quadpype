@@ -362,14 +362,10 @@
                             "type": "task-types-enum"
                             },
                             {
-                                "type": "text",
-                                "key": "main_template",
-                                "label": "Main Template"
-                            },
-                            {
-                                "type": "text",
-                                "key": "variant_template",
-                                "label": "Variant Template"
+                                "key": "templates",
+                                "label": "Templates",
+                                "type": "list",
+                                "object_type": "text"
                             }
                         ]
                     }
