@@ -134,7 +134,7 @@ class BaseAnatomy(object):
             template (str): Template for environment variable key fill.
                 By default is set to `"${}"`.
         """
-        return self.roots_obj.root_environmets_fill_data(template)
+        return self.roots_obj.root_environments_fill_data(template)
 
     def find_root_template_from_path(self, *args, **kwargs):
         """Wrapper for Roots `find_root_template_from_path`."""
@@ -1400,7 +1400,7 @@ class Roots:
             output.update(self._root_environments(_keys, _value))
         return output
 
-    def root_environmets_fill_data(self, template=None):
+    def root_environments_fill_data(self, template=None):
         """Environment variable values in dictionary for rootless path.
 
         Args:
@@ -1409,12 +1409,12 @@ class Roots:
         """
         if template is None:
             template = "${}"
-        return self._root_environmets_fill_data(template)
+        return self._root_environments_fill_data(template)
 
-    def _root_environmets_fill_data(self, template, keys=None, roots=None):
+    def _root_environments_fill_data(self, template, keys=None, roots=None):
         if keys is None and roots is None:
             return {
-                "root": self._root_environmets_fill_data(
+                "root": self._root_environments_fill_data(
                     template, [], self.roots
                 )
             }
@@ -1430,7 +1430,7 @@ class Roots:
         for key, value in roots.items():
             _keys = list(keys)
             _keys.append(key)
-            output[key] = self._root_environmets_fill_data(
+            output[key] = self._root_environments_fill_data(
                 template, _keys, value
             )
         return output

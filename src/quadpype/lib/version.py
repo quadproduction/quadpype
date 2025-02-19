@@ -8,6 +8,7 @@ import tempfile
 
 import semver
 import requests
+from requests.adapters import HTTPAdapter, Retry
 from htmllistparse import fetch_listing
 
 from pathlib import Path
@@ -17,6 +18,11 @@ from typing import Union, List, Tuple, Any, Optional, Dict
 
 ADDONS_SETTINGS_KEY = "addons"
 _NOT_SET = object()
+HTTP_ADAPTER = HTTPAdapter(max_retries=Retry(
+    total=3,
+    backoff_factor=0.2,
+    status_forcelist=[500, 502, 503, 504]
+))
 
 # Versions should match any string complying with https://semver.org/
 VERSION_REGEX = re.compile(r"(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>[a-zA-Z\d\-.]*))?(?:\+(?P<buildmetadata>[a-zA-Z\d\-.]*))?$")  # noqa: E501
@@ -201,6 +207,9 @@ class ZipFileLongPaths(ZipFile):
 class PackageHandler:
     """Class for handling a package."""
     type = "package"
+    _request_session = requests.Session()
+    _request_session.mount('http://', HTTP_ADAPTER)
+    _request_session.mount('https://', HTTP_ADAPTER)
 
     def __init__(self,
                  pkg_name: str,
@@ -378,7 +387,7 @@ class PackageHandler:
                 return remote_source
             elif isinstance(remote_source, SourceURL):
                 try:
-                    response = requests.head(remote_source)
+                    response = self._request_session.get(remote_source)
                     if response.ok:
                         return remote_source
                 except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError):
@@ -637,7 +646,11 @@ class PackageHandler:
         if not source_url:
             return versions
 
-        response = requests.head(source_url)
+        try:
+            response = cls._request_session.head(source_url)
+        except Exception:  # noqa
+            return versions
+
         page_content_type = "text/html"
         allowed_content_type = [
             "application/zip",
@@ -673,7 +686,11 @@ class PackageHandler:
 
                 continue
 
-            response = requests.head(item_full_url)
+            try:
+                response = cls._request_session.head(item_full_url)
+            except Exception:  # noqa
+                continue
+
             if response.status_code != 200 or response.headers.get("content-type") not in allowed_content_type:
                 continue
 
@@ -807,7 +824,10 @@ class PackageHandler:
 
     @staticmethod
     def _download_version(remote_version: PackageVersion, dest_archive_path: Path):
-        response = requests.get(remote_version.location, stream=True)
+        try:
+            response = PackageHandler._request_session.get(remote_version.location, stream=True)
+        except Exception as e:  # noqa
+            raise Exception(f"Failed to download {remote_version.location}. Error: {e}")
 
         if response.status_code == 200:
             with open(dest_archive_path, "wb") as file:

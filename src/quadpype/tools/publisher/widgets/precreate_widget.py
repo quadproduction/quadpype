@@ -92,21 +92,25 @@ class AttributesWidget(QtWidgets.QWidget):
 
     def current_value(self):
         output = []
+        global_data = {}
+
         for widget in self._widgets:
             attr_def = widget.attr_def
             if not attr_def.is_value_def:
                 continue
 
-            output_data = {attr_def.key: None}
             if isinstance(attr_def, FileDef):
                 for data_dict in widget.current_value():
-                    output_data_copy = output_data.copy()
-                    output_data_copy[attr_def.key] = data_dict
-                    output_data_copy['reviewable'] = data_dict.get('reviewable', {})
-                    output.append(output_data_copy)
+                    output_data = {
+                        attr_def.key: data_dict,
+                        'reviewable': data_dict.get('reviewable', {})
+                    }
+                    output.append(output_data)
             else:
-                output_data[attr_def.key] = widget.current_value()
-                output.append(output_data)
+                global_data[attr_def.key] = widget.current_value()
+
+        if global_data:
+            output.insert(0, global_data)
 
         return output
 
