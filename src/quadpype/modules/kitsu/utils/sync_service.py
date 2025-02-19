@@ -143,7 +143,7 @@ class Listener:
         # Get project entity
         project = gazu.project.get_project(data["project_id"])
 
-        update_project = write_project_to_op(project, self.dbcon)
+        update_project = write_project_to_op(project)
 
         # Write into DB
         if update_project:
