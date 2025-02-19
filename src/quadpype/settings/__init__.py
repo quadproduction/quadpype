@@ -32,6 +32,7 @@ from .lib import (
     get_core_settings,
     get_global_settings,
     get_project_settings,
+    get_default_anatomy_settings,
     get_current_project_settings,
     get_anatomy_settings
 )
@@ -75,6 +76,7 @@ __all__ = (
     "get_core_settings",
     "get_global_settings",
     "get_project_settings",
+    "get_default_anatomy_settings",
     "get_current_project_settings",
     "get_anatomy_settings",
 
