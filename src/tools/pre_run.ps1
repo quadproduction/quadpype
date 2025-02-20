@@ -54,6 +54,8 @@ $ENV_FILE_CONTENT = [string]::Concat($ENV_FILE_CONTENT,"QUADPYPE_ROOT=$PATH_QUAD
 
 New-Item "$($PATH_ADDITIONAL_ENV_FILE)" -ItemType File -Value "${ENV_FILE_CONTENT}" | Out-Null
 
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
 # Launch the activate script
 . "$($SCRIPT_DIR)\activate.ps1"
 
