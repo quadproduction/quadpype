@@ -4,7 +4,6 @@ from quadpype.settings import get_project_settings
 from copy import deepcopy
 from quadpype.lib import (
     filter_profiles,
-    Logger,
     StringTemplate,
 )
 
@@ -13,7 +12,7 @@ def get_resolved_name(data, template, **additional_data):
     """Resolve template_collections_naming with entered data.
     Args:
         data (Dict[str, Any]): Data to fill template_collections_naming.
-        template (list): template to solve
+        template (str): template to solve
     Returns:
         str: Resolved template
     """

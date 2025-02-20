@@ -32,14 +32,14 @@ function dump_projects($MONGO_URI) {
     } else {
         Remove-Item "${TMP_FOLDER_PATH}\*" -Recurse -Force
     }
-    $RET_VAL = mongodump --uri="${MONGO_URI}" --db=avalon --out $TMP_FOLDER_PATH --quiet | mongorestore --uri="mongodb://localhost:27017" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
+    $RET_VAL = mongodump --uri="${MONGO_URI}" --db="quadpype_projects" --out $TMP_FOLDER_PATH --quiet | mongorestore --uri="mongodb://localhost:27017" --dir $TMP_FOLDER_PATH --drop --quiet --stopOnError
     return $RET_VAL
 }
 
 
 function disable_module($MODULE_NAME) {
     $DISABLE_MODULE_SCRIPT_PATH = Join-Path -Path (Split-Path $SCRIPT_DIR -Parent) -ChildPath "tools\_lib\database\disable_module.js"
-    $RET_VAL = mongosh --file $DISABLE_MODULE_SCRIPT_PATH --quiet --eval "var moduleName='$MODULE_NAME'"
+    $RET_VAL = mongosh --quiet --file $DISABLE_MODULE_SCRIPT_PATH --quiet --eval "var moduleName=`"`"$MODULE_NAME`"`";"
     return $RET_VAL
 }
 
@@ -50,7 +50,7 @@ function change_root_dir($ROOT_DIR) {
     }
 
     $CHANGE_ROOT_DIR_SCRIPT_PATH = Join-Path -Path (Split-Path $SCRIPT_DIR -Parent) -ChildPath "tools\_lib\database\change_root_directory.js"
-    $RET_VAL = mongosh --file $CHANGE_ROOT_DIR_SCRIPT_PATH --eval "var rootDir="$ROOT_DIR"" --quiet
+    $RET_VAL = mongosh --quiet --file $CHANGE_ROOT_DIR_SCRIPT_PATH --eval "var rootDir=`"`"$ROOT_DIR`"`";"
     return $RET_VAL
 }
 
@@ -154,7 +154,7 @@ function main {
     if ($YES_TO_ALL -Or $FETCH_PROJECTS) {
         $ALSO_FETCH_PROJECTS = $true
     } else {
-        $ALSO_FETCH_PROJECTS = (Read-Host -Prompt "Do you also want to fetch projects ? (y/n) : ").ToLower()
+        $ALSO_FETCH_PROJECTS = (Read-Host -Prompt "Do you also want to fetch projects ? (y/n)").ToLower()
         if (($ALSO_FETCH_PROJECTS -eq "y") -Or ($ALSO_FETCH_PROJECTS -eq "yes")) {
             $ALSO_FETCH_PROJECTS = $true
         } else {

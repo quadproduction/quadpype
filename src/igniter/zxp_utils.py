@@ -10,8 +10,6 @@ from typing import List
 import semver
 from qtpy import QtCore
 
-from .version_classes import PackageVersion
-
 
 class ZXPExtensionData:
 
@@ -91,7 +89,8 @@ def get_zxp_extensions_to_update(running_version_fullpath, global_settings, forc
         return []
     elif low_platform == "darwin":
         # TODO: implement this function for macOS
-        raise NotImplementedError(f"MacOS not implemented, implementation need before the first macOS release")
+        return []
+        # raise NotImplementedError(f"MacOS not implemented, implementation need before the first macOS release")
 
     zxp_host_ids = ["photoshop", "aftereffects"]
 
