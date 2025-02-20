@@ -34,6 +34,7 @@ from .lib import (
     maintained_selection,
     maintained_time,
     get_selection,
+    get_parents_for_collection,
     # unique_name,
 )
 
@@ -43,7 +44,6 @@ from .render_lib import prepare_rendering
 
 from .template_resolving import (
     get_resolved_name,
-    get_entity_collection_templates,
     get_task_collection_templates,
     update_parent_data_with_entity_prefix
 )
@@ -81,7 +81,7 @@ __all__ = [
 
     #Templates for working:
     "get_resolved_name",
-    "get_entity_collection_templates",
     "get_task_collection_templates",
-    "update_parent_data_with_entity_prefix"
+    "update_parent_data_with_entity_prefix",
+    "get_parents_for_collection"
 ]

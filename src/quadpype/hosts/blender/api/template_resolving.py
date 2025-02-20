@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from quadpype.settings import get_project_settings
-from copy import deepcopy
+from copy import copy
 from quadpype.lib import (
     filter_profiles,
     StringTemplate,
@@ -19,10 +19,12 @@ def get_resolved_name(data, template, **additional_data):
     template_obj = StringTemplate(template)
     # Resolve the template
     if additional_data:
-        from copy import copy
+        copy_data = copy(data)
         for key, value in additional_data.items():
-            data[key] = value
-    output = template_obj.format_strict(data)
+            copy_data[key] = value
+        output = template_obj.format_strict(copy_data)
+    else:
+        output = template_obj.format_strict(data)
     return output.normalized()
 
 
@@ -153,34 +155,16 @@ def update_parent_data_with_entity_prefix(data):
         data["parent"] = parent_prefix
 
 
-def get_entity_collection_templates(data):
-    """Retrieve the template for the collection depending on the entity type
-    Args:
-        data (Dict[str, Any]): Data to fill template_collections_naming.
-    Return:
-        str: A template that can be solved later
-    """
-
-    profiles = _get_profiles("collections_templates_by_entity_type", data)
-    parent, is_anatomy = _get_parent_by_data(data)
-    profile_key = {"entity_types": parent}
-    profile = filter_profiles(profiles, profile_key)
-    if not profile:
-        return None
-
-    return profile.get("templates")
-
-
-def get_task_collection_templates(data):
+def get_task_collection_templates(data, task=None):
     """Retrieve the template for the collection depending on the task type
     Args:
         data (Dict[str, Any]): Data to fill template_collections_naming.
+        task (str): fill to bypass task in data dict
     Return:
         str: A template that can be solved later
     """
-
     profiles = _get_profiles("working_collections_templates_by_tasks", data)
-    profile_key = {"task_types": data["task"]}
+    profile_key = {"task_types": data["task"] if not task else task}
     profile = filter_profiles(profiles, profile_key)
 
     if not profile:

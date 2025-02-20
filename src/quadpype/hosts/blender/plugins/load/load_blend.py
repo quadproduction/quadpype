@@ -14,8 +14,9 @@ from quadpype.hosts.blender.api import plugin
 from quadpype.hosts.blender.api.lib import imprint
 from quadpype.hosts.blender.api import (
     update_parent_data_with_entity_prefix,
-    get_entity_collection_template,
-    get_resolved_name
+    get_task_collection_templates,
+    get_resolved_name,
+    get_parents_for_collection
 )
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
@@ -142,7 +143,7 @@ class BlendLoader(plugin.BlenderLoader):
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
 
-        parent = self.get_parent(context)
+        parent = self.get_parent_data(context)
         if not parent:
             self.log.warning(f"Can not retrieve parent from asset {asset} / subset {subset}")
 
@@ -178,44 +179,159 @@ class BlendLoader(plugin.BlenderLoader):
             asset_type_collection = self.get_asset_type_collection(data_for_template)
 
         asset_collection = None
-        asset_collection_template = get_entity_collection_template(context["representation"]["context"])
-        # If a difference, then it means a settings was found.
-        # Get the corresponding collection then
-        if asset_collection_template:
-            asset_collection = self.get_asset_numbered_collection(data_for_template,
-                                                                  asset_collection_template,
-                                                                  unique_number)
+        asset_collection_templates = get_task_collection_templates(
+            context["representation"]["context"],
+            task=context["representation"]["context"]['task'].get('name', None)
+        )
+
         container, members = self._process_data(libpath, group_name)
 
-        #If there's both an asset_type and asset_collection, then link them
-        if asset_type_collection and asset_collection:
-            asset_type_collection.children.link(asset_collection)
+        corresponding_hierarchies_numbered = None
 
-        #if only asset collection is found, then link it to scene
-        elif not asset_type_collection and asset_collection:
-            bpy.context.scene.collection.children.link(asset_collection)
+        if asset_collection_templates:
+            all_hierarchies = [
+                get_resolved_name(
+                    data=data_for_template,
+                    template=hierarchies,
+                    numbering=unique_number
+                ).replace('\\', '/').split('/')
+                for hierarchies in asset_collection_templates
+            ]
+
+            corresponding_hierarchies_numbered = {
+                get_resolved_name(
+                    data=data_for_template,
+                    template=hierarchies
+                ).replace('\\', '/').split('/')[-1] : get_resolved_name(
+                    data=data_for_template,
+                    template=hierarchies,
+                    numbering=unique_number
+                ).replace('\\', '/').split('/')[-1]
+                for hierarchies in asset_collection_templates
+            }
+
+            self.log.warning('HERE')
+            self.log.warning(asset_collection_templates)
+            self.log.warning(data_for_template.get('numbering'))
+            self.log.warning(corresponding_hierarchies_numbered)
+
+            top_hierarchies = set(
+                collection[0] for collection in all_hierarchies
+            )
+            top_collection_name = next(iter(top_hierarchies))
+            self.log.warning(top_collection_name)
+            if not top_collection_name:
+                self.log.warning(
+                    "Can not extract top collection from retrieved templates. "
+                    "No collection will be used for later process."
+                )
+            else:
+                if len(top_hierarchies) > 1:
+                    self.log.warning(
+                        f"Multiple top collections have been found. "
+                        f"Only the first one ({top_collection_name}) will be used."
+                    )
+
+                asset_collection = self.create_asset_numbered_collection(
+                    data_for_template,
+                    top_collection_name,
+                    unique_number,
+                    asset_type_collection
+                )
+                self.log.warning('COLLECTIONS MISSING')
+                self.log.warning(asset_collection)
+                self.log.warning(asset_type_collection)
+
+                top_children_coll_templates = [
+                    collection[1:] for collection in all_hierarchies
+                ]
+                self.log.warning('---')
+                self.log.warning(asset_collection)
+                self.log.warning(top_children_coll_templates)
+                for single_template in top_children_coll_templates:
+                    self.log.warning(single_template)
+                    for level, collection_name in enumerate(single_template):
+                        self.log.warning(collection_name)
+                        collection = bpy.data.collections.get(collection_name)
+                        if not collection:
+                            collection = bpy.data.collections.new(collection_name)
+
+                        if level == 0:
+                            parent = asset_collection
+                        else:
+                            parent = bpy.data.collections[single_template[level-1]]
+
+                        if collection not in list(parent.children):
+                            parent.children.link(collection)
+
+        if asset_collection:
+            # TODO : important but need to move this elsewhere
+            # self.get_parent_collection(
+            #     asset_type_collection
+            # ).children.link(asset_collection)
+
+            for blender_object in members:
+                self.log.warning(blender_object.name)
+
+                # TODO : what to do if no parent is found ?
+                # TODO : handle multiple collections in hierarchies
+                parent_collection_name = blender_object.get('original_collection_parent')
+                if not parent_collection_name:
+                    continue
+
+                collection = bpy.data.collections.get(
+                    corresponding_hierarchies_numbered.get(parent_collection_name, parent_collection_name)
+                )
+                self.log.warning(collection)
+                if not collection:
+                    collection = bpy.data.collections.new(parent_collection_name)
+
+                collection.objects.link(blender_object)
+
+                # if not get_parents_for_collection(
+                #     collection=collection,
+                #     collections=asset_collection
+                # ):
+                #     #TODO : how to link to parent ?
+                #     #collection.objects.link(blender_object)
+                #
+                # self.log.warning('linked')
+
+
+
+
+
+
+        # #If there's both an asset_type and asset_collection, then link them
+        # if asset_type_collection and asset_collection:
+        #     asset_type_collection.children.link(asset_collection)
+        #
+        # #if only asset collection is found, then link it to scene
+        # elif not asset_type_collection and asset_collection:
+        #     bpy.context.scene.collection.children.link(asset_collection)
 
         # TODO : Check if it is always working without using collections
         # if asset_collection:
         #     [asset_collection.objects.link(member) for member in members if isinstance(member, bpy.types.Object)]
 
-        for blender_object in members:
-            collections = list(filter(None, blender_object.get('original_hierarchy', '').split('/')))
-            collections = [f'{collection_name}-{unique_number}' for collection_name in collections]
-            for collection_level, collection_name in enumerate(collections):
-                collection = bpy.data.collections.get(collection_name, None)
-                if collection:
-                    continue
 
-                collection = bpy.data.collections.new(collection_name)
-
-                if collection_level == 0:
-                    asset_collection.children.link(collection)
-                else:
-                    bpy.data.collections[collections[collection_level - 1]].children.link(collection)
-
-            if collections:
-                bpy.data.collections[collections[-1]].objects.link(blender_object)
+        # for blender_object in members:
+        #     collections = list(filter(None, blender_object.get('original_hierarchy', '').split('/')))
+        #     collections = [f'{collection_name}-{unique_number}' for collection_name in collections]
+        #     for collection_level, collection_name in enumerate(collections):
+        #         collection = bpy.data.collections.get(collection_name, None)
+        #         if collection:
+        #             continue
+        #
+        #         collection = bpy.data.collections.new(collection_name)
+        #
+        #         if collection_level == 0:
+        #             asset_collection.children.link(collection)
+        #         else:
+        #             bpy.data.collections[collections[collection_level - 1]].children.link(collection)
+        #
+        #     if collections:
+        #         bpy.data.collections[collections[-1]].objects.link(blender_object)
 
         if family == "layout":
             self._post_process_layout(container, asset, representation)
@@ -251,7 +367,7 @@ class BlendLoader(plugin.BlenderLoader):
         return objects
 
     @staticmethod
-    def get_parent(context):
+    def get_parent_data(context):
         parent = context["representation"]["context"].get('parent', None)
         if not parent:
             hierarchy = context["representation"]["context"].get('hierarchy')
@@ -264,6 +380,10 @@ class BlendLoader(plugin.BlenderLoader):
         return parent
 
     @staticmethod
+    def get_parent_collection(asset_type_collection):
+        return asset_type_collection if asset_type_collection else bpy.context.scene.collection
+
+    @staticmethod
     def get_asset_type_collection(context_data):
         """Search for the asset_type collection based on template and setting
         If None is found, create one"""
@@ -272,22 +392,31 @@ class BlendLoader(plugin.BlenderLoader):
         asset_type_collection = bpy.data.collections.get(asset_type_name)
         if not asset_type_collection:
             asset_type_collection = bpy.data.collections.new(name=asset_type_name)
+
+        if asset_type_collection not in list(bpy.context.scene.collection.children):
             bpy.context.scene.collection.children.link(asset_type_collection)
 
         return asset_type_collection
 
     @staticmethod
-    def get_asset_numbered_collection(context_data, template, unique_number):
+    def create_asset_numbered_collection(context_data, template, unique_number, parent):
         """Search for the asset collection based on template and setting
         If None is found, create one"""
-
+        # TODO : update with new template system
         asset_collection_name = get_resolved_name(context_data, template)
         asset_collection_name = f"{asset_collection_name}-{unique_number}"
         asset_collection = bpy.data.collections.get(asset_collection_name)
         if not asset_collection:
             asset_collection = bpy.data.collections.new(name=asset_collection_name)
+        print('\n######\n######\n#####\n')
+        print('parents')
+        print(get_parents_for_collection(asset_collection))
+        print(get_parents_for_collection(asset_collection, parent.children))
+        if asset_collection not in list(parent.children):
+            parent.children.link(asset_collection)
 
         return asset_collection
+
 
     def exec_update(self, container: Dict, representation: Dict):
         """

@@ -572,3 +572,9 @@ def get_cache_modifiers(obj, modifier_type="MESH_SEQUENCE_CACHE"):
                                    if modifier.type == modifier_type]
                 modifiers_dict[ob.name] = cache_modifiers
     return modifiers_dict
+
+
+def get_parents_for_collection(collection, collections=None):
+    if not collections:
+        collections = bpy.data.collections
+    return [c for c in collections if c.user_of_id(collection)]
