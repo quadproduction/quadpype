@@ -168,6 +168,6 @@ def get_task_collection_templates(data, task=None):
     profile = filter_profiles(profiles, profile_key)
 
     if not profile:
-        return None
+        return []
 
-    return profile["templates"]
+    return profile.get["templates"]

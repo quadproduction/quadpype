@@ -59,7 +59,7 @@ class ExtractBlend(
         data_blocks = set()
 
         templates = get_task_collection_templates(instance.data)
-
+        hierarchies = {}
         for template in templates:
             task_hierarchy = get_resolved_name(
                 data=instance.data,
@@ -68,11 +68,18 @@ class ExtractBlend(
                 variant=variant
             )
             parent_collection_name = task_hierarchy.replace('\\', '/').split('/')[-1]
-            self.assign_hierarchy_to_objects_in(
-                collection=bpy.data.collections[parent_collection_name]
+            parent_collection = bpy.data.collections[parent_collection_name]
+
+            self.retrieve_objects_hierarchy(
+                collections=[parent_collection],
+                selection=[data for data in instance],
+                result=hierarchies
             )
 
         for data in instance:
+            hierarchy_for_object = hierarchies.get(data.name)
+            if hierarchy_for_object:
+                data['original_collection_parent'] = hierarchy_for_object
 
             data_blocks.add(data)
             # Pack used images in the blend files.
@@ -111,9 +118,21 @@ class ExtractBlend(
         self.log.info("Extracted instance '%s' to: %s",
                        instance.name, representation)
 
-    def assign_hierarchy_to_objects_in(self, collection):
-        for obj in collection.objects:
-            obj['original_collection_parent'] = collection.name
+    def retrieve_objects_hierarchy(self, collections, selection, result, hierarchy=None):
 
-        for child_collections in collection.children:
-            self.assign_hierarchy_to_objects_in(child_collections)
+        def _format_hierarchy_label(collection, hierarchy):
+            return f'{hierarchy}/{collection.name}' if hierarchy else f'{collection.name}'
+
+        for collection in collections:
+            if collection.children:
+                self.retrieve_objects_hierarchy(
+                    collections=collection.children,
+                    selection=selection,
+                    result=result,
+                    hierarchy=_format_hierarchy_label(collection, hierarchy),
+                )
+            for obj in collection.objects:
+                if obj not in selection:
+                    continue
+
+                result[obj.name] = _format_hierarchy_label(collection, hierarchy)

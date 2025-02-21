@@ -44,6 +44,7 @@ class ValidateModelContents(plugin.BlenderInstancePlugin):
 
         templates = get_task_collection_templates(instance.data)
         collections_objects = []
+
         for template in templates:
             hierarchy_template = get_resolved_name(
                 data=instance.data,
