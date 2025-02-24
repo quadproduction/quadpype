@@ -56,7 +56,7 @@ class ValidateModelContents(plugin.BlenderInstancePlugin):
             asset_model_coll = bpy.data.collections.get(collection_name)
             if not asset_model_coll:
                 raise RuntimeError("No collection found with name :"
-                                   "{}".format(asset_model_coll))
+                                   "{}".format(collection_name))
 
             collections_objects.extend(asset_model_coll.objects)
 

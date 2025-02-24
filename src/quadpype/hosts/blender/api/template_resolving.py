@@ -170,4 +170,4 @@ def get_task_collection_templates(data, task=None):
     if not profile:
         return []
 
-    return profile.get["templates"]
+    return profile.get("templates", [])

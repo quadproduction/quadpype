@@ -221,10 +221,12 @@ class BlendLoader(plugin.BlenderLoader):
 
         else:
             [asset_type_collection.objects.link(member) for member in members if isinstance(member, bpy.types.Object)]
-            if isinstance(container, bpy.types.Object):
-                avalon_container.objects.link(container)
-            elif isinstance(container, bpy.types.Collection):
-                avalon_container.children.link(container)
+
+
+        if isinstance(container, bpy.types.Object):
+            avalon_container.objects.link(container)
+        elif isinstance(container, bpy.types.Collection):
+            avalon_container.children.link(container)
 
         if family == "layout":
             self._post_process_layout(container, asset, representation)
