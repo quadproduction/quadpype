@@ -58,29 +58,32 @@ class ExtractBlend(
 
         data_blocks = set()
 
-        templates = get_task_collection_templates(instance.data)
+        templates = get_task_collection_templates(
+            data=instance.data,
+        )
         hierarchies = {}
         for template in templates:
             task_hierarchy = get_resolved_name(
                 data=instance.data,
                 template=template,
                 parent=parent,
-                variant=variant
+                variant=variant,
+                sequence="{sequence}",
+                shot="{shot}"
             )
+
             parent_collection_name = task_hierarchy.replace('\\', '/').split('/')[-1]
             parent_collection = bpy.data.collections[parent_collection_name]
-
             self.retrieve_objects_hierarchy(
                 collections=[parent_collection],
                 selection=[data for data in instance],
                 result=hierarchies
             )
 
-        for data in instance:
-            hierarchy_for_object = hierarchies.get(data.name)
-            if hierarchy_for_object:
-                data['original_collection_parent'] = hierarchy_for_object
+        for blender_object, hierarchy_for_object in hierarchies.items():
+            blender_object['original_collection_parent'] = hierarchy_for_object
 
+        for data in instance:
             data_blocks.add(data)
             # Pack used images in the blend files.
             if not (
@@ -132,7 +135,9 @@ class ExtractBlend(
                     hierarchy=_format_hierarchy_label(collection, hierarchy),
                 )
             for obj in collection.objects:
-                if obj not in selection:
-                    continue
+                # if obj not in selection:
+                #     continue
 
-                result[obj.name] = _format_hierarchy_label(collection, hierarchy)
+                self.log.warning(obj)
+
+                result[obj] = _format_hierarchy_label(collection, hierarchy)

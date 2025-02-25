@@ -164,7 +164,10 @@ def get_task_collection_templates(data, task=None):
         str: A template that can be solved later
     """
     profiles = _get_profiles("working_collections_templates_by_tasks", data)
-    profile_key = {"task_types": data["task"] if not task else task}
+    profile_key = {
+        "task_types": data["task"] if not task else task,
+        "families": data["family"]
+    }
     profile = filter_profiles(profiles, profile_key)
 
     if not profile:
