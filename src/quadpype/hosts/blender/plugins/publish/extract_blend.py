@@ -135,9 +135,4 @@ class ExtractBlend(
                     hierarchy=_format_hierarchy_label(collection, hierarchy),
                 )
             for obj in collection.objects:
-                # if obj not in selection:
-                #     continue
-
-                self.log.warning(obj)
-
                 result[obj] = _format_hierarchy_label(collection, hierarchy)
