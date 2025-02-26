@@ -493,6 +493,87 @@ class TaskTypeEnumEntity(BaseEnumEntity):
                 self.set(value_on_not_set)
 
 
+class AssetTypeEnumEntity(BaseEnumEntity):
+    schema_types = ["asset-types-enum"]
+
+    def _item_initialization(self):
+        self.multiselection = self.schema_data.get("multiselection", True)
+        if self.multiselection:
+            self.valid_value_types = (list,)
+            self.value_on_not_set = []
+        else:
+            self.valid_value_types = (STRING_TYPE,)
+            self.value_on_not_set = ""
+
+        self.enum_items = []
+        self.valid_keys = set()
+        self.placeholder = None
+
+    def _get_enum_values(self):
+        anatomy_entity = self.get_entity_from_path(
+            "project_settings/project_anatomy"
+        )
+
+        valid_keys = set()
+        enum_items = []
+        for task_type in anatomy_entity["tasks"].keys():
+            enum_items.append({task_type: task_type})
+            valid_keys.add(task_type)
+
+        return enum_items, valid_keys
+
+    def _convert_value_for_current_state(self, source_value):
+        if self.multiselection:
+            output = []
+            for key in source_value:
+                if key in self.valid_keys:
+                    output.append(key)
+            return output
+
+        if source_value not in self.valid_keys:
+            # Take first item from enum items
+            for item in self.enum_items:
+                for key in item.keys():
+                    source_value = key
+                break
+        return source_value
+
+    def set_override_state(self, *args, **kwargs):
+        super(AssetTypeEnumEntity, self).set_override_state(*args, **kwargs)
+
+        self.enum_items, self.valid_keys = self._get_enum_values()
+
+        if self.multiselection:
+            new_value = []
+            for key in self._current_value:
+                if isinstance(key, list):
+                    for sub_key in key:
+                        if sub_key in self.valid_keys:
+                            new_value.append(sub_key)
+                elif isinstance(key, STRING_TYPE):
+                    if key in self.valid_keys:
+                        new_value.append(key)
+
+            if self._current_value != new_value:
+                self.set(new_value)
+        else:
+            if not self.enum_items:
+                self.valid_keys.add("")
+                self.enum_items.append({"": "< Empty >"})
+
+            for item in self.enum_items:
+                for key in item.keys():
+                    value_on_not_set = key
+                break
+
+            self.value_on_not_set = value_on_not_set
+            if (
+                self._current_value is NOT_SET
+                or self._current_value not in self.valid_keys
+            ):
+                self.set(value_on_not_set)
+
+
 class DynamicEnumEntity(BaseEnumEntity):
     schema_types = []
 
