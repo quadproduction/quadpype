@@ -171,7 +171,11 @@ class BlendLoader(plugin.BlenderLoader):
         )
 
         # TODO : find a better way to retrieve shot & asset & also detect if we are in a shot
-        sequence, shot = get_current_context()['asset_name'].split('_')
+
+        if self.is_shot():
+            sequence, shot = get_current_context()['asset_name'].split('_')
+        else:
+            sequence = shot = None
 
         container, members = self._process_data(libpath, group_name)
 
@@ -270,6 +274,10 @@ class BlendLoader(plugin.BlenderLoader):
 
         self[:] = objects
         return objects
+
+    @staticmethod
+    def is_shot():
+        return len(get_current_context()['asset_name'].split('_')) > 1
 
     @staticmethod
     def _create_collection(collection_name, link_to=None):
