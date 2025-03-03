@@ -170,13 +170,6 @@ class BlendLoader(plugin.BlenderLoader):
             task=context["representation"]["context"]['task'].get('name', None)
         )
 
-        # TODO : find a better way to retrieve shot & asset & also detect if we are in a shot
-
-        if self.is_shot():
-            sequence, shot = get_current_context()['asset_name'].split('_')
-        else:
-            sequence = shot = None
-
         container, members = self._process_data(libpath, group_name)
 
         asset_type_collection = self._create_collection(
@@ -184,30 +177,37 @@ class BlendLoader(plugin.BlenderLoader):
             link_to=bpy.context.scene.collection
         )
 
-        corresponding_hierarchies_numbered = {
-            get_resolved_name(
-                data=data_for_template,
-                template=hierarchies,
-                sequence=sequence,
-                shot=shot
-            ).replace('\\', '/').split('/')[-1]: get_resolved_name(
-                data=data_for_template,
-                template=hierarchies,
-                numbering=unique_number,
-                sequence=sequence,
-                shot=shot
-            ).replace('\\', '/').split('/')[-1]
-            for hierarchies in asset_collection_templates
-        }
-        self.create_collections_from_template(
-            data=data_for_template,
-            templates=asset_collection_templates,
-            unique_number=unique_number,
-            parent_collection=asset_type_collection,
-            sequence=sequence,
-            shot=shot
-        )
         if asset_collection_templates:
+            # TODO : find a better way to retrieve shot & asset & also detect if we are in a shot
+            if self.is_shot():
+                sequence, shot = get_current_context()['asset_name'].split('_')
+            else:
+                sequence = shot = None
+
+            corresponding_hierarchies_numbered = {
+                get_resolved_name(
+                    data=data_for_template,
+                    template=hierarchies,
+                    sequence=sequence,
+                    shot=shot
+                ).replace('\\', '/').split('/')[-1]: get_resolved_name(
+                    data=data_for_template,
+                    template=hierarchies,
+                    numbering=unique_number,
+                    sequence=sequence,
+                    shot=shot
+                ).replace('\\', '/').split('/')[-1]
+                for hierarchies in asset_collection_templates
+            }
+            self.create_collections_from_template(
+                data=data_for_template,
+                templates=asset_collection_templates,
+                unique_number=unique_number,
+                parent_collection=asset_type_collection,
+                sequence=sequence,
+                shot=shot
+            )
+
             for blender_object in members:
                 object_hierarchies = blender_object.get('original_collection_parent')
                 if not object_hierarchies:
@@ -222,7 +222,10 @@ class BlendLoader(plugin.BlenderLoader):
                         sequence=sequence,
                         shot=shot
                     )
-                    corresponding_collection_name = corresponding_hierarchies_numbered.get(hierarchy, hierarchy)
+                    corresponding_collection_name = corresponding_hierarchies_numbered.get(
+                        hierarchy,
+                        f"{hierarchy}-{unique_number}"
+                    )
 
                     if level > 0:
                         parent_collection_name = split_object_hierarchies[level - 1]
@@ -314,7 +317,8 @@ class BlendLoader(plugin.BlenderLoader):
             ).replace('\\', '/').split('/')
             for hierarchies in templates
         ]
-
+        self.log.warning(templates)
+        self.log.warning(all_hierarchies)
         top_hierarchies = set(
             collection[0] for collection in all_hierarchies
         )
