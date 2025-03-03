@@ -334,28 +334,10 @@
                                         "type": "task-types-enum"
                                     },
                                     {
-                                        "type": "enum",
                                         "key": "families",
                                         "label": "Families",
-                                        "multiselection": true,
-                                        "enum_items": [
-                                            {
-                                                "model": "model"
-                                            },
-                                            {
-                                                "camera": "camera"
-                                            },
-                                            {
-                                                "rig": "rig"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "key": "templates",
-                                        "label": "Templates",
                                         "type": "list",
-                                        "object_type": "text",
-                                        "default": ["Test"]
+                                        "object_type": "text"
                                     }
                                 ]
                             }
