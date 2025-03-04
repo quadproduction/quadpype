@@ -3,7 +3,7 @@ from copy import copy
 
 import bpy
 
-from quadpype.pipeline import publish
+from quadpype.pipeline import publish, get_current_context
 from quadpype.hosts.blender.api import (
     plugin,
     get_task_collection_templates,
@@ -61,15 +61,17 @@ class ExtractBlend(
         templates = get_task_collection_templates(
             data=instance.data,
         )
+
+        if self.is_shot():
+            instance.data['sequence'], instance.data['shot'] = get_current_context()['asset_name'].split('_')
+
         hierarchies = {}
         for template in templates:
             task_hierarchy = get_resolved_name(
                 data=instance.data,
                 template=template,
                 parent=parent,
-                variant=variant,
-                sequence="{sequence}",
-                shot="{shot}"
+                variant=variant
             )
 
             parent_collection_name = task_hierarchy.replace('\\', '/').split('/')[-1]
@@ -85,11 +87,12 @@ class ExtractBlend(
 
         for data in instance:
             data_blocks.add(data)
-            # Pack used images in the blend files.
+
             if not (
                 isinstance(data, bpy.types.Object) and data.type == 'MESH'
             ):
                 continue
+
             for material_slot in data.material_slots:
                 mat = material_slot.material
                 if not (mat and mat.use_nodes):
@@ -120,6 +123,10 @@ class ExtractBlend(
 
         self.log.info("Extracted instance '%s' to: %s",
                        instance.name, representation)
+
+    @staticmethod
+    def is_shot():
+        return len(get_current_context()['asset_name'].split('_')) > 1
 
     def retrieve_objects_hierarchy(self, collections, selection, result, hierarchy=None):
 

@@ -17,7 +17,7 @@ def get_resolved_name(data, template, **additional_data):
         str: Resolved template
     """
     template_obj = StringTemplate(template)
-    # Resolve the template
+
     if additional_data:
         copy_data = copy(data)
         for key, value in additional_data.items():
@@ -168,6 +168,7 @@ def get_task_collection_templates(data, task=None):
         "task_types": data["task"] if not task else task,
         "families": data["family"]
     }
+
     profile = filter_profiles(profiles, profile_key)
 
     if not profile:
