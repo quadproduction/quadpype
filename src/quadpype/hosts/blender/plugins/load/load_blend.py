@@ -164,7 +164,7 @@ class BlendLoader(plugin.BlenderLoader):
 
         asset_collection_templates = get_task_collection_templates(
             context["representation"]["context"],
-            task=context["representation"]["context"]['task'].get('name', None)
+            task=get_current_context()['task_name']
         )
 
         container, members = self._process_data(libpath, group_name)

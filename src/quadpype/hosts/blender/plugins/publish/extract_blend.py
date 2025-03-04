@@ -103,8 +103,7 @@ class ExtractBlend(
                 for node in tree.nodes:
                     if node.bl_idname != 'ShaderNodeTexImage':
                         continue
-                    # Check if image is not packed already
-                    # and pack it if not.
+
                     if node.image and node.image.packed_file is None:
                         node.image.pack()
 
