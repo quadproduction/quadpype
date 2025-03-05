@@ -203,7 +203,8 @@ class BlendLoader(plugin.BlenderLoader):
             )
 
             for blender_object in members:
-                if not isinstance(blender_object, bpy.types.Object):
+                # Do not link non-objects or invisible objects from published scene
+                if not isinstance(blender_object, bpy.types.Object) or not blender_object.get('visible', True):
                     continue
 
                 object_hierarchies = blender_object.get('original_collection_parent')

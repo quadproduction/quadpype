@@ -82,6 +82,9 @@ class ExtractBlend(
                 result=hierarchies
             )
 
+        for blender_object in bpy.context.scene.objects:
+            blender_object['visible'] = blender_object.visible_get()
+
         for blender_object, hierarchy_for_object in hierarchies.items():
             blender_object['original_collection_parent'] = hierarchy_for_object
 
