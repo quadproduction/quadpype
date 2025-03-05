@@ -750,7 +750,7 @@ def _boot_print_versions(quadpype_package):
     list_versions(versions_to_display, compatible_with)
 
 
-def _initialize_package_manager(database_url, version_str):
+def _initialize_package_manager(database_url, version_str, is_dev_mode):
     """Initialize the Package Manager and add the registered AddOns."""
     from quadpype.lib.version import retrieve_package_manager, PackageHandler
     from quadpype.settings.lib import (
@@ -763,10 +763,14 @@ def _initialize_package_manager(database_url, version_str):
 
     package_manager = retrieve_package_manager()
 
+    remote_sources = None
+    if not is_dev_mode:
+        remote_sources = get_quadpype_remote_sources(core_settings)
+
     quadpype_package = PackageHandler(
         pkg_name="quadpype",
         local_dir_path=get_quadpype_local_dir_path(core_settings),
-        remote_sources=get_quadpype_remote_sources(core_settings),
+        remote_sources=remote_sources,
         running_version_str=version_str,
         retrieve_locally=True,
         install_dir_path=os.getenv("QUADPYPE_ROOT")
@@ -852,7 +856,7 @@ def boot():
         use_version = get_expected_studio_version_str(use_staging)
 
     # Create the Package Manager and add the QuadPype package & the registered AddOns
-    package_manager = _initialize_package_manager(quadpype_mongo, use_version)
+    package_manager = _initialize_package_manager(quadpype_mongo, use_version, is_dev_mode)
 
     # Ensure the settings will be retrieved from the correct running version
     running_version = package_manager["quadpype"].running_version
