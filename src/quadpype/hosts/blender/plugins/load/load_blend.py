@@ -203,16 +203,14 @@ class BlendLoader(plugin.BlenderLoader):
             )
 
             for blender_object in members:
+
                 # Do not link non-objects or invisible objects from published scene
                 if not isinstance(blender_object, bpy.types.Object) or not blender_object.get('visible', True):
                     continue
 
-                object_hierarchies = blender_object.get('original_collection_parent')
+                collection = bpy.data.collections[default_parent_collection_name]
 
-                if not object_hierarchies:
-                    bpy.data.collections[default_parent_collection_name].objects.link(blender_object)
-                    continue
-
+                object_hierarchies = blender_object.get('original_collection_parent', '')
                 split_object_hierarchies = object_hierarchies.replace('\\', '/').split('/')
 
                 for collection_number, hierarchy in enumerate(split_object_hierarchies):
@@ -239,7 +237,7 @@ class BlendLoader(plugin.BlenderLoader):
                             corresponding_hierarchies_numbered=corresponding_hierarchies_numbered
                         )
 
-                    collection.objects.link(blender_object)
+                collection.objects.link(blender_object)
 
         else:
             # TODO: move this because it needs to happen when template is found and to raise error if none found
