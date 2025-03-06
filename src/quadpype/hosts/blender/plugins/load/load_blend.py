@@ -3,6 +3,7 @@ from pathlib import Path
 
 import bpy
 
+from quadpype.lib.attribute_definitions import BoolDef, EnumDef
 from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
@@ -26,6 +27,26 @@ class BlendLoader(plugin.BlenderLoader):
     label = "Append Blend"
     icon = "code-fork"
     color = "orange"
+
+    defaults = {
+        'import_method': 'link'
+    }
+
+    @classmethod
+    def get_options(cls, contexts):
+        return [
+            BoolDef(
+                "multi_cam",
+                label="Multiple Cameras Submission",
+                default=False
+            ),
+            EnumDef(
+                "import_method",
+                items=['append', 'link'],
+                default=cls.defaults['import_method'],
+                label="Import method",
+            )
+        ]
 
     @staticmethod
     def _get_asset_container(objects):
@@ -75,11 +96,9 @@ class BlendLoader(plugin.BlenderLoader):
                 }
             )
 
-    def _process_data(self, libpath, group_name):
+    def _process_data(self, libpath, group_name, link):
         # Append all the data from the .blend file
-        with bpy.data.libraries.load(
-            libpath, link=False, relative=False
-        ) as (data_from, data_to):
+        with bpy.data.libraries.load(libpath, link=link) as (data_from, data_to):
             for attr in dir(data_to):
                 setattr(data_to, attr, getattr(data_from, attr))
 
@@ -146,7 +165,9 @@ class BlendLoader(plugin.BlenderLoader):
             avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
             bpy.context.scene.collection.children.link(avalon_container)
 
-        container, members = self._process_data(libpath, group_name)
+        import_method = options.get('import_method', self.defaults['import_method'])
+        link = True if import_method in ['link', 'link_override'] else False
+        container, members = self._process_data(libpath, group_name, link)
 
         if family == "layout":
             self._post_process_layout(container, asset, representation)
