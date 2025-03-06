@@ -384,7 +384,10 @@ class BlenderCreator(Creator):
         return [
             BoolDef("use_selection",
                     label="Use selection",
-                    default=True)
+                    default=True),
+            BoolDef("create_as_asset_group",
+                    label="Use Empty as Instance",
+                    default=False)
         ]
 
 

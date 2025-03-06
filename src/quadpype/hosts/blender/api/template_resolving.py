@@ -1,13 +1,14 @@
 from collections import OrderedDict
 
 from quadpype.settings import get_project_settings
+from copy import copy
 from quadpype.lib import (
     filter_profiles,
     StringTemplate,
 )
 
 
-def get_resolved_name(data, template):
+def get_resolved_name(data, template, **additional_data):
     """Resolve template_collections_naming with entered data.
     Args:
         data (Dict[str, Any]): Data to fill template_collections_naming.
@@ -16,8 +17,14 @@ def get_resolved_name(data, template):
         str: Resolved template
     """
     template_obj = StringTemplate(template)
-    # Resolve the template
-    output = template_obj.format_strict(data)
+
+    if additional_data:
+        copy_data = copy(data)
+        for key, value in additional_data.items():
+            copy_data[key] = value
+        output = template_obj.format_strict(copy_data)
+    else:
+        output = template_obj.format_strict(data)
     return output.normalized()
 
 
@@ -53,7 +60,7 @@ def _get_app_name_by_data(data):
     is_from_anatomy = False
 
     if data.get("app"):
-        app_name = data["project"]["app"]
+        app_name = data["app"]
     elif data.get("anatomyData"):
         is_from_anatomy = True
         app_name = data["anatomyData"]["app"]
@@ -124,6 +131,8 @@ def _get_entity_prefix(data):
 
     profile_key = {"entity_types": parent}
     profile = filter_profiles(profiles, profile_key)
+    if not profile:
+        return None, is_anatomy
     # If a profile is found, return the prefix
     return profile.get("entity_prefix"), is_anatomy
 
@@ -138,7 +147,7 @@ def update_parent_data_with_entity_prefix(data):
     parent_prefix, is_anatomy = _get_entity_prefix(data)
 
     if not parent_prefix:
-        return
+        return None
 
     if is_anatomy:
         data["anatomyData"]["parent"] = parent_prefix
@@ -146,40 +155,23 @@ def update_parent_data_with_entity_prefix(data):
         data["parent"] = parent_prefix
 
 
-def get_entity_collection_template(data):
-    """Retrieve the template for the collection depending on the entity type
-    Args:
-        data (Dict[str, Any]): Data to fill template_collections_naming.
-    Return:
-        str: A template that can be solved later
-    """
-
-    # Get Entity Type Name Matcher Profiles
-    profiles = _get_profiles("collections_templates_by_entity_type", data)
-    parent, is_anatomy = _get_parent_by_data(data)
-    profile_key = {"entity_types": parent}
-    profile = filter_profiles(profiles, profile_key)
-    # If a profile is found, return the template
-    return profile.get("template")
-
-
-def get_task_collection_template(data):
+def get_task_collection_templates(data, task=None):
     """Retrieve the template for the collection depending on the task type
     Args:
         data (Dict[str, Any]): Data to fill template_collections_naming.
+        task (str): fill to bypass task in data dict
     Return:
         str: A template that can be solved later
     """
-
-    # Get Entity Type Name Matcher Profiles
     profiles = _get_profiles("working_collections_templates_by_tasks", data)
-    profile_key = {"task_types": data["task"]}
+    profile_key = {
+        "task_types": data["task"] if not task else task,
+        "families": data["family"]
+    }
+
     profile = filter_profiles(profiles, profile_key)
 
     if not profile:
-        return None
-    # If a profile is found, return the template
-    if data.get("variant", None) == "Main":
-        return profile["main_template"]
+        return []
 
-    return profile["variant_template"]
+    return profile.get("templates", [])

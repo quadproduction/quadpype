@@ -38,20 +38,13 @@ class ExtractCameraABC(
 
         asset_group = instance.data["transientData"]["instance_node"]
 
-        # Need to cast to list because children is a tuple
-        selected = list(asset_group.children)
-
+        selected = self.get_asset_children(asset_group)
         if not selected:
             self.log.error("Extraction failed: No child objects found in the asset group.")
             return
 
         active = selected[0]
-
-        camera = None
-        for obj in selected:
-            if obj.type == "CAMERA":
-                camera = (obj.data)
-            obj.select_set(True)
+        camera = self.get_and_select_camera(selected)
 
         # Create focal value dict throught time for blender
         if camera:
@@ -117,6 +110,19 @@ class ExtractCameraABC(
             "stagingDir": stagingdir,
         }
         instance.data["representations"].append(json_representation)
-
         self.log.info("Extracted instance '%s' to: %s\nExtracted instance '%s' to: %s",
                       instance.name, representation, jsonname, json_representation)
+
+    @staticmethod
+    def get_asset_children(asset):
+        return list(asset.objects) if isinstance(asset, bpy.types.Collection) else list(list(asset.children))
+
+    def get_and_select_camera(self, objects):
+        for blender_object in objects:
+            if blender_object.type == "CAMERA":
+                blender_object.select_set(True)
+                return blender_object.data
+
+            camera = self.get_and_select_camera(list(blender_object.children))
+            if camera:
+                return camera

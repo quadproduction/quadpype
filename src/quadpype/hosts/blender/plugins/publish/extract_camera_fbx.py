@@ -33,16 +33,14 @@ class ExtractCamera(
 
         plugin.deselect_all()
 
-        selected = []
+        asset_group = instance.data["transientData"]["instance_node"]
 
-        camera = None
+        selected = self.get_asset_children(asset_group)
+        if not selected:
+            self.log.error("Extraction failed: No child objects found in the asset group.")
+            return
 
-        for obj in instance:
-            if obj.type == "CAMERA":
-                obj.select_set(True)
-                selected.append(obj)
-                camera = obj
-                break
+        camera = self.get_and_select_camera(selected)
 
         assert camera, "No camera found"
 
@@ -97,3 +95,17 @@ class ExtractCamera(
 
         self.log.info("Extracted instance '%s' to: %s",
                       instance.name, representation)
+
+    @staticmethod
+    def get_asset_children(asset):
+        return list(asset.objects) if isinstance(asset, bpy.types.Collection) else list(list(asset.children))
+
+    def get_and_select_camera(self, objects):
+        for blender_object in objects:
+            if blender_object.type == "CAMERA":
+                blender_object.select_set(True)
+                return blender_object.data
+
+            camera = self.get_and_select_camera(list(blender_object.children))
+            if camera:
+                return camera

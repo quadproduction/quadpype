@@ -36,7 +36,7 @@ class ExtractFBX(
         asset_group = instance.data["transientData"]["instance_node"]
 
         selected = []
-        for obj in instance:
+        for obj in self.get_asset_children(asset_group):
             obj.select_set(True)
             selected.append(obj)
 
@@ -91,3 +91,11 @@ class ExtractFBX(
 
         self.log.info("Extracted instance '%s' to: %s",
                       instance.name, representation)
+
+    @staticmethod
+    def get_asset_children(asset):
+        return list(asset.objects) if isinstance(asset, bpy.types.Collection) else list(list(asset.children))
+
+    def select_all_from(self, objects):
+        for blender_object in objects:
+            blender_object.select_set(True)
