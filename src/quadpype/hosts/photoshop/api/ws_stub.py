@@ -434,7 +434,7 @@ class PhotoshopServerStub:
             <boolean>
         """
         str_to_bool = {"true": True, "false": False}
-        return str_to_bool.get(string_boolean.lower(), None)
+        return str_to_bool.get(string_boolean.lower(), False)
 
     def save(self):
         """Saves active document"""
