@@ -44,11 +44,6 @@ class BlendLoader(plugin.BlenderLoader):
     @classmethod
     def get_options(cls, contexts):
         return [
-            BoolDef(
-                "multi_cam",
-                label="Multiple Cameras Submission",
-                default=False
-            ),
             EnumDef(
                 "import_method",
                 items=['append', 'link'],
@@ -107,34 +102,26 @@ class BlendLoader(plugin.BlenderLoader):
                 }
             )
 
-    def _process_data(self, libpath, group_name, link):
-        # Append all the data from the .blend file
-        with bpy.data.libraries.load(libpath, link=link) as (data_from, data_to):
+    def import_blend_objects(self, libpath, group_name, import_link):
+        with bpy.data.libraries.load(libpath, link=import_link) as (data_from, data_to):
             for attr in dir(data_to):
                 setattr(data_to, attr, getattr(data_from, attr))
 
         members = []
-
-        # Rename the object to add the asset name
+        # Needs to rename in separate block to retrieve blender object and not string
         for attr in dir(data_to):
             for data in getattr(data_to, attr):
-                data.name = f"{group_name}:{data.name}"
                 members.append(data)
+                if import_link:
+                    continue
+
+                data.name = f"{group_name}:{data.name}"
 
         container = self._get_asset_container(data_to.objects, data_to.collections)
-
         assert container, "No asset group found"
 
-        container.name = group_name
-
-        # Remove the library from the blend file
-        filepath = bpy.path.basename(libpath)
-        # Blender has a limit of 63 characters for any data name.
-        # If the filepath is longer, it will be truncated.
-        if len(filepath) > 63:
-            filepath = filepath[:63]
-        library = bpy.data.libraries.get(filepath)
-        bpy.data.libraries.remove(library)
+        if not import_link:
+            container.name = group_name
 
         return container, members
 
@@ -188,7 +175,9 @@ class BlendLoader(plugin.BlenderLoader):
 
         import_method = options.get('import_method', self.defaults['import_method'])
         link = True if import_method in ['link', 'link_override'] else False
-        container, members = self._process_data(libpath, group_name, link)
+        container, members = self.import_blend_objects(libpath, group_name, link)
+        if not link:
+            self.remove_library_from_blend_file(libpath)
 
         collections_are_created = None
         corresponding_hierarchies_numbered = {}
@@ -258,6 +247,9 @@ class BlendLoader(plugin.BlenderLoader):
                             corresponding_hierarchies_numbered=corresponding_hierarchies_numbered
                         )
 
+                if blender_object in list(collection.objects):
+                    continue
+
                 collection.objects.link(blender_object)
 
         else:
@@ -266,7 +258,7 @@ class BlendLoader(plugin.BlenderLoader):
 
         if isinstance(container, bpy.types.Object):
             avalon_container.objects.link(container)
-        elif isinstance(container, bpy.types.Collection):
+        elif isinstance(container, bpy.types.Collection) and container not in list(avalon_container.children):
             avalon_container.children.link(container)
 
         if family == "layout":
@@ -296,6 +288,16 @@ class BlendLoader(plugin.BlenderLoader):
 
         self[:] = objects
         return objects
+
+    @staticmethod
+    def remove_library_from_blend_file(libpath):
+        # Blender has a limit of 63 characters for any data name.
+        # If the filepath is longer, it will be truncated.
+        filepath = bpy.path.basename(libpath)
+        if len(filepath) > 63:
+            filepath = filepath[:63]
+        library = bpy.data.libraries.get(filepath)
+        bpy.data.libraries.remove(library)
 
     @staticmethod
     def _extract_last_collection_from_first_template(data, templates, unique_number):
