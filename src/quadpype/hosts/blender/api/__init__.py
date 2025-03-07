@@ -35,6 +35,7 @@ from .lib import (
     maintained_time,
     get_selection,
     get_parents_for_collection,
+    get_objects_in_collection,
     # unique_name,
 )
 
@@ -83,5 +84,6 @@ __all__ = [
     "get_resolved_name",
     "get_task_collection_templates",
     "update_parent_data_with_entity_prefix",
-    "get_parents_for_collection"
+    "get_parents_for_collection",
+    "get_objects_in_collection"
 ]
