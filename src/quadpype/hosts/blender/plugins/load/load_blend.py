@@ -38,7 +38,7 @@ class BlendLoader(plugin.BlenderLoader):
     color = "orange"
 
     defaults = {
-        'import_method': 'link'
+        'import_method': 'append'
     }
 
     @classmethod
@@ -112,7 +112,7 @@ class BlendLoader(plugin.BlenderLoader):
                 }
             )
 
-    def import_blend_objects(self, libpath, group_name, import_link):
+    def import_blend_objects(self, libpath, group_name, import_link=False):
         with bpy.data.libraries.load(libpath, link=import_link) as (data_from, data_to):
             for attr in dir(data_to):
                 setattr(data_to, attr, getattr(data_from, attr))
@@ -150,40 +150,131 @@ class BlendLoader(plugin.BlenderLoader):
 
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
+        representation = context['representation']
 
-        parent = self.get_parent_data(context)
-        if not parent:
-            self.log.warning(f"Can not retrieve parent from asset {asset} / subset {subset}")
-
-        context["representation"]["context"]["parent"] = parent
-        context["representation"]["context"]["app"] = "blender"
-
-        try:
-            family = context["representation"]["context"]["family"]
-        except ValueError:
-            family = "model"
-
-        representation = str(context["representation"]["_id"])
+        representation_id = str(representation["_id"])
 
         asset_name = plugin.prepare_scene_name(asset, subset)
         unique_number = plugin.get_unique_number(asset, subset)
         group_name = plugin.prepare_scene_name(asset, subset, unique_number)
         namespace = namespace or f"{asset}_{unique_number}"
 
+        container, members = self.load_assets_and_create_hierarchy(
+            representation=representation,
+            libpath=libpath,
+            group_name=group_name,
+            unique_number=unique_number,
+            import_method=options.get('import_method', self.defaults['import_method'])
+        )
+
+        try:
+            family = representation["context"]["family"]
+        except ValueError:
+            family = "model"
+
+        if family == "layout":
+            self._post_process_layout(container, asset, representation_id)
+
+        data = {
+            "schema": "quadpype:container-2.0",
+            "id": AVALON_CONTAINER_ID,
+            "name": name,
+            "namespace": namespace or '',
+            "loader": str(self.__class__.__name__),
+            "representation": str(representation["_id"]),
+            "libpath": libpath,
+            "asset_name": asset_name,
+            "parent": str(representation["parent"]),
+            "family": representation["context"]["family"],
+            "objectName": group_name,
+            "members": members,
+        }
+
+        container[AVALON_PROPERTY] = data
+
+        objects = [
+            obj for obj in bpy.data.objects
+            if obj.name.startswith(f"{group_name}:")
+        ]
+
+        self[:] = objects
+        return objects
+
+    @staticmethod
+    def remove_library_from_blend_file(libpath):
+        # Blender has a limit of 63 characters for any data name.
+        # If the filepath is longer, it will be truncated.
+        filepath = bpy.path.basename(libpath)
+        if len(filepath) > 63:
+            filepath = filepath[:63]
+        library = bpy.data.libraries.get(filepath)
+        bpy.data.libraries.remove(library)
+
+    @staticmethod
+    def _extract_last_collection_from_first_template(data, templates, unique_number):
+        return get_resolved_name(
+            data=data,
+            template=templates[0],
+            numbering=unique_number
+        ).replace('\\', '/').split('/')[-1]
+
+    @staticmethod
+    def _create_collection(collection_name, link_to=None):
+        collection = bpy.data.collections.get(collection_name)
+
+        if not collection:
+            collection = bpy.data.collections.new(collection_name)
+            if link_to and collection not in list(link_to.children):
+                link_to.children.link(collection)
+
+        return collection
+
+    @staticmethod
+    def is_shot():
+        return len(get_current_context()['asset_name'].split('_')) > 1
+
+    @staticmethod
+    def get_parent_data(representation):
+        parent = representation["context"].get('parent', None)
+        if not parent:
+            hierarchy = representation["context"].get('hierarchy')
+
+            if not hierarchy:
+                return
+
+            return hierarchy.split('/')[-1]
+
+        return parent
+
+    @staticmethod
+    def get_top_collection(collection_name, default_parent_collection_name):
+        parent_collection = bpy.data.collections.get(collection_name, None)
+        if not parent_collection:
+            parent_collection = bpy.data.collections[default_parent_collection_name]
+
+        return parent_collection if parent_collection else bpy.context.scene.collection
+
+    def load_assets_and_create_hierarchy(self, representation, libpath, group_name, unique_number, import_method):
+        parent = self.get_parent_data(representation)
+        if not parent:
+            self.log.warning(f"Can not retrieve parent from asset {group_name}")
+
+        representation["context"]["parent"] = parent
+        representation["context"]["app"] = "blender"
+
         avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
         if not avalon_container:
             avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
             bpy.context.scene.collection.children.link(avalon_container)
 
-        data_for_template = deepcopy(context["representation"]["context"])
+        data_for_template = deepcopy(representation["context"])
         update_parent_data_with_entity_prefix(data_for_template)
 
         asset_collection_templates = get_task_collection_templates(
-            context["representation"]["context"],
+            representation["context"],
             task=get_current_context()['task_name']
         )
 
-        import_method = options.get('import_method', self.defaults['import_method'])
         link = True if import_method in ['link', 'link_override'] else False
         container, members = self.import_blend_objects(libpath, group_name, link)
         if not link:
@@ -264,94 +355,15 @@ class BlendLoader(plugin.BlenderLoader):
 
         else:
             # TODO: move this because it needs to happen when template is found and to raise error if none found
-            [bpy.context.scene.collection.objects.link(member) for member in members if isinstance(member, bpy.types.Object)]
+            [bpy.context.scene.collection.objects.link(member) for member in members if
+             isinstance(member, bpy.types.Object)]
 
         if isinstance(container, bpy.types.Object):
             avalon_container.objects.link(container)
         elif isinstance(container, bpy.types.Collection) and container not in list(avalon_container.children):
             avalon_container.children.link(container)
 
-        if family == "layout":
-            self._post_process_layout(container, asset, representation)
-
-        data = {
-            "schema": "quadpype:container-2.0",
-            "id": AVALON_CONTAINER_ID,
-            "name": name,
-            "namespace": namespace or '',
-            "loader": str(self.__class__.__name__),
-            "representation": str(context["representation"]["_id"]),
-            "libpath": libpath,
-            "asset_name": asset_name,
-            "parent": str(context["representation"]["parent"]),
-            "family": context["representation"]["context"]["family"],
-            "objectName": group_name,
-            "members": members,
-        }
-
-        container[AVALON_PROPERTY] = data
-
-        objects = [
-            obj for obj in bpy.data.objects
-            if obj.name.startswith(f"{group_name}:")
-        ]
-
-        self[:] = objects
-        return objects
-
-    @staticmethod
-    def remove_library_from_blend_file(libpath):
-        # Blender has a limit of 63 characters for any data name.
-        # If the filepath is longer, it will be truncated.
-        filepath = bpy.path.basename(libpath)
-        if len(filepath) > 63:
-            filepath = filepath[:63]
-        library = bpy.data.libraries.get(filepath)
-        bpy.data.libraries.remove(library)
-
-    @staticmethod
-    def _extract_last_collection_from_first_template(data, templates, unique_number):
-        return get_resolved_name(
-            data=data,
-            template=templates[0],
-            numbering=unique_number
-        ).replace('\\', '/').split('/')[-1]
-
-    @staticmethod
-    def _create_collection(collection_name, link_to=None):
-        collection = bpy.data.collections.get(collection_name)
-
-        if not collection:
-            collection = bpy.data.collections.new(collection_name)
-            if link_to and collection not in list(link_to.children):
-                link_to.children.link(collection)
-
-        return collection
-
-    @staticmethod
-    def is_shot():
-        return len(get_current_context()['asset_name'].split('_')) > 1
-
-    @staticmethod
-    def get_parent_data(context):
-        parent = context["representation"]["context"].get('parent', None)
-        if not parent:
-            hierarchy = context["representation"]["context"].get('hierarchy')
-
-            if not hierarchy:
-                return
-
-            return hierarchy.split('/')[-1]
-
-        return parent
-
-    @staticmethod
-    def get_top_collection(collection_name, default_parent_collection_name):
-        parent_collection = bpy.data.collections.get(collection_name, None)
-        if not parent_collection:
-            parent_collection = bpy.data.collections[default_parent_collection_name]
-
-        return parent_collection if parent_collection else bpy.context.scene.collection
+        return container, members
 
     def create_collection_from_hierarchy(
         self,
@@ -418,56 +430,76 @@ class BlendLoader(plugin.BlenderLoader):
         Update the loaded asset.
         """
         group_name = container["objectName"]
-        asset_group = bpy.data.objects.get(group_name)
+        asset_group = self._retrieve_undefined_asset_group(group_name)
         libpath = Path(get_representation_path(representation)).as_posix()
+
+        import_method = "link" if asset_group.library else "append"
 
         assert asset_group, (
             f"The asset is not loaded: {container['objectName']}"
         )
 
-        transform = asset_group.matrix_basis.copy()
         old_data = dict(asset_group.get(AVALON_PROPERTY))
         old_members = old_data.get("members", [])
-        parent = asset_group.parent
 
-        actions = {}
-        objects_with_anim = [
-            obj for obj in asset_group.children_recursive
-            if obj.animation_data]
-        for obj in objects_with_anim:
-            # Check if the object has an action and, if so, add it to a dict
-            # so we can restore it later. Save and restore the action only
-            # if it wasn't originally loaded from the current asset.
-            if obj.animation_data.action not in old_members:
-                actions[obj.name] = obj.animation_data.action
+        if isinstance(asset_group, bpy.types.Object):
+            transform = asset_group.matrix_basis.copy()
+            asset_group_parent = asset_group.parent
+            actions = {}
+            objects_with_anim = [
+                obj for obj in asset_group.children_recursive
+                if obj.animation_data
+            ]
+
+            for obj in objects_with_anim:
+                # Check if the object has an action and, if so, add it to a dict
+                # so we can restore it later. Save and restore the action only
+                # if it wasn't originally loaded from the current asset.
+                if obj.animation_data.action not in old_members:
+                    actions[obj.name] = obj.animation_data.action
+
+        asset = representation.get('asset', '')
+        subset = representation.get('subset', '')
+
+        parent = self.get_parent_data(representation)
+        if not parent:
+            self.log.warning(f"Can not retrieve parent from asset {asset} / subset {subset}")
+
+        representation["context"]["parent"] = parent
 
         self.exec_remove(container)
 
-        asset_group, members = self._process_data(libpath, group_name)
+        container, members = self.load_assets_and_create_hierarchy(
+            representation=representation,
+            libpath=libpath,
+            group_name=group_name,
+            unique_number=plugin.get_unique_number(asset, subset),
+            import_method=import_method
+        )
 
-        avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
-        avalon_container.objects.link(asset_group)
+        if isinstance(asset_group, bpy.types.Object):
+            asset_group.matrix_basis = transform
+            asset_group.parent = asset_group_parent
 
-        asset_group.matrix_basis = transform
-        asset_group.parent = parent
-
-        # Restore the actions
-        for obj in asset_group.children_recursive:
-            if obj.name in actions:
-                if not obj.animation_data:
-                    obj.animation_data_create()
-                obj.animation_data.action = actions[obj.name]
+            # Restore the actions
+            for obj in asset_group.children_recursive:
+                if obj.name in actions:
+                    if not obj.animation_data:
+                        obj.animation_data_create()
+                    obj.animation_data.action = actions[obj.name]
 
         # Restore the old data, but reset members, as they don't exist anymore
         # This avoids a crash, because the memory addresses of those members
         # are not valid anymore
         old_data["members"] = []
+
+        asset_group = self._retrieve_undefined_asset_group(group_name)
         asset_group[AVALON_PROPERTY] = old_data
 
         new_data = {
             "libpath": libpath,
-            "representation": representation["_id"],
-            "parent": representation["parent"],
+            "representation": str(representation["_id"]),
+            "parent": str(representation["parent"]),
             "members": members,
         }
 
