@@ -64,16 +64,26 @@ class BlendLoader(plugin.BlenderLoader):
 
         return None
 
-    @staticmethod
-    def get_all_container_parents(asset_group):
+    def get_all_container_parents(self, asset_group):
         parent_containers = []
-        parent = asset_group.parent
+        parent = self._get_parents(asset_group)
         while parent:
             if parent.get(AVALON_PROPERTY):
                 parent_containers.append(parent)
-            parent = parent.parent
+            parent = self._get_parents(parent)
 
         return parent_containers
+
+    @staticmethod
+    def _get_parents(asset_group):
+        if hasattr(asset_group, "parent"):
+            return [asset_group.parent]
+        else:
+            for collection in bpy.data.collections:
+                if asset_group in list(collection.objects):
+                    return collection
+
+        return None
 
     def _post_process_layout(self, container, asset, representation):
         rigs = [
@@ -476,7 +486,9 @@ class BlendLoader(plugin.BlenderLoader):
         Remove an existing container from a Blender scene.
         """
         group_name = container["objectName"]
-        asset_group = bpy.data.objects.get(group_name)
+
+        asset_group = self._retrieve_undefined_asset_group(group_name)
+        assert asset_group, f"Can not find asset_group with name {group_name}"
 
         attrs = [
             attr for attr in dir(bpy.data)
@@ -488,7 +500,12 @@ class BlendLoader(plugin.BlenderLoader):
 
         members = asset_group.get(AVALON_PROPERTY).get("members", [])
 
-        # We need to update all the parent container members
+        collections_parents = [
+            collection for collection in bpy.data.collections
+            if set(data for data in members).intersection(set(collection.objects))
+            and collection is not asset_group
+        ]
+
         parent_containers = self.get_all_container_parents(asset_group)
 
         for parent in parent_containers:
@@ -502,6 +519,50 @@ class BlendLoader(plugin.BlenderLoader):
                     # Skip the asset group
                     if data == asset_group:
                         continue
-                    getattr(bpy.data, attr).remove(data)
 
-        bpy.data.objects.remove(asset_group)
+                    attribute = getattr(bpy.data, attr)
+                    if not hasattr(attribute, 'remove'):
+                        continue
+
+                    attribute.remove(data)
+
+        if isinstance(asset_group, bpy.types.Object):
+            bpy.data.objects.remove(asset_group)
+        else:
+            bpy.data.collections.remove(asset_group)
+
+        self._remove_collection_recursively(collections_parents)
+
+    @staticmethod
+    def _retrieve_undefined_asset_group(group_name):
+        asset_group = bpy.data.objects.get(group_name)
+
+        if not asset_group:
+            return bpy.data.collections.get(group_name)
+
+        return asset_group
+
+    @staticmethod
+    def _get_collections_parents(collection):
+        return [
+            parent for parent in bpy.data.collections
+            if collection in list(parent.children)
+        ]
+
+    def _remove_collection_recursively(self, collections, deleted_collections=[]):
+        for collection in collections:
+            if collection in deleted_collections:
+                continue
+
+            if collection.objects or collection.children:
+                continue
+
+            parents = self._get_collections_parents(collection)
+
+            deleted_collections.append(collection)
+            bpy.data.collections.remove(collection)
+
+            self._remove_collection_recursively(
+                collections=parents,
+                deleted_collections=deleted_collections
+            )

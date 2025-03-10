@@ -35,7 +35,26 @@ class CreateCamera(plugin.BlenderCreator):
                 continue
             asset_group.objects.link(camera)
 
+        parent_collection = self.get_parent_collection(cameras)
+        target_collection = self.get_parent_collection(asset_group) if self.create_as_asset_group else asset_group
+
+        if parent_collection:
+            self.link_to_collection_recursively(
+                collections_to_look_in=parent_collection,
+                link_to=target_collection
+            )
+
         return asset_group
+
+    def link_to_collection_recursively(self, collections_to_look_in, link_to):
+        for children in collections_to_look_in.children:
+            self.link_to_collection_recursively(children, link_to)
+
+        for blender_object in collections_to_look_in.objects:
+            if blender_object in list(link_to.objects):
+                continue
+
+            link_to.objects.link(blender_object)
 
     def get_instance_attr_defs(self):
         defs = lib.collect_animation_defs(step=False)

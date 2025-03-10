@@ -11,7 +11,8 @@ from quadpype.pipeline.publish import (
 
 from quadpype.hosts.blender.api import (
     get_resolved_name,
-    get_task_collection_templates
+    get_task_collection_templates,
+    get_objects_in_collection
 )
 
 class ValidateModelContents(plugin.BlenderInstancePlugin):
@@ -58,10 +59,15 @@ class ValidateModelContents(plugin.BlenderInstancePlugin):
                 raise RuntimeError("No collection found with name :"
                                    "{}".format(collection_name))
 
-            collections_objects.extend(asset_model_coll.objects)
+            collections_objects.extend(get_objects_in_collection(asset_model_coll))
 
         # Compare obj in instance and obj in scene model collection
         invalid = [missing_obj for missing_obj in collections_objects if missing_obj not in objects]
+        print("+++++++++++++++++++++++++++++")
+        print(invalid)
+        print("+++++++++++++++++++++++++++++")
+        print(objects)
+        print("+++++++++++++++++++++++++++++")
 
         return invalid
 

@@ -389,6 +389,12 @@ def get_all_parents(obj):
         result.append(obj)
     return result
 
+def get_objects_in_collection(collection):
+    """Retrieve recursively  all objects in a collection, even in sub collection"""
+    objects = list(collection.objects)
+    for sub_collection in collection.children:
+        objects.extend(get_objects_in_collection(sub_collection))
+    return objects
 
 def get_highest_root(objects):
     """Get the highest object (the least parents) among the objects.
