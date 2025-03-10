@@ -477,6 +477,12 @@ class BlendLoader(plugin.BlenderLoader):
 
         members = asset_group.get(AVALON_PROPERTY).get("members", [])
 
+        collections_parents = [
+            collection for collection in bpy.data.collections
+            if set(data for data in members).intersection(set(collection.objects))
+            and collection is not asset_group
+        ]
+
         parent_containers = self.get_all_container_parents(asset_group)
 
         for parent in parent_containers:
@@ -490,13 +496,7 @@ class BlendLoader(plugin.BlenderLoader):
                     # Skip the asset group
                     if data == asset_group:
                         continue
-                    # self.log.warning(getattr(bpy.data, attr))
-                    # self.log.warning(
-                    #     {
-                    #         key: value for key, value in
-                    #         getattr(bpy.data, attr).items()
-                    #     }
-                    # )
+
                     attribute = getattr(bpy.data, attr)
                     if not hasattr(attribute, 'remove'):
                         continue
@@ -508,6 +508,8 @@ class BlendLoader(plugin.BlenderLoader):
         else:
             bpy.data.collections.remove(asset_group)
 
+        self._remove_collection_recursively(collections_parents)
+
     @staticmethod
     def _retrieve_undefined_asset_group(group_name):
         asset_group = bpy.data.objects.get(group_name)
@@ -516,3 +518,28 @@ class BlendLoader(plugin.BlenderLoader):
             return bpy.data.collections.get(group_name)
 
         return asset_group
+
+    @staticmethod
+    def _get_collections_parents(collection):
+        return [
+            parent for parent in bpy.data.collections
+            if collection in list(parent.children)
+        ]
+
+    def _remove_collection_recursively(self, collections, deleted_collections=[]):
+        for collection in collections:
+            if collection in deleted_collections:
+                continue
+
+            if collection.objects or collection.children:
+                continue
+
+            parents = self._get_collections_parents(collection)
+
+            deleted_collections.append(collection)
+            bpy.data.collections.remove(collection)
+
+            self._remove_collection_recursively(
+                collections=parents,
+                deleted_collections=deleted_collections
+            )
