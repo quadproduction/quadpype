@@ -419,9 +419,22 @@ class PhotoshopServerStub:
         Returns:
             <boolean>
         """
-        return self.websocketserver.call(
+        str_is_saved = self.websocketserver.call(
             self.client.call('Photoshop.is_saved')
         )
+
+        return self._string_to_boolean(str_is_saved)
+
+    @staticmethod
+    def _string_to_boolean(string_boolean):
+        """Transform a stringed bool to an actual bool
+        Args:
+            string_boolean (str): a string "false" or "true" to convert
+        Returns:
+            <boolean>
+        """
+        str_to_bool = {"true": True, "false": False}
+        return str_to_bool.get(string_boolean.lower(), False)
 
     def save(self):
         """Saves active document"""
