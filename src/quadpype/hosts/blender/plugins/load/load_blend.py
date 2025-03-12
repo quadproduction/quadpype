@@ -21,6 +21,7 @@ from quadpype.hosts.blender.api import (
     update_parent_data_with_entity_prefix,
     get_task_collection_templates,
     get_resolved_name,
+    get_objects_in_collection,
     get_parents_for_collection
 )
 from quadpype.hosts.blender.api.pipeline import (
@@ -542,21 +543,27 @@ class BlendLoader(plugin.BlenderLoader):
         old_data = dict(asset_group.get(AVALON_PROPERTY))
         old_members = old_data.get("members", [])
 
+        all_objects_from_asset = []
         if isinstance(asset_group, bpy.types.Object):
             transform = asset_group.matrix_basis.copy()
             asset_group_parent = asset_group.parent
-            actions = {}
-            objects_with_anim = [
-                obj for obj in asset_group.children_recursive
-                if obj.animation_data
-            ]
+            all_objects_from_asset = asset_group.children_recursive
 
-            for obj in objects_with_anim:
-                # Check if the object has an action and, if so, add it to a dict
-                # so we can restore it later. Save and restore the action only
-                # if it wasn't originally loaded from the current asset.
-                if obj.animation_data.action not in old_members:
-                    actions[obj.name] = obj.animation_data.action
+        else:
+            all_objects_from_asset = get_objects_in_collection(asset_group)
+
+        objects_with_anim = [
+            obj for obj in all_objects_from_asset
+            if obj.animation_data
+        ]
+
+        actions = {}
+        for obj in objects_with_anim:
+            # Check if the object has an action and, if so, add it to a dict
+            # so we can restore it later. Save and restore the action only
+            # if it wasn't originally loaded from the current asset.
+            if obj.animation_data.action not in old_members:
+                actions[obj.name] = obj.animation_data.action
 
         asset = representation.get('asset', '')
         subset = representation.get('subset', '')
@@ -577,23 +584,29 @@ class BlendLoader(plugin.BlenderLoader):
             import_method=import_method
         )
 
+        asset_group = self._retrieve_undefined_asset_group(group_name)
+
         if isinstance(asset_group, bpy.types.Object):
             asset_group.matrix_basis = transform
             asset_group.parent = asset_group_parent
 
-            # Restore the actions
-            for obj in asset_group.children_recursive:
-                if obj.name in actions:
-                    if not obj.animation_data:
-                        obj.animation_data_create()
-                    obj.animation_data.action = actions[obj.name]
+            all_objects_from_asset = asset_group.children_recursive
+
+        else:
+            all_objects_from_asset = get_objects_in_collection(asset_group)
+
+        # Restore the actions
+        for obj in all_objects_from_asset:
+            if obj.name in actions:
+                if not obj.animation_data:
+                    obj.animation_data_create()
+                obj.animation_data.action = actions[obj.name]
 
         # Restore the old data, but reset members, as they don't exist anymore
         # This avoids a crash, because the memory addresses of those members
         # are not valid anymore
         old_data["members"] = []
 
-        asset_group = self._retrieve_undefined_asset_group(group_name)
         asset_group[AVALON_PROPERTY] = old_data
 
         new_data = {
@@ -676,13 +689,6 @@ class BlendLoader(plugin.BlenderLoader):
 
         return asset_group
 
-    @staticmethod
-    def _get_collections_parents(collection):
-        return [
-            parent for parent in bpy.data.collections
-            if collection in list(parent.children)
-        ]
-
     def _remove_collection_recursively(self, collections, deleted_collections=[]):
         for collection in collections:
             if collection in deleted_collections:
@@ -691,7 +697,7 @@ class BlendLoader(plugin.BlenderLoader):
             if collection.objects or collection.children:
                 continue
 
-            parents = self._get_collections_parents(collection)
+            parents = get_parents_for_collection(collection)
 
             deleted_collections.append(collection)
             bpy.data.collections.remove(collection)
