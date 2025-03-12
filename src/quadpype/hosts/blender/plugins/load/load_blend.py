@@ -644,13 +644,9 @@ class BlendLoader(plugin.BlenderLoader):
             parent.get(AVALON_PROPERTY)["members"] = list(filter(
                 lambda i: i not in members,
                 parent.get(AVALON_PROPERTY).get("members", [])))
-        print('\n\n\nATTRIBUTE')
+
         for attr in attrs:
-            print(attr)
-            print([data for data in getattr(bpy.data, attr)])
             for data in getattr(bpy.data, attr):
-                print(data)
-                print(data in members)
                 if not data in members:
                     continue
 
