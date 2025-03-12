@@ -280,6 +280,11 @@ class BlendLoader(plugin.BlenderLoader):
 
                 collection.objects.link(blender_object)
 
+                # If override, we need to add newly linked objects to members
+                # in order to be effectively removed or updated later.
+                if import_method is import_method.OVERRIDE:
+                    members.append(blender_object)
+
         else:
             # TODO: move this because it needs to happen when template is found and to raise error if none found
             [bpy.context.scene.collection.objects.link(member) for member in members if
@@ -294,11 +299,16 @@ class BlendLoader(plugin.BlenderLoader):
 
     def import_blend_objects(self, libpath, group_name, import_method):
         if import_method == ImportMethod.APPEND:
-            return self.append_blend_objects(libpath, group_name)
-        if import_method == ImportMethod.LINK:
-            return self.link_blend_objects(libpath)
-        if import_method == ImportMethod.OVERRIDE:
-            return self.link_blend_objects_with_overrides(libpath, group_name)
+            container, members = self.append_blend_objects(libpath, group_name)
+        elif import_method == ImportMethod.LINK:
+            container, members = self.link_blend_objects(libpath)
+        elif import_method == ImportMethod.OVERRIDE:
+            container, members = self.link_blend_objects_with_overrides(libpath, group_name)
+        else:
+            raise RuntimeError("No import method specified when importing blend objects.")
+
+        container['import_method'] = import_method.value
+        return container, members
 
     @staticmethod
     def get_parent_data(representation):
@@ -523,11 +533,11 @@ class BlendLoader(plugin.BlenderLoader):
         asset_group = self._retrieve_undefined_asset_group(group_name)
         libpath = Path(get_representation_path(representation)).as_posix()
 
-        import_method = "link" if asset_group.library else "append"
-
         assert asset_group, (
             f"The asset is not loaded: {container['objectName']}"
         )
+
+        import_method = ImportMethod(asset_group['import_method'])
 
         old_data = dict(asset_group.get(AVALON_PROPERTY))
         old_members = old_data.get("members", [])
@@ -634,19 +644,25 @@ class BlendLoader(plugin.BlenderLoader):
             parent.get(AVALON_PROPERTY)["members"] = list(filter(
                 lambda i: i not in members,
                 parent.get(AVALON_PROPERTY).get("members", [])))
-
+        print('\n\n\nATTRIBUTE')
         for attr in attrs:
+            print(attr)
+            print([data for data in getattr(bpy.data, attr)])
             for data in getattr(bpy.data, attr):
-                if data in members:
-                    # Skip the asset group
-                    if data == asset_group:
-                        continue
+                print(data)
+                print(data in members)
+                if not data in members:
+                    continue
 
-                    attribute = getattr(bpy.data, attr)
-                    if not hasattr(attribute, 'remove'):
-                        continue
+                # Skip the asset group
+                if data == asset_group:
+                    continue
 
-                    attribute.remove(data)
+                attribute = getattr(bpy.data, attr)
+                if not hasattr(attribute, 'remove'):
+                    continue
+
+                attribute.remove(data)
 
         if isinstance(asset_group, bpy.types.Object):
             bpy.data.objects.remove(asset_group)
