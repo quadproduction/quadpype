@@ -2,6 +2,8 @@ from typing import Dict, List, Optional
 from pathlib import Path
 
 import bpy
+from enum import Enum
+import re
 from copy import deepcopy
 
 from quadpype.lib.attribute_definitions import BoolDef, EnumDef
@@ -27,6 +29,12 @@ from quadpype.hosts.blender.api.pipeline import (
 )
 
 
+class ImportMethod(Enum):
+    APPEND = "Append"
+    LINK = "Link"
+    OVERRIDE = "Link + override"
+
+
 class BlendLoader(plugin.BlenderLoader):
     """Load assets from a .blend file."""
 
@@ -38,7 +46,7 @@ class BlendLoader(plugin.BlenderLoader):
     color = "orange"
 
     defaults = {
-        'import_method': 'append'
+        'import_method': ImportMethod.APPEND.value
     }
 
     @classmethod
@@ -46,23 +54,15 @@ class BlendLoader(plugin.BlenderLoader):
         return [
             EnumDef(
                 "import_method",
-                items=['append', 'link'],
+                items=[
+                    ImportMethod.APPEND.value,
+                    ImportMethod.LINK.value,
+                    ImportMethod.OVERRIDE.value
+                ],
                 default=cls.defaults['import_method'],
                 label="Import method",
             )
         ]
-
-    @staticmethod
-    def _get_asset_container(objects, collections):
-        for coll in collections:
-            if coll.get(AVALON_PROPERTY):
-                return coll
-
-        for empty in [obj for obj in objects if obj.type == 'EMPTY']:
-            if empty.get(AVALON_PROPERTY) and empty.parent is None:
-                return empty
-
-        return None
 
     def get_all_container_parents(self, asset_group):
         parent_containers = []
@@ -112,29 +112,6 @@ class BlendLoader(plugin.BlenderLoader):
                 }
             )
 
-    def import_blend_objects(self, libpath, group_name, import_link=False):
-        with bpy.data.libraries.load(libpath, link=import_link) as (data_from, data_to):
-            for attr in dir(data_to):
-                setattr(data_to, attr, getattr(data_from, attr))
-
-        members = []
-        # Needs to rename in separate block to retrieve blender object and not string
-        for attr in dir(data_to):
-            for data in getattr(data_to, attr):
-                members.append(data)
-                if import_link:
-                    continue
-
-                data.name = f"{group_name}:{data.name}"
-
-        container = self._get_asset_container(data_to.objects, data_to.collections)
-        assert container, "No asset group found"
-
-        if not import_link:
-            container.name = group_name
-
-        return container, members
-
     def process_asset(
         self, context: dict, name: str, namespace: Optional[str] = None,
         options: Optional[Dict] = None
@@ -164,7 +141,12 @@ class BlendLoader(plugin.BlenderLoader):
             libpath=libpath,
             group_name=group_name,
             unique_number=unique_number,
-            import_method=options.get('import_method', self.defaults['import_method'])
+            import_method=ImportMethod(
+                options.get(
+                    'import_method',
+                    self.defaults['import_method']
+                )
+            )
         )
 
         try:
@@ -200,60 +182,6 @@ class BlendLoader(plugin.BlenderLoader):
         self[:] = objects
         return objects
 
-    @staticmethod
-    def remove_library_from_blend_file(libpath):
-        # Blender has a limit of 63 characters for any data name.
-        # If the filepath is longer, it will be truncated.
-        filepath = bpy.path.basename(libpath)
-        if len(filepath) > 63:
-            filepath = filepath[:63]
-        library = bpy.data.libraries.get(filepath)
-        bpy.data.libraries.remove(library)
-
-    @staticmethod
-    def _extract_last_collection_from_first_template(data, templates, unique_number):
-        return get_resolved_name(
-            data=data,
-            template=templates[0],
-            numbering=unique_number
-        ).replace('\\', '/').split('/')[-1]
-
-    @staticmethod
-    def _create_collection(collection_name, link_to=None):
-        collection = bpy.data.collections.get(collection_name)
-
-        if not collection:
-            collection = bpy.data.collections.new(collection_name)
-            if link_to and collection not in list(link_to.children):
-                link_to.children.link(collection)
-
-        return collection
-
-    @staticmethod
-    def is_shot():
-        return len(get_current_context()['asset_name'].split('_')) > 1
-
-    @staticmethod
-    def get_parent_data(representation):
-        parent = representation["context"].get('parent', None)
-        if not parent:
-            hierarchy = representation["context"].get('hierarchy')
-
-            if not hierarchy:
-                return
-
-            return hierarchy.split('/')[-1]
-
-        return parent
-
-    @staticmethod
-    def get_top_collection(collection_name, default_parent_collection_name):
-        parent_collection = bpy.data.collections.get(collection_name, None)
-        if not parent_collection:
-            parent_collection = bpy.data.collections[default_parent_collection_name]
-
-        return parent_collection if parent_collection else bpy.context.scene.collection
-
     def load_assets_and_create_hierarchy(self, representation, libpath, group_name, unique_number, import_method):
         parent = self.get_parent_data(representation)
         if not parent:
@@ -275,9 +203,8 @@ class BlendLoader(plugin.BlenderLoader):
             task=get_current_context()['task_name']
         )
 
-        link = True if import_method in ['link', 'link_override'] else False
-        container, members = self.import_blend_objects(libpath, group_name, link)
-        if not link:
+        container, members = self.import_blend_objects(libpath, group_name, import_method)
+        if import_method is ImportMethod.APPEND:
             self.remove_library_from_blend_file(libpath)
 
         collections_are_created = None
@@ -313,10 +240,10 @@ class BlendLoader(plugin.BlenderLoader):
                 unique_number=unique_number
             )
 
-            for blender_object in members:
+            for blender_object in container.objects:
 
                 # Do not link non-objects or invisible objects from published scene
-                if not isinstance(blender_object, bpy.types.Object) or not blender_object.get('visible', True):
+                if not blender_object.get('visible', True):
                     continue
 
                 collection = bpy.data.collections[default_parent_collection_name]
@@ -364,6 +291,169 @@ class BlendLoader(plugin.BlenderLoader):
             avalon_container.children.link(container)
 
         return container, members
+
+    def import_blend_objects(self, libpath, group_name, import_method):
+        if import_method == ImportMethod.APPEND:
+            return self.append_blend_objects(libpath, group_name)
+        if import_method == ImportMethod.LINK:
+            return self.link_blend_objects(libpath)
+        if import_method == ImportMethod.OVERRIDE:
+            return self.link_blend_objects_with_overrides(libpath, group_name)
+
+    @staticmethod
+    def get_parent_data(representation):
+        parent = representation["context"].get('parent', None)
+        if not parent:
+            hierarchy = representation["context"].get('hierarchy')
+
+            if not hierarchy:
+                return
+
+            return hierarchy.split('/')[-1]
+
+        return parent
+
+    def append_blend_objects(self, libpath, group_name):
+        data_to = self._load_from_blendfile(
+            libpath,
+            import_link=False,
+            override=False
+        )
+        container = self._get_asset_container(data_to.objects, data_to.collections)
+        assert container, "No asset group found"
+
+        members = self._collect_members(data_to)
+
+        # Needs to rename in separate block to retrieve blender object after initialisation
+        self._rename_all(
+            data_list=members,
+            group_name=group_name
+        )
+
+        container.name = group_name
+        return container, members
+
+    def link_blend_objects(self, libpath):
+        data_to = self._load_from_blendfile(
+            libpath,
+            import_link=True,
+            override=False
+        )
+        container = self._get_asset_container(data_to.objects, data_to.collections)
+        assert container, "No asset group found"
+
+        members = self._collect_members(data_to)
+
+        return container, members
+
+    def link_blend_objects_with_overrides(self, libpath, group_name):
+        data_to = self._load_from_blendfile(
+            libpath,
+            import_link=True,
+            override=True
+        )
+        container = self._get_asset_container(data_to.objects, data_to.collections)
+        for obj in container.objects:
+            obj.override_create(remap_local_usages=True)
+
+        assert container, "No asset group found"
+
+        members = self._collect_members(data_to)
+
+        container.name = group_name
+
+        # Needs to rename in separate block to retrieve blender object after initialisation
+        self._rename_all(
+            data_list=container.objects,
+            group_name=group_name,
+            truncate_occurrence=True
+        )
+
+        return container, members
+
+    @staticmethod
+    def _load_from_blendfile(libpath, import_link, override):
+        with bpy.data.libraries.load(
+                libpath,
+                link=import_link,
+                create_liboverrides=override,
+                relative=False
+        ) as (data_from, data_to):
+            for attr in dir(data_to):
+                setattr(data_to, attr, getattr(data_from, attr))
+
+        return data_to
+
+    @staticmethod
+    def _get_asset_container(objects, collections):
+        for coll in collections:
+            if coll.get(AVALON_PROPERTY):
+                return coll
+
+        for empty in [obj for obj in objects if obj.type == 'EMPTY']:
+            if empty.get(AVALON_PROPERTY) and empty.parent is None:
+                return empty
+
+        return None
+
+    @staticmethod
+    def _collect_members(data_attributes):
+        members = []
+        # Needs to rename in separate block to retrieve blender object after initialisation
+        for attr in dir(data_attributes):
+            for data in getattr(data_attributes, attr):
+                members.append(data)
+
+        return members
+
+    @staticmethod
+    def _rename_all(data_list, group_name, truncate_occurrence=False):
+        for blender_object in data_list:
+            object_name = blender_object.name
+            if truncate_occurrence:
+                object_name = re.sub('.\d{3}$', '', blender_object.name)
+            blender_object.name = f"{group_name}:{object_name}"
+
+    @staticmethod
+    def remove_library_from_blend_file(libpath):
+        # Blender has a limit of 63 characters for any data name.
+        # If the filepath is longer, it will be truncated.
+        filepath = bpy.path.basename(libpath)
+        if len(filepath) > 63:
+            filepath = filepath[:63]
+        library = bpy.data.libraries.get(filepath)
+        bpy.data.libraries.remove(library)
+
+    @staticmethod
+    def _extract_last_collection_from_first_template(data, templates, unique_number):
+        return get_resolved_name(
+            data=data,
+            template=templates[0],
+            numbering=unique_number
+        ).replace('\\', '/').split('/')[-1]
+
+    @staticmethod
+    def _create_collection(collection_name, link_to=None):
+        collection = bpy.data.collections.get(collection_name)
+
+        if not collection:
+            collection = bpy.data.collections.new(collection_name)
+            if link_to and collection not in list(link_to.children):
+                link_to.children.link(collection)
+
+        return collection
+
+    @staticmethod
+    def is_shot():
+        return len(get_current_context()['asset_name'].split('_')) > 1
+
+    @staticmethod
+    def get_top_collection(collection_name, default_parent_collection_name):
+        parent_collection = bpy.data.collections.get(collection_name, None)
+        if not parent_collection:
+            parent_collection = bpy.data.collections[default_parent_collection_name]
+
+        return parent_collection if parent_collection else bpy.context.scene.collection
 
     def create_collection_from_hierarchy(
         self,
