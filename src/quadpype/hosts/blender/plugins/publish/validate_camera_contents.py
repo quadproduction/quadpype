@@ -1,7 +1,7 @@
 import pyblish.api
 import bpy
 
-import quadpype.hosts.blender.api.action
+from quadpype.hosts.blender.api import action, lib
 from quadpype.pipeline.publish import (
     PublishValidationError, ValidateContentsOrder)
 
@@ -40,19 +40,11 @@ class ValidateCameraContents(pyblish.api.InstancePlugin):
 
 
 def _retrieve_cameras(instance):
-    cameras_objects = [obj for obj in instance if _is_camera(obj)]
+    cameras_objects = [obj for obj in instance if lib.is_camera(obj)]
     cameras_from_collection = [
         obj for collection in instance
         for obj in collection.children
-        if _is_collection(collection) and _is_camera(obj)
+        if lib.is_collection(collection) and lib.is_camera(obj)
     ]
 
     return cameras_objects + cameras_from_collection
-
-
-def _is_camera(obj):
-    return isinstance(obj, bpy.types.Object) and obj.type == "CAMERA"
-
-
-def _is_collection(obj):
-    return isinstance(obj, bpy.types.Collection)

@@ -63,11 +63,6 @@ class ValidateModelContents(plugin.BlenderInstancePlugin):
 
         # Compare obj in instance and obj in scene model collection
         invalid = [missing_obj for missing_obj in collections_objects if missing_obj not in objects]
-        print("+++++++++++++++++++++++++++++")
-        print(invalid)
-        print("+++++++++++++++++++++++++++++")
-        print(objects)
-        print("+++++++++++++++++++++++++++++")
 
         return invalid
 

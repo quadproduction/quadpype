@@ -6,8 +6,8 @@ import bpy
 from quadpype.pipeline import publish, get_current_context
 from quadpype.hosts.blender.api import (
     plugin,
-    get_task_collection_templates,
-    get_resolved_name
+    lib,
+    template_resolving
 )
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
@@ -58,16 +58,16 @@ class ExtractBlend(
 
         data_blocks = set()
 
-        templates = get_task_collection_templates(
+        templates = template_resolving.get_task_collection_templates(
             data=instance.data,
         )
 
-        if self.is_shot():
+        if lib.is_shot():
             instance.data['sequence'], instance.data['shot'] = get_current_context()['asset_name'].split('_')
 
         hierarchies = {}
         for template in templates:
-            task_hierarchy = get_resolved_name(
+            task_hierarchy = template_resolving.get_resolved_name(
                 data=instance.data,
                 template=template,
                 parent=parent,
@@ -125,10 +125,6 @@ class ExtractBlend(
 
         self.log.info("Extracted instance '%s' to: %s",
                        instance.name, representation)
-
-    @staticmethod
-    def is_shot():
-        return len(get_current_context()['asset_name'].split('_')) > 1
 
     def retrieve_objects_hierarchy(self, collections, selection, result, hierarchy=None):
 

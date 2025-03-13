@@ -36,7 +36,10 @@ from .lib import (
     get_selection,
     get_parents_for_collection,
     get_objects_in_collection,
-    # unique_name,
+    get_asset_children,
+    get_and_select_camera,
+    is_camera,
+    is_collection
 )
 
 from .capture import capture
@@ -84,6 +87,16 @@ __all__ = [
     "get_resolved_name",
     "get_task_collection_templates",
     "update_parent_data_with_entity_prefix",
+
+    # Collections getters
     "get_parents_for_collection",
-    "get_objects_in_collection"
+    "get_objects_in_collection",
+
+    # Objects manipulation
+    "get_asset_children",
+    "get_and_select_camera"
+
+    # Checkers
+    "is_camera",
+    "is_collection"
 ]

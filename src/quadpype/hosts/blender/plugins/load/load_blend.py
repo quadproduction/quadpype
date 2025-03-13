@@ -12,8 +12,7 @@ from quadpype.pipeline import (
 )
 # from quadpype.pipeline.context_tools import , get_project_settings
 from quadpype.pipeline.create import CreateContext
-from quadpype.hosts.blender.api import plugin
-from quadpype.hosts.blender.api.lib import imprint
+from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api import (
     update_parent_data_with_entity_prefix,
     get_task_collection_templates,
@@ -182,7 +181,7 @@ class BlendLoader(plugin.BlenderLoader):
         collections_are_created = None
         corresponding_hierarchies_numbered = {}
 
-        if self.is_shot():
+        if lib.is_shot():
             data_for_template['sequence'], data_for_template['shot'] = get_current_context()['asset_name'].split('_')
 
         if asset_collection_templates:
@@ -304,10 +303,6 @@ class BlendLoader(plugin.BlenderLoader):
                 link_to.children.link(collection)
 
         return collection
-
-    @staticmethod
-    def is_shot():
-        return len(get_current_context()['asset_name'].split('_')) > 1
 
     @staticmethod
     def get_parent_data(context):
@@ -448,7 +443,7 @@ class BlendLoader(plugin.BlenderLoader):
             "members": members,
         }
 
-        imprint(asset_group, new_data)
+        lib.imprint(asset_group, new_data)
 
         # We need to update all the parent container members
         parent_containers = self.get_all_container_parents(asset_group)
