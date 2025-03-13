@@ -602,6 +602,10 @@ def get_and_select_camera(objects):
             return camera
 
 
+def extract_sequence_and_shot():
+    get_current_context()['asset_name'].split('_')
+
+
 def is_camera(obj):
     return isinstance(obj, bpy.types.Object) and obj.type == "CAMERA"
 

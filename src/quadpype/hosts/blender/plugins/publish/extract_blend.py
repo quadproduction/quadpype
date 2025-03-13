@@ -63,7 +63,7 @@ class ExtractBlend(
         )
 
         if lib.is_shot():
-            instance.data['sequence'], instance.data['shot'] = get_current_context()['asset_name'].split('_')
+            instance.data['sequence'], instance.data['shot'] = lib.extract_sequence_and_shot()
 
         hierarchies = {}
         for template in templates:

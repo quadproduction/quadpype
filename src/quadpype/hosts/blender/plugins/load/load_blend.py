@@ -10,7 +10,7 @@ from quadpype.pipeline import (
     registered_host,
     get_current_context
 )
-# from quadpype.pipeline.context_tools import , get_project_settings
+
 from quadpype.pipeline.create import CreateContext
 from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api import (
@@ -60,7 +60,7 @@ class BlendLoader(plugin.BlenderLoader):
     @staticmethod
     def _get_parents(asset_group):
         if hasattr(asset_group, "parent"):
-            return [asset_group.parent]
+            return asset_group.parent
         else:
             for collection in bpy.data.collections:
                 if asset_group in list(collection.objects):
@@ -474,9 +474,13 @@ class BlendLoader(plugin.BlenderLoader):
 
         collections_parents = [
             collection for collection in bpy.data.collections
-            if set(data for data in members).intersection(set(collection.objects))
+            if set(members).intersection(set(collection.objects))
             and collection is not asset_group
         ]
+
+        print('\n\n\n######')
+        print(set(data for data in members))
+        print(set(members))
 
         parent_containers = self.get_all_container_parents(asset_group)
 

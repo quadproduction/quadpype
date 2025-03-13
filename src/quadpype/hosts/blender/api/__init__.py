@@ -38,6 +38,7 @@ from .lib import (
     get_objects_in_collection,
     get_asset_children,
     get_and_select_camera,
+    extract_sequence_and_shot,
     is_camera,
     is_collection
 )
@@ -82,6 +83,7 @@ __all__ = [
     "capture",
     # "unique_name",
     "prepare_rendering",
+    "extract_sequence_and_shot",
 
     #Templates for working:
     "get_resolved_name",
@@ -94,7 +96,7 @@ __all__ = [
 
     # Objects manipulation
     "get_asset_children",
-    "get_and_select_camera"
+    "get_and_select_camera",
 
     # Checkers
     "is_camera",
