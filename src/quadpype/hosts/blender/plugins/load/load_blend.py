@@ -182,7 +182,7 @@ class BlendLoader(plugin.BlenderLoader):
         corresponding_hierarchies_numbered = {}
 
         if lib.is_shot():
-            data_for_template['sequence'], data_for_template['shot'] = get_current_context()['asset_name'].split('_')
+            data_for_template['sequence'], data_for_template['shot'] = lib.extract_sequence_and_shot()
 
         if asset_collection_templates:
             corresponding_hierarchies_numbered = {

@@ -603,7 +603,8 @@ def get_and_select_camera(objects):
 
 
 def extract_sequence_and_shot():
-    get_current_context()['asset_name'].split('_')
+    # TODO : Needs to be improved (not reliable at this time)
+    return get_current_context()['asset_name'].split('_')
 
 
 def is_camera(obj):
