@@ -478,10 +478,6 @@ class BlendLoader(plugin.BlenderLoader):
             and collection is not asset_group
         ]
 
-        print('\n\n\n######')
-        print(set(data for data in members))
-        print(set(members))
-
         parent_containers = self.get_all_container_parents(asset_group)
 
         for parent in parent_containers:
