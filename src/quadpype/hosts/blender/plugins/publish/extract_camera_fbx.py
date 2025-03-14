@@ -33,16 +33,14 @@ class ExtractCamera(
 
         plugin.deselect_all()
 
-        selected = []
+        asset_group = instance.data["transientData"]["instance_node"]
 
-        camera = None
+        selected = lib.get_asset_children(asset_group)
+        if not selected:
+            self.log.error("Extraction failed: No child objects found in the asset group.")
+            return
 
-        for obj in instance:
-            if obj.type == "CAMERA":
-                obj.select_set(True)
-                selected.append(obj)
-                camera = obj
-                break
+        camera = lib.get_and_select_camera(selected)
 
         assert camera, "No camera found"
 

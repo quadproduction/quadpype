@@ -21,7 +21,7 @@
                     },
                     {
                         "type": "label",
-                        "label": "Define where the add-on versions are located. <i>This need to be an OS path, not an URL.</i>"
+                        "label": "Define where the add-on versions are located."
                     },
                     {
                         "type": "path",

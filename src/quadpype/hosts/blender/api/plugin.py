@@ -340,7 +340,6 @@ class BlenderCreator(Creator):
             imprint(node, data)
 
     def remove_instances(self, instances: List[CreatedInstance]):
-
         for instance in instances:
             node = instance.transient_data["instance_node"]
 
@@ -352,7 +351,15 @@ class BlenderCreator(Creator):
                         bpy.data.objects.remove(children)
 
                 bpy.data.collections.remove(node)
+
             elif isinstance(node, bpy.types.Object):
+                parent_collection = self.get_parent_collection(node)
+
+                if parent_collection:
+                    self.unlink_children_from(
+                        objects=node.children,
+                        collection=parent_collection
+                    )
                 bpy.data.objects.remove(node)
 
             self._remove_instance_from_context(instance)
@@ -384,8 +391,36 @@ class BlenderCreator(Creator):
         return [
             BoolDef("use_selection",
                     label="Use selection",
-                    default=True)
+                    default=True),
+            BoolDef("create_as_asset_group",
+                    label="Use Empty as Instance",
+                    default=False)
         ]
+
+    def unlink_children_from(self, objects, collection):
+        for blender_object in objects:
+            if blender_object not in list(collection.objects):
+                continue
+            collection.objects.unlink(blender_object)
+            self.unlink_children_from(blender_object.children, collection)
+
+    @staticmethod
+    def get_parent_collection(selection):
+        """Get parent collection from selection.
+        
+        If selection is parented to multiple collections, only the
+        first one in the hierarchy will be returned.
+        """
+        if type(selection) is not list:
+            selection = [selection]
+
+        for collection in bpy.data.collections:
+            if set(selection).intersection(set(collection.objects)):
+                return collection
+
+        return None
+
+
 
 
 class BlenderLoader(LoaderPlugin):

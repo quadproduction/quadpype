@@ -229,14 +229,17 @@ class PackageHandler:
 
         self._local_dir_path = local_dir_path
 
-        if not self.is_local_dir_path_accessible():
+        if self._local_dir_path and not self.is_local_dir_path_accessible():
             try:
                 self._local_dir_path.mkdir(parents=True, exist_ok=True)
             except Exception:  # noqa
                 raise RuntimeError(f"Local directory path for package \"{pkg_name}\" is not accessible.")
 
         if not remote_sources:
-            remote_sources = [self._local_dir_path]
+            if self._local_dir_path:
+                remote_sources = [self._local_dir_path]
+            else:
+                remote_sources = []
         self._remote_sources = self._conform_remote_sources(pkg_name, remote_sources)
 
         self._running_version = None
@@ -255,7 +258,7 @@ class PackageHandler:
                 location=self._install_dir_path
             )
 
-        running_version_str = ""
+        running_version_str = running_version_str
         if not running_version_str:
             # If no version specified gets the latest version
             latest_version = self.get_latest_version()
@@ -314,13 +317,13 @@ class PackageHandler:
         if isinstance(local_dir_path, str):
             local_dir_path = Path(local_dir_path)
 
-        if not isinstance(local_dir_path, Path):
+        if local_dir_path is not None and not isinstance(local_dir_path, Path):
             raise ValueError("Invalid local directory path. Must be a string or a Path object.")
 
         self._local_dir_path = local_dir_path
 
         # Ensure accessibility
-        if not self.is_local_dir_path_accessible():
+        if self._local_dir_path and not self.is_local_dir_path_accessible():
             raise ValueError(f"Local directory path of package \"{self._name}\" is not accessible.")
 
     def is_local_dir_path_accessible(self) -> bool:
@@ -370,9 +373,9 @@ class PackageHandler:
 
     def change_remote_sources(self, remote_sources: Union[List[Union[str, Path]], None]):
         """Set the remote directory path."""
-        if not remote_sources:
+        if not remote_sources and self._local_dir_path:
             remote_sources = [self._local_dir_path]
-        self._remote_sources = self._conform_remote_sources(self._name, remote_sources)
+            self._remote_sources = self._conform_remote_sources(self._name, remote_sources)
 
     def get_accessible_remote_source(self):
         """Get the first accessible remote source path (if any)."""
@@ -779,6 +782,9 @@ class PackageHandler:
             list: of compatible versions available on the machine.
 
         """
+        if not self._local_dir_path:
+            return []
+
         if excluded_str_versions is None:
             excluded_str_versions = []
 

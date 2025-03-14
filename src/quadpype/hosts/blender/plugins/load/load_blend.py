@@ -2,15 +2,23 @@ from typing import Dict, List, Optional
 from pathlib import Path
 
 import bpy
+from copy import deepcopy
 
 from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
-    registered_host
+    registered_host,
+    get_current_context
 )
+
 from quadpype.pipeline.create import CreateContext
-from quadpype.hosts.blender.api import plugin
-from quadpype.hosts.blender.api.lib import imprint
+from quadpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api import (
+    update_parent_data_with_entity_prefix,
+    get_task_collection_templates,
+    get_resolved_name,
+    get_parents_for_collection
+)
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
     AVALON_PROPERTY,
@@ -28,25 +36,37 @@ class BlendLoader(plugin.BlenderLoader):
     color = "orange"
 
     @staticmethod
-    def _get_asset_container(objects):
-        empties = [obj for obj in objects if obj.type == 'EMPTY']
+    def _get_asset_container(objects, collections):
+        for coll in collections:
+            if coll.get(AVALON_PROPERTY):
+                return coll
 
-        for empty in empties:
+        for empty in [obj for obj in objects if obj.type == 'EMPTY']:
             if empty.get(AVALON_PROPERTY) and empty.parent is None:
                 return empty
 
         return None
 
-    @staticmethod
-    def get_all_container_parents(asset_group):
+    def get_all_container_parents(self, asset_group):
         parent_containers = []
-        parent = asset_group.parent
+        parent = self._get_parents(asset_group)
         while parent:
             if parent.get(AVALON_PROPERTY):
                 parent_containers.append(parent)
-            parent = parent.parent
+            parent = self._get_parents(parent)
 
         return parent_containers
+
+    @staticmethod
+    def _get_parents(asset_group):
+        if hasattr(asset_group, "parent"):
+            return asset_group.parent
+        else:
+            for collection in bpy.data.collections:
+                if asset_group in list(collection.objects):
+                    return collection
+
+        return None
 
     def _post_process_layout(self, container, asset, representation):
         rigs = [
@@ -91,18 +111,11 @@ class BlendLoader(plugin.BlenderLoader):
                 data.name = f"{group_name}:{data.name}"
                 members.append(data)
 
-        container = self._get_asset_container(data_to.objects)
+        container = self._get_asset_container(data_to.objects, data_to.collections)
+
         assert container, "No asset group found"
 
         container.name = group_name
-        container.empty_display_type = 'SINGLE_ARROW'
-
-        # Link the collection to the scene
-        bpy.context.scene.collection.objects.link(container)
-
-        # Link all the container children to the collection
-        for obj in container.children_recursive:
-            bpy.context.scene.collection.objects.link(obj)
 
         # Remove the library from the blend file
         filepath = bpy.path.basename(libpath)
@@ -127,8 +140,17 @@ class BlendLoader(plugin.BlenderLoader):
             options: Additional settings dictionary
         """
         libpath = self.filepath_from_context(context)
+
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
+
+        parent = self.get_parent_data(context)
+        if not parent:
+            self.log.warning(f"Can not retrieve parent from asset {asset} / subset {subset}")
+
+        context["representation"]["context"]["parent"] = parent
+        context["representation"]["context"]["app"] = "blender"
+
         try:
             family = context["representation"]["context"]["family"]
         except ValueError:
@@ -146,12 +168,97 @@ class BlendLoader(plugin.BlenderLoader):
             avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
             bpy.context.scene.collection.children.link(avalon_container)
 
+        data_for_template = deepcopy(context["representation"]["context"])
+        update_parent_data_with_entity_prefix(data_for_template)
+
+        asset_collection_templates = get_task_collection_templates(
+            context["representation"]["context"],
+            task=get_current_context()['task_name']
+        )
+
         container, members = self._process_data(libpath, group_name)
+
+        collections_are_created = None
+        corresponding_hierarchies_numbered = {}
+
+        if lib.is_shot():
+            data_for_template['sequence'], data_for_template['shot'] = lib.extract_sequence_and_shot()
+
+        if asset_collection_templates:
+            corresponding_hierarchies_numbered = {
+                get_resolved_name(
+                    data=data_for_template,
+                    template=hierarchies
+                ).replace('\\', '/').split('/')[-1]: get_resolved_name(
+                    data=data_for_template,
+                    template=hierarchies,
+                    numbering=unique_number
+                ).replace('\\', '/').split('/')[-1]
+                for hierarchies in asset_collection_templates
+            }
+
+            collections_are_created = self.create_collections_from_template(
+                data=data_for_template,
+                templates=asset_collection_templates,
+                unique_number=unique_number,
+                parent_collection=bpy.context.scene.collection
+            )
+
+        if collections_are_created:
+            default_parent_collection_name = self._extract_last_collection_from_first_template(
+                data=data_for_template,
+                templates=asset_collection_templates,
+                unique_number=unique_number
+            )
+
+            for blender_object in members:
+
+                # Do not link non-objects or invisible objects from published scene
+                if not isinstance(blender_object, bpy.types.Object) or not blender_object.get('visible', True):
+                    continue
+
+                collection = bpy.data.collections[default_parent_collection_name]
+
+                object_hierarchies = blender_object.get('original_collection_parent', '')
+                split_object_hierarchies = object_hierarchies.replace('\\', '/').split('/')
+
+                for collection_number, hierarchy in enumerate(split_object_hierarchies):
+                    hierarchy = get_resolved_name(
+                        data=data_for_template,
+                        template=hierarchy,
+                        numbering=unique_number
+                    )
+                    corresponding_collection_name = corresponding_hierarchies_numbered.get(
+                        hierarchy,
+                        f"{hierarchy}-{unique_number}"
+                    )
+
+                    if collection_number == 0:
+                        collection = self.get_top_collection(
+                            collection_name=corresponding_collection_name,
+                            default_parent_collection_name=default_parent_collection_name
+                        )
+
+                    else:
+                        collection = self.create_collection_from_hierarchy(
+                            parent_collection_name=split_object_hierarchies[collection_number - 1],
+                            collection_name=corresponding_collection_name,
+                            corresponding_hierarchies_numbered=corresponding_hierarchies_numbered
+                        )
+
+                collection.objects.link(blender_object)
+
+        else:
+            # TODO: move this because it needs to happen when template is found and to raise error if none found
+            [bpy.context.scene.collection.objects.link(member) for member in members if isinstance(member, bpy.types.Object)]
+
+        if isinstance(container, bpy.types.Object):
+            avalon_container.objects.link(container)
+        elif isinstance(container, bpy.types.Collection):
+            avalon_container.children.link(container)
 
         if family == "layout":
             self._post_process_layout(container, asset, representation)
-
-        avalon_container.objects.link(container)
 
         data = {
             "schema": "quadpype:container-2.0",
@@ -177,6 +284,106 @@ class BlendLoader(plugin.BlenderLoader):
 
         self[:] = objects
         return objects
+
+    @staticmethod
+    def _extract_last_collection_from_first_template(data, templates, unique_number):
+        return get_resolved_name(
+            data=data,
+            template=templates[0],
+            numbering=unique_number
+        ).replace('\\', '/').split('/')[-1]
+
+    @staticmethod
+    def _create_collection(collection_name, link_to=None):
+        collection = bpy.data.collections.get(collection_name)
+
+        if not collection:
+            collection = bpy.data.collections.new(collection_name)
+            if link_to and collection not in list(link_to.children):
+                link_to.children.link(collection)
+
+        return collection
+
+    @staticmethod
+    def get_parent_data(context):
+        parent = context["representation"]["context"].get('parent', None)
+        if not parent:
+            hierarchy = context["representation"]["context"].get('hierarchy')
+
+            if not hierarchy:
+                return
+
+            return hierarchy.split('/')[-1]
+
+        return parent
+
+    @staticmethod
+    def get_top_collection(collection_name, default_parent_collection_name):
+        parent_collection = bpy.data.collections.get(collection_name, None)
+        if not parent_collection:
+            parent_collection = bpy.data.collections[default_parent_collection_name]
+
+        return parent_collection if parent_collection else bpy.context.scene.collection
+
+    def create_collection_from_hierarchy(
+        self,
+        parent_collection_name,
+        collection_name,
+        corresponding_hierarchies_numbered
+    ):
+        corresponding_parent_collection_name = bpy.data.collections.get(
+            corresponding_hierarchies_numbered.get(parent_collection_name, parent_collection_name)
+        )
+        collection = self._create_collection(
+            collection_name=collection_name,
+            link_to=corresponding_parent_collection_name
+        )
+
+        return collection
+
+    def create_collections_from_template(self, data, templates, parent_collection, unique_number):
+        all_hierarchies = [
+            get_resolved_name(
+                data=data,
+                template=hierarchies,
+                numbering=unique_number
+            ).replace('\\', '/').split('/')
+            for hierarchies in templates
+        ]
+
+        top_hierarchies = set(
+            collection[0] for collection in all_hierarchies
+        )
+
+        try:
+            top_collection_name = next(iter(top_hierarchies))
+
+        except StopIteration:
+            self.log.warning(
+                "Can not extract top collection from retrieved templates. "
+                "No collection will be used for later process."
+            )
+            return None
+
+        if len(top_hierarchies) > 1:
+            self.log.warning(
+                f"Multiple top collections have been found. "
+                f"Only the first one ({top_collection_name}) will be used."
+            )
+
+        for single_template in all_hierarchies:
+            for level, collection_name in enumerate(single_template):
+                if level == 0:
+                    parent = parent_collection
+                else:
+                    parent = bpy.data.collections[single_template[level - 1]]
+
+                self._create_collection(
+                    collection_name=collection_name,
+                    link_to=parent
+                )
+
+        return True
 
     def exec_update(self, container: Dict, representation: Dict):
         """
@@ -236,7 +443,7 @@ class BlendLoader(plugin.BlenderLoader):
             "members": members,
         }
 
-        imprint(asset_group, new_data)
+        lib.imprint(asset_group, new_data)
 
         # We need to update all the parent container members
         parent_containers = self.get_all_container_parents(asset_group)
@@ -251,7 +458,9 @@ class BlendLoader(plugin.BlenderLoader):
         Remove an existing container from a Blender scene.
         """
         group_name = container["objectName"]
-        asset_group = bpy.data.objects.get(group_name)
+
+        asset_group = self._retrieve_undefined_asset_group(group_name)
+        assert asset_group, f"Can not find asset_group with name {group_name}"
 
         attrs = [
             attr for attr in dir(bpy.data)
@@ -263,7 +472,12 @@ class BlendLoader(plugin.BlenderLoader):
 
         members = asset_group.get(AVALON_PROPERTY).get("members", [])
 
-        # We need to update all the parent container members
+        collections_parents = [
+            collection for collection in bpy.data.collections
+            if set(members).intersection(set(collection.objects))
+            and collection is not asset_group
+        ]
+
         parent_containers = self.get_all_container_parents(asset_group)
 
         for parent in parent_containers:
@@ -277,6 +491,50 @@ class BlendLoader(plugin.BlenderLoader):
                     # Skip the asset group
                     if data == asset_group:
                         continue
-                    getattr(bpy.data, attr).remove(data)
 
-        bpy.data.objects.remove(asset_group)
+                    attribute = getattr(bpy.data, attr)
+                    if not hasattr(attribute, 'remove'):
+                        continue
+
+                    attribute.remove(data)
+
+        if isinstance(asset_group, bpy.types.Object):
+            bpy.data.objects.remove(asset_group)
+        else:
+            bpy.data.collections.remove(asset_group)
+
+        self._remove_collection_recursively(collections_parents)
+
+    @staticmethod
+    def _retrieve_undefined_asset_group(group_name):
+        asset_group = bpy.data.objects.get(group_name)
+
+        if not asset_group:
+            return bpy.data.collections.get(group_name)
+
+        return asset_group
+
+    @staticmethod
+    def _get_collections_parents(collection):
+        return [
+            parent for parent in bpy.data.collections
+            if collection in list(parent.children)
+        ]
+
+    def _remove_collection_recursively(self, collections, deleted_collections=[]):
+        for collection in collections:
+            if collection in deleted_collections:
+                continue
+
+            if collection.objects or collection.children:
+                continue
+
+            parents = self._get_collections_parents(collection)
+
+            deleted_collections.append(collection)
+            bpy.data.collections.remove(collection)
+
+            self._remove_collection_recursively(
+                collections=parents,
+                deleted_collections=deleted_collections
+            )

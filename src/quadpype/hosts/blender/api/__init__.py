@@ -34,7 +34,13 @@ from .lib import (
     maintained_selection,
     maintained_time,
     get_selection,
-    # unique_name,
+    get_parents_for_collection,
+    get_objects_in_collection,
+    get_asset_children,
+    get_and_select_camera,
+    extract_sequence_and_shot,
+    is_camera,
+    is_collection
 )
 
 from .capture import capture
@@ -43,8 +49,7 @@ from .render_lib import prepare_rendering
 
 from .template_resolving import (
     get_resolved_name,
-    get_entity_collection_template,
-    get_task_collection_template,
+    get_task_collection_templates,
     update_parent_data_with_entity_prefix
 )
 
@@ -78,10 +83,22 @@ __all__ = [
     "capture",
     # "unique_name",
     "prepare_rendering",
+    "extract_sequence_and_shot",
 
     #Templates for working:
     "get_resolved_name",
-    "get_entity_collection_template",
-    "get_task_collection_template",
-    "update_parent_data_with_entity_prefix"
+    "get_task_collection_templates",
+    "update_parent_data_with_entity_prefix",
+
+    # Collections getters
+    "get_parents_for_collection",
+    "get_objects_in_collection",
+
+    # Objects manipulation
+    "get_asset_children",
+    "get_and_select_camera",
+
+    # Checkers
+    "is_camera",
+    "is_collection"
 ]
