@@ -606,7 +606,7 @@ def get_and_select_camera(objects):
 
 def extract_sequence_and_shot():
     asset_name = get_current_context()['asset_name']
-    is_valid_pattern = re.match('^[A-Za-z]*\d+[A-Za-z]*_[A-Za-z]*\d+[A-Za-z]*$', asset_name)
+    is_valid_pattern = re.match('^[a-zA-Z.]+\d+_[a-zA-Z.]+\d+[a-zA-Z0-9_.]*$', asset_name)
     if not is_valid_pattern:
         raise RuntimeError(f"Can not extract sequence and shot from asset_name {asset_name}")
 
