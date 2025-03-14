@@ -1,5 +1,6 @@
 import os
 import traceback
+import re
 import importlib
 import contextlib
 from typing import Dict, List, Union, TYPE_CHECKING
@@ -8,6 +9,7 @@ import bpy
 import addon_utils
 from quadpype.lib import Logger, NumberDef
 from quadpype.pipeline import get_current_project_name, get_current_asset_name, get_current_context
+from quadpype.pipeline.context_tools import get_current_project_asset
 from quadpype.client import get_asset_by_name
 if TYPE_CHECKING:
     from quadpype.pipeline.create import CreateContext  # noqa: F401
@@ -603,8 +605,12 @@ def get_and_select_camera(objects):
 
 
 def extract_sequence_and_shot():
-    # TODO : Needs to be improved (not reliable at this time)
-    return get_current_context()['asset_name'].split('_')
+    asset_name = get_current_context()['asset_name']
+    is_valid_pattern = re.match('^[A-Za-z]*\d+[A-Za-z]*_[A-Za-z]*\d+[A-Za-z]*$', asset_name)
+    if not is_valid_pattern:
+        raise RuntimeError(f"Can not extract sequence and shot from asset_name {asset_name}")
+
+    return asset_name.split('_')
 
 
 def is_camera(obj):
@@ -616,4 +622,5 @@ def is_collection(obj):
 
 
 def is_shot():
-    return len(get_current_context()['asset_name'].split('_')) > 1
+    asset_data = get_current_project_asset()["data"]
+    return asset_data['parents'][0].lower() == "shots"
