@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import bpy
+import json
 import pyblish.api
 from quadpype.pipeline import (
     Creator,
@@ -209,10 +210,11 @@ class BlenderCreator(Creator):
                     avalon_instance_objs,
                     bpy.data.collections
             ):
-                avalon_prop = obj_or_col.get(AVALON_PROPERTY, {})
-                if not avalon_prop:
+                avalon_text = obj_or_col.get(AVALON_PROPERTY, {})
+                if not avalon_text:
                     continue
 
+                avalon_prop = json.loads(avalon_text)
                 if avalon_prop.get('id') != 'pyblish.avalon.instance':
                     continue
 
@@ -271,6 +273,9 @@ class BlenderCreator(Creator):
         instance.transient_data["instance_node"] = instance_node
         self._add_instance_to_context(instance)
 
+        self.log.warning('\n\n\n')
+        self.log.warning('CREATE IMPRINT')
+        self.log.warning('\n\n\n')
         imprint(instance_node, instance_data)
 
         return instance_node
@@ -407,7 +412,7 @@ class BlenderCreator(Creator):
     @staticmethod
     def get_parent_collection(selection):
         """Get parent collection from selection.
-        
+
         If selection is parented to multiple collections, only the
         first one in the hierarchy will be returned.
         """

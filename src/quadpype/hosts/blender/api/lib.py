@@ -3,12 +3,13 @@ import traceback
 import re
 import importlib
 import contextlib
+import json
 from typing import Dict, List, Union, TYPE_CHECKING
 
 import bpy
 import addon_utils
 from quadpype.lib import Logger, NumberDef
-from quadpype.pipeline import get_current_project_name, get_current_asset_name, get_current_context
+from quadpype.pipeline import get_current_project_name, get_current_asset_name, get_current_context, get_avalon_node
 from quadpype.pipeline.context_tools import get_current_project_asset
 from quadpype.client import get_asset_by_name
 if TYPE_CHECKING:
@@ -249,9 +250,10 @@ def lsattrs(attrs: Dict) -> List:
             continue
         for node in getattr(bpy.data, coll):
             for attr, value in attrs.items():
-                avalon_prop = node.get(pipeline.AVALON_PROPERTY)
+                avalon_prop = get_avalon_node(node)
                 if not avalon_prop:
                     continue
+
                 if (avalon_prop.get(attr)
                         and (value is None or avalon_prop.get(attr) == value)):
                     matches.add(node)
@@ -261,7 +263,7 @@ def lsattrs(attrs: Dict) -> List:
 def read(node: bpy.types.bpy_struct_meta_idprop):
     """Return user-defined attributes from `node`"""
 
-    data = dict(node.get(pipeline.AVALON_PROPERTY, {}))
+    data = get_avalon_node(node)
 
     # Ignore hidden/internal data
     data = {

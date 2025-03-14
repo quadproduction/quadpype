@@ -298,19 +298,6 @@ class BlendLoader(plugin.BlenderLoader):
 
         return container, members
 
-    def import_blend_objects(self, libpath, group_name, import_method):
-        if import_method == ImportMethod.APPEND:
-            container, members = self.append_blend_objects(libpath, group_name)
-        elif import_method == ImportMethod.LINK:
-            container, members = self.link_blend_objects(libpath)
-        elif import_method == ImportMethod.OVERRIDE:
-            container, members = self.link_blend_objects_with_overrides(libpath, group_name)
-        else:
-            raise RuntimeError("No import method specified when importing blend objects.")
-
-        container['import_method'] = import_method.value
-        return container, members
-
     @staticmethod
     def get_parent_data(representation):
         parent = representation["context"].get('parent', None)
@@ -323,6 +310,22 @@ class BlendLoader(plugin.BlenderLoader):
             return hierarchy.split('/')[-1]
 
         return parent
+
+    def import_blend_objects(self, libpath, group_name, import_method):
+        if import_method == ImportMethod.APPEND:
+            container, members = self.append_blend_objects(libpath, group_name)
+        elif import_method == ImportMethod.LINK:
+            container, members = self.link_blend_objects(libpath)
+        elif import_method == ImportMethod.OVERRIDE:
+            container, members = self.link_blend_objects_with_overrides(libpath, group_name)
+        else:
+            raise RuntimeError("No import method specified when importing blend objects.")
+
+        container['import_method'] = import_method.value
+        container.property_overridable_library_set('["import_method"]', True)
+        container['import_method'] = import_method.value
+        #container['import_method'] = import_method.value
+        return container, members
 
     def append_blend_objects(self, libpath, group_name):
         data_to = self._load_from_blendfile(
@@ -363,6 +366,7 @@ class BlendLoader(plugin.BlenderLoader):
             import_link=True,
             override=True
         )
+
         container = self._get_asset_container(data_to.objects, data_to.collections)
         for obj in container.objects:
             obj.override_create(remap_local_usages=True)

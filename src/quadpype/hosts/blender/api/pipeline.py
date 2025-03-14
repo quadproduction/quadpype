@@ -2,6 +2,7 @@ import os
 import sys
 import re
 import traceback
+import json
 from typing import Callable, Dict, Iterator, List, Optional
 
 import bpy
@@ -495,14 +496,22 @@ def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict):
     """Imprint the node with metadata.
 
     Existing metadata will be updated.
+
+    We use json to dump data into strings and allow library override.
     """
 
-    if not node.get(AVALON_PROPERTY):
-        node[AVALON_PROPERTY] = dict()
+    existing_data = get_avalon_node(node)
     for key, value in data.items():
         if value is None:
             continue
-        node[AVALON_PROPERTY][key] = value
+        existing_data[key] = value
+
+    node[AVALON_PROPERTY] = json.dumps(existing_data)
+    node.property_overridable_library_set(f'["{AVALON_PROPERTY}"]', True)
+
+
+def get_avalon_node(node):
+    return json.loads(node.get(AVALON_PROPERTY, {}))
 
 
 def containerise(name: str,
@@ -640,7 +649,7 @@ def ls() -> Iterator:
             if not node.get(AVALON_PROPERTY):
                 continue
 
-            if node.get(AVALON_PROPERTY).get("id") not in container_ids:
+            if json.loads(node.get(AVALON_PROPERTY)).get("id") not in container_ids:
                 continue
 
             yield parse_container(node)
