@@ -11,7 +11,8 @@ from quadpype.pipeline.publish import (
 
 from quadpype.hosts.blender.api import (
     get_resolved_name,
-    get_task_collection_template
+    get_task_collection_templates,
+    get_objects_in_collection
 )
 
 class ValidateModelContents(plugin.BlenderInstancePlugin):
@@ -30,23 +31,38 @@ class ValidateModelContents(plugin.BlenderInstancePlugin):
     @staticmethod
     def get_invalid(instance):
         # Get collection template from task/variant
-        template = get_task_collection_template(instance.data)
-        coll_name = get_resolved_name(instance.data, template)
+        parent = instance.data.get('parent')
+        if not parent:
+            parent = instance.data.get('anatomyData', []).get('parent', None)
 
-        # Get collection
-        asset_model_coll = bpy.data.collections.get(coll_name)
-        if not asset_model_coll:
-            raise RuntimeError("No collection found with name :"
-                               "{}".format(asset_model_coll))
-
-        objects = [obj for obj in instance]
-        asset_model_list = asset_model_coll.objects
+        # We remove variant data if equal to Main to avoid the info in the final name
+        variant = instance.data.get('variant')
+        if variant == 'Main':
+            variant = None
 
         # Get objects in instance
         objects = [obj for obj in instance]
 
+        templates = get_task_collection_templates(instance.data)
+        collections_objects = []
+
+        for template in templates:
+            hierarchy_template = get_resolved_name(
+                data=instance.data,
+                template=template,
+                parent=parent,
+                variant=variant
+            )
+            collection_name = hierarchy_template.replace('\\', '/').split('/')[-1]
+            asset_model_coll = bpy.data.collections.get(collection_name)
+            if not asset_model_coll:
+                raise RuntimeError("No collection found with name :"
+                                   "{}".format(collection_name))
+
+            collections_objects.extend(get_objects_in_collection(asset_model_coll))
+
         # Compare obj in instance and obj in scene model collection
-        invalid = [missing_obj for missing_obj in asset_model_list if missing_obj not in objects]
+        invalid = [missing_obj for missing_obj in collections_objects if missing_obj not in objects]
 
         return invalid
 
@@ -74,7 +90,10 @@ class ValidateModelContents(plugin.BlenderInstancePlugin):
             raise RuntimeError ("No instance object found for {}".format(instance.name))
 
         for object in invalid:
-            object.parent = instance_object
+            if isinstance(instance_object, bpy.types.Object):
+                object.parent = instance_object
+                continue
+            instance_object.objects.link(object)
 
     def get_description(self):
         return inspect.cleandoc(

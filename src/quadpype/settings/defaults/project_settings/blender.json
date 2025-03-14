@@ -36,16 +36,19 @@
         "custom_templates": []
     },
     "templated_workfile_build": {
-    "profiles": [],
-    "entity_type_name_matcher":{
-        "profiles": []
-    },
-    "collections_templates_by_entity_type": {
-        "profiles": []
-    },
-    "working_collections_templates_by_tasks": {
-        "profiles": []
-    }
+        "profiles": [],
+        "entity_type_name_matcher":{
+            "profiles": []
+        },
+        "working_collections_templates_by_tasks": {
+            "profiles": [
+                {
+                    "task_types": [""],
+                    "families": [],
+                    "templates": ["{parent}-{asset}<-{numbering}>"]
+                }
+            ]
+        }
     },
     "publish": {
         "ValidateCameraZeroKeyframe": {

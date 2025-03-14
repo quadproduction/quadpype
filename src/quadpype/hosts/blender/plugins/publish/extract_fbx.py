@@ -3,7 +3,7 @@ import os
 import bpy
 
 from quadpype.pipeline import publish
-from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api import plugin, lib
 
 
 class ExtractFBX(
@@ -36,7 +36,7 @@ class ExtractFBX(
         asset_group = instance.data["transientData"]["instance_node"]
 
         selected = []
-        for obj in instance:
+        for obj in lib.get_asset_children(asset_group):
             obj.select_set(True)
             selected.append(obj)
 
@@ -91,3 +91,7 @@ class ExtractFBX(
 
         self.log.info("Extracted instance '%s' to: %s",
                       instance.name, representation)
+
+    def select_all_from(self, objects):
+        for blender_object in objects:
+            blender_object.select_set(True)
