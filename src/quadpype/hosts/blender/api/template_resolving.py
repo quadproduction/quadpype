@@ -19,13 +19,8 @@ def get_resolved_name(data, template, **additional_data):
     template_obj = StringTemplate(template)
 
     if additional_data:
-        copy_data = copy(data)
-        for key, value in additional_data.items():
-            copy_data[key] = value
-        output = template_obj.format_strict(copy_data)
-    else:
-        output = template_obj.format_strict(data)
-    return output.normalized()
+        data = dict(data, **additional_data)
+    return template_obj.format_strict(data).normalized()
 
 
 def _get_project_name_by_data(data):

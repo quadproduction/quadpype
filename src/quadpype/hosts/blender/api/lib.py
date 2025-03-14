@@ -1,5 +1,6 @@
 import os
 import traceback
+import re
 import importlib
 import contextlib
 from typing import Dict, List, Union, TYPE_CHECKING
@@ -7,7 +8,8 @@ from typing import Dict, List, Union, TYPE_CHECKING
 import bpy
 import addon_utils
 from quadpype.lib import Logger, NumberDef
-from quadpype.pipeline import get_current_project_name, get_current_asset_name
+from quadpype.pipeline import get_current_project_name, get_current_asset_name, get_current_context
+from quadpype.pipeline.context_tools import get_current_project_asset
 from quadpype.client import get_asset_by_name
 if TYPE_CHECKING:
     from quadpype.pipeline.create import CreateContext  # noqa: F401
@@ -396,6 +398,7 @@ def get_objects_in_collection(collection):
         objects.extend(get_objects_in_collection(sub_collection))
     return objects
 
+
 def get_highest_root(objects):
     """Get the highest object (the least parents) among the objects.
 
@@ -584,3 +587,40 @@ def get_parents_for_collection(collection, collections=None):
     if not collections:
         collections = bpy.data.collections
     return [c for c in collections if c.user_of_id(collection)]
+
+
+def get_asset_children(asset):
+    return list(asset.objects) if isinstance(asset, bpy.types.Collection) else list(asset.children)
+
+
+def get_and_select_camera(objects):
+    for blender_object in objects:
+        if blender_object.type == "CAMERA":
+            blender_object.select_set(True)
+            return blender_object.data
+
+        camera = get_and_select_camera(list(blender_object.children))
+        if camera:
+            return camera
+
+
+def extract_sequence_and_shot():
+    asset_name = get_current_context()['asset_name']
+    is_valid_pattern = re.match('^[a-zA-Z.]+\d+_[a-zA-Z.]+\d+[a-zA-Z0-9_.]*$', asset_name)
+    if not is_valid_pattern:
+        raise RuntimeError(f"Can not extract sequence and shot from asset_name {asset_name}")
+
+    return asset_name.split('_')
+
+
+def is_camera(obj):
+    return isinstance(obj, bpy.types.Object) and obj.type == "CAMERA"
+
+
+def is_collection(obj):
+    return isinstance(obj, bpy.types.Collection)
+
+
+def is_shot():
+    asset_data = get_current_project_asset()["data"]
+    return asset_data['parents'][0].lower() == "shots"

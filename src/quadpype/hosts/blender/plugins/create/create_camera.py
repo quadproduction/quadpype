@@ -26,7 +26,6 @@ class CreateCamera(plugin.BlenderCreator):
                                      instance_data,
                                      pre_create_data)
 
-        # bpy.context.view_layer.objects.active = asset_group
         cameras = _get_selection() if pre_create_data.get("use_selection") else _create_camera(subset_name, asset_group)
 
         for camera in cameras:
