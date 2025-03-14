@@ -11,10 +11,9 @@ from quadpype.pipeline import (
     registered_host,
     get_current_context
 )
-# from quadpype.pipeline.context_tools import , get_project_settings
+
 from quadpype.pipeline.create import CreateContext
-from quadpype.hosts.blender.api import plugin
-from quadpype.hosts.blender.api.lib import imprint
+from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api import (
     update_parent_data_with_entity_prefix,
     get_task_collection_templates,
@@ -77,7 +76,7 @@ class BlendLoader(plugin.BlenderLoader):
     @staticmethod
     def _get_parents(asset_group):
         if hasattr(asset_group, "parent"):
-            return [asset_group.parent]
+            return asset_group.parent
         else:
             for collection in bpy.data.collections:
                 if asset_group in list(collection.objects):
@@ -211,48 +210,8 @@ class BlendLoader(plugin.BlenderLoader):
         bpy.data.libraries.remove(library)
 
     @staticmethod
-    def _extract_last_collection_from_first_template(data, templates, unique_number):
-        return get_resolved_name(
-            data=data,
-            template=templates[0],
-            numbering=unique_number
-        ).replace('\\', '/').split('/')[-1]
-
-    @staticmethod
-    def _create_collection(collection_name, link_to=None):
-        collection = bpy.data.collections.get(collection_name)
-
-        if not collection:
-            collection = bpy.data.collections.new(collection_name)
-            if link_to and collection not in list(link_to.children):
-                link_to.children.link(collection)
-
-        return collection
-
-    @staticmethod
     def is_shot():
         return len(get_current_context()['asset_name'].split('_')) > 1
-
-    @staticmethod
-    def get_parent_data(representation):
-        parent = representation["context"].get('parent', None)
-        if not parent:
-            hierarchy = representation["context"].get('hierarchy')
-
-            if not hierarchy:
-                return
-
-            return hierarchy.split('/')[-1]
-
-        return parent
-
-    @staticmethod
-    def get_top_collection(collection_name, default_parent_collection_name):
-        parent_collection = bpy.data.collections.get(collection_name, None)
-        if not parent_collection:
-            parent_collection = bpy.data.collections[default_parent_collection_name]
-
-        return parent_collection if parent_collection else bpy.context.scene.collection
 
     def load_assets_and_create_hierarchy(self, representation, libpath, group_name, unique_number, import_method):
         parent = self.get_parent_data(representation)
@@ -283,8 +242,8 @@ class BlendLoader(plugin.BlenderLoader):
         collections_are_created = None
         corresponding_hierarchies_numbered = {}
 
-        if self.is_shot():
-            data_for_template['sequence'], data_for_template['shot'] = get_current_context()['asset_name'].split('_')
+        if lib.is_shot():
+            data_for_template['sequence'], data_for_template['shot'] = lib.extract_sequence_and_shot()
 
         if asset_collection_templates:
             corresponding_hierarchies_numbered = {
@@ -363,7 +322,48 @@ class BlendLoader(plugin.BlenderLoader):
         elif isinstance(container, bpy.types.Collection) and container not in list(avalon_container.children):
             avalon_container.children.link(container)
 
+
         return container, members
+
+    @staticmethod
+    def _extract_last_collection_from_first_template(data, templates, unique_number):
+        return get_resolved_name(
+            data=data,
+            template=templates[0],
+            numbering=unique_number
+        ).replace('\\', '/').split('/')[-1]
+
+    @staticmethod
+    def _create_collection(collection_name, link_to=None):
+        collection = bpy.data.collections.get(collection_name)
+
+        if not collection:
+            collection = bpy.data.collections.new(collection_name)
+            if link_to and collection not in list(link_to.children):
+                link_to.children.link(collection)
+
+        return collection
+
+    @staticmethod
+    def get_parent_data(context):
+        parent = context["representation"]["context"].get('parent', None)
+        if not parent:
+            hierarchy = context["representation"]["context"].get('hierarchy')
+
+            if not hierarchy:
+                return
+
+            return hierarchy.split('/')[-1]
+
+        return parent
+
+    @staticmethod
+    def get_top_collection(collection_name, default_parent_collection_name):
+        parent_collection = bpy.data.collections.get(collection_name, None)
+        if not parent_collection:
+            parent_collection = bpy.data.collections[default_parent_collection_name]
+
+        return parent_collection if parent_collection else bpy.context.scene.collection
 
     def create_collection_from_hierarchy(
         self,
@@ -503,7 +503,7 @@ class BlendLoader(plugin.BlenderLoader):
             "members": members,
         }
 
-        imprint(asset_group, new_data)
+        lib.imprint(asset_group, new_data)
 
         # We need to update all the parent container members
         parent_containers = self.get_all_container_parents(asset_group)
@@ -534,7 +534,7 @@ class BlendLoader(plugin.BlenderLoader):
 
         collections_parents = [
             collection for collection in bpy.data.collections
-            if set(data for data in members).intersection(set(collection.objects))
+            if set(members).intersection(set(collection.objects))
             and collection is not asset_group
         ]
 

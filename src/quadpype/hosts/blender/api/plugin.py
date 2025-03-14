@@ -406,6 +406,11 @@ class BlenderCreator(Creator):
 
     @staticmethod
     def get_parent_collection(selection):
+        """Get parent collection from selection.
+        
+        If selection is parented to multiple collections, only the
+        first one in the hierarchy will be returned.
+        """
         if type(selection) is not list:
             selection = [selection]
 
