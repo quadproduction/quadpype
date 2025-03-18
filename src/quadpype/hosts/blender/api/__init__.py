@@ -11,7 +11,9 @@ from .pipeline import (
     publish,
     containerise,
     BlenderHost,
-    get_avalon_node
+    get_avalon_node,
+    has_avalon_node,
+    delete_avalon_node
 )
 
 from .plugin import (
@@ -32,6 +34,8 @@ from .lib import (
     lsattr,
     lsattrs,
     read,
+    map_to_classes_and_names,
+    get_objects_from_mapped,
     maintained_selection,
     maintained_time,
     get_selection,
@@ -65,6 +69,8 @@ __all__ = [
     "containerise",
     "BlenderHost",
     "get_avalon_node",
+    "has_avalon_node",
+    "delete_avalon_node",
 
     "BlenderCreator",
     "BlenderLoader",
@@ -83,6 +89,8 @@ __all__ = [
     "lsattr",
     "lsattrs",
     "read",
+    "map_to_classes_and_names",
+    "get_objects_from_mapped",
     "get_selection",
     "capture",
     # "unique_name",

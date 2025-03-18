@@ -146,10 +146,7 @@ class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost):
         Returns:
             dict: Context data stored using 'update_context_data'.
         """
-        property = bpy.context.scene.get(AVALON_PROPERTY)
-        if property:
-            return property.to_dict()
-        return {}
+        return get_avalon_node(bpy.context.scene)
 
     def update_context_data(self, data: dict, changes: dict):
         """Override abstract method from IPublishHost.
@@ -160,7 +157,7 @@ class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost):
             changes (dict): Only data that has been changed. Each value has
                 tuple with '(<old>, <new>)' value.
         """
-        bpy.context.scene[AVALON_PROPERTY] = data
+        lib.imprint(bpy.context.scene, data)
 
 
 def pype_excepthook_handler(*args):
@@ -492,15 +489,20 @@ def add_to_avalon_container(container: bpy.types.Collection):
                 child.exclude = True
 
 
-def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict):
+def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool):
     """Imprint the node with metadata.
 
     Existing metadata will be updated.
 
     We use json to dump data into strings and allow library override.
+
+    Arguments:
+        node: Long name of node
+        data: Dictionary of key/value pairs
+        erase: Erase previous value insted of updating / adding data
     """
 
-    existing_data = get_avalon_node(node)
+    existing_data = dict() if erase else get_avalon_node(node)
     for key, value in data.items():
         if value is None:
             continue
@@ -511,7 +513,42 @@ def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict):
 
 
 def get_avalon_node(node):
-    return json.loads(node.get(AVALON_PROPERTY, {}))
+    """ Return avalon node content.
+
+    By default we expect a single string (json dump), but we also want to handle
+    special cases with specific Blender data types.
+
+    Arguments:
+        node: blender object
+    """
+    node_content = node.get(AVALON_PROPERTY, '{}')
+
+    # For IDPropertyGroup (which is not accessible through bpy.types)
+    if hasattr(node_content, 'to_dict'):
+        return node_content.to_dict()
+
+    return json.loads(node_content)
+
+
+def has_avalon_node(node):
+    """ Check if avalon custom prop exists for given object.
+
+    Arguments:
+        node: blender object
+
+    return
+    """
+    return bool(node.get(AVALON_PROPERTY, False))
+
+
+def delete_avalon_node(node):
+    """ Delete avalon custom prop for given object.
+
+    Arguments:
+        node: blender object
+    """
+
+    del node[AVALON_PROPERTY]
 
 
 def containerise(name: str,
@@ -646,10 +683,7 @@ def ls() -> Iterator:
     node_tree = bpy.context.scene.node_tree
     if node_tree:
         for node in node_tree.nodes:
-            if not node.get(AVALON_PROPERTY):
-                continue
-
-            if json.loads(node.get(AVALON_PROPERTY)).get("id") not in container_ids:
+            if get_avalon_node(node).get("id", None) not in container_ids:
                 continue
 
             yield parse_container(node)

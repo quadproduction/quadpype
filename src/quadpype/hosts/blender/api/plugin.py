@@ -18,7 +18,8 @@ from quadpype.lib import BoolDef
 from .pipeline import (
     AVALON_CONTAINERS,
     AVALON_INSTANCES,
-    AVALON_PROPERTY,
+    get_avalon_node,
+    has_avalon_node
 )
 from .ops import (
     MainThreadItem,
@@ -58,11 +59,11 @@ def get_unique_number(
     obj_asset_groups = avalon_container.objects
     obj_group_names = {
         c.name for c in obj_asset_groups
-        if c.type == 'EMPTY' and c.get(AVALON_PROPERTY)}
+        if c.type == 'EMPTY' and has_avalon_node(c)}
     coll_asset_groups = avalon_container.children
     coll_group_names = {
         c.name for c in coll_asset_groups
-        if c.get(AVALON_PROPERTY)}
+        if has_avalon_node(c)}
     container_names = obj_group_names.union(coll_group_names)
     count = 1
     name = f"{asset}_{count:0>2}_{subset}"
@@ -210,11 +211,10 @@ class BlenderCreator(Creator):
                     avalon_instance_objs,
                     bpy.data.collections
             ):
-                avalon_text = obj_or_col.get(AVALON_PROPERTY, {})
-                if not avalon_text:
+                avalon_prop = get_avalon_node(obj_or_col)
+                if not avalon_prop:
                     continue
 
-                avalon_prop = json.loads(avalon_text)
                 if avalon_prop.get('id') != 'pyblish.avalon.instance':
                     continue
 
@@ -273,9 +273,6 @@ class BlenderCreator(Creator):
         instance.transient_data["instance_node"] = instance_node
         self._add_instance_to_context(instance)
 
-        self.log.warning('\n\n\n')
-        self.log.warning('CREATE IMPRINT')
-        self.log.warning('\n\n\n')
         imprint(instance_node, instance_data)
 
         return instance_node
@@ -296,10 +293,10 @@ class BlenderCreator(Creator):
 
         # Process only instances that were created by this creator
         for instance_node in cached_subsets.get(self.identifier, []):
-            property = instance_node.get(AVALON_PROPERTY)
+            property = get_avalon_node(instance_node)
             # Create instance object from existing data
             instance = CreatedInstance.from_existing(
-                instance_data=property.to_dict(),
+                instance_data=property,
                 creator=self
             )
             instance.transient_data["instance_node"] = instance_node

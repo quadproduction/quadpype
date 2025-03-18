@@ -15,7 +15,7 @@ from quadpype.pipeline import (
 )
 
 from quadpype.pipeline.create import CreateContext
-from quadpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api import plugin, lib, pipeline
 from quadpype.hosts.blender.api import (
     update_parent_data_with_entity_prefix,
     get_task_collection_templates,
@@ -25,7 +25,8 @@ from quadpype.hosts.blender.api import (
 )
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
-    AVALON_PROPERTY,
+    has_avalon_node,
+    get_avalon_node
 )
 
 
@@ -68,7 +69,7 @@ class BlendLoader(plugin.BlenderLoader):
         parent_containers = []
         parent = self._get_parents(asset_group)
         while parent:
-            if parent.get(AVALON_PROPERTY):
+            if has_avalon_node(parent):
                 parent_containers.append(parent)
             parent = self._get_parents(parent)
 
@@ -90,8 +91,7 @@ class BlendLoader(plugin.BlenderLoader):
             obj for obj in container.children_recursive
             if (
                 obj.type == 'EMPTY' and
-                obj.get(AVALON_PROPERTY) and
-                obj.get(AVALON_PROPERTY).get('family') == 'rig'
+                get_avalon_node(obj).get('family') == 'rig'
             )
         ]
         if not rigs:
@@ -124,7 +124,6 @@ class BlendLoader(plugin.BlenderLoader):
             options: Additional settings dictionary
         """
         libpath = self.filepath_from_context(context)
-
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
         representation = context['representation']
@@ -135,18 +134,19 @@ class BlendLoader(plugin.BlenderLoader):
         unique_number = plugin.get_unique_number(asset, subset)
         group_name = plugin.prepare_scene_name(asset, subset, unique_number)
         namespace = namespace or f"{asset}_{unique_number}"
+        import_method = ImportMethod(
+            options.get(
+                'import_method',
+                self.defaults['import_method']
+            )
+        )
 
         container, members = self.load_assets_and_create_hierarchy(
             representation=representation,
             libpath=libpath,
             group_name=group_name,
             unique_number=unique_number,
-            import_method=ImportMethod(
-                options.get(
-                    'import_method',
-                    self.defaults['import_method']
-                )
-            )
+            import_method=import_method
         )
 
         try:
@@ -169,10 +169,11 @@ class BlendLoader(plugin.BlenderLoader):
             "parent": str(representation["parent"]),
             "family": representation["context"]["family"],
             "objectName": group_name,
-            "members": members,
+            "members": lib.map_to_classes_and_names(members),
+            "import_method": import_method.value
         }
 
-        container[AVALON_PROPERTY] = data
+        lib.imprint(container, data)
 
         objects = [
             obj for obj in bpy.data.objects
@@ -295,7 +296,6 @@ class BlendLoader(plugin.BlenderLoader):
         elif isinstance(container, bpy.types.Collection) and container not in list(avalon_container.children):
             avalon_container.children.link(container)
 
-
         return container, members
 
     @staticmethod
@@ -321,10 +321,6 @@ class BlendLoader(plugin.BlenderLoader):
         else:
             raise RuntimeError("No import method specified when importing blend objects.")
 
-        container['import_method'] = import_method.value
-        container.property_overridable_library_set('["import_method"]', True)
-        container['import_method'] = import_method.value
-        #container['import_method'] = import_method.value
         return container, members
 
     def append_blend_objects(self, libpath, group_name):
@@ -402,11 +398,11 @@ class BlendLoader(plugin.BlenderLoader):
     @staticmethod
     def _get_asset_container(objects, collections):
         for coll in collections:
-            if coll.get(AVALON_PROPERTY):
+            if has_avalon_node(coll):
                 return coll
 
         for empty in [obj for obj in objects if obj.type == 'EMPTY']:
-            if empty.get(AVALON_PROPERTY) and empty.parent is None:
+            if has_avalon_node(empty) and empty.parent is None:
                 return empty
 
         return None
@@ -457,19 +453,6 @@ class BlendLoader(plugin.BlenderLoader):
                 link_to.children.link(collection)
 
         return collection
-
-    @staticmethod
-    def get_parent_data(context):
-        parent = context["representation"]["context"].get('parent', None)
-        if not parent:
-            hierarchy = context["representation"]["context"].get('hierarchy')
-
-            if not hierarchy:
-                return
-
-            return hierarchy.split('/')[-1]
-
-        return parent
 
     @staticmethod
     def get_top_collection(collection_name, default_parent_collection_name):
@@ -531,7 +514,6 @@ class BlendLoader(plugin.BlenderLoader):
                     parent = parent_collection
                 else:
                     parent = bpy.data.collections[single_template[level - 1]]
-
                 self._create_collection(
                     collection_name=collection_name,
                     link_to=parent
@@ -551,9 +533,14 @@ class BlendLoader(plugin.BlenderLoader):
             f"The asset is not loaded: {container['objectName']}"
         )
 
-        import_method = ImportMethod(asset_group['import_method'])
+        old_data = pipeline.get_avalon_node(asset_group)
 
-        old_data = dict(asset_group.get(AVALON_PROPERTY))
+        import_method = ImportMethod(
+            old_data.get(
+                'import_method',
+                self.defaults['import_method']
+            )
+        )
         old_members = old_data.get("members", [])
 
         all_objects_from_asset = []
@@ -619,25 +606,24 @@ class BlendLoader(plugin.BlenderLoader):
         # This avoids a crash, because the memory addresses of those members
         # are not valid anymore
         old_data["members"] = []
+        old_data.update(
+            {
+                "libpath": libpath,
+                "representation": str(representation["_id"]),
+                "parent": str(representation["parent"]),
+                "members": lib.map_to_classes_and_names(members)
+            }
+        )
 
-        asset_group[AVALON_PROPERTY] = old_data
-
-        new_data = {
-            "libpath": libpath,
-            "representation": str(representation["_id"]),
-            "parent": str(representation["parent"]),
-            "members": members,
-        }
-
-        lib.imprint(asset_group, new_data)
+        lib.imprint(asset_group, old_data)
 
         # We need to update all the parent container members
         parent_containers = self.get_all_container_parents(asset_group)
 
         for parent_container in parent_containers:
-            parent_members = parent_container[AVALON_PROPERTY]["members"]
-            parent_container[AVALON_PROPERTY]["members"] = (
-                parent_members + members)
+            parent_avalon_node = pipeline.get_avalon_node(parent_container)
+            parent_members = lib.get_objects_from_mapped(parent_avalon_node["members"])
+            lib.imprint(parent_container, {'members': lib.map_to_classes_and_names(parent_members + members)})
 
     def exec_remove(self, container: Dict) -> bool:
         """
@@ -656,7 +642,8 @@ class BlendLoader(plugin.BlenderLoader):
             )
         ]
 
-        members = asset_group.get(AVALON_PROPERTY).get("members", [])
+        avalon_node = pipeline.get_avalon_node(asset_group)
+        members = lib.get_objects_from_mapped(avalon_node['members'])
 
         collections_parents = [
             collection for collection in bpy.data.collections
@@ -667,10 +654,14 @@ class BlendLoader(plugin.BlenderLoader):
         parent_containers = self.get_all_container_parents(asset_group)
 
         for parent in parent_containers:
-            parent.get(AVALON_PROPERTY)["members"] = list(filter(
-                lambda i: i not in members,
-                parent.get(AVALON_PROPERTY).get("members", [])))
 
+            parent_members = list(filter(
+                lambda i: i not in members,
+                lib.get_objects_from_mapped(pipeline.get_avalon_node(parent)['members'])))
+
+            lib.imprint({'members': parent_members})
+
+        deleted_collections = list()
         for attr in attrs:
             for data in getattr(bpy.data, attr):
                 if not data in members:
@@ -684,6 +675,9 @@ class BlendLoader(plugin.BlenderLoader):
                 if not hasattr(attribute, 'remove'):
                     continue
 
+                if isinstance(data, bpy.types.Collection):
+                    deleted_collections.append(data)
+
                 attribute.remove(data)
 
         if isinstance(asset_group, bpy.types.Object):
@@ -691,7 +685,7 @@ class BlendLoader(plugin.BlenderLoader):
         else:
             bpy.data.collections.remove(asset_group)
 
-        self._remove_collection_recursively(collections_parents)
+        self._remove_collection_recursively(collections_parents, deleted_collections)
 
     @staticmethod
     def _retrieve_undefined_asset_group(group_name):

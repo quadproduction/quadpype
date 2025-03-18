@@ -6,9 +6,8 @@ import bpy_extras
 import bpy_extras.anim_utils
 
 from quadpype.client import get_representations
-from quadpype.pipeline import publish
+from quadpype.pipeline import publish, get_avalon_node
 from quadpype.hosts.blender.api import plugin
-from quadpype.hosts.blender.api.pipeline import AVALON_PROPERTY
 
 
 class ExtractLayout(
@@ -51,7 +50,7 @@ class ExtractLayout(
                 continue
 
             asset_group_name = asset.name
-            asset.name = asset.get(AVALON_PROPERTY).get("asset_name")
+            asset.name = get_avalon_node(asset).get("asset_name")
 
             armature_name = obj.name
             original_name = armature_name.split(':')[1]
@@ -139,7 +138,7 @@ class ExtractLayout(
         version_ids = set()
         filtered_assets = []
         for asset in asset_group.children:
-            metadata = asset.get(AVALON_PROPERTY)
+            metadata = get_avalon_node(asset)
             if not metadata:
                 # Avoid raising error directly if there's just invalid data
                 # inside the instance; better to log it to the artist

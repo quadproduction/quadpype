@@ -4,12 +4,13 @@ import re
 import importlib
 import contextlib
 import json
+from enum import Enum
 from typing import Dict, List, Union, TYPE_CHECKING
 
 import bpy
 import addon_utils
 from quadpype.lib import Logger, NumberDef
-from quadpype.pipeline import get_current_project_name, get_current_asset_name, get_current_context, get_avalon_node
+from quadpype.pipeline import get_current_project_name, get_current_asset_name, get_current_context
 from quadpype.pipeline.context_tools import get_current_project_asset
 from quadpype.client import get_asset_by_name
 if TYPE_CHECKING:
@@ -162,12 +163,13 @@ def set_app_templates_path():
         os.environ["BLENDER_USER_SCRIPTS"] = app_templates_path
 
 
-def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict):
+def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool=False):
     r"""Write `data` to `node` as userDefined attributes
 
     Arguments:
         node: Long name of node
         data: Dictionary of key/value pairs
+        erase(optional): Erase previous value insted of updating / adding data
 
     Example:
         >>> import bpy
@@ -200,7 +202,7 @@ def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict):
 
         imprint_data[key] = value
 
-    pipeline.metadata_update(node, imprint_data)
+    pipeline.metadata_update(node, imprint_data, erase)
 
 
 def lsattr(attr: str,
@@ -249,11 +251,11 @@ def lsattrs(attrs: Dict) -> List:
         ):
             continue
         for node in getattr(bpy.data, coll):
-            for attr, value in attrs.items():
-                avalon_prop = get_avalon_node(node)
-                if not avalon_prop:
-                    continue
+            avalon_prop = pipeline.get_avalon_node(node)
+            if not avalon_prop:
+                continue
 
+            for attr, value in attrs.items():
                 if (avalon_prop.get(attr)
                         and (value is None or avalon_prop.get(attr) == value)):
                     matches.add(node)
@@ -263,7 +265,7 @@ def lsattrs(attrs: Dict) -> List:
 def read(node: bpy.types.bpy_struct_meta_idprop):
     """Return user-defined attributes from `node`"""
 
-    data = get_avalon_node(node)
+    data = pipeline.get_avalon_node(node)
 
     # Ignore hidden/internal data
     data = {
@@ -272,6 +274,42 @@ def read(node: bpy.types.bpy_struct_meta_idprop):
     }
 
     return data
+
+
+class ObjectTypeData(Enum):
+    CacheFile = "cache_files"
+    Collection = "collections"
+    Material = "materials"
+    Mesh = "meshes"
+    Object = "objects"
+    Armature = "armatures"
+    Light = "lights"
+    Action = "actions"
+    Camera = "cameras"
+    Brushe = "brushes"
+
+
+def map_to_classes_and_names(blender_objects):
+    mapped_values = dict()
+    for blender_object in blender_objects:
+        object_data_name = ObjectTypeData[blender_object.bl_rna.name].value
+        if not mapped_values.get(object_data_name):
+            mapped_values[object_data_name] = list()
+        mapped_values[object_data_name].append(blender_object.name)
+
+    return mapped_values
+
+
+def get_objects_from_mapped(mapped_objects):
+    blender_objects = list()
+    for data_type, blender_objects_names in mapped_objects.items():
+        blender_objects.extend(
+            [
+                getattr(bpy.data, data_type)[blender_object_name]
+                for blender_object_name in blender_objects_names
+            ]
+        )
+    return blender_objects
 
 
 def get_selected_collections():
@@ -392,6 +430,7 @@ def get_all_parents(obj):
             break
         result.append(obj)
     return result
+
 
 def get_objects_in_collection(collection):
     """Retrieve recursively  all objects in a collection, even in sub collection"""
