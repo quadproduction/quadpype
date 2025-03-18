@@ -27,7 +27,11 @@ if ($PORT_TCP_CONNECTION) {
     $OWNING_PROCESS_NAME = (Get-Process -Id $PORT_TCP_CONNECTION.OwningProcess).Name
     if ($OWNING_PROCESS_NAME -ne "Idle") {
         write-output "Port $QUADPYPE_MONGO_CONTAINER_PORT is already used by $OWNING_PROCESS_NAME, process will be killed."
-        taskkill /PID $PORT_TCP_CONNECTION.OwningProcess /F
+        foreach ($PID in $PORT_TCP_CONNECTION.OwningProcess){
+            if ($PID -ne 0) {
+                taskkill /PID $PORT_TCP_CONNECTION.OwningProcess /F
+            }
+        }
     }
 }
 

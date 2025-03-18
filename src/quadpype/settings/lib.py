@@ -593,7 +593,10 @@ def _apply_applications_settings_override(global_settings, user_settings):
 def _apply_modules_settings_override(global_settings, user_settings):
     modules_settings = global_settings[ADDONS_SETTINGS_KEY]
     for module_name, prop in user_settings[ADDONS_SETTINGS_KEY].items():
-        modules_settings[module_name].update(prop)
+        if isinstance(prop, list):
+            modules_settings[module_name] = copy.deepcopy(prop)
+        else:
+            modules_settings[module_name].update(prop)
 
 
 def apply_user_settings_on_global_settings(global_settings, user_settings):

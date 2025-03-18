@@ -29,7 +29,8 @@ from quadpype.settings import (
 
 from quadpype.settings.lib import (
     load_json_file,
-    get_studio_global_settings_overrides
+    get_studio_global_settings_overrides,
+    apply_user_settings_on_global_settings
 )
 
 from quadpype.lib import (
@@ -37,6 +38,7 @@ from quadpype.lib import (
     import_filepath,
     is_staging_enabled,
     import_module_from_dirpath,
+    get_user_settings
 )
 
 from quadpype.lib.version import (
@@ -208,6 +210,7 @@ def get_dynamic_modules_dirs():
         list: Paths loaded from studio overrides.
     """
     global_settings = get_studio_global_settings_overrides()
+    apply_user_settings_on_global_settings(global_settings, get_user_settings())
     addon_settings = global_settings.get(ADDONS_SETTINGS_KEY, {}).get("custom_addons", {})
     local_dir = Path(user_data_dir("quadpype", "quad")) / "addons"
 
@@ -237,12 +240,16 @@ def get_dynamic_modules_dirs():
         for remote_source in remote_sources_settings:
             remote_sources.append(PackageHandler.conform_remote_source(remote_source))
 
+        retrieve_locally = addon_setting.get("retrieve_locally", False)
+        if not retrieve_locally:
+            addon_local_dir = None
+
         addon_package = AddOnHandler(
             pkg_name=addon_setting.get("package_name"),
             local_dir_path=addon_local_dir,
             remote_sources=remote_sources,
             running_version_str=addon_setting.get(version_key, ""),
-            retrieve_locally=addon_setting.get("retrieve_locally", False),
+            retrieve_locally=retrieve_locally,
         )
         package_manager.add_package(addon_package)
 

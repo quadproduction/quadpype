@@ -6,6 +6,7 @@ import collections
 import numbers
 import time
 
+from quadpype.settings import get_default_anatomy_settings
 from quadpype.settings.constants import (
     DEFAULT_PROJECT_KEY,
     PROJECTS_SETTINGS_KEY
@@ -85,8 +86,11 @@ class BaseAnatomy(object):
 
         Method added to replace `{task}` with `{task[name]}` in templates.
         """
-
+        default_anatomy_settings = get_default_anatomy_settings()
         anatomy_data = self._project_doc_to_anatomy_data(project_doc)
+        default_anatomy_settings.update(anatomy_data)
+
+        anatomy_data = default_anatomy_settings
 
         self._apply_user_settings_on_anatomy_data(
             anatomy_data,
