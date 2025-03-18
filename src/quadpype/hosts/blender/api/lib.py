@@ -290,6 +290,20 @@ class ObjectTypeData(Enum):
 
 
 def map_to_classes_and_names(blender_objects):
+    """ Get a list of blender_objects and produce a dictionary composed of all previous objects
+    sorted by types (as accessible from `bpy.data`, and not `bpy.types`, to make it easier
+    to load after).
+
+    Arguments:
+        blender_objects: list of objects retrieved from Blender scene.
+
+    Returns:
+        dict: Objects sorted by objects types, for example :
+        {
+            'objects': ['eltA', 'eltB'],
+            'cameras': ['eltC']
+        }
+    """
     mapped_values = dict()
     for blender_object in blender_objects:
         object_data_name = ObjectTypeData[blender_object.bl_rna.name].value
@@ -301,6 +315,15 @@ def map_to_classes_and_names(blender_objects):
 
 
 def get_objects_from_mapped(mapped_objects):
+    """ Get a list of mapped blender_objects (with objects types as keys and list of objects as values)
+    and return retrieved objects from Blender scene, with all inner functions and methods accessible.
+
+    Arguments:
+        mapped_objects: Objects sorted by objects types, as produced by `map_to_classes_and_names` function.
+
+    Returns:
+        list: Blender objects retrieved from scene.
+    """
     blender_objects = list()
     for data_type, blender_objects_names in mapped_objects.items():
         blender_objects.extend(

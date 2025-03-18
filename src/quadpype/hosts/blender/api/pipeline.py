@@ -520,6 +520,9 @@ def get_avalon_node(node):
 
     Arguments:
         node: blender object
+
+    Returns:
+        dict: AVALON_PROPERTY custom prop content
     """
     node_content = node.get(AVALON_PROPERTY, '{}')
 
@@ -536,7 +539,8 @@ def has_avalon_node(node):
     Arguments:
         node: blender object
 
-    return
+    Returns:
+        bool: True is AVALON_PROPERTY exists for given object, False otherwise.
     """
     return bool(node.get(AVALON_PROPERTY, False))
 
