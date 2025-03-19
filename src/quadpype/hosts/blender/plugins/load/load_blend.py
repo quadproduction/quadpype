@@ -374,11 +374,16 @@ class BlendLoader(plugin.BlenderLoader):
         container.name = group_name
 
         # Needs to rename in separate block to retrieve blender object after initialisation
-        self._rename_all(
+        corresponding_renamed = self._rename_all(
             data_list=container.objects,
             group_name=group_name,
             truncate_occurrence=True
         )
+
+        for obj in container.objects:
+            if not obj.parent:
+                continue
+            obj.parent = bpy.data.objects.get(corresponding_renamed.get(obj.parent.name))
 
         return container, members
 
@@ -419,11 +424,15 @@ class BlendLoader(plugin.BlenderLoader):
 
     @staticmethod
     def _rename_all(data_list, group_name, truncate_occurrence=False):
+        corresponding_renamed = dict()
         for blender_object in data_list:
             object_name = blender_object.name
             if truncate_occurrence:
                 object_name = re.sub('.\d{3}$', '', blender_object.name)
-            blender_object.name = f"{group_name}:{object_name}"
+            new_name = f"{group_name}:{object_name}"
+            corresponding_renamed[object_name] = new_name
+            blender_object.name = new_name
+        return corresponding_renamed
 
     @staticmethod
     def remove_library_from_blend_file(libpath):
