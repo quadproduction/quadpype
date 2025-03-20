@@ -148,18 +148,19 @@ def get_deadline_limits_plugin(deadline_enabled, deadline_url, log):
 def get_deadline_job_profile(project_settings, host):
     settings = project_settings["deadline"]["JobAttrsValues"] # noqa
     task = get_current_task_name()
-    profile = {}
+    default = settings['DefaultValues']
 
     filtering_criteria = {
         "hosts": host,
         "task_types": task
     }
 
-    if settings.get("profiles"):
-        profile = filter_profiles(settings["profiles"], filtering_criteria)
+    if not settings.get("profiles"):
+        return default
 
-        # Ensure we return a dict (not None)
-        if not profile:
-            profile = {}
+    profile = filter_profiles(settings["profiles"], filtering_criteria)
+
+    if not profile:
+        return default
 
     return profile

@@ -423,6 +423,11 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
         self.aux_files = None
 
     def process(self, instance):
+        if not self.is_active(instance.data):
+            self.log.debug("Skipping Deadline submit.")
+            instance.data["farm"] = False
+            return
+
         """Plugin entry point."""
         self._instance = instance
         context = instance.context

@@ -13,12 +13,16 @@ from quadpype.lib import (
     NumberDef,
     TextDef,
 )
-from quadpype.pipeline import legacy_io
+from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline.context_tools import get_current_project_name
+
+from quadpype.pipeline import legacy_io, OptionalPyblishPluginMixin
 from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
 from quadpype.pipeline.farm.tools import iter_expected_files
 from quadpype.tests.lib import is_in_tests
 
 from quadpype_modules.deadline import abstract_submit_deadline
+from quadpype_modules.deadline.utils import get_deadline_job_profile, DeadlineDefaultJobAttrs
 from quadpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
 
 
@@ -30,11 +34,14 @@ class BlenderPluginInfo():
 
 
 class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
-                            QuadPypePyblishPluginMixin):
+                            OptionalPyblishPluginMixin,
+                            QuadPypePyblishPluginMixin,
+                            DeadlineDefaultJobAttrs):
     label = "Submit Render to Deadline"
     hosts = ["blender"]
     families = ["render"]
 
+    optional = True
     use_published = True
     priority = 50
     chunk_size = 1
@@ -50,6 +57,14 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
 
         instance = self._instance
         context = instance.context
+
+        profile = get_deadline_job_profile(context.data[PROJECT_SETTINGS_KEY],  self.hosts[0])
+        self.set_job_attrs(profile)
+
+        job_info.Priority = self.get_job_attr("priority")
+        job_info.Pool = self.get_job_attr("pool")
+        job_info.SecondaryPool = self.get_job_attr("pool_secondary")
+        job_info.MachineLimit = self.get_job_attr("limit_machine")
 
         # Always use the original work file name for the Job name even when
         # rendering is done from the published Work File. The original work
@@ -74,8 +89,6 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         )
         job_info.Frames = frames
 
-        job_info.Pool = instance.data.get("primaryPool")
-        job_info.SecondaryPool = instance.data.get("secondaryPool")
         job_info.Comment = instance.data.get("comment")
 
         if self.group != "none" and self.group:
