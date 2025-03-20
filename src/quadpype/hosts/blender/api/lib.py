@@ -287,6 +287,7 @@ class ObjectTypeData(Enum):
     Action = "actions"
     Camera = "cameras"
     Brushe = "brushes"
+    Image = "images"
 
 
 def map_to_classes_and_names(blender_objects):

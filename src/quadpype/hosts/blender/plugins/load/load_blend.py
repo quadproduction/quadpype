@@ -383,6 +383,11 @@ class BlendLoader(plugin.BlenderLoader):
         for obj in container.objects:
             if not obj.parent:
                 continue
+
+            if obj.parent.name not in corresponding_renamed.keys() and obj.parent.name in corresponding_renamed.values():
+                self.log.warning(f"Parent {obj.parent.name} already set")
+                continue
+
             obj.parent = bpy.data.objects.get(corresponding_renamed.get(obj.parent.name))
 
         return container, members
