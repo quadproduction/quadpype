@@ -11,6 +11,9 @@ from .pipeline import (
     publish,
     containerise,
     BlenderHost,
+    get_avalon_node,
+    has_avalon_node,
+    delete_avalon_node
 )
 
 from .plugin import (
@@ -31,6 +34,8 @@ from .lib import (
     lsattr,
     lsattrs,
     read,
+    map_to_classes_and_names,
+    get_objects_from_mapped,
     maintained_selection,
     maintained_time,
     get_selection,
@@ -40,7 +45,9 @@ from .lib import (
     get_and_select_camera,
     extract_sequence_and_shot,
     is_camera,
-    is_collection
+    is_collection,
+    get_objects_in_collection
+    # unique_name,
 )
 
 from .capture import capture
@@ -61,6 +68,9 @@ __all__ = [
     "publish",
     "containerise",
     "BlenderHost",
+    "get_avalon_node",
+    "has_avalon_node",
+    "delete_avalon_node",
 
     "BlenderCreator",
     "BlenderLoader",
@@ -79,6 +89,8 @@ __all__ = [
     "lsattr",
     "lsattrs",
     "read",
+    "map_to_classes_and_names",
+    "get_objects_from_mapped",
     "get_selection",
     "capture",
     # "unique_name",

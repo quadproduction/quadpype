@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import bpy
+import json
 import pyblish.api
 from quadpype.pipeline import (
     Creator,
@@ -17,7 +18,8 @@ from quadpype.lib import BoolDef
 from .pipeline import (
     AVALON_CONTAINERS,
     AVALON_INSTANCES,
-    AVALON_PROPERTY,
+    get_avalon_node,
+    has_avalon_node
 )
 from .ops import (
     MainThreadItem,
@@ -57,11 +59,11 @@ def get_unique_number(
     obj_asset_groups = avalon_container.objects
     obj_group_names = {
         c.name for c in obj_asset_groups
-        if c.type == 'EMPTY' and c.get(AVALON_PROPERTY)}
+        if c.type == 'EMPTY' and has_avalon_node(c)}
     coll_asset_groups = avalon_container.children
     coll_group_names = {
         c.name for c in coll_asset_groups
-        if c.get(AVALON_PROPERTY)}
+        if has_avalon_node(c)}
     container_names = obj_group_names.union(coll_group_names)
     count = 1
     name = f"{asset}_{count:0>2}_{subset}"
@@ -209,7 +211,7 @@ class BlenderCreator(Creator):
                     avalon_instance_objs,
                     bpy.data.collections
             ):
-                avalon_prop = obj_or_col.get(AVALON_PROPERTY, {})
+                avalon_prop = get_avalon_node(obj_or_col)
                 if not avalon_prop:
                     continue
 
@@ -291,10 +293,10 @@ class BlenderCreator(Creator):
 
         # Process only instances that were created by this creator
         for instance_node in cached_subsets.get(self.identifier, []):
-            property = instance_node.get(AVALON_PROPERTY)
+            property = get_avalon_node(instance_node)
             # Create instance object from existing data
             instance = CreatedInstance.from_existing(
-                instance_data=property.to_dict(),
+                instance_data=property,
                 creator=self
             )
             instance.transient_data["instance_node"] = instance_node
@@ -407,7 +409,7 @@ class BlenderCreator(Creator):
     @staticmethod
     def get_parent_collection(selection):
         """Get parent collection from selection.
-        
+
         If selection is parented to multiple collections, only the
         first one in the hierarchy will be returned.
         """

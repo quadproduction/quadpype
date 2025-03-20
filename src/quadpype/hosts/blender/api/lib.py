@@ -3,6 +3,8 @@ import traceback
 import re
 import importlib
 import contextlib
+import json
+from enum import Enum
 from typing import Dict, List, Union, TYPE_CHECKING
 
 import bpy
@@ -161,12 +163,13 @@ def set_app_templates_path():
         os.environ["BLENDER_USER_SCRIPTS"] = app_templates_path
 
 
-def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict):
+def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool=False):
     r"""Write `data` to `node` as userDefined attributes
 
     Arguments:
         node: Long name of node
         data: Dictionary of key/value pairs
+        erase(optional): Erase previous value insted of updating / adding data
 
     Example:
         >>> import bpy
@@ -199,7 +202,7 @@ def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict):
 
         imprint_data[key] = value
 
-    pipeline.metadata_update(node, imprint_data)
+    pipeline.metadata_update(node, imprint_data, erase)
 
 
 def lsattr(attr: str,
@@ -248,10 +251,11 @@ def lsattrs(attrs: Dict) -> List:
         ):
             continue
         for node in getattr(bpy.data, coll):
+            avalon_prop = pipeline.get_avalon_node(node)
+            if not avalon_prop:
+                continue
+
             for attr, value in attrs.items():
-                avalon_prop = node.get(pipeline.AVALON_PROPERTY)
-                if not avalon_prop:
-                    continue
                 if (avalon_prop.get(attr)
                         and (value is None or avalon_prop.get(attr) == value)):
                     matches.add(node)
@@ -261,7 +265,7 @@ def lsattrs(attrs: Dict) -> List:
 def read(node: bpy.types.bpy_struct_meta_idprop):
     """Return user-defined attributes from `node`"""
 
-    data = dict(node.get(pipeline.AVALON_PROPERTY, {}))
+    data = pipeline.get_avalon_node(node)
 
     # Ignore hidden/internal data
     data = {
@@ -270,6 +274,66 @@ def read(node: bpy.types.bpy_struct_meta_idprop):
     }
 
     return data
+
+
+class ObjectTypeData(Enum):
+    CacheFile = "cache_files"
+    Collection = "collections"
+    Material = "materials"
+    Mesh = "meshes"
+    Object = "objects"
+    Armature = "armatures"
+    Light = "lights"
+    Action = "actions"
+    Camera = "cameras"
+    Brushe = "brushes"
+    Image = "images"
+
+
+def map_to_classes_and_names(blender_objects):
+    """ Get a list of blender_objects and produce a dictionary composed of all previous objects
+    sorted by types (as accessible from `bpy.data`, and not `bpy.types`, to make it easier
+    to load after).
+
+    Arguments:
+        blender_objects: list of objects retrieved from Blender scene.
+
+    Returns:
+        dict: Objects sorted by objects types, for example :
+        {
+            'objects': ['eltA', 'eltB'],
+            'cameras': ['eltC']
+        }
+    """
+    mapped_values = dict()
+    for blender_object in blender_objects:
+        object_data_name = ObjectTypeData[blender_object.bl_rna.name].value
+        if not mapped_values.get(object_data_name):
+            mapped_values[object_data_name] = list()
+        mapped_values[object_data_name].append(blender_object.name)
+
+    return mapped_values
+
+
+def get_objects_from_mapped(mapped_objects):
+    """ Get a list of mapped blender_objects (with objects types as keys and list of objects as values)
+    and return retrieved objects from Blender scene, with all inner functions and methods accessible.
+
+    Arguments:
+        mapped_objects: Objects sorted by objects types, as produced by `map_to_classes_and_names` function.
+
+    Returns:
+        list: Blender objects retrieved from scene.
+    """
+    blender_objects = list()
+    for data_type, blender_objects_names in mapped_objects.items():
+        blender_objects.extend(
+            [
+                getattr(bpy.data, data_type)[blender_object_name]
+                for blender_object_name in blender_objects_names
+            ]
+        )
+    return blender_objects
 
 
 def get_selected_collections():
@@ -390,6 +454,7 @@ def get_all_parents(obj):
             break
         result.append(obj)
     return result
+
 
 def get_objects_in_collection(collection):
     """Retrieve recursively  all objects in a collection, even in sub collection"""

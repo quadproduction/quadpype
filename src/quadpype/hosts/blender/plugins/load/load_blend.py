@@ -2,8 +2,11 @@ from typing import Dict, List, Optional
 from pathlib import Path
 
 import bpy
+from enum import Enum
+import re
 from copy import deepcopy
 
+from quadpype.lib.attribute_definitions import BoolDef, EnumDef
 from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
@@ -12,17 +15,25 @@ from quadpype.pipeline import (
 )
 
 from quadpype.pipeline.create import CreateContext
-from quadpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api import plugin, lib, pipeline
 from quadpype.hosts.blender.api import (
     update_parent_data_with_entity_prefix,
     get_task_collection_templates,
     get_resolved_name,
+    get_objects_in_collection,
     get_parents_for_collection
 )
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
-    AVALON_PROPERTY,
+    has_avalon_node,
+    get_avalon_node
 )
+
+
+class ImportMethod(Enum):
+    APPEND = "Append"
+    LINK = "Link"
+    OVERRIDE = "Link + override"
 
 
 class BlendLoader(plugin.BlenderLoader):
@@ -35,23 +46,30 @@ class BlendLoader(plugin.BlenderLoader):
     icon = "code-fork"
     color = "orange"
 
-    @staticmethod
-    def _get_asset_container(objects, collections):
-        for coll in collections:
-            if coll.get(AVALON_PROPERTY):
-                return coll
+    defaults = {
+        'import_method': ImportMethod.APPEND.value
+    }
 
-        for empty in [obj for obj in objects if obj.type == 'EMPTY']:
-            if empty.get(AVALON_PROPERTY) and empty.parent is None:
-                return empty
-
-        return None
+    @classmethod
+    def get_options(cls, contexts):
+        return [
+            EnumDef(
+                "import_method",
+                items=[
+                    ImportMethod.APPEND.value,
+                    ImportMethod.LINK.value,
+                    ImportMethod.OVERRIDE.value
+                ],
+                default=cls.defaults['import_method'],
+                label="Import method",
+            )
+        ]
 
     def get_all_container_parents(self, asset_group):
         parent_containers = []
         parent = self._get_parents(asset_group)
         while parent:
-            if parent.get(AVALON_PROPERTY):
+            if has_avalon_node(parent):
                 parent_containers.append(parent)
             parent = self._get_parents(parent)
 
@@ -73,8 +91,7 @@ class BlendLoader(plugin.BlenderLoader):
             obj for obj in container.children_recursive
             if (
                 obj.type == 'EMPTY' and
-                obj.get(AVALON_PROPERTY) and
-                obj.get(AVALON_PROPERTY).get('family') == 'rig'
+                get_avalon_node(obj).get('family') == 'rig'
             )
         ]
         if not rigs:
@@ -95,39 +112,6 @@ class BlendLoader(plugin.BlenderLoader):
                 }
             )
 
-    def _process_data(self, libpath, group_name):
-        # Append all the data from the .blend file
-        with bpy.data.libraries.load(
-            libpath, link=False, relative=False
-        ) as (data_from, data_to):
-            for attr in dir(data_to):
-                setattr(data_to, attr, getattr(data_from, attr))
-
-        members = []
-
-        # Rename the object to add the asset name
-        for attr in dir(data_to):
-            for data in getattr(data_to, attr):
-                data.name = f"{group_name}:{data.name}"
-                members.append(data)
-
-        container = self._get_asset_container(data_to.objects, data_to.collections)
-
-        assert container, "No asset group found"
-
-        container.name = group_name
-
-        # Remove the library from the blend file
-        filepath = bpy.path.basename(libpath)
-        # Blender has a limit of 63 characters for any data name.
-        # If the filepath is longer, it will be truncated.
-        if len(filepath) > 63:
-            filepath = filepath[:63]
-        library = bpy.data.libraries.get(filepath)
-        bpy.data.libraries.remove(library)
-
-        return container, members
-
     def process_asset(
         self, context: dict, name: str, namespace: Optional[str] = None,
         options: Optional[Dict] = None
@@ -140,43 +124,89 @@ class BlendLoader(plugin.BlenderLoader):
             options: Additional settings dictionary
         """
         libpath = self.filepath_from_context(context)
-
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
+        representation = context['representation']
 
-        parent = self.get_parent_data(context)
-        if not parent:
-            self.log.warning(f"Can not retrieve parent from asset {asset} / subset {subset}")
-
-        context["representation"]["context"]["parent"] = parent
-        context["representation"]["context"]["app"] = "blender"
-
-        try:
-            family = context["representation"]["context"]["family"]
-        except ValueError:
-            family = "model"
-
-        representation = str(context["representation"]["_id"])
+        representation_id = str(representation["_id"])
 
         asset_name = plugin.prepare_scene_name(asset, subset)
         unique_number = plugin.get_unique_number(asset, subset)
         group_name = plugin.prepare_scene_name(asset, subset, unique_number)
         namespace = namespace or f"{asset}_{unique_number}"
+        import_method = ImportMethod(
+            options.get(
+                'import_method',
+                self.defaults['import_method']
+            )
+        )
+
+        container, members = self.load_assets_and_create_hierarchy(
+            representation=representation,
+            libpath=libpath,
+            group_name=group_name,
+            unique_number=unique_number,
+            import_method=import_method
+        )
+
+        try:
+            family = representation["context"]["family"]
+        except ValueError:
+            family = "model"
+
+        if family == "layout":
+            self._post_process_layout(container, asset, representation_id)
+
+        data = {
+            "schema": "quadpype:container-2.0",
+            "id": AVALON_CONTAINER_ID,
+            "name": name,
+            "namespace": namespace or '',
+            "loader": str(self.__class__.__name__),
+            "representation": str(representation["_id"]),
+            "libpath": libpath,
+            "asset_name": asset_name,
+            "parent": str(representation["parent"]),
+            "family": representation["context"]["family"],
+            "objectName": group_name,
+            "members": lib.map_to_classes_and_names(members),
+            "import_method": import_method.value
+        }
+
+        lib.imprint(container, data)
+
+        objects = [
+            obj for obj in bpy.data.objects
+            if obj.name.startswith(f"{group_name}:")
+        ]
+
+        self[:] = objects
+        return objects
+
+    def load_assets_and_create_hierarchy(self, representation, libpath, group_name, unique_number, import_method):
+        parent = self.get_parent_data(representation)
+        if not parent:
+            self.log.warning(f"Can not retrieve parent from asset {group_name}")
+
+        representation["context"]["parent"] = parent
+        representation["context"]["app"] = "blender"
 
         avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
         if not avalon_container:
             avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
             bpy.context.scene.collection.children.link(avalon_container)
 
-        data_for_template = deepcopy(context["representation"]["context"])
+        data_for_template = deepcopy(representation["context"])
         update_parent_data_with_entity_prefix(data_for_template)
 
         asset_collection_templates = get_task_collection_templates(
-            context["representation"]["context"],
+            representation["context"],
             task=get_current_context()['task_name']
         )
 
-        container, members = self._process_data(libpath, group_name)
+        container, members = self.import_blend_objects(libpath, group_name, import_method)
+        if import_method is ImportMethod.APPEND:
+            self.remove_library_from_blend_file(libpath)
 
         collections_are_created = None
         corresponding_hierarchies_numbered = {}
@@ -211,10 +241,10 @@ class BlendLoader(plugin.BlenderLoader):
                 unique_number=unique_number
             )
 
-            for blender_object in members:
+            for blender_object in container.objects:
 
                 # Do not link non-objects or invisible objects from published scene
-                if not isinstance(blender_object, bpy.types.Object) or not blender_object.get('visible', True):
+                if not blender_object.get('visible', True):
                     continue
 
                 collection = bpy.data.collections[default_parent_collection_name]
@@ -246,44 +276,178 @@ class BlendLoader(plugin.BlenderLoader):
                             corresponding_hierarchies_numbered=corresponding_hierarchies_numbered
                         )
 
+                if blender_object in list(collection.objects):
+                    continue
+
                 collection.objects.link(blender_object)
+
+                # If override, we need to add newly linked objects to members
+                # in order to be effectively removed or updated later.
+                if import_method is import_method.OVERRIDE:
+                    members.append(blender_object)
 
         else:
             # TODO: move this because it needs to happen when template is found and to raise error if none found
-            [bpy.context.scene.collection.objects.link(member) for member in members if isinstance(member, bpy.types.Object)]
+            [bpy.context.scene.collection.objects.link(member) for member in members if
+             isinstance(member, bpy.types.Object)]
 
         if isinstance(container, bpy.types.Object):
             avalon_container.objects.link(container)
-        elif isinstance(container, bpy.types.Collection):
+        elif isinstance(container, bpy.types.Collection) and container not in list(avalon_container.children):
             avalon_container.children.link(container)
 
-        if family == "layout":
-            self._post_process_layout(container, asset, representation)
+        return container, members
 
-        data = {
-            "schema": "quadpype:container-2.0",
-            "id": AVALON_CONTAINER_ID,
-            "name": name,
-            "namespace": namespace or '',
-            "loader": str(self.__class__.__name__),
-            "representation": str(context["representation"]["_id"]),
-            "libpath": libpath,
-            "asset_name": asset_name,
-            "parent": str(context["representation"]["parent"]),
-            "family": context["representation"]["context"]["family"],
-            "objectName": group_name,
-            "members": members,
-        }
+    @staticmethod
+    def get_parent_data(representation):
+        parent = representation["context"].get('parent', None)
+        if not parent:
+            hierarchy = representation["context"].get('hierarchy')
 
-        container[AVALON_PROPERTY] = data
+            if not hierarchy:
+                return
 
-        objects = [
-            obj for obj in bpy.data.objects
-            if obj.name.startswith(f"{group_name}:")
-        ]
+            return hierarchy.split('/')[-1]
 
-        self[:] = objects
-        return objects
+        return parent
+
+    def import_blend_objects(self, libpath, group_name, import_method):
+        if import_method == ImportMethod.APPEND:
+            container, members = self.append_blend_objects(libpath, group_name)
+        elif import_method == ImportMethod.LINK:
+            container, members = self.link_blend_objects(libpath)
+        elif import_method == ImportMethod.OVERRIDE:
+            container, members = self.link_blend_objects_with_overrides(libpath, group_name)
+        else:
+            raise RuntimeError("No import method specified when importing blend objects.")
+
+        return container, members
+
+    def append_blend_objects(self, libpath, group_name):
+        data_to = self._load_from_blendfile(
+            libpath,
+            import_link=False,
+            override=False
+        )
+        container = self._get_asset_container(data_to.objects, data_to.collections)
+        assert container, "No asset group found"
+
+        members = self._collect_members(data_to)
+
+        # Needs to rename in separate block to retrieve blender object after initialisation
+        self._rename_all(
+            data_list=members,
+            group_name=group_name
+        )
+
+        container.name = group_name
+        return container, members
+
+    def link_blend_objects(self, libpath):
+        data_to = self._load_from_blendfile(
+            libpath,
+            import_link=True,
+            override=False
+        )
+        container = self._get_asset_container(data_to.objects, data_to.collections)
+        assert container, "No asset group found"
+
+        members = self._collect_members(data_to)
+
+        return container, members
+
+    def link_blend_objects_with_overrides(self, libpath, group_name):
+        data_to = self._load_from_blendfile(
+            libpath,
+            import_link=True,
+            override=True
+        )
+
+        container = self._get_asset_container(data_to.objects, data_to.collections)
+        for obj in container.objects:
+            obj.override_create(remap_local_usages=True)
+
+        assert container, "No asset group found"
+
+        members = self._collect_members(data_to)
+
+        container.name = group_name
+
+        # Needs to rename in separate block to retrieve blender object after initialisation
+        corresponding_renamed = self._rename_all(
+            data_list=container.objects,
+            group_name=group_name,
+            truncate_occurrence=True
+        )
+
+        for obj in container.objects:
+            if not obj.parent:
+                continue
+
+            if obj.parent.name not in corresponding_renamed.keys() and obj.parent.name in corresponding_renamed.values():
+                self.log.warning(f"Parent {obj.parent.name} already set")
+                continue
+
+            obj.parent = bpy.data.objects.get(corresponding_renamed.get(obj.parent.name))
+
+        return container, members
+
+    @staticmethod
+    def _load_from_blendfile(libpath, import_link, override):
+        with bpy.data.libraries.load(
+                libpath,
+                link=import_link,
+                create_liboverrides=override,
+                relative=False
+        ) as (data_from, data_to):
+            for attr in dir(data_to):
+                setattr(data_to, attr, getattr(data_from, attr))
+
+        return data_to
+
+    @staticmethod
+    def _get_asset_container(objects, collections):
+        for coll in collections:
+            if has_avalon_node(coll):
+                return coll
+
+        for empty in [obj for obj in objects if obj.type == 'EMPTY']:
+            if has_avalon_node(empty) and empty.parent is None:
+                return empty
+
+        return None
+
+    @staticmethod
+    def _collect_members(data_attributes):
+        members = []
+        # Needs to rename in separate block to retrieve blender object after initialisation
+        for attr in dir(data_attributes):
+            for data in getattr(data_attributes, attr):
+                members.append(data)
+
+        return members
+
+    @staticmethod
+    def _rename_all(data_list, group_name, truncate_occurrence=False):
+        corresponding_renamed = dict()
+        for blender_object in data_list:
+            object_name = blender_object.name
+            if truncate_occurrence:
+                object_name = re.sub('.\d{3}$', '', blender_object.name)
+            new_name = f"{group_name}:{object_name}"
+            corresponding_renamed[object_name] = new_name
+            blender_object.name = new_name
+        return corresponding_renamed
+
+    @staticmethod
+    def remove_library_from_blend_file(libpath):
+        # Blender has a limit of 63 characters for any data name.
+        # If the filepath is longer, it will be truncated.
+        filepath = bpy.path.basename(libpath)
+        if len(filepath) > 63:
+            filepath = filepath[:63]
+        library = bpy.data.libraries.get(filepath)
+        bpy.data.libraries.remove(library)
 
     @staticmethod
     def _extract_last_collection_from_first_template(data, templates, unique_number):
@@ -303,19 +467,6 @@ class BlendLoader(plugin.BlenderLoader):
                 link_to.children.link(collection)
 
         return collection
-
-    @staticmethod
-    def get_parent_data(context):
-        parent = context["representation"]["context"].get('parent', None)
-        if not parent:
-            hierarchy = context["representation"]["context"].get('hierarchy')
-
-            if not hierarchy:
-                return
-
-            return hierarchy.split('/')[-1]
-
-        return parent
 
     @staticmethod
     def get_top_collection(collection_name, default_parent_collection_name):
@@ -377,7 +528,6 @@ class BlendLoader(plugin.BlenderLoader):
                     parent = parent_collection
                 else:
                     parent = bpy.data.collections[single_template[level - 1]]
-
                 self._create_collection(
                     collection_name=collection_name,
                     link_to=parent
@@ -390,22 +540,38 @@ class BlendLoader(plugin.BlenderLoader):
         Update the loaded asset.
         """
         group_name = container["objectName"]
-        asset_group = bpy.data.objects.get(group_name)
+        asset_group = self._retrieve_undefined_asset_group(group_name)
         libpath = Path(get_representation_path(representation)).as_posix()
 
         assert asset_group, (
             f"The asset is not loaded: {container['objectName']}"
         )
 
-        transform = asset_group.matrix_basis.copy()
-        old_data = dict(asset_group.get(AVALON_PROPERTY))
+        old_data = pipeline.get_avalon_node(asset_group)
+
+        import_method = ImportMethod(
+            old_data.get(
+                'import_method',
+                self.defaults['import_method']
+            )
+        )
         old_members = old_data.get("members", [])
-        parent = asset_group.parent
+
+        all_objects_from_asset = []
+        if isinstance(asset_group, bpy.types.Object):
+            transform = asset_group.matrix_basis.copy()
+            asset_group_parent = asset_group.parent
+            all_objects_from_asset = asset_group.children_recursive
+
+        else:
+            all_objects_from_asset = get_objects_in_collection(asset_group)
+
+        objects_with_anim = [
+            obj for obj in all_objects_from_asset
+            if obj.animation_data
+        ]
 
         actions = {}
-        objects_with_anim = [
-            obj for obj in asset_group.children_recursive
-            if obj.animation_data]
         for obj in objects_with_anim:
             # Check if the object has an action and, if so, add it to a dict
             # so we can restore it later. Save and restore the action only
@@ -413,18 +579,38 @@ class BlendLoader(plugin.BlenderLoader):
             if obj.animation_data.action not in old_members:
                 actions[obj.name] = obj.animation_data.action
 
+        asset = representation.get('asset', '')
+        subset = representation.get('subset', '')
+
+        parent = self.get_parent_data(representation)
+        if not parent:
+            self.log.warning(f"Can not retrieve parent from asset {asset} / subset {subset}")
+
+        representation["context"]["parent"] = parent
+
         self.exec_remove(container)
 
-        asset_group, members = self._process_data(libpath, group_name)
+        container, members = self.load_assets_and_create_hierarchy(
+            representation=representation,
+            libpath=libpath,
+            group_name=group_name,
+            unique_number=plugin.get_unique_number(asset, subset),
+            import_method=import_method
+        )
 
-        avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
-        avalon_container.objects.link(asset_group)
+        asset_group = self._retrieve_undefined_asset_group(group_name)
 
-        asset_group.matrix_basis = transform
-        asset_group.parent = parent
+        if isinstance(asset_group, bpy.types.Object):
+            asset_group.matrix_basis = transform
+            asset_group.parent = asset_group_parent
+
+            all_objects_from_asset = asset_group.children_recursive
+
+        else:
+            all_objects_from_asset = get_objects_in_collection(asset_group)
 
         # Restore the actions
-        for obj in asset_group.children_recursive:
+        for obj in all_objects_from_asset:
             if obj.name in actions:
                 if not obj.animation_data:
                     obj.animation_data_create()
@@ -434,24 +620,24 @@ class BlendLoader(plugin.BlenderLoader):
         # This avoids a crash, because the memory addresses of those members
         # are not valid anymore
         old_data["members"] = []
-        asset_group[AVALON_PROPERTY] = old_data
+        old_data.update(
+            {
+                "libpath": libpath,
+                "representation": str(representation["_id"]),
+                "parent": str(representation["parent"]),
+                "members": lib.map_to_classes_and_names(members)
+            }
+        )
 
-        new_data = {
-            "libpath": libpath,
-            "representation": representation["_id"],
-            "parent": representation["parent"],
-            "members": members,
-        }
-
-        lib.imprint(asset_group, new_data)
+        lib.imprint(asset_group, old_data)
 
         # We need to update all the parent container members
         parent_containers = self.get_all_container_parents(asset_group)
 
         for parent_container in parent_containers:
-            parent_members = parent_container[AVALON_PROPERTY]["members"]
-            parent_container[AVALON_PROPERTY]["members"] = (
-                parent_members + members)
+            parent_avalon_node = pipeline.get_avalon_node(parent_container)
+            parent_members = lib.get_objects_from_mapped(parent_avalon_node["members"])
+            lib.imprint(parent_container, {'members': lib.map_to_classes_and_names(parent_members + members)})
 
     def exec_remove(self, container: Dict) -> bool:
         """
@@ -470,7 +656,8 @@ class BlendLoader(plugin.BlenderLoader):
             )
         ]
 
-        members = asset_group.get(AVALON_PROPERTY).get("members", [])
+        avalon_node = pipeline.get_avalon_node(asset_group)
+        members = lib.get_objects_from_mapped(avalon_node['members'])
 
         collections_parents = [
             collection for collection in bpy.data.collections
@@ -481,29 +668,38 @@ class BlendLoader(plugin.BlenderLoader):
         parent_containers = self.get_all_container_parents(asset_group)
 
         for parent in parent_containers:
-            parent.get(AVALON_PROPERTY)["members"] = list(filter(
-                lambda i: i not in members,
-                parent.get(AVALON_PROPERTY).get("members", [])))
 
+            parent_members = list(filter(
+                lambda i: i not in members,
+                lib.get_objects_from_mapped(pipeline.get_avalon_node(parent)['members'])))
+
+            lib.imprint({'members': parent_members})
+
+        deleted_collections = list()
         for attr in attrs:
             for data in getattr(bpy.data, attr):
-                if data in members:
-                    # Skip the asset group
-                    if data == asset_group:
-                        continue
+                if not data in members:
+                    continue
 
-                    attribute = getattr(bpy.data, attr)
-                    if not hasattr(attribute, 'remove'):
-                        continue
+                # Skip the asset group
+                if data == asset_group:
+                    continue
 
-                    attribute.remove(data)
+                attribute = getattr(bpy.data, attr)
+                if not hasattr(attribute, 'remove'):
+                    continue
+
+                if isinstance(data, bpy.types.Collection):
+                    deleted_collections.append(data)
+
+                attribute.remove(data)
 
         if isinstance(asset_group, bpy.types.Object):
             bpy.data.objects.remove(asset_group)
         else:
             bpy.data.collections.remove(asset_group)
 
-        self._remove_collection_recursively(collections_parents)
+        self._remove_collection_recursively(collections_parents, deleted_collections)
 
     @staticmethod
     def _retrieve_undefined_asset_group(group_name):
@@ -514,13 +710,6 @@ class BlendLoader(plugin.BlenderLoader):
 
         return asset_group
 
-    @staticmethod
-    def _get_collections_parents(collection):
-        return [
-            parent for parent in bpy.data.collections
-            if collection in list(parent.children)
-        ]
-
     def _remove_collection_recursively(self, collections, deleted_collections=[]):
         for collection in collections:
             if collection in deleted_collections:
@@ -529,7 +718,7 @@ class BlendLoader(plugin.BlenderLoader):
             if collection.objects or collection.children:
                 continue
 
-            parents = self._get_collections_parents(collection)
+            parents = get_parents_for_collection(collection)
 
             deleted_collections.append(collection)
             bpy.data.collections.remove(collection)
