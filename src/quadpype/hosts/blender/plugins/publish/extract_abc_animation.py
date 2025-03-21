@@ -46,6 +46,8 @@ class ExtractAnimationABC(
         for obj in objects:
             children = [o for o in bpy.data.objects if o.parent == obj]
             for child in children:
+                if not child.visible_get():
+                    continue
                 objects.append(child)
 
         for obj in objects:
