@@ -43,20 +43,20 @@ class BlendAnimationLoader(plugin.BlenderLoader):
             data_to.actions = data_from.actions
 
         container = data_to.objects[0]
-
         assert container, "No asset group found"
 
-        target_namespace = get_avalon_node(container).get('namespace')
+        action = data_to.actions[0]
+        assert action, "No action found"
 
-        action = data_to.actions[0].make_local().copy()
+        action = action.make_local().copy()
+        target_namespace = get_avalon_node(container).get('namespace')
 
         for obj in bpy.data.objects:
             if get_avalon_node(obj).get('namespace') == target_namespace:
-                if obj.children[0]:
-                    if not obj.children[0].animation_data:
-                        obj.children[0].animation_data_create()
-                    obj.children[0].animation_data.action = action
-                break
+                for armature in self.get_armatures_with_animation(obj.children):
+                    if not armature.animation_data:
+                        armature.animation_data_create()
+                    armature.animation_data.action = action
 
         bpy.data.objects.remove(container)
 
@@ -67,3 +67,11 @@ class BlendAnimationLoader(plugin.BlenderLoader):
             filename = filename[:63]
         library = bpy.data.libraries.get(filename)
         bpy.data.libraries.remove(library)
+
+    @staticmethod
+    def get_armatures_with_animation(children):
+        return [
+            child for child in children if
+            child and
+            child.type == 'ARMATURE'
+        ]
