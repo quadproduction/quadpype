@@ -1,6 +1,10 @@
-from .addon import BlenderAddon
+from .addon import (
+    BlenderAddon,
+    BLENDER_ROOT_DIR,
+)
 
 
 __all__ = (
-    "BlenderAddon"
+    "BlenderAddon",
+    "BLENDER_ROOT_DIR"
 )

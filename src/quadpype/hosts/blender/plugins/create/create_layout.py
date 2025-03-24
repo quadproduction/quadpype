@@ -15,8 +15,6 @@ class CreateLayout(plugin.BlenderCreator):
 
     create_as_asset_group = True
 
-
-
     def create(
         self, subset_name: str, instance_data: dict, pre_create_data: dict
     ):
