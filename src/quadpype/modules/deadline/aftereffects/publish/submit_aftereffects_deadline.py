@@ -1,7 +1,7 @@
 import os
-import attr
 import getpass
 import pyblish.api
+from dataclasses import dataclass, field, asdict
 
 from datetime import datetime, timezone
 
@@ -17,24 +17,23 @@ from quadpype.tests.lib import is_in_tests
 from quadpype.lib import is_running_from_build
 
 
-@attr.s
+@dataclass
 class DeadlinePluginInfo():
-    Comp = attr.ib(default=None)
-    SceneFile = attr.ib(default=None)
-    OutputFilePath = attr.ib(default=None)
-    Output = attr.ib(default=None)
-    StartupDirectory = attr.ib(default=None)
-    Arguments = attr.ib(default=None)
-    ProjectPath = attr.ib(default=None)
-    AWSAssetFile0 = attr.ib(default=None)
-    Version = attr.ib(default=None)
-    MultiProcess = attr.ib(default=None)
+    Comp: str = field(default=None)
+    SceneFile: str = field(default=None)
+    OutputFilePath: str = field(default=None)
+    Output: str = field(default=None)
+    StartupDirectory: str = field(default=None)
+    Arguments: str = field(default=None)
+    ProjectPath: str = field(default=None)
+    AWSAssetFile0: str = field(default=None)
+    Version: str = field(default=None)
+    MultiProcess: str = field(default=None)
 
 
 class AfterEffectsSubmitDeadline(
     abstract_submit_deadline.AbstractSubmitDeadline,
     DeadlineDefaultJobAttrs):
-
     label = "Submit AE to Deadline"
     order = pyblish.api.IntegratorOrder + 0.1
     hosts = ["aftereffects"]
@@ -150,9 +149,9 @@ class AfterEffectsSubmitDeadline(
         deadline_plugin_info.SceneFile = self.scene_path
         deadline_plugin_info.Output = render_path.replace("\\", "/")
 
-        return attr.asdict(deadline_plugin_info)
+        return asdict(deadline_plugin_info)
 
-    def from_published_scene(self):
+    def from_published_scene(self, replace_in_path=True):
         """ Do not overwrite expected files.
 
             Use published is set to True, so rendering will be triggered
@@ -160,4 +159,4 @@ class AfterEffectsSubmitDeadline(
             of abstract class renames expected (eg. rendered) files accordingly
             which is not needed here.
         """
-        return super().from_published_scene(False)
+        return super().from_published_scene(replace_in_path)

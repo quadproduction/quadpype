@@ -3,7 +3,7 @@
 
 import os
 import getpass
-import attr
+from dataclasses import dataclass, field, asdict
 
 from datetime import datetime, timezone
 
@@ -22,11 +22,11 @@ from quadpype_modules.deadline import abstract_submit_deadline
 from quadpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
 
 
-@attr.s
-class BlenderPluginInfo():
-    SceneFile = attr.ib(default=None)   # Input
-    Version = attr.ib(default=None)  # Mandatory for Deadline
-    SaveFile = attr.ib(default=True)
+@dataclass
+class BlenderPluginInfo:
+    SceneFile: str = field(default=None)  # Input
+    Version: str = field(default=None)  # Mandatory for Deadline
+    SaveFile: bool = field(default=True)
 
 
 class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
@@ -160,7 +160,7 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
             SaveFile=True,
         )
 
-        plugin_payload = attr.asdict(plugin_info)
+        plugin_payload = asdict(plugin_info)
 
         # Patching with pluginInfo from settings
         for key, value in self.pluginInfo.items():
@@ -183,14 +183,14 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         payload = self.assemble_payload()
         return self.submit(payload)
 
-    def from_published_scene(self):
+    def from_published_scene(self, replace_in_path=True):
         """
         This is needed to set the correct path for the json metadata. Because
         the rendering path is set in the blend file during the collection,
         and the path is adjusted to use the published scene, this ensures that
         the metadata and the rendered files are in the same location.
         """
-        return super().from_published_scene(False)
+        return super().from_published_scene(replace_in_path)
 
     @classmethod
     def get_attribute_defs(cls):
