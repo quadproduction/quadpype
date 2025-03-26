@@ -122,8 +122,6 @@ source "$SCRIPT_DIR/activate.sh"
 "$POETRY_HOME/bin/poetry" run python -m pip install distro
 "$POETRY_HOME/bin/poetry" run python "$SCRIPT_DIR/_lib/install/install_additional_dependencies.py"
 
-kill -SIGHUP $$
-
 # 7. Set back the current location to the current script folder
 ###############################################################
 cd "$PATH_ORIGINAL_LOCATION" || return > /dev/null
