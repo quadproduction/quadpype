@@ -17,23 +17,25 @@ from quadpype.pipeline import (
 from quadpype.pipeline.create import CreateContext
 from quadpype.hosts.blender.api import plugin, lib, pipeline
 from quadpype.hosts.blender.api import (
-    update_parent_data_with_entity_prefix,
     get_task_collection_templates,
     get_resolved_name,
+    set_data_for_template_from_original_data,
     get_objects_in_collection,
-    get_parents_for_collection
+    get_parents_for_collection,
+    split_hierarchy,
+    get_top_collection,
+    get_corresponding_hierarchies_numbered,
+    create_collections_from_hierarchy,
+    create_collection
 )
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
     has_avalon_node,
     get_avalon_node
 )
-
-
-class ImportMethod(Enum):
-    APPEND = "Append"
-    LINK = "Link"
-    OVERRIDE = "Link + override"
+from quadpype.hosts.blender.api.workfile_template_builder import(
+    ImportMethod
+)
 
 
 class BlendLoader(plugin.BlenderLoader):
@@ -184,64 +186,60 @@ class BlendLoader(plugin.BlenderLoader):
         return objects
 
     def load_assets_and_create_hierarchy(self, representation, libpath, group_name, unique_number, import_method):
-        parent = self.get_parent_data(representation)
-        if not parent:
-            self.log.warning(f"Can not retrieve parent from asset {group_name}")
-
-        representation["context"]["parent"] = parent
-        representation["context"]["app"] = "blender"
 
         avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
         if not avalon_container:
             avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
             bpy.context.scene.collection.children.link(avalon_container)
 
-        data_for_template = deepcopy(representation["context"])
-        update_parent_data_with_entity_prefix(data_for_template)
-
-        asset_collection_templates = get_task_collection_templates(
-            representation["context"],
+        data_template = set_data_for_template_from_original_data(representation)
+        collection_templates = get_task_collection_templates(
+            data_template,
             task=get_current_context()['task_name']
         )
 
-        container, members = self.import_blend_objects(libpath, group_name, import_method)
+        container, members, container_objects = self.import_blend_objects(libpath, group_name, import_method)
         if import_method is ImportMethod.APPEND:
             self.remove_library_from_blend_file(libpath)
 
         collections_are_created = None
-        corresponding_hierarchies_numbered = {}
 
-        if lib.is_shot():
-            data_for_template['sequence'], data_for_template['shot'] = lib.extract_sequence_and_shot()
+        corresponding_collections_numbered = dict()
+        collections_numbered_hierarchy = list()
 
-        if asset_collection_templates:
-            corresponding_hierarchies_numbered = {
+        if collection_templates:
+            collections_hierarchy = [
                 get_resolved_name(
-                    data=data_for_template,
-                    template=hierarchies
-                ).replace('\\', '/').split('/')[-1]: get_resolved_name(
-                    data=data_for_template,
-                    template=hierarchies,
+                    data=data_template,
+                    template=template
+                )
+                for template in collection_templates
+            ]
+            collections_numbered_hierarchy = [
+                get_resolved_name(
+                    data=data_template,
+                    template=template,
                     numbering=unique_number
-                ).replace('\\', '/').split('/')[-1]
-                for hierarchies in asset_collection_templates
-            }
+                )
+                for template in collection_templates
+            ]
 
-            collections_are_created = self.create_collections_from_template(
-                data=data_for_template,
-                templates=asset_collection_templates,
-                unique_number=unique_number,
+            corresponding_collections_numbered = get_corresponding_hierarchies_numbered(
+                collections_hierarchy,
+                collections_numbered_hierarchy
+            )
+
+            collections_are_created = create_collections_from_hierarchy(
+                hierarchies=collections_numbered_hierarchy,
                 parent_collection=bpy.context.scene.collection
             )
 
         if collections_are_created:
-            default_parent_collection_name = self._extract_last_collection_from_first_template(
-                data=data_for_template,
-                templates=asset_collection_templates,
-                unique_number=unique_number
+            default_parent_collection_name = self._get_last_collection_from_first_template(
+                collections_numbered_hierarchy
             )
 
-            for blender_object in container.objects:
+            for blender_object in container_objects:
 
                 # Do not link non-objects or invisible objects from published scene
                 if not blender_object.get('visible', True):
@@ -253,38 +251,28 @@ class BlendLoader(plugin.BlenderLoader):
                 split_object_hierarchies = object_hierarchies.replace('\\', '/').split('/')
 
                 for collection_number, hierarchy in enumerate(split_object_hierarchies):
-                    hierarchy = get_resolved_name(
-                        data=data_for_template,
-                        template=hierarchy,
-                        numbering=unique_number
-                    )
-                    corresponding_collection_name = corresponding_hierarchies_numbered.get(
+                    corresponding_collection_name = corresponding_collections_numbered.get(
                         hierarchy,
                         f"{hierarchy}-{unique_number}"
                     )
 
                     if collection_number == 0:
-                        collection = self.get_top_collection(
+                        collection = get_top_collection(
                             collection_name=corresponding_collection_name,
                             default_parent_collection_name=default_parent_collection_name
                         )
 
                     else:
-                        collection = self.create_collection_from_hierarchy(
-                            parent_collection_name=split_object_hierarchies[collection_number - 1],
-                            collection_name=corresponding_collection_name,
-                            corresponding_hierarchies_numbered=corresponding_hierarchies_numbered
-                        )
+                        parent_collection_name = split_object_hierarchies[collection_number - 1]
+                        parent_collection_name_numbered = corresponding_collections_numbered.get(parent_collection_name,
+                                                                                                 parent_collection_name)
+
+                        collection = create_collection(corresponding_collection_name, parent_collection_name_numbered)
 
                 if blender_object in list(collection.objects):
                     continue
 
                 collection.objects.link(blender_object)
-
-                # If override, we need to add newly linked objects to members
-                # in order to be effectively removed or updated later.
-                if import_method is import_method.OVERRIDE:
-                    members.append(blender_object)
 
         else:
             # TODO: move this because it needs to happen when template is found and to raise error if none found
@@ -299,29 +287,25 @@ class BlendLoader(plugin.BlenderLoader):
         return container, members
 
     @staticmethod
-    def get_parent_data(representation):
-        parent = representation["context"].get('parent', None)
-        if not parent:
-            hierarchy = representation["context"].get('hierarchy')
+    def _get_container_objects(container):
+        """Retrieve all objects in the given container"""
+        if not bpy.data.objects.get(container.name):
+            return container.objects
 
-            if not hierarchy:
-                return
+        return [obj for obj in bpy.data.objects if obj.parent == container]
 
-            return hierarchy.split('/')[-1]
-
-        return parent
 
     def import_blend_objects(self, libpath, group_name, import_method):
         if import_method == ImportMethod.APPEND:
-            container, members = self.append_blend_objects(libpath, group_name)
+            container, members, container_objects = self.append_blend_objects(libpath, group_name)
         elif import_method == ImportMethod.LINK:
-            container, members = self.link_blend_objects(libpath)
+            container, members, container_objects = self.link_blend_objects(libpath)
         elif import_method == ImportMethod.OVERRIDE:
-            container, members = self.link_blend_objects_with_overrides(libpath, group_name)
+            container, members, container_objects = self.link_blend_objects_with_overrides(libpath, group_name)
         else:
             raise RuntimeError("No import method specified when importing blend objects.")
 
-        return container, members
+        return container, members, container_objects
 
     def append_blend_objects(self, libpath, group_name):
         data_to = self._load_from_blendfile(
@@ -335,13 +319,17 @@ class BlendLoader(plugin.BlenderLoader):
         members = self._collect_members(data_to)
 
         # Needs to rename in separate block to retrieve blender object after initialisation
-        self._rename_all(
-            data_list=members,
-            group_name=group_name
-        )
+        for attr in dir(data_to):
+            for data in getattr(data_to, attr):
+                data.name = self._get_new_name(
+                    name=data.name,
+                    group_name=group_name
+                )
 
         container.name = group_name
-        return container, members
+
+        container_objects = self._get_container_objects(container)
+        return container, members, container_objects
 
     def link_blend_objects(self, libpath):
         data_to = self._load_from_blendfile(
@@ -353,34 +341,48 @@ class BlendLoader(plugin.BlenderLoader):
         assert container, "No asset group found"
 
         members = self._collect_members(data_to)
+        container_objects = self._get_container_objects(container)
 
-        return container, members
+        return container, members, container_objects
 
     def link_blend_objects_with_overrides(self, libpath, group_name):
         data_to = self._load_from_blendfile(
             libpath,
             import_link=True,
-            override=True
+            override=False
         )
-
         container = self._get_asset_container(data_to.objects, data_to.collections)
-        for obj in container.objects:
-            obj.override_create(remap_local_usages=True)
-
-        assert container, "No asset group found"
-
         members = self._collect_members(data_to)
 
+        original_container_name = ""
+
+        corresponding_renamed = dict()
+        for attr in dir(data_to):
+            for data in getattr(data_to, attr):
+                new_data = data.override_create(remap_local_usages=True)
+                new_data.name = self._get_new_name(new_data.name, group_name, truncate_occurrence=False)
+                corresponding_renamed[data.name] = new_data.name
+
+                # We need to add newly linked objects to members
+                # in order to be effectively removed or updated later.
+                members.append(new_data)
+
+                if data == container:
+                    original_container_name = container.name
+                    container = new_data
+
+        assert container, "No asset group found"
         container.name = group_name
 
-        # Needs to rename in separate block to retrieve blender object after initialisation
-        corresponding_renamed = self._rename_all(
-            data_list=container.objects,
-            group_name=group_name,
-            truncate_occurrence=True
-        )
+        container_objects = self._get_container_objects(container)
 
-        for obj in container.objects:
+        # If the container is an empty, no parent value are stored in the loaded obj
+        # So we retrieve the
+        if not container_objects:
+            container_objects = [bpy.data.objects.get(corresponding_renamed.get(obj.name)) for obj in data_to.objects
+                                 if obj.name != original_container_name]
+
+        for obj in container_objects:
             if not obj.parent:
                 continue
 
@@ -390,7 +392,25 @@ class BlendLoader(plugin.BlenderLoader):
 
             obj.parent = bpy.data.objects.get(corresponding_renamed.get(obj.parent.name))
 
-        return container, members
+        #Remap override data
+        for new_obj in corresponding_renamed.values():
+            obj = bpy.data.objects.get(new_obj)
+
+            if obj and obj.override_library:
+                if not obj.data:
+                    continue
+
+                if not obj.data.library:
+                    continue
+                data_type = lib.get_data_type_name(obj.data)
+                corresponding_renamed_data_name = corresponding_renamed.get(obj.data.name)
+                if not corresponding_renamed_data_name:
+                    self.log.warning(f"No corresponding data found for {obj.data.name}")
+                for data in getattr(bpy.data, data_type):
+                    if data.name == corresponding_renamed_data_name:
+                        obj.data = data
+
+        return container, members, container_objects
 
     @staticmethod
     def _load_from_blendfile(libpath, import_link, override):
@@ -428,16 +448,11 @@ class BlendLoader(plugin.BlenderLoader):
         return members
 
     @staticmethod
-    def _rename_all(data_list, group_name, truncate_occurrence=False):
-        corresponding_renamed = dict()
-        for blender_object in data_list:
-            object_name = blender_object.name
-            if truncate_occurrence:
-                object_name = re.sub('.\d{3}$', '', blender_object.name)
-            new_name = f"{group_name}:{object_name}"
-            corresponding_renamed[object_name] = new_name
-            blender_object.name = new_name
-        return corresponding_renamed
+    def _get_new_name(name, group_name, truncate_occurrence=False):
+        if truncate_occurrence:
+            name = re.sub('.\d{3}$', '', name)
+        new_name = f"{group_name}:{name}"
+        return new_name
 
     @staticmethod
     def remove_library_from_blend_file(libpath):
@@ -450,90 +465,8 @@ class BlendLoader(plugin.BlenderLoader):
         bpy.data.libraries.remove(library)
 
     @staticmethod
-    def _extract_last_collection_from_first_template(data, templates, unique_number):
-        return get_resolved_name(
-            data=data,
-            template=templates[0],
-            numbering=unique_number
-        ).replace('\\', '/').split('/')[-1]
-
-    @staticmethod
-    def _create_collection(collection_name, link_to=None):
-        collection = bpy.data.collections.get(collection_name)
-
-        if not collection:
-            collection = bpy.data.collections.new(collection_name)
-            if link_to and collection not in list(link_to.children):
-                link_to.children.link(collection)
-
-        return collection
-
-    @staticmethod
-    def get_top_collection(collection_name, default_parent_collection_name):
-        parent_collection = bpy.data.collections.get(collection_name, None)
-        if not parent_collection:
-            parent_collection = bpy.data.collections[default_parent_collection_name]
-
-        return parent_collection if parent_collection else bpy.context.scene.collection
-
-    def create_collection_from_hierarchy(
-        self,
-        parent_collection_name,
-        collection_name,
-        corresponding_hierarchies_numbered
-    ):
-        corresponding_parent_collection_name = bpy.data.collections.get(
-            corresponding_hierarchies_numbered.get(parent_collection_name, parent_collection_name)
-        )
-        collection = self._create_collection(
-            collection_name=collection_name,
-            link_to=corresponding_parent_collection_name
-        )
-
-        return collection
-
-    def create_collections_from_template(self, data, templates, parent_collection, unique_number):
-        all_hierarchies = [
-            get_resolved_name(
-                data=data,
-                template=hierarchies,
-                numbering=unique_number
-            ).replace('\\', '/').split('/')
-            for hierarchies in templates
-        ]
-
-        top_hierarchies = set(
-            collection[0] for collection in all_hierarchies
-        )
-
-        try:
-            top_collection_name = next(iter(top_hierarchies))
-
-        except StopIteration:
-            self.log.warning(
-                "Can not extract top collection from retrieved templates. "
-                "No collection will be used for later process."
-            )
-            return None
-
-        if len(top_hierarchies) > 1:
-            self.log.warning(
-                f"Multiple top collections have been found. "
-                f"Only the first one ({top_collection_name}) will be used."
-            )
-
-        for single_template in all_hierarchies:
-            for level, collection_name in enumerate(single_template):
-                if level == 0:
-                    parent = parent_collection
-                else:
-                    parent = bpy.data.collections[single_template[level - 1]]
-                self._create_collection(
-                    collection_name=collection_name,
-                    link_to=parent
-                )
-
-        return True
+    def _get_last_collection_from_first_template(hierarchies):
+        return split_hierarchy(hierarchies[0])[-1]
 
     def exec_update(self, container: Dict, representation: Dict):
         """
@@ -581,12 +514,6 @@ class BlendLoader(plugin.BlenderLoader):
 
         asset = representation.get('asset', '')
         subset = representation.get('subset', '')
-
-        parent = self.get_parent_data(representation)
-        if not parent:
-            self.log.warning(f"Can not retrieve parent from asset {asset} / subset {subset}")
-
-        representation["context"]["parent"] = parent
 
         self.exec_remove(container)
 

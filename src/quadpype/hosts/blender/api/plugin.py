@@ -1,16 +1,33 @@
 """Shared functionality for pipeline plugins for Blender."""
 
 import itertools
+from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import bpy
 import json
 import pyblish.api
+from quadpype.client.mongo.entities import (
+    get_asset_by_name
+)
+from quadpype.pipeline.template_data import (
+    get_asset_template_data,
+)
+from quadpype.hosts.blender.api.template_resolving import (
+    get_task_collection_templates,
+    get_resolved_name,
+    set_data_for_template_from_original_data
+)
+from quadpype.hosts.blender.api.collections import (
+    create_collections_from_hierarchy
+)
 from quadpype.pipeline import (
     Creator,
     CreatedInstance,
-    LoaderPlugin
+    LoaderPlugin,
+    get_current_host_name,
+    get_current_project_name
 )
 from quadpype.pipeline.publish import Extractor
 from quadpype.lib import BoolDef
@@ -264,6 +281,8 @@ class BlenderCreator(Creator):
             # Create instance collection
             instance_node = bpy.data.collections.new(name=name)
             instances.children.link(instance_node)
+            if pre_create_data.get("create_collection_hierarchy", False):
+                self._create_collection_hierarchy(instance_data)
 
         self.set_instance_data(subset_name, instance_data)
 
@@ -276,6 +295,38 @@ class BlenderCreator(Creator):
         imprint(instance_node, instance_data)
 
         return instance_node
+
+    def _create_collection_hierarchy(self, data: dict):
+        """Generate the collection hierarchy based on the creator context
+        Args:
+            data (dict)
+        """
+        data_for_template = self._format_data_for_template_solve(data)
+        collection_templates = get_task_collection_templates(data_for_template, task=data_for_template["task"])
+        if collection_templates:
+            collections_hierarchy = [
+                get_resolved_name(
+                    data=data_for_template,
+                    template=template
+                )
+                for template in collection_templates
+            ]
+            create_collections_from_hierarchy(
+                hierarchies=collections_hierarchy,
+                parent_collection=bpy.context.scene.collection
+            )
+
+    @staticmethod
+    def _format_data_for_template_solve(data):
+        template_data = deepcopy(data)
+        template_data["project"] = {"name":get_current_project_name()}
+        template_data["app"] = get_current_host_name()
+
+        asset_data = get_asset_by_name(template_data["project"]["name"], template_data["asset"])
+        template_data.update(get_asset_template_data(asset_data, get_current_project_name()))
+
+        return set_data_for_template_from_original_data(template_data)
+
 
     def collect_instances(self):
         """Override abstract method from BlenderCreator.
@@ -396,6 +447,9 @@ class BlenderCreator(Creator):
                     default=True),
             BoolDef("create_as_asset_group",
                     label="Use Empty as Instance",
+                    default=False),
+            BoolDef("create_collection_hierarchy",
+                    label="Create Collection Hierarchy",
                     default=False)
         ]
 
@@ -492,6 +546,10 @@ class BlenderLoader(LoaderPlugin):
              name: Optional[str] = None,
              namespace: Optional[str] = None,
              options: Optional[Dict] = None) -> Optional[bpy.types.Collection]:
+
+        if options.get("template", False):
+            return self._load(context, name, namespace, options)
+
         """ Run the loader on Blender main thread"""
         mti = MainThreadItem(self._load, context, name, namespace, options)
         execute_in_main_thread(mti)
