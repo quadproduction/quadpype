@@ -54,7 +54,6 @@ RUN chmod +x ./src/tools/build.sh
 
 # Create virtualenv
 RUN ./src/tools/install_environment_no_pyenv.sh
-RUN cd src/ && ./.poetry/bin/poetry lock
 
 # Ensure venv is truly activate
 RUN chmod +x ./src/.venv/bin/activate
