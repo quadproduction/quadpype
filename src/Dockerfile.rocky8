@@ -7,7 +7,7 @@ ARG VERSION
 
 LABEL maintainer="dev@quad.fr"
 LABEL description="Docker Image to build and run QuadPype under Rocky Linux 8.9"
-LABEL org.opencontainers.image.name="quad/quadpype"
+LABEL org.opencontainers.image.name="quad/quadpype-rocky"
 LABEL org.opencontainers.image.title="QuadPype Docker Image"
 LABEL org.opencontainers.image.url="https://github.com/quadproduction/quadpype"
 LABEL org.opencontainers.image.source="https://github.com/quadproduction/quadpype"
@@ -43,8 +43,6 @@ RUN cd /opt/ && \
     git fetch --all --tags
 
 WORKDIR /opt/quadpype
-
-RUN git checkout enhancement/linux-dockerfile
 
 SHELL ["/bin/bash", "--login", "-c"]
 
