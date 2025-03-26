@@ -41,6 +41,8 @@ RUN cd /opt/ && \
 
 WORKDIR /opt/quadpype
 
+RUN git checkout enhancement/linux-dockerfile
+
 SHELL ["/bin/bash", "--login", "-c"]
 
 RUN source ~/.bashrc
@@ -52,7 +54,7 @@ RUN chmod +x ./src/tools/build.sh
 
 # Create virtualenv
 RUN ./src/tools/install_environment_no_pyenv.sh
-RUN ./src/.poetry/bin/poetry lock
+RUN cd src/ && ./.poetry/bin/poetry lock
 
 # Ensure venv is truly activate
 RUN chmod +x ./src/.venv/bin/activate
