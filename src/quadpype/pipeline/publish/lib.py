@@ -844,14 +844,38 @@ def replace_with_published_scene_path(instance, replace_in_path=True):
     # determine published path from Anatomy.
     template_data = workfile_instance.data.get("anatomyData")
     rep = workfile_instance.data["representations"][0]
-    template_data["representation"] = rep.get("name")
-    template_data["ext"] = rep.get("ext")
-    template_data["comment"] = None
+    file_path = rep.get('published_path')
+    if not file_path:
+        log.warning(
+            "Could'nt retrieved file published path from representation. "
+            "Will retrieve correct publish path from settings."
+        )
+        template_data["representation"] = rep.get("name")
+        template_data["ext"] = rep.get("ext")
+        template_data["comment"] = None
 
-    anatomy = instance.context.data['anatomy']
-    anatomy_filled = anatomy.format(template_data)
-    template_filled = anatomy_filled["publish"]["path"]
-    file_path = os.path.normpath(template_filled)
+        anatomy = instance.context.data['anatomy']
+        anatomy_filled = anatomy.format(template_data)
+
+        project_name = template_data.get("project", []).get("name", None)
+        task = template_data.get('task', [])
+        template_name = get_publish_template_name(
+            project_name=project_name,
+            host_name=template_data.get("app"),
+            family=template_data.get('family'),
+            task_name=task.get('name'),
+            task_type=task.get('type'),
+            project_settings=get_project_settings(project_name),
+            hero=False,
+            logger=log
+        )
+
+        if not template_name:
+            log.warning("Can't find corresponding publish template name. Will use default publish path.")
+            template_name = "publish"
+
+        template_filled = anatomy_filled[template_name]["path"]
+        file_path = os.path.normpath(template_filled)
 
     log.info("Using published scene for render {}".format(file_path))
 
