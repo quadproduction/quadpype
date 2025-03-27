@@ -152,7 +152,7 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
     # the database even if not used by the destination template
     db_representation_context_keys = [
         "project", "asset", "task", "subset", "version", "representation",
-        "family", "hierarchy", "username", "user", "output"
+        "family", "hierarchy", "username", "user", "output", "variant"
     ]
 
     def process(self, instance):
@@ -595,6 +595,8 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
 
         # allow overwriting existing version
         template_data["version"] = version["name"]
+
+        template_data["variant"] = instance.data.get("variant")
 
         # add template data for colorspaceData
         if repre.get("colorspaceData"):
