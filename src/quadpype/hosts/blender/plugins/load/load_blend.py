@@ -264,8 +264,8 @@ class BlendLoader(plugin.BlenderLoader):
 
                     else:
                         parent_collection_name = split_object_hierarchies[collection_number - 1]
-                        parent_collection_name_numbered = corresponding_collections_numbered.get(parent_collection_name,
-                                                                                                 parent_collection_name)
+                        parent_collection_name_numbered = corresponding_collections_numbered.get(
+                            parent_collection_name, f"{parent_collection_name}-{unique_number}")
 
                         collection = create_collection(corresponding_collection_name, parent_collection_name_numbered)
 
