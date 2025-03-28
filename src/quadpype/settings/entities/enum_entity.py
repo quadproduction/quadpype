@@ -1,5 +1,5 @@
-import abc
 import copy
+from abc import abstractmethod
 
 import requests
 
@@ -530,7 +530,7 @@ class DynamicEnumEntity(BaseEnumEntity):
             elif self._current_value not in self.valid_keys:
                 self._current_value = tuple(self.valid_keys)[0]
 
-    @abc.abstractmethod
+    @abstractmethod
     def _get_enum_values(self):
         pass
 

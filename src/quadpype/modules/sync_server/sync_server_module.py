@@ -2312,7 +2312,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                "files.$[f].sites.$[s].created_dt": datetime.now(timezone.utc)}
         return val
 
-    def _get_error_dict(self, error="", tries="", progress=""):
+    def _get_error_dict(self, error="", tries=0, progress=""):
         """
             Provide error metadata to be stored in Db.
             Used for set (error and tries provided) or unset mode.
@@ -2324,7 +2324,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         """
         val = {"files.$[f].sites.$[s].last_failed_dt": datetime.now(timezone.utc),
                "files.$[f].sites.$[s].error": error,
-               "files.$[f].sites.$[s].tries": tries,
+               "files.$[f].sites.$[s].tries": str(tries),
                "files.$[f].sites.$[s].progress": progress
                }
         return val
@@ -2389,8 +2389,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Returns:
             (list)
         """
-        retry_cnt = self.sync_project_settings[project_name].\
-            get("config")["retry_cnt"]
+        retry_cnt = self.sync_project_settings[project_name].get("config")["retry_cnt"]
         arr = [i for i in range(int(retry_cnt))]
         arr.append(None)
 

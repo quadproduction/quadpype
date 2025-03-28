@@ -44,11 +44,11 @@ class AEItem(object):
 
 
 class AfterEffectsServerStub():
-    """
-        Stub for calling function on client (Photoshop js) side.
-        Expects that client is already connected (started when avalon menu
-        is opened).
-        'self.websocketserver.call' is used as async wrapper
+    """Stub for calling function on client (After Effects js) side.
+
+    Expects that client is already connected (started when QuadPype menu is opened)
+
+    'self.websocketserver.call' is used as async wrapper
     """
     PUBLISH_ICON = '\u2117 '
     LOADED_ICON = '\u25bc'
@@ -121,7 +121,7 @@ class AfterEffectsServerStub():
                     str(item.id) == str(item_meta.get('members')[0]):
                 return item_meta
 
-        self.log.debug("Couldn't find layer metadata")
+        self.log.debug(f"Couldn't find layer metadata for item: {item}")
 
     def imprint(self, item_id, data, all_items=None, items_meta=None):
         """

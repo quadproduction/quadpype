@@ -32,12 +32,12 @@ class ShowInKitsu(LauncherAction):
             project_name=project_name, fields=["data.zou_id"]
         )
         if not project:
-            raise RuntimeError("Project {} not found.".format(project_name))
+            raise RuntimeError(f"Project {project_name} not found.")
 
         project_zou_id = project["data"].get("zou_id")
         if not project_zou_id:
             raise RuntimeError(
-                "Project {} has no connected kitsu id.".format(project_name)
+                f"Project {project_name} has no connected kitsu id."
             )
 
         asset_zou_name = None
@@ -83,7 +83,7 @@ class ShowInKitsu(LauncherAction):
         )
 
         # Open URL in webbrowser
-        self.log.info("Opening URL: {}".format(url))
+        self.log.info(f"Opening URL: {url}")
         webbrowser.open(
             url,
             # Try in new tab
@@ -103,9 +103,7 @@ class ShowInKitsu(LauncherAction):
         kitsu_module = self.get_kitsu_module()
 
         # Get kitsu url with /api stripped
-        kitsu_url = kitsu_module.server_url
-        if kitsu_url.endswith("/api"):
-            kitsu_url = kitsu_url[: -len("/api")]
+        kitsu_url = kitsu_module.server_url.rstrip("/api")
 
         sub_url = f"/productions/{project_id}"
         asset_type_url = "shots" if asset_type in shots_url else "assets"

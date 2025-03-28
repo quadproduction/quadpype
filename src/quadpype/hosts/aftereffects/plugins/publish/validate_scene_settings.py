@@ -18,24 +18,19 @@ from quadpype.hosts.aftereffects.api import get_asset_settings
 
 class ValidateSceneSettings(OptionalPyblishPluginMixin,
                             pyblish.api.InstancePlugin):
-    """
-        Ensures that Composition Settings (right mouse on comp) are same as
-        in FTrack on task.
+    """Ensures that Composition Settings (right mouse on comp) are same as
+    task in QuadPype.
 
-        By default checks only duration - how many frames should be rendered.
-        Compares:
-            Frame start - Frame end + 1 from FTrack
-                against
-            Duration in Composition Settings.
+    By default checks only duration - how many frames should be rendered.
+    Compares:
+        Frame start - Frame end + 1 against duration in Composition Settings.
 
-        If this complains:
-            Check error message where is discrepancy.
-            Check FTrack task 'pype' section of task attributes for expected
-            values.
-            Check/modify rendered Composition Settings.
+    If this complains:
+        Check error message where is discrepancy.
+        Check/modify rendered Composition Settings.
 
-        If you know what you are doing run publishing again, uncheck this
-        validation before Validation phase.
+    If you know what you are doing run publishing again, uncheck this
+    validation before Validation phase.
     """
 
     """
@@ -78,11 +73,17 @@ class ValidateSceneSettings(OptionalPyblishPluginMixin,
         task_name = instance.data["anatomyData"]["task"]["name"]
         if any(re.search(pattern, task_name)
                 for pattern in self.skip_resolution_check):
+            self.log.debug(
+                f"Skipping resolution check for task name: {task_name}"
+            )
             expected_settings.pop("resolutionWidth")
             expected_settings.pop("resolutionHeight")
 
         if any(re.search(pattern, task_name)
                 for pattern in self.skip_timelines_check):
+            self.log.debug(
+                f"Skipping frames check for task name: {task_name}"
+            )
             expected_settings.pop('fps', None)
             expected_settings.pop('frameStart', None)
             expected_settings.pop('frameEnd', None)
@@ -98,10 +99,13 @@ class ValidateSceneSettings(OptionalPyblishPluginMixin,
                     "{:.2f}".format(fps))
             expected_settings["fps"] = fps
 
-        duration = instance.data.get("frameEndHandle") - \
-            instance.data.get("frameStartHandle") + 1
+        duration = (
+            instance.data.get("frameEndHandle")
+            - instance.data.get("frameStartHandle")
+            + 1
+        )
 
-        self.log.debug("validated items::{}".format(expected_settings))
+        self.log.debug(f"Validating attributes: {expected_settings}")
 
         current_settings = {
             "fps": fps,
@@ -115,7 +119,7 @@ class ValidateSceneSettings(OptionalPyblishPluginMixin,
             "resolutionHeight": instance.data.get("resolutionHeight"),
             "duration": duration
         }
-        self.log.info("current_settings:: {}".format(current_settings))
+        self.log.debug(f"Comp attributes: {current_settings}")
 
         invalid_settings = []
         invalid_keys = set()
@@ -125,9 +129,11 @@ class ValidateSceneSettings(OptionalPyblishPluginMixin,
                     key, value, current_settings[key])
 
                 if key == "duration" and expected_settings.get("handleStart"):
-                    msg += "Handles included in calculation. Remove " \
-                           "handles in DB or extend frame range in " \
-                           "Composition Setting."
+                    msg += (
+                        "Handles included in calculation. Remove "
+                        "handles in DB or extend frame range in "
+                        "Composition Setting."
+                    )
 
                 invalid_settings.append(msg)
                 invalid_keys.add(key)
