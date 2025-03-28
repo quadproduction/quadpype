@@ -220,10 +220,7 @@ class Listener:
         # Find asset doc
         # Query all assets of the local project
         zou_ids_and_asset_docs = self.get_zou_ids_and_assets_docs(project_name)
-        log.warning(asset)
         entity_type_id = asset['entity_type_id']
-        log.warning("checking for entity type")
-        log.warning(data)
         if entity_type_id not in self.get_zou_ids_and_assets_docs(project_name).keys():
             self._new_asset_type(data, entity_type_id)
             zou_ids_and_asset_docs = self.get_zou_ids_and_assets_docs(project_name)
@@ -256,7 +253,6 @@ class Listener:
 
         # Update
         self._update_asset_type(data, entity_type_id)
-        log.warning('end of update')
 
         msg = (
             "Asset type created: {proj_name} - {asset_type_name}".format(
