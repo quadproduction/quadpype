@@ -47,6 +47,8 @@ RUN ln -sf /usr/bin/python3.9 /usr/bin/python
 RUN git clone --recurse-submodules https://github.com/quadproduction/quadpype.git /opt/quadpype && \
     cd /opt/quadpype && git fetch --all --tags
 
+RUN git checkout enhancement/macos-build
+
 WORKDIR /opt/quadpype
 
 SHELL ["/bin/bash", "--login", "-c"]
