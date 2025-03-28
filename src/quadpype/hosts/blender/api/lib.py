@@ -658,14 +658,6 @@ def get_parents_for_collection(collection, collections=None):
     return [c for c in collections if c.user_of_id(collection)]
 
 
-def get_top_collection(collection_name, default_parent_collection_name):
-    parent_collection = bpy.data.collections.get(collection_name, None)
-    if not parent_collection:
-        parent_collection = bpy.data.collections.get(default_parent_collection_name, None)
-
-    return parent_collection if parent_collection else bpy.context.scene.collection
-
-
 def get_parent_collection_for_object(obj):
     """Retrieve the object parent's collection
     Args:

@@ -46,7 +46,6 @@ from .lib import (
     extract_sequence_and_shot,
     is_camera,
     is_collection,
-    get_top_collection,
     get_objects_in_collection
 )
 
@@ -64,7 +63,8 @@ from .collections import (
     get_corresponding_hierarchies_numbered,
     create_collections_from_hierarchy,
     create_collection,
-    split_hierarchy
+    split_hierarchy,
+    get_top_collection
 )
 
 __all__ = [
