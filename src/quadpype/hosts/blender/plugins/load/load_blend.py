@@ -382,6 +382,7 @@ class BlendLoader(plugin.BlenderLoader):
             container_objects = [bpy.data.objects.get(corresponding_renamed.get(obj.name)) for obj in data_to.objects
                                  if obj.name != original_container_name]
 
+        # Remap parent
         for obj in container_objects:
             if not obj.parent:
                 continue
@@ -392,16 +393,16 @@ class BlendLoader(plugin.BlenderLoader):
 
             obj.parent = bpy.data.objects.get(corresponding_renamed.get(obj.parent.name))
 
-        #Remap override data
         for new_obj in corresponding_renamed.values():
             obj = bpy.data.objects.get(new_obj)
 
             if obj and obj.override_library:
                 if not obj.data:
                     continue
-
                 if not obj.data.library:
                     continue
+
+                # Remap override data
                 data_type = lib.get_data_type_name(obj.data)
                 corresponding_renamed_data_name = corresponding_renamed.get(obj.data.name)
                 if not corresponding_renamed_data_name:
@@ -409,6 +410,15 @@ class BlendLoader(plugin.BlenderLoader):
                 for data in getattr(bpy.data, data_type):
                     if data.name == corresponding_renamed_data_name:
                         obj.data = data
+
+                # Remap override data in deformers
+                if not obj.modifiers:
+                    continue
+                for mod in obj.modifiers:
+                    if hasattr(mod, "object"):
+                        mod_object_name = mod.object.name
+                        new_mod_object = bpy.data.objects.get(corresponding_renamed.get(mod_object_name), mod_object_name)
+                        mod.object = new_mod_object
 
         return container, members, container_objects
 
