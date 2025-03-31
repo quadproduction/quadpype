@@ -102,6 +102,7 @@ install_requires = [
     "PIL",
     "pymongo",
     "pynput",
+    "cryptography",
     "jinxed",
     "blessed",
     "Qt",

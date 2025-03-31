@@ -25,26 +25,43 @@ RUN dnf install -y dnf-plugins-core epel-release && \
 # Install required dependencies
 RUN dnf install -y --setopt=install_weak_deps=False \
     bash git cmake make curl wget gcc gcc-c++ glibc-devel \
-    openssl-devel zlib-devel bzip2 bzip2-devel \
-    readline-devel sqlite sqlite-devel llvm \
-    ncurses-devel tk tk-devel libxml2-devel xmlsec1-devel \
+    openssl-devel openssl-libs \
+    zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel \
+    llvm ncurses-devel tk tk-devel libxml2-devel xmlsec1-devel \
     libffi-devel xz-devel patchelf mesa-libGL libxcb \
     xkeyboard-config dbus-libs gtk2-devel mesa-libEGL \
     libXau-devel libpng-devel brotli-devel freetype-devel \
-    python39 python39-devel python39-pip
+    python39 python39-devel python39-pip \
+    perl-IPC-Cmd perl-Test-Simple perl-Test-Harness perl-Math-BigInt perl-Pod-Html
 
 RUN ln -sf /usr/bin/python3.9 /usr/bin/python3
 RUN ln -sf /usr/bin/python3.9 /usr/bin/python
 
+WORKDIR /opt/
+
+RUN wget https://github.com/openssl/openssl/releases/download/openssl-3.0.0/openssl-3.0.0.tar.gz
+RUN tar xvf openssl-3.0.0.tar.gz
+
+WORKDIR /opt/openssl-3.0.0
+
+RUN ./config --prefix=/usr/local/openssl --openssldir=/usr/local/openssl && make && make install
+
+RUN echo "/usr/local/openssl/lib64" | tee /etc/ld.so.conf.d/openssl.conf
+
+RUN ldconfig
+
 # Clone QuadPype
-RUN cd /opt/ && \
-    git clone --recurse-submodules https://github.com/quadproduction/quadpype.git && \
+WORKDIR /opt/
+
+RUN git clone --recurse-submodules https://github.com/quadproduction/quadpype.git && \
     cd quadpype && \
     git fetch --all --tags
 
 WORKDIR /opt/quadpype
 
 SHELL ["/bin/bash", "--login", "-c"]
+
+RUN git checkout release/4.1.6
 
 # Ensure required scripts are executable
 RUN chmod +x ./src/tools/activate.sh
@@ -58,5 +75,20 @@ RUN ./src/tools/install_environment_no_pyenv.sh
 RUN chmod +x ./src/.venv/bin/activate
 RUN source ./src/.venv/bin/activate
 
+WORKDIR /opt/quadpype/src
+
+RUN echo 'export PYTHONPATH="/opt/quadpype/src/vendor/python:$PYTHONPATH"'>> $HOME/.bashrc
+
+RUN export CPPFLAGS="-I/usr/include/openssl" \
+RUN export LDFLAGS="-L/usr/local/openssl/lib64 -lssl -lcrypto" \
+RUN export PATH=/usr/local/openssl/bin:$PATH \
+RUN export LD_LIBRARY_PATH=/usr/local/openssl/lib64:$LD_LIBRARY_PATH
+
 # Build QuadPype
-RUN ./src/tools/build.sh
+RUN ./tools/build.sh
+
+RUN cp /usr/lib64/libffi* ./build/exe_quadpype/lib \
+    && cp /usr/local/openssl/lib64/libssl* ./build/exe_quadpype/lib \
+    && cp /usr/local/openssl/lib64/libcrypto* ./build/exe_quadpype/lib \
+    && cp /usr/lib64/libpython3.9* ./build/exe_quadpype/lib \
+    && cp /usr/lib64/libxcb* ./build/exe_quadpype/vendor/python/PySide6/Qt/lib
