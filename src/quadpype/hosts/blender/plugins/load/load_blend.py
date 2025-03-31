@@ -172,7 +172,8 @@ class BlendLoader(plugin.BlenderLoader):
             "family": representation["context"]["family"],
             "objectName": group_name,
             "members": lib.map_to_classes_and_names(members),
-            "import_method": import_method.value
+            "import_method": import_method.value,
+            "unique_number": unique_number
         }
 
         lib.imprint(container, data)
@@ -522,7 +523,7 @@ class BlendLoader(plugin.BlenderLoader):
             representation=representation,
             libpath=libpath,
             group_name=group_name,
-            unique_number=plugin.get_unique_number(asset, subset),
+            unique_number=avalon_data.get("unique_number", plugin.get_unique_number(asset, subset)),
             import_method=ImportMethod(
             avalon_data.get(
                 'import_method',
