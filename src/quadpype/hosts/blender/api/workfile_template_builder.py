@@ -33,7 +33,7 @@ from quadpype.hosts.blender.api.lib import (
     imprint,
     get_selection,
     make_scene_empty,
-    get_parent_collection_for_object,
+    get_parent_collections_for_object,
     purge_orphans
 )
 
@@ -351,13 +351,16 @@ class BlenderPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
             save_file(current_file())
             return
 
-        parent = get_parent_collection_for_object(obj)
+        parent = get_parent_collections_for_object(obj)
 
         if not parent:
             bpy.context.scene.collection.objects.unlink(obj)
             placeholder_coll.objects.link(obj)
             save_file(current_file())
             return
+
+        #Get first collection
+        parent = parent[0]
 
         parent.objects.unlink(obj)
         placeholder_coll.objects.link(obj)
@@ -521,7 +524,7 @@ class BlenderPlaceholderCreatePlugin(PlaceholderPlugin, PlaceholderCreateMixin):
             save_file(current_file())
             return
 
-        parent = get_parent_collection_for_object(obj)
+        parent = get_parent_collections_for_object(obj)
         if not parent:
             save_file(current_file())
             return

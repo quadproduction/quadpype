@@ -658,26 +658,26 @@ def get_parents_for_collection(collection, collections=None):
     return [c for c in collections if c.user_of_id(collection)]
 
 
-def get_parent_collection_for_object(obj):
+def get_parent_collections_for_object(obj):
     """Retrieve the object parent's collection
     Args:
         obj (bpy.types.Object or str): a blender object or its name
     Return:
         bpy.types.Collection: The parent collection
     """
-
+    parent_collections = set()
     if isinstance(obj, str):
         obj = bpy.data.objects.get(obj)
+
+    if not obj:
+        raise ValueError("Object doesn't exist")
 
     if obj:
         for coll in bpy.data.collections:
             if obj.name in coll.objects:
-                return coll
-        else:
-            return None
+                parent_collections.add(coll)
 
-    raise ValueError("Object doesn't exist")
-
+    return parent_collections
 
 def make_scene_empty(scene=None):
     """Delete all objects, worlds and collections in given scene and clean everything.
