@@ -375,7 +375,7 @@ class BlendLoader(plugin.BlenderLoader):
         container_objects = self._get_container_objects(container)
 
         # If the container is an empty, no parent value is stored in the loaded obj
-        # So we retrieve the
+        # So we retrieve the corresponding renamed overrided obj imported except the original container
         if not container_objects:
             container_objects = [bpy.data.objects.get(corresponding_renamed.get(obj.name)) for obj in data_to.objects
                                  if obj.name != original_container_name]
