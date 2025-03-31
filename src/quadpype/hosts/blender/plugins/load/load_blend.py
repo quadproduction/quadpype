@@ -397,9 +397,7 @@ class BlendLoader(plugin.BlenderLoader):
             obj = bpy.data.objects.get(new_obj)
 
             if obj and obj.override_library:
-                if not obj.data:
-                    continue
-                if not obj.data.library:
+                if not obj.data or not obj.data.library:
                     continue
 
                 # Remap override data
@@ -491,14 +489,7 @@ class BlendLoader(plugin.BlenderLoader):
         )
 
         old_data = pipeline.get_avalon_node(asset_group)
-
-        import_method = ImportMethod(
-            old_data.get(
-                'import_method',
-                self.defaults['import_method']
-            )
-        )
-        old_members = old_data.get("members", [])
+        avalon_data = pipeline.get_avalon_node(asset_group)
 
         all_objects_from_asset = []
         if isinstance(asset_group, bpy.types.Object):
@@ -519,7 +510,7 @@ class BlendLoader(plugin.BlenderLoader):
             # Check if the object has an action and, if so, add it to a dict
             # so we can restore it later. Save and restore the action only
             # if it wasn't originally loaded from the current asset.
-            if obj.animation_data.action not in old_members:
+            if obj.animation_data.action not in avalon_data.get("members", []):
                 actions[obj.name] = obj.animation_data.action
 
         asset = representation.get('asset', '')
@@ -532,7 +523,12 @@ class BlendLoader(plugin.BlenderLoader):
             libpath=libpath,
             group_name=group_name,
             unique_number=plugin.get_unique_number(asset, subset),
-            import_method=import_method
+            import_method=ImportMethod(
+            avalon_data.get(
+                'import_method',
+                self.defaults['import_method']
+            )
+        )
         )
 
         asset_group = self._retrieve_undefined_asset_group(group_name)
@@ -557,16 +553,15 @@ class BlendLoader(plugin.BlenderLoader):
         # This avoids a crash, because the memory addresses of those members
         # are not valid anymore
         old_data["members"] = []
-        old_data.update(
-            {
-                "libpath": libpath,
-                "representation": str(representation["_id"]),
-                "parent": str(representation["parent"]),
-                "members": lib.map_to_classes_and_names(members)
-            }
-        )
+        lib.imprint(asset_group, old_data, erase=True)
 
-        lib.imprint(asset_group, old_data)
+        new_data = {
+            "libpath": libpath,
+            "representation": str(representation["_id"]),
+            "parent": str(representation["parent"]),
+            "members": lib.map_to_classes_and_names(members)
+        }
+        lib.imprint(asset_group, new_data)
 
         # We need to update all the parent container members
         parent_containers = self.get_all_container_parents(asset_group)
