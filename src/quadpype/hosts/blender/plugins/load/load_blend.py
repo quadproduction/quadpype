@@ -2,11 +2,9 @@ from typing import Dict, List, Optional
 from pathlib import Path
 
 import bpy
-from enum import Enum
 import re
-from copy import deepcopy
 
-from quadpype.lib.attribute_definitions import BoolDef, EnumDef
+from quadpype.lib.attribute_definitions import EnumDef
 from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
@@ -33,7 +31,7 @@ from quadpype.hosts.blender.api.pipeline import (
     has_avalon_node,
     get_avalon_node
 )
-from quadpype.hosts.blender.api.workfile_template_builder import(
+from quadpype.hosts.blender.api.workfile_template_builder import (
     ImportMethod
 )
 
@@ -92,8 +90,8 @@ class BlendLoader(plugin.BlenderLoader):
         rigs = [
             obj for obj in container.children_recursive
             if (
-                obj.type == 'EMPTY' and
-                get_avalon_node(obj).get('family') == 'rig'
+                    obj.type == 'EMPTY' and
+                    get_avalon_node(obj).get('family') == 'rig'
             )
         ]
         if not rigs:
@@ -115,8 +113,8 @@ class BlendLoader(plugin.BlenderLoader):
             )
 
     def process_asset(
-        self, context: dict, name: str, namespace: Optional[str] = None,
-        options: Optional[Dict] = None
+            self, context: dict, name: str, namespace: Optional[str] = None,
+            options: Optional[Dict] = None
     ) -> Optional[List]:
         """
         Arguments:
@@ -242,7 +240,7 @@ class BlendLoader(plugin.BlenderLoader):
 
             for blender_object in container_objects:
 
-                # Do not link non-objects or invisible objects from published scene
+                # Do not link non-objects or invisible objects from the published scene
                 if not blender_object.get('visible', True):
                     continue
 
@@ -294,7 +292,6 @@ class BlendLoader(plugin.BlenderLoader):
             return container.objects
 
         return [obj for obj in bpy.data.objects if obj.parent == container]
-
 
     def import_blend_objects(self, libpath, group_name, import_method):
         if import_method == ImportMethod.APPEND:
@@ -377,7 +374,7 @@ class BlendLoader(plugin.BlenderLoader):
 
         container_objects = self._get_container_objects(container)
 
-        # If the container is an empty, no parent value are stored in the loaded obj
+        # If the container is an empty, no parent value is stored in the loaded obj
         # So we retrieve the
         if not container_objects:
             container_objects = [bpy.data.objects.get(corresponding_renamed.get(obj.name)) for obj in data_to.objects
@@ -459,7 +456,7 @@ class BlendLoader(plugin.BlenderLoader):
     @staticmethod
     def _get_new_name(name, group_name, truncate_occurrence=False):
         if truncate_occurrence:
-            name = re.sub('.\d{3}$', '', name)
+            name = re.sub(r".\d{3}$", "", name)
         new_name = f"{group_name}:{name}"
         return new_name
 
@@ -489,15 +486,12 @@ class BlendLoader(plugin.BlenderLoader):
             f"The asset is not loaded: {container['objectName']}"
         )
 
-        old_data = pipeline.get_avalon_node(asset_group)
         avalon_data = pipeline.get_avalon_node(asset_group)
 
-        all_objects_from_asset = []
         if isinstance(asset_group, bpy.types.Object):
             transform = asset_group.matrix_basis.copy()
             asset_group_parent = asset_group.parent
             all_objects_from_asset = asset_group.children_recursive
-
         else:
             all_objects_from_asset = get_objects_in_collection(asset_group)
 
@@ -525,11 +519,11 @@ class BlendLoader(plugin.BlenderLoader):
             group_name=group_name,
             unique_number=avalon_data.get("unique_number", plugin.get_unique_number(asset, subset)),
             import_method=ImportMethod(
-            avalon_data.get(
-                'import_method',
-                self.defaults['import_method']
+                avalon_data.get(
+                    'import_method',
+                    self.defaults['import_method']
+                )
             )
-        )
         )
 
         asset_group = self._retrieve_undefined_asset_group(group_name)
@@ -550,11 +544,11 @@ class BlendLoader(plugin.BlenderLoader):
                     obj.animation_data_create()
                 obj.animation_data.action = actions[obj.name]
 
-        # Restore the old data, but reset members, as they don't exist anymore
+        # Restore the old data, but reset members, as they don't exist anymore,
         # This avoids a crash, because the memory addresses of those members
         # are not valid anymore
-        old_data["members"] = []
-        lib.imprint(asset_group, old_data, erase=True)
+        avalon_data["members"] = []
+        lib.imprint(asset_group, avalon_data, erase=True)
 
         new_data = {
             "libpath": libpath,
@@ -572,7 +566,7 @@ class BlendLoader(plugin.BlenderLoader):
             parent_members = lib.get_objects_from_mapped(parent_avalon_node["members"])
             lib.imprint(parent_container, {'members': lib.map_to_classes_and_names(parent_members + members)})
 
-    def exec_remove(self, container: Dict) -> bool:
+    def exec_remove(self, container: Dict):
         """
         Remove an existing container from a Blender scene.
         """
@@ -594,24 +588,22 @@ class BlendLoader(plugin.BlenderLoader):
 
         collections_parents = [
             collection for collection in bpy.data.collections
-            if set(members).intersection(set(collection.objects))
-            and collection is not asset_group
+            if set(members).intersection(set(collection.objects)) and collection is not asset_group
         ]
 
         parent_containers = self.get_all_container_parents(asset_group)
 
         for parent in parent_containers:
-
             parent_members = list(filter(
                 lambda i: i not in members,
                 lib.get_objects_from_mapped(pipeline.get_avalon_node(parent)['members'])))
 
-            lib.imprint({'members': parent_members})
+            lib.imprint(parent, {'members': parent_members})
 
         deleted_collections = list()
         for attr in attrs:
             for data in getattr(bpy.data, attr):
-                if not data in members:
+                if data not in members:
                     continue
 
                 # Skip the asset group
@@ -643,7 +635,9 @@ class BlendLoader(plugin.BlenderLoader):
 
         return asset_group
 
-    def _remove_collection_recursively(self, collections, deleted_collections=[]):
+    def _remove_collection_recursively(self, collections, deleted_collections=None):
+        if deleted_collections is None:
+            deleted_collections = []
         for collection in collections:
             if collection in deleted_collections:
                 continue
