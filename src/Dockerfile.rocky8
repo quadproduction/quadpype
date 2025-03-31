@@ -61,7 +61,7 @@ WORKDIR /opt/quadpype
 
 SHELL ["/bin/bash", "--login", "-c"]
 
-RUN git checkout release/4.1.6
+RUN git checkout enhancement/linux-build-debug
 
 # Ensure required scripts are executable
 RUN chmod +x ./src/tools/activate.sh
