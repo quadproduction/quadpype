@@ -283,6 +283,12 @@
                                 "label": "Autobuild first version",
                                 "type": "boolean",
                                 "default": true
+                            },
+                            {
+                                "key": "apply_settings_on_build",
+                                "label": "Apply Settings on Build",
+                                "type": "boolean",
+                                "default": true
                             }
                         ]
                     }

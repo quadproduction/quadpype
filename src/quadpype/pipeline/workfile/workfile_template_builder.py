@@ -829,7 +829,10 @@ class AbstractTemplateBuilder(ABC):
             "name": project_name,
             "code": anatomy.project_code,
         }
-
+        fill_data["task"] = {
+            "type": task_type,
+            "name": task_name,
+        }
         result = StringTemplate.format_template(path, fill_data)
         if result.solved:
             path = result.normalized()
@@ -1317,7 +1320,7 @@ class PlaceholderLoadMixin(object):
             {"label": "Current asset", "value": "context_asset"},
             {"label": "Linked assets", "value": "linked_asset"},
             {"label": "All assets", "value": "all_assets"},
-        ] + libraries_project_items,
+        ] + libraries_project_items
         build_type_label = "Asset Builder Type"
         build_type_help = (
             "Asset Builder Type\n"
@@ -1456,6 +1459,9 @@ class PlaceholderLoadMixin(object):
 
         if not loader_args:
             return {}
+
+        if isinstance(loader_args, dict):
+            return loader_args
 
         try:
             parsed_args = eval(loader_args)
@@ -1652,7 +1658,7 @@ class PlaceholderLoadMixin(object):
                 container = load_with_repre_context(
                     loaders_by_name[loader_name],
                     repre_load_context,
-                    options=loader_args
+                    options=self.parse_loader_args(loader_args)
                 )
 
             except Exception:
@@ -1994,6 +2000,34 @@ def should_build_first_workfile(
 ):
     """Return whether first workfile should be created for given context"""
 
+    profile = _get_build_first_workfile_profile(
+        project_name=project_name,
+        project_settings=project_settings,
+        asset_doc=asset_doc,
+        asset_name=asset_name,
+        task_name=task_name,
+        host_name=host_name)
+
+    if not profile or not profile.get("autobuild_first_version"):
+        return False
+
+    return True
+
+
+def should_apply_settings_on_build_first_workfile():
+    profile = _get_build_first_workfile_profile()
+
+    if not profile or not profile.get("apply_settings_on_build"):
+        return False
+
+    return True
+
+def _get_build_first_workfile_profile(project_name=None,
+        project_settings=None,
+        asset_doc=None,
+        asset_name=None,
+        task_name=None,
+        host_name=None):
     project_name = project_name or get_current_project_name()
     if project_settings is None:
         project_settings = get_project_settings(project_name)
@@ -2020,17 +2054,7 @@ def should_build_first_workfile(
         filtering_criteria
     )
 
-    if not profile or not profile.get("autobuild_first_version"):
-        return False
-
-    is_task_name = task_name in profile["task_names"]
-    is_task_type = task_type in profile["task_types"]
-
-    if not is_task_name and not is_task_type:
-        return False
-
-    return True
-
+    return profile
 
 def get_last_workfile_path():
     return os.getenv("AVALON_LAST_WORKFILE")
