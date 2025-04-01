@@ -64,6 +64,10 @@ export PATH="$PATH_PYENV_DIR/bin:$PATH_PYENV_DIR/shims:$PATH"
 eval "$(pyenv init --path)"
 eval "$(pyenv virtualenv-init -)"
 
+export CPPFLAGS="-I/usr/local/include"
+export LDFLAGS="-L/usr/local/lib64"
+export CONFIGURE_OPTS="--with-openssl=/usr/local/bin/openssl"
+
 # 1.C Ensure the VIRTUAL_ENV variable isn't present in the User env variables
 unset VIRTUAL_ENV
 
@@ -74,6 +78,7 @@ pyenv local 3.9.13
 
 # 1.E Update PIP for the pyenv Python
 python3 -m pip install --upgrade --force-reinstall pip
+python3 -m pip install --upgrade certifi
 
 # 2. Re-apply the previously saved terminal encoding
 ####################################################

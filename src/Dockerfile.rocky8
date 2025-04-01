@@ -25,17 +25,17 @@ RUN dnf install -y dnf-plugins-core epel-release && \
 # Install required dependencies
 RUN dnf install -y --setopt=install_weak_deps=False \
     bash git cmake make curl wget gcc gcc-c++ glibc-devel \
-    openssl-devel openssl-libs \
+    openssl-devel openssl-libs findutils \
     zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel \
     llvm ncurses-devel tk tk-devel libxml2-devel xmlsec1-devel \
     libffi-devel xz-devel patchelf mesa-libGL libxcb \
     xkeyboard-config dbus-libs gtk2-devel mesa-libEGL \
     libXau-devel libpng-devel brotli-devel freetype-devel \
-    python39 python39-devel python39-pip \
     perl-IPC-Cmd perl-Test-Simple perl-Test-Harness perl-Math-BigInt perl-Pod-Html
+#    python39 python39-devel python39-pip \
 
-RUN ln -sf /usr/bin/python3.9 /usr/bin/python3
-RUN ln -sf /usr/bin/python3.9 /usr/bin/python
+#RUN ln -sf /usr/bin/python3.9 /usr/bin/python3
+#RUN ln -sf /usr/bin/python3.9 /usr/bin/python
 
 WORKDIR /opt/
 
@@ -65,11 +65,11 @@ RUN git checkout enhancement/linux-build-debug
 
 # Ensure required scripts are executable
 RUN chmod +x ./src/tools/activate.sh
-RUN chmod +x ./src/tools/install_environment_no_pyenv.sh
+RUN chmod +x ./src/tools/install_environment.sh
 RUN chmod +x ./src/tools/build.sh
 
 # Create virtualenv
-RUN ./src/tools/install_environment_no_pyenv.sh
+RUN ./src/tools/install_environment.sh
 
 # Ensure venv is truly active
 RUN chmod +x ./src/.venv/bin/activate
@@ -90,5 +90,5 @@ RUN ./tools/build.sh
 RUN cp /usr/lib64/libffi* ./build/exe_quadpype/lib \
     && cp /usr/local/openssl/lib64/libssl* ./build/exe_quadpype/lib \
     && cp /usr/local/openssl/lib64/libcrypto* ./build/exe_quadpype/lib \
-    && cp /usr/lib64/libpython3.9* ./build/exe_quadpype/lib \
     && cp /usr/lib64/libxcb* ./build/exe_quadpype/vendor/python/PySide6/Qt/lib
+#    && cp /usr/lib64/libpython3.9* ./build/exe_quadpype/lib \
