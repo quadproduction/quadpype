@@ -287,15 +287,6 @@ class BlendLoader(plugin.BlenderLoader):
 
         return container, members
 
-    @staticmethod
-    def _get_container_objects(container):
-        """Retrieve all objects in the given container"""
-        if not bpy.data.objects.get(container.name):
-            return container.objects
-
-        return [obj for obj in bpy.data.objects if obj.parent == container]
-
-
     def import_blend_objects(self, libpath, group_name, import_method):
         if import_method == ImportMethod.APPEND:
             container, members, container_objects = self.append_blend_objects(libpath, group_name)
@@ -314,7 +305,7 @@ class BlendLoader(plugin.BlenderLoader):
             import_link=False,
             override=False
         )
-        container = self._get_asset_container(data_to.objects, data_to.collections)
+        container = pipeline.get_container(data_to.objects, data_to.collections)
         assert container, "No asset group found"
 
         members = self._collect_members(data_to)
@@ -329,7 +320,7 @@ class BlendLoader(plugin.BlenderLoader):
 
         container.name = group_name
 
-        container_objects = self._get_container_objects(container)
+        container_objects = pipeline.get_container_content(container)
         return container, members, container_objects
 
     def link_blend_objects(self, libpath):
@@ -338,11 +329,11 @@ class BlendLoader(plugin.BlenderLoader):
             import_link=True,
             override=False
         )
-        container = self._get_asset_container(data_to.objects, data_to.collections)
+        container = pipeline.get_container(data_to.objects, data_to.collections)
         assert container, "No asset group found"
 
         members = self._collect_members(data_to)
-        container_objects = self._get_container_objects(container)
+        container_objects = pipeline.get_container_content(container)
 
         return container, members, container_objects
 
@@ -352,7 +343,7 @@ class BlendLoader(plugin.BlenderLoader):
             import_link=True,
             override=False
         )
-        container = self._get_asset_container(data_to.objects, data_to.collections)
+        container = pipeline.get_container(data_to.objects, data_to.collections)
         members = self._collect_members(data_to)
 
         original_container_name = ""
@@ -375,7 +366,7 @@ class BlendLoader(plugin.BlenderLoader):
         assert container, "No asset group found"
         container.name = group_name
 
-        container_objects = self._get_container_objects(container)
+        container_objects = pipeline.get_container_content(container)
 
         # If the container is an empty, no parent value are stored in the loaded obj
         # So we retrieve the
@@ -433,18 +424,6 @@ class BlendLoader(plugin.BlenderLoader):
                 setattr(data_to, attr, getattr(data_from, attr))
 
         return data_to
-
-    @staticmethod
-    def _get_asset_container(objects, collections):
-        for coll in collections:
-            if has_avalon_node(coll):
-                return coll
-
-        for empty in [obj for obj in objects if obj.type == 'EMPTY']:
-            if has_avalon_node(empty) and empty.parent is None:
-                return empty
-
-        return None
 
     @staticmethod
     def _collect_members(data_attributes):
