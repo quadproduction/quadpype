@@ -63,14 +63,16 @@ class BlendAnimationLoader(plugin.BlenderLoader):
         )
 
         for loaded_container in loaded_containers:
-            if get_avalon_node(loaded_container).get('namespace') == target_namespace:
-                for obj in pipeline.get_container_content(loaded_container):
-                    if obj.name in correspondance.keys():
-                        if not obj.animation_data:
-                            obj.animation_data_create()
-                        obj.animation_data.action = bpy.data.actions.get(
-                            correspondance.get(obj.name), f"{obj.name}Action"
-                        )
+            if not get_avalon_node(loaded_container).get('namespace') == target_namespace:
+                continue
+            for obj in pipeline.get_container_content(loaded_container):
+                if not obj.name in correspondance.keys():
+                    continue
+                if not obj.animation_data:
+                    obj.animation_data_create()
+                obj.animation_data.action = bpy.data.actions.get(
+                    correspondance.get(obj.name), f"{obj.name}Action"
+                )
 
         for library in bpy.data.libraries:
             if library.name in previous_libraries:
