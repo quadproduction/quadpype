@@ -145,6 +145,10 @@ version = "6.7.1"
 package = "PySide6"
 version = "6.7.1"
 
+[quadpype.qtbinding.rocky8]
+package = "PySide2"
+version = "5.15.2"
+
 [quadpype.qtbinding.centos7]
 package = "PySide2"
 version = "5.15.2"
