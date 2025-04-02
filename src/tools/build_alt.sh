@@ -61,8 +61,12 @@ echo -e "${GREEN}>>>${RST} Cleaning cache files ... \c"
 find . -regex '^.*\(__pycache__\|\.py[co]\)$' -exec rm -rf {} + &>/dev/null
 echo -e "${GREEN}OK${RST}"
 
+cp "$PATH_QUADPYPE_ROOT/tools/_lib/build/build_linux.spec" "$PATH_QUADPYPE_ROOT"
+
 echo -e "${GREEN}>>>${RST} Building QuadPype ..."
-"$POETRY_HOME/bin/poetry" run pyinstaller "$PATH_QUADPYPE_ROOT/tools/_lib/build/build_linux.spec"
+"$POETRY_HOME/bin/poetry" run pyinstaller "$PATH_QUADPYPE_ROOT/build_linux.spec"
+
+rm -f "$PATH_QUADPYPE_ROOT/build_linux.spec"
 
 rm -rf "$PATH_QUADPYPE_ROOT/build" && mkdir "$PATH_QUADPYPE_ROOT/build" > /dev/null
 
@@ -71,13 +75,13 @@ cp -r "$PATH_QUADPYPE_ROOT/dist/exe_quadpype" "$PATH_QUADPYPE_ROOT/build"
 rm -rf "$PATH_QUADPYPE_ROOT/dist"
 
 # Define the patterns to search for
-mkdir -p "$PATH_QUADPYPE_ROOT/build/lib"
+mkdir -p "$PATH_QUADPYPE_ROOT/build/exe_quadpype/lib"
 patterns=("libcrypt*" "libncursesw*" "libtinfo*" "libssl*")
 
 # Loop through each pattern and copy the matching .so files to the 'lib' directory
 for pattern in "${patterns[@]}"; do
     # Use find to search for matching .so files in /usr/lib64
-    find /usr/lib64 -type f -name "$pattern" -exec cp --parents {} "$PATH_QUADPYPE_ROOT/build/exe_quadpype/lib" \;
+    find /usr/lib64 -maxdepth 1 -type f -name "$pattern" -exec cp {} "$PATH_QUADPYPE_ROOT/build/exe_quadpype/lib" \;
 done
 
 patchelf --set-rpath "$ORIGIN/lib" "$PATH_QUADPYPE_ROOT/build/exe_quadpype/quadpype_console"
