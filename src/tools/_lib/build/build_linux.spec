@@ -29,6 +29,7 @@ hiddenimports = collect_submodules('quadpype') + collect_submodules('igniter') +
     collect_submodules("pyblish") + \
     collect_submodules("pynput") + \
     collect_submodules("pymongo") + \
+    collect_submodules("PySide2") + \
     collect_submodules("qtpy") + \
     collect_submodules("qtawesome") + \
     collect_submodules("speedcopy") + \
