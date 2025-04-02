@@ -9,11 +9,6 @@ from quadpype.hosts.blender.api import (
     lib,
     template_resolving
 )
-from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
-    AVALON_INSTANCES,
-    AVALON_PROPERTY,
-)
 
 
 DEFAULT_VARIANT_NAME = "Main"

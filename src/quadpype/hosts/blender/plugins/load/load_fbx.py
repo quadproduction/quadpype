@@ -8,12 +8,12 @@ import bpy
 
 from quadpype.pipeline import (
     get_representation_path,
-    AVALON_CONTAINER_ID,
+    AVALON_CONTAINER_ID
 )
 from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
-    AVALON_PROPERTY,
+    get_avalon_node
 )
 
 
@@ -109,11 +109,7 @@ class FbxModelLoader(plugin.BlenderLoader):
                     name_action = anim_data.action.name
                     anim_data.action.name = f"{group_name}:{name_action}"
 
-            if not obj.get(AVALON_PROPERTY):
-                obj[AVALON_PROPERTY] = dict()
-
-            avalon_info = obj[AVALON_PROPERTY]
-            avalon_info.update({"container_name": group_name})
+            lib.imprint(obj, {"container_name": group_name})
 
         plugin.deselect_all()
 
@@ -158,19 +154,23 @@ class FbxModelLoader(plugin.BlenderLoader):
 
         bpy.context.scene.collection.objects.link(asset_group)
 
-        asset_group[AVALON_PROPERTY] = {
-            "schema": "quadpype:container-2.0",
-            "id": AVALON_CONTAINER_ID,
-            "name": name,
-            "namespace": namespace or '',
-            "loader": str(self.__class__.__name__),
-            "representation": str(context["representation"]["_id"]),
-            "libpath": libpath,
-            "asset_name": asset_name,
-            "parent": str(context["representation"]["parent"]),
-            "family": context["representation"]["context"]["family"],
-            "objectName": group_name
-        }
+        lib.imprint(
+            node=asset_group,
+            values={
+                "schema": "quadpype:container-2.0",
+                "id": AVALON_CONTAINER_ID,
+                "name": name,
+                "namespace": namespace or '',
+                "loader": str(self.__class__.__name__),
+                "representation": str(context["representation"]["_id"]),
+                "libpath": libpath,
+                "asset_name": asset_name,
+                "parent": str(context["representation"]["parent"]),
+                "family": context["representation"]["context"]["family"],
+                "objectName": group_name
+            },
+            erase=True
+        )
 
         self[:] = objects
         return objects
@@ -211,7 +211,7 @@ class FbxModelLoader(plugin.BlenderLoader):
             f"Unsupported file: {libpath}"
         )
 
-        metadata = asset_group.get(AVALON_PROPERTY)
+        metadata = get_avalon_node(asset_group)
         group_libpath = metadata["libpath"]
 
         normalized_group_libpath = (
