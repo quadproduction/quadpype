@@ -235,7 +235,9 @@ class BlenderCreator(Creator):
                     continue
 
                 avalon_prop = get_avalon_node(obj_or_col)
-                if not avalon_prop or avalon_prop.get('id') != 'pyblish.avalon.instance':
+                if not avalon_prop:
+                    continue
+                if avalon_prop.get('id') != 'pyblish.avalon.instance':
                     continue
 
                 if is_collection(obj_or_col) and obj_or_col.name not in avalon_instances.children:
