@@ -39,10 +39,6 @@ RUN cd /opt/ && \
     cd quadpype && \
     git fetch --all --tags
 
-WORKDIR /opt/quadpype
-
-RUN git checkout release/4.1.6
-
 WORKDIR /opt/quadpype/src
 
 SHELL ["/bin/bash", "--login", "-c"]
