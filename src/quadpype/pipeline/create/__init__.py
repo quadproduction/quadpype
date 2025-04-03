@@ -12,6 +12,7 @@ from .utils import (
 
 from .subset_name import (
     TaskNotSetError,
+    NamespaceNotSetError,
     get_subset_name_template,
     get_subset_name,
 )
@@ -57,6 +58,7 @@ __all__ = (
     "get_next_versions_for_instances",
 
     "TaskNotSetError",
+    "NamespaceNotSetError",
     "get_subset_name_template",
     "get_subset_name",
 

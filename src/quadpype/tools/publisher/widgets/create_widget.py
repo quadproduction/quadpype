@@ -7,6 +7,7 @@ from quadpype.pipeline.create import (
     PRE_CREATE_THUMBNAIL_KEY,
     DEFAULT_VARIANT_VALUE,
     TaskNotSetError,
+    NamespaceNotSetError
 )
 
 from .thumbnail_widget import ThumbnailWidget
@@ -697,6 +698,11 @@ class CreateWidget(QtWidgets.QWidget):
             self._create_btn.setEnabled(False)
             self._set_variant_state_property("invalid")
             self.subset_name_input.setText("< Missing task >")
+            return
+        except NamespaceNotSetError:
+            self._create_btn.setEnabled(False)
+            self._set_variant_state_property("invalid")
+            self.subset_name_input.setText("< Missing Asset Selection >")
             return
 
         self.subset_name_input.setText(subset_name)

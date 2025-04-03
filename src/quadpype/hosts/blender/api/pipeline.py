@@ -767,3 +767,22 @@ def get_path_from_template(template_module='', template_name='', template_data={
         else:
             os.makedirs(os.path.dirname(render_node_path), exist_ok=True)
     return render_node_path
+
+def get_container(objects: list = [], collections: list = []):
+    """Retrieve the instance container based on given objects and collections"""
+    for coll in collections:
+        if has_avalon_node(coll):
+            return coll
+
+    for empty in [obj for obj in objects if obj.type == 'EMPTY']:
+        if has_avalon_node(empty) and empty.parent is None:
+            return empty
+
+    return None
+
+def get_container_content(container):
+    """Retrieve all objects and collection in the given container"""
+    if lib.is_collection(container):
+        return [*container.objects, *container.children]
+
+    return [obj for obj in bpy.data.objects if obj.parent == container]
