@@ -698,7 +698,7 @@ def publish():
     return pyblish.util.publish()
 
 
-def get_path_from_template(template_module='', template_name='', template_data={}, bump_version=False, makedirs=False):
+def get_path_from_template(template_module, template_name, template_data={}, bump_version=False, makedirs=False):
     """ Build the render node path based on actual context"""
     anatomy = Anatomy()
     if not anatomy.templates.get(template_module):
@@ -711,7 +711,7 @@ def get_path_from_template(template_module='', template_name='', template_data={
     template_session_data.update(template_data)
     if 'version' in templates[template_name]:
         template_folder_path = os.path.normpath(StringTemplate.format_template(templates['folder'], template_session_data))
-        # Get versions
+
         if not os.path.exists(template_folder_path):
             template_session_data.update({'version': 1})
         else:
@@ -719,16 +719,14 @@ def get_path_from_template(template_module='', template_name='', template_data={
             regex = fr'v(\d{{{templates["version_padding"]}}})$'
             for version in os.listdir(template_folder_path):
                 match = re.search(regex, version)
-                if match:
-                    version_num = int(match.group(1))
-                    if bump_version:
-                        latest_version = max(latest_version, version_num + 1)  # Increment the highest version number
-                    else:
-                        latest_version = max(latest_version, version_num)
-            # Update the template data with the latest version
+                if not match:
+                    continue
+
+                version_num = int(match.group(1))
+                latest_version = max(latest_version, version_num + 1 if bump_version else 0)
+
             template_session_data.update({'version': latest_version})
 
-    # Build render node path and create file architecture if not exists
     render_node_path = os.path.normpath(StringTemplate.format_template(templates[template_name], template_session_data))
     if makedirs:
         if os.path.isdir(render_node_path):
