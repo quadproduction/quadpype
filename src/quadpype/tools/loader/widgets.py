@@ -1403,6 +1403,9 @@ class RepresentationWidget(QtWidgets.QWidget):
             self._repre_contexts_for_loaders_filter(items)
         )
 
+        curr_user_profile = get_user_profile()
+        curr_user_role = curr_user_profile["role"]
+
         for item in items:
             repre_context = repre_context_by_id[item["_id"]]
             for loader in loaders_from_repre_context(
@@ -1410,11 +1413,6 @@ class RepresentationWidget(QtWidgets.QWidget):
                 repre_context
             ):
                 if tools_lib.is_sync_loader(loader):
-                    is_user_accessible = True
-                    user_profile = get_user_profile()
-                    if user_profile["role"] == "user":
-                        is_user_accessible = False
-
                     both_unavailable = (
                         item["active_site_progress"] <= 0
                         and item["remote_site_progress"] <= 0
@@ -1430,17 +1428,21 @@ class RepresentationWidget(QtWidgets.QWidget):
                             "{}_site_progress".format(selected_side), -1)
 
                         # only remove if actually present
-                        if tools_lib.is_remove_site_loader(loader):
-                            label = "Remove {}".format(selected_side)
-                            if selected_site_progress < 1 or not is_user_accessible:
+                        if tools_lib.is_remove_site_loader(loader) and selected_site_progress < 1:
+                            if curr_user_role != "administrator":
+                                # Only administrators can remove manually from the loader
                                 continue
 
-                        if tools_lib.is_add_site_loader(loader):
+                            label = "Remove {}".format(selected_side)
+                        elif tools_lib.is_add_site_loader(loader):
                             label = self.commands[selected_side]
                             if selected_site_progress >= 0:
-                                label = 'Re-{} {}'.format(label, selected_side)
-                                if not is_user_accessible and selected_side == "remote":
+                                if selected_side == "remote" and curr_user_role != "administrator":
+                                    # Only administrators can re-upload files
+                                    # To avoid issues that mess-up with the FTP
                                     continue
+
+                                label = 'Re-{} {}'.format(label, selected_side)
 
                         if not label:
                             continue
