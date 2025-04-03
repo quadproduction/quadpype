@@ -58,7 +58,7 @@ else
 fi
 
 echo -e "${GREEN}>>>${RST} Cleaning cache files ... \c"
-find . -regex '^.*\(__pycache__\|\.py[co]\)$' -exec rm -rf {} \;
+find . -regex '^.*\(__pycache__\|\.py[co]\)$' -exec rm -rf {} + &>/dev/null
 echo -e "${GREEN}OK${RST}"
 
 echo -e "${GREEN}>>>${RST} Building QuadPype ..."

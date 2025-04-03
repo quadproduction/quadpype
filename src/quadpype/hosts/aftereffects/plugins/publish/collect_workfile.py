@@ -10,6 +10,7 @@ class CollectWorkfile(pyblish.api.ContextPlugin):
 
     label = "Collect After Effects Workfile Instance"
     order = pyblish.api.CollectorOrder + 0.1
+    families = ["workfile"]
 
     default_variant = "Main"
 
@@ -30,16 +31,12 @@ class CollectWorkfile(pyblish.api.ContextPlugin):
             instance = existing_instance
 
         # creating representation
-        representation = {
-            'name': 'aep',
-            'ext': 'aep',
-            'files': scene_file,
+        instance.data.setdefault("representations", []).append({
+            "name": "aep",
+            "ext": "aep",
+            "files": scene_file,
             "stagingDir": staging_dir,
-        }
-
-        if not instance.data.get("representations"):
-            instance.data["representations"] = []
-        instance.data["representations"].append(representation)
+        })
 
         instance.data["publish"] = instance.data["active"]  # for DL
 

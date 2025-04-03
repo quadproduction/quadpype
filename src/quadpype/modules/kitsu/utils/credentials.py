@@ -1,14 +1,16 @@
 """Kitsu credentials functions."""
 
 import os
-from typing import Tuple
+from typing import Tuple, Optional
 import gazu
 
 from quadpype.lib import emit_event, QuadPypeSecureRegistry
 
 
 def validate_credentials(
-    login: str, password: str, kitsu_url: str = None
+    login: str,
+    password: str,
+    kitsu_url: Optional[str] = None,
 ) -> bool:
     """Validate credentials by trying to connect to Kitsu host URL.
 
@@ -20,8 +22,11 @@ def validate_credentials(
     Returns:
         bool: Are credentials valid?
     """
+
     if kitsu_url is None:
         kitsu_url = os.getenv("KITSU_SERVER")
+        if not kitsu_url:
+            raise
 
     # Connect to server
     validate_host(kitsu_url)
@@ -53,19 +58,22 @@ def validate_host(kitsu_url: str) -> bool:
     if gazu.client.host_is_valid():
         return True
     else:
-        raise gazu.exception.HostException(
-            "Host '{}' is invalid.".format(kitsu_url))
+        raise gazu.exception.HostException(f"Host '{kitsu_url}' is invalid.")
 
 
 def clear_credentials():
     """Clear credentials in Secure Registry."""
+    (login, password) = load_credentials()
+    if login is None and password is None:
+        return
+
     # Get user registry
     user_registry = QuadPypeSecureRegistry("kitsu_user")
 
     # Set user settings
-    if user_registry.get_item("login", None) is not None:
+    if login is not None:
         user_registry.delete_item("login")
-    if user_registry.get_item("password", None) is not None:
+    if password is not None:
         user_registry.delete_item("password")
 
 

@@ -296,7 +296,7 @@ def cache_and_get_instances(creator):
     Returns:
         List[]: list of all instances stored in metadata
     """
-    shared_key = "quadpype.photoshop.instances"
+    shared_key = "quadpype.aftereffects.instances"
     if shared_key not in creator.collection_shared_data:
         creator.collection_shared_data[shared_key] = \
             creator.host.list_instances()

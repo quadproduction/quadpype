@@ -32,6 +32,10 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
         for representation in instance.data.get("representations", []):
             # Skip if not tagged as review
             if "kitsureview" not in representation.get("tags", []):
+                self.log.debug(
+                    f"Skipping representation {representation['name']} "
+                    "because it has no 'kitsureview' tag"
+                )
                 continue
 
             filenames = representation.get("files")

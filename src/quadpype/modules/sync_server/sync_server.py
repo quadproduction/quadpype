@@ -390,7 +390,8 @@ class SyncServerThread(threading.Thread):
                                     local_site,
                                     remote_site,
                                     preset.get('config'))
-                                if status == SyncStatus.DO_UPLOAD:
+                                if (status == SyncStatus.DO_UPLOAD and
+                                        len(task_files_to_process) < limit):
                                     tree = handler.get_tree()
                                     limit -= 1
                                     task = asyncio.create_task(
@@ -410,7 +411,8 @@ class SyncServerThread(threading.Thread):
                                                                  project_name
                                                                  ))
                                     processed_file_path.add(file_path)
-                                if status == SyncStatus.DO_DOWNLOAD:
+                                if (status == SyncStatus.DO_DOWNLOAD and
+                                        len(task_files_to_process) < limit):
                                     tree = handler.get_tree()
                                     limit -= 1
                                     task = asyncio.create_task(
