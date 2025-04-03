@@ -22,6 +22,9 @@ from quadpype.hosts.blender.api.template_resolving import (
 from quadpype.hosts.blender.api.collections import (
     create_collections_from_hierarchy
 )
+from quadpype.hosts.blender.api.lib import (
+    is_collection
+)
 from quadpype.pipeline import (
     Creator,
     CreatedInstance,
@@ -228,13 +231,17 @@ class BlenderCreator(Creator):
                     avalon_instance_objs,
                     bpy.data.collections
             ):
+                if not avalon_instances:
+                    continue
+
                 avalon_prop = get_avalon_node(obj_or_col)
                 if not avalon_prop:
                     continue
-
                 if avalon_prop.get('id') != 'pyblish.avalon.instance':
                     continue
 
+                if is_collection(obj_or_col) and obj_or_col.name not in avalon_instances.children:
+                        continue
                 creator_id = avalon_prop.get('creator_identifier')
                 if creator_id:
                     # Creator instance
