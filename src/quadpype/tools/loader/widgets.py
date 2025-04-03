@@ -1439,7 +1439,7 @@ class RepresentationWidget(QtWidgets.QWidget):
                             label = self.commands[selected_side]
                             if selected_site_progress >= 0:
                                 label = 'Re-{} {}'.format(label, selected_side)
-                                if not is_user_accessible:
+                                if not is_user_accessible and selected_side == "remote":
                                     continue
 
                         if not label:
