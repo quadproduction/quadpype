@@ -1405,6 +1405,7 @@ class RepresentationWidget(QtWidgets.QWidget):
 
         curr_user_profile = get_user_profile()
         curr_user_role = curr_user_profile["role"]
+        curr_user_is_admin = curr_user_role == "administrator"
 
         for item in items:
             repre_context = repre_context_by_id[item["_id"]]
@@ -1429,7 +1430,7 @@ class RepresentationWidget(QtWidgets.QWidget):
 
                         # only remove if actually present
                         if tools_lib.is_remove_site_loader(loader) and selected_site_progress < 1:
-                            if curr_user_role != "administrator":
+                            if not curr_user_is_admin:
                                 # Only administrators can remove manually from the loader
                                 continue
 
@@ -1437,7 +1438,7 @@ class RepresentationWidget(QtWidgets.QWidget):
                         elif tools_lib.is_add_site_loader(loader):
                             label = self.commands[selected_side]
                             if selected_site_progress >= 0:
-                                if selected_side == "remote" and curr_user_role != "administrator":
+                                if selected_side == "remote" and not curr_user_is_admin:
                                     # Only administrators can re-upload files
                                     # To avoid issues that mess-up with the FTP
                                     continue
