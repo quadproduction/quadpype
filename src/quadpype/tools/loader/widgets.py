@@ -19,6 +19,7 @@ from quadpype.client import (
 )
 from quadpype.client.operations import OperationsSession, REMOVED_VALUE
 from quadpype.pipeline import HeroVersionType, Anatomy
+from quadpype.lib import get_user_profile
 from quadpype.pipeline.thumbnail import get_thumbnail_binary
 from quadpype.pipeline.load import (
     discover_loader_plugins,
@@ -1409,6 +1410,11 @@ class RepresentationWidget(QtWidgets.QWidget):
                 repre_context
             ):
                 if tools_lib.is_sync_loader(loader):
+                    is_user_accessible = True
+                    user_profile = get_user_profile()
+                    if user_profile["role"] == "user":
+                        is_user_accessible = False
+
                     both_unavailable = (
                         item["active_site_progress"] <= 0
                         and item["remote_site_progress"] <= 0
@@ -1426,13 +1432,15 @@ class RepresentationWidget(QtWidgets.QWidget):
                         # only remove if actually present
                         if tools_lib.is_remove_site_loader(loader):
                             label = "Remove {}".format(selected_side)
-                            if selected_site_progress < 1:
+                            if selected_site_progress < 1 or not is_user_accessible:
                                 continue
 
                         if tools_lib.is_add_site_loader(loader):
                             label = self.commands[selected_side]
                             if selected_site_progress >= 0:
                                 label = 'Re-{} {}'.format(label, selected_side)
+                                if not is_user_accessible:
+                                    continue
 
                         if not label:
                             continue
