@@ -10,10 +10,10 @@ from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
 )
-from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
-    AVALON_PROPERTY,
+    get_avalon_node
 )
 
 
@@ -75,20 +75,24 @@ class AudioLoader(plugin.BlenderLoader):
         p = Path(libpath)
         audio = p.name
 
-        asset_group[AVALON_PROPERTY] = {
-            "schema": "quadpype:container-2.0",
-            "id": AVALON_CONTAINER_ID,
-            "name": name,
-            "namespace": namespace or '',
-            "loader": str(self.__class__.__name__),
-            "representation": str(context["representation"]["_id"]),
-            "libpath": libpath,
-            "asset_name": asset_name,
-            "parent": str(context["representation"]["parent"]),
-            "family": context["representation"]["context"]["family"],
-            "objectName": group_name,
-            "audio": audio
-        }
+        lib.imprint(
+            node=asset_group,
+            values={
+                "schema": "quadpype:container-2.0",
+                "id": AVALON_CONTAINER_ID,
+                "name": name,
+                "namespace": namespace or '',
+                "loader": str(self.__class__.__name__),
+                "representation": str(context["representation"]["_id"]),
+                "libpath": libpath,
+                "asset_name": asset_name,
+                "parent": str(context["representation"]["parent"]),
+                "family": context["representation"]["context"]["family"],
+                "objectName": group_name,
+                "audio": audio
+            },
+            erase=True
+        )
 
         objects = []
         self[:] = objects
@@ -123,7 +127,7 @@ class AudioLoader(plugin.BlenderLoader):
             f"The file doesn't exist: {libpath}"
         )
 
-        metadata = asset_group.get(AVALON_PROPERTY)
+        metadata = get_avalon_node(asset_group)
         group_libpath = metadata["libpath"]
 
         normalized_group_libpath = (

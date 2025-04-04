@@ -9,12 +9,12 @@ from quadpype.hosts.aftereffects.api import (
 
 
 class CollectExtensionVersion(pyblish.api.ContextPlugin):
-    """ Pulls and compares version of installed extension.
+    """Pulls and compares version of installed extension.
 
-        It is recommended to use same extension as in provided QuadPype code.
+    It is recommended to use same extension as in provided QuadPype code.
 
-        Please use Anastasiy's Extension Manager or ZXPInstaller to update
-        extension in case of an error.
+    Please use Anastasiy's Extension Manager or ZXPInstaller to update
+    extension in case of an error.
     """
     # This technically should be a validator, but other collectors might be
     # impacted with usage of obsolete extension, so collector that runs first

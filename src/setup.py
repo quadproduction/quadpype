@@ -96,6 +96,7 @@ install_requires = [
     "cx_Freeze",
     "keyring",
     "clique",
+    "cryptography",
     "jsonschema",
     "pathlib2",
     "pkg_resources",

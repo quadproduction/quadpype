@@ -3,7 +3,7 @@ import bpy
 import pyblish.api
 
 from quadpype.pipeline.publish import KnownPublishError
-from quadpype.hosts.blender.api.pipeline import AVALON_PROPERTY
+from quadpype.hosts.blender.api.pipeline import has_avalon_node
 from quadpype.hosts.blender.api import plugin
 
 class CollectBlenderInstanceData(plugin.BlenderInstancePlugin):
@@ -27,7 +27,7 @@ class CollectBlenderInstanceData(plugin.BlenderInstancePlugin):
             # Special case for animation instances, include armatures
             if instance.data["family"] == "animation":
                 for obj in instance_node.objects:
-                    if obj.type == 'EMPTY' and obj.get(AVALON_PROPERTY):
+                    if obj.type == 'EMPTY' and has_avalon_node(obj):
                         members.extend(
                             child for child in obj.children
                             if child.type == 'ARMATURE'

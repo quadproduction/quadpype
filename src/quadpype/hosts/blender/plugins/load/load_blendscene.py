@@ -7,11 +7,11 @@ from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
 )
-from quadpype.hosts.blender.api import plugin
-from quadpype.hosts.blender.api.lib import imprint
+from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
-    AVALON_PROPERTY,
+    has_avalon_node,
+    get_avalon_node
 )
 
 
@@ -21,7 +21,7 @@ class BlendSceneLoader(plugin.BlenderLoader):
     families = ["blendScene"]
     representations = ["blend"]
 
-    label = "Append Blend"
+    label = "Append Blend Scene"
     icon = "code-fork"
     color = "orange"
 
@@ -29,7 +29,7 @@ class BlendSceneLoader(plugin.BlenderLoader):
     def _get_asset_container(collections):
         for coll in collections:
             parents = [c for c in collections if c.user_of_id(coll)]
-            if coll.get(AVALON_PROPERTY) and not parents:
+            if has_avalon_node(coll) and not parents:
                 return coll
 
         return None
@@ -104,22 +104,24 @@ class BlendSceneLoader(plugin.BlenderLoader):
 
         avalon_container.children.link(container)
 
-        data = {
-            "schema": "quadpype:container-2.0",
-            "id": AVALON_CONTAINER_ID,
-            "name": name,
-            "namespace": namespace or '',
-            "loader": str(self.__class__.__name__),
-            "representation": str(context["representation"]["_id"]),
-            "libpath": libpath,
-            "asset_name": asset_name,
-            "parent": str(context["representation"]["parent"]),
-            "family": context["representation"]["context"]["family"],
-            "objectName": group_name,
-            "members": members,
-        }
-
-        container[AVALON_PROPERTY] = data
+        lib.imprint(
+            node=container,
+            values={
+                "schema": "quadpype:container-2.0",
+                "id": AVALON_CONTAINER_ID,
+                "name": name,
+                "namespace": namespace or '',
+                "loader": str(self.__class__.__name__),
+                "representation": str(context["representation"]["_id"]),
+                "libpath": libpath,
+                "asset_name": asset_name,
+                "parent": str(context["representation"]["parent"]),
+                "family": context["representation"]["context"]["family"],
+                "objectName": group_name,
+                "members": members,
+            },
+            erase=True
+        )
 
         objects = [
             obj for obj in bpy.data.objects
@@ -146,7 +148,7 @@ class BlendSceneLoader(plugin.BlenderLoader):
         # Also gets the transform for each object to reapply after the update.
         collection_parents = {}
         member_transforms = {}
-        members = asset_group.get(AVALON_PROPERTY).get("members", [])
+        members = get_avalon_node(asset_group).get("members", [])
         loaded_collections = {c for c in bpy.data.collections if c in members}
         loaded_collections.add(bpy.data.collections.get(AVALON_CONTAINERS))
         for member in members:
@@ -163,7 +165,7 @@ class BlendSceneLoader(plugin.BlenderLoader):
             if member_parents:
                 collection_parents[member.name] = list(member_parents)
 
-        old_data = dict(asset_group.get(AVALON_PROPERTY))
+        old_data = get_avalon_node(asset_group)
 
         self.exec_remove(container)
 
@@ -189,7 +191,7 @@ class BlendSceneLoader(plugin.BlenderLoader):
         # This avoids a crash, because the memory addresses of those members
         # are not valid anymore
         old_data["members"] = []
-        asset_group[AVALON_PROPERTY] = old_data
+        lib.imprint(asset_group, old_data, erase=True)
 
         new_data = {
             "libpath": libpath,
@@ -197,8 +199,7 @@ class BlendSceneLoader(plugin.BlenderLoader):
             "parent": representation["parent"],
             "members": members,
         }
-
-        imprint(asset_group, new_data)
+        lib.imprint(asset_group, new_data)
 
     def exec_remove(self, container: Dict) -> bool:
         """
@@ -207,7 +208,7 @@ class BlendSceneLoader(plugin.BlenderLoader):
         group_name = container["objectName"]
         asset_group = bpy.data.collections.get(group_name)
 
-        members = set(asset_group.get(AVALON_PROPERTY).get("members", []))
+        members = set(get_avalon_node(asset_group).get("members", []))
 
         if members:
             for attr_name in dir(bpy.data):

@@ -2,6 +2,7 @@ import os
 import sys
 import re
 import traceback
+import json
 from typing import Callable, Dict, Iterator, List, Optional
 
 import bpy
@@ -30,6 +31,16 @@ from quadpype.pipeline import (
     Anatomy,
     get_current_project_name,
     get_current_task_name
+)
+from quadpype.pipeline.workfile.workfile_template_builder import (
+    is_last_workfile_exists,
+    should_build_first_workfile
+)
+
+from .workfile_template_builder import (
+    build_workfile_template,
+    BlenderPlaceholderLoadPlugin,
+    BlenderPlaceholderCreatePlugin
 )
 
 from quadpype.pipeline.workfile import get_template_data_from_session
@@ -63,6 +74,8 @@ AVALON_INSTANCES = "AVALON_INSTANCES"
 AVALON_CONTAINERS = "AVALON_CONTAINERS"
 AVALON_PROPERTY = 'avalon'
 IS_HEADLESS = bpy.app.background
+
+DEFAULT_VARIANT_NAME = "Main"
 
 log = Logger.get_logger(__name__)
 
@@ -145,10 +158,7 @@ class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost):
         Returns:
             dict: Context data stored using 'update_context_data'.
         """
-        property = bpy.context.scene.get(AVALON_PROPERTY)
-        if property:
-            return property.to_dict()
-        return {}
+        return get_avalon_node(bpy.context.scene)
 
     def update_context_data(self, data: dict, changes: dict):
         """Override abstract method from IPublishHost.
@@ -159,7 +169,13 @@ class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost):
             changes (dict): Only data that has been changed. Each value has
                 tuple with '(<old>, <new>)' value.
         """
-        bpy.context.scene[AVALON_PROPERTY] = data
+        lib.imprint(bpy.context.scene, data)
+
+    def get_workfile_build_placeholder_plugins(self):
+        return [
+            BlenderPlaceholderLoadPlugin,
+            BlenderPlaceholderCreatePlugin
+        ]
 
 
 def pype_excepthook_handler(*args):
@@ -264,6 +280,15 @@ def get_frame_range(asset_entity=None) -> Union[Dict[str, int], None]:
         "frameEndHandle": frame_end_handle,
     }
 
+def get_parent_data(data):
+    parent = data.get('parent', None)
+    if not parent:
+        hierarchy = data.get('hierarchy')
+        if not hierarchy:
+            return
+
+        return hierarchy.split('/')[-1]
+    return parent
 
 def set_frame_range(data):
     scene = bpy.context.scene
@@ -332,8 +357,12 @@ def set_unit_scale_from_settings(unit_scale_settings=None):
         unit_scale = unit_scale_settings["base_file_unit_scale"]
         bpy.context.scene.unit_settings.scale_length = unit_scale
 
+def _autobuild_first_workfile():
+    if not is_last_workfile_exists() and should_build_first_workfile():
+        build_workfile_template()
 
 def on_new():
+    _autobuild_first_workfile()
     project = os.getenv("AVALON_PROJECT")
     settings = get_project_settings(project).get("blender")
 
@@ -491,18 +520,70 @@ def add_to_avalon_container(container: bpy.types.Collection):
                 child.exclude = True
 
 
-def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict):
+def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool):
     """Imprint the node with metadata.
 
     Existing metadata will be updated.
+
+    We use json to dump data into strings and allow library override.
+
+    Arguments:
+        node: Long name of node
+        data: Dictionary of key/value pairs
+        erase: Erase previous value insted of updating / adding data
     """
 
-    if not node.get(AVALON_PROPERTY):
-        node[AVALON_PROPERTY] = dict()
+    existing_data = dict() if erase else get_avalon_node(node)
     for key, value in data.items():
         if value is None:
             continue
-        node[AVALON_PROPERTY][key] = value
+        existing_data[key] = value
+
+    node[AVALON_PROPERTY] = json.dumps(existing_data)
+    node.property_overridable_library_set(f'["{AVALON_PROPERTY}"]', True)
+
+
+def get_avalon_node(node):
+    """ Return avalon node content.
+
+    By default we expect a single string (json dump), but we also want to handle
+    special cases with specific Blender data types.
+
+    Arguments:
+        node: blender object
+
+    Returns:
+        dict: AVALON_PROPERTY custom prop content
+    """
+    node_content = node.get(AVALON_PROPERTY, '{}')
+
+    # For IDPropertyGroup (which is not accessible through bpy.types)
+    if hasattr(node_content, 'to_dict'):
+        return node_content.to_dict()
+
+    return json.loads(node_content)
+
+
+def has_avalon_node(node):
+    """ Check if avalon custom prop exists for given object.
+
+    Arguments:
+        node: blender object
+
+    Returns:
+        bool: True is AVALON_PROPERTY exists for given object, False otherwise.
+    """
+    return bool(node.get(AVALON_PROPERTY, False))
+
+
+def delete_avalon_node(node):
+    """ Delete avalon custom prop for given object.
+
+    Arguments:
+        node: blender object
+    """
+
+    del node[AVALON_PROPERTY]
 
 
 def containerise(name: str,
@@ -637,10 +718,7 @@ def ls() -> Iterator:
     node_tree = bpy.context.scene.node_tree
     if node_tree:
         for node in node_tree.nodes:
-            if not node.get(AVALON_PROPERTY):
-                continue
-
-            if node.get(AVALON_PROPERTY).get("id") not in container_ids:
+            if get_avalon_node(node).get("id", None) not in container_ids:
                 continue
 
             yield parse_container(node)
@@ -689,3 +767,22 @@ def get_path_from_template(template_module='', template_name='', template_data={
         else:
             os.makedirs(os.path.dirname(render_node_path), exist_ok=True)
     return render_node_path
+
+def get_container(objects: list = [], collections: list = []):
+    """Retrieve the instance container based on given objects and collections"""
+    for coll in collections:
+        if has_avalon_node(coll):
+            return coll
+
+    for empty in [obj for obj in objects if obj.type == 'EMPTY']:
+        if has_avalon_node(empty) and empty.parent is None:
+            return empty
+
+    return None
+
+def get_container_content(container):
+    """Retrieve all objects and collection in the given container"""
+    if lib.is_collection(container):
+        return [*container.objects, *container.children]
+
+    return [obj for obj in bpy.data.objects if obj.parent == container]

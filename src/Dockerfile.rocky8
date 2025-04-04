@@ -1,0 +1,68 @@
+# Build QuadPype docker image
+FROM rockylinux:8.9 AS builder
+USER root
+
+ARG BUILD_DATE
+ARG VERSION
+
+LABEL maintainer="dev@quad.fr"
+LABEL description="Docker Image to build and run QuadPype under Rocky Linux 8.9"
+LABEL org.opencontainers.image.name="quad/quadpype-rocky"
+LABEL org.opencontainers.image.title="QuadPype Docker Image"
+LABEL org.opencontainers.image.url="https://github.com/quadproduction/quadpype"
+LABEL org.opencontainers.image.source="https://github.com/quadproduction/quadpype"
+LABEL org.opencontainers.image.documentation="https://github.com/quadproduction/quadpype/wiki"
+LABEL org.opencontainers.image.created=$BUILD_DATE
+LABEL org.opencontainers.image.version=$VERSION
+
+# Update base
+RUN dnf clean all && dnf makecache && dnf update -y
+
+# Enable EPEL and PowerTools (required for xmlsec1-devel)
+RUN dnf install -y dnf-plugins-core epel-release && \
+    dnf config-manager --set-enabled powertools
+
+# Install required dependencies
+RUN dnf install -y --setopt=install_weak_deps=False \
+    bash git cmake make curl wget gcc gcc-c++ glibc-devel openssl-devel openssl-libs findutils \
+    zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel llvm ncurses-devel tk tk-devel \
+    libxml2-devel xmlsec1-devel libffi-devel xz-devel patchelf mesa-libGL libxcb xkeyboard-config \
+    dbus-libs gtk2-devel mesa-libEGL libsecret libXau-devel libpng-devel brotli-devel freetype-devel \
+    gnome-tweaks perl-IPC-Cmd perl-Test-Simple perl-Test-Harness perl-Math-BigInt perl-Pod-Html \
+    libatomic mysql-devel unixODBC postgresql-libs libxcb gnome-keyring xcb-util-cursor xcb-util \
+    xcb-util-cursor-devel xcb-util-devel boost boost-devel xcb-util-wm xcb-util-keysyms \
+    xcb-util-image xcb-util-renderutil
+
+# Clone QuadPype
+RUN cd /opt/ && \
+    git clone --recurse-submodules https://github.com/quadproduction/quadpype.git && \
+    cd quadpype && \
+    git fetch --all --tags
+
+WORKDIR /opt/quadpype/src
+
+SHELL ["/bin/bash", "--login", "-c"]
+
+# Ensure required scripts are executable
+RUN chmod +x ./tools/activate.sh
+RUN chmod +x ./tools/install_environment.sh
+RUN chmod +x ./tools/build_alt.sh
+
+# Create virtualenv
+RUN ./tools/install_environment.sh
+
+# Ensure venv is truly active
+RUN chmod +x ./.venv/bin/activate
+RUN source ./.venv/bin/activate
+
+# Ensure PySide2 will be linked properly
+RUN ./.poetry/bin/poetry run python -m pip install PySide2
+
+# Install PatchELF 0.18
+RUN wget https://github.com/NixOS/patchelf/releases/download/0.18.0/patchelf-0.18.0-x86_64.tar.gz
+RUN tar -xzf ./patchelf-0.18.0-x86_64.tar.gz
+RUN mv ./bin/patchelf /usr/local/bin/
+RUN chmod +x /usr/local/bin/patchelf
+# Build QuadPype
+
+RUN ./tools/build_alt.sh

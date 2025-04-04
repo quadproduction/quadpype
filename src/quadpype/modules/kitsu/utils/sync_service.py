@@ -131,6 +131,14 @@ class Listener:
             return gazu.entity.get_entity(ep_id)
         return
 
+    @staticmethod
+    def get_zou_ids_and_assets_docs(project_name):
+        return {
+            asset_doc["data"]["zou"]["id"]: asset_doc
+            for asset_doc in get_assets(project_name)
+            if asset_doc["data"].get("zou", {}).get("id")
+        }
+
     # == Project ==
     def _new_project(self, data):
         """Create new project into QuadPype DB."""
@@ -207,18 +215,66 @@ class Listener:
         project_name = self.dbcon.active_project()
         project_doc = get_project(project_name)
 
-        # Get gazu entity
         asset = gazu.asset.get_asset(data["asset_id"])
 
         # Find asset doc
         # Query all assets of the local project
-        zou_ids_and_asset_docs = {
-            asset_doc["data"]["zou"]["id"]: asset_doc
-            for asset_doc in get_assets(project_name)
-            if asset_doc["data"].get("zou", {}).get("id")
-        }
+        zou_ids_and_asset_docs = self.get_zou_ids_and_assets_docs(project_name)
+        entity_type_id = asset['entity_type_id']
+        if entity_type_id not in self.get_zou_ids_and_assets_docs(project_name).keys():
+            self._new_asset_type(data, entity_type_id)
+            zou_ids_and_asset_docs = self.get_zou_ids_and_assets_docs(project_name)
+
         zou_ids_and_asset_docs[asset["project_id"]] = project_doc
         gazu_project = gazu.project.get_project(asset["project_id"])
+
+        # Update
+        update_op_result = update_op_assets(
+            self.dbcon,
+            gazu_project,
+            project_doc,
+            [asset],
+            zou_ids_and_asset_docs,
+        )
+        if update_op_result:
+            asset_doc_id, asset_update = update_op_result[0]
+            self.dbcon.update_one({"_id": asset_doc_id}, asset_update)
+
+    def _new_asset_type(self, data, entity_type_id):
+        # Get project entity
+        set_op_project(self.dbcon, data["project_id"])
+        project_name = self.dbcon.active_project()
+
+        # Get asset type entity
+        asset_type = gazu.asset.get_asset_type(entity_type_id)
+
+        # Insert doc in DB
+        self.dbcon.insert_one(create_op_asset(asset_type))
+
+        # Update
+        self._update_asset_type(data, entity_type_id)
+
+        msg = (
+            "Asset type created: {proj_name} - {asset_type_name}".format(
+                proj_name=project_name,
+                asset_type_name=asset_type["name"],
+            )
+        )
+        log.info(msg)
+
+    def _update_asset_type(self, data, entity_type_id):
+        """Update asset into QuadPype DB."""
+        set_op_project(self.dbcon, data["project_id"])
+        project_name = self.dbcon.active_project()
+        project_doc = get_project(project_name)
+
+        asset = gazu.asset.get_asset_type(entity_type_id)
+
+        # Find asset doc
+        # Query all assets of the local project
+        zou_ids_and_asset_docs = self.get_zou_ids_and_assets_docs(project_name)
+        zou_ids_and_asset_docs[data["project_id"]] = project_doc
+        gazu_project = gazu.project.get_project(data["project_id"])
 
         # Update
         update_op_result = update_op_assets(

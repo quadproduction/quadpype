@@ -4,7 +4,6 @@ import bpy
 
 from quadpype.pipeline import publish
 from quadpype.hosts.blender.api import plugin, lib
-from quadpype.hosts.blender.api.pipeline import AVALON_PROPERTY
 
 
 class ExtractCameraABC(

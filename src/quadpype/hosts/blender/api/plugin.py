@@ -1,15 +1,36 @@
 """Shared functionality for pipeline plugins for Blender."""
 
 import itertools
+from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import bpy
+import json
 import pyblish.api
+from quadpype.client.mongo.entities import (
+    get_asset_by_name
+)
+from quadpype.pipeline.template_data import (
+    get_asset_template_data,
+)
+from quadpype.hosts.blender.api.template_resolving import (
+    get_task_collection_templates,
+    get_resolved_name,
+    set_data_for_template_from_original_data
+)
+from quadpype.hosts.blender.api.collections import (
+    create_collections_from_hierarchy
+)
+from quadpype.hosts.blender.api.lib import (
+    is_collection
+)
 from quadpype.pipeline import (
     Creator,
     CreatedInstance,
-    LoaderPlugin
+    LoaderPlugin,
+    get_current_host_name,
+    get_current_project_name
 )
 from quadpype.pipeline.publish import Extractor
 from quadpype.lib import BoolDef
@@ -17,7 +38,8 @@ from quadpype.lib import BoolDef
 from .pipeline import (
     AVALON_CONTAINERS,
     AVALON_INSTANCES,
-    AVALON_PROPERTY,
+    get_avalon_node,
+    has_avalon_node
 )
 from .ops import (
     MainThreadItem,
@@ -57,11 +79,11 @@ def get_unique_number(
     obj_asset_groups = avalon_container.objects
     obj_group_names = {
         c.name for c in obj_asset_groups
-        if c.type == 'EMPTY' and c.get(AVALON_PROPERTY)}
+        if c.type == 'EMPTY' and has_avalon_node(c)}
     coll_asset_groups = avalon_container.children
     coll_group_names = {
         c.name for c in coll_asset_groups
-        if c.get(AVALON_PROPERTY)}
+        if has_avalon_node(c)}
     container_names = obj_group_names.union(coll_group_names)
     count = 1
     name = f"{asset}_{count:0>2}_{subset}"
@@ -209,13 +231,17 @@ class BlenderCreator(Creator):
                     avalon_instance_objs,
                     bpy.data.collections
             ):
-                avalon_prop = obj_or_col.get(AVALON_PROPERTY, {})
-                if not avalon_prop:
+                if not avalon_instances:
                     continue
 
+                avalon_prop = get_avalon_node(obj_or_col)
+                if not avalon_prop:
+                    continue
                 if avalon_prop.get('id') != 'pyblish.avalon.instance':
                     continue
 
+                if is_collection(obj_or_col) and obj_or_col.name not in avalon_instances.children:
+                        continue
                 creator_id = avalon_prop.get('creator_identifier')
                 if creator_id:
                     # Creator instance
@@ -262,6 +288,8 @@ class BlenderCreator(Creator):
             # Create instance collection
             instance_node = bpy.data.collections.new(name=name)
             instances.children.link(instance_node)
+            if pre_create_data.get("create_collection_hierarchy", False):
+                self._create_collection_hierarchy(instance_data)
 
         self.set_instance_data(subset_name, instance_data)
 
@@ -274,6 +302,38 @@ class BlenderCreator(Creator):
         imprint(instance_node, instance_data)
 
         return instance_node
+
+    def _create_collection_hierarchy(self, data: dict):
+        """Generate the collection hierarchy based on the creator context
+        Args:
+            data (dict)
+        """
+        data_for_template = self._format_data_for_template_solve(data)
+        collection_templates = get_task_collection_templates(data_for_template, task=data_for_template["task"])
+        if collection_templates:
+            collections_hierarchy = [
+                get_resolved_name(
+                    data=data_for_template,
+                    template=template
+                )
+                for template in collection_templates
+            ]
+            create_collections_from_hierarchy(
+                hierarchies=collections_hierarchy,
+                parent_collection=bpy.context.scene.collection
+            )
+
+    @staticmethod
+    def _format_data_for_template_solve(data):
+        template_data = deepcopy(data)
+        template_data["project"] = {"name":get_current_project_name()}
+        template_data["app"] = get_current_host_name()
+
+        asset_data = get_asset_by_name(template_data["project"]["name"], template_data["asset"])
+        template_data.update(get_asset_template_data(asset_data, get_current_project_name()))
+
+        return set_data_for_template_from_original_data(template_data)
+
 
     def collect_instances(self):
         """Override abstract method from BlenderCreator.
@@ -291,10 +351,10 @@ class BlenderCreator(Creator):
 
         # Process only instances that were created by this creator
         for instance_node in cached_subsets.get(self.identifier, []):
-            property = instance_node.get(AVALON_PROPERTY)
+            property = get_avalon_node(instance_node)
             # Create instance object from existing data
             instance = CreatedInstance.from_existing(
-                instance_data=property.to_dict(),
+                instance_data=property,
                 creator=self
             )
             instance.transient_data["instance_node"] = instance_node
@@ -394,6 +454,9 @@ class BlenderCreator(Creator):
                     default=True),
             BoolDef("create_as_asset_group",
                     label="Use Empty as Instance",
+                    default=False),
+            BoolDef("create_collection_hierarchy",
+                    label="Create Collection Hierarchy",
                     default=False)
         ]
 
@@ -407,7 +470,7 @@ class BlenderCreator(Creator):
     @staticmethod
     def get_parent_collection(selection):
         """Get parent collection from selection.
-        
+
         If selection is parented to multiple collections, only the
         first one in the hierarchy will be returned.
         """
@@ -490,6 +553,10 @@ class BlenderLoader(LoaderPlugin):
              name: Optional[str] = None,
              namespace: Optional[str] = None,
              options: Optional[Dict] = None) -> Optional[bpy.types.Collection]:
+
+        if options.get("template", False):
+            return self._load(context, name, namespace, options)
+
         """ Run the loader on Blender main thread"""
         mti = MainThreadItem(self._load, context, name, namespace, options)
         execute_in_main_thread(mti)

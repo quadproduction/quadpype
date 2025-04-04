@@ -3,8 +3,9 @@ from quadpype.hosts.blender.api.plugin import BlenderCreator
 from quadpype.pipeline import CreatedInstance, AutoCreator
 from quadpype.client import get_asset_by_name
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_PROPERTY,
-    AVALON_CONTAINERS
+    AVALON_CONTAINERS,
+    get_avalon_node,
+    delete_avalon_node
 )
 
 
@@ -92,13 +93,13 @@ class CreateWorkfile(BlenderCreator, AutoCreator):
         if not instance_node:
             return
 
-        property = instance_node.get(AVALON_PROPERTY)
+        property = get_avalon_node(instance_node)
         if not property:
             return
 
         # Create instance object from existing data
         instance = CreatedInstance.from_existing(
-            instance_data=property.to_dict(),
+            instance_data=property,
             creator=self
         )
         instance.transient_data["instance_node"] = instance_node
@@ -109,6 +110,6 @@ class CreateWorkfile(BlenderCreator, AutoCreator):
     def remove_instances(self, instances):
         for instance in instances:
             node = instance.transient_data["instance_node"]
-            del node[AVALON_PROPERTY]
+            delete_avalon_node(node)
 
             self._remove_instance_from_context(instance)
