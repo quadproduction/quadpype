@@ -351,16 +351,15 @@ class BlenderPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
             save_file(current_file())
             return
 
-        parent = get_parent_collections_for_object(obj)
+        parents = get_parent_collections_for_object(obj)
 
-        if not parent:
+        if not parents:
             bpy.context.scene.collection.objects.unlink(obj)
             placeholder_coll.objects.link(obj)
             save_file(current_file())
             return
 
-        #Get first collection
-        parent = parent[0]
+        parent = next(iter(parents))
 
         parent.objects.unlink(obj)
         placeholder_coll.objects.link(obj)
@@ -524,10 +523,12 @@ class BlenderPlaceholderCreatePlugin(PlaceholderPlugin, PlaceholderCreateMixin):
             save_file(current_file())
             return
 
-        parent = get_parent_collections_for_object(obj)
-        if not parent:
+        parents = get_parent_collections_for_object(obj)
+        if not parents:
             save_file(current_file())
             return
+
+        parent = next(iter(parents))
 
         parent.objects.unlink(obj)
         placeholder_coll.objects.link(obj)
