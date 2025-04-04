@@ -139,6 +139,7 @@ class SceneInventoryWindow(BaseToolDialog):
         whilst trying to name an instance.
 
         """
+        pass
 
     def _on_refresh_request(self):
         """Signal callback to trigger 'refresh' without any arguments."""

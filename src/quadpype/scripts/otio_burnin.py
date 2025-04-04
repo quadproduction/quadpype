@@ -16,9 +16,10 @@ from quadpype.lib import (
     convert_ffprobe_fps_value,
 )
 
+FFMPEG_EXE_COMMAND = subprocess.list2cmdline(get_ffmpeg_tool_args("ffmpeg"))
 FFMPEG = (
     '{}%(input_args)s -i "%(input)s" %(filters)s %(args)s%(output)s'
-).format(subprocess.list2cmdline(get_ffmpeg_tool_args("ffmpeg")))
+).format(FFMPEG_EXE_COMMAND)
 
 DRAWTEXT = (
     "drawtext@'%(label)s'=fontfile='%(font)s':text=\\'%(text)s\\':"
@@ -98,7 +99,7 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
         - required IF start frame is not set when using frames or timecode burnins
 
     On initializing class can be set General options through "options_init" arg.
-    General can be overridden when adding burnin
+    General options can be overridden when adding burnin.
 
     '''
     TOP_CENTERED = ffmpeg_burnins.TOP_CENTERED
@@ -485,10 +486,19 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
         )
         print("Launching command: {}".format(command))
 
+        use_shell = True
+        try:
+            test_proc = subprocess.Popen(
+                f"{FFMPEG_EXE_COMMAND} --help", shell=True
+            )
+            test_proc.wait()
+        except BaseException:
+            use_shell = False
+
         kwargs = {
             "stdout": subprocess.PIPE,
             "stderr": subprocess.PIPE,
-            "shell": True,
+            "shell": use_shell,
         }
         proc = subprocess.Popen(command, **kwargs)
 
