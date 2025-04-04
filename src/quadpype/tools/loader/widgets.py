@@ -1429,7 +1429,7 @@ class RepresentationWidget(QtWidgets.QWidget):
                             "{}_site_progress".format(selected_side), -1)
 
                         # only remove if actually present
-                        if tools_lib.is_remove_site_loader(loader) and selected_site_progress < 1:
+                        if tools_lib.is_remove_site_loader(loader) and selected_site_progress >= 1:
                             if not curr_user_is_admin:
                                 # Only administrators can remove manually from the loader
                                 continue
