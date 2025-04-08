@@ -5,6 +5,8 @@ import bpy
 from quadpype.settings import get_project_settings
 from quadpype.pipeline import get_current_project_name
 
+RENDER_DATA = "render_data"
+
 
 def get_default_render_folder(settings):
     """Get default render folder from blender settings."""
@@ -253,6 +255,13 @@ def set_node_tree(
         if link.to_node == old_output_node}
 
     # Create a new socket for the beauty output
+    if multi_exr:
+        # If multi exr, we also need to first add socket with empty name
+        # to allow exr to be read by ffprobe later
+        slot, _ = _create_aov_slot(
+            name, aov_sep, slots, '', multi_exr, output_path)
+        tree.links.new(render_layer_node.outputs["Image"], slot)
+
     pass_name = "rgba" if multi_exr else "beauty"
     slot, _ = _create_aov_slot(
         name, aov_sep, slots, pass_name, multi_exr, output_path)
@@ -304,7 +313,6 @@ def set_node_tree(
 
 
 def imprint_render_settings(node, data):
-    RENDER_DATA = "render_data"
     if not node.get(RENDER_DATA):
         node[RENDER_DATA] = {}
     for key, value in data.items():
@@ -312,6 +320,9 @@ def imprint_render_settings(node, data):
             continue
         node[RENDER_DATA][key] = value
 
+
+def get_render_settings(node):
+    return node.get("render_data", {})
 
 def prepare_rendering(asset_group):
     name = asset_group.name
