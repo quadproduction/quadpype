@@ -35,7 +35,7 @@ class Delivery(load.SubsetLoaderPlugin):
     label = "Deliver Versions"
     order = 35
     icon = "upload"
-    color = "#d8d8d8"
+    color = style.get_default_entity_icon_color()
 
     def message(self, text):
         msgBox = QtWidgets.QMessageBox()

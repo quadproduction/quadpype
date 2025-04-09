@@ -250,6 +250,7 @@ class ExtractSequence(pyblish.api.Extractor):
         self.log.debug("Creating new representation: {}".format(new_repre))
 
         instance.data["representations"].append(new_repre)
+        instance.context.data["cleanupFullPaths"].append(output_dir)
 
         if not thumbnail_fullpath:
             return

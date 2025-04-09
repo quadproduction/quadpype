@@ -7,13 +7,29 @@ import platform
 from pathlib import Path
 from typing import List
 
+import appdirs
 import semver
 from qtpy import QtCore
 
 
+def get_adobe_extensions_dir_path():
+    adobe_data_folder_path = appdirs.user_data_dir(appname="Adobe", appauthor="")
+
+    # On Windows we want the Roaming folder
+    adobe_data_folder_path.replace("AddData\\Local", "AppData\\Roaming")
+
+    user_extensions_dir = Path(adobe_data_folder_path) / "CEP" / "extensions"
+
+    # Ensure the dir exists
+    os.makedirs(user_extensions_dir, exist_ok=True)
+
+    return user_extensions_dir
+
+
 class ZXPExtensionData:
 
-    def __init__(self, host_id: str, ext_id: str, installed_version: semver.VersionInfo, shipped_version: semver.VersionInfo):
+    def __init__(self, host_id: str, ext_id: str, installed_version: semver.VersionInfo,
+                 shipped_version: semver.VersionInfo):
         self.host_id = host_id
         self.id = ext_id
         self.installed_version = installed_version
@@ -45,11 +61,8 @@ def extract_zxp_info_from_manifest(path_manifest: Path):
 
 
 def update_zxp_extensions(running_version_fullpath: Path, extensions: [ZXPExtensionData]):
-    # Determine the user-specific Adobe extensions directory
-    user_extensions_dir = Path(os.getenv('APPDATA'), 'Adobe', 'CEP', 'extensions')
-
-    # Create the user extensions directory if it doesn't exist
-    os.makedirs(user_extensions_dir, exist_ok=True)
+    # Retrieve the user-specific Adobe extensions directory
+    user_extensions_dir = get_adobe_extensions_dir_path()
 
     for extension in extensions:
         # Remove installed ZXP extension
@@ -84,18 +97,16 @@ def get_zxp_extensions_to_update(running_version_fullpath, global_settings, forc
     # List of all Adobe software ids (named hosts) handled by QuadPype
     # TODO: where and how to store the list of Adobe software ids
     low_platform = platform.system().lower()
+
     if low_platform == "linux":
-        # ZXP skipped for Linux
-        return []
-    elif low_platform == "darwin":
-        # TODO: implement this function for macOS
-        return []
-        # raise NotImplementedError(f"MacOS not implemented, implementation need before the first macOS release")
+        # TODO: Do the necessary checks on Linux, then remove this condition and Exception
+        raise NotImplementedError(
+            f"Linux not tested, checks needed to ensure paths and operations are valids for Linux")
 
     zxp_host_ids = ["photoshop", "aftereffects"]
 
-    # Determine the user-specific Adobe extensions directory
-    user_extensions_dir = Path(os.getenv('APPDATA'), 'Adobe', 'CEP', 'extensions')
+    # Retrieve the user-specific Adobe extensions directory
+    user_extensions_dir = get_adobe_extensions_dir_path()
 
     zxp_hosts_to_update = []
     for zxp_host_id in zxp_host_ids:

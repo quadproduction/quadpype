@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.17)
 
+cmake_policy(SET CMP0144 NEW)
+cmake_policy(SET CMP0167 NEW)
+
 project(QuadPypePlugin C CXX)
 
+set(CUR_TARGET ${PROJECT_NAME})
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -24,9 +28,9 @@ if(MSVC)
     endif()
 endif()
 
-set(BOOST_ROOT "C:/Boost")
-set(OPENSSL_INCLUDE "C:/Program Files/OpenSSL-Win64/include")
-set(OPENSSL_LIB_DIR "C:/Program Files/OpenSSL-Win64/lib")
+set(BOOST_ROOT "ADD_YOUR_PATH_TO_THE/boost_build")
+set(OPENSSL_INCLUDE "ADD_YOUR_PATH_TO_THE/openssl/include")
+set(OPENSSL_LIB_DIR "ADD_YOUR_PATH_TO_THE/openssl/lib")
 set(WEBSOCKETPP_INCLUDE "./dependencies/websocketpp-0.8.2/")
 set(JSONRPCPP_INCLUDE "./dependencies/jsonrpcpp-1.4.0/include")
 set(TVPAINT_SDK_INCLUDE "ADD_YOUR_PATH_TO_THE/TVPaint_SDK/include")
@@ -52,7 +56,27 @@ link_directories(
 
 add_library(jsonrpcpp INTERFACE)
 
-add_library(${PROJECT_NAME} SHARED library.cpp library.def "${TVPAINT_SDK_LIB}/dllx.c")
+
+if(WIN32)
+    add_library(${PROJECT_NAME} SHARED library.cpp library.def "${TVPAINT_SDK_LIB}/dllx.c")
+elseif(APPLE)
+    add_library(${PROJECT_NAME} MODULE library.cpp library.def "${TVPAINT_SDK_LIB}/dllx.c")
+elseif(UNIX)
+    message(STATUS "Building for Linux/Unix")
+endif()
 
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} jsonrpcpp)
+
+if(APPLE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        BUNDLE TRUE
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_GUI_IDENTIFIER fr.tvpaint.tvpa.QuadPypePlugin
+        MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME}
+        MACOSX_BUNDLE_BUNDLE_VERSION "1.0"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
+        OUTPUT_NAME ${PROJECT_NAME}
+        MACOSX_BUNDLE_INFO_PLIST "./Info.plist"
+    )
+endif()

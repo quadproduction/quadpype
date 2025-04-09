@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 #include <queue>
+#include <list>
 
 #include "plugdllx.h"
 
@@ -488,7 +489,7 @@ static char* GetLocalString( PIFilter* iFilter, int iNum, char* iDefault )
 std::string label_from_env()
 {
     std::string _plugin_label = "QuadPype";
-    if (std::getenv("QUADPYPE_LABEL") && std::getenv("QUADPYPE_LABEL") != "")
+    if (std::getenv("QUADPYPE_LABEL") && strcmp(std::getenv("QUADPYPE_LABEL"), "") != 0)
     {
         _plugin_label = std::getenv("QUADPYPE_LABEL");
     }
@@ -496,9 +497,9 @@ std::string label_from_env()
 }
 std::string plugin_label = label_from_env();
 
-#define TXT_REQUESTER               GetLocalString( iFilter, 100, "QuadPype Tools" )
+#define TXT_REQUESTER               GetLocalString( iFilter, 100, strdup("QuadPype Tools") )
 
-#define TXT_REQUESTER_ERROR         GetLocalString( iFilter, 30001, "Can't Open Requester !" )
+#define TXT_REQUESTER_ERROR         GetLocalString( iFilter, 30001, strdup("Can't Open Requester !") )
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
