@@ -80,8 +80,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
   # fix code signing issue
   echo -e "${GREEN}>>>${RST} Fixing code signatures ...\c"
-  codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime "$PATH_QUADPYPE_ROOT/build/QuadPype $QUADPYPE_VERSION.app/Contents/MacOS/quadpype_console"
-  codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime "$PATH_QUADPYPE_ROOT/build/QuadPype $QUADPYPE_VERSION.app/Contents/MacOS/quadpype_gui"
+  codesign --sign - --force --deep --preserve-metadata=entitlements,requirements,flags,runtime "$PATH_QUADPYPE_ROOT/build/QuadPype $QUADPYPE_VERSION.app/Contents/MacOS/quadpype_console"
+  codesign --sign - --force --deep --preserve-metadata=entitlements,requirements,flags,runtime "$PATH_QUADPYPE_ROOT/build/QuadPype $QUADPYPE_VERSION.app/Contents/MacOS/quadpype_gui"
 
   echo -e "${GREEN}DONE${RST}"
   if command -v create-dmg > /dev/null 2>&1; then
