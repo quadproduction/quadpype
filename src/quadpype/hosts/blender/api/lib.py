@@ -150,8 +150,11 @@ def set_app_templates_path():
     # We look among the scripts paths for one of the paths that contains
     # the app templates. The path must contain the subfolder
     # `startup/bl_app_templates_user`.
-    paths = os.getenv("QUADPYPE_BLENDER_USER_SCRIPTS").split(os.pathsep)
+    paths = os.getenv("QUADPYPE_BLENDER_USER_SCRIPTS")
+    if not paths:
+        return
 
+    paths = paths.split(os.pathsep)
     app_templates_path = None
     for path in paths:
         if os.path.isdir(
@@ -645,6 +648,13 @@ def get_cache_modifiers(obj, modifier_type="MESH_SEQUENCE_CACHE"):
                                    if modifier.type == modifier_type]
                 modifiers_dict[ob.name] = cache_modifiers
     return modifiers_dict
+
+
+def get_blender_version():
+    """Get Blender Version
+    """
+    major, minor, subversion = bpy.app.version
+    return major, minor, subversion
 
 
 def get_parents_for_collection(collection, collections=None):

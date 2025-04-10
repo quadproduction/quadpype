@@ -30,7 +30,7 @@ class CreateRenderlayer(plugin.BlenderCreator):
             bpy.data.collections.remove(collection)
             raise
 
-        # TODO: this is undesiderable, but it's the only way to be sure that
+        # TODO: this is undesirable, but it's the only way to be sure that
         # the file is saved before the render starts.
         # Blender, by design, doesn't set the file as dirty if modifications
         # happen by script. So, when creating the instance and setting the

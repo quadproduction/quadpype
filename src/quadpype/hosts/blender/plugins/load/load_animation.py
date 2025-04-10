@@ -46,12 +46,12 @@ class BlendAnimationLoader(plugin.BlenderLoader):
 
         assert container, "No asset group found"
 
-        target_namespace = get_avalon_node(container).get('namespace')
+        target_namespace = get_avalon_node(container).get('namespace', namespace)
 
         action = data_to.actions[0].make_local().copy()
 
         for obj in bpy.data.objects:
-            if get_avalon_node(obj).get('namespace') == target_namespace:
+            if get_avalon_node(obj).get('namespace', namespace) == target_namespace:
                 if obj.children[0]:
                     if not obj.children[0].animation_data:
                         obj.children[0].animation_data_create()

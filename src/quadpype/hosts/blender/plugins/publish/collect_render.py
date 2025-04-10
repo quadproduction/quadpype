@@ -82,6 +82,7 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
         aov_file_product = render_data.get("aov_file_product")
         ext = render_data.get("image_format")
         multilayer = render_data.get("multilayer_exr")
+        review = render_data.get("review", False)
 
         frame_start = context.data["frameStart"]
         frame_end = context.data["frameEnd"]
@@ -106,7 +107,7 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
             "frameEndHandle": frame_handle_end,
             "fps": context.data["fps"],
             "byFrameStep": instance.data["creator_attributes"].get("step", 1),
-            "review": render_data.get("review", False),
+            "review": review,
             "multipartExr": ext == "exr" and multilayer,
             "farm": True,
             "expectedFiles": [expected_files],

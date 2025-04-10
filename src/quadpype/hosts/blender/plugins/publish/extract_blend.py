@@ -85,7 +85,7 @@ class ExtractBlend(
 
         for data in instance:
             data_blocks.add(data)
-
+            # Pack used images in the blend files.
             if not (
                 isinstance(data, bpy.types.Object) and data.type == 'MESH'
             ):
@@ -101,7 +101,8 @@ class ExtractBlend(
                 for node in tree.nodes:
                     if node.bl_idname != 'ShaderNodeTexImage':
                         continue
-
+                    # Check if image is not packed already
+                    # and pack it if not.
                     if node.image and node.image.packed_file is None:
                         node.image.pack()
 
