@@ -6,7 +6,6 @@ import bpy
 from quadpype.settings import get_project_settings
 from quadpype.pipeline import get_current_project_name
 
-RENDER_DATA = "render_data"
 from quadpype.hosts.blender.api import lib
 
 
@@ -329,6 +328,7 @@ def set_node_tree(
     # In case of a multilayer exr, we don't need to use the output node,
     # because the blender render already outputs a multilayer exr.
     multi_exr = ext == "exr" and multilayer
+
     slots = output.layer_slots if multi_exr else output.file_slots
 
     rn_layer_node = next((node for node in reversed(render_aovs_dict.keys())), None)
@@ -346,17 +346,20 @@ def set_node_tree(
         link.from_socket.name: link for link in tree.links
         if link.to_node == old_output_node}
 
-    # Create a new socket for the beauty output
     if multi_exr:
         # If multi exr, we also need to first add socket with empty name
         # to allow exr to be read by ffprobe later
-        slot, _ = _create_aov_slot(
-            name, aov_sep, slots, '', multi_exr, output_path)
-        tree.links.new(render_layer_node.outputs["Image"], slot)
+        current_view_layer = next(iter(render_aovs_dict))
+        if current_view_layer:
+            slot, _ = _create_aov_slot(
+                name, aov_sep, slots, '', multi_exr, output_path, current_view_layer.layer)
+            tree.links.new(current_view_layer.outputs["Image"], slot)
 
+    # Create a new socket for the beauty output
     pass_name = "rgba" if multi_exr else "beauty"
     for render_layer_node in render_aovs_dict.keys():
         render_layer = render_layer_node.layer
+
         slot, _ = _create_aov_slot(
             name, aov_sep, slots, pass_name, multi_exr, output_path, render_layer)
         tree.links.new(render_layer_node.outputs["Image"], slot)
@@ -415,6 +418,7 @@ def set_node_tree(
 
 
 def imprint_render_settings(node, data):
+    RENDER_DATA = "render_data"
     if not node.get(RENDER_DATA):
         node[RENDER_DATA] = {}
     for key, value in data.items():
