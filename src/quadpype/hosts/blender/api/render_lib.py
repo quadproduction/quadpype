@@ -323,8 +323,6 @@ def set_node_tree(
     image_settings = bpy.context.scene.render.image_settings
     output.format.file_format = image_settings.file_format
 
-    slots = None
-
     # In case of a multilayer exr, we don't need to use the output node,
     # because the blender render already outputs a multilayer exr.
     multi_exr = ext == "exr" and multilayer
@@ -349,19 +347,16 @@ def set_node_tree(
     if multi_exr:
         # If multi exr, we also need to first add socket with empty name
         # to allow exr to be read by ffprobe later
-        current_view_layer = next(iter(render_aovs_dict))
-        if current_view_layer:
-            slot, _ = _create_aov_slot(
-                name, aov_sep, slots, '', multi_exr, output_path, current_view_layer.layer)
-            tree.links.new(current_view_layer.outputs["Image"], slot)
+        slot, _ = _create_aov_slot(
+            name, aov_sep, slots, '', multi_exr, output_path, rn_layer_node.layer)
+        tree.links.new(rn_layer_node.outputs["Image"], slot)
 
     # Create a new socket for the beauty output
     pass_name = "rgba" if multi_exr else "beauty"
     for render_layer_node in render_aovs_dict.keys():
         render_layer = render_layer_node.layer
-
         slot, _ = _create_aov_slot(
-            name, aov_sep, slots, pass_name, multi_exr, output_path, render_layer)
+            name, aov_sep, slots, f"{pass_name}_{render_layer}", multi_exr, output_path, render_layer)
         tree.links.new(render_layer_node.outputs["Image"], slot)
 
     if compositing:
@@ -389,7 +384,7 @@ def set_node_tree(
                 aov_file_products[render_layer] = []
             for rpass in passes:
                 slot, filepath = _create_aov_slot(
-                    name, aov_sep, slots, rpass.name, multi_exr, output_path, render_layer)
+                    name, aov_sep, slots, f"{rpass.name}_{render_layer}", multi_exr, output_path, render_layer)
 
                 aov_file_products[render_layer].append((rpass.name, filepath))
 
