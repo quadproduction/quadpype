@@ -285,6 +285,20 @@
                     "label": "Presets"
                 }
             ]
+        },
+        {
+            "type": "splitter"
+        },
+        {
+            "type": "label",
+            "label": "Publish Loaded Element Re-Naming"
+        },
+        {
+            "type": "dict-modifiable",
+            "collapsible": true,
+            "key": "LoadedNamingFinder",
+            "label": "Loaded Naming Finder Template",
+            "object_type": "text"
         }
     ]
 }

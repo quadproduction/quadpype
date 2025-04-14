@@ -13,7 +13,7 @@ from quadpype.pipeline import (
 )
 
 from quadpype.pipeline.create import CreateContext
-from quadpype.hosts.blender.api import plugin, lib, pipeline
+from quadpype.hosts.blender.api import plugin, lib, pipeline, template_resolving
 from quadpype.hosts.blender.api import (
     get_task_collection_templates,
     get_resolved_name,
@@ -130,10 +130,18 @@ class BlendLoader(plugin.BlenderLoader):
 
         representation_id = str(representation["_id"])
 
-        asset_name = plugin.prepare_scene_name(asset, subset)
-        unique_number = plugin.get_unique_number(asset, subset)
-        group_name = plugin.prepare_scene_name(asset, subset, unique_number)
-        namespace = namespace or f"{asset}_{unique_number}"
+        template_data = template_resolving.set_data_for_template_from_original_data(representation)
+        asset_name_template = template_resolving.get_load_naming_template("assetname", template_data)
+        namespace_template = template_resolving.get_load_naming_template("namespace", template_data)
+        group_name_template = template_resolving.get_load_naming_template("container", template_data)
+
+        asset_name = template_resolving.get_resolved_name(template_data, asset_name_template)
+        unique_number = plugin.get_unique_number(asset, subset, template_data)
+        template_data.update({"unique_number":unique_number})
+
+        namespace = namespace or template_resolving.get_resolved_name(template_data, namespace_template)
+        group_name = template_resolving.get_resolved_name(template_data, group_name_template, namespace=namespace)
+
         import_method = ImportMethod(
             options.get(
                 'import_method',
@@ -146,7 +154,8 @@ class BlendLoader(plugin.BlenderLoader):
             libpath=libpath,
             group_name=group_name,
             unique_number=unique_number,
-            import_method=import_method
+            import_method=import_method,
+            template_data=template_data
         )
 
         try:
@@ -184,7 +193,8 @@ class BlendLoader(plugin.BlenderLoader):
         self[:] = objects
         return objects
 
-    def load_assets_and_create_hierarchy(self, representation, libpath, group_name, unique_number, import_method):
+    def load_assets_and_create_hierarchy(self, representation, libpath, group_name, unique_number, import_method,
+                                         template_data):
 
         avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
         if not avalon_container:
@@ -197,7 +207,8 @@ class BlendLoader(plugin.BlenderLoader):
             task=get_current_context()['task_name']
         )
 
-        container, members, container_objects = self.import_blend_objects(libpath, group_name, import_method)
+        container, members, container_objects = self.import_blend_objects(libpath, group_name, import_method,
+                                                                          template_data)
         if import_method is ImportMethod.APPEND:
             self.remove_library_from_blend_file(libpath)
 
@@ -285,19 +296,20 @@ class BlendLoader(plugin.BlenderLoader):
 
         return container, members
 
-    def import_blend_objects(self, libpath, group_name, import_method):
+    def import_blend_objects(self, libpath, group_name, import_method, template_data):
         if import_method == ImportMethod.APPEND:
-            container, members, container_objects = self.append_blend_objects(libpath, group_name)
+            container, members, container_objects = self.append_blend_objects(libpath, group_name, template_data)
         elif import_method == ImportMethod.LINK:
             container, members, container_objects = self.link_blend_objects(libpath)
         elif import_method == ImportMethod.OVERRIDE:
-            container, members, container_objects = self.link_blend_objects_with_overrides(libpath, group_name)
+            container, members, container_objects = self.link_blend_objects_with_overrides(libpath, group_name,
+                                                                                           template_data)
         else:
             raise RuntimeError("No import method specified when importing blend objects.")
 
         return container, members, container_objects
 
-    def append_blend_objects(self, libpath, group_name):
+    def append_blend_objects(self, libpath, group_name, template_data):
         data_to = self._load_from_blendfile(
             libpath,
             import_link=False,
@@ -309,11 +321,14 @@ class BlendLoader(plugin.BlenderLoader):
         members = self._collect_members(data_to)
 
         # Needs to rename in separate block to retrieve blender object after initialisation
+        full_name_template = template_resolving.get_load_naming_template("fullname", template_data)
         for attr in dir(data_to):
             for data in getattr(data_to, attr):
-                data.name = self._get_new_name(
+                data.name = template_resolving.get_resolved_name(
+                    template_data,
+                    full_name_template,
                     name=data.name,
-                    group_name=group_name
+                    container=group_name
                 )
 
         container.name = group_name
@@ -335,7 +350,7 @@ class BlendLoader(plugin.BlenderLoader):
 
         return container, members, container_objects
 
-    def link_blend_objects_with_overrides(self, libpath, group_name):
+    def link_blend_objects_with_overrides(self, libpath, group_name, template_data):
         data_to = self._load_from_blendfile(
             libpath,
             import_link=True,
@@ -347,10 +362,17 @@ class BlendLoader(plugin.BlenderLoader):
         original_container_name = ""
 
         corresponding_renamed = dict()
+
+        full_name_template = template_resolving.get_load_naming_template("fullname", template_data)
         for attr in dir(data_to):
             for data in getattr(data_to, attr):
                 new_data = data.override_create(remap_local_usages=True)
-                new_data.name = self._get_new_name(new_data.name, group_name, truncate_occurrence=False)
+                new_data.name = template_resolving.get_resolved_name(
+                    template_data,
+                    full_name_template,
+                    name=data.name,
+                    container=group_name
+                )
                 corresponding_renamed[data.name] = new_data.name
 
                 # We need to add newly linked objects to members
@@ -490,7 +512,8 @@ class BlendLoader(plugin.BlenderLoader):
 
         asset = representation.get('asset', '')
         subset = representation.get('subset', '')
-
+        template_data = template_resolving.set_data_for_template_from_original_data(representation)
+        template_data.update({"unique_number": container.get("unique_number", "00")})
         self.exec_remove(container)
 
         container, members = self.load_assets_and_create_hierarchy(
@@ -503,7 +526,8 @@ class BlendLoader(plugin.BlenderLoader):
                     'import_method',
                     self.defaults['import_method']
                 )
-            )
+            ),
+            template_data=template_data
         )
 
         asset_group = self._retrieve_undefined_asset_group(group_name)

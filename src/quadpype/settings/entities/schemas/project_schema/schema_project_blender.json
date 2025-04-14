@@ -361,6 +361,10 @@
         {
             "type": "schema",
             "name": "schema_blender_publish"
+        },
+        {
+            "type": "schema",
+            "name": "schema_blender_load"
         }
     ]
 }
