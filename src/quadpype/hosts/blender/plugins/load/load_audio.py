@@ -10,7 +10,7 @@ from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
 )
-from quadpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api import plugin, lib, template_resolving
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
     get_avalon_node
@@ -41,11 +41,19 @@ class AudioLoader(plugin.BlenderLoader):
         libpath = self.filepath_from_context(context)
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
+        representation = context['representation']
 
-        asset_name = plugin.prepare_scene_name(asset, subset)
-        unique_number = plugin.get_unique_number(asset, subset)
-        group_name = plugin.prepare_scene_name(asset, subset, unique_number)
-        namespace = namespace or f"{asset}_{unique_number}"
+        template_data = template_resolving.set_data_for_template_from_original_data(representation)
+        asset_name_template = template_resolving.get_load_naming_template("assetname", template_data)
+        namespace_template = template_resolving.get_load_naming_template("namespace", template_data)
+        group_name_template = template_resolving.get_load_naming_template("container", template_data)
+
+        asset_name = template_resolving.get_resolved_name(template_data, asset_name_template)
+        unique_number = plugin.get_unique_number(asset, subset, template_data)
+        template_data.update({"unique_number":unique_number})
+
+        namespace = namespace or template_resolving.get_resolved_name(template_data, namespace_template)
+        group_name = template_resolving.get_resolved_name(template_data, group_name_template, namespace=namespace)
 
         avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
         if not avalon_container:
@@ -77,7 +85,7 @@ class AudioLoader(plugin.BlenderLoader):
 
         lib.imprint(
             node=asset_group,
-            values={
+            data={
                 "schema": "quadpype:container-2.0",
                 "id": AVALON_CONTAINER_ID,
                 "name": name,
@@ -177,9 +185,11 @@ class AudioLoader(plugin.BlenderLoader):
         window_manager.windows[-1].screen.areas[0].type = old_type
 
         metadata["libpath"] = str(libpath)
-        metadata["representation"] = representation["_id"]
-        metadata["parent"] = representation["parent"]
+        metadata["representation"] = str(representation["_id"])
+        metadata["parent"] = str(representation["parent"])
         metadata["audio"] = new_audio
+
+        lib.imprint(node=asset_group, data=metadata, erase=True)
 
     def exec_remove(self, container: Dict) -> bool:
         """Remove an audio strip from the sequence editor and the container.

@@ -156,7 +156,7 @@ class FbxModelLoader(plugin.BlenderLoader):
 
         lib.imprint(
             node=asset_group,
-            values={
+            data={
                 "schema": "quadpype:container-2.0",
                 "id": AVALON_CONTAINER_ID,
                 "name": name,

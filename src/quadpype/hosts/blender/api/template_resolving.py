@@ -21,7 +21,7 @@ def get_resolved_name(data, template, **additional_data):
         data = dict(data, **additional_data)
     return template_obj.format_strict(data).normalized()
 
-def set_data_for_template_from_original_data(original_data):
+def set_data_for_template_from_original_data(original_data, filter_variant=True):
     """Format incoming data for template resolving"""
     data = deepcopy(original_data)
 
@@ -38,7 +38,8 @@ def set_data_for_template_from_original_data(original_data):
 
     if lib.is_shot():
         data['sequence'], data['shot'] = lib.extract_sequence_and_shot()
-    _filter_variant_data(data)
+    if filter_variant:
+        _filter_variant_data(data)
     return data
 
 def _filter_variant_data(data):
@@ -193,3 +194,52 @@ def get_task_collection_templates(data, task=None):
         return []
 
     return profile.get("templates", [])
+
+
+#---------------------------------------------------------------------------
+#Load naming template
+#---------------------------------------------------------------------------
+
+def get_load_naming_template(setting_key, data):
+    project_name, is_anatomy_data = _get_project_name_by_data(data)
+    app_name, is_anatomy_data = _get_app_name_by_data(data)
+    project_settings = get_project_settings(project_name)
+
+    # Get Entity Type Name Matcher Profiles
+    try:
+        template = (
+            project_settings
+            [app_name]
+            ["load"]
+            ["NamingTemplate"]
+            [setting_key]
+        )
+
+    except Exception:
+        raise KeyError("Project has no template set for {}".format(setting_key))
+
+    return template
+
+#---------------------------------------------------------------------------
+#Publish loaded re-naming template
+#---------------------------------------------------------------------------
+
+def get_loaded_naming_finder_template(setting_key, data):
+    project_name, is_anatomy_data = _get_project_name_by_data(data)
+    app_name, is_anatomy_data = _get_app_name_by_data(data)
+    project_settings = get_project_settings(project_name)
+
+    # Get Entity Type Name Matcher Profiles
+    try:
+        template = (
+            project_settings
+            [app_name]
+            ["publish"]
+            ["LoadedNamingFinder"]
+            [setting_key]
+        )
+
+    except Exception:
+        raise KeyError("Project has no template set for {}".format(setting_key))
+
+    return template

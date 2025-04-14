@@ -67,12 +67,9 @@ def _get_selection():
 
 def _create_camera(subset_name, asset_group):
     plugin.deselect_all()
-    camera = bpy.data.cameras.new(subset_name)
+    camera = bpy.data.cameras.new(f"{subset_name}.data")
     camera_obj = bpy.data.objects.new(subset_name, camera)
 
-    instances = bpy.data.collections.get(AVALON_INSTANCES)
-    instances.objects.link(camera_obj)
+    bpy.context.scene.collection.objects.link(camera_obj)
 
-    bpy.context.view_layer.objects.active = asset_group
-
-    return [camera]
+    return [camera_obj]

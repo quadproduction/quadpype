@@ -629,7 +629,7 @@ def containerise(name: str,
         "representation": str(context["representation"]["_id"]),
     }
 
-    metadata_update(container, data)
+    metadata_update(container, data, erase=False)
     add_to_avalon_container(container)
 
     return container
@@ -668,7 +668,7 @@ def containerise_existing(
         "representation": str(context["representation"]["_id"]),
     }
 
-    metadata_update(container, data)
+    metadata_update(container, data, erase=False)
     add_to_avalon_container(container)
 
     return container

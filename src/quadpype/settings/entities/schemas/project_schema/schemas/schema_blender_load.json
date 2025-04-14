@@ -1,0 +1,15 @@
+{
+    "type": "dict",
+    "collapsible": true,
+    "key": "load",
+    "label": "Load plugins",
+    "children": [
+        {
+            "type": "dict-modifiable",
+            "collapsible": true,
+            "key": "NamingTemplate",
+            "label": "Naming Template",
+            "object_type": "text"
+        }
+    ]
+}
