@@ -507,8 +507,8 @@ class BlendLoader(plugin.BlenderLoader):
             # Check if the object has an action and, if so, add it to a dict
             # so we can restore it later. Save and restore the action only
             # if it wasn't originally loaded from the current asset.
-            if obj.animation_data.action not in avalon_data.get("members", []):
-                actions[obj.name] = obj.animation_data.action
+            if obj.animation_data.action.name not in avalon_data.get("members", []).get("actions", []):
+                actions[obj.name] = obj.animation_data.action.name
 
         asset = representation.get('asset', '')
         subset = representation.get('subset', '')
@@ -544,9 +544,15 @@ class BlendLoader(plugin.BlenderLoader):
         # Restore the actions
         for obj in all_objects_from_asset:
             if obj.name in actions:
+                if not actions.get(obj.name):
+                    continue
                 if not obj.animation_data:
                     obj.animation_data_create()
-                obj.animation_data.action = actions[obj.name]
+
+                action = bpy.data.actions.get(actions.get(obj.name))
+                if not action:
+                    continue
+                obj.animation_data.action = action
 
         # Restore the old data, but reset members, as they don't exist anymore,
         # This avoids a crash, because the memory addresses of those members
