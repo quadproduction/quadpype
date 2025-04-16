@@ -88,8 +88,7 @@ class CollectHierarchy(pyblish.api.ContextPlugin):
             context.data["hierarchyContext"]))
 
     def _update_dict(self, parent_dict, child_dict):
-        """
-        Nesting each children into its parent.
+        """Nesting each child into its parent.
 
         Args:
             parent_dict (dict): parent dict wich should be nested with children

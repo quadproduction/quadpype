@@ -150,8 +150,11 @@ def set_app_templates_path():
     # We look among the scripts paths for one of the paths that contains
     # the app templates. The path must contain the subfolder
     # `startup/bl_app_templates_user`.
-    paths = os.getenv("QUADPYPE_BLENDER_USER_SCRIPTS").split(os.pathsep)
+    paths = os.getenv("QUADPYPE_BLENDER_USER_SCRIPTS")
+    if not paths:
+        return
 
+    paths = paths.split(os.pathsep)
     app_templates_path = None
     for path in paths:
         if os.path.isdir(
@@ -276,19 +279,18 @@ def read(node: bpy.types.bpy_struct_meta_idprop):
     return data
 
 
-class ObjectTypeData(Enum):
-    CacheFile = "cache_files"
-    Collection = "collections"
-    Material = "materials"
-    Mesh = "meshes"
-    Object = "objects"
-    Armature = "armatures"
-    Light = "lights"
-    Action = "actions"
-    Camera = "cameras"
-    Brushe = "brushes"
-    Image = "images"
-
+def get_object_types_correspondance():
+    rna_to_bpy_data = dict()
+    for name in dir(bpy.data):
+        prop = getattr(bpy.data, name)
+        if isinstance(prop, bpy.types.bpy_prop_collection):
+            try:
+                if len(prop) > 0:
+                    identifier = prop[0].bl_rna.identifier
+                    rna_to_bpy_data[identifier] = name
+            except Exception:
+                pass
+    return rna_to_bpy_data
 
 def map_to_classes_and_names(blender_objects):
     """ Get a list of blender_objects and produce a dictionary composed of all previous objects
@@ -306,8 +308,10 @@ def map_to_classes_and_names(blender_objects):
         }
     """
     mapped_values = dict()
+    rna_to_bpy_data = get_object_types_correspondance()
+
     for blender_object in blender_objects:
-        object_data_name = ObjectTypeData[blender_object.bl_rna.name].value
+        object_data_name = rna_to_bpy_data[blender_object.bl_rna.identifier]
         if not mapped_values.get(object_data_name):
             mapped_values[object_data_name] = list()
         mapped_values[object_data_name].append(blender_object.name)
@@ -650,6 +654,13 @@ def get_cache_modifiers(obj, modifier_type="MESH_SEQUENCE_CACHE"):
                                    if modifier.type == modifier_type]
                 modifiers_dict[ob.name] = cache_modifiers
     return modifiers_dict
+
+
+def get_blender_version():
+    """Get Blender Version
+    """
+    major, minor, subversion = bpy.app.version
+    return major, minor, subversion
 
 
 def get_parents_for_collection(collection, collections=None):

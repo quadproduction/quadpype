@@ -1,0 +1,41 @@
+[About]
+Type=label
+Label=About
+Category=About Plugin
+CategoryOrder=-1
+Index=0
+Default=Blender Plugin for Deadline
+Description=Not configurable
+
+[ConcurrentTasks]
+Type=label
+Label=ConcurrentTasks
+Category=About Plugin
+CategoryOrder=-1
+Index=0
+Default=True
+Description=Not configurable
+
+[Blender_RenderExecutable]
+Type=multilinemultifilename
+Label=Blender Executable
+Category=Render Executables
+CategoryOrder=0
+Default=C:\Program Files\Blender Foundation\Blender\blender.exe;C:\Program Files (x86)\Blender Foundation\Blender\blender.exe;/Applications/Blender/blender.app/Contents/MacOS/blender;/usr/local/Blender/blender
+Description=The path to the Blender executable file used for rendering. Enter alternative paths on separate lines.
+
+[Blender_ScriptsFolder]
+Type=folder
+Label=Blender Scripts Folder
+Category=Scripts Folder
+CategoryOrder=1
+Default=
+Description=Folder in which requested Blender scripts are localized.
+
+[SuppressOutput]
+Type=boolean
+Label=Suppress Verbose Progress Output To Log
+Category=Output
+CategoryOrder=0
+Default=True
+Description=When enabled, this will prevent excessive progress logging to the Worker and task logs.

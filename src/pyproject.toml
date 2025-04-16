@@ -79,10 +79,10 @@ requests = "^2.25.1"
 pysftp = "^0.2.9"
 dropbox = "^11.20.0"
 cryptography = "^43.0.1"
-opentimelineio = "^0.15.0"
+opentimelineio = "0.16.0"
 colorama = "0.4.6"
-fastapi = ">=0.112.0,<0.113.0"
-uvicorn = "^0.30.6"
+fastapi = "^0.115.0"
+uvicorn = "^0.34.0"
 htmllistparse = "^0.6.1"
 
 [tool.poetry.dev-dependencies]
@@ -103,7 +103,7 @@ pydocstyle = "*"
 linkify-it-py = "^2.0.0"
 myst-parser = "^0.18.1"
 pylint = "^2.4.4"
-pytest = "^6.1"
+pytest = "^7.2.0"
 pytest-cov = "*"
 pytest-print = "*"
 Sphinx = "^5.3"
@@ -161,7 +161,7 @@ version = "5.15.2"
 # Python dependencies that will be available only in runtime of the QuadPype process
 # To not interfere with DCCs dependencies
 opencolorio = "2.2.1"
-opentimelineio = "0.14.1"
+opentimelineio = "0.16.0"
 
 [quadpype.thirdparty.ffmpeg.windows]
 url = "https://distribute.ynput.io/thirdparty/ffmpeg-4.4-windows.zip"

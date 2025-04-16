@@ -46,7 +46,7 @@ class BlendAnimationLoader(plugin.BlenderLoader):
 
         container = pipeline.get_container(collections=data_to.collections)
         correspondance = get_avalon_node(container).get("correspondance")
-        target_namespace = get_avalon_node(container).get('namespace')
+        target_namespace = get_avalon_node(container).get('namespace', namespace)
         assert container, "No asset group found"
 
         actions = data_to.actions
@@ -63,7 +63,7 @@ class BlendAnimationLoader(plugin.BlenderLoader):
         )
 
         for loaded_container in loaded_containers:
-            if not get_avalon_node(loaded_container).get('namespace') == target_namespace:
+            if not get_avalon_node(loaded_container).get('namespace', namespace) == target_namespace:
                 continue
             for obj in pipeline.get_container_content(loaded_container):
                 if not obj.name in correspondance.keys():

@@ -17,10 +17,11 @@ class CollectKitsuUsername(pyblish.api.ContextPlugin):
         if not kitsu_login:
             return
 
-        kitsu_username = kitsu_login.split("@")[0].replace(".", " ")
-        new_username = re.sub("[^a-zA-Z]", " ", kitsu_username).title()
+        from gazu.person import get_person_by_email
+
+        user = get_person_by_email(kitsu_login)
 
         for instance in context:
             # Don't override customData if it already exists
             custom_data = instance.data.setdefault("customData", {})
-            custom_data["kitsuUsername"] = new_username
+            custom_data["kitsuUsername"] = user["full_name"]

@@ -17,7 +17,8 @@ from quadpype.pipeline.template_data import (
 from quadpype.hosts.blender.api.template_resolving import (
     get_task_collection_templates,
     get_resolved_name,
-    set_data_for_template_from_original_data
+    set_data_for_template_from_original_data,
+    get_load_naming_template
 )
 from quadpype.hosts.blender.api.collections import (
     create_collections_from_hierarchy
@@ -69,7 +70,7 @@ def prepare_scene_name(
 
 
 def get_unique_number(
-    asset: str, subset: str
+    asset: str, subset: str, data: Optional[dict] = None
 ) -> str:
     """Return a unique number based on the asset name."""
     avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
@@ -87,9 +88,21 @@ def get_unique_number(
     container_names = obj_group_names.union(coll_group_names)
     count = 1
     name = f"{asset}_{count:0>2}_{subset}"
+    namespace_template = ""
+    name_template = ""
+    if data:
+        namespace_template = get_load_naming_template("namespace", data)
+        namespace = get_resolved_name(data, namespace_template, unique_number=f"{count:0>2}")
+        name_template = get_load_naming_template("container", data)
+        name = get_resolved_name(data, name_template, namespace=namespace)
+
     while name in container_names:
         count += 1
-        name = f"{asset}_{count:0>2}_{subset}"
+        if not data:
+            name = f"{asset}_{count:0>2}_{subset}"
+        else:
+            namespace = get_resolved_name(data, namespace_template, unique_number=f"{count:0>2}")
+            name = get_resolved_name(data, name_template, namespace=namespace)
     return f"{count:0>2}"
 
 
@@ -582,13 +595,16 @@ class BlenderLoader(LoaderPlugin):
 
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
+        representation = context['representation']
+        template_data = set_data_for_template_from_original_data(representation)
+
         unique_number = get_unique_number(
-            asset, subset
+            asset, subset, template_data
         )
-        namespace = namespace or f"{asset}_{unique_number}"
-        name = name or prepare_scene_name(
-            asset, subset, unique_number
-        )
+        namespace_template = get_load_naming_template("namespace", template_data)
+        namespace = namespace or get_resolved_name(template_data, namespace_template, unique_number=unique_number)
+        name_template = get_load_naming_template("container", template_data)
+        name = name or get_resolved_name(template_data, name_template, namespace=namespace)
 
         nodes = self.process_asset(
             context=context,

@@ -1,5 +1,6 @@
 import os
 
+from quadpype.style import get_default_entity_icon_color
 from quadpype.pipeline import load
 
 
@@ -11,7 +12,7 @@ class CopyFilePath(load.LoaderPlugin):
     label = "Copy File Path"
     order = 20
     icon = "clipboard"
-    color = "#999999"
+    color = get_default_entity_icon_color()
 
     def load(self, context, name=None, namespace=None, data=None):
         path = self.filepath_from_context(context)

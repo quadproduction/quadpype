@@ -85,7 +85,7 @@ class AbstractTemplateBuilder(ABC):
     """Abstraction of Template Builder.
 
     Builder cares about context, shared data, cache, discovery of plugins
-    and trigger logic. Provides public api for host workfile build systen.
+    and trigger logic. Provides public api for host workfile build system.
 
     Rest of logic is based on plugins that care about collection and creation
     of placeholder items.
@@ -685,7 +685,7 @@ class AbstractTemplateBuilder(ABC):
             for placeholder in placeholders
         }
         all_processed = len(placeholders) == 0
-        # Counter is checked at the ned of a loop so the loop happens at least
+        # Counter is checked at the end of a loop so the loop happens at least
         #   once.
         iter_counter = 0
         while not all_processed:
@@ -764,7 +764,7 @@ class AbstractTemplateBuilder(ABC):
         )
 
     def get_template_preset(self):
-        """Unified way how template preset is received usign settings.
+        """Unified way how template preset is received using settings.
 
         Method is dependent on '_get_build_profiles' which should return filter
         profiles to resolve path to a template. Default implementation looks
@@ -817,7 +817,7 @@ class AbstractTemplateBuilder(ABC):
                 "Settings\\Profiles"
             ).format(host_name.title()))
 
-        # Try fill path with environments and anatomy roots
+        # Try to fill path with environments and anatomy roots
         anatomy = Anatomy(project_name)
         fill_data = {
             key: value
@@ -1114,10 +1114,10 @@ class PlaceholderItem(object):
     """Item representing single item in scene that is a placeholder to process.
 
     Items are always created and updated by their plugins. Each plugin can use
-    modified class of 'PlacehoderItem' but only to add more options instead of
+    modified class of 'PlaceholderItem' but only to add more options instead of
     new other.
 
-    Scene identifier is used to avoid processing of the palceholder item
+    Scene identifier is used to avoid processing of the placeholder item
     multiple times so must be unique across whole workfile builder.
 
     Args:
@@ -1169,7 +1169,7 @@ class PlaceholderItem(object):
         """Placeholder data which can modify how placeholder is processed.
 
         Possible general keys
-        - order: Can define the order in which is palceholder processed.
+        - order: Can define the order in which is placeholder processed.
                     Lower == earlier.
 
         Other keys are defined by placeholder and should validate them on item
@@ -1271,7 +1271,7 @@ class PlaceholderLoadMixin(object):
         """Unified attribute definitions for load placeholder.
 
         Common function for placeholder plugins used for loading of
-        repsentations. Use it in 'get_placeholder_options'.
+        representations. Use it in 'get_placeholder_options'.
 
         Args:
             plugin (PlaceholderPlugin): Plugin used for loading of
@@ -1389,7 +1389,7 @@ class PlaceholderLoadMixin(object):
                 placeholder='{"camera":"persp", "lights":True}',
                 tooltip=(
                     "Loader"
-                    "\nDefines a dictionnary of arguments used to load assets."
+                    "\nDefines a dictionary of arguments used to load assets."
                     "\nUseable arguments depend on current placeholder Loader."
                     "\nField should be a valid python dict."
                     " Anything else will be ignored."
@@ -1925,7 +1925,7 @@ class PlaceholderCreateMixin(object):
         self.log.debug("Clean up of placeholder is not implemented.")
 
     def _before_instance_create(self, placeholder):
-        """Can be overriden. Is called before instance is created."""
+        """Can be overridden. Is called before instance is created."""
 
         pass
 

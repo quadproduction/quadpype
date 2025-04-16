@@ -232,6 +232,18 @@
                     }
                 }
             }
+        },
+        "LoadedNamingFinder": {
+            "namespace": "^[^:]+:(.+)$",
+            "unique-number": "^(.*)-\\d{2}$"
+        }
+    },
+    "load": {
+        "NamingTemplate": {
+            "namespace": "{asset}_{unique_number}",
+            "container": "{namespace}_{subset}",
+            "assetname": "{asset}_{subset}",
+            "fullname": "{container}:{name}"
         }
     }
 }
