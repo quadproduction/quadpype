@@ -221,7 +221,8 @@ class LaunchQtApp(bpy.types.Operator):
     _init_kwargs: Optional[Dict] = dict()
     bl_idname: str = None
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         if self.bl_idname is None:
             raise NotImplementedError("Attribute `bl_idname` must be set!")
         print(f"Initialising {self.bl_idname}...")
@@ -336,7 +337,7 @@ class LaunchCreator(LaunchQtApp):
 
 
 class LaunchLoader(LaunchQtApp):
-    """Launch Avalon Loader."""
+    """Launch QuadPype Loader."""
 
     bl_idname = "wm.avalon_loader"
     bl_label = "Load..."

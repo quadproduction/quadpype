@@ -412,6 +412,7 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
     use_published = True
     asset_dependencies = False
     default_priority = 50
+    dependency = False
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -423,6 +424,11 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
         self.aux_files = None
 
     def process(self, instance):
+        if not self.is_active(instance.data):
+            self.log.debug("Skipping Deadline submit.")
+            instance.data["farm"] = False
+            return
+
         """Plugin entry point."""
         self._instance = instance
         context = instance.context
@@ -457,6 +463,7 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
         self.aux_files = self.get_aux_files()
 
         job_id = self.process_submission()
+        self.add_as_dependency(job_id)
         self.log.info("Submitted job to Deadline: {}.".format(job_id))
 
         # TODO: Find a way that's more generic and not render type specific
@@ -484,6 +491,14 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
         """
         payload = self.assemble_payload()
         return self.submit(payload)
+
+    def add_as_dependency(self, job_id):
+        if not self.dependency:
+            return
+
+        instance_data = self._instance.data
+        instance_data['jobDependency'] = job_id
+
 
     @abstractmethod
     def get_job_info(self):
@@ -575,8 +590,14 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
 
         """
         job = job_info or self.job_info
+        serialized_job = job.serialize()
+        job_dependency_id = self._instance.data.get('jobDependency', None)
+        if job_dependency_id:
+            serialized_job["JobDependency0"] = job_dependency_id
+            self.log.info(f"Added job with id {job_dependency_id} to current job.")
+
         return {
-            "JobInfo": job.serialize(),
+            "JobInfo": serialized_job,
             "PluginInfo": plugin_info or self.plugin_info,
             "AuxFiles": aux_files or self.aux_files
         }
