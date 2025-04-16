@@ -276,19 +276,18 @@ def read(node: bpy.types.bpy_struct_meta_idprop):
     return data
 
 
-class ObjectTypeData(Enum):
-    CacheFile = "cache_files"
-    Collection = "collections"
-    Material = "materials"
-    Mesh = "meshes"
-    Object = "objects"
-    Armature = "armatures"
-    Light = "lights"
-    Action = "actions"
-    Camera = "cameras"
-    Brushe = "brushes"
-    Image = "images"
-
+def get_object_types_correspondance():
+    rna_to_bpy_data = dict()
+    for name in dir(bpy.data):
+        prop = getattr(bpy.data, name)
+        if isinstance(prop, bpy.types.bpy_prop_collection):
+            try:
+                if len(prop) > 0:
+                    identifier = prop[0].bl_rna.identifier
+                    rna_to_bpy_data[identifier] = name
+            except Exception:
+                pass
+    return rna_to_bpy_data
 
 def map_to_classes_and_names(blender_objects):
     """ Get a list of blender_objects and produce a dictionary composed of all previous objects
@@ -306,8 +305,10 @@ def map_to_classes_and_names(blender_objects):
         }
     """
     mapped_values = dict()
+    rna_to_bpy_data = get_object_types_correspondance()
+
     for blender_object in blender_objects:
-        object_data_name = ObjectTypeData[blender_object.bl_rna.name].value
+        object_data_name = rna_to_bpy_data[blender_object.bl_rna.identifier]
         if not mapped_values.get(object_data_name):
             mapped_values[object_data_name] = list()
         mapped_values[object_data_name].append(blender_object.name)
