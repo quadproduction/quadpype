@@ -32,6 +32,16 @@ from quadpype.pipeline import (
     get_current_project_name,
     get_current_task_name
 )
+from quadpype.pipeline.workfile.workfile_template_builder import (
+    is_last_workfile_exists,
+    should_build_first_workfile
+)
+
+from .workfile_template_builder import (
+    build_workfile_template,
+    BlenderPlaceholderLoadPlugin,
+    BlenderPlaceholderCreatePlugin
+)
 
 from quadpype.pipeline.workfile import get_template_data_from_session
 from quadpype.lib import (
@@ -64,6 +74,8 @@ AVALON_INSTANCES = "AVALON_INSTANCES"
 AVALON_CONTAINERS = "AVALON_CONTAINERS"
 AVALON_PROPERTY = 'avalon'
 IS_HEADLESS = bpy.app.background
+
+DEFAULT_VARIANT_NAME = "Main"
 
 log = Logger.get_logger(__name__)
 
@@ -158,6 +170,12 @@ class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost):
                 tuple with '(<old>, <new>)' value.
         """
         lib.imprint(bpy.context.scene, data)
+
+    def get_workfile_build_placeholder_plugins(self):
+        return [
+            BlenderPlaceholderLoadPlugin,
+            BlenderPlaceholderCreatePlugin
+        ]
 
 
 def pype_excepthook_handler(*args):
@@ -262,6 +280,15 @@ def get_frame_range(asset_entity=None) -> Union[Dict[str, int], None]:
         "frameEndHandle": frame_end_handle,
     }
 
+def get_parent_data(data):
+    parent = data.get('parent', None)
+    if not parent:
+        hierarchy = data.get('hierarchy')
+        if not hierarchy:
+            return
+
+        return hierarchy.split('/')[-1]
+    return parent
 
 def set_frame_range(data):
     scene = bpy.context.scene
@@ -330,8 +357,12 @@ def set_unit_scale_from_settings(unit_scale_settings=None):
         unit_scale = unit_scale_settings["base_file_unit_scale"]
         bpy.context.scene.unit_settings.scale_length = unit_scale
 
+def _autobuild_first_workfile():
+    if not is_last_workfile_exists() and should_build_first_workfile():
+        build_workfile_template()
 
 def on_new():
+    _autobuild_first_workfile()
     project = os.getenv("AVALON_PROJECT")
     settings = get_project_settings(project).get("blender")
 
@@ -598,7 +629,7 @@ def containerise(name: str,
         "representation": str(context["representation"]["_id"]),
     }
 
-    metadata_update(container, data)
+    metadata_update(container, data, erase=False)
     add_to_avalon_container(container)
 
     return container
@@ -637,7 +668,7 @@ def containerise_existing(
         "representation": str(context["representation"]["_id"]),
     }
 
-    metadata_update(container, data)
+    metadata_update(container, data, erase=False)
     add_to_avalon_container(container)
 
     return container
@@ -734,3 +765,22 @@ def get_path_from_template(template_module, template_name, template_data={}, bum
         else:
             os.makedirs(os.path.dirname(render_node_path), exist_ok=True)
     return render_node_path
+
+def get_container(objects: list = [], collections: list = []):
+    """Retrieve the instance container based on given objects and collections"""
+    for coll in collections:
+        if has_avalon_node(coll):
+            return coll
+
+    for empty in [obj for obj in objects if obj.type == 'EMPTY']:
+        if has_avalon_node(empty) and empty.parent is None:
+            return empty
+
+    return None
+
+def get_container_content(container):
+    """Retrieve all objects and collection in the given container"""
+    if lib.is_collection(container):
+        return [*container.objects, *container.children]
+
+    return [obj for obj in bpy.data.objects if obj.parent == container]

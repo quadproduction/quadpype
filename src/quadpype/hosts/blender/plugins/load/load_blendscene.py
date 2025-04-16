@@ -21,7 +21,7 @@ class BlendSceneLoader(plugin.BlenderLoader):
     families = ["blendScene"]
     representations = ["blend"]
 
-    label = "Append Blend"
+    label = "Append Blend Scene"
     icon = "code-fork"
     color = "orange"
 

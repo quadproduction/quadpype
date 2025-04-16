@@ -26,6 +26,14 @@ class AERenderInstance(RenderInstance):
 
 
 class CollectAERender(publish.AbstractCollectRender):
+    """Prepares RenderInstance.
+
+    RenderInstance is meant to replace simple dictionaries to provide code
+    assist and typing. (Currently used only in AE, Harmony though.)
+
+    This must run after `collect_review`, but before Deadline plugins (which
+    should be run only on renderable instances.)
+    """
 
     order = pyblish.api.CollectorOrder + 0.405
     label = "Collect After Effects Render Layers"
@@ -42,7 +50,9 @@ class CollectAERender(publish.AbstractCollectRender):
             cls._stub = get_stub()
         return cls._stub
 
-    def get_instances(self, context):
+    def get_instances(
+        self, context: pyblish.api.Context
+    ) -> list[AERenderInstance]:
         instances = []
         instances_to_remove = []
 
@@ -159,7 +169,7 @@ class CollectAERender(publish.AbstractCollectRender):
             for later 'submit_publish_job'.
 
         Args:
-            render_instance (RenderInstance): to pull anatomy and parts used
+            render_instance (AERenderInstance): to pull anatomy and parts used
                 in url
 
         Returns:
@@ -195,13 +205,12 @@ class CollectAERender(publish.AbstractCollectRender):
         return expected_files
 
     def _get_output_dir(self, render_instance):
-        """
-            Returns dir path of rendered files, used in submit_publish_job
-            for metadata.json location.
-            Should be in separate folder inside of work area.
+        """Return dir path of rendered files, used in submit_publish_job
+        for metadata.json location. Should be in separate folder inside work
+        area.
 
         Args:
-            render_instance (RenderInstance):
+            render_instance (AERenderInstance): The render instance.
 
         Returns:
             (str): absolute path to rendered files

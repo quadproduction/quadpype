@@ -46,6 +46,7 @@ unset VIRTUAL_ENV
 # 1.D Install the right Python version for the pipeline to run
 
 # 1.E Update PIP for the pyenv Python
+python3 -m ensurepip --upgrade
 python3 -m pip install --upgrade --force-reinstall pip
 
 # 2. Re-apply the previously saved terminal encoding

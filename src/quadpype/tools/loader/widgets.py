@@ -19,6 +19,7 @@ from quadpype.client import (
 )
 from quadpype.client.operations import OperationsSession, REMOVED_VALUE
 from quadpype.pipeline import HeroVersionType, Anatomy
+from quadpype.lib import get_user_profile
 from quadpype.pipeline.thumbnail import get_thumbnail_binary
 from quadpype.pipeline.load import (
     discover_loader_plugins,
@@ -1402,6 +1403,10 @@ class RepresentationWidget(QtWidgets.QWidget):
             self._repre_contexts_for_loaders_filter(items)
         )
 
+        curr_user_profile = get_user_profile()
+        curr_user_role = curr_user_profile["role"]
+        curr_user_is_admin = curr_user_role == "administrator"
+
         for item in items:
             repre_context = repre_context_by_id[item["_id"]]
             for loader in loaders_from_repre_context(
@@ -1424,14 +1429,20 @@ class RepresentationWidget(QtWidgets.QWidget):
                             "{}_site_progress".format(selected_side), -1)
 
                         # only remove if actually present
-                        if tools_lib.is_remove_site_loader(loader):
-                            label = "Remove {}".format(selected_side)
-                            if selected_site_progress < 1:
+                        if tools_lib.is_remove_site_loader(loader) and selected_site_progress >= 1:
+                            if not curr_user_is_admin:
+                                # Only administrators can remove manually from the loader
                                 continue
 
-                        if tools_lib.is_add_site_loader(loader):
+                            label = "Remove {}".format(selected_side)
+                        elif tools_lib.is_add_site_loader(loader):
                             label = self.commands[selected_side]
                             if selected_site_progress >= 0:
+                                if selected_side == "remote" and not curr_user_is_admin:
+                                    # Only administrators can re-upload files
+                                    # To avoid issues that mess-up with the FTP
+                                    continue
+
                                 label = 'Re-{} {}'.format(label, selected_side)
 
                         if not label:

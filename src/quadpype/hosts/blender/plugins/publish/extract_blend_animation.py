@@ -3,7 +3,7 @@ import os
 import bpy
 
 from quadpype.pipeline import publish
-from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api import plugin, pipeline, lib
 
 class ExtractBlendAnimation(
     plugin.BlenderExtractor,
@@ -35,20 +35,30 @@ class ExtractBlendAnimation(
         # Perform extraction
         self.log.info("Performing extraction..")
 
+        asset_group = instance.data["transientData"]["instance_node"]
+
         data_blocks = set()
+        instance_objects = lib.get_objects_in_collection(asset_group)
+        correspondance_dict = {}
 
-        for obj in instance:
-            if isinstance(obj, bpy.types.Object) and obj.type == 'EMPTY':
-                child = obj.children[0]
-                if child and child.type == 'ARMATURE':
-                    if child.animation_data and child.animation_data.action:
-                        if not obj.animation_data:
-                            obj.animation_data_create()
-                        obj.animation_data.action = child.animation_data.action
-                        obj.animation_data_clear()
-                        data_blocks.add(child.animation_data.action)
-                        data_blocks.add(obj)
+        animated_objects = [
+            obj for obj in instance_objects if
+            obj and
+            obj.animation_data and
+            obj.animation_data.action
+        ]
 
+        for obj in animated_objects:
+            data_blocks.add(obj.animation_data.action)
+            if not obj.animation_data:
+                obj.animation_data_create()
+            correspondance_dict[obj.name] = obj.animation_data.action.name
+
+        avalon_data = pipeline.get_avalon_node(asset_group)
+        avalon_data["correspondance"] = correspondance_dict
+        lib.imprint(asset_group, avalon_data)
+
+        data_blocks.add(asset_group)
         bpy.data.libraries.write(filepath, data_blocks, compress=self.compress)
 
         if "representations" not in instance.data:

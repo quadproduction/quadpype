@@ -6,6 +6,7 @@ from quadpype.hosts.blender.api import plugin, action
 from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishValidationError,
+    OptionalPyblishPluginMixin,
     RepairAction
 )
 
@@ -15,7 +16,7 @@ from quadpype.hosts.blender.api import (
     get_objects_in_collection
 )
 
-class ValidateModelContents(plugin.BlenderInstancePlugin):
+class ValidateModelContents(plugin.BlenderInstancePlugin, OptionalPyblishPluginMixin):
     """Validates Model instance contents.
 
     A Model instance should have everything that is in the {parent}-{asset} collection
@@ -25,6 +26,7 @@ class ValidateModelContents(plugin.BlenderInstancePlugin):
     families = ['model']
     hosts = ['blender']
     label = 'Validate Model Contents'
+    optional = True
 
     actions = [action.SelectInvalidAction, RepairAction]
 
@@ -67,7 +69,8 @@ class ValidateModelContents(plugin.BlenderInstancePlugin):
         return invalid
 
     def process(self, instance):
-
+        if not self.is_active(instance.data):
+            return
         invalid = self.get_invalid(instance)
 
         if invalid:

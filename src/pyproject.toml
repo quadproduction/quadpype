@@ -37,6 +37,7 @@ quadpype = 'start:boot'
 
 [tool.poetry.dependencies]
 python = ">=3.9.13,<3.10"
+pyinstaller = ">=6.12.0"
 aiohttp = "^3.9.0"
 aiohttp_json_rpc = "*" # TVPaint server
 acre = { git = "https://github.com/pypeclub/acre.git" }
@@ -55,7 +56,7 @@ jsonschema = "^2.6.0"
 keyring = "^22.0.1"
 log4mongo = "^1.7"
 pathlib2= "^2.3.5" # deadline submit publish job only (single place, maybe not needed?)
-Pillow = "^9.0" # used in TVPaint and for slates
+Pillow = "^10.3.0" # used in TVPaint and for slates
 pyblish-base = "^1.8.11"
 pynput = "^1.7.2" # idle manager in tray
 pymongo = "^3.11.2"
@@ -77,20 +78,21 @@ slack-sdk = "^3.6.0"
 requests = "^2.25.1"
 pysftp = "^0.2.9"
 dropbox = "^11.20.0"
-aiohttp-middlewares = "^2.0.0"
-Unidecode = "^1.2.0"
-cryptography = "39.0.0"
-opentimelineio = "^0.15.0"
+cryptography = "^43.0.1"
+opentimelineio = "0.16.0"
 colorama = "0.4.6"
-fastapi = ">=0.112.0,<0.113.0"
-uvicorn = "^0.30.6"
+fastapi = "^0.115.0"
+uvicorn = "^0.34.0"
 htmllistparse = "^0.6.1"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^6.0"
 autopep8 = "^2.0"
 coverage = "*"
-cx_freeze = ">=6.15.0,<7.2.3"
+cx_freeze = [
+    { version = ">=6.15.0,<7.2.3", markers = "sys_platform == 'win32'" },
+    { version = "7.2.4", markers = "sys_platform != 'win32'" }
+]
 lief = ">=0.12.0,<0.14.0"
 GitPython = "^3.1.17"
 jedi = "^0.13"
@@ -101,7 +103,7 @@ pydocstyle = "*"
 linkify-it-py = "^2.0.0"
 myst-parser = "^0.18.1"
 pylint = "^2.4.4"
-pytest = "^6.1"
+pytest = "^7.2.0"
 pytest-cov = "*"
 pytest-print = "*"
 Sphinx = "^5.3"
@@ -143,6 +145,10 @@ version = "6.7.1"
 package = "PySide6"
 version = "6.7.1"
 
+[quadpype.qtbinding.rocky8]
+package = "PySide2"
+version = "5.15.2"
+
 [quadpype.qtbinding.centos7]
 package = "PySide2"
 version = "5.15.2"
@@ -155,7 +161,7 @@ version = "5.15.2"
 # Python dependencies that will be available only in runtime of the QuadPype process
 # To not interfere with DCCs dependencies
 opencolorio = "2.2.1"
-opentimelineio = "0.14.1"
+opentimelineio = "0.16.0"
 
 [quadpype.thirdparty.ffmpeg.windows]
 url = "https://distribute.ynput.io/thirdparty/ffmpeg-4.4-windows.zip"

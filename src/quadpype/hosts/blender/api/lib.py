@@ -279,18 +279,18 @@ def read(node: bpy.types.bpy_struct_meta_idprop):
     return data
 
 
-class ObjectTypeData(Enum):
-    CacheFile = "cache_files"
-    Collection = "collections"
-    Material = "materials"
-    Mesh = "meshes"
-    Object = "objects"
-    Armature = "armatures"
-    Light = "lights"
-    Action = "actions"
-    Camera = "cameras"
-    Brushe = "brushes"
-
+def get_object_types_correspondance():
+    rna_to_bpy_data = dict()
+    for name in dir(bpy.data):
+        prop = getattr(bpy.data, name)
+        if isinstance(prop, bpy.types.bpy_prop_collection):
+            try:
+                if len(prop) > 0:
+                    identifier = prop[0].bl_rna.identifier
+                    rna_to_bpy_data[identifier] = name
+            except Exception:
+                pass
+    return rna_to_bpy_data
 
 def map_to_classes_and_names(blender_objects):
     """ Get a list of blender_objects and produce a dictionary composed of all previous objects
@@ -308,14 +308,20 @@ def map_to_classes_and_names(blender_objects):
         }
     """
     mapped_values = dict()
+    rna_to_bpy_data = get_object_types_correspondance()
+
     for blender_object in blender_objects:
-        object_data_name = ObjectTypeData[blender_object.bl_rna.name].value
+        object_data_name = rna_to_bpy_data[blender_object.bl_rna.identifier]
         if not mapped_values.get(object_data_name):
             mapped_values[object_data_name] = list()
         mapped_values[object_data_name].append(blender_object.name)
 
     return mapped_values
 
+def get_data_type_name(blender_data):
+    """Retrieve the name of the data type base on a data block"""
+    data_type_dict = map_to_classes_and_names([blender_data])
+    return next((k for k, v in data_type_dict.items() if blender_data.name in v), None)
 
 def get_objects_from_mapped(mapped_objects):
     """ Get a list of mapped blender_objects (with objects types as keys and list of objects as values)
@@ -331,7 +337,7 @@ def get_objects_from_mapped(mapped_objects):
     for data_type, blender_objects_names in mapped_objects.items():
         blender_objects.extend(
             [
-                getattr(bpy.data, data_type)[blender_object_name]
+                getattr(bpy.data, data_type).get(blender_object_name)
                 for blender_object_name in blender_objects_names
             ]
         )
@@ -662,6 +668,77 @@ def get_parents_for_collection(collection, collections=None):
         collections = bpy.data.collections
     return [c for c in collections if c.user_of_id(collection)]
 
+
+def get_parent_collections_for_object(obj):
+    """Retrieve the object parent's collection
+    Args:
+        obj (bpy.types.Object or str): a blender object or its name
+    Return:
+        bpy.types.Collection: The parent collection
+    """
+    parent_collections = set()
+    if isinstance(obj, str):
+        obj = bpy.data.objects.get(obj)
+
+    if not obj:
+        raise ValueError("Object doesn't exist")
+
+    if obj:
+        for coll in bpy.data.collections:
+            if obj.name in coll.objects:
+                parent_collections.add(coll)
+
+    return parent_collections
+
+def make_scene_empty(scene=None):
+    """Delete all objects, worlds and collections in given scene and clean everything.
+        Args:
+            scene (bpy.types.Scene or str): a blender scene object, or its name
+    """
+
+    # If no scene scpecified
+    if scene is None:
+        # Not specified: it's the current scene.
+        scene = bpy.context.scene
+    else:
+        # if scene is a scene.name
+        if isinstance(scene, str):
+            # Specified by name: get the scene object.
+            scene = bpy.data.scenes[scene]
+        # Otherwise, assume it's a scene object already.
+
+    # Remove objects.
+    for object_ in scene.objects:
+        bpy.data.objects.remove(object_, do_unlink=True)
+
+    # Remove worlds.
+    for world_ in bpy.data.worlds:
+        bpy.data.worlds.remove(world_, do_unlink=True)
+
+    # Remove collections.
+    for coll_ in bpy.data.collections:
+        bpy.data.collections.remove(coll_, do_unlink=True)
+
+    # Remove linked library
+    for lib in bpy.data.libraries:
+        bpy.data.libraries.remove(lib, do_unlink=True)
+
+    # Clean everything
+    bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+
+def purge_orphans(is_recursive):
+    data_types = [attr for attr in dir(bpy.data) if
+                    isinstance(getattr(bpy.data, attr), bpy.types.bpy_prop_collection)]
+
+    for data_type in data_types:
+        data_collection = getattr(bpy.data, data_type)
+
+        for item in list(data_collection):
+            if item.users == 0:
+                data_collection.remove(item)
+
+    if is_recursive:
+        purge_orphans(is_recursive=False)
 
 def get_asset_children(asset):
     return list(asset.objects) if isinstance(asset, bpy.types.Collection) else list(asset.children)

@@ -1,16 +1,37 @@
 """Shared functionality for pipeline plugins for Blender."""
 
 import itertools
+from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import bpy
 import json
 import pyblish.api
+from quadpype.client.mongo.entities import (
+    get_asset_by_name
+)
+from quadpype.pipeline.template_data import (
+    get_asset_template_data,
+)
+from quadpype.hosts.blender.api.template_resolving import (
+    get_task_collection_templates,
+    get_resolved_name,
+    set_data_for_template_from_original_data,
+    get_load_naming_template
+)
+from quadpype.hosts.blender.api.collections import (
+    create_collections_from_hierarchy
+)
+from quadpype.hosts.blender.api.lib import (
+    is_collection
+)
 from quadpype.pipeline import (
     Creator,
     CreatedInstance,
-    LoaderPlugin
+    LoaderPlugin,
+    get_current_host_name,
+    get_current_project_name
 )
 from quadpype.pipeline.publish import Extractor
 from quadpype.lib import BoolDef
@@ -49,7 +70,7 @@ def prepare_scene_name(
 
 
 def get_unique_number(
-    asset: str, subset: str
+    asset: str, subset: str, data: Optional[dict] = None
 ) -> str:
     """Return a unique number based on the asset name."""
     avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
@@ -67,9 +88,21 @@ def get_unique_number(
     container_names = obj_group_names.union(coll_group_names)
     count = 1
     name = f"{asset}_{count:0>2}_{subset}"
+    namespace_template = ""
+    name_template = ""
+    if data:
+        namespace_template = get_load_naming_template("namespace", data)
+        namespace = get_resolved_name(data, namespace_template, unique_number=f"{count:0>2}")
+        name_template = get_load_naming_template("container", data)
+        name = get_resolved_name(data, name_template, namespace=namespace)
+
     while name in container_names:
         count += 1
-        name = f"{asset}_{count:0>2}_{subset}"
+        if not data:
+            name = f"{asset}_{count:0>2}_{subset}"
+        else:
+            namespace = get_resolved_name(data, namespace_template, unique_number=f"{count:0>2}")
+            name = get_resolved_name(data, name_template, namespace=namespace)
     return f"{count:0>2}"
 
 
@@ -211,13 +244,17 @@ class BlenderCreator(Creator):
                     avalon_instance_objs,
                     bpy.data.collections
             ):
+                if not avalon_instances:
+                    continue
+
                 avalon_prop = get_avalon_node(obj_or_col)
                 if not avalon_prop:
                     continue
-
                 if avalon_prop.get('id') != 'pyblish.avalon.instance':
                     continue
 
+                if is_collection(obj_or_col) and obj_or_col.name not in avalon_instances.children:
+                        continue
                 creator_id = avalon_prop.get('creator_identifier')
                 if creator_id:
                     # Creator instance
@@ -264,6 +301,8 @@ class BlenderCreator(Creator):
             # Create instance collection
             instance_node = bpy.data.collections.new(name=name)
             instances.children.link(instance_node)
+            if pre_create_data.get("create_collection_hierarchy", False):
+                self._create_collection_hierarchy(instance_data)
 
         self.set_instance_data(subset_name, instance_data)
 
@@ -276,6 +315,38 @@ class BlenderCreator(Creator):
         imprint(instance_node, instance_data)
 
         return instance_node
+
+    def _create_collection_hierarchy(self, data: dict):
+        """Generate the collection hierarchy based on the creator context
+        Args:
+            data (dict)
+        """
+        data_for_template = self._format_data_for_template_solve(data)
+        collection_templates = get_task_collection_templates(data_for_template, task=data_for_template["task"])
+        if collection_templates:
+            collections_hierarchy = [
+                get_resolved_name(
+                    data=data_for_template,
+                    template=template
+                )
+                for template in collection_templates
+            ]
+            create_collections_from_hierarchy(
+                hierarchies=collections_hierarchy,
+                parent_collection=bpy.context.scene.collection
+            )
+
+    @staticmethod
+    def _format_data_for_template_solve(data):
+        template_data = deepcopy(data)
+        template_data["project"] = {"name":get_current_project_name()}
+        template_data["app"] = get_current_host_name()
+
+        asset_data = get_asset_by_name(template_data["project"]["name"], template_data["asset"])
+        template_data.update(get_asset_template_data(asset_data, get_current_project_name()))
+
+        return set_data_for_template_from_original_data(template_data)
+
 
     def collect_instances(self):
         """Override abstract method from BlenderCreator.
@@ -396,6 +467,9 @@ class BlenderCreator(Creator):
                     default=True),
             BoolDef("create_as_asset_group",
                     label="Use Empty as Instance",
+                    default=False),
+            BoolDef("create_collection_hierarchy",
+                    label="Create Collection Hierarchy",
                     default=False)
         ]
 
@@ -492,6 +566,10 @@ class BlenderLoader(LoaderPlugin):
              name: Optional[str] = None,
              namespace: Optional[str] = None,
              options: Optional[Dict] = None) -> Optional[bpy.types.Collection]:
+
+        if options.get("template", False):
+            return self._load(context, name, namespace, options)
+
         """ Run the loader on Blender main thread"""
         mti = MainThreadItem(self._load, context, name, namespace, options)
         execute_in_main_thread(mti)
@@ -517,13 +595,16 @@ class BlenderLoader(LoaderPlugin):
 
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
+        representation = context['representation']
+        template_data = set_data_for_template_from_original_data(representation)
+
         unique_number = get_unique_number(
-            asset, subset
+            asset, subset, template_data
         )
-        namespace = namespace or f"{asset}_{unique_number}"
-        name = name or prepare_scene_name(
-            asset, subset, unique_number
-        )
+        namespace_template = get_load_naming_template("namespace", template_data)
+        namespace = namespace or get_resolved_name(template_data, namespace_template, unique_number=unique_number)
+        name_template = get_load_naming_template("container", template_data)
+        name = name or get_resolved_name(template_data, name_template, namespace=namespace)
 
         nodes = self.process_asset(
             context=context,

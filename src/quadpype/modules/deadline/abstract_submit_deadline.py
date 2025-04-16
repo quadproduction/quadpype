@@ -545,7 +545,7 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
         that field even empty must be present on Deadline submission.
 
         Returns:
-            list: List of files.
+            list[str]: List of files.
 
         """
         return []
@@ -630,7 +630,7 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
         try:
             result = response.json()
         except JSONDecodeError:
-            msg = "Broken response {}. ".format(response)
+            msg = f"Broken response {response.text}. "
             msg += "Try restarting the Deadline Webservice."
             self.log.warning(msg, exc_info=True)
             raise KnownPublishError("Broken response from DL")

@@ -1,5 +1,6 @@
 import os
 import re
+import math
 import clique
 
 import opentimelineio as otio
@@ -64,7 +65,7 @@ def convert_to_padded_path(path, padding):
         padding (int): number of padding
 
     Returns:
-        type: string with reformated path
+        type: string with reformatted path
 
     Example:
         convert_to_padded_path("plate.%d.exr") > plate.%04d.exr
@@ -263,16 +264,16 @@ def get_media_range_with_retimes(otio_clip, handle_start, handle_end):
             "retime": True,
             "speed": time_scalar,
             "timewarps": time_warp_nodes,
-            "handleStart": int(round(handle_start)),
-            "handleEnd": int(round(handle_end))
+            "handleStart": math.ceil(handle_start),
+            "handleEnd": math.ceil(handle_end)
         }
     }
 
     returning_dict = {
         "mediaIn": media_in_trimmed,
         "mediaOut": media_out_trimmed,
-        "handleStart": int(round(handle_start)),
-        "handleEnd": int(round(handle_end)),
+        "handleStart": math.ceil(handle_start),
+        "handleEnd": math.ceil(handle_end),
         "speed": time_scalar
     }
 

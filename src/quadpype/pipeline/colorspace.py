@@ -1152,7 +1152,8 @@ def get_display_view_colorspace_name(config_path, display, view):
         view (str): view name e.g. "sRGB"
 
     Returns:
-        view color space name (str) e.g. "Output - sRGB"
+        str: View color space name. e.g. "Output - sRGB"
+
     """
 
     if not compatibility_check():
@@ -1176,7 +1177,8 @@ def get_display_view_colorspace_subprocess(config_path, display, view):
         view (str): view name e.g. "sRGB"
 
     Returns:
-        view color space name (str) e.g. "Output - sRGB"
+        str: view color space name e.g. "Output - sRGB"
+
     """
 
     with _make_temp_json_file() as tmp_json_path:

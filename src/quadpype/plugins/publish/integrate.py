@@ -152,7 +152,7 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
     # the database even if not used by the destination template
     db_representation_context_keys = [
         "project", "asset", "task", "subset", "version", "representation",
-        "family", "hierarchy", "username", "user", "output"
+        "family", "hierarchy", "username", "user", "output", "variant"
     ]
 
     def process(self, instance):
@@ -596,6 +596,8 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
         # allow overwriting existing version
         template_data["version"] = version["name"]
 
+        template_data["variant"] = instance.data.get("variant")
+
         # add template data for colorspaceData
         if repre.get("colorspaceData"):
             colorspace = repre["colorspaceData"]["colorspace"]
@@ -782,6 +784,11 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
             #   contain '{frame}' in template -> Do we want support it?
             if not is_udim:
                 repre_context["frame"] = first_index_padded
+
+            # store renderlayer in context if it exists
+            # to be later used for example by delivery templates
+            if instance.data.get("renderlayer"):
+                repre_context["renderlayer"] = instance.data["renderlayer"]
 
             # Update the destination indexes and padding
             dst_collection = clique.assemble(dst_filepaths)[0][0]

@@ -1,6 +1,7 @@
 import os
 
 from quadpype import PACKAGE_DIR
+from quadpype.style import get_default_entity_icon_color
 from quadpype.lib import get_quadpype_execute_args, run_detached_process
 from quadpype.pipeline import load
 from quadpype.pipeline.load import LoadError
@@ -17,7 +18,7 @@ class PushToLibraryProject(load.SubsetLoaderPlugin):
     label = "Push to Library project"
     order = 35
     icon = "send"
-    color = "#d8d8d8"
+    color = get_default_entity_icon_color()
 
     def load(self, contexts, name=None, namespace=None, options=None):
         filtered_contexts = [

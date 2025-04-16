@@ -1,6 +1,7 @@
 import os
 import re
 import json
+from typing import Any, Union
 
 from pathlib import Path
 
@@ -11,7 +12,7 @@ from .anatomy import Anatomy
 from .template_data import get_project_template_data
 
 
-def concatenate_splitted_paths(split_paths, anatomy):
+def concatenate_splitted_paths(split_paths, anatomy: Anatomy):
     log = Logger.get_logger("concatenate_splitted_paths")
     pattern_array = re.compile(r"\[.*\]")
     output = []
@@ -49,7 +50,7 @@ def concatenate_splitted_paths(split_paths, anatomy):
     return output
 
 
-def fill_paths(path_list, anatomy):
+def fill_paths(path_list: list[str], anatomy: Anatomy):
     format_data = get_project_template_data(project_name=anatomy.project_name)
     format_data["root"] = anatomy.roots
     filled_paths = []
@@ -61,7 +62,7 @@ def fill_paths(path_list, anatomy):
     return filled_paths
 
 
-def create_project_folders(project_name, basic_paths=None):
+def create_project_folders(project_name: str, basic_paths=None):
     log = Logger.get_logger("create_project_folders")
     anatomy = Anatomy(project_name)
     if basic_paths is None:
@@ -105,8 +106,18 @@ def create_project_folders(project_name, basic_paths=None):
     return case_sensitivity_issues
 
 
-def _list_path_items(folder_structure):
+def _list_path_items(folder_structure: Union[dict[str, Any], list[str]]):
     output = []
+
+    # Allow leaf folders of the `project_folder_structure` to use a list of
+    # strings instead of a dictionary of keys with empty values.
+    if isinstance(folder_structure, list):
+        if not all(isinstance(item, str) for item in folder_structure):
+            raise ValueError(
+                f"List items must all be strings. Got: {folder_structure}")
+        return [[path] for path in folder_structure]
+
+    # Process key, value as key for folder names and value its subfolders
     for key, value in folder_structure.items():
         if not value:
             output.append(key)
@@ -124,7 +135,7 @@ def _list_path_items(folder_structure):
     return output
 
 
-def get_project_basic_paths(project_name):
+def get_project_basic_paths(project_name: str):
     project_settings = get_project_settings(project_name)
     folder_structure = (
         project_settings["global"]["project_folder_structure"]

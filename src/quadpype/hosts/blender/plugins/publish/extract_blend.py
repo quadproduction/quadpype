@@ -1,15 +1,16 @@
 import os
 from copy import copy
-
+import re
 import bpy
 
 from quadpype.pipeline import publish, get_current_context
 from quadpype.hosts.blender.api import (
     plugin,
+    pipeline,
     lib,
+    ops,
     template_resolving
 )
-
 
 DEFAULT_VARIANT_NAME = "Main"
 
@@ -31,6 +32,50 @@ class ExtractBlend(
         if not self.is_active(instance.data):
             return
 
+        asset_name = instance.data["assetEntity"]["name"]
+        subset = instance.data["subset"]
+        instance_name = f"{asset_name}_{subset}"
+        instance_coll = bpy.data.collections.get(instance_name)
+        objects_in_instance = pipeline.get_container_content(instance_coll)
+        from_loaded_coll = self.get_collections_from_loaded(objects_in_instance)
+
+        if not from_loaded_coll:
+            self._process_instance(instance)
+            return
+
+        # if from a loaded subset, must rename before extract to avoid namespace accumulation in names
+        corresponding_renaming = {}
+        namespace_regex = template_resolving.get_loaded_naming_finder_template("namespace", instance.data)
+        unique_number_regex = template_resolving.get_loaded_naming_finder_template("unique-number", instance.data)
+
+        for loaded_coll in from_loaded_coll:
+            avalon_data = pipeline.get_avalon_node(loaded_coll)
+            members = lib.get_objects_from_mapped(avalon_data.get("members"))
+
+            for member in members:
+                old_full_name = member.name
+                match = re.match(fr"{namespace_regex}", old_full_name)
+                if match:
+                    member.name = match.group(1)
+                corresponding_renaming[member] = old_full_name
+                if not member.get("original_collection_parent"):
+                    continue
+
+                real_object_hierarchies = lib.get_parent_collections_for_object(member)
+
+                for hier_coll in real_object_hierarchies:
+                    match = re.match(fr"{unique_number_regex}", hier_coll.name)
+                    if match:
+                        old_full_name = hier_coll.name
+                        hier_coll.name = match.group(1)
+                        corresponding_renaming[hier_coll] = old_full_name
+
+        self._process_instance(instance)
+
+        for obj, name in corresponding_renaming.items():
+            obj.name = name
+
+    def _process_instance(self, instance):
         # Define extract output file path
         stagingdir = self.staging_dir(instance)
         asset_name = instance.data["assetEntity"]["name"]
@@ -47,6 +92,15 @@ class ExtractBlend(
         variant = instance.data.get('variant')
         if variant == 'Main':
             variant = None
+
+        instance_coll = bpy.data.collections.get(instance_name)
+        objects_in_instance = pipeline.get_container_content(instance_coll)
+
+        # If no data are in instances like in 'action' family, populate it
+        if len(instance) == 0:
+            instance.append(instance_coll)
+            for obj in objects_in_instance:
+                instance.append(obj)
 
         # Perform extraction
         self.log.info("Performing extraction..")
@@ -70,7 +124,7 @@ class ExtractBlend(
             )
 
             parent_collection_name = task_hierarchy.replace('\\', '/').split('/')[-1]
-            parent_collection = bpy.data.collections[parent_collection_name]
+            parent_collection = bpy.data.collections.get(parent_collection_name, instance_name)
             self.retrieve_objects_hierarchy(
                 collections=[parent_collection],
                 selection=[data for data in instance],
@@ -137,3 +191,16 @@ class ExtractBlend(
                 )
             for obj in collection.objects:
                 result[obj] = _format_hierarchy_label(collection, hierarchy)
+
+    @staticmethod
+    def get_collections_from_loaded(objects_in_instance):
+        loaded_coll = set()
+        for obj in objects_in_instance:
+            for collection in [coll for coll in bpy.data.collections if obj.name in coll.objects]:
+                if not pipeline.has_avalon_node(collection):
+                    continue
+                if not pipeline.get_avalon_node(collection).get("loader"):
+                    continue
+                loaded_coll.add(collection)
+
+        return loaded_coll

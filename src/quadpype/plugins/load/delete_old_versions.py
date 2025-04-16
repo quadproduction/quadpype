@@ -31,7 +31,7 @@ class DeleteOldVersions(load.SubsetLoaderPlugin):
     label = "Delete Old Versions"
     order = 35
     icon = "trash"
-    color = "#d8d8d8"
+    color = style.get_default_entity_icon_color()
 
     options = [
         qargparse.Integer(

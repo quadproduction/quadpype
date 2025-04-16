@@ -13,6 +13,11 @@ class TaskNotSetError(KeyError):
             msg = "Creator's subset name template requires task name."
         super().__init__(msg)
 
+class NamespaceNotSetError(KeyError):
+    def __init__(self, msg=None):
+        if not msg:
+            msg = "Creator's subset name template requires namespace name."
+        super().__init__(msg)
 
 class TemplateFillError(Exception):
     def __init__(self, msg=None):

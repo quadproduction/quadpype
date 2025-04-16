@@ -28,9 +28,29 @@ from aiohttp_json_rpc.exceptions import RpcError
 from quadpype.lib import emit_event
 from quadpype.hosts.tvpaint.tvpaint_plugin import get_plugin_files_path
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
+
+
+def can_write_to_dir(path):
+    try:
+        test_file = tempfile.TemporaryFile(dir=path)
+        test_file.close()  # Cleanup
+        return True
+    except (IOError, PermissionError):
+        return False
+
+
+def copy_with_finder(source, destination):
+    script = f'''
+    tell application "Finder"
+        set theSource to POSIX file "{source}" as alias
+        set theDestination to POSIX file "{destination}" as alias
+        duplicate theSource to theDestination with replacing
+    end tell
+    '''
+    subprocess.run(["osascript", "-e", script])
 
 
 class CommunicationWrapper:
@@ -38,6 +58,7 @@ class CommunicationWrapper:
     communicator = None
 
     log = logging.getLogger("CommunicationWrapper")
+    log.setLevel(logging.DEBUG)
 
     @classmethod
     def create_qt_communicator(cls, *args, **kwargs):
@@ -666,26 +687,79 @@ class BaseCommunicator:
             )
         raise RuntimeError(" & ".join(msg_parts))
 
+    def _prepare_macos_plugin(self, launch_args):
+        """Copy plugin to TVPaint plugins"""
+
+        host_executable = Path(launch_args[0])
+
+        subfolder = "macos"
+        plugin_files_path = get_plugin_files_path()
+        source_plugins_dir = Path(plugin_files_path) / subfolder
+        host_exe_dir = host_executable.parent.parent
+        # Path to TVPaint's plugins folder (where we want to add our plugin)
+        host_plugins_path = host_exe_dir / "Resources" / "plugins"
+        plugin_dir = source_plugins_dir / "plugin"
+
+        to_copy = []
+        to_remove = []
+
+        for src_full_path in plugin_dir.iterdir():
+            dst_full_path = host_plugins_path / src_full_path.name
+
+            if dst_full_path.exists():
+                to_remove.append(dst_full_path)
+
+            src_exe_path = src_full_path / "Contents" / "MacOS" / "QuadPypePlugin"
+            dst_exe_path = dst_full_path / "Contents" / "MacOS" / "QuadPypePlugin"
+
+            if not dst_full_path.exists() or not filecmp.cmp(src_exe_path, dst_exe_path):
+                to_copy.append((src_full_path, dst_full_path))
+
+        # Skip copy if everything is done
+        if not to_copy:
+            return
+
+        if can_write_to_dir(host_plugins_path):
+            try:
+                for elem_to_rm in to_remove:
+                    shutil.rmtree(elem_to_rm)
+                for src, dst in to_copy:
+                    shutil.copytree(src, dst)
+            except Exception:
+                elems = [f"\"{src}\" -> \"{dst}\"" for src, dst in to_copy]
+                raise RuntimeError(f"Plugin copy failed\nFailed to copy files: {', '.join(elems)}")
+        else:
+            for src, dst in to_copy:
+                copy_with_finder(src, host_plugins_path)
+
     def _launch_tv_paint(self, launch_args):
-        flags = (
-            subprocess.DETACHED_PROCESS
-            | subprocess.CREATE_NEW_PROCESS_GROUP
-        )
         env = os.environ.copy()
-        # Remove QuickTime from PATH on windows
-        # - quicktime overrides TVPaint's ffmpeg encode/decode which may
-        #   cause issues on loading
+
+        kwargs = {}
         if platform.system().lower() == "windows":
+            # Remove QuickTime from PATH on windows
+            # - quicktime overrides TVPaint's ffmpeg encode/decode which may
+            #   cause issues on loading
             new_path = []
             for path in env["PATH"].split(os.pathsep):
                 if path and "quicktime" not in path.lower():
                     new_path.append(path)
             env["PATH"] = os.pathsep.join(new_path)
 
-        kwargs = {
-            "env": env,
-            "creationflags": flags
-        }
+            kwargs = {
+                "env": env,
+                "creationflags": (subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
+            }
+        elif platform.system().lower() == "darwin":
+            # POSIX (macOS/Linux)
+            kwargs = {
+                "env": env,
+                "start_new_session": True,
+                "stdout": subprocess.DEVNULL,
+                "stderr": subprocess.DEVNULL,
+                "stdin": subprocess.DEVNULL,
+            }
+
         self.process = subprocess.Popen(launch_args, **kwargs)
 
     def _create_routes(self):
@@ -726,6 +800,8 @@ class BaseCommunicator:
         """
         if platform.system().lower() == "windows":
             self._prepare_windows_plugin(launch_args)
+        elif platform.system().lower() == "darwin":
+            self._prepare_macos_plugin(launch_args)
 
         # Launch TVPaint and the websocket server.
         log.info("Launching TVPaint")
