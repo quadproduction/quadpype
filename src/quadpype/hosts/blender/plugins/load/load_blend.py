@@ -507,6 +507,8 @@ class BlendLoader(plugin.BlenderLoader):
             # Check if the object has an action and, if so, add it to a dict
             # so we can restore it later. Save and restore the action only
             # if it wasn't originally loaded from the current asset.
+            if not obj.animation_data.action:
+                continue
             if obj.animation_data.action.name not in avalon_data.get("members", []).get("actions", []):
                 actions[obj.name] = obj.animation_data.action.name
 
