@@ -4,6 +4,7 @@
 import os
 import getpass
 import attr
+import pyblish.api
 
 from datetime import datetime, timezone
 
@@ -40,6 +41,7 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
     label = "Submit Render to Deadline"
     hosts = ["blender"]
     families = ["render"]
+    order = pyblish.api.IntegratorOrder + 0.12
 
     optional = True
     use_published = True
@@ -49,6 +51,7 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
     pluginInfo = {}
     group = None
     job_delay = "00:00:00:00"
+    dependency = True
 
     def get_job_info(self):
         job_info = DeadlineJobInfo(Plugin="Blender")
@@ -147,7 +150,6 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         # to recognize job from PYPE for turning Event On/Off
         job_info.add_render_job_env_var()
         job_info.EnvironmentKeyValue["QUADPYPE_LOG_NO_COLORS"] = "1"
-
         # Adding file dependencies.
         if self.asset_dependencies:
             dependencies = instance.context.data["fileDependencies"]
