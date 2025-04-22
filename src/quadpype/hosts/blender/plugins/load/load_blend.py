@@ -424,11 +424,15 @@ class BlendLoader(plugin.BlenderLoader):
                 # Remap override data in deformers
                 if not obj.modifiers:
                     continue
+
                 for mod in obj.modifiers:
-                    if hasattr(mod, "object"):
-                        mod_object_name = mod.object.name
-                        new_mod_object = bpy.data.objects.get(corresponding_renamed.get(mod_object_name), mod_object_name)
-                        mod.object = new_mod_object
+                    mod_object = getattr(mod, "object", None)
+                    if not mod_object:
+                        continue
+
+                    mod_object_name = mod_object.name
+                    new_mod_object = bpy.data.objects.get(corresponding_renamed.get(mod_object_name), mod_object_name)
+                    mod.object = new_mod_object
 
         return container, members, container_objects
 
