@@ -366,7 +366,13 @@ class BlendLoader(plugin.BlenderLoader):
         full_name_template = template_resolving.get_load_naming_template("fullname", template_data)
         for attr in dir(data_to):
             for data in getattr(data_to, attr):
+                if not hasattr(data, 'override_create'):
+                    continue
+
                 new_data = data.override_create(remap_local_usages=True)
+                if not new_data:
+                    continue
+
                 new_data.name = template_resolving.get_resolved_name(
                     template_data,
                     full_name_template,
@@ -455,6 +461,9 @@ class BlendLoader(plugin.BlenderLoader):
         # Needs to rename in separate block to retrieve blender object after initialisation
         for attr in dir(data_attributes):
             for data in getattr(data_attributes, attr):
+                if isinstance(data, str):
+                    continue
+
                 members.append(data)
 
         return members
