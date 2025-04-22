@@ -100,8 +100,7 @@ def get_zxp_extensions_to_update(running_version_fullpath, global_settings, forc
 
     if low_platform == "linux":
         # TODO: Do the necessary checks on Linux, then remove this condition and Exception
-        raise NotImplementedError(
-            f"Linux not tested, checks needed to ensure paths and operations are valids for Linux")
+        print(f"Linux not tested, checks needed to ensure paths and operations are valid for Linux")
 
     zxp_host_ids = ["photoshop", "aftereffects"]
 
