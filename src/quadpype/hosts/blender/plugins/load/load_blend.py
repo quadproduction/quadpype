@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional
 from pathlib import Path
+from copy import copy
 
 import bpy
 import re
@@ -11,6 +12,7 @@ from quadpype.pipeline import (
     registered_host,
     get_current_context
 )
+from quadpype.client import get_version_by_id
 
 from quadpype.pipeline.create import CreateContext
 from quadpype.hosts.blender.api import plugin, lib, pipeline, template_resolving
@@ -127,6 +129,8 @@ class BlendLoader(plugin.BlenderLoader):
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
         representation = context['representation']
+        print('#######)')
+        print(context)
 
         representation_id = str(representation["_id"])
 
@@ -166,6 +170,9 @@ class BlendLoader(plugin.BlenderLoader):
         if family == "layout":
             self._post_process_layout(container, asset, representation_id)
 
+        project_name = context.get('project', {}).get('name', None)
+        assert project_name, "Can not retrieve project name from context data."
+
         data = {
             "schema": "quadpype:container-2.0",
             "id": AVALON_CONTAINER_ID,
@@ -180,7 +187,8 @@ class BlendLoader(plugin.BlenderLoader):
             "objectName": group_name,
             "members": lib.map_to_classes_and_names(members),
             "import_method": import_method.value,
-            "unique_number": unique_number
+            "unique_number": unique_number,
+            "version": get_version_by_id(project_name, str(representation["parent"])).get('name', '')
         }
 
         lib.imprint(container, data)
@@ -572,14 +580,20 @@ class BlendLoader(plugin.BlenderLoader):
         # Restore the old data, but reset members, as they don't exist anymore,
         # This avoids a crash, because the memory addresses of those members
         # are not valid anymore
+        # TODO: We lose asset in scene inventory if we comment the following lines.
+        # TODO: It would be great to understand why ? Moving the erase arg after doesn't work.
         avalon_data["members"] = []
         lib.imprint(asset_group, avalon_data, erase=True)
+
+        project_name = representation.get('context', {}).get('project', {}).get('name', None)
+        assert project_name, "Can not retrieve project name from context data."
 
         new_data = {
             "libpath": libpath,
             "representation": str(representation["_id"]),
             "parent": str(representation["parent"]),
-            "members": lib.map_to_classes_and_names(members)
+            "members": lib.map_to_classes_and_names(members),
+            "version": get_version_by_id(project_name, str(representation["parent"])).get('name', '')
         }
         lib.imprint(asset_group, new_data)
 
@@ -609,7 +623,7 @@ class BlendLoader(plugin.BlenderLoader):
         ]
 
         avalon_node = pipeline.get_avalon_node(asset_group)
-        members = lib.get_objects_from_mapped(avalon_node['members'])
+        members = lib.get_objects_from_mapped(avalon_node.get('members', []))
 
         collections_parents = [
             collection for collection in bpy.data.collections
@@ -626,9 +640,11 @@ class BlendLoader(plugin.BlenderLoader):
             lib.imprint(parent, {'members': parent_members})
 
         deleted_collections = list()
+        obj_to_delete = self.get_unique_members(group_name, members, container)
+
         for attr in attrs:
             for data in getattr(bpy.data, attr):
-                if data not in members:
+                if data not in obj_to_delete:
                     continue
 
                 # Skip the asset group
@@ -650,6 +666,33 @@ class BlendLoader(plugin.BlenderLoader):
             bpy.data.collections.remove(asset_group)
 
         self._remove_collection_recursively(collections_parents, deleted_collections)
+
+    def get_unique_members(self, collection_name, current_members, container):
+        if container.get('import_method', None) == ImportMethod.APPEND.value:
+            return
+
+        asset = container.get('asset')
+        subset_without_variant = container.get('subset').replace(container.get('variant'), '')
+        regex = fr"^{asset}.*.{subset_without_variant}$"
+        version = container.get('version', None)
+        for collection in self._get_other_collection_with_name_and_version(collection_name, regex, version):
+            coll_members = lib.get_objects_from_mapped(pipeline.get_avalon_node(collection).get('members', []))
+            for coll_member in coll_members:
+                if coll_member not in current_members:
+                    continue
+
+                current_members.remove(coll_member)
+
+        return current_members
+
+    @staticmethod
+    def _get_other_collection_with_name_and_version(collection_name, regex, version):
+        return [
+            coll for coll in bpy.data.collections if
+            re.match(regex, coll.name) and
+            pipeline.get_avalon_node(coll).get('version', None) == version and
+            coll.name != collection_name
+        ]
 
     @staticmethod
     def _retrieve_undefined_asset_group(group_name):
