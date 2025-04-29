@@ -3,9 +3,13 @@ import nuke
 from quadpype.pipeline import (
     CreatedInstance
 )
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import get_current_project_name
 from quadpype.lib import (
-    BoolDef
+    BoolDef,
+    EnumDef
 )
+
 from quadpype.hosts.nuke import api as napi
 from quadpype.hosts.nuke.api.plugin import exposed_write_knobs
 
@@ -33,8 +37,35 @@ class CreateWriteRender(napi.NukeWriteCreator):
                 default=not self.create_context.headless,
                 label="Use selection"
             ),
-            self._get_render_target_enum()
+            self._get_render_target_enum(),
         ]
+        project_settings = get_project_settings(get_current_project_name())
+        res_profiles = project_settings.get('quad_studio_addon', {}).get('general', {}).get('working_resolution_overrides')
+
+        if not res_profiles:
+            self.log.warning(
+                "Can not retrieve working resolution overrides from settings or settings are empty. "
+                "Can not add resolution selection to render subset creator."
+            )
+            return attr_defs
+
+        profiles = [profile for profile in res_profiles if 'nuke' in profile.get('hosts')]
+        if not profiles:
+            self.log.warning("Working resolution overrides : Couldn't find matching profile for host 'Nuke'.")
+            return attr_defs
+
+        resolutions = [
+            f"{profile.get('working_resolution_width')}*{profile.get('working_resolution_height')}"
+            for profile in profiles
+        ]
+        attr_defs.append(
+            EnumDef(
+                "resolution",
+                items=resolutions,
+                default=resolutions[0],
+                label="Resolution",
+            )
+        )
         return attr_defs
 
     def create_instance_node(self, subset_name, instance_data):
