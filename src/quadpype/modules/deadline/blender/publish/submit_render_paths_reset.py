@@ -88,6 +88,13 @@ class BlenderRenderPathsResetDeadline(abstract_submit_deadline.AbstractSubmitDea
         job_info.BatchName = src_filename
         job_info.UserName = context.data.get("deadlineUser", getpass.getuser())
 
+        frames = "{start}-{end}x{step}".format(
+            start=int(instance.data["frameStartHandle"]),
+            end=int(instance.data["frameEndHandle"]),
+            step=int(instance.data["byFrameStep"]),
+        )
+        job_info.Frames = frames
+
         job_info.Comment = instance.data.get("comment")
 
         if self.group != "none" and self.group:

@@ -1,4 +1,6 @@
 """Create a model asset."""
+import bpy
+
 from quadpype.hosts.blender.api import plugin, lib
 
 
