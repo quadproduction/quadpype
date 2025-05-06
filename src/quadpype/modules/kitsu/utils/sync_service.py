@@ -585,6 +585,18 @@ class Listener:
             parent_name = task["entity"]["name"]
             asset_name = task["entity"]["name"]
             ent_type = task["entity_type"]["name"]
+
+        elif task["task_type"]["for_entity"] == "Sequence":
+            parent_name = "{ep_name}{sequence_name}".format(
+                ep_name=ep["name"] + " - " if ep is not None else "",
+                sequence_name=task["entity"]["name"],
+            )
+            asset_name = "{ep_name}{sequence_name}".format(
+                ep_name=ep["name"] + "_" if ep is not None else "",
+                sequence_name=task["entity"]["name"]
+            )
+            ent_type = task["entity_type"]["name"]
+
         elif task["task_type"]["for_entity"] == "Shot":
             parent_name = "{ep_name}{sequence_name} - {shot_name}".format(
                 ep_name=ep["name"] + " - " if ep is not None else "",
@@ -629,7 +641,6 @@ class Listener:
 
     def _delete_task(self, data):
         """Delete task of QuadPype DB."""
-
         set_op_project(self.dbcon, data["project_id"])
         project_name = self.dbcon.active_project()
         # Find asset doc
@@ -652,12 +663,21 @@ class Listener:
                     entity = gazu.entity.get_entity(task["zou"]["entity_id"])
                     ep = self.get_ep_dict(entity["source_id"])
 
+                    parent_name = None
+
                     if entity["type"] == "Asset":
                         parent_name = "{ep}{entity_type} - {entity}".format(
                             ep=ep["name"] + " - " if ep is not None else "",
                             entity_type=task["zou"]["entity_type"]["name"],
                             entity=task["zou"]["entity"]["name"],
                         )
+
+                    elif entity["type"] == "Sequence":
+                        parent_name = "{ep_name}{sequence_name}".format(
+                            ep_name=ep["name"] + " - " if ep is not None else "",
+                            sequence_name=task["zou"]["entity"]["name"],
+                        )
+
                     elif entity["type"] == "Shot":
                         parent_name = "{ep}{sequence} - {shot}".format(
                             ep=ep["name"] + " - " if ep is not None else "",

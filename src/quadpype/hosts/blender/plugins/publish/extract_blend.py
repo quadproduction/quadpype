@@ -124,7 +124,13 @@ class ExtractBlend(
             )
 
             parent_collection_name = task_hierarchy.replace('\\', '/').split('/')[-1]
-            parent_collection = bpy.data.collections.get(parent_collection_name, instance_name)
+            parent_collection = bpy.data.collections.get(parent_collection_name, bpy.data.collections.get(instance_name, None))
+            if not parent_collection:
+                self.log.warning(
+                    f"Can not find parent collection ({parent_collection_name}) or "
+                    f"instance collection ({instance_name}) in scene. "
+                )
+                continue
             self.retrieve_objects_hierarchy(
                 collections=[parent_collection],
                 selection=[data for data in instance],

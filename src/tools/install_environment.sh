@@ -28,12 +28,9 @@ if [[ ":$PATH:" != *":$PATH_QUADPYPE_ROOT:"* ]]; then
   export PATH="$PATH_QUADPYPE_ROOT:$PATH"
 fi
 
-ping_google() {
-  ping -q -c1 google.com &>/dev/null && return 0 || return 1
-}
-ping_google
-
-if [ $? -ne 0 ]; then
+if nc -zw1 8.8.8.8 443; then
+  echo "Computer properly connected to internet."
+else
   echo "No Internet connection, aborting."
   exit 1
 fi
