@@ -129,8 +129,6 @@ class BlendLoader(plugin.BlenderLoader):
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
         representation = context['representation']
-        print('#######)')
-        print(context)
 
         representation_id = str(representation["_id"])
 
@@ -669,7 +667,7 @@ class BlendLoader(plugin.BlenderLoader):
 
     def get_unique_members(self, collection_name, current_members, container):
         if container.get('import_method', None) == ImportMethod.APPEND.value:
-            return
+            return current_members
 
         asset = container.get('asset')
         subset_without_variant = container.get('subset').replace(container.get('variant'), '')
