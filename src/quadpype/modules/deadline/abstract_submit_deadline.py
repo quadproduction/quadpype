@@ -454,17 +454,20 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
         self.scene_path = file_path
         self.log.info("Using {} for render/export.".format(file_path))
 
-        self.job_info = self.get_job_info()
+        all_jobs = self.get_job_info()
+        if not isinstance(all_jobs, list):
+            all_jobs = [all_jobs]
 
-        # Apply some info globally (usable for all annexes jobs)
-        self.set_instance_global_info(instance)
+        for job_info in all_jobs:
+            # Apply some info globally (usable for all annexes jobs)
+            self.set_instance_global_info(instance, job_info)
 
-        self.plugin_info = self.get_plugin_info()
-        self.aux_files = self.get_aux_files()
+            plugin_info = self.get_plugin_info()
+            aux_files = self.get_aux_files()
 
-        job_id = self.process_submission()
-        self.add_as_dependency(job_id)
-        self.log.info("Submitted job to Deadline: {}.".format(job_id))
+            job_id = self.process_submission(job_info=job_info, plugin_info=plugin_info, aux_files=aux_files)
+            self.add_as_dependency(job_info.BatchName, job_id)
+            self.log.info("Submitted job to Deadline: {}.".format(job_id))
 
         # TODO: Find a way that's more generic and not render type specific
         if instance.data.get("splitRender"):
@@ -479,7 +482,7 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
             render_job_id = self.submit(payload)
             self.log.info("Render job id: %s", render_job_id)
 
-    def process_submission(self):
+    def process_submission(self, job_info=None, plugin_info=None, aux_files=None):
         """Process data for submission.
 
         This takes Deadline JobInfo, PluginInfo, AuxFile, creates payload
@@ -489,19 +492,22 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
             str: Deadline job ID
 
         """
-        payload = self.assemble_payload()
+        self.log.error(aux_files)
+        payload = self.assemble_payload(job_info=job_info, plugin_info=plugin_info, aux_files=aux_files)
         return self.submit(payload)
 
-    def add_as_dependency(self, job_id):
+    def add_as_dependency(self, batch_name, job_id):
         if not self.dependency:
             return
 
         instance_data = self._instance.data
-        instance_data['jobDependency'] = job_id
+        if not instance_data.get("jobDependency"):
+            instance_data['jobDependency'] = {}
 
+        instance_data['jobDependency'][batch_name] = job_id
 
     @abstractmethod
-    def get_job_info(self):
+    def get_job_info(self, *args, **kwargs):
         """Return filled Deadline JobInfo.
 
         This is host/plugin specific implementation of how to fill data in.
@@ -515,16 +521,16 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
         """
         pass
 
-    def set_instance_global_info(self, instance):
+    def set_instance_global_info(self, instance, job_info):
         """Set global info from the submitter into the instance"""
-        instance.data["priority"] = self.job_info.Priority
-        instance.data["pool"] = self.job_info.Pool
-        instance.data["pool_secondary"] = self.job_info.SecondaryPool
-        instance.data["limit_machine"] = self.job_info.MachineLimit
-        instance.data["limits_plugin"] = self.job_info.LimitGroups
+        instance.data["priority"] = job_info.Priority
+        instance.data["pool"] = job_info.Pool
+        instance.data["pool_secondary"] = job_info.SecondaryPool
+        instance.data["limit_machine"] = job_info.MachineLimit
+        instance.data["limits_plugin"] = job_info.LimitGroups
 
     @abstractmethod
-    def get_plugin_info(self):
+    def get_plugin_info(self, *args, **kwargs):
         """Return filled Deadline PluginInfo.
 
         This is host/plugin specific implementation of how to fill data in.
@@ -589,17 +595,17 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
             dict: Deadline Payload.
 
         """
-        job = job_info or self.job_info
+        job = job_info if job_info is not None else self.job_info
         serialized_job = job.serialize()
-        job_dependency_id = self._instance.data.get('jobDependency', None)
+        job_dependency_id = self._instance.data.get('jobDependency', {}).get(job_info.BatchName, None)
         if job_dependency_id:
             serialized_job["JobDependency0"] = job_dependency_id
             self.log.info(f"Added job with id {job_dependency_id} to current job.")
 
         return {
             "JobInfo": serialized_job,
-            "PluginInfo": plugin_info or self.plugin_info,
-            "AuxFiles": aux_files or self.aux_files
+            "PluginInfo": plugin_info if plugin_info is not None else self.plugin_info,
+            "AuxFiles": aux_files if aux_files is not None else self.aux_files
         }
 
     def submit(self, payload):
@@ -620,6 +626,7 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
         """
         url = "{}/api/jobs".format(self._deadline_url)
         response = requests_post(url, json=payload)
+        self.log.warning(payload)
         if not response.ok:
             self.log.error("Submission failed!")
             self.log.error(response.status_code)

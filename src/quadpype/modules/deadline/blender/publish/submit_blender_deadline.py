@@ -54,9 +54,6 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
     dependency = True
 
     def get_job_info(self):
-        job_info = DeadlineJobInfo(Plugin="Blender")
-
-        job_info.update(self.jobInfo)
 
         instance = self._instance
         context = instance.context
@@ -64,106 +61,111 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         profile = get_deadline_job_profile(context.data[PROJECT_SETTINGS_KEY],  self.hosts[0])
         self.set_job_attrs(profile)
 
-        job_info.Priority = self.get_job_attr("priority")
-        job_info.Pool = self.get_job_attr("pool")
-        job_info.SecondaryPool = self.get_job_attr("pool_secondary")
-        job_info.MachineLimit = self.get_job_attr("limit_machine")
+        jobs = list()
+        for src_filepath in context.data["currentFile"]:
+            job_info = DeadlineJobInfo(Plugin="Blender")
+            job_info.update(self.jobInfo)
+            job_info.Priority = self.get_job_attr("priority")
+            job_info.Pool = self.get_job_attr("pool")
+            job_info.SecondaryPool = self.get_job_attr("pool_secondary")
+            job_info.MachineLimit = self.get_job_attr("limit_machine")
 
-        # Always use the original work file name for the Job name even when
-        # rendering is done from the published Work File. The original work
-        # file name is clearer because it can also have subversion strings,
-        # etc. which are stripped for the published file.
-        src_filepath = context.data["currentFile"]
-        src_filename = os.path.basename(src_filepath)
+            # Always use the original work file name for the Job name even when
+            # rendering is done from the published Work File. The original work
+            # file name is clearer because it can also have subversion strings,
+            # etc. which are stripped for the published file.
+            src_filename = os.path.basename(src_filepath)
 
-        if is_in_tests():
-            src_filename += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
+            if is_in_tests():
+                src_filename += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
 
-        job_info.Name = f"{src_filename} - {instance.name}"
-        job_info.BatchName = src_filename
-        instance.data.get("blenderRenderPlugin", "Blender")
-        job_info.UserName = context.data.get("deadlineUser", getpass.getuser())
+            job_info.Name = f"{src_filename} - {instance.name}"
+            job_info.BatchName = f"{src_filename}"
+            instance.data.get("blenderRenderPlugin", "Blender")
+            job_info.UserName = context.data.get("deadlineUser", getpass.getuser())
 
-        # Deadline requires integers in frame range
-        frames = "{start}-{end}x{step}".format(
-            start=int(instance.data["frameStartHandle"]),
-            end=int(instance.data["frameEndHandle"]),
-            step=int(instance.data["byFrameStep"]),
-        )
-        job_info.Frames = frames
+            # Deadline requires integers in frame range
+            frames = "{start}-{end}x{step}".format(
+                start=int(instance.data["frameStartHandle"]),
+                end=int(instance.data["frameEndHandle"]),
+                step=int(instance.data["byFrameStep"]),
+            )
+            job_info.Frames = frames
 
-        job_info.Comment = instance.data.get("comment")
+            job_info.Comment = instance.data.get("comment")
 
-        if self.group != "none" and self.group:
-            job_info.Group = self.group
+            if self.group != "none" and self.group:
+                job_info.Group = self.group
 
-        attr_values = self.get_attr_values_from_data(instance.data)
-        render_globals = instance.data.setdefault("renderGlobals", {})
-        machine_list = attr_values.get("machineList", "")
-        if machine_list:
-            if attr_values.get("whitelist", True):
-                machine_list_key = "Whitelist"
-            else:
-                machine_list_key = "Blacklist"
-            render_globals[machine_list_key] = machine_list
+            attr_values = self.get_attr_values_from_data(instance.data)
+            render_globals = instance.data.setdefault("renderGlobals", {})
+            machine_list = attr_values.get("machineList", "")
+            if machine_list:
+                if attr_values.get("whitelist", True):
+                    machine_list_key = "Whitelist"
+                else:
+                    machine_list_key = "Blacklist"
+                render_globals[machine_list_key] = machine_list
 
-        job_info.ChunkSize = attr_values.get("chunkSize", self.chunk_size)
-        job_info.Priority = attr_values.get("priority", self.priority)
-        job_info.ScheduledType = "Once"
-        job_info.JobDelay = attr_values.get("job_delay", self.job_delay)
+            job_info.ChunkSize = attr_values.get("chunkSize", self.chunk_size)
+            job_info.Priority = attr_values.get("priority", self.priority)
+            job_info.ScheduledType = "Once"
+            job_info.JobDelay = attr_values.get("job_delay", self.job_delay)
 
-        # Add options from RenderGlobals
-        render_globals = instance.data.get("renderGlobals", {})
-        job_info.update(render_globals)
+            # Add options from RenderGlobals
+            render_globals = instance.data.get("renderGlobals", {})
+            job_info.update(render_globals)
 
-        keys = [
-            "FTRACK_API_KEY",
-            "FTRACK_API_USER",
-            "FTRACK_SERVER",
-            "QUADPYPE_SG_USER",
-            "AVALON_DB",
-            "AVALON_PROJECT",
-            "AVALON_ASSET",
-            "AVALON_TASK",
-            "AVALON_APP_NAME",
-            "QUADPYPE_DEV"
-            "IS_TEST"
-        ]
+            keys = [
+                "FTRACK_API_KEY",
+                "FTRACK_API_USER",
+                "FTRACK_SERVER",
+                "QUADPYPE_SG_USER",
+                "AVALON_DB",
+                "AVALON_PROJECT",
+                "AVALON_ASSET",
+                "AVALON_TASK",
+                "AVALON_APP_NAME",
+                "QUADPYPE_DEV"
+                "IS_TEST"
+            ]
 
-        # Add QuadPype version if we are running from build.
-        if is_running_from_build():
-            keys.append("QUADPYPE_VERSION")
+            # Add QuadPype version if we are running from build.
+            if is_running_from_build():
+                keys.append("QUADPYPE_VERSION")
 
-        # Add mongo url if it's enabled
-        if self._instance.context.data.get("deadlinePassMongoUrl"):
-            keys.append("QUADPYPE_MONGO")
+            # Add mongo url if it's enabled
+            if self._instance.context.data.get("deadlinePassMongoUrl"):
+                keys.append("QUADPYPE_MONGO")
 
-        environment = dict({key: os.environ[key] for key in keys
-                            if key in os.environ}, **legacy_io.Session)
+            environment = dict({key: os.environ[key] for key in keys
+                                if key in os.environ}, **legacy_io.Session)
 
-        for key in keys:
-            value = environment.get(key)
-            if not value:
-                continue
-            job_info.EnvironmentKeyValue[key] = value
+            for key in keys:
+                value = environment.get(key)
+                if not value:
+                    continue
+                job_info.EnvironmentKeyValue[key] = value
 
-        # to recognize job from PYPE for turning Event On/Off
-        job_info.add_render_job_env_var()
-        job_info.EnvironmentKeyValue["QUADPYPE_LOG_NO_COLORS"] = "1"
-        # Adding file dependencies.
-        if self.asset_dependencies:
-            dependencies = instance.context.data["fileDependencies"]
-            for dependency in dependencies:
-                job_info.AssetDependency += dependency
+            # to recognize job from PYPE for turning Event On/Off
+            job_info.add_render_job_env_var()
+            job_info.EnvironmentKeyValue["QUADPYPE_LOG_NO_COLORS"] = "1"
+            # Adding file dependencies.
+            if self.asset_dependencies:
+                dependencies = instance.context.data["fileDependencies"]
+                for dependency in dependencies:
+                    job_info.AssetDependency += dependency
 
-        # Add list of expected files to job
-        # ---------------------------------
-        exp = instance.data.get("expectedFiles")
-        for filepath in iter_expected_files(exp):
-            job_info.OutputDirectory += os.path.dirname(filepath)
-            job_info.OutputFilename += os.path.basename(filepath)
+            # Add list of expected files to job
+            # ---------------------------------
+            exp = instance.data.get("expectedFiles")
+            for filepath in iter_expected_files(exp):
+                job_info.OutputDirectory += os.path.dirname(filepath)
+                job_info.OutputFilename += os.path.basename(filepath)
 
-        return job_info
+            jobs.append(job_info)
+
+        return jobs
 
     def get_plugin_info(self):
         # Not all hosts can import this module.
@@ -183,7 +185,7 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
 
         return plugin_payload
 
-    def process_submission(self):
+    def process_submission(self, job_info=None, plugin_info=None, aux_files=None):
         instance = self._instance
 
         expected_files = instance.data["expectedFiles"]
@@ -195,7 +197,7 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         instance.data["outputDir"] = output_dir
         instance.data["toBeRenderedOn"] = "deadline"
 
-        payload = self.assemble_payload()
+        payload = self.assemble_payload(job_info, plugin_info, aux_files)
         return self.submit(payload)
 
     def from_published_scene(self, replace_in_path=True):

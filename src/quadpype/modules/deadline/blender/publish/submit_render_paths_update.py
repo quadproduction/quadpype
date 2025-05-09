@@ -60,53 +60,59 @@ class BlenderRenderPathsUpdateDeadline(abstract_submit_deadline.AbstractSubmitDe
     dependency = True
 
     def get_job_info(self):
-        job_info = DeadlineJobInfo(Plugin="BlenderScript")
-
-        job_info.update(self.jobInfo)
-
         instance = self._instance
         context = instance.context
 
-        profile = get_deadline_job_profile(context.data[PROJECT_SETTINGS_KEY],  self.hosts[0])
+        profile = get_deadline_job_profile(context.data[PROJECT_SETTINGS_KEY], self.hosts[0])
+
         self.set_job_attrs(profile)
 
-        job_info.Priority = self.get_job_attr("priority")
-        job_info.Pool = self.get_job_attr("pool")
-        job_info.SecondaryPool = self.get_job_attr("pool_secondary")
-        job_info.MachineLimit = self.get_job_attr("limit_machine")
+        jobs = list()
 
-        # Always use the original work file name for the Job name even when
-        # rendering is done from the published Work File. The original work
-        # file name is clearer because it can also have subversion strings,
-        # etc. which are stripped for the published file.
-        src_filepath = context.data["currentFile"]
-        src_filename = os.path.basename(src_filepath)
+        for src_filepath in context.data["currentFile"]:
+            job_info = DeadlineJobInfo(Plugin="BlenderScript")
 
-        if is_in_tests():
-            src_filename += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
+            job_info.update(self.jobInfo)
 
-        job_info.Name = f"{src_filename} - update_render_paths"
-        job_info.BatchName = src_filename
-        job_info.UserName = context.data.get("deadlineUser", getpass.getuser())
+            job_info.Priority = self.get_job_attr("priority")
+            job_info.Pool = self.get_job_attr("pool")
+            job_info.SecondaryPool = self.get_job_attr("pool_secondary")
+            job_info.MachineLimit = self.get_job_attr("limit_machine")
 
-        frames = "{start}-{end}x{step}".format(
-            start=int(instance.data["frameStartHandle"]),
-            end=int(instance.data["frameEndHandle"]),
-            step=int(instance.data["byFrameStep"]),
-        )
-        job_info.Frames = frames
+            # Always use the original work file name for the Job name even when
+            # rendering is done from the published Work File. The original work
+            # file name is clearer because it can also have subversion strings,
+            # etc. which are stripped for the published file.
 
-        job_info.Comment = instance.data.get("comment")
+            src_filename = os.path.basename(src_filepath)
 
-        if self.group != "none" and self.group:
-            job_info.Group = self.group
+            if is_in_tests():
+                src_filename += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
 
-        attr_values = self.get_attr_values_from_data(instance.data)
-        job_info.Priority = attr_values.get("priority", self.priority)
-        job_info.ScheduledType = "Once"
-        job_info.JobDelay = attr_values.get("job_delay", self.job_delay)
+            job_info.Name = f"{src_filename} - update_render_paths"
+            job_info.BatchName = f"{src_filename}"
+            job_info.UserName = context.data.get("deadlineUser", getpass.getuser())
 
-        return job_info
+            frames = "{start}-{end}x{step}".format(
+                start=int(instance.data["frameStartHandle"]),
+                end=int(instance.data["frameEndHandle"]),
+                step=int(instance.data["byFrameStep"]),
+            )
+            job_info.Frames = frames
+
+            job_info.Comment = instance.data.get("comment")
+
+            if self.group != "none" and self.group:
+                job_info.Group = self.group
+
+            attr_values = self.get_attr_values_from_data(instance.data)
+            job_info.Priority = attr_values.get("priority", self.priority)
+            job_info.ScheduledType = "Once"
+            job_info.JobDelay = attr_values.get("job_delay", self.job_delay)
+
+            jobs.append(job_info)
+
+        return jobs
 
     def get_plugin_info(self):
         # Not all hosts can import this module.
