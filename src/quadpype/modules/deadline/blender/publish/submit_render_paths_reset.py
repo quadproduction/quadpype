@@ -67,7 +67,7 @@ class BlenderRenderPathsResetDeadline(abstract_submit_deadline.AbstractSubmitDea
         self.set_job_attrs(profile)
 
         jobs = list()
-        for src_filepath in context.data["currentFile"]:
+        for src_filepath in [context.data["currentFile"]]:
             job_info = DeadlineJobInfo(Plugin="BlenderScript")
             job_info.update(self.jobInfo)
             job_info.Priority = self.get_job_attr("priority")

@@ -1,7 +1,7 @@
 """Create render."""
 import bpy
 
-from quadpype.lib import version_up
+from quadpype.lib import version_up, EnumDef, BoolDef, UISeparatorDef
 from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.render_lib import prepare_rendering
 from quadpype.hosts.blender.api.workio import save_file
@@ -47,5 +47,50 @@ class CreateRenderlayer(plugin.BlenderCreator):
 
     def get_instance_attr_defs(self):
         defs = lib.collect_animation_defs()
-
+        defs.extend(
+            [
+                UISeparatorDef(),
+                EnumDef(
+                    "render_layers",
+                    items=[view_layer.name for view_layer in bpy.context.scene.view_layers],
+                    default=[
+                        view_layer.name for view_layer in bpy.context.scene.view_layers
+                        if view_layer.use
+                    ],
+                    label="Layer(s) to render",
+                    multiselection=True
+                ),
+                EnumDef(
+                    "cycles.device",
+                    label="Device",
+                    items=["CPU, GPU"],
+                    default="CPU"
+                ),
+                BoolDef(
+                    "render.use_single_layer",
+                    label="Use single layer",
+                    default=False
+                ),
+                BoolDef(
+                    "render.use_simplify",
+                    label="Use simplify",
+                    default=False
+                ),
+                BoolDef(
+                    "render.use_motion_blur",
+                    label="Use motion blur",
+                    default=True
+                ),
+                BoolDef(
+                    "render.use_border",
+                    label="Render region",
+                    default=False
+                ),
+                BoolDef(
+                    "use_nodes",
+                    label="Use nodes",
+                    default=True
+                )
+            ]
+        )
         return defs

@@ -69,7 +69,7 @@ class BlenderRenderPathsUpdateDeadline(abstract_submit_deadline.AbstractSubmitDe
 
         jobs = list()
 
-        for src_filepath in context.data["currentFile"]:
+        for src_filepath in [context.data["currentFile"]]:
             job_info = DeadlineJobInfo(Plugin="BlenderScript")
 
             job_info.update(self.jobInfo)

@@ -492,7 +492,6 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
             str: Deadline job ID
 
         """
-        self.log.error(aux_files)
         payload = self.assemble_payload(job_info=job_info, plugin_info=plugin_info, aux_files=aux_files)
         return self.submit(payload)
 
@@ -626,7 +625,6 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
         """
         url = "{}/api/jobs".format(self._deadline_url)
         response = requests_post(url, json=payload)
-        self.log.warning(payload)
         if not response.ok:
             self.log.error("Submission failed!")
             self.log.error(response.status_code)

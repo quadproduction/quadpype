@@ -62,7 +62,7 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         self.set_job_attrs(profile)
 
         jobs = list()
-        for src_filepath in context.data["currentFile"]:
+        for src_filepath in [context.data["currentFile"]]:
             job_info = DeadlineJobInfo(Plugin="Blender")
             job_info.update(self.jobInfo)
             job_info.Priority = self.get_job_attr("priority")
