@@ -433,6 +433,17 @@ class BlendLoader(plugin.BlenderLoader):
                     if data.name == corresponding_renamed_data_name:
                         obj.data = data
 
+                # Remap bones custom shapes
+                if data_type == "armatures":
+                    for bone in obj.pose.bones:
+                        old_shape = bone.custom_shape
+                        if not old_shape:
+                            continue
+                        corresponding_renamed_shape_name = corresponding_renamed.get(old_shape.name)
+                        if not corresponding_renamed_shape_name:
+                            self.log.warning(f"No corresponding data found for {old_shape.name}")
+                        bone.custom_shape = bpy.data.objects.get(corresponding_renamed_shape_name)
+
                 # Remap override data in deformers
                 if not obj.modifiers:
                     continue
