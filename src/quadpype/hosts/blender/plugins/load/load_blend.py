@@ -680,11 +680,10 @@ class BlendLoader(plugin.BlenderLoader):
         if container.get('import_method', None) == ImportMethod.APPEND.value:
             return current_members
 
-        asset = container.get('asset')
-        subset_without_variant = container.get('subset').replace(container.get('variant'), '')
-        regex = fr"^{asset}.*.{subset_without_variant}$"
+        asset_name = container.get('asset_name', None)
         version = container.get('version', None)
-        for collection in self._get_other_collection_with_name_and_version(collection_name, regex, version):
+
+        for collection in self._get_other_collection_with_name_and_version(collection_name, version, asset_name):
             coll_members = lib.get_objects_from_mapped(pipeline.get_avalon_node(collection).get('members', []))
             for coll_member in coll_members:
                 if coll_member not in current_members:
@@ -695,11 +694,11 @@ class BlendLoader(plugin.BlenderLoader):
         return current_members
 
     @staticmethod
-    def _get_other_collection_with_name_and_version(collection_name, regex, version):
+    def _get_other_collection_with_name_and_version(collection_name, version, asset_name):
         return [
             coll for coll in bpy.data.collections if
-            re.match(regex, coll.name) and
             pipeline.get_avalon_node(coll).get('version', None) == version and
+            pipeline.get_avalon_node(coll).get('asset_name', None) == asset_name and
             coll.name != collection_name
         ]
 
