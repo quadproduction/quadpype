@@ -282,8 +282,11 @@ def set_node_tree(
     old_output_node = None
 
     for node in tree.nodes:
-        if node.bl_idname == comp_layer_type and auto_connect_nodes:
-            render_layer_nodes.add(node)
+        if node.bl_idname == comp_layer_type:
+            # Don't add node if auto_connect_nodes is disabled
+            # except if node name start with Quadpype label
+            if auto_connect_nodes or (not auto_connect_nodes and node.name.startswith("QuadPype Render Node")):
+                render_layer_nodes.add(node)
         elif node.bl_idname == compositor_type:
             composite_node = node
         elif node.bl_idname == output_type and "QuadPype" in node.name:
@@ -439,6 +442,8 @@ def create_node_with_new_view_layers(tree, comp_layer_type, view_layers, render_
     for view_layer in view_layers:
         render_layer_node = tree.nodes.new(comp_layer_type)
         render_layer_node.layer = view_layer.name
+        render_layer_node.name = f"QuadPype Render Node - {view_layer.name}"
+        render_layer_node.label = f"QuadPype Render Node"
         render_layer_nodes.add(render_layer_node)
     return render_layer_nodes
 
