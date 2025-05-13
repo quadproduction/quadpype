@@ -1,6 +1,6 @@
 from quadpype.pipeline import publish
 from quadpype.hosts.photoshop import api as photoshop
-
+from pathlib import Path
 
 class ExtractSaveScene(publish.Extractor):
     """Save scene before extraction."""
@@ -11,4 +11,7 @@ class ExtractSaveScene(publish.Extractor):
     families = ["workfile"]
 
     def process(self, instance):
-        photoshop.stub().save()
+        current_path = Path(photoshop.stub().get_active_document_full_name())
+        current_ext = current_path.suffix.lstrip('.')
+
+        photoshop.stub().saveAs(str(current_path), current_ext, as_copy=False)
