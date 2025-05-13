@@ -730,16 +730,15 @@ def publish():
 
 
 def get_path_from_template(template_module, template_name, template_data={}, bump_version=False, makedirs=False):
-    """ Build the render node path based on actual context"""
+    """ Build path from asked template based on actual context"""
     anatomy = Anatomy()
-    if not anatomy.templates.get(template_module):
+    templates = anatomy.templates.get(template_module)
+    if not templates:
         raise NotImplemented(f"'{template_module}' template need to be setted in your project settings")
 
-    templates = anatomy.templates.get(template_module)
     template_session_data = {'root': anatomy.roots, **get_template_data_from_session()}
-
-    # Build render node folder template
     template_session_data.update(template_data)
+
     if 'version' in templates[template_name]:
         template_folder_path = os.path.normpath(StringTemplate.format_template(templates['folder'], template_session_data))
 
@@ -764,7 +763,9 @@ def get_path_from_template(template_module, template_name, template_data={}, bum
             os.makedirs(render_node_path, exist_ok=True)
         else:
             os.makedirs(os.path.dirname(render_node_path), exist_ok=True)
+
     return render_node_path
+
 
 def get_container(objects: list = [], collections: list = []):
     """Retrieve the instance container based on given objects and collections"""
@@ -777,6 +778,7 @@ def get_container(objects: list = [], collections: list = []):
             return empty
 
     return None
+
 
 def get_container_content(container):
     """Retrieve all objects and collection in the given container"""

@@ -10,10 +10,14 @@ from quadpype.pipeline.publish import (
 import quadpype.hosts.blender.api.action
 from quadpype.hosts.blender.api import plugin
 from quadpype.hosts.blender.api.pipeline import get_path_from_template
+from quadpype.pipeline.publish.lib import get_template_name_profiles
+from quadpype.lib import filter_profiles
+from quadpype.settings import get_project_settings
+
 
 
 class SetNodesOutputsPaths(
-    plugin.BlenderContextPlugin,
+    plugin.BlenderInstancePlugin,
     OptionalPyblishPluginMixin,
 ):
     """Validate that the objects in the instance are in Object Mode."""
@@ -22,11 +26,10 @@ class SetNodesOutputsPaths(
     hosts = ["blender"]
     families = ["render"]
     label = "Set nodes outputs paths"
-    actions = [quadpype.hosts.blender.api.action.SelectInvalidAction]
     optional = True
 
-    def process(self, context):
-        if not self.is_active(context.data):
+    def process(self, instance):
+        if not self.is_active(instance.data):
             return
 
         scene = bpy.context.scene
@@ -34,7 +37,29 @@ class SetNodesOutputsPaths(
             self.log.error("Scene does not have a valid node tree. Make sure compositing nodes are enabled.")
             return {'CANCELLED'}
 
-        anatomy_data = context.data['anatomyData']
+        anatomy_data = instance.data['anatomyData']
+        family = instance.data["family"]
+
+        project_name = anatomy_data.get('project', {}).get('name', None)
+        if not project_name:
+            raise RuntimeError("Can not retrieve project name from template_data. Can not get path from template.")
+
+        profiles = get_template_name_profiles(
+            project_name, get_project_settings(project_name), self.log
+        )
+
+        task = anatomy_data.get('task')
+        if not task:
+            raise RuntimeError("Can not retrieve task from template_data. Can not get path from template.")
+
+        filter_criteria = {
+            "hosts": anatomy_data["app"],
+            "families": family,
+            "task_names": task.get('name', None),
+            "task_types": task.get('type', None),
+        }
+        profile = filter_profiles(profiles, filter_criteria, logger=self.log)
+
         quadpype_output_node = "QuadPype File Output"
         for output_node in _get_output_nodes(scene):
             render_node = _find_render_node(output_node.inputs)
@@ -43,12 +68,14 @@ class SetNodesOutputsPaths(
                 self.log.info(f"Ignoring node called '{quadpype_output_node}'")
                 continue
 
-            anatomy_data['render_layer_name'] = render_node.layer
-
             output_path = get_path_from_template(
-                template_module='deadline_render',
+                template_module=profile['template_name'],
                 template_name='node_output',
-                template_data=anatomy_data,
+                template_data={
+                    'family': family,
+                    'subset': instance.data["subset"],
+                    'render_layer_name': render_node.layer
+                },
                 bump_version=True,
                 makedirs=True
             )
