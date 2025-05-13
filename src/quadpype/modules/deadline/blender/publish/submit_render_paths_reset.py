@@ -59,7 +59,7 @@ class BlenderRenderPathsResetDeadline(abstract_submit_deadline.AbstractSubmitDea
                 instance=instance,
                 plugin_name="BlenderScript",
                 src_filepath=src_filepath,
-                job_suffix="reset_render_paths"
+                job_suffix="Reset render paths"
             )
             jobs.append(job)
 

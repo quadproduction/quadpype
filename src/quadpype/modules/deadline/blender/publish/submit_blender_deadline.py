@@ -2,11 +2,9 @@
 """Submitting render job to Deadline."""
 
 import os
-import getpass
+
 import pyblish.api
 from dataclasses import dataclass, field, asdict
-
-from datetime import datetime, timezone
 
 from quadpype.lib import (
     is_running_from_build,
@@ -15,16 +13,14 @@ from quadpype.lib import (
     TextDef,
 )
 from quadpype.settings import PROJECT_SETTINGS_KEY
-from quadpype.pipeline.context_tools import get_current_project_name
 
 from quadpype.pipeline import legacy_io, OptionalPyblishPluginMixin
 from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
 from quadpype.pipeline.farm.tools import iter_expected_files
-from quadpype.tests.lib import is_in_tests
 
 from quadpype_modules.deadline import abstract_submit_deadline
 from quadpype_modules.deadline.utils import get_deadline_job_profile, DeadlineDefaultJobAttrs
-from quadpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from quadpype_modules.deadline.blender.publish import common_job
 
 
 @dataclass
@@ -63,39 +59,15 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
 
         jobs = list()
         for src_filepath in [context.data["currentFile"]]:
-            job_info = DeadlineJobInfo(Plugin="Blender")
-            job_info.update(self.jobInfo)
-            job_info.Priority = self.get_job_attr("priority")
-            job_info.Pool = self.get_job_attr("pool")
-            job_info.SecondaryPool = self.get_job_attr("pool_secondary")
-            job_info.MachineLimit = self.get_job_attr("limit_machine")
-
-            # Always use the original work file name for the Job name even when
-            # rendering is done from the published Work File. The original work
-            # file name is clearer because it can also have subversion strings,
-            # etc. which are stripped for the published file.
-            src_filename = os.path.basename(src_filepath)
-
-            if is_in_tests():
-                src_filename += datetime.now(timezone.utc).strftime("%d%m%Y%H%M%S")
-
-            job_info.Name = f"{src_filename} - {instance.name}"
-            job_info.BatchName = f"{src_filename}"
             instance.data.get("blenderRenderPlugin", "Blender")
-            job_info.UserName = context.data.get("deadlineUser", getpass.getuser())
 
-            # Deadline requires integers in frame range
-            frames = "{start}-{end}x{step}".format(
-                start=int(instance.data["frameStartHandle"]),
-                end=int(instance.data["frameEndHandle"]),
-                step=int(instance.data["byFrameStep"]),
+            job = common_job.generate(
+                job_instance=self,
+                instance=instance,
+                plugin_name="Blender",
+                src_filepath=src_filepath,
+                job_suffix="Render"
             )
-            job_info.Frames = frames
-
-            job_info.Comment = instance.data.get("comment")
-
-            if self.group != "none" and self.group:
-                job_info.Group = self.group
 
             attr_values = self.get_attr_values_from_data(instance.data)
             render_globals = instance.data.setdefault("renderGlobals", {})
@@ -107,14 +79,11 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
                     machine_list_key = "Blacklist"
                 render_globals[machine_list_key] = machine_list
 
-            job_info.ChunkSize = attr_values.get("chunkSize", self.chunk_size)
-            job_info.Priority = attr_values.get("priority", self.priority)
-            job_info.ScheduledType = "Once"
-            job_info.JobDelay = attr_values.get("job_delay", self.job_delay)
+            job.ChunkSize = attr_values.get("chunkSize", self.chunk_size)
 
             # Add options from RenderGlobals
             render_globals = instance.data.get("renderGlobals", {})
-            job_info.update(render_globals)
+            job.update(render_globals)
 
             keys = [
                 "FTRACK_API_KEY",
@@ -145,25 +114,25 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
                 value = environment.get(key)
                 if not value:
                     continue
-                job_info.EnvironmentKeyValue[key] = value
+                job.EnvironmentKeyValue[key] = value
 
             # to recognize job from PYPE for turning Event On/Off
-            job_info.add_render_job_env_var()
-            job_info.EnvironmentKeyValue["QUADPYPE_LOG_NO_COLORS"] = "1"
+            job.add_render_job_env_var()
+            job.EnvironmentKeyValue["QUADPYPE_LOG_NO_COLORS"] = "1"
             # Adding file dependencies.
             if self.asset_dependencies:
                 dependencies = instance.context.data["fileDependencies"]
                 for dependency in dependencies:
-                    job_info.AssetDependency += dependency
+                    job.AssetDependency += dependency
 
             # Add list of expected files to job
             # ---------------------------------
             exp = instance.data.get("expectedFiles")
             for filepath in iter_expected_files(exp):
-                job_info.OutputDirectory += os.path.dirname(filepath)
-                job_info.OutputFilename += os.path.basename(filepath)
+                job.OutputDirectory += os.path.dirname(filepath)
+                job.OutputFilename += os.path.basename(filepath)
 
-            jobs.append(job_info)
+            jobs.append(job)
 
         return jobs
 

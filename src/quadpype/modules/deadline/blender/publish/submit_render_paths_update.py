@@ -62,7 +62,7 @@ class BlenderRenderPathsUpdateDeadline(abstract_submit_deadline.AbstractSubmitDe
                 instance=instance,
                 plugin_name="BlenderScript",
                 src_filepath=src_filepath,
-                job_suffix="update_render_paths"
+                job_suffix="Update render paths"
             )
             jobs.append(job)
 
