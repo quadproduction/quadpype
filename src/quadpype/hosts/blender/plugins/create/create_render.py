@@ -26,7 +26,6 @@ class CreateRenderlayer(plugin.BlenderCreator):
             collection = super().create(
                 subset_name, instance_data, pre_create_data
             )
-            self.log.warning(pre_create_data)
             prepare_rendering(
                 asset_group=collection,
                 auto_connect_nodes=pre_create_data.get('auto_connect_nodes', self.auto_connect_nodes_default),
