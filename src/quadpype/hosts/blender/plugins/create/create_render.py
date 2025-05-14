@@ -1,7 +1,7 @@
 """Create render."""
 import bpy
 
-from quadpype.lib import version_up
+from quadpype.lib import version_up, BoolDef, UISeparatorDef
 from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.render_lib import prepare_rendering
 from quadpype.hosts.blender.api.workio import save_file
@@ -15,6 +15,9 @@ class CreateRenderlayer(plugin.BlenderCreator):
     family = "render"
     icon = "eye"
 
+    auto_connect_nodes_default = False
+    only_current_layer = True
+
     def create(
         self, subset_name: str, instance_data: dict, pre_create_data: dict
     ):
@@ -23,8 +26,11 @@ class CreateRenderlayer(plugin.BlenderCreator):
             collection = super().create(
                 subset_name, instance_data, pre_create_data
             )
-
-            prepare_rendering(collection)
+            prepare_rendering(
+                asset_group=collection,
+                auto_connect_nodes=pre_create_data.get('auto_connect_nodes', self.auto_connect_nodes_default),
+                connect_only_current_layer=pre_create_data.get('only_current_layer', self.only_current_layer)
+            )
         except Exception:
             # Remove the instance if there was an error
             bpy.data.collections.remove(collection)
@@ -47,5 +53,24 @@ class CreateRenderlayer(plugin.BlenderCreator):
 
     def get_instance_attr_defs(self):
         defs = lib.collect_animation_defs()
+        return defs
+
+    def get_pre_create_attr_defs(self):
+        defs = super().get_pre_create_attr_defs()
+        defs.extend(
+            [
+                UISeparatorDef(),
+                BoolDef(
+                    "auto_connect_nodes",
+                    label="Auto connect already created nodes",
+                    default=self.auto_connect_nodes_default
+                ),
+                BoolDef(
+                    "only_current_layer",
+                    label="Only connect current layer",
+                    default=self.only_current_layer
+                ),
+            ]
+        )
 
         return defs

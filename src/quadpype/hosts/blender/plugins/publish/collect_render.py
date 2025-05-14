@@ -110,7 +110,11 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
 
         for view_layer in bpy.context.scene.view_layers:
             viewlayer_name = view_layer.name
-            rn_product = render_product[viewlayer_name]
+            rn_product = render_product.get(viewlayer_name, None)
+            if not rn_product:
+                self.log.warning(f"Can not found render data for layer named '{viewlayer_name}'. Will not create instance.")
+                continue
+
             aov_product = aov_file_product[viewlayer_name] if aov_file_product else {}
 
             # This name should normally be generated with ayon libs, but because they are not currently
@@ -122,7 +126,6 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
                     context.data["hostName"],
                     prod_type,
                     instance.data["variant"] + viewlayer_name,
-                    context.data["project_settings"]
                 ]
             )
             rn_layer_instance = context.create_instance(viewlayer_product_name)
@@ -144,7 +147,6 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
                 "review": review,
                 "multipartExr": ext == "exr" and multilayer,
                 "farm": True,
-                "folderPath": instance.data["folderPath"],
                 "productName": viewlayer_product_name,
                 "productType": prod_type,
                 "expectedFiles": [expected_files],
