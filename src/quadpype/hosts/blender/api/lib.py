@@ -286,8 +286,8 @@ def get_object_types_correspondance():
         if isinstance(prop, bpy.types.bpy_prop_collection):
             try:
                 if len(prop) > 0:
-                    identifier = prop[0].bl_rna.identifier
-                    rna_to_bpy_data[identifier] = name
+                    identifiers = {pr.bl_rna.identifier for pr in prop}
+                    rna_to_bpy_data.update({identifier: name for identifier in identifiers})
             except Exception:
                 pass
     return rna_to_bpy_data
