@@ -254,7 +254,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                 "Pool": self.get_attr_value(self, instance, "pool"),
                 "SecondaryPool": self.get_attr_value(self, instance, "pool_secondary"),
                 # ensure the outputdirectory with correct slashes
-                "OutputDirectory0": output_dir.replace("\\", "/")
+                "OutputDirectory0": output_dir.replace("\\", "/"),
             },
             "PluginInfo": {
                 "Version": self.plugin_pype_version,
@@ -264,6 +264,21 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             # Mandatory for Deadline, may be empty
             "AuxFiles": [],
         }
+
+        # Fill frames information from instance data. If no information is
+        # found, frames data will be automatically retrieved from last job
+        # Data can be equal to 0 so we check that value is different from None
+        frame_start_handle = int(instance.data.get("frameStartHandle", None))
+        frame_end_handle = int(instance.data.get("frameEndHandle", None))
+        frame_step = int(instance.data.get("byFrameStep", None))
+        if frame_start_handle is not None and \
+                frame_end_handle is not None and \
+                frame_step is not None:
+            payload['JobInfo']['Frames'] = "{start}-{end}x{step}".format(
+                start=int(instance.data["frameStartHandle"]),
+                end=int(instance.data["frameEndHandle"]),
+                step=int(instance.data["byFrameStep"]),
+            )
 
         # add assembly jobs as dependencies
         if instance.data.get("tileRendering"):

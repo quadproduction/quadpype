@@ -65,6 +65,7 @@ class BlenderRenderPathsResetDeadline(abstract_submit_deadline.AbstractSubmitDea
 
         return jobs
 
+
     def get_plugin_info(self):
         # Not all hosts can import this module.
         import bpy
