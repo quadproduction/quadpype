@@ -67,7 +67,7 @@ def update_paths(name, objects_to_update, attribute, root_paths, replaced_root):
 
     logging.info(f"[{name}] Updating paths.")
     for single_object in objects_to_update:
-        object_path = getattr(single_object, attribute)
+        object_path = getattr(single_object, attribute, None)
         if object_path is None:
             logging.warning(f"[{name}] Does not have attribute named {attribute}. Abort path update.")
             return
@@ -86,14 +86,14 @@ def get_output_nodes(scene):
 
 
 def _flatten_path(path):
-    return path.replace('\\', '\\\\')
+    return path.replace('\\\\', '\\').replace('\\', '/')
 
 
 def replace_root(original_path, root_paths, replaced_root):
     return re.sub(
         pattern=fr'^({root_paths.windows})|({root_paths.linux})|({root_paths.mac})',
         repl=replaced_root,
-        string=original_path
+        string=_flatten_path(original_path)
     )
 
 
@@ -107,11 +107,10 @@ def execute(args):
             logging.error(f"Current platform ({sys.platform}) is not supported by script. Paths can not be updated.")
             quit()
 
-    # Flatten windows path to remove double slashes
     root_paths = RootPath(
         windows_path=_flatten_path(args.windows_root_path),
-        linux_path=_flatten_path(args.linux_root_path),
-        mac_path=_flatten_path(args.mac_root_path)
+        linux_path=args.linux_root_path,
+        mac_path=args.mac_root_path
     )
 
     for objects_properties in objects_attr_to_update:
