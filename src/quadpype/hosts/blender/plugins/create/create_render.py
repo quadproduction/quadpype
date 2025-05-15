@@ -67,28 +67,28 @@ class CreateRenderlayer(plugin.BlenderCreator):
                     multiselection=True
                 ),
                 EnumDef(
-                    "cycles.device",
+                    "device",
                     label="Device",
-                    items=["CPU, GPU"],
+                    items=["CPU", "GPU"],
                     default="CPU"
                 ),
                 BoolDef(
-                    "render.use_single_layer",
+                    "use_single_layer",
                     label="Use single layer",
                     default=False
                 ),
                 BoolDef(
-                    "render.use_simplify",
+                    "use_simplify",
                     label="Use simplify",
                     default=False
                 ),
                 BoolDef(
-                    "render.use_motion_blur",
+                    "use_motion_blur",
                     label="Use motion blur",
                     default=True
                 ),
                 BoolDef(
-                    "render.use_border",
+                    "use_border",
                     label="Render region",
                     default=False
                 ),

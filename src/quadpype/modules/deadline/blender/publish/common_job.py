@@ -34,14 +34,6 @@ def generate(job_instance, instance, plugin_name, src_filepath, job_suffix):
     job_info.Name = f"{src_filename} - {job_suffix}"
     job_info.BatchName = f"{src_filename}"
     job_info.UserName = instance.context.data.get("deadlineUser", getpass.getuser())
-
-    frames = "{start}-{end}x{step}".format(
-        start=int(instance.data["frameStartHandle"]),
-        end=int(instance.data["frameEndHandle"]),
-        step=int(instance.data["byFrameStep"]),
-    )
-    job_info.Frames = frames
-
     job_info.Comment = instance.data.get("comment")
 
     if job_instance.group != "none" and job_instance.group:

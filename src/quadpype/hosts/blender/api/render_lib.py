@@ -58,12 +58,12 @@ def get_renderer(settings):
     ["renderer"])
 
 
-def get_autoconnect(settings):
-    """Get renderer from blender settings."""
+def get_use_nodes(settings):
+    """Get use_nodes from blender settings."""
 
     return (settings["blender"]
     ["RenderSettings"]
-    ["autoconnect_nodes"])
+    ["use_nodes"])
 
 
 def get_compositing(settings):
@@ -264,11 +264,12 @@ def _create_aov_slot(name, aov_sep, slots, rpass_name, multi_exr, output_path, r
 
 
 def set_node_tree(
-        output_path, name, aov_sep, ext, multilayer, compositing,
-        view_layers, auto_connect_nodes, connect_only_current_layer
+        output_path, name, aov_sep, ext, multilayer, compositing, view_layers,
+        auto_connect_nodes, connect_only_current_layer, use_nodes
 ):
     # Set the scene to use the compositor node tree to render
-    bpy.context.scene.use_nodes = True
+    if use_nodes:
+        bpy.context.scene.use_nodes = True
 
     tree = bpy.context.scene.node_tree
 
@@ -465,6 +466,7 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
     ext = get_image_format(settings)
     multilayer = get_multilayer(settings)
     renderer = get_renderer(settings)
+    use_nodes = get_use_nodes(settings)
     ver_major, ver_minor, _ = lib.get_blender_version()
     if renderer == "BLENDER_EEVEE" and (
             ver_major >= 4 and ver_minor >= 2
@@ -474,7 +476,16 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
 
     set_render_format(ext, multilayer)
     bpy.context.scene.render.engine = renderer
-    view_layers = [bpy.context.view_layer] if connect_only_current_layer else bpy.context.scene.view_layers
+
+    view_layers = bpy.context.scene.view_layers
+    if connect_only_current_layer:
+        for layer in view_layers:
+            if not layer.use:
+                continue
+
+            view_layers = [layer]
+            break
+
     aov_list, custom_passes = set_render_passes(settings, renderer, view_layers)
 
     output_path = Path.joinpath(dirpath, render_folder, file_name)
@@ -483,8 +494,8 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
         output_path, name, aov_sep, view_layers, multiexr=multilayer
     )
     aov_file_product = set_node_tree(
-        output_path, name, aov_sep, ext, multilayer, compositing,
-        view_layers, auto_connect_nodes, connect_only_current_layer
+        output_path, name, aov_sep, ext, multilayer, compositing, view_layers,
+        auto_connect_nodes, connect_only_current_layer, use_nodes
     )
 
     # Clear the render filepath, so that the output is handled only by the

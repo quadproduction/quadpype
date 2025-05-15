@@ -69,6 +69,13 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
                 job_suffix="Render"
             )
 
+            frames = "{start}-{end}x{step}".format(
+                start=int(instance.data["frameStartHandle"]),
+                end=int(instance.data["frameEndHandle"]),
+                step=int(instance.data["byFrameStep"]),
+            )
+            job.Frames = frames
+
             attr_values = self.get_attr_values_from_data(instance.data)
             render_globals = instance.data.setdefault("renderGlobals", {})
             machine_list = attr_values.get("machineList", "")

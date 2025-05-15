@@ -22,7 +22,7 @@ class SetRenderSettings(
 ):
     """Validate that the objects in the instance are in Object Mode."""
 
-    order = pyblish.api.IntegratorOrder - 0.3
+    order = pyblish.api.IntegratorOrder - 0.2
     hosts = ["blender"]
     families = ["render"]
     label = "Set render settings"
@@ -49,6 +49,19 @@ class SetRenderSettings(
                     property_name=single_property,
                     value=creator_attributes.get(single_property, None),
                 )
+
+        layers_to_render = creator_attributes.get('render_layers', None)
+        if layers_to_render is None:
+            self.log.warning("Can not find render layers attribute from creator attributes.")
+            return
+
+        assert layers_to_render, "Render layers attribute retrieved from creator is empty. Nothing will be rendered."
+
+        for layer in bpy.context.scene.view_layers:
+            layer.use = layer.name in layers_to_render
+            self.log.info(f"Layer {layer.name} has been {'enabled' if layer.use else 'disabled'}.")
+
+        raise RuntimeError
 
     def set_property(self, scene_property, property_name, value):
         if value is None:
