@@ -61,8 +61,6 @@ class SetRenderSettings(
             layer.use = layer.name in layers_to_render
             self.log.info(f"Layer {layer.name} has been {'enabled' if layer.use else 'disabled'}.")
 
-        raise RuntimeError
-
     def set_property(self, scene_property, property_name, value):
         if value is None:
             self.log.warning(f"No value has been found for property {property_name}.")
