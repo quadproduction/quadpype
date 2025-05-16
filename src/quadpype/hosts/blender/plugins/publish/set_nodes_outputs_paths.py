@@ -1,4 +1,3 @@
-from typing import List
 from pathlib import Path
 
 import bpy
@@ -8,15 +7,12 @@ from quadpype.pipeline.publish import (
     OptionalPyblishPluginMixin,
     PublishValidationError
 )
-import quadpype.hosts.blender.api.action
+
 from quadpype.hosts.blender.api import plugin
-from quadpype.hosts.blender.api.pipeline import get_path_from_template
 from quadpype.pipeline.publish.lib import get_template_name_profiles
-from quadpype.pipeline.publish import get_publish_template_name
 from quadpype.pipeline import Anatomy
 from quadpype.lib import filter_profiles, StringTemplate, version_up, get_version_from_path
 from quadpype.settings import get_project_settings
-from quadpype.client import get_version_by_name
 
 
 
@@ -88,20 +84,21 @@ class SetNodesOutputsPaths(
                 },
             )
 
-            bumped_version_filepath = version_up(output_path)
-            version = get_version_from_path(bumped_version_filepath)
+            if Path(output_path).parent.exists():
+                bumped_version_filepath = version_up(output_path)
+                version = get_version_from_path(bumped_version_filepath)
 
-            output_path = StringTemplate.format_template(
-                template=templates['node_output'],
-                data={
-                    'root': anatomy.roots,
-                    'family': family,
-                    'subset': instance.data["subset"],
-                    'render_layer_name': render_node.layer,
-                    **anatomy_data,
-                    'version': version
-                },
-            )
+                output_path = StringTemplate.format_template(
+                    template=templates['node_output'],
+                    data={
+                        'root': anatomy.roots,
+                        'family': family,
+                        'subset': instance.data["subset"],
+                        'render_layer_name': render_node.layer,
+                        **anatomy_data,
+                        'version': version
+                    },
+                )
 
             output_node.base_path = output_path
             self.log.info(f"File output path set to '{output_node.base_path}'.")
