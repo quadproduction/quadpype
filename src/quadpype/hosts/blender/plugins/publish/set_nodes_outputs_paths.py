@@ -63,12 +63,13 @@ class SetNodesOutputsPaths(
         }
         profile = filter_profiles(profiles, filter_criteria, logger=self.log)
 
-        quadpype_output_node = "QuadPype File Output"
+        quadpype_suffix = "quadpype"
+
         for output_node in _get_output_nodes(scene):
             render_node = _find_render_node(output_node.inputs)
 
-            if output_node.name == quadpype_output_node:
-                self.log.info(f"Ignoring node called '{quadpype_output_node}'")
+            if output_node.name.lower().startswith(quadpype_suffix):
+                self.log.info(f"Ignoring node called '{output_node.name}'")
                 continue
 
             anatomy = Anatomy()
@@ -89,7 +90,6 @@ class SetNodesOutputsPaths(
 
             bumped_version_filepath = version_up(output_path)
             version = get_version_from_path(bumped_version_filepath)
-            anatomy_data['version'] = version
 
             output_path = StringTemplate.format_template(
                 template=templates['node_output'],
@@ -98,14 +98,15 @@ class SetNodesOutputsPaths(
                     'family': family,
                     'subset': instance.data["subset"],
                     'render_layer_name': render_node.layer,
-                    **anatomy_data
+                    **anatomy_data,
+                    'version': version
                 },
             )
 
             output_node.base_path = output_path
             self.log.info(f"File output path set to '{output_node.base_path}'.")
 
-        return {'FINISHED'}
+        return
 
 
 def _get_output_nodes(scene):

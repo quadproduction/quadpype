@@ -267,9 +267,7 @@ def set_node_tree(
         output_path, name, aov_sep, ext, multilayer, compositing, view_layers,
         auto_connect_nodes, connect_only_current_layer, use_nodes
 ):
-    # Set the scene to use the compositor node tree to render
-    if use_nodes:
-        bpy.context.scene.use_nodes = True
+    bpy.context.scene.use_nodes = True
 
     tree = bpy.context.scene.node_tree
 
@@ -425,6 +423,9 @@ def set_node_tree(
 
     output.name = "QuadPype File Output"
     output.label = "QuadPype File Output"
+
+    if not use_nodes:
+        bpy.context.scene.use_nodes = False
 
     return {} if multi_exr else aov_file_products
 
