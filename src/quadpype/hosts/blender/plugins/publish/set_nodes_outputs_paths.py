@@ -26,7 +26,7 @@ class SetNodesOutputsPaths(
 ):
     """Validate that the objects in the instance are in Object Mode."""
 
-    order = pyblish.api.IntegratorOrder - 0.2
+    order = pyblish.api.IntegratorOrder - 0.3
     hosts = ["blender"]
     families = ["render"]
     label = "Set nodes outputs paths"
@@ -38,8 +38,7 @@ class SetNodesOutputsPaths(
 
         scene = bpy.context.scene
         if scene.node_tree is None:
-            self.log.error("Scene does not have a valid node tree. Make sure compositing nodes are enabled.")
-            return {'CANCELLED'}
+            raise RuntimeError("Scene does not have a valid node tree. Make sure compositing nodes are enabled.")
 
         anatomy_data = instance.data['anatomyData']
         family = instance.data["family"]

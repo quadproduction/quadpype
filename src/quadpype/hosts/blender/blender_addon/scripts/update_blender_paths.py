@@ -15,6 +15,27 @@ class Platform(Enum):
     MACOS = 'darwin'
 
 
+# Object type (for logging), then access property / function, then attribute to update
+objects_attr_to_update = [
+    ["Render nodes", "get_output_nodes(bpy.context.scene)", "base_path"],
+    ["Cache files", "bpy.data.cache_files", "filepath"],
+    ["Image Files", "bpy.data.images", "filepath"],
+    ["VDB Files", "bpy.data.volumes", "filepath"],
+    ["Modifiers", "[mod for obj in bpy.data.objects for mod in obj.modifiers]", "simulation_bake_directory"]
+]
+
+
+class RootPath:
+    windows: str = ''
+    linux: str = ''
+    mac: str = ''
+
+    def __init__(self, windows_path, linux_path, mac_path):
+        self.windows = windows_path
+        self.linux = linux_path
+        self.mac = mac_path
+
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-wp", "--windows-root-path", help="Windows root path to use.", required=True)
@@ -38,32 +59,41 @@ def get_correct_path_with_platform(args, platform):
         args.mac_root_path if platform == Platform.MACOS.value else None
 
 
-def update_render_layers_paths(windows_path, linux_path, mac_path, replaced_root):
-    scene = bpy.context.scene
-
-    if scene.node_tree is None:
-        logging.error("Scene does not have a valid node tree. Make sure compositing nodes are enabled.")
+def update_paths(name, objects_to_update, attribute, root_paths, replaced_root):
+    objects_to_update = eval(objects_to_update)
+    if len(objects_to_update) == 0:
+        logging.info(f"[{name}] Nothing to update.")
         return
 
-    for output_node in get_output_nodes(scene):
-        logging.info(f"Updating render output path : {output_node.base_path}")
-        output_node.base_path = replace_root(output_node.base_path, windows_path, linux_path, mac_path, replaced_root)
-        logging.info(f"Render output path has been updated to : {output_node.base_path}")
+    logging.info(f"[{name}] Updating paths.")
+    for single_object in objects_to_update:
+        object_path = getattr(single_object, attribute, None)
+        if object_path is None:
+            logging.warning(f"[{name}] Does not have attribute named {attribute}. Abort path update.")
+            return
+
+        logging.info(f"[{name}] Updating property {attribute} : {object_path}.")
+        setattr(single_object, attribute, replace_root(object_path, root_paths, replaced_root))
+        logging.info(f"[{name}] {attribute} has been updated to : {getattr(single_object, attribute)}.")
 
 
 def get_output_nodes(scene):
+    if not scene.node_tree:
+        logging.error("Scene does not have a valid node tree. Make sure compositing nodes are enabled.")
+        return []
+
     return [node for node in scene.node_tree.nodes if node.type == 'OUTPUT_FILE']
 
 
 def _flatten_path(path):
-    return path.replace('\\', '\\\\')
+    return path.replace('\\\\', '\\').replace('\\', '/')
 
 
-def replace_root(original_path, windows_path, linux_path, mac_path, replaced_root):
+def replace_root(original_path, root_paths, replaced_root):
     return re.sub(
-        pattern=fr'^({windows_path})|({linux_path})|({mac_path})',
+        pattern=fr'^({root_paths.windows})|({root_paths.linux})|({root_paths.mac})',
         repl=replaced_root,
-        string=original_path
+        string=_flatten_path(original_path)
     )
 
 
@@ -77,17 +107,21 @@ def execute(args):
             logging.error(f"Current platform ({sys.platform}) is not supported by script. Paths can not be updated.")
             quit()
 
-    # Flatten windows path to remove double slashes
-    windows_root_path = _flatten_path(args.windows_root_path)
-    linux_root_path = _flatten_path(args.linux_root_path)
-    mac_root_path = _flatten_path(args.mac_root_path)
-
-    update_render_layers_paths(
-        windows_path=windows_root_path,
-        linux_path=linux_root_path,
-        mac_path=mac_root_path,
-        replaced_root=replaced_root
+    root_paths = RootPath(
+        windows_path=_flatten_path(args.windows_root_path),
+        linux_path=args.linux_root_path,
+        mac_path=args.mac_root_path
     )
+
+    for objects_properties in objects_attr_to_update:
+        name, objects_to_update, attribute = objects_properties
+        update_paths(
+            name=name,
+            objects_to_update=objects_to_update,
+            attribute=attribute,
+            root_paths=root_paths,
+            replaced_root=replaced_root
+        )
 
     bpy.ops.wm.save_as_mainfile(filepath=bpy.data.filepath)
 
