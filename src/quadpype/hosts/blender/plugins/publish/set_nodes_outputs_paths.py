@@ -87,12 +87,6 @@ class SetNodesOutputsPaths(
                 },
             )
 
-            # If version is 1, there's no needs to recalculate it
-            # because nothing has been rendered yet for this layer
-            if anatomy_data['version'] == 1:
-                output_node.base_path = output_path
-                return
-
             bumped_version_filepath = version_up(output_path)
             version = get_version_from_path(bumped_version_filepath)
             anatomy_data['version'] = version
