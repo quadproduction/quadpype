@@ -1,6 +1,8 @@
 from pathlib import Path
 
 import bpy
+import re
+from copy import copy
 
 import pyblish.api
 from quadpype.pipeline.publish import (
@@ -11,9 +13,11 @@ from quadpype.pipeline.publish import (
 from quadpype.hosts.blender.api import plugin
 from quadpype.pipeline.publish.lib import get_template_name_profiles
 from quadpype.pipeline import Anatomy
-from quadpype.lib import filter_profiles, StringTemplate, version_up, get_version_from_path
+from quadpype.lib import filter_profiles, StringTemplate, version_up, get_version_from_path, get_last_version_from_path
 from quadpype.settings import get_project_settings
 
+
+PATH_REGEX_BEFORE_VERSION = r'^(.*?)/[^/]*\{version[^a-zA-Z}]*\}'
 
 
 class SetNodesOutputsPaths(
@@ -59,6 +63,20 @@ class SetNodesOutputsPaths(
         }
         profile = filter_profiles(profiles, filter_criteria, logger=self.log)
 
+        anatomy = Anatomy()
+        templates = anatomy.templates.get(profile['template_name'])
+        if not templates:
+            raise NotImplemented(f"'{profile['template_name']}' template need to be setted in your project settings")
+
+        updated_anatomy_data = copy(anatomy_data)
+        updated_anatomy_data.update(
+            {
+                'root': anatomy.roots,
+                'family': family,
+                'subset': instance.data["subset"],
+            }
+        )
+
         quadpype_suffix = "quadpype"
 
         for output_node in _get_output_nodes(scene):
@@ -68,35 +86,38 @@ class SetNodesOutputsPaths(
                 self.log.info(f"Ignoring node called '{output_node.name}'")
                 continue
 
-            anatomy = Anatomy()
-            templates = anatomy.templates.get(profile['template_name'])
-            if not templates:
-                raise NotImplemented(f"'{profile['template_name']}' template need to be setted in your project settings")
+            updated_anatomy_data['render_layer_name'] = render_node.layer
 
             output_path = StringTemplate.format_template(
                 template=templates['node_output'],
-                data={
-                    'root': anatomy.roots,
-                    'family': family,
-                    'subset': instance.data["subset"],
-                    'render_layer_name': render_node.layer,
-                    **anatomy_data
-                },
+                data=updated_anatomy_data,
             )
 
+            # If folder doesn't exists, it means that we render this layer for the first time
+            # and we can keep the previous path as generated with version retrieved from instance
             if Path(output_path).parent.exists():
-                bumped_version_filepath = version_up(output_path)
-                version = get_version_from_path(bumped_version_filepath)
 
+                last_version_filename = get_last_version_from_path(
+                    path_dir=_get_version_folder_parent(
+                        output_template=templates['node_output'],
+                        template_data=updated_anatomy_data
+                    ),
+                    filter=[updated_anatomy_data['asset'], render_node.layer],
+                    search_in_subdirectories=True
+                )
+
+                if not last_version_filename:
+                    raise RuntimeError(
+                        f"An error has occured when trying to determine last version "
+                        f"from rendered layer named {render_node.layer}"
+                    )
+
+                last_version_number = int(get_version_from_path(last_version_filename))
                 output_path = StringTemplate.format_template(
                     template=templates['node_output'],
                     data={
-                        'root': anatomy.roots,
-                        'family': family,
-                        'subset': instance.data["subset"],
-                        'render_layer_name': render_node.layer,
-                        **anatomy_data,
-                        'version': version
+                        **updated_anatomy_data,
+                        'version': last_version_number+1
                     },
                 )
 
@@ -104,6 +125,16 @@ class SetNodesOutputsPaths(
             self.log.info(f"File output path set to '{output_node.base_path}'.")
 
         return
+
+
+def _get_version_folder_parent(output_template, template_data):
+    node_folder_path_match = re.match(PATH_REGEX_BEFORE_VERSION, output_template)
+    assert node_folder_path_match, "Can not determine render layer folder withtout version from template."
+
+    return StringTemplate.format_template(
+        template=node_folder_path_match.group(1),
+        data=template_data,
+    )
 
 
 def _get_output_nodes(scene):
