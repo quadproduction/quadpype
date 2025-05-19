@@ -7,13 +7,7 @@ from quadpype.pipeline.publish import (
     OptionalPyblishPluginMixin,
     PublishValidationError
 )
-import quadpype.hosts.blender.api.action
 from quadpype.hosts.blender.api import plugin
-from quadpype.hosts.blender.api.pipeline import get_path_from_template
-from quadpype.pipeline.publish.lib import get_template_name_profiles
-from quadpype.lib import filter_profiles
-from quadpype.settings import get_project_settings
-
 
 
 class SetRenderSettings(
