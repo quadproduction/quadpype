@@ -287,6 +287,21 @@
                     ]
                 },
                 {
+                        "type": "dict",
+                        "collapsible": true,
+                        "key": "ExtractPsd",
+                        "label": "Extract PSD",
+                        "is_group": true,
+                        "checkbox_key": "enabled",
+                        "children": [
+                            {
+                                "type": "boolean",
+                                "key": "enabled",
+                                "label": "Enabled"
+                            }
+                        ]
+                },
+                {
                     "type": "schema_template",
                     "name": "template_publish_plugin",
                     "template_data": [

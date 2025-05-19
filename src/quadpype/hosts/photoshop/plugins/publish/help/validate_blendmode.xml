@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<error id="main">
+<title>BlendMode Error</title>
+<description>
+## Invalid blendMode on layer or group
+
+Layer must be in Normal blend and Groups in PassThrought.
+
+### How to repair?
+
+You can fix this with "repair" button on the right and press Refresh publishing button at the bottom right.
+</description>
+</error>
+</root>
