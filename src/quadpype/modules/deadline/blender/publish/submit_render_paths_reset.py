@@ -2,6 +2,7 @@
 """Submitting render job to Deadline."""
 
 import attr
+import json
 import pyblish.api
 from platform import system
 from quadpype.pipeline import Anatomy
@@ -69,22 +70,15 @@ class BlenderRenderPathsResetDeadline(abstract_submit_deadline.AbstractSubmitDea
         # Not all hosts can import this module.
         import bpy
 
-        root_paths = Anatomy().get('roots', []).get('work', None)
+        root_paths = Anatomy().get('roots', None)
         assert root_paths, "Can't find root paths to update render paths."
-
-        windows_path = root_paths.get('windows', '')
-        mac_path = root_paths.get('darwin', '')
-        linux_path = root_paths.get('linux', '')
-        specific_path = windows_path if system().lower() == "windows" else \
-            mac_path if system().lower() == "darwin" else \
-            linux_path if system().lower() == "linux" else ""
 
         plugin_info = BlenderScriptPluginInfo(
             SceneFile=self.scene_path,
             Version=bpy.app.version_string,
             SaveFile=True,
             ScriptName=common_job.ScriptsNames.UpdateBlenderPaths.value,
-            ScriptArguments=f'-wp "{windows_path}" -mp "{mac_path}" -lp "{linux_path}" -s "{specific_path}"'
+            ScriptArguments=f"-r  \"{json.dumps(root_paths)}\" -"
         )
 
         plugin_payload = attr.asdict(plugin_info)
