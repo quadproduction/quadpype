@@ -1311,3 +1311,23 @@ function _prepareSingleValue(value){
 function _prepareError(error_msg){
     return JSON.stringify({"error": error_msg})
 }
+
+function emptyRenderQueue(){
+    var rq = app.project.renderQueue;
+    for (var i = rq.numItems; i >= 1; i--) {
+        rq.items[i].remove();
+    }
+
+}
+
+function addCompToRenderQueue(comp_id){
+    var comp = app.project.itemByID(comp_id);
+    alert(comp);
+    if isComp(comp) {
+        var renderQueueItem = app.project.renderQueue.items.add(comp);
+        renderQueueItem.outputModule(1).file = new File("C:/temp/render_output.mov");
+
+    } else {
+        return _prepareError("The following item is not a comp : "+ comp);
+    }
+}

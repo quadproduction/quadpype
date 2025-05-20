@@ -384,6 +384,17 @@ function main(websocket_url) {
                 return result;
             });
     });
+
+    RPC.addRoute('AfterEffects.empty_render_queue', function (data) {
+        log.warn('Server called client route "empty_render_queue":', data);
+        return runEvalScript("emptyRenderQueue()");
+    });
+
+    RPC.addRoute('AfterEffects.add_comp_to_render_queue', function (data) {
+        log.warn('Server called client route "add_comp_to_render_queue":', data);
+        return runEvalScript(("addCompToRenderQueue(" + data.comp_id + ")")
+    });
+
 }
 
 /** main entry point **/
