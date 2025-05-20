@@ -14,7 +14,8 @@ import math
 from bpy_extras.view3d_utils import location_3d_to_region_2d
 
 # Set addon path
-addonPath = os.path.join(os.path.dirname(__file__), "")
+addonPath =  os.path.join(os.path.dirname(__file__), "") #r"C:\Users\lgermain\AppData\Local\quad\quadpype\4.3\4.3.4\quadpype\hosts\blender\blender_addon\addons"
+
 '''
 toolsPy = os.path.join(addonPath, "tools.py")
 exec(compile(open(toolsPy).read(), toolsPy, 'exec'))
@@ -23,8 +24,8 @@ exec(compile(open(toolsPy).read(), toolsPy, 'exec'))
 # Global variables
 rendering = None
 loadingThumb = None
-RrImageSize = (0, 0)
-switchIconPath = os.path.join(addonPath, "render_catalogue/icon/switch.png")
+RrImageSize = (0,0)
+switchIconPath = os.path.join(addonPath, r"render_catalogue\icon\switch.png")
 RrFilePath = os.path.join(addonPath, "render_catalogue/renderResult.blend")
 RrImage = "RC Render Result"
 thumbnailDir = os.path.join(bpy.app.tempdir, "thumbnail/")
@@ -39,7 +40,7 @@ addon_keymaps = []
 
 def sceneInit():
     """Initialize scene and setup keymaps."""
-    global RrImageSize
+    #global RrImageSize
     renderResult = is_RR_image()
 
     if renderResult is not None:
@@ -54,11 +55,15 @@ def sceneInit():
     else:
         importRrImageRef(RrFilePath, RrImage)
         setImageEditorContext(bpy.data.images[RrImage])
+    #RrImageSize= getRrImageSize()
 
+
+
+def getRrImageSize():
     resPercentage = bpy.context.scene.render.resolution_percentage
     res = bpy.context.scene.render
     RrImageSize = (int(res.resolution_x * (resPercentage / 100)), int(res.resolution_y * (resPercentage / 100)))
-
+    return RrImageSize
 
 def loadThumb():
     """Load thumbnail images as icons for UI display."""
@@ -93,18 +98,29 @@ def setImageEditorContext(img):
     return None
 
 
-def saveRender(renderResult, thumbnailPath):
+def saveRender(renderResult,thumbnailPath):
     """Save the render result to a file."""
+    setImageEditorContext(renderResult)
+    scene = bpy.context.scene
+    render_settings = scene.render.image_settings
+    original_format = render_settings.file_format
+    original_colorDepth = render_settings.color_depth
+    render_settings.file_format = 'JPEG'
     try:
-        renderResult.save_render(thumbnailPath, scene=bpy.context.scene, quality=0)
+        bpy.ops.image.save_as(filepath=thumbnailPath, save_as_render= False, copy= True)
+        render_settings.file_format= original_format
+        render_settings.color_depth= original_colorDepth
         return True
     except RuntimeError:
+        render_settings.file_format= original_format
+        render_settings.color_depth= original_colorDepth
         return False
 
 
 def createThumbnail(thumbnailDir, thumbName, thumbExt, thumbSize):
     """Create and save a thumbnail from render result."""
-    global RrImageSize
+    #global RrImageSize
+    RrImageSize= getRrImageSize()
     renderResult = is_RR_image()
     if not renderResult:
         return
@@ -115,11 +131,11 @@ def createThumbnail(thumbnailDir, thumbName, thumbExt, thumbSize):
     if saveRender(renderResult, thumbnailPath):
         bpy.ops.image.open(filepath=thumbnailPath)
         imgThumb = bpy.data.images.get(os.path.basename(thumbnailPath))
-        RrImageSize = (imgThumb.size[0], imgThumb.size[1])
 
-        thumbnailHeight = int(thumbSize * imgThumb.size[1] / imgThumb.size[0])
-        imgThumb.scale(thumbSize, thumbnailHeight)
-        imgThumb.save(filepath=thumbnailPath, quality=0)
+        if imgThumb.size[1] != 0 and imgThumb.size[0]!= 0:
+            thumbnailHeight = int(thumbSize * imgThumb.size[1] / imgThumb.size[0])
+            imgThumb.scale(thumbSize, thumbnailHeight)
+            imgThumb.save(filepath=thumbnailPath, quality=0)
 
         if imgThumb.users > 0:
             imgThumb.user_clear()
@@ -227,7 +243,7 @@ def setScreenshotUI(area, overlays=None, gizmo=None, region_ui=None, toolbar=Non
     return overlays, gizmo, region_ui, toolbar
 
 
-def reSetScreenshotUI(area, overlays, gizmo, region_ui, toolbar):
+def reSetScreenshotUI(area=None, overlays=True, gizmo=None, region_ui=None, toolbar=None):
     """Reset UI state after screenshot."""
     spaceData = bpy.context.space_data
     spaceData.overlay.show_overlays = overlays
@@ -240,12 +256,14 @@ def reSetScreenshotUI(area, overlays, gizmo, region_ui, toolbar):
 
 def takeScreenshot(thumbnailDir, scrshotName, thumbExt, area):
     """Take a screenshot and process it."""
-    global RrImageSize
+    #global RrImageSize
+    RrImageSize= getRrImageSize()
     renderResult = addRenderSlot(thumbnailDir, thumbName, empty=True)
     slotIndex = renderResult.render_slots.active.name.split('_')[1]
     scrshotPath = os.path.join(thumbnailDir, f"{scrshotName}{slotIndex}{thumbExt}")
 
     bpy.ops.screen.screenshot_area(filepath=scrshotPath)
+
     scrshot = bpy.data.images.load(scrshotPath)
 
     viewPoint = area.spaces[0].region_3d.view_perspective
@@ -253,19 +271,18 @@ def takeScreenshot(thumbnailDir, scrshotName, thumbExt, area):
         for region in area.regions:
             if region.type == 'WINDOW':
                 frame_px = getCamBorder(region, area.spaces[0].region_3d)
+                cropped_min_x = round(frame_px[3][0])
+                cropped_max_x = round(frame_px[0][0])
+                cropped_min_y = round(frame_px[2][1])
+                cropped_max_y = round(frame_px[0][1])
+
+                cropedImg = crop_image(scrshot, cropped_min_x, cropped_max_x, cropped_min_y, cropped_max_y)
+                cropedImg.scale(RrImageSize[0], RrImageSize[1])
+                cropedImg.save(filepath=scrshotPath)
+                bpy.data.images.remove(cropedImg)
+                scrshot.reload()
                 break
 
-        cropped_min_x = round(frame_px[3][0])
-        cropped_max_x = round(frame_px[0][0])
-        cropped_min_y = round(frame_px[2][1])
-        cropped_max_y = round(frame_px[0][1])
-
-        cropedImg = crop_image(scrshot, cropped_min_x, cropped_max_x, cropped_min_y, cropped_max_y)
-        cropedImg.scale(RrImageSize[0], RrImageSize[1])
-        cropedImg.save(filepath=scrshotPath)
-        bpy.data.images.remove(cropedImg)
-
-    scrshot.reload()
     return scrshot
 
 
@@ -360,6 +377,7 @@ def setRenderSlotActive(slotName):
 iconsThumb = bpy.utils.previews.new()
 customIcon = bpy.utils.previews.new()
 customIcon.load("switch", switchIconPath, 'IMAGE')
+
 
 # Timer for scene initialization
 bpy.app.timers.register(sceneInit, first_interval=0.5)
@@ -617,6 +635,7 @@ class RC_PT_PanelButton(LayoutRenderCatalogue, bpy.types.Panel):
     bl_parent_id = "IMAGE_EDITOR_PT_RenderCatalogue"
     bl_options = {"DEFAULT_CLOSED"}
 
+
     def draw(self, context):
         layout = self.layout
         split = layout.split()
@@ -628,8 +647,8 @@ class RC_PT_PanelButton(LayoutRenderCatalogue, bpy.types.Panel):
         col.scale_y = 1.0
 
         col = split.column(align=True)
-        switchIcon = customIcon["switch"]
-        col.operator("render.switch_view", text='', icon_value=switchIcon.icon_id)
+        #switchIcon = customIcon["switch"]
+        col.operator("render.switch_view", text='', icon="UV_SYNC_SELECT")
         col.scale_y = 3.0
 
         col = split.column(align=True)
@@ -645,7 +664,7 @@ class RC_PT_DocPanel(LayoutRenderCatalogue, bpy.types.Panel):
     bl_options = {"DEFAULT_CLOSED"}
 
     def draw(self, context):
-        switchIcon = customIcon["switch"]
+        #switchIcon = customIcon["switch"]
         layout = self.layout
         slot = layout.column()
         scaleX = (context.region.width) / 135
@@ -657,7 +676,7 @@ class RC_PT_DocPanel(LayoutRenderCatalogue, bpy.types.Panel):
             ('F12', "ADD", 'Render.'),
             ('Del', "REMOVE", 'Delete current slot.'),
             ('Ctrl+Del', "X", 'Clear render catalogue.'),
-            ('S', switchIcon.icon_id, 'Switch between forward/backward slot.'),
+            ('S', 'UV_SYNC_SELECT', 'Switch between forward/backward slot.'),
             ('Page up', "SORT_DESC", 'Cycle up through slot.'),
             ('Page down', "SORT_ASC", 'Cycle down through slot.')
         ]
