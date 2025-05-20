@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 """File declaring QuadPype version."""
-__version__ = "4.3.6"
+__version__ = "4.3.7"
