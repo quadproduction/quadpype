@@ -99,8 +99,6 @@ class RenderCreator(Creator):
             stub.rename_item(comp.id, subset_name)
 
             stub.add_comp_to_render_queue(comp.id)
-            #stub.empty_render_queue()
-            #stub.delete_item(comp.id)
 
             if self.force_setting_values:
                 set_settings(True, True, [comp.id], print_msg=False)

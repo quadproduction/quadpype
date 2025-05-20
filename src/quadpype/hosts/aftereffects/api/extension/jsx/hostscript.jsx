@@ -1331,3 +1331,8 @@ function addCompToRenderQueue(comp_id){
         return _prepareError("The following item is not a comp : "+ comp);
     }
 }
+
+function alertAddCompToRenderQueue(comp_id){
+    var comp = app.project.itemByID(comp_id);
+    alert(comp);
+}

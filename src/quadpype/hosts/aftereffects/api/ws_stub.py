@@ -350,16 +350,7 @@ class AfterEffectsServerStub():
                 item_name (string): label on item in Project list
 
         """
-        print("---------")
-        print(item_id)
-        print(type(item_id))
-        print("---------")
-        print("---------")
-        print(item_name)
-        print(type(item_name))
-        print("---------")
-        print("renameItem(" + str(item_id) + ", " +
-            "'" + item_name + "')")
+
         res = self.websocketserver.call(self.client.call
                                         ('AfterEffects.rename_item',
                                          item_id=item_id,
@@ -685,18 +676,9 @@ class AfterEffectsServerStub():
             comp_id: id of target composition
         Returns: None
         """
-        print("-----------------------")
-        print(comp_id)
-        print("-----------------------")
-        print("......................")
-        print("addCompToRenderQueue(" + str(comp_id) + ")")
-        print("......................")
         res = self.websocketserver.call(self.client.call
                                         ('AfterEffects.add_comp_to_render_queue',
                                          comp_id=comp_id))
-        print("......................")
-        print(res)
-        print("......................")
         return self._handle_return(res)
 
     def print_msg(self, msg):
