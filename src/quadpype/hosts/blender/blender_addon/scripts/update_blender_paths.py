@@ -151,6 +151,7 @@ def execute(args):
                 replaced_paths=replaced_paths
             )
 
-    #bpy.ops.wm.save_as_mainfile(filepath=bpy.data.filepath)
+    bpy.ops.wm.save_as_mainfile(filepath=bpy.data.filepath)
+
 
 execute(get_args())
