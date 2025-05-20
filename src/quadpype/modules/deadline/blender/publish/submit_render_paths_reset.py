@@ -3,8 +3,9 @@
 
 import attr
 import json
+import sys
 import pyblish.api
-from platform import system
+
 from quadpype.pipeline import Anatomy
 
 from quadpype.settings import PROJECT_SETTINGS_KEY
@@ -73,12 +74,13 @@ class BlenderRenderPathsResetDeadline(abstract_submit_deadline.AbstractSubmitDea
         root_paths = Anatomy().get('roots', None)
         assert root_paths, "Can't find root paths to update render paths."
 
+        root_paths_args = _escape_and_remove_chars(json.dumps(root_paths))
         plugin_info = BlenderScriptPluginInfo(
             SceneFile=self.scene_path,
             Version=bpy.app.version_string,
             SaveFile=True,
             ScriptName=common_job.ScriptsNames.UpdateBlenderPaths.value,
-            ScriptArguments=f"-r  \"{json.dumps(root_paths)}\" -"
+            ScriptArguments=f"-r  \"{root_paths_args}\" -c \"{sys.platform}\""
         )
 
         plugin_payload = attr.asdict(plugin_info)
@@ -88,3 +90,7 @@ class BlenderRenderPathsResetDeadline(abstract_submit_deadline.AbstractSubmitDea
             plugin_payload[key] = value
 
         return plugin_payload
+
+
+def _escape_and_remove_chars(data_string):
+    return data_string.replace('\\\\', '\\').replace('\\', '/').replace('"', '\\"')
