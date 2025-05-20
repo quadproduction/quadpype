@@ -97,7 +97,6 @@ class RenderCreator(Creator):
             self._add_instance_to_context(new_instance)
 
             stub.rename_item(comp.id, subset_name)
-
             stub.add_comp_to_render_queue(comp.id)
 
             if self.force_setting_values:

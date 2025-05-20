@@ -350,7 +350,6 @@ class AfterEffectsServerStub():
                 item_name (string): label on item in Project list
 
         """
-
         res = self.websocketserver.call(self.client.call
                                         ('AfterEffects.rename_item',
                                          item_id=item_id,
@@ -664,16 +663,11 @@ class AfterEffectsServerStub():
 
         return self._handle_return(res)
 
-    def empty_render_queue(self):
-        res = self.websocketserver.call(self.client.call('AfterEffects.empty_render_queue'))
-
-        return self._handle_return(res)
-
     def add_comp_to_render_queue(self, comp_id):
         """
             Add the comp corresponding to comp_id to the render queue
         Args:
-            comp_id: id of target composition
+            comp_id(int): id of target composition
         Returns: None
         """
         res = self.websocketserver.call(self.client.call

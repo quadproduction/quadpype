@@ -199,6 +199,11 @@ function main(websocket_url) {
             });
     });
 
+    RPC.addRoute('AfterEffects.add_comp_to_render_queue', function (data) {
+        log.warn('Server called client route "add_comp_to_render_queue":', data);
+        return runEvalScript("addCompToRenderQueue(" + data.comp_id + ")")
+    });
+
     RPC.addRoute('AfterEffects.delete_item', function (data) {
         log.warn('Server called client route "delete_item":', data);
         return runEvalScript("deleteItem(" + data.item_id + ")")
@@ -384,17 +389,6 @@ function main(websocket_url) {
                 return result;
             });
     });
-
-    RPC.addRoute('AfterEffects.empty_render_queue', function (data) {
-        log.warn('Server called client route "empty_render_queue":', data);
-        return runEvalScript("emptyRenderQueue()");
-    });
-
-    RPC.addRoute('AfterEffects.add_comp_to_render_queue', function (data) {
-        log.warn('Server called client route "add_comp_to_render_queue":', data);
-        return runEvalScript(("addCompToRenderQueue(" + data.comp_id + ")")
-    });
-
 }
 
 /** main entry point **/
