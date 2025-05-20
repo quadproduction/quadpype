@@ -68,6 +68,9 @@
                 255
             ]
         },
+        "ExtractPsd":  {
+                        "enabled": false
+        },
         "ValidateProjectSettings": {
             "enabled": true,
             "optional": true,
