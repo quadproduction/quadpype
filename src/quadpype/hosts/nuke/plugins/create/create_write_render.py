@@ -7,11 +7,15 @@ from quadpype.settings import get_project_settings
 from quadpype.pipeline import get_current_project_name
 from quadpype.lib import (
     BoolDef,
-    EnumDef
+    EnumDef,
 )
 
 from quadpype.hosts.nuke import api as napi
 from quadpype.hosts.nuke.api.plugin import exposed_write_knobs
+
+
+FROM_SELECTED = "From selected"
+RES_SEPARATOR = '*'
 
 
 class CreateWriteRender(napi.NukeWriteCreator):
@@ -30,6 +34,9 @@ class CreateWriteRender(napi.NukeWriteCreator):
     temp_rendering_path_template = (
         "{work}/renders/nuke/{subset}/{subset}.{frame}.{ext}")
 
+    resolution = None
+    resolutions = []
+
     def get_pre_create_attr_defs(self):
         attr_defs = [
             BoolDef(
@@ -39,7 +46,30 @@ class CreateWriteRender(napi.NukeWriteCreator):
             ),
             self._get_render_target_enum(),
         ]
+
+        resolutions = self.get_resolution_overrides()
+        if resolutions:
+            self.resolutions = resolutions
+            attr_defs.append(
+                EnumDef(
+                    "resolution",
+                    items=resolutions,
+                    default=resolutions[0],
+                    label="Resolution",
+                )
+            )
+        return attr_defs
+
+    def get_resolution_overrides(self):
         project_settings = get_project_settings(get_current_project_name())
+        autoresize = project_settings.get('nuke', {}).get('create', {}).get('CreateWriteRender', {}).get('autoresolutionresize', {})
+
+        if not autoresize:
+            self.log.warning(
+                "Resolution auto resize hasn't been enabled in project config. Resolution can not be overridden."
+            )
+            return
+
         res_profiles = project_settings.get('quad_studio_addon', {}).get('general', {}).get('working_resolution_overrides')
 
         if not res_profiles:
@@ -47,26 +77,27 @@ class CreateWriteRender(napi.NukeWriteCreator):
                 "Can not retrieve working resolution overrides from settings or settings are empty. "
                 "Can not add resolution selection to render subset creator."
             )
-            return attr_defs
+            return
 
         profiles = [profile for profile in res_profiles if 'nuke' in profile.get('hosts')]
         if not profiles:
             self.log.warning("Working resolution overrides : Couldn't find matching profile for host 'Nuke'.")
-            return attr_defs
+            return
 
-        resolutions = [
-            f"{profile.get('working_resolution_width')}*{profile.get('working_resolution_height')}"
+        return [FROM_SELECTED] + [
+            f"{profile.get('working_resolution_width')}{RES_SEPARATOR}{profile.get('working_resolution_height')}"
             for profile in profiles
         ]
-        attr_defs.append(
+
+    def get_instance_attr_defs(self):
+        return [
             EnumDef(
                 "resolution",
-                items=resolutions,
-                default=resolutions[0],
+                items=self.resolutions,
+                default=self.resolution,
                 label="Resolution",
             )
-        )
-        return attr_defs
+        ] if self.resolutions else []
 
     def create_instance_node(self, subset_name, instance_data):
         # add fpath_template
@@ -78,17 +109,27 @@ class CreateWriteRender(napi.NukeWriteCreator):
 
         write_data.update(instance_data)
 
-        # get width and height
-        if self.selected_node:
-            width, height = (
-                self.selected_node.width(), self.selected_node.height())
-        else:
-            actual_format = nuke.root().knob('format').value()
-            width, height = (actual_format.width(), actual_format.height())
-
+        width, height = self._get_width_and_height()
+        self.log.warning(width)
+        self.log.warning(height)
         self.log.debug(">>>>>>> : {}".format(self.instance_attributes))
         self.log.debug(">>>>>>> : {}".format(self.get_linked_knobs()))
+        self.log.debug(">>>>>>> : {}".format(self.prenodes))
 
+        self.prenodes["nodeName"] = {
+                "nodeclass": "Reformat",
+                "dependent": [],
+                "knobs": [
+                    {
+                        "type": "text",
+                        "name": "knobname",
+                        "value": "knob value"
+                    }
+                ]
+            }
+        }
+
+        # TODO : giving width and height here doesn't seem to update any values later
         created_node = napi.create_write_node(
             subset_name,
             write_data,
@@ -105,6 +146,17 @@ class CreateWriteRender(napi.NukeWriteCreator):
 
         return created_node
 
+    def _get_width_and_height(self):
+        if self.selected_node and (not self.resolution or self.resolution == FROM_SELECTED):
+            width, height = (self.selected_node.width(), self.selected_node.height())
+        elif self.resolution:
+            width, height = self.resolution.split(RES_SEPARATOR)
+        else:
+            actual_format = nuke.root().knob('format').value()
+            width, height = (actual_format.width(), actual_format.height())
+
+        return width, height
+
     def create(self, subset_name, instance_data, pre_create_data):
         # pass values from precreate to instance
         self.pass_pre_attributes_to_instance(
@@ -114,6 +166,9 @@ class CreateWriteRender(napi.NukeWriteCreator):
                 "render_target"
             ]
         )
+
+        self.resolution = pre_create_data.get('resolution')
+
         # make sure selected nodes are added
         self.set_selected_nodes(pre_create_data)
 
@@ -146,6 +201,9 @@ class CreateWriteRender(napi.NukeWriteCreator):
             exposed_write_knobs(
                 self.project_settings, self.__class__.__name__, instance_node
             )
+            self.log.error("------------\n------------\n------------\n")
+            self.log.error(instance.transient_data)
+            self.log.error("------------\n------------\n------------\n")
 
             return instance
 

@@ -277,6 +277,7 @@
                 "reviewable",
                 "farm_rendering"
             ],
+            "autoresolutionresize": true,
             "prenodes": {
                 "Reformat01": {
                     "nodeclass": "Reformat",
