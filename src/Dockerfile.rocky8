@@ -31,7 +31,7 @@ RUN dnf install -y --setopt=install_weak_deps=False \
     gnome-tweaks perl-IPC-Cmd perl-Test-Simple perl-Test-Harness perl-Math-BigInt perl-Pod-Html \
     libatomic mysql-devel unixODBC postgresql-libs libxcb gnome-keyring xcb-util-cursor xcb-util \
     xcb-util-cursor-devel xcb-util-devel boost boost-devel xcb-util-wm xcb-util-keysyms \
-    xcb-util-image xcb-util-renderutil
+    xcb-util-image xcb-util-renderutil netcat
 
 # Clone QuadPype
 RUN cd /opt/ && \

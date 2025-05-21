@@ -131,7 +131,8 @@ def version_up(filepath):
     new_filename = "{}{}".format(new_basename, ext)
     new_filename = os.path.join(dirname, new_filename)
     new_filename = os.path.normpath(new_filename)
-
+    log.error(new_filename)
+    log.error(filepath)
     if new_filename == filepath:
         raise RuntimeError("Created path is the same as current file,"
                            "this is a bug")
@@ -148,6 +149,7 @@ def version_up(filepath):
         clash_basename = clash_basename[:index]
 
     for file in os.listdir(dirname):
+        log.error(file)
         if file.endswith(ext) and file.startswith(clash_basename):
             log.info("Skipping existing version %s" % new_label)
             return version_up(new_filename)
@@ -177,12 +179,13 @@ def get_version_from_path(file):
         )
 
 
-def get_last_version_from_path(path_dir, filter):
+def get_last_version_from_path(path_dir, filter, search_in_subdirectories=False):
     """Find last version of given directory content.
 
     Args:
         path_dir (str): directory path
         filter (list): list of strings used as file name filter
+        search_in_subdirectory (bool): also search for files in subdirectories
 
     Returns:
         str: file name with last version
@@ -191,6 +194,11 @@ def get_last_version_from_path(path_dir, filter):
         last_version_file = get_last_version_from_path(
             "/project/shots/shot01/work", ["shot01", "compositing", "nk"])
     """
+
+    def _add_file_if_concerned(filtered_files, pattern, file):
+        if not re.findall(pattern, file):
+            return
+        filtered_files.append(file)
 
     assert os.path.isdir(path_dir), "`path_dir` argument needs to be directory"
     assert isinstance(filter, list) and (
@@ -201,10 +209,13 @@ def get_last_version_from_path(path_dir, filter):
     # form regex for filtering
     pattern = r".*".join(filter)
 
-    for file in os.listdir(path_dir):
-        if not re.findall(pattern, file):
-            continue
-        filtered_files.append(file)
+    if search_in_subdirectories:
+        for _, _, files in os.walk(path_dir):
+            for file in files:
+                _add_file_if_concerned(filtered_files, pattern, file)
+    else:
+        for file in os.listdir(path_dir):
+            _add_file_if_concerned(filtered_files, pattern, file)
 
     if filtered_files:
         filtered_files.sort()

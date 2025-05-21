@@ -58,6 +58,14 @@ def get_renderer(settings):
     ["renderer"])
 
 
+def get_use_nodes(settings):
+    """Get use_nodes from blender settings."""
+
+    return (settings["blender"]
+    ["RenderSettings"]
+    ["use_nodes"])
+
+
 def get_compositing(settings):
     """Get compositing from blender settings."""
 
@@ -256,10 +264,9 @@ def _create_aov_slot(name, aov_sep, slots, rpass_name, multi_exr, output_path, r
 
 
 def set_node_tree(
-        output_path, name, aov_sep, ext, multilayer, compositing,
-        view_layers
+        output_path, name, aov_sep, ext, multilayer, compositing, view_layers,
+        auto_connect_nodes, connect_only_current_layer, use_nodes
 ):
-    # Set the scene to use the compositor node tree to render
     bpy.context.scene.use_nodes = True
 
     tree = bpy.context.scene.node_tree
@@ -272,9 +279,13 @@ def set_node_tree(
     render_layer_nodes = set()
     composite_node = None
     old_output_node = None
+
     for node in tree.nodes:
         if node.bl_idname == comp_layer_type:
-            render_layer_nodes.add(node)
+            # Don't add node if auto_connect_nodes is disabled
+            # except if node name start with Quadpype label
+            if auto_connect_nodes or (not auto_connect_nodes and node.name.startswith("QuadPype Render Node")):
+                render_layer_nodes.add(node)
         elif node.bl_idname == compositor_type:
             composite_node = node
         elif node.bl_idname == output_type and "QuadPype" in node.name:
@@ -307,6 +318,7 @@ def set_node_tree(
     # render.
     # We also exclude some layers.
     exclude_sockets = ["Image", "Alpha", "Noisy Image"]
+
     render_aovs_dict = {}
     for render_layer_node in render_layer_nodes:
         render_dict = {
@@ -317,6 +329,7 @@ def set_node_tree(
             ]
         }
         render_aovs_dict.update(render_dict)
+
     # Create a new output node
     output = tree.nodes.new(output_type)
 
@@ -353,11 +366,13 @@ def set_node_tree(
 
     # Create a new socket for the beauty output
     pass_name = "rgba" if multi_exr else "beauty"
-    for render_layer_node in render_aovs_dict.keys():
-        render_layer = render_layer_node.layer
-        slot, _ = _create_aov_slot(
-            name, aov_sep, slots, f"{pass_name}_{render_layer}", multi_exr, output_path, render_layer)
-        tree.links.new(render_layer_node.outputs["Image"], slot)
+
+    if not connect_only_current_layer:
+        for render_layer_node in render_aovs_dict.keys():
+            render_layer = render_layer_node.layer
+            slot, _ = _create_aov_slot(
+                name, aov_sep, slots, f"{pass_name}_{render_layer}", multi_exr, output_path, render_layer)
+            tree.links.new(render_layer_node.outputs["Image"], slot)
 
     if compositing:
         # Create a new socket for the composite output
@@ -409,6 +424,9 @@ def set_node_tree(
     output.name = "QuadPype File Output"
     output.label = "QuadPype File Output"
 
+    if not use_nodes:
+        bpy.context.scene.use_nodes = False
+
     return {} if multi_exr else aov_file_products
 
 
@@ -426,11 +444,13 @@ def create_node_with_new_view_layers(tree, comp_layer_type, view_layers, render_
     for view_layer in view_layers:
         render_layer_node = tree.nodes.new(comp_layer_type)
         render_layer_node.layer = view_layer.name
+        render_layer_node.name = f"QuadPype Render Node - {view_layer.name}"
+        render_layer_node.label = f"QuadPype Render Node"
         render_layer_nodes.add(render_layer_node)
     return render_layer_nodes
 
 
-def prepare_rendering(asset_group):
+def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_layer):
     name = asset_group.name
 
     filepath = Path(bpy.data.filepath)
@@ -447,6 +467,7 @@ def prepare_rendering(asset_group):
     ext = get_image_format(settings)
     multilayer = get_multilayer(settings)
     renderer = get_renderer(settings)
+    use_nodes = get_use_nodes(settings)
     ver_major, ver_minor, _ = lib.get_blender_version()
     if renderer == "BLENDER_EEVEE" and (
             ver_major >= 4 and ver_minor >= 2
@@ -456,7 +477,16 @@ def prepare_rendering(asset_group):
 
     set_render_format(ext, multilayer)
     bpy.context.scene.render.engine = renderer
+
     view_layers = bpy.context.scene.view_layers
+    if connect_only_current_layer:
+        for layer in view_layers:
+            if not layer.use:
+                continue
+
+            view_layers = [layer]
+            break
+
     aov_list, custom_passes = set_render_passes(settings, renderer, view_layers)
 
     output_path = Path.joinpath(dirpath, render_folder, file_name)
@@ -465,8 +495,8 @@ def prepare_rendering(asset_group):
         output_path, name, aov_sep, view_layers, multiexr=multilayer
     )
     aov_file_product = set_node_tree(
-        output_path, name, aov_sep, ext,
-        multilayer, compositing, view_layers
+        output_path, name, aov_sep, ext, multilayer, compositing, view_layers,
+        auto_connect_nodes, connect_only_current_layer, use_nodes
     )
 
     # Clear the render filepath, so that the output is handled only by the

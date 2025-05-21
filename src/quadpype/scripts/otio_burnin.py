@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 from string import Formatter
 
-import opentimelineio_contrib.adapters.ffmpeg_burnins as ffmpeg_burnins
+import quadpype.scripts.ffmpeg_burnins as ffmpeg_burnins
 from quadpype.lib import (
     get_ffmpeg_tool_args,
     get_ffmpeg_codec_args,

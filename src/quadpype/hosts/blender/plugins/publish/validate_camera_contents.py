@@ -1,5 +1,5 @@
 import pyblish.api
-import bpy
+import quadpype.hosts.blender.api.action
 
 from quadpype.hosts.blender.api import action, lib
 from quadpype.pipeline.publish import (
