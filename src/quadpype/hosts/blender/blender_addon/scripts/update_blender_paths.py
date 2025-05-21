@@ -100,7 +100,7 @@ def get_output_nodes(scene):
 
 
 def _flatten_path(path):
-    return path.replace('\\\\', '\\').replace('\\', '/') if path else None
+    return str(Path(path).as_posix()) if path else None
 
 
 def replace_root(original_path, root_paths, replaced_root):
