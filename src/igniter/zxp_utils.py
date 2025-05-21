@@ -14,8 +14,10 @@ from qtpy import QtCore
 
 def get_adobe_extensions_dir_path():
     adobe_data_folder_path = Path(appdirs.user_data_dir(appname="Adobe", appauthor=""))
+    adobe_path_replaced = (str(adobe_data_folder_path).replace('\\\\', '\\').replace('\\', '/')
+                           .replace('AppData/Local', 'AppData/Roaming'))
 
-    user_extensions_dir = Path(str(adobe_data_folder_path).replace("Local", "Roaming"), "CEP", "extensions")
+    user_extensions_dir = Path(adobe_path_replaced, "CEP", "extensions")
     # Ensure the dir exists
     os.makedirs(user_extensions_dir, exist_ok=True)
 
