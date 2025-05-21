@@ -3,7 +3,7 @@
 
 import json
 import attr
-import sys
+from pathlib import Path
 
 import pyblish.api
 from quadpype.pipeline import Anatomy
@@ -97,4 +97,4 @@ class BlenderRenderPathsUpdateDeadline(abstract_submit_deadline.AbstractSubmitDe
 
 
 def _escape_and_remove_chars(data_string):
-    return data_string.replace('\\\\', '\\').replace('\\', '/').replace('"', '\\"')
+    return str(Path(data_string).as_posix()).replace('"', '\\"')
