@@ -663,16 +663,18 @@ class AfterEffectsServerStub():
 
         return self._handle_return(res)
 
-    def add_comp_to_render_queue(self, comp_id):
+    def add_comp_to_render_queue(self, comp_id, path):
         """
             Add the comp corresponding to comp_id to the render queue
         Args:
             comp_id(int): id of target composition
+            path(str): output path to set to render module
         Returns: None
         """
         res = self.websocketserver.call(self.client.call
                                         ('AfterEffects.add_comp_to_render_queue',
-                                         comp_id=comp_id))
+                                         comp_id=comp_id,
+                                         path=path))
         return self._handle_return(res)
 
     def print_msg(self, msg):

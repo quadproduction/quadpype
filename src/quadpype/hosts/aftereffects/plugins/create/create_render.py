@@ -1,4 +1,6 @@
 import re
+import tempfile
+from pathlib import Path
 
 from quadpype import resources
 from quadpype.lib import BoolDef, UISeparatorDef
@@ -97,7 +99,9 @@ class RenderCreator(Creator):
             self._add_instance_to_context(new_instance)
 
             stub.rename_item(comp.id, subset_name)
-            stub.add_comp_to_render_queue(comp.id)
+
+            temp_path = Path(tempfile.gettempdir(), "output_render.mov")
+            stub.add_comp_to_render_queue(comp.id, temp_path.as_posix())
 
             if self.force_setting_values:
                 set_settings(True, True, [comp.id], print_msg=False)
