@@ -30,6 +30,8 @@ class RenderCreator(Creator):
     # Settings
     mark_for_review = True
     force_setting_values = True
+    set_frames_create = True
+    set_resolution_create = True
 
     def create(self, subset_name_from_ui, data, pre_create_data):
         stub = api.get_stub()  # only after After Effects is up
@@ -98,8 +100,7 @@ class RenderCreator(Creator):
 
             stub.rename_item(comp.id, subset_name)
 
-            if self.force_setting_values:
-                set_settings(True, True, [comp.id], print_msg=False)
+            set_settings(self.set_frames_create, self.set_resolution_create, [comp.id], print_msg=False)
 
     def get_pre_create_attr_defs(self):
         output = [
@@ -176,7 +177,8 @@ class RenderCreator(Creator):
         )
 
         self.mark_for_review = plugin_settings["mark_for_review"]
-        self.force_setting_values = plugin_settings["force_setting_values"]
+        self.set_frames_create = plugin_settings["set_frames_create"]
+        self.set_resolution_create = plugin_settings["set_resolution_create"]
         self.default_variants = plugin_settings.get(
             "default_variants",
             plugin_settings.get("defaults") or []
