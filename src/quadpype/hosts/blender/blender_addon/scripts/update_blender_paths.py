@@ -116,9 +116,9 @@ def execute(args):
     replaced_paths = list()
     for root_category, root_paths in root_paths.items():
         category_label = f"Treating category named '{root_category}'."
-        print('-'*len(category_label))
+        logging.info('-'*len(category_label))
         logging.info(category_label)
-        print('-'*len(category_label))
+        logging.info('-'*len(category_label))
         if args.convert_to_os:
             replaced_root = root_paths[Platform[args.convert_to_os].value]
 

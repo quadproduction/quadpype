@@ -78,12 +78,13 @@ class BlenderRenderPathsUpdateDeadline(abstract_submit_deadline.AbstractSubmitDe
         root_paths = Anatomy().get('roots', None)
         assert root_paths, "Can't find root paths to update render paths."
 
+        root_paths_args = _escape_and_remove_chars(json.dumps(root_paths))
         plugin_info = BlenderScriptPluginInfo(
             SceneFile=self.scene_path,
             Version=bpy.app.version_string,
             SaveFile=True,
             ScriptName=common_job.ScriptsNames.UpdateBlenderPaths.value,
-            ScriptArguments=f"-r  \"{json.dumps(root_paths)}\" -c \"{sys.platform}\""
+            ScriptArguments=f"-r  \"{root_paths_args}\""
         )
 
         plugin_payload = attr.asdict(plugin_info)
@@ -93,3 +94,7 @@ class BlenderRenderPathsUpdateDeadline(abstract_submit_deadline.AbstractSubmitDe
             plugin_payload[key] = value
 
         return plugin_payload
+
+
+def _escape_and_remove_chars(data_string):
+    return data_string.replace('\\\\', '\\').replace('\\', '/').replace('"', '\\"')
