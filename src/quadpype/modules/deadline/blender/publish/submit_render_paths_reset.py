@@ -34,7 +34,7 @@ class BlenderRenderPathsResetDeadline(abstract_submit_deadline.AbstractSubmitDea
     label = "Submit render paths reset script to Deadline"
     hosts = ["blender"]
     families = ["render"]
-    order = pyblish.api.IntegratorOrder + 0.13
+    order = pyblish.api.IntegratorOrder + 0.21
 
     # optional = True
     # use_published = True
