@@ -569,7 +569,7 @@ class PackageHandler:
         # Iterate over directory at the first level
         for item in source_path.iterdir():
             # If the item is a directory with a major.minor version format, dive deeper
-            if item.is_dir() and re.match(r"^v?\d+\.\d+$", item.name) and parent_version is None:
+            if item.is_dir() and re.match(r"^v?\d+\.\d+.*$", item.name) and parent_version is None:
                 parent_version_str = f"{item.name.removeprefix('v')}.0"
                 detected_versions = cls.get_versions_from_dir(
                     pkg_name,
@@ -674,7 +674,7 @@ class PackageHandler:
             item_full_url = SourceURL(f"{source_url}{item.name}")
 
             # If the item is a directory with a major.minor version format, dive deeper
-            if item.name.endswith("/") and re.match(r"^v?\d+\.\d+/$", item.name) and parent_version is None:
+            if item.name.endswith("/") and re.match(r"^v?\d+\.\d+.*/$", item.name) and parent_version is None:
                 parent_version_str = f"{item.name.removeprefix('v')[:-1]}.0"
                 detected_versions = cls.get_versions_from_url(
                     pkg_name,

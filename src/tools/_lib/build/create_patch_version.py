@@ -221,7 +221,7 @@ def create_version_from_live_code(out_dir_path):
     version = {}
     with open(src_root.joinpath("quadpype", "version.py")) as fp:
         exec(fp.read(), version)
-    version_match = re.search(r"(\d+\.\d+.\d+).*", version["__version__"])
+    version_match = re.search(r"(\d+\.\d+.\d+.*)", version["__version__"])
     version_str = version_match[1]
     version_obj = semver.VersionInfo.parse(version_str)
 

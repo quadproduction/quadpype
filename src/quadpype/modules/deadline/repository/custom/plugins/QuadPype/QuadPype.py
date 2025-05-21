@@ -94,7 +94,7 @@ class QuadPypeDeadlinePlugin(DeadlinePlugin):
         with open(version_file, "r") as vf:
             exec(vf.read(), version)
 
-        version_match = re.search(r"(\d+\.\d+.\d+).*", version["__version__"])
+        version_match = re.search(r"(\d+\.\d+.\d+.*)", version["__version__"])
         return version_match[1]
 
     def RenderExecutable(self):
