@@ -663,6 +663,18 @@ class AfterEffectsServerStub():
 
         return self._handle_return(res)
 
+    def add_comp_to_render_queue(self, comp_id):
+        """
+            Add the comp corresponding to comp_id to the render queue
+        Args:
+            comp_id(int): id of target composition
+        Returns: None
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.add_comp_to_render_queue',
+                                         comp_id=comp_id))
+        return self._handle_return(res)
+
     def print_msg(self, msg):
         """Triggers Javascript alert dialog."""
         self.websocketserver.call(self.client.call
