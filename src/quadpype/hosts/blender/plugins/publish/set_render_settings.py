@@ -29,6 +29,13 @@ class SetRenderSettings(
         creator_attributes = instance.data.get('creator_attributes', None)
         assert creator_attributes, "Can not retrieve creator attributes for instance. Abort process."
 
+        layers_to_render = creator_attributes.get('render_layers', None)
+        if layers_to_render is None:
+            self.log.warning("Can not find render layers attribute from creator attributes.")
+            return
+
+        assert layers_to_render, "Render layers attribute retrieved from creator is empty. Nothing will be rendered."
+
         scene = bpy.context.scene
         properties_and_attributes = {
             scene.render: ['use_single_layer', 'use_simplify', 'use_motion_blur', 'use_border'],
@@ -50,13 +57,6 @@ class SetRenderSettings(
                     property_name=single_property,
                     value=creator_attributes.get(single_property, None),
                 )
-
-        layers_to_render = creator_attributes.get('render_layers', None)
-        if layers_to_render is None:
-            self.log.warning("Can not find render layers attribute from creator attributes.")
-            return
-
-        assert layers_to_render, "Render layers attribute retrieved from creator is empty. Nothing will be rendered."
 
         for layer in bpy.context.scene.view_layers:
             layer.use = layer.name in layers_to_render
