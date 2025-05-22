@@ -94,8 +94,20 @@
                                 },
                                 {
                                     "cg-config-v1.0.0_aces-v1.3_ocio-v2.1": "cg-config-v1.0.0_aces-v1.3_ocio-v2.1 (14)"
+                                },
+                                {
+                                    "custom": "custom"
                                 }
                             ]
+                        },
+                        {
+                            "key": "customOCIOConfigPath",
+                            "type": "list",
+                            "label": "custom OCIO ConfigPath",
+                            "object_type": {
+                                "type": "path",
+                                "multiplatform": true
+                            }
                         },
                         {
                             "type": "text",

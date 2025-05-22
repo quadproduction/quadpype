@@ -28,6 +28,12 @@
         "workfile": {
             "colorManagement": "OCIO",
             "OCIO_config": "aces_1.2",
+
+            "customOCIOConfigPath": [{
+                "windows": "",
+                "darwin": "",
+                "linux": ""
+            }],
             "workingSpaceLUT": "role_scene_linear",
             "monitorLut": "ACES/sRGB",
             "monitorOutLUT": "ACES/sRGB",
