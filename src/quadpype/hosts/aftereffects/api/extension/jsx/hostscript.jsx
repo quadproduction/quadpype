@@ -741,6 +741,17 @@ function renameItem(item_id, new_name){
     }
 }
 
+function addCompToRenderQueue(comp_id){
+    var comp = app.project.itemByID(comp_id);
+    if (isComp(comp)) {
+        var renderQueueItem = app.project.renderQueue.items.add(comp);
+        renderQueueItem.outputModule(1).file = new File("C:/temp/render_output.mov");
+
+    } else {
+        return _prepareError("The following item is not a comp : "+ comp.name);
+    }
+}
+
 function deleteItem(item_id){
     /**
      *  Delete any 'item_id'
