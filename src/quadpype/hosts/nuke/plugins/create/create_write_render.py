@@ -36,6 +36,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
 
     resolution = None
     resolutions = []
+    autoresize = False
 
     def get_pre_create_attr_defs(self):
         attr_defs = [
@@ -62,9 +63,9 @@ class CreateWriteRender(napi.NukeWriteCreator):
 
     def get_resolution_overrides(self):
         project_settings = get_project_settings(get_current_project_name())
-        autoresize = project_settings.get('nuke', {}).get('create', {}).get('CreateWriteRender', {}).get('autoresolutionresize', {})
+        self.autoresize = project_settings.get('nuke', {}).get('create', {}).get('CreateWriteRender', {}).get('autoresolutionresize', {})
 
-        if not autoresize:
+        if not self.autoresize:
             self.log.warning(
                 "Resolution auto resize hasn't been enabled in project config. Resolution can not be overridden."
             )
@@ -110,24 +111,12 @@ class CreateWriteRender(napi.NukeWriteCreator):
         write_data.update(instance_data)
 
         width, height = self._get_width_and_height()
-        self.log.warning(width)
-        self.log.warning(height)
+        if self.autoresize:
+            self.add_autoresize_prenodes(width, height)
+
         self.log.debug(">>>>>>> : {}".format(self.instance_attributes))
         self.log.debug(">>>>>>> : {}".format(self.get_linked_knobs()))
         self.log.debug(">>>>>>> : {}".format(self.prenodes))
-
-        self.prenodes["nodeName"] = {
-                "nodeclass": "Reformat",
-                "dependent": [],
-                "knobs": [
-                    {
-                        "type": "text",
-                        "name": "knobname",
-                        "value": "knob value"
-                    }
-                ]
-            }
-        }
 
         # TODO : giving width and height here doesn't seem to update any values later
         created_node = napi.create_write_node(
@@ -156,6 +145,21 @@ class CreateWriteRender(napi.NukeWriteCreator):
             width, height = (actual_format.width(), actual_format.height())
 
         return width, height
+
+    def add_autoresize_prenodes(self, width, height):
+        node_name = f"Custom_res_{width}x{height}"
+        nuke.addFormat(f"{height} {width} {node_name}")
+        self.prenodes["AutoResize"] = {
+            "nodeclass": "Reformat",
+            "dependent": list(self.prenodes.keys())[0] if self.prenodes else [],
+            "knobs": [
+                {
+                    "type": "Text",
+                    "name": "format",
+                    "value": node_name
+                }
+            ]
+        }
 
     def create(self, subset_name, instance_data, pre_create_data):
         # pass values from precreate to instance
