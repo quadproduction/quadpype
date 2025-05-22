@@ -2022,12 +2022,16 @@ class WorkfileSettings(object):
             # with use of `customOCIOConfigPath`
             resolved_path = None
             if workfile_settings.get("customOCIOConfigPath"):
-                unresolved_path = workfile_settings["customOCIOConfigPath"]
-                ocio_paths = unresolved_path[platform.system().lower()]
+                unresolved_paths = workfile_settings["customOCIOConfigPath"]
 
-                for ocio_p in ocio_paths:
-                    resolved_path = str(ocio_p).format(**os.environ)
+                ocio_paths = set()
+                for unresolved_path in unresolved_paths:
+                    ocio_paths.add(unresolved_path[platform.system().lower()])
+
+                for ocio_path in ocio_paths:
+                    resolved_path = str(ocio_path).format(**os.environ).replace("\\", "/")
                     if not os.path.exists(resolved_path):
+                        log.info(f"{resolved_path} doesn't exists, it will be skipped")
                         continue
 
             if resolved_path:
