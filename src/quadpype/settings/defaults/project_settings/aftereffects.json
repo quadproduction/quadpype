@@ -16,7 +16,8 @@
                 "Main"
             ],
             "mark_for_review": true,
-            "force_setting_values": true
+            "force_setting_values": true,
+            "autoresolutionresize": true
         }
     },
     "publish": {

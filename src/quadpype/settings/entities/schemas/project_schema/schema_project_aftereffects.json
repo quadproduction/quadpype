@@ -42,13 +42,19 @@
                             "key": "mark_for_review",
                             "label": "Review",
                             "default": true
-                         },
+                        },
                         {
                             "type": "boolean",
                             "key": "force_setting_values",
                             "label": "Force resolution and duration values from Asset",
                             "default": true
-                         }
+                        },
+                        {
+                            "type": "boolean",
+                            "key": "autoresolutionresize",
+                            "label": "Auto resolution resize",
+                            "default": true
+                        }
                     ]
                 }
             ]
