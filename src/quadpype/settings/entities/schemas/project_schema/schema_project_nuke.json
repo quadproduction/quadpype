@@ -18,6 +18,12 @@
                     "default": true
                 },
                 {
+                    "key": "set_frames_startup",
+                    "type": "boolean",
+                    "label": "Set Start/End Frames and FPS on Startup",
+                    "default": true
+                },
+                {
                     "type": "dict",
                     "collapsible": true,
                     "key": "menu",

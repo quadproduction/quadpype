@@ -6,9 +6,22 @@ from quadpype.pipeline.publish import (
 )
 from quadpype.hosts.photoshop import api as photoshop
 
+class ValidateBlendModeSelect(pyblish.api.Action):
+    """Select the layers that have incorrect blendmode"""
+
+    label = "Select Layers"
+    icon = "briefcase"
+    on = "failed"
+
+    def process(self, context, plugin):
+        stub = photoshop.stub()
+        failed = context.data['transientData'][ValidateBlendMode.__name__]
+        stub.select_layers(info["layer_data"] for layer, info in failed.items())
+
+        return True
 
 class ValidateBlendModeRepair(pyblish.api.Action):
-    """Repair the instance asset."""
+    """Repair the layers blendmode."""
 
     label = "Repair"
     icon = "wrench"
@@ -18,7 +31,6 @@ class ValidateBlendModeRepair(pyblish.api.Action):
 
         stub = photoshop.stub()
         failed = context.data['transientData'][ValidateBlendMode.__name__]
-
         for layer, info in failed.items():
             stub.set_blendmode(layer_name=layer, blendMode_name=info["defaultBlendMode"])
 
@@ -34,7 +46,7 @@ class ValidateBlendMode(
     hosts = ["photoshop"]
     order = ValidateContentsOrder
     families = ["image"]
-    actions = [ValidateBlendModeRepair]
+    actions = [ValidateBlendModeRepair, ValidateBlendModeSelect]
     optional = True
     active = False
 
@@ -55,6 +67,7 @@ class ValidateBlendMode(
             if (layer.group and layer.blendMode != PASSTHROUGH) or (not layer.group and layer.blendMode != NORMAL):
                 layerDict["actualBlendMode"] = layer.blendMode
                 layerDict["defaultBlendMode"] = PASSTHROUGH if layer.group else NORMAL
+                layerDict["layer_data"] = layer
                 returnDict[layer.name] = layerDict
 
                 typeStr = "Group" if layer.group else "Layer"

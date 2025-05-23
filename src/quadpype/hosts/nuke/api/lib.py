@@ -2022,12 +2022,16 @@ class WorkfileSettings(object):
             # with use of `customOCIOConfigPath`
             resolved_path = None
             if workfile_settings.get("customOCIOConfigPath"):
-                unresolved_path = workfile_settings["customOCIOConfigPath"]
-                ocio_paths = unresolved_path[platform.system().lower()]
+                unresolved_paths = workfile_settings["customOCIOConfigPath"]
 
-                for ocio_p in ocio_paths:
-                    resolved_path = str(ocio_p).format(**os.environ)
+                ocio_paths = set()
+                for unresolved_path in unresolved_paths:
+                    ocio_paths.add(unresolved_path[platform.system().lower()])
+
+                for ocio_path in ocio_paths:
+                    resolved_path = str(ocio_path).format(**os.environ).replace("\\", "/")
                     if not os.path.exists(resolved_path):
+                        log.info(f"{resolved_path} doesn't exists, it will be skipped")
                         continue
 
             if resolved_path:
@@ -2600,7 +2604,8 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
         os.environ["QUADPYPE_NUKE_SKIP_SAVE_EVENT"] = "True"
         if get_project_settings(Context.project_name)["nuke"]["general"].get("set_resolution_startup", True):
             self.reset_resolution()
-        self.reset_frame_range_handles()
+        if get_project_settings(Context.project_name)["nuke"]["general"].get("set_frames_startup", True):
+            self.reset_frame_range_handles()
         # add colorspace menu item
         self.set_colorspace()
         del os.environ["QUADPYPE_NUKE_SKIP_SAVE_EVENT"]
