@@ -11,11 +11,11 @@ from quadpype.lib import (
 )
 
 from quadpype.hosts.nuke import api as napi
+from quadpype.pipeline.settings import get_available_resolutions, extract_width_and_height
 from quadpype.hosts.nuke.api.plugin import exposed_write_knobs
 
 
 FROM_SELECTED = "From selected"
-RES_SEPARATOR = '*'
 
 
 class CreateWriteRender(napi.NukeWriteCreator):
@@ -48,7 +48,22 @@ class CreateWriteRender(napi.NukeWriteCreator):
             self._get_render_target_enum(),
         ]
 
-        resolutions = self.get_resolution_overrides()
+        project_name = get_current_project_name()
+        project_settings = get_project_settings(project_name)
+        self.autoresize = project_settings.get('nuke', {}).get('create', {}).get('CreateWriteRender', {}).get(
+            'autoresolutionresize', {})
+
+        if not self.autoresize:
+            self.log.warning(
+                "Resolution auto resize hasn't been enabled in project config. Resolution can not be overridden."
+            )
+            return attr_defs
+
+        resolutions = get_available_resolutions(
+            project_name=project_name,
+            project_settings=project_settings
+        )
+        resolutions.insert(0, FROM_SELECTED)
         if resolutions:
             self.resolutions = resolutions
             attr_defs.append(
@@ -60,35 +75,6 @@ class CreateWriteRender(napi.NukeWriteCreator):
                 )
             )
         return attr_defs
-
-    def get_resolution_overrides(self):
-        project_settings = get_project_settings(get_current_project_name())
-        self.autoresize = project_settings.get('nuke', {}).get('create', {}).get('CreateWriteRender', {}).get('autoresolutionresize', {})
-
-        if not self.autoresize:
-            self.log.warning(
-                "Resolution auto resize hasn't been enabled in project config. Resolution can not be overridden."
-            )
-            return
-
-        res_profiles = project_settings.get('quad_studio_addon', {}).get('general', {}).get('working_resolution_overrides')
-
-        if not res_profiles:
-            self.log.warning(
-                "Can not retrieve working resolution overrides from settings or settings are empty. "
-                "Can not add resolution selection to render subset creator."
-            )
-            return
-
-        profiles = [profile for profile in res_profiles if 'nuke' in profile.get('hosts')]
-        if not profiles:
-            self.log.warning("Working resolution overrides : Couldn't find matching profile for host 'Nuke'.")
-            return
-
-        return [FROM_SELECTED] + [
-            f"{profile.get('working_resolution_width')}{RES_SEPARATOR}{profile.get('working_resolution_height')}"
-            for profile in profiles
-        ]
 
     def get_instance_attr_defs(self):
         return [
@@ -139,7 +125,9 @@ class CreateWriteRender(napi.NukeWriteCreator):
         if self.selected_node and (not self.resolution or self.resolution == FROM_SELECTED):
             width, height = (self.selected_node.width(), self.selected_node.height())
         elif self.resolution:
-            width, height = self.resolution.split(RES_SEPARATOR)
+            width, height = extract_width_and_height(self.resolution)
+            self.log.warning(width)
+            self.log.warning(height)
         else:
             actual_format = nuke.root().knob('format').value()
             width, height = (actual_format.width(), actual_format.height())

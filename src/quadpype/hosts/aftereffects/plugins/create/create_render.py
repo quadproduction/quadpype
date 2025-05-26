@@ -7,16 +7,15 @@ from quadpype.pipeline import (
     Creator,
     CreatedInstance,
     CreatorError,
-    get_current_project_name
+    get_current_project_name,
+    get_current_asset_name
 )
 from quadpype.settings import get_project_settings
 from quadpype.hosts.aftereffects.api.pipeline import cache_and_get_instances
 from quadpype.hosts.aftereffects.api.lib import set_settings
 from quadpype.lib import prepare_template_data
+from quadpype.pipeline.settings import get_available_resolutions, extract_width_and_height
 from quadpype.pipeline.create import SUBSET_NAME_ALLOWED_SYMBOLS
-
-
-RES_SEPARATOR = '*'
 
 
 class RenderCreator(Creator):
@@ -110,7 +109,7 @@ class RenderCreator(Creator):
                 return
 
             resolution = pre_create_data.get('resolution')
-            width, height = resolution.split(RES_SEPARATOR) if resolution else None, None
+            width, height = extract_width_and_height(resolution)
             set_settings(
                 frames=self.force_setting_values,
                 resolution=self.force_setting_values,
@@ -137,7 +136,21 @@ class RenderCreator(Creator):
             )
         ]
 
-        resolutions = self.get_resolution_overrides()
+        project_name = get_current_project_name()
+        project_settings = get_project_settings(project_name)
+        self.autoresize = project_settings.get('aftereffects', {}).get('create', {}).get('RenderCreator', {}).get(
+            'autoresolutionresize', {})
+
+        if not self.autoresize:
+            self.log.warning(
+                "Resolution auto resize hasn't been enabled in project config. Resolution can not be overridden."
+            )
+            return output
+
+        resolutions = get_available_resolutions(
+            project_name=project_name,
+            project_settings=project_settings
+        )
         if resolutions:
             self.resolutions = resolutions
             output.append(
@@ -149,35 +162,6 @@ class RenderCreator(Creator):
                 )
             )
         return output
-
-    def get_resolution_overrides(self):
-        project_settings = get_project_settings(get_current_project_name())
-        self.autoresize = project_settings.get('aftereffects', {}).get('create', {}).get('RenderCreator', {}).get('autoresolutionresize', {})
-
-        if not self.autoresize:
-            self.log.warning(
-                "Resolution auto resize hasn't been enabled in project config. Resolution can not be overridden."
-            )
-            return
-
-        res_profiles = project_settings.get('quad_studio_addon', {}).get('general', {}).get('working_resolution_overrides')
-
-        if not res_profiles:
-            self.log.warning(
-                "Can not retrieve working resolution overrides from settings or settings are empty. "
-                "Can not add resolution selection to render subset creator."
-            )
-            return
-
-        profiles = [profile for profile in res_profiles if 'aftereffects' in profile.get('hosts')]
-        if not profiles:
-            self.log.warning("Working resolution overrides : Couldn't find matching profile for host 'Nuke'.")
-            return
-
-        return [
-            f"{profile.get('working_resolution_width')}{RES_SEPARATOR}{profile.get('working_resolution_height')}"
-            for profile in profiles
-        ]
 
     def get_instance_attr_defs(self):
         return [
