@@ -112,6 +112,11 @@ from .action import (
     action_with_repre_context
 )
 
+from .settings import (
+    get_available_resolutions,
+    extract_width_and_height
+)
+
 install = install_host
 uninstall = uninstall_host
 
@@ -229,4 +234,8 @@ __all__ = (
     # Backwards compatible function names
     "install",
     "uninstall",
+
+    # --- Settings ---
+    "get_available_resolutions",
+    "extract_width_and_height",
 )

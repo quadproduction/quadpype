@@ -191,6 +191,7 @@ class GenericCreateSaver(Creator):
         creator_attrs = instance_data["creator_attributes"] = {}
         for pass_key in pre_create_data.keys():
             creator_attrs[pass_key] = pre_create_data[pass_key]
+        self.log.warning(creator_attrs)
 
     def _get_render_target_enum(self):
         rendering_targets = {

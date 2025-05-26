@@ -1177,6 +1177,9 @@ def create_prenodes(
     last_node = None
     for_dependency = {}
     for name, node in nodes_setting.items():
+        log.warning('--')
+        log.warning(name)
+        log.warning(node)
         # get attributes
         nodeclass = node["nodeclass"]
         knobs = node["knobs"]
@@ -1204,6 +1207,7 @@ def create_prenodes(
             )
 
         # add data to knob
+        log.warning('ADD DATA TO KNOB')
         set_node_knobs_from_settings(now_node, knobs, **kwargs)
 
         # switch actual node to previous
@@ -1320,7 +1324,8 @@ def create_write_node(
                 "name {}".format("rgba"),
                 inpanel=False
             )
-
+        log.warning('PRENODES')
+        log.warning(prenodes)
         # creating pre-write nodes `prenodes`
         last_prenode = create_prenodes(
             prev_node,
@@ -1696,7 +1701,9 @@ def set_node_knobs_from_settings(node, knob_settings, **kwargs):
         knob_settings (list): list of dict. Keys are `type`, `name`, `value`
         kwargs (dict)[optional]: keys for formattable knob settings
     """
+    log.warning(kwargs)
     for knob in knob_settings:
+        log.warning(knob)
         log.debug("__ knob: {}".format(pformat(knob)))
         knob_type = knob["type"]
         knob_name = knob["name"]
@@ -1719,6 +1726,9 @@ def set_node_knobs_from_settings(node, knob_settings, **kwargs):
                 _knob_value = template.format(
                     **kwargs
                 )
+                log.warning("*********\n*********\n*********\n*********\n*********\n")
+                log.warning(_knob_value)
+                log.warning("*********\n*********\n*********\n*********\n*********\n")
             except KeyError as msg:
                 raise KeyError(
                     "Not able to format expression: {}".format(msg))
@@ -2531,74 +2541,13 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
     def reset_resolution(self):
         """Set resolution to project resolution."""
         log.info("Resetting resolution")
-        project_name = get_current_project_name()
         asset_data = self._asset_entity["data"]
 
-        format_data = {
-            "width": int(asset_data.get(
-                'resolutionWidth',
-                asset_data.get('resolution_width'))),
-            "height": int(asset_data.get(
-                'resolutionHeight',
-                asset_data.get('resolution_height'))),
-            "pixel_aspect": asset_data.get(
-                'pixelAspect',
-                asset_data.get('pixel_aspect', 1)),
-            "name": project_name
-        }
-
-        log.info(format_data)
-
-        if any(x_ for x_ in format_data.values() if x_ is None):
-            msg = ("Missing set shot attributes in DB."
-                   "\nContact your supervisor!."
-                   "\n\nWidth: `{width}`"
-                   "\nHeight: `{height}`"
-                   "\nPixel Aspect: `{pixel_aspect}`").format(**format_data)
-            log.error(msg)
-            nuke.message(msg)
-
-        existing_format = None
-        for format in nuke.formats():
-            if format_data["name"] == format.name():
-                existing_format = format
-                break
-
-        if existing_format:
-            # Enforce existing format to be correct.
-            existing_format.setWidth(format_data["width"])
-            existing_format.setHeight(format_data["height"])
-            existing_format.setPixelAspect(format_data["pixel_aspect"])
-        else:
-            format_string = self.make_format_string(**format_data)
-            log.info("Creating new format: {}".format(format_string))
-            nuke.addFormat(format_string)
-
-        nuke.root()["format"].setValue(format_data["name"])
-        log.info("Format is set.")
-
-        # update node graph so knobs are updated
-        update_node_graph()
-
-    def make_format_string(self, **kwargs):
-        if kwargs.get("r"):
-            return (
-                "{width} "
-                "{height} "
-                "{x} "
-                "{y} "
-                "{r} "
-                "{t} "
-                "{pixel_aspect:.2f} "
-                "{name}".format(**kwargs)
-            )
-        else:
-            return (
-                "{width} "
-                "{height} "
-                "{pixel_aspect:.2f} "
-                "{name}".format(**kwargs)
-            )
+        set_resolution(
+            width=int(asset_data.get('resolutionWidth', asset_data.get('resolution_width'))),
+            height=int(asset_data.get('resolutionHeight', asset_data.get('resolution_height'))),
+            pixel_aspect=asset_data.get('pixelAspect', asset_data.get('pixel_aspect', 1))
+        )
 
     def set_context_settings(self):
         os.environ["QUADPYPE_NUKE_SKIP_SAVE_EVENT"] = "True"
@@ -2638,6 +2587,73 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
         favorite_items.update({"Work dir": work_dir.replace("\\", "/")})
 
         set_context_favorites(favorite_items)
+
+
+def _make_format_string(**kwargs):
+    if kwargs.get("r"):
+        return (
+            "{width} "
+            "{height} "
+            "{x} "
+            "{y} "
+            "{r} "
+            "{t} "
+            "{pixel_aspect:.2f} "
+            "{name}".format(**kwargs)
+        )
+    else:
+        return (
+            "{width} "
+            "{height} "
+            "{pixel_aspect:.2f} "
+            "{name}".format(**kwargs)
+        )
+
+
+def set_resolution(width, height, pixel_aspect):
+    """Set resolution to given resolution."""
+    log.info("Resetting resolution")
+    project_name = get_current_project_name()
+
+    format_data = {
+        "width": width,
+        "height": height,
+        "pixel_aspect": pixel_aspect,
+        "name": project_name
+    }
+
+    log.info(format_data)
+
+    if any(x_ for x_ in format_data.values() if x_ is None):
+        msg = ("Missing set shot attributes in DB."
+               "\nContact your supervisor!."
+               "\n\nWidth: `{width}`"
+               "\nHeight: `{height}`"
+               "\nPixel Aspect: `{pixel_aspect}`").format(**format_data)
+        log.error(msg)
+        nuke.message(msg)
+
+    existing_format = None
+    for format in nuke.formats():
+        if format_data["name"] == format.name():
+            existing_format = format
+            break
+
+    if existing_format:
+        # Enforce existing format to be correct.
+        existing_format.setWidth(format_data["width"])
+        existing_format.setHeight(format_data["height"])
+        existing_format.setPixelAspect(format_data["pixel_aspect"])
+    else:
+        format_string = _make_format_string(**format_data)
+        log.info("Creating new format: {}".format(format_string))
+        nuke.addFormat(format_string)
+
+    nuke.root()["format"].setValue(format_data["name"])
+    log.info("Format is set.")
+
+    # update node graph so knobs are updated
+    update_node_graph()
 
 
 def get_write_node_template_attr(node):

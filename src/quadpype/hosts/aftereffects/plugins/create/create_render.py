@@ -1,16 +1,20 @@
 import re
 
 from quadpype import resources
-from quadpype.lib import BoolDef, UISeparatorDef
+from quadpype.lib import BoolDef, UISeparatorDef, EnumDef
 from quadpype.hosts.aftereffects import api
 from quadpype.pipeline import (
     Creator,
     CreatedInstance,
-    CreatorError
+    CreatorError,
+    get_current_project_name,
+    get_current_asset_name
 )
+from quadpype.settings import get_project_settings
 from quadpype.hosts.aftereffects.api.pipeline import cache_and_get_instances
 from quadpype.hosts.aftereffects.api.lib import set_settings
 from quadpype.lib import prepare_template_data
+from quadpype.pipeline.settings import get_available_resolutions, extract_width_and_height
 from quadpype.pipeline.create import SUBSET_NAME_ALLOWED_SYMBOLS
 
 
@@ -32,6 +36,10 @@ class RenderCreator(Creator):
     force_setting_values = True
     set_frames_create = True
     set_resolution_create = True
+
+    resolution = None
+    resolutions = []
+    autoresize = False
 
     def create(self, subset_name_from_ui, data, pre_create_data):
         stub = api.get_stub()  # only after After Effects is up
@@ -101,7 +109,19 @@ class RenderCreator(Creator):
             stub.rename_item(comp.id, subset_name)
             stub.add_comp_to_render_queue(comp.id)
 
-            set_settings(self.set_frames_create, self.set_resolution_create, [comp.id], print_msg=False)
+            if not self.force_setting_values and not self.autoresize:
+                return
+
+            resolution = pre_create_data.get('resolution')
+            width, height = extract_width_and_height(resolution)
+            set_settings(
+                frames=self.force_setting_values,
+                resolution=self.force_setting_values,
+                comp_ids=[comp.id],
+                print_msg=False,
+                override_width=width,
+                override_height=height
+            )
 
     def get_pre_create_attr_defs(self):
         output = [
@@ -119,6 +139,32 @@ class RenderCreator(Creator):
                 default=self.mark_for_review
             )
         ]
+
+        project_name = get_current_project_name()
+        project_settings = get_project_settings(project_name)
+        self.autoresize = project_settings.get('aftereffects', {}).get('create', {}).get('RenderCreator', {}).get(
+            'auto_resolution_resize', {})
+
+        if not self.autoresize:
+            self.log.warning(
+                "Resolution auto resize hasn't been enabled in project config. Resolution can not be overridden."
+            )
+            return output
+
+        resolutions = get_available_resolutions(
+            project_name=project_name,
+            project_settings=project_settings
+        )
+        if resolutions:
+            self.resolutions = resolutions
+            output.append(
+                EnumDef(
+                    "resolution",
+                    items=resolutions,
+                    default=resolutions[0],
+                    label="Resolution",
+                )
+            )
         return output
 
     def get_instance_attr_defs(self):

@@ -554,6 +554,9 @@
         }
     },
     "project_folder_structure": "{\"__project_root__\": {\"prod\": {}, \"resources\": {\"footage\": {\"plates\": {}, \"offline\": {}}, \"audio\": {}, \"art_dept\": {}}, \"editorial\": {}, \"assets\": {\"characters\": {}, \"locations\": {}}, \"shots\": {}}}",
+    "project_resolutions": {
+        "resolutions": []
+    },
     "sync_server": {
         "enabled": false,
         "config": {

@@ -3,11 +3,19 @@ import nuke
 from quadpype.pipeline import (
     CreatedInstance
 )
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import get_current_project_name
 from quadpype.lib import (
-    BoolDef
+    BoolDef,
+    EnumDef,
 )
+
 from quadpype.hosts.nuke import api as napi
+from quadpype.pipeline.settings import get_available_resolutions, extract_width_and_height
 from quadpype.hosts.nuke.api.plugin import exposed_write_knobs
+
+
+FROM_SELECTED = "From selected"
 
 
 class CreateWriteRender(napi.NukeWriteCreator):
@@ -26,6 +34,10 @@ class CreateWriteRender(napi.NukeWriteCreator):
     temp_rendering_path_template = (
         "{work}/renders/nuke/{subset}/{subset}.{frame}.{ext}")
 
+    resolution = None
+    resolutions = []
+    autoresize = False
+
     def get_pre_create_attr_defs(self):
         attr_defs = [
             BoolDef(
@@ -33,9 +45,46 @@ class CreateWriteRender(napi.NukeWriteCreator):
                 default=not self.create_context.headless,
                 label="Use selection"
             ),
-            self._get_render_target_enum()
+            self._get_render_target_enum(),
         ]
+
+        project_name = get_current_project_name()
+        project_settings = get_project_settings(project_name)
+        self.autoresize = project_settings.get('nuke', {}).get('create', {}).get('CreateWriteRender', {}).get(
+            'auto_resolution_resize', {})
+
+        if not self.autoresize:
+            self.log.warning(
+                "Resolution auto resize hasn't been enabled in project config. Resolution can not be overridden."
+            )
+            return attr_defs
+
+        resolutions = get_available_resolutions(
+            project_name=project_name,
+            project_settings=project_settings
+        )
+        resolutions.insert(0, FROM_SELECTED)
+        if resolutions:
+            self.resolutions = resolutions
+            attr_defs.append(
+                EnumDef(
+                    "resolution",
+                    items=resolutions,
+                    default=resolutions[0],
+                    label="Resolution",
+                )
+            )
         return attr_defs
+
+    def get_instance_attr_defs(self):
+        return [
+            EnumDef(
+                "resolution",
+                items=self.resolutions,
+                default=self.resolution,
+                label="Resolution",
+            )
+        ] if self.resolutions else []
 
     def create_instance_node(self, subset_name, instance_data):
         # add fpath_template
@@ -47,17 +96,15 @@ class CreateWriteRender(napi.NukeWriteCreator):
 
         write_data.update(instance_data)
 
-        # get width and height
-        if self.selected_node:
-            width, height = (
-                self.selected_node.width(), self.selected_node.height())
-        else:
-            actual_format = nuke.root().knob('format').value()
-            width, height = (actual_format.width(), actual_format.height())
+        width, height = self._get_width_and_height()
+        if self.autoresize:
+            self.add_autoresize_prenodes(width, height)
 
         self.log.debug(">>>>>>> : {}".format(self.instance_attributes))
         self.log.debug(">>>>>>> : {}".format(self.get_linked_knobs()))
+        self.log.debug(">>>>>>> : {}".format(self.prenodes))
 
+        # TODO : giving width and height here doesn't seem to update any values later
         created_node = napi.create_write_node(
             subset_name,
             write_data,
@@ -74,6 +121,34 @@ class CreateWriteRender(napi.NukeWriteCreator):
 
         return created_node
 
+    def _get_width_and_height(self):
+        if self.selected_node and (not self.resolution or self.resolution == FROM_SELECTED):
+            width, height = (self.selected_node.width(), self.selected_node.height())
+        elif self.resolution:
+            width, height = extract_width_and_height(self.resolution)
+            self.log.warning(width)
+            self.log.warning(height)
+        else:
+            actual_format = nuke.root().knob('format').value()
+            width, height = (actual_format.width(), actual_format.height())
+
+        return width, height
+
+    def add_autoresize_prenodes(self, width, height):
+        node_name = f"Custom_res_{width}x{height}"
+        nuke.addFormat(f"{height} {width} {node_name}")
+        self.prenodes["AutoResize"] = {
+            "nodeclass": "Reformat",
+            "dependent": list(self.prenodes.keys())[0] if self.prenodes else [],
+            "knobs": [
+                {
+                    "type": "Text",
+                    "name": "format",
+                    "value": node_name
+                }
+            ]
+        }
+
     def create(self, subset_name, instance_data, pre_create_data):
         # pass values from precreate to instance
         self.pass_pre_attributes_to_instance(
@@ -83,6 +158,9 @@ class CreateWriteRender(napi.NukeWriteCreator):
                 "render_target"
             ]
         )
+
+        self.resolution = pre_create_data.get('resolution')
+
         # make sure selected nodes are added
         self.set_selected_nodes(pre_create_data)
 
@@ -115,6 +193,9 @@ class CreateWriteRender(napi.NukeWriteCreator):
             exposed_write_knobs(
                 self.project_settings, self.__class__.__name__, instance_node
             )
+            self.log.error("------------\n------------\n------------\n")
+            self.log.error(instance.transient_data)
+            self.log.error("------------\n------------\n------------\n")
 
             return instance
 
