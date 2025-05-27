@@ -483,7 +483,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
             "PYBLISHPLUGINPATH",
             "NUKE_PATH",
             "TOOL_ENV",
-            "FOUNDRY_LICENSE",
+            "foundry_LICENSE",
             "QUADPYPE_SG_USER",
         ]
 
