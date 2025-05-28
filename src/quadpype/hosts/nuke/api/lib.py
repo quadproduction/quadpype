@@ -1177,9 +1177,6 @@ def create_prenodes(
     last_node = None
     for_dependency = {}
     for name, node in nodes_setting.items():
-        log.warning('--')
-        log.warning(name)
-        log.warning(node)
         # get attributes
         nodeclass = node["nodeclass"]
         knobs = node["knobs"]
@@ -1207,7 +1204,6 @@ def create_prenodes(
             )
 
         # add data to knob
-        log.warning('ADD DATA TO KNOB')
         set_node_knobs_from_settings(now_node, knobs, **kwargs)
 
         # switch actual node to previous
@@ -1324,8 +1320,7 @@ def create_write_node(
                 "name {}".format("rgba"),
                 inpanel=False
             )
-        log.warning('PRENODES')
-        log.warning(prenodes)
+
         # creating pre-write nodes `prenodes`
         last_prenode = create_prenodes(
             prev_node,
@@ -1701,9 +1696,7 @@ def set_node_knobs_from_settings(node, knob_settings, **kwargs):
         knob_settings (list): list of dict. Keys are `type`, `name`, `value`
         kwargs (dict)[optional]: keys for formattable knob settings
     """
-    log.warning(kwargs)
     for knob in knob_settings:
-        log.warning(knob)
         log.debug("__ knob: {}".format(pformat(knob)))
         knob_type = knob["type"]
         knob_name = knob["name"]
@@ -1726,9 +1719,6 @@ def set_node_knobs_from_settings(node, knob_settings, **kwargs):
                 _knob_value = template.format(
                     **kwargs
                 )
-                log.warning("*********\n*********\n*********\n*********\n*********\n")
-                log.warning(_knob_value)
-                log.warning("*********\n*********\n*********\n*********\n*********\n")
             except KeyError as msg:
                 raise KeyError(
                     "Not able to format expression: {}".format(msg))
