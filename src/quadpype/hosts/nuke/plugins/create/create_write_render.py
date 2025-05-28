@@ -13,6 +13,7 @@ from quadpype.lib import (
 from quadpype.hosts.nuke import api as napi
 from quadpype.pipeline.settings import get_available_resolutions, extract_width_and_height
 from quadpype.hosts.nuke.api.plugin import exposed_write_knobs
+from quadpype.hosts.nuke.api.lib import AUTORESIZE_LABEL, get_custom_res
 
 
 FROM_SELECTED = "From selected"
@@ -135,16 +136,15 @@ class CreateWriteRender(napi.NukeWriteCreator):
         return width, height
 
     def add_autoresize_prenodes(self, width, height):
-        node_name = f"Custom_res_{width}x{height}"
-        nuke.addFormat(f"{height} {width} {node_name}")
-        self.prenodes["AutoResize"] = {
+        custom_res = get_custom_res(width, height)
+        self.prenodes[AUTORESIZE_LABEL] = {
             "nodeclass": "Reformat",
             "dependent": list(self.prenodes.keys())[0] if self.prenodes else [],
             "knobs": [
                 {
                     "type": "Text",
                     "name": "format",
-                    "value": node_name
+                    "value": custom_res
                 }
             ]
         }

@@ -71,6 +71,7 @@ EXCLUDED_KNOB_TYPE_ON_READ = (
 JSON_PREFIX = "JSON:::"
 ROOT_DATA_KNOB = "publish_context"
 INSTANCE_DATA_KNOB = "publish_instance"
+AUTORESIZE_LABEL = "AutoResize"
 
 
 class DeprecatedWarning(DeprecationWarning):
@@ -3529,3 +3530,12 @@ def link_knobs(knobs, node, group_node):
             "Write node exposed knobs missing:\n\n{}\n\nPlease review"
             " project settings.".format("\n".join(missing_knobs))
         )
+
+
+def get_custom_res(width, height):
+    """Add normalized custom res and return name"""
+    node_name = f"Custom_res_{width}x{height}"
+    if node_name not in [nuke_format.name() for nuke_format in nuke.formats()]:
+        nuke.addFormat(f"{width} {height} {node_name}")
+
+    return node_name

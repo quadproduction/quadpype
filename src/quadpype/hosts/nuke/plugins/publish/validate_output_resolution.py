@@ -34,6 +34,11 @@ class ValidateOutputResolution(
         if not self.is_active(instance.data):
             return
 
+        publish_attributes = instance.data.get("publish_attributes")
+        auto_set_resolution_state = publish_attributes.get("AutoSetResolution", {}).get("active", None)
+        if auto_set_resolution_state is True:
+            self.log.info("Bypassing output resolution validator because auto set resolution is active.")
+
         invalid = self.get_invalid(instance)
         if invalid:
             raise PublishXmlValidationError(self, invalid)

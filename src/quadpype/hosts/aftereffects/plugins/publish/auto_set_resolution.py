@@ -2,9 +2,10 @@ import pyblish.api
 
 from quadpype.hosts.aftereffects.api.lib import set_settings
 from quadpype.pipeline.settings import extract_width_and_height
+from quadpype.pipeline import OptionalPyblishPluginMixin
 
 
-class AutoSetResolution(pyblish.api.InstancePlugin):
+class AutoSetResolution(OptionalPyblishPluginMixin, pyblish.api.InstancePlugin):
     """Set resolution to given comp as defined by subset
     """
 
@@ -14,6 +15,9 @@ class AutoSetResolution(pyblish.api.InstancePlugin):
     optional = True
 
     def process(self, instance):
+        if not self.is_active(instance.data):
+            return
+
         instance_data = instance.data
         resolution_override = instance_data.get("creator_attributes", {}).get('resolution')
         if not resolution_override:
