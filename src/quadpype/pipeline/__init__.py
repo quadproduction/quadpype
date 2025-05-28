@@ -112,6 +112,19 @@ from .action import (
     action_with_repre_context
 )
 
+from .working_organization_template import (
+    get_resolved_name,
+    set_data_for_template_from_original_data,
+    get_parent_data,
+    update_parent_data_with_entity_prefix,
+    get_task_hierarchy_templates,
+    split_hierarchy,
+    get_load_naming_template,
+    get_loaded_naming_finder_template,
+    is_current_asset_shot,
+    extract_sequence_and_shot
+)
+
 install = install_host
 uninstall = uninstall_host
 
@@ -229,4 +242,16 @@ __all__ = (
     # Backwards compatible function names
     "install",
     "uninstall",
+
+    "get_task_hierarchy_templates",
+    "split_hierarchy",
+
+    "get_resolved_name",
+    "set_data_for_template_from_original_data",
+    "get_parent_data",
+    "update_parent_data_with_entity_prefix",
+    "get_load_naming_template",
+    "get_loaded_naming_finder_template",
+    "is_current_asset_shot",
+    "extract_sequence_and_shot"
 )

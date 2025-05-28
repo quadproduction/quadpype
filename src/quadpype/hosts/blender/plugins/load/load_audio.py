@@ -10,10 +10,18 @@ from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
 )
-from quadpype.hosts.blender.api import plugin, lib, template_resolving
+from quadpype.hosts.blender.api import plugin, lib
+
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
     get_avalon_node
+)
+
+from src.quadpype.pipeline import (
+    get_current_host_name,
+    set_data_for_template_from_original_data,
+    get_load_naming_template,
+    get_resolved_name
 )
 
 
@@ -43,17 +51,17 @@ class AudioLoader(plugin.BlenderLoader):
         subset = context["subset"]["name"]
         representation = context['representation']
 
-        template_data = template_resolving.set_data_for_template_from_original_data(representation)
-        asset_name_template = template_resolving.get_load_naming_template("assetname", template_data)
-        namespace_template = template_resolving.get_load_naming_template("namespace", template_data)
-        group_name_template = template_resolving.get_load_naming_template("container", template_data)
+        template_data = set_data_for_template_from_original_data(representation, True, get_current_host_name())
+        asset_name_template = get_load_naming_template("assetname", template_data)
+        namespace_template = get_load_naming_template("namespace", template_data)
+        group_name_template = get_load_naming_template("container", template_data)
 
-        asset_name = template_resolving.get_resolved_name(template_data, asset_name_template)
+        asset_name = get_resolved_name(template_data, asset_name_template)
         unique_number = plugin.get_unique_number(asset, subset, template_data)
         template_data.update({"unique_number":unique_number})
 
-        namespace = namespace or template_resolving.get_resolved_name(template_data, namespace_template)
-        group_name = template_resolving.get_resolved_name(template_data, group_name_template, namespace=namespace)
+        namespace = namespace or get_resolved_name(template_data, namespace_template)
+        group_name = get_resolved_name(template_data, group_name_template, namespace=namespace)
 
         avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
         if not avalon_container:

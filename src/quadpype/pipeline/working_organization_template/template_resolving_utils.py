@@ -1,11 +1,34 @@
-from quadpype.settings import get_project_settings
+import re
 from copy import deepcopy
-from quadpype.lib import (
-    filter_profiles,
-    StringTemplate,
-)
 import warnings
-from quadpype.hosts.blender.api import lib, pipeline
+
+from quadpype.settings import get_project_settings
+from quadpype.lib import filter_profiles, StringTemplate
+from src.quadpype.pipeline.context_tools import get_current_project_asset, get_current_context
+
+DEFAULT_VARIANT_NAME= "Main"
+
+def set_data_for_template_from_original_data(original_data, filter_variant=True, app=""):
+
+    """Format incoming data for template resolving"""
+    data = deepcopy(original_data)
+
+    if original_data.get("context"):
+        data = deepcopy(original_data["context"])
+
+    parent = get_parent_data(data)
+    if not parent:
+        warnings.warn(f"Can not retrieve parent short from {data.get('parent', None)}", UserWarning)
+    data["parent"] = parent
+    data["app"] = app
+
+    update_parent_data_with_entity_prefix(data)
+
+    if is_current_asset_shot():
+        data['sequence'], data['shot'] = extract_sequence_and_shot()
+    if filter_variant:
+        _filter_variant_data(data)
+    return data
 
 def get_resolved_name(data, template, **additional_data):
     """Resolve template_collections_naming with entered data.
@@ -21,33 +44,17 @@ def get_resolved_name(data, template, **additional_data):
         data = dict(data, **additional_data)
     return template_obj.format_strict(data).normalized()
 
-def set_data_for_template_from_original_data(original_data, filter_variant=True):
-    """Format incoming data for template resolving"""
-    data = deepcopy(original_data)
-
-    if original_data.get("context"):
-        data = deepcopy(original_data["context"])
-
-    parent = pipeline.get_parent_data(data)
+def get_parent_data(data):
+    parent = data.get('parent', None)
     if not parent:
-        warnings.warn(f"Can not retrieve parent short from {data.get('parent', None)}", UserWarning)
-    data["parent"] = parent
-    data["app"] = "blender"
+        hierarchy = data.get('hierarchy')
+        if not hierarchy:
+            return
 
-    update_parent_data_with_entity_prefix(data)
+        return hierarchy.split('/')[-1]
+    return parent
 
-    if lib.is_shot():
-        data['sequence'], data['shot'] = lib.extract_sequence_and_shot()
-    if filter_variant:
-        _filter_variant_data(data)
-    return data
-
-def _filter_variant_data(data):
-    """Remove the variant from data if equel to DEFAULT_VARIANT_NAME"""
-    if data.get("variant") == pipeline.DEFAULT_VARIANT_NAME:
-        data.pop("variant")
-
-def _get_project_name_by_data(data):
+def get_project_name_by_data(data):
     """
     Retrieve the project name depending on given data
     This can be given by an instance or an app, and they are not sorted the same way
@@ -66,8 +73,7 @@ def _get_project_name_by_data(data):
 
     return project_name, is_from_anatomy
 
-
-def _get_app_name_by_data(data):
+def get_app_name_by_data(data):
     """
     Retrieve the app name depending on given data
     This can be given by an instance or an app, and they are not sorted the same way
@@ -86,6 +92,10 @@ def _get_app_name_by_data(data):
 
     return app_name, is_from_anatomy
 
+def _filter_variant_data(data):
+    """Remove the variant from data if equel to DEFAULT_VARIANT_NAME"""
+    if data.get("variant") == DEFAULT_VARIANT_NAME or data.get("variant") == "":
+        data.pop("variant")
 
 def _get_parent_by_data(data):
     """
@@ -106,11 +116,10 @@ def _get_parent_by_data(data):
 
     return parent_name, is_from_anatomy
 
+def get_profiles_by_key(setting_key, data, project_settings=None):
 
-def _get_profiles(setting_key, data, project_settings=None):
-
-    project_name, is_anatomy_data = _get_project_name_by_data(data)
-    app_name, is_anatomy_data = _get_app_name_by_data(data)
+    project_name, is_anatomy_data = get_project_name_by_data(data)
+    app_name, is_anatomy_data = get_app_name_by_data(data)
 
     if not project_settings:
         project_settings = get_project_settings(project_name)
@@ -134,7 +143,6 @@ def _get_profiles(setting_key, data, project_settings=None):
 
     return profiles
 
-
 def _get_entity_prefix(data):
     """Retrieve the asset_type (entity_type) short name for proper blender naming
     Args:
@@ -145,7 +153,7 @@ def _get_entity_prefix(data):
     """
 
     # Get Entity Type Name Matcher Profiles
-    profiles = _get_profiles("entity_type_name_matcher", data)
+    profiles = get_profiles_by_key("entity_type_name_matcher", data)
     parent, is_anatomy = _get_parent_by_data(data)
 
     profile_key = {"entity_types": parent}
@@ -154,7 +162,6 @@ def _get_entity_prefix(data):
         return None, is_anatomy
     # If a profile is found, return the prefix
     return profile.get("entity_prefix"), is_anatomy
-
 
 def update_parent_data_with_entity_prefix(data):
     """
@@ -173,73 +180,14 @@ def update_parent_data_with_entity_prefix(data):
     else:
         data["parent"] = parent_prefix
 
+def is_current_asset_shot():
+    asset_data = get_current_project_asset()["data"]
+    return asset_data['parents'][0].lower() == "shots"
 
-def get_task_collection_templates(data, task=None):
-    """Retrieve the template for the collection depending on the task type
-    Args:
-        data (Dict[str, Any]): Data to fill template_collections_naming.
-        task (str): fill to bypass task in data dict
-    Return:
-        str: A template that can be solved later
-    """
-    profiles = _get_profiles("working_collections_templates_by_tasks", data)
-    profile_key = {
-        "task_types": data["task"] if not task else task,
-        "families": data["family"]
-    }
+def extract_sequence_and_shot():
+    asset_name = get_current_context()['asset_name']
+    is_valid_pattern = re.match('^SQ[a-zA-Z0-9_.]+_[a-zA-Z.]+[a-zA-Z0-9_.]*$', asset_name)
+    if not is_valid_pattern:
+        raise RuntimeError(f"Can not extract sequence and shot from asset_name {asset_name}")
 
-    profile = filter_profiles(profiles, profile_key)
-
-    if not profile:
-        return []
-
-    return profile.get("templates", [])
-
-
-#---------------------------------------------------------------------------
-#Load naming template
-#---------------------------------------------------------------------------
-
-def get_load_naming_template(setting_key, data):
-    project_name, is_anatomy_data = _get_project_name_by_data(data)
-    app_name, is_anatomy_data = _get_app_name_by_data(data)
-    project_settings = get_project_settings(project_name)
-
-    # Get Entity Type Name Matcher Profiles
-    try:
-        template = (
-            project_settings
-            [app_name]
-            ["load"]
-            ["NamingTemplate"]
-            [setting_key]
-        )
-
-    except Exception:
-        raise KeyError("Project has no template set for {}".format(setting_key))
-
-    return template
-
-#---------------------------------------------------------------------------
-#Publish loaded re-naming template
-#---------------------------------------------------------------------------
-
-def get_loaded_naming_finder_template(setting_key, data):
-    project_name, is_anatomy_data = _get_project_name_by_data(data)
-    app_name, is_anatomy_data = _get_app_name_by_data(data)
-    project_settings = get_project_settings(project_name)
-
-    # Get Entity Type Name Matcher Profiles
-    try:
-        template = (
-            project_settings
-            [app_name]
-            ["publish"]
-            ["LoadedNamingFinder"]
-            [setting_key]
-        )
-
-    except Exception:
-        raise KeyError("Project has no template set for {}".format(setting_key))
-
-    return template
+    return asset_name.split('_', 1)
