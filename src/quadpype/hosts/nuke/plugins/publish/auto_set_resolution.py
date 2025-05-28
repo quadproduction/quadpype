@@ -39,7 +39,7 @@ class AutoSetResolution(
         assert auto_resize_node, "Can not found auto resize node in child nodes."
 
         width, height = extract_width_and_height(resolution_override)
-        if self._resolution_is_identical(auto_resize_node, width, height):
+        if self._resolutions_are_identical(auto_resize_node, width, height):
             self.log.info("Given resolution and node format are identical. Process has been aborted.")
             return
 
@@ -49,7 +49,7 @@ class AutoSetResolution(
         self.log.info(f"Format on auto resize node set to {custom_res_name}")
 
     @staticmethod
-    def _resolution_is_identical(current_node, width, height):
+    def _resolutions_are_identical(current_node, width, height):
         write_width = current_node.format().width()
         write_height = current_node.format().height()
         return int(width) == int(write_width) and int(height) == int(write_height)

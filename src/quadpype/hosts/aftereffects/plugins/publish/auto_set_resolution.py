@@ -13,7 +13,7 @@ class AutoSetResolution(OptionalPyblishPluginMixin, pyblish.api.InstancePlugin):
     hosts = ["aftereffects"]
     order = pyblish.api.IntegratorOrder - 0.2
     optional = True
-    families = ["render"]
+    families = ["render.farm", "render.local", "render"]
 
     def process(self, instance):
         if not self.is_active(instance.data):

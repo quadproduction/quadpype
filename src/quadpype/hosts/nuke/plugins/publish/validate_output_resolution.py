@@ -38,6 +38,7 @@ class ValidateOutputResolution(
         auto_set_resolution_state = publish_attributes.get("AutoSetResolution", {}).get("active", None)
         if auto_set_resolution_state is True:
             self.log.info("Bypassing output resolution validator because auto set resolution is active.")
+            return
 
         invalid = self.get_invalid(instance)
         if invalid:
