@@ -149,9 +149,13 @@ class RenderCreator(Creator):
             )
             return output
 
-        resolutions = get_available_resolutions(
-            project_name=project_name,
-            project_settings=project_settings
+        resolutions = list(
+            set(
+                get_available_resolutions(
+                    project_name=project_name,
+                    project_settings=project_settings
+                )
+            )
         )
         if resolutions:
             self.resolutions = resolutions
