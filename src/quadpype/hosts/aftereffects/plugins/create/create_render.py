@@ -149,11 +149,16 @@ class RenderCreator(Creator):
             )
             return output
 
-        self.resolutions = get_available_resolutions(
-            project_name=project_name,
-            project_settings=project_settings
+        resolutions = list(
+            set(
+                get_available_resolutions(
+                    project_name=project_name,
+                    project_settings=project_settings
+                )
+            )
         )
-        if self.resolutions:
+        if resolutions:
+            self.resolutions = resolutions
             output.append(
                 EnumDef(
                     "resolution",
