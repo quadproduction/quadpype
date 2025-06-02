@@ -46,7 +46,7 @@ class AutoSetResolution(
         custom_res_name = get_custom_res(width, height)
         auto_resize_node["format"].setValue(custom_res_name)
 
-        self.log.info(f"Format on auto resize node set to {custom_res_name}")
+        self.log.warning(f"Format on auto resize node set to {custom_res_name}")
 
     @staticmethod
     def _resolution_is_identical(current_node, width, height):

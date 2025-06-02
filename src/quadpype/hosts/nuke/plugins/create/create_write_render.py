@@ -82,7 +82,8 @@ class CreateWriteRender(napi.NukeWriteCreator):
         return attr_defs
 
     def get_instance_attr_defs(self):
-        return [
+        attrs = super().get_instance_attr_defs()
+        return attrs + [
             EnumDef(
                 "resolution",
                 items=self.resolutions,
