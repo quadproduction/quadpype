@@ -1,6 +1,6 @@
 from quadpype.hosts.aftereffects.api import get_stub
 from quadpype.pipeline import split_hierarchy
-stub = get_stub()
+
 
 def create_folder(folder_name, parent_to=None):
     """Create a folder based on a name and parent it to a given folder
@@ -11,6 +11,7 @@ def create_folder(folder_name, parent_to=None):
     Returns:
         AEItem: the newly created folder
     """
+    stub = get_stub()
     all_folders = stub.get_items(comps=False, folders=True, footages=False)
     folder = find_folder(folder_name, all_folders)
 
@@ -25,13 +26,16 @@ def create_folder(folder_name, parent_to=None):
 
     return folder
 
+
 def find_folder(folder_name, all_folders=None):
+    stub = get_stub()
     if not all_folders:
         all_folders = stub.get_items(comps=False, folders=True, footages=False)
     for folder in all_folders:
         if folder.name == folder_name:
             return folder
     return None
+
 
 def create_folders_from_hierarchy(hierarchies):
     """ Generate all the folder hierarchies based on a string like:
@@ -62,14 +66,16 @@ def create_folders_from_hierarchy(hierarchies):
                 parent = None
             else:
                 parent = hierarchy[level - 1]
-            last_folder = create_folder(
+            create_folder(
                 folder_name=folder_name,
                 parent_to=parent
-                )
+            )
 
     return True
 
+
 def get_last_folder_from_first_template(hierarchies):
+    stub = get_stub()
     all_folders = stub.get_items(comps=False, folders=True, footages=False)
     last_folder_name = split_hierarchy(hierarchies[0])[-1]
     last_folder = find_folder(last_folder_name, all_folders)

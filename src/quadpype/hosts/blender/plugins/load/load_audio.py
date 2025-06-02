@@ -19,7 +19,7 @@ from quadpype.hosts.blender.api.pipeline import (
 
 from src.quadpype.pipeline import (
     get_current_host_name,
-    set_data_for_template_from_original_data,
+    format_data,
     get_load_naming_template,
     get_resolved_name
 )
@@ -51,10 +51,10 @@ class AudioLoader(plugin.BlenderLoader):
         subset = context["subset"]["name"]
         representation = context['representation']
 
-        template_data = set_data_for_template_from_original_data(representation, True, get_current_host_name())
-        asset_name_template = get_load_naming_template("assetname", template_data)
-        namespace_template = get_load_naming_template("namespace", template_data)
-        group_name_template = get_load_naming_template("container", template_data)
+        template_data = format_data(representation, True, get_current_host_name())
+        asset_name_template = get_load_naming_template("assetname")
+        namespace_template = get_load_naming_template("namespace")
+        group_name_template = get_load_naming_template("container")
 
         asset_name = get_resolved_name(template_data, asset_name_template)
         unique_number = plugin.get_unique_number(asset, subset, template_data)

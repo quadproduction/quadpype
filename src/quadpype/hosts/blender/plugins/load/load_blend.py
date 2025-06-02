@@ -14,7 +14,7 @@ from quadpype.pipeline import (
     split_hierarchy,
     get_task_hierarchy_templates,
     get_resolved_name,
-    set_data_for_template_from_original_data,
+    format_data,
     get_load_naming_template,
     get_current_host_name
 )
@@ -134,10 +134,10 @@ class BlendLoader(plugin.BlenderLoader):
 
         representation_id = str(representation["_id"])
 
-        template_data = set_data_for_template_from_original_data(representation, True, get_current_host_name())
-        asset_name_template = get_load_naming_template("assetname", template_data)
-        namespace_template = get_load_naming_template("namespace", template_data)
-        group_name_template = get_load_naming_template("container", template_data)
+        template_data = format_data(representation, True, get_current_host_name())
+        asset_name_template = get_load_naming_template("assetname")
+        namespace_template = get_load_naming_template("namespace")
+        group_name_template = get_load_naming_template("container")
 
         asset_name = get_resolved_name(template_data, asset_name_template)
         unique_number = plugin.get_unique_number(asset, subset, template_data)
@@ -209,7 +209,7 @@ class BlendLoader(plugin.BlenderLoader):
             avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
             bpy.context.scene.collection.children.link(avalon_container)
 
-        data_template = set_data_for_template_from_original_data(representation, True, get_current_host_name())
+        data_template = format_data(representation, True, get_current_host_name())
         collection_templates = get_task_hierarchy_templates(
             data_template,
             task=get_current_context()['task_name']
@@ -329,7 +329,7 @@ class BlendLoader(plugin.BlenderLoader):
         members = self._collect_members(data_to)
 
         # Needs to rename in separate block to retrieve blender object after initialisation
-        full_name_template = get_load_naming_template("fullname", template_data)
+        full_name_template = get_load_naming_template("fullname")
         for attr in dir(data_to):
             for data in getattr(data_to, attr):
                 data.name = get_resolved_name(
@@ -371,7 +371,7 @@ class BlendLoader(plugin.BlenderLoader):
 
         corresponding_renamed = dict()
 
-        full_name_template = get_load_naming_template("fullname", template_data)
+        full_name_template = get_load_naming_template("fullname")
         for attr in dir(data_to):
             for data in getattr(data_to, attr):
                 if not hasattr(data, 'override_create'):
@@ -546,7 +546,7 @@ class BlendLoader(plugin.BlenderLoader):
 
         asset = representation.get('asset', '')
         subset = representation.get('subset', '')
-        template_data = set_data_for_template_from_original_data(representation, True, get_current_host_name())
+        template_data = format_data(representation, True, get_current_host_name())
         template_data.update({"unique_number": container.get("unique_number", "00")})
         self.exec_remove(container)
 

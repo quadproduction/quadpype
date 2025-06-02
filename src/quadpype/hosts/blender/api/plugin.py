@@ -29,7 +29,7 @@ from quadpype.pipeline import (
     get_current_project_name,
     get_task_hierarchy_templates,
     get_resolved_name,
-    set_data_for_template_from_original_data,
+    format_data,
     get_load_naming_template
 )
 from quadpype.pipeline.publish import Extractor
@@ -90,9 +90,9 @@ def get_unique_number(
     namespace_template = ""
     name_template = ""
     if data:
-        namespace_template = get_load_naming_template("namespace", data)
+        namespace_template = get_load_naming_template("namespace")
         namespace = get_resolved_name(data, namespace_template, unique_number=f"{count:0>2}")
-        name_template = get_load_naming_template("container", data)
+        name_template = get_load_naming_template("container")
         name = get_resolved_name(data, name_template, namespace=namespace)
 
     while name in container_names:
@@ -343,7 +343,7 @@ class BlenderCreator(Creator):
         asset_data = get_asset_by_name(template_data["project"]["name"], template_data["asset"])
         template_data.update(get_asset_template_data(asset_data, get_current_project_name()))
 
-        return set_data_for_template_from_original_data(template_data, True, get_current_host_name())
+        return format_data(template_data, True, get_current_host_name())
 
 
     def collect_instances(self):
@@ -594,14 +594,14 @@ class BlenderLoader(LoaderPlugin):
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
         representation = context['representation']
-        template_data = set_data_for_template_from_original_data(representation, True, get_current_host_name())
+        template_data = format_data(representation, True, get_current_host_name())
 
         unique_number = get_unique_number(
             asset, subset, template_data
         )
-        namespace_template = get_load_naming_template("namespace", template_data)
+        namespace_template = get_load_naming_template("namespace")
         namespace = namespace or get_resolved_name(template_data, namespace_template, unique_number=unique_number)
-        name_template = get_load_naming_template("container", template_data)
+        name_template = get_load_naming_template("container")
         name = name or get_resolved_name(template_data, name_template, namespace=namespace)
 
         nodes = self.process_asset(

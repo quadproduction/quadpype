@@ -52,8 +52,8 @@ class ExtractBlend(
 
         # if from a loaded subset, must rename before extract to avoid namespace accumulation in names
         corresponding_renaming = {}
-        namespace_regex = get_loaded_naming_finder_template("namespace", instance.data)
-        unique_number_regex = get_loaded_naming_finder_template("unique-number", instance.data)
+        namespace_regex = get_loaded_naming_finder_template("namespace")
+        unique_number_regex = get_loaded_naming_finder_template("unique-number")
 
         for loaded_coll in from_loaded_coll:
             avalon_data = pipeline.get_avalon_node(loaded_coll)

@@ -19,7 +19,7 @@ from quadpype.hosts.aftereffects.api.folder_hierarchy import (
 from quadpype.pipeline import (
     get_task_hierarchy_templates,
     get_resolved_name,
-    set_data_for_template_from_original_data,
+    format_data,
     split_hierarchy
 )
 
@@ -86,6 +86,9 @@ class FileLoader(api.AfterEffectsLoader):
             existing_layers, name, is_psd=is_psd)
         comp_name = f"{name}_{unique_number}"
         if is_psd:
+            print(path_str)
+            print(stub.LOADED_ICON + comp_name)
+            print(import_options)
             import_options['ImportAsType'] = 'ImportAsType.COMP'
             comp = stub.import_file_with_dialog(
                 path_str,
@@ -112,9 +115,11 @@ class FileLoader(api.AfterEffectsLoader):
 
         self[:] = [comp]
         namespace = namespace or comp_name
-        template_data = set_data_for_template_from_original_data(original_data=context['representation'],
-                                                                 filter_variant=True,
-                                                                 app=get_current_host_name())
+        template_data = format_data(
+            original_data=context['representation'],
+            filter_variant=True,
+            app=get_current_host_name()
+        )
         folder_templates = get_task_hierarchy_templates(
             template_data,
             task=get_current_context()['task_name']
