@@ -82,7 +82,7 @@ class ValidateOutputResolution(
             write_width = reformat.format().width()
             write_height = reformat.format().height()
 
-            if (root_width != write_width) or (root_height != write_height):
+            if (int(root_width) != int(write_width)) or (int(root_height) != int(write_height)):
                 return None
             else:
                 return True
