@@ -16,9 +16,6 @@ from quadpype.hosts.nuke.api.plugin import exposed_write_knobs
 from quadpype.hosts.nuke.api.lib import AUTORESIZE_LABEL, get_custom_res
 
 
-FROM_SELECTED = "From selected"
-
-
 class CreateWriteRender(napi.NukeWriteCreator):
     identifier = "create_write_render"
     label = "Render (write)"
@@ -68,7 +65,6 @@ class CreateWriteRender(napi.NukeWriteCreator):
                 )
             )
         )
-        resolutions.insert(0, FROM_SELECTED)
         if resolutions:
             self.resolutions = resolutions
             attr_defs.append(
@@ -128,7 +124,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
         return created_node
 
     def _get_width_and_height(self):
-        if self.selected_node and (not self.resolution or self.resolution == FROM_SELECTED):
+        if self.selected_node and not self.resolution:
             width, height = (self.selected_node.width(), self.selected_node.height())
         elif self.resolution:
             width, height = extract_width_and_height(self.resolution)
