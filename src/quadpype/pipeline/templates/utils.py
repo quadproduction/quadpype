@@ -5,8 +5,7 @@ import warnings
 from quadpype.lib import filter_profiles, StringTemplate
 from . import get_workfile_build_template
 
-from src.quadpype.pipeline.context_tools import get_current_project_asset
-from src.quadpype.pipeline.context_tools import get_current_context
+from quadpype.pipeline.context_tools import get_current_project_asset, get_current_context
 
 
 DEFAULT_VARIANT_NAME = "Main"

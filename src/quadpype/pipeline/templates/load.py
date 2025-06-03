@@ -1,6 +1,6 @@
 from quadpype.settings import get_project_settings
 from quadpype.lib import filter_profiles
-from src.quadpype.pipeline.context_tools import get_current_project_name, get_current_host_name
+from quadpype.pipeline.context_tools import get_current_project_name, get_current_host_name
 
 
 def _get_template(category, name, setting):
