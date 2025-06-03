@@ -99,8 +99,8 @@ class ValidateSceneSettings(OptionalPyblishPluginMixin,
         publish_attributes = instance.data.get("publish_attributes")
         auto_set_resolution_state = publish_attributes.get("AutoSetResolution", {}).get("active", None)
 
-        asset_doc = instance.data["assetEntity"]
-        expected_settings = get_asset_settings(asset_doc)
+        expected_settings = {"resolutionWidth": instance.data["resolutionWidth"],
+                            "resolutionHeight": instance.data["resolutionHeight"]}
 
         resolution_override = instance.data.get("creator_attributes", {}).get('resolution')
         width, height = extract_width_and_height(resolution_override)
@@ -120,8 +120,10 @@ class ValidateSceneSettings(OptionalPyblishPluginMixin,
 
         not_empty = self.skip_resolution_check != ['']
         if auto_set_resolution_state is True:
-            self.log.info("Skipping resolution check because auto set resolution is active.")
+            self.log.warning("Skipping resolution check because auto set resolution is active.")
             self.remove_resolution_data_from_settings(expected_settings)
+            instance.data["resolutionWidth"] = width
+            instance.data["resolutionHeight"] = height
 
         elif not_empty and any(re.search(pattern, task_name)
                 for pattern in self.skip_resolution_check):
@@ -245,5 +247,6 @@ class ValidateSceneSettings(OptionalPyblishPluginMixin,
             override_width=width,
             override_height=height
         )
-
+        instance.data["resolutionWidth"] = width
+        instance.data["resolutionHeight"] = height
         cls.log.info(f"Resolution for comp with '{instance_data['comp_id']}' has been set to '{resolution_override}'.")

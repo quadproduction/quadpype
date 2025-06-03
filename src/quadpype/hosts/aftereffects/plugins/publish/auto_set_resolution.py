@@ -34,9 +34,5 @@ class AutoSetResolution(OptionalPyblishPluginMixin, pyblish.api.InstancePlugin):
             override_width=width,
             override_height=height
         )
-        if not instance_data.get("customData"):
-            instance_data["customData"] = {"tags": ["reformated"]}
-        else:
-            instance_data["customData"].update({'tags': ["reformated"]})
 
         self.log.info(f"Resolution for comp with '{instance_data['comp_id']}' has been set to '{resolution_override}'.")

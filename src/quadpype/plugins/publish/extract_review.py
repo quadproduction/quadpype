@@ -360,11 +360,6 @@ class ExtractReview(pyblish.api.InstancePlugin):
                 if tag not in new_tags:
                     new_tags.append(tag)
 
-            # Add additional tags from customData
-            for tag in instance.data.get("customData").get("tags"):
-                if tag not in new_tags:
-                    new_tags.append(tag)
-
             # Return tags to new representation
             new_repre["tags"] = new_tags
 
