@@ -32,6 +32,7 @@ def get_available_resolutions(project_name, project_settings=None, log=None):
 
     asset_width = asset_entity['data'].get('resolutionWidth', None)
     asset_height = asset_entity['data'].get('resolutionHeight', None)
+    resolutions.append(RES_SEPARATOR.join([str(asset_width), str(asset_height)]))
 
     if asset_width and asset_height and _resolution_is_different(
             project_width, project_height, asset_width, asset_height,

@@ -162,8 +162,8 @@ class RenderCreator(Creator):
             output.append(
                 EnumDef(
                     "resolution",
-                    items=resolutions,
-                    default=resolutions[0],
+                    items=self.resolutions,
+                    default=self.resolutions[0],
                     label="Resolution",
                 )
             )
