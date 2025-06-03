@@ -42,7 +42,7 @@
                             "key": "mark_for_review",
                             "label": "Review",
                             "default": true
-                         },
+                        },
                         {
                             "key": "set_frames_create",
                             "type": "boolean",
@@ -53,6 +53,12 @@
                             "key": "set_resolution_create",
                             "type": "boolean",
                             "label": "Set Resolution on Create",
+                            "default": true
+                        },
+                        {
+                            "type": "boolean",
+                            "key": "auto_resolution_resize",
+                            "label": "Auto resolution resize",
                             "default": true
                         }
                     ]
