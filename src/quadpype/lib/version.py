@@ -258,7 +258,6 @@ class PackageHandler:
                 location=self._install_dir_path
             )
 
-        running_version_str = running_version_str
         if not running_version_str:
             # If no version specified gets the latest version
             latest_version = self.get_latest_version()
@@ -289,10 +288,14 @@ class PackageHandler:
             else:
                 running_version = self.find_version(running_version_str)
                 if not running_version:
+                    current_version_string = ''
                     if self._install_dir_path:
-                        running_version_str = self.get_package_version_from_dir(self._name, self._install_dir_path)
+                        current_version_str = self.get_package_version_from_dir(self._name, self._install_dir_path)
+                        current_version_string = f" (Current version is : {current_version_str})"
                     raise ValueError(
-                        f"Specified version \"{running_version_str}\" is not available locally and on the remote path directory.")
+                        f"Specified version \"{running_version_str}\" is not available locally "
+                        f"and on the remote path directory.{current_version_string}"
+                    )
 
                 if retrieve_locally or running_version.download_required:
                     self._running_version = self.retrieve_version_locally(running_version_str)

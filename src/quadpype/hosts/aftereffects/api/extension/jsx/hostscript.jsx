@@ -306,7 +306,7 @@ function importFile(path, item_name, import_options){
                  comp.parentFolder = app.project.selection[0]
             }
 
-            if ('fps' in import_options){
+            if (import_options.hasOwnProperty("fps") && import_options.hasOwnProperty("sequence")){
                 comp.mainSource.conformFrameRate = import_options["fps"];
             }
 
@@ -749,6 +749,16 @@ function addCompToRenderQueue(comp_id){
 
     } else {
         return _prepareError("The following item is not a comp : "+ comp.name);
+    }
+}
+
+function parentItems(item_id, parent_item_id){
+    var childItem = app.project.itemByID(item_id);
+    var parentFolder = app.project.itemByID(parent_item_id);
+    if (childItem && parentFolder){
+        childItem.parentFolder = parentFolder;
+    }else{
+        return _prepareError("There is a problem with "+ parentFolder.name + "or" + childItem.name);
     }
 }
 

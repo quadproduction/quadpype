@@ -43,7 +43,6 @@ from .lib import (
     get_objects_in_collection,
     get_asset_children,
     get_and_select_camera,
-    extract_sequence_and_shot,
     is_camera,
     is_collection,
     get_objects_in_collection
@@ -53,17 +52,11 @@ from .capture import capture
 
 from .render_lib import prepare_rendering
 
-from .template_resolving import (
-    get_resolved_name,
-    get_task_collection_templates,
-    set_data_for_template_from_original_data
-)
 
 from .collections import (
     get_corresponding_hierarchies_numbered,
     create_collections_from_hierarchy,
     create_collection,
-    split_hierarchy,
     get_top_collection
 )
 
@@ -101,12 +94,7 @@ __all__ = [
     "capture",
     # "unique_name",
     "prepare_rendering",
-    "extract_sequence_and_shot",
 
-    #Templates for working:
-    "get_resolved_name",
-    "get_task_collection_templates",
-    "set_data_for_template_from_original_data",
 
     # Collections getters
     "get_parents_for_collection",
@@ -124,6 +112,5 @@ __all__ = [
     # Collections tools
     "get_corresponding_hierarchies_numbered",
     "create_collections_from_hierarchy",
-    "split_hierarchy",
     "create_collection"
 ]

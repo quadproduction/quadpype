@@ -11,9 +11,12 @@ from quadpype.pipeline.publish import (
 )
 
 from quadpype.hosts.blender.api import (
-    get_resolved_name,
-    get_task_collection_templates,
     get_objects_in_collection
+)
+
+from quadpype.pipeline import (
+    get_resolved_name,
+    get_task_hierarchy_templates
 )
 
 class ValidateModelContents(plugin.BlenderInstancePlugin, OptionalPyblishPluginMixin):
@@ -45,7 +48,7 @@ class ValidateModelContents(plugin.BlenderInstancePlugin, OptionalPyblishPluginM
         # Get objects in instance
         objects = [obj for obj in instance]
 
-        templates = get_task_collection_templates(instance.data)
+        templates = get_task_hierarchy_templates(instance.data)
         collections_objects = []
 
         for template in templates:

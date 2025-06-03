@@ -675,6 +675,20 @@ class AfterEffectsServerStub():
                                          comp_id=comp_id))
         return self._handle_return(res)
 
+    def parent_items(self, item_id, parent_item_id):
+        """
+            Parent an item to a given folder
+        Args:
+            item_id(int): id of item to parent
+            parent_item_id(int): id of target parent folder
+        Returns: None
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.parent_items',
+                                         item_id=item_id,
+                                         parent_item_id=parent_item_id))
+        return self._handle_return(res)
+
     def print_msg(self, msg):
         """Triggers Javascript alert dialog."""
         self.websocketserver.call(self.client.call

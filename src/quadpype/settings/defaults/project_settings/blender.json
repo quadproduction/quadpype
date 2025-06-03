@@ -41,7 +41,7 @@
         "entity_type_name_matcher":{
             "profiles": []
         },
-        "working_collections_templates_by_tasks": {
+        "working_hierarchy_templates_by_tasks": {
             "profiles": [
                 {
                     "task_types": [""],

@@ -149,6 +149,20 @@
             "store_as_string": true
         },
         {
+            "type": "dict",
+            "collapsible": true,
+            "label": "Project Resolutions",
+            "key": "project_resolutions",
+            "children": [
+                {
+                    "type": "list",
+                    "key": "resolutions",
+                    "label": "Resolutions",
+                    "object_type": "text"
+                }
+            ]
+        },
+        {
             "type": "schema",
             "name": "schema_project_syncserver"
         },

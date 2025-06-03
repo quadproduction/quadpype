@@ -2,11 +2,26 @@ import re
 
 from pathlib import Path
 
-from quadpype.pipeline import get_representation_path
+from quadpype.pipeline import (
+    get_representation_path,
+    get_current_context,
+    get_current_host_name
+)
 from quadpype.pipeline.anatomy import Anatomy
 from quadpype.hosts.aftereffects import api
-from quadpype.hosts.aftereffects.api.lib import get_unique_layer_name
+from quadpype.hosts.aftereffects.api.lib import get_unique_number
+from quadpype.hosts.aftereffects.api.folder_hierarchy import (
+    create_folders_from_hierarchy,
+    get_last_folder_from_first_template,
+    find_folder
+)
 
+from quadpype.pipeline import (
+    get_task_hierarchy_templates,
+    get_resolved_name,
+    format_data,
+    split_hierarchy
+)
 
 class FileLoader(api.AfterEffectsLoader):
     """Load images
@@ -14,6 +29,8 @@ class FileLoader(api.AfterEffectsLoader):
     Stores the imported asset in a container named after the asset.
     """
     label = "Load file"
+    icon = "file-image-o"
+    color = "green"
 
     families = ["image",
                 "plate",
@@ -64,11 +81,14 @@ class FileLoader(api.AfterEffectsLoader):
 
         # Determine if the imported file is a PSD file (Special case)
         is_psd = path.suffix == '.psd'
-
-        comp_name = get_unique_layer_name(
-            existing_layers, "{}_{}".format(context["asset"]["name"], name), is_psd=is_psd)
-
+        name = "{}_{}".format(context["asset"]["name"], name)
+        unique_number = get_unique_number(
+            existing_layers, name, is_psd=is_psd)
+        comp_name = f"{name}_{unique_number}"
         if is_psd:
+            print(path_str)
+            print(stub.LOADED_ICON + comp_name)
+            print(import_options)
             import_options['ImportAsType'] = 'ImportAsType.COMP'
             comp = stub.import_file_with_dialog(
                 path_str,
@@ -95,6 +115,32 @@ class FileLoader(api.AfterEffectsLoader):
 
         self[:] = [comp]
         namespace = namespace or comp_name
+        template_data = format_data(
+            original_data=context['representation'],
+            filter_variant=True,
+            app=get_current_host_name()
+        )
+        folder_templates = get_task_hierarchy_templates(
+            template_data,
+            task=get_current_context()['task_name']
+        )
+
+        if folder_templates:
+            folders_hierarchy = [
+                get_resolved_name(
+                    data=template_data,
+                    template=template,
+                    numbering=unique_number
+                )
+                for template in folder_templates
+            ]
+            create_folders_from_hierarchy(folders_hierarchy)
+            last_folder = find_folder(get_last_folder_from_first_template(folders_hierarchy))
+            stub.parent_items(comp.id, last_folder.id)
+            # if psd, must retrieve the folder to parent it too
+            if is_psd:
+                psd_folder = find_folder(stub.LOADED_ICON + comp_name)
+                stub.parent_items(psd_folder.id, last_folder.id)
 
         return api.containerise(
             name,
@@ -118,9 +164,11 @@ class FileLoader(api.AfterEffectsLoader):
         if namespace_from_container != layer_name:
             layers = stub.get_items(comps=True)
             existing_layers = [layer.name for layer in layers]
-            layer_name = get_unique_layer_name(
-                existing_layers,
-                "{}_{}".format(context["asset"], context["subset"]))
+            name = "{}_{}".format(context["asset"], context["subset"])
+            unique_number = get_unique_number(
+                existing_layers, name)
+            layer_name = f"{name}_{unique_number}"
+
         else:  # switching version - keep same name
             layer_name = container["namespace"]
         path = get_representation_path(representation)

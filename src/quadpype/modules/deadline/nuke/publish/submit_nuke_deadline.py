@@ -3,13 +3,17 @@ import re
 import json
 import getpass
 import platform
+from copy import copy
 
 from datetime import datetime, timezone
 
 import requests
 import pyblish.api
 
-from quadpype.pipeline import legacy_io
+from quadpype.pipeline import (
+    legacy_io,
+    Anatomy
+)
 from quadpype.pipeline.publish import (
     QuadPypePyblishPluginMixin
 )
@@ -24,8 +28,12 @@ from quadpype.lib import (
     is_running_from_build,
     BoolDef,
     NumberDef,
-    EnumDef
+    EnumDef,
+    filter_profiles,
+    StringTemplate
 )
+from quadpype.pipeline.publish.lib import get_template_name_profiles
+from quadpype.settings import get_project_settings
 
 from quadpype_modules.deadline import (
     get_deadline_limits_plugin
@@ -250,7 +258,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
                 or instance.data("publish") is False
             ):
                 continue
-            template_data = instance.data["anatomyData"]
+
             # Expect workfile instance has only one representation
             representation = instance.data["representations"][0]
             # Get workfile extension
@@ -258,16 +266,49 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
             self.log.info(repre_file)
             ext = os.path.splitext(repre_file)[1].lstrip(".").lower()
 
-            # Fill template data
-            template_data["representation"] = representation["name"]
-            template_data["ext"] = ext
-            template_data["comment"] = None
+            anatomy_data = instance.data['anatomyData']
+            family = instance.data["family"]
 
-            anatomy = context.data["anatomy"]
-            # WARNING Hardcoded template name 'publish' > may not be used
-            template_obj = anatomy.templates_obj["publish"]["path"]
+            project_name = anatomy_data.get('project', {}).get('name', None)
+            if not project_name:
+                raise RuntimeError("Can not retrieve project name from template_data. Can not get path from template.")
 
-            template_filled = template_obj.format(template_data)
+            profiles = get_template_name_profiles(
+                project_name, get_project_settings(project_name), self.log
+            )
+
+            task = anatomy_data.get('task')
+            if not task:
+                raise RuntimeError("Can not retrieve task from template_data. Can not get path from template.")
+
+            filter_criteria = {
+                "hosts": anatomy_data["app"],
+                "families": family,
+                "task_names": task.get('name', None),
+                "task_types": task.get('type', None),
+            }
+            profile = filter_profiles(profiles, filter_criteria, logger=self.log)
+
+            anatomy = Anatomy()
+            template = anatomy.templates.get(profile['template_name'])
+            if not template:
+                raise NotImplemented(
+                    f"'{profile['template_name']}' template need to be setted in your project settings")
+
+            template_data = copy(anatomy_data)
+            template_data.update(
+                {
+                    'root': anatomy.roots,
+                    'family': family,
+                    'subset': instance.data["subset"],
+                    'ext': ext
+                }
+            )
+            template_filled = StringTemplate.format_template(
+                template=template['path'],
+                data=template_data,
+            )
+
             script_path = os.path.normpath(template_filled)
             self.log.info(
                 "Using published scene for render {}".format(

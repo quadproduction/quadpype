@@ -1,17 +1,5 @@
 import bpy
-
-def split_hierarchy(hierarchy):
-    """Split a str hierarchy to a list of individual name
-
-    Args:
-        hierarchy (str): a string template like "{parent}-{asset}<-{numbering}>/{asset}-model<-{variant}><-{numbering}>"
-    Return:
-        list: a list of separated template like ["{parent}-{asset}<-{numbering}>",
-        "{asset}-model<-{variant}><-{numbering}>"]
-    """
-
-    return hierarchy.replace('\\', '/').split('/')
-
+from quadpype.pipeline import split_hierarchy
 
 def create_collection(collection_name, link_to=None):
     """Create a collection based on a name and link it to a given
