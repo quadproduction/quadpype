@@ -329,8 +329,8 @@
                 {
                     "type": "dict",
                     "collapsible": true,
-                    "key": "working_collections_templates_by_tasks",
-                    "label": "Working Collections Templates By Tasks",
+                    "key": "working_hierarchy_templates_by_tasks",
+                    "label": "Working Hierarchy Templates By Tasks",
                     "children": [
                         {
                             "type": "list",
