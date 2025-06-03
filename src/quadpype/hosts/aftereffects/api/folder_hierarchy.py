@@ -75,9 +75,4 @@ def create_folders_from_hierarchy(hierarchies):
 
 
 def get_last_folder_from_first_template(hierarchies):
-    stub = get_stub()
-    all_folders = stub.get_items(comps=False, folders=True, footages=False)
-    last_folder_name = split_hierarchy(hierarchies[0])[-1]
-    last_folder = find_folder(last_folder_name, all_folders)
-
-    return last_folder if last_folder else last_folder_name
+    return split_hierarchy(hierarchies[0])[-1]

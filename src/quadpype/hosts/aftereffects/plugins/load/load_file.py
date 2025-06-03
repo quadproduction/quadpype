@@ -135,7 +135,7 @@ class FileLoader(api.AfterEffectsLoader):
                 for template in folder_templates
             ]
             create_folders_from_hierarchy(folders_hierarchy)
-            last_folder = get_last_folder_from_first_template(folders_hierarchy)
+            last_folder = find_folder(get_last_folder_from_first_template(folders_hierarchy))
             stub.parent_items(comp.id, last_folder.id)
             # if psd, must retrieve the folder to parent it too
             if is_psd:
