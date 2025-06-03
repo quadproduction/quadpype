@@ -19,7 +19,7 @@ class AutoSetResolution(
     Format definition of script in Root node.
     """
 
-    order = pyblish.api.IntegratorOrder - 0.2
+    order = pyblish.api.ExtractorOrder - 0.5
     optional = True
     families = ["render"]
     label = "Auto set resolution"

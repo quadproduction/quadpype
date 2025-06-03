@@ -37,12 +37,16 @@ class ValidateOutputResolution(
             return
 
         publish_attributes = instance.data.get("publish_attributes")
+        resolution_override = instance.data.get("creator_attributes", {}).get('resolution', None)
+        root_width, root_height = extract_width_and_height(resolution_override)
+        instance.data["resolutionWidth"] = root_width
+        instance.data["resolutionHeight"] = root_height
+
         auto_set_resolution_state = publish_attributes.get("AutoSetResolution", {}).get("active", None)
         if auto_set_resolution_state is True:
             self.log.warning("Bypassing output resolution validator because auto set resolution is active.")
             return
 
-        resolution_override = instance.data.get("creator_attributes", {}).get('resolution', None)
         if resolution_override:
             self.log.info("Will consider resolution override from render creator as defined by user to compare with.")
 
