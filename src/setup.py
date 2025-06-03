@@ -70,7 +70,7 @@ version = {}
 with open(app_root / "quadpype" / "version.py") as fp:
     exec(fp.read(), version)
 
-version_match = re.search(r"(\d+\.\d+.\d+).*", version["__version__"])
+version_match = re.search(r"(\d+\.\d+.\d+.*)", version["__version__"])
 __version__ = version_match.group(1)
 
 low_platform_name = platform.system().lower()
