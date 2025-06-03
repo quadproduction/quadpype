@@ -6,6 +6,8 @@ from quadpype.pipeline import (
     PublishXmlValidationError,
     OptionalPyblishPluginMixin
 )
+from quadpype.pipeline.settings import extract_width_and_height
+from quadpype.hosts.nuke.api.lib import AUTORESIZE_LABEL, get_custom_res
 
 import nuke
 
@@ -34,46 +36,69 @@ class ValidateOutputResolution(
         if not self.is_active(instance.data):
             return
 
-        invalid = self.get_invalid(instance)
+        publish_attributes = instance.data.get("publish_attributes")
+        resolution_override = instance.data.get("creator_attributes", {}).get('resolution', None)
+        root_width, root_height = extract_width_and_height(resolution_override)
+        instance.data["resolutionWidth"] = root_width
+        instance.data["resolutionHeight"] = root_height
+
+        auto_set_resolution_state = publish_attributes.get("AutoSetResolution", {}).get("active", None)
+        if auto_set_resolution_state is True:
+            self.log.warning("Bypassing output resolution validator because auto set resolution is active.")
+            return
+
+        if resolution_override:
+            self.log.info("Will consider resolution override from render creator as defined by user to compare with.")
+
+        invalid = self.get_invalid(
+            instance=instance,
+            resolution_override=resolution_override,
+            node_name=AUTORESIZE_LABEL if resolution_override else None
+        )
         if invalid:
             raise PublishXmlValidationError(self, invalid)
 
     @classmethod
-    def get_reformat(cls, instance):
+    def get_reformat(cls, instance, node_name=None):
         child_nodes = (
             instance.data.get("transientData", {}).get("childNodes")
             or instance
         )
 
-        reformat = None
         for inode in child_nodes:
-            if inode.Class() != "Reformat":
-                continue
-            reformat = inode
+            if inode.Class() == "Reformat" and cls._name_is_correct(inode, node_name):
+                return inode
 
-        return reformat
+        return None
+
+    @staticmethod
+    def _name_is_correct(node, node_name):
+        return node_name is None or node.name() == node_name
 
     @classmethod
-    def get_invalid(cls, instance):
-        def _check_resolution(instance, reformat):
-            root_width = instance.data["resolutionWidth"]
-            root_height = instance.data["resolutionHeight"]
+    def get_invalid(cls, instance, resolution_override=None, node_name=None):
+        def _check_resolution(instance, reformat, resolution_override):
+            if resolution_override:
+                root_width, root_height = extract_width_and_height(resolution_override)
+            else:
+                root_width = instance.data["resolutionWidth"]
+                root_height = instance.data["resolutionHeight"]
 
             write_width = reformat.format().width()
             write_height = reformat.format().height()
 
-            if (root_width != write_width) or (root_height != write_height):
+            if (int(root_width) != int(write_width)) or (int(root_height) != int(write_height)):
                 return None
             else:
                 return True
 
         # check if reformat is in render node
-        reformat = cls.get_reformat(instance)
+        reformat = cls.get_reformat(instance, node_name)
         if not reformat:
             return cls.missing_msg
 
         # check if reformat is set to correct root format
-        correct_format = _check_resolution(instance, reformat)
+        correct_format = _check_resolution(instance, reformat, resolution_override)
         if not correct_format:
             return cls.resolution_msg
 
@@ -107,6 +132,13 @@ class ValidateOutputResolution(
                 cls.log.info("Adding reformat node")
 
         if cls.resolution_msg == invalid:
+            nuke_format = nuke.root()["format"].value()
+
+            resolution_override = instance.data.get("creator_attributes", {}).get('resolution', None)
+            if resolution_override:
+                root_width, root_height = extract_width_and_height(resolution_override)
+                nuke_format = get_custom_res(root_width, root_height)
+
             reformat = cls.get_reformat(instance)
-            reformat["format"].setValue(nuke.root()["format"].value())
-            cls.log.info("Fixing reformat to root.format")
+            reformat["format"].setValue(nuke_format)
+            cls.log.info(f"Fixing reformat to {nuke_format}")

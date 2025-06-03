@@ -1,5 +1,4 @@
 import os
-import re
 import tempfile
 import attr
 
@@ -22,6 +21,7 @@ class AERenderInstance(RenderInstance):
     stagingDir = attr.ib(default=None)
     app_version = attr.ib(default=None)
     publish_attributes = attr.ib(default={})
+    creator_attributes = attr.ib(default={})
     file_names = attr.ib(default=[])
 
 
@@ -98,7 +98,6 @@ class CollectAERender(publish.AbstractCollectRender):
             if not render_q:
                 raise ValueError("No file extension set in Render Queue")
             render_item = render_q[0]
-
             instance_families = inst.data.get("families", [])
             subset_name = inst.data["subset"]
             instance = AERenderInstance(
@@ -128,6 +127,7 @@ class CollectAERender(publish.AbstractCollectRender):
                 fps=fps,
                 app_version=app_version,
                 publish_attributes=inst.data.get("publish_attributes", {}),
+                creator_attributes=inst.data.get("creator_attributes", {}),
                 file_names=[item.file_name for item in render_q]
             )
 

@@ -406,7 +406,6 @@ def add_rv_shortcut():
         log.info('RV Nuke Plugin not activated')
 
 
-
 def change_context_label():
     if ASSIST:
         return

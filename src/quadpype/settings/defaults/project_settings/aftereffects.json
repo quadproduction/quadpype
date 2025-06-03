@@ -17,7 +17,8 @@
             ],
             "mark_for_review": true,
             "set_frames_create": true,
-            "set_resolution_create": true
+            "set_resolution_create": true,
+            "auto_resolution_resize": true
         }
     },
     "publish": {
