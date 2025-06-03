@@ -123,6 +123,7 @@ from .templates import (
     split_hierarchy,
     is_current_asset_shot,
     extract_sequence_and_shot
+)
 
 from .settings import (
     get_available_resolutions,
