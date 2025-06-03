@@ -34,10 +34,10 @@ def get_available_resolutions(project_name, project_settings=None, log=None):
     asset_height = asset_entity['data'].get('resolutionHeight', None)
     resolutions.append(RES_SEPARATOR.join([str(asset_width), str(asset_height)]))
 
-    if project_width and project_height and _resolution_is_different(
+    if asset_width and asset_height and _resolution_is_different(
             project_width, project_height, asset_width, asset_height,
     ):
-        resolutions.append(RES_SEPARATOR.join([str(project_width), str(project_height)]))
+        resolutions.append(RES_SEPARATOR.join([str(asset_width), str(asset_height)]))
 
     custom_resolutions = project_settings.get('global', {}).get('project_resolutions', {}).get('resolutions')
     if not custom_resolutions:
