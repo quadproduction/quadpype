@@ -578,7 +578,7 @@ def _process_arguments() -> tuple:
                 use_version = "latest"
             else:
                 m = re.search(
-                    r"(?P<version>\d+\.\d+\.\d+(?:\S*)?)", version_str
+                    r"(?P<version>\d+\.\d+\.\d+.*(?:\S*)?)", version_str
                 )
                 if m and m.group('version'):
                     use_version = m.group('version')
@@ -598,7 +598,7 @@ def _process_arguments() -> tuple:
 
         if arg.startswith("--validate-version="):
             m = re.search(
-                r"--validate-version=(?P<version>\d+\.\d+\.\d+(?:\S*)?)", arg)
+                r"--validate-version=(?P<version>\d+\.\d+\.\d+.*(?:\S*)?)", arg)
             if m and m.group('version'):
                 use_version = m.group('version')
                 sys.argv.remove(arg)

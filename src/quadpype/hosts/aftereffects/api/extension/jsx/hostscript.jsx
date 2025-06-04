@@ -306,7 +306,7 @@ function importFile(path, item_name, import_options){
                  comp.parentFolder = app.project.selection[0]
             }
 
-            if ('fps' in import_options){
+            if (import_options.hasOwnProperty("fps") && import_options.hasOwnProperty("sequence")){
                 comp.mainSource.conformFrameRate = import_options["fps"];
             }
 
@@ -407,7 +407,7 @@ function _importFileWithDialog(path, item_name, import_options){
 
         renameFolderItems(importedCompFolder);
 
-        if ('fps' in import_options){
+        if (import_options.hasOwnProperty("fps") && import_options.hasOwnProperty("sequence")){
             fps = import_options['fps']
             importedComp.frameRate = fps;
             setFolderItemsFPS(importedCompFolder, fps);
@@ -467,7 +467,9 @@ function extensionsAreDifferents(sourceFilePath, targetFilePath){
 
 
 function _extractFirstPart(layerName){
-    return layerName.match(/.+?(?=[\/])/)[0];
+    var decomposedName = layerName.match(/.+?(?=[\/])/);
+    if (decomposedName === null){ return layerName; }
+    else{ return decomposedName[0]; }
 }
 
 
@@ -738,6 +740,27 @@ function renameItem(item_id, new_name){
         item.name = new_name;
     }else{
         return _prepareError("There is no composition with "+ comp_id);
+    }
+}
+
+function addCompToRenderQueue(comp_id){
+    var comp = app.project.itemByID(comp_id);
+    if (isComp(comp)) {
+        var renderQueueItem = app.project.renderQueue.items.add(comp);
+        renderQueueItem.outputModule(1).file = new File("C:/temp/render_output.mov");
+
+    } else {
+        return _prepareError("The following item is not a comp : "+ comp.name);
+    }
+}
+
+function parentItems(item_id, parent_item_id){
+    var childItem = app.project.itemByID(item_id);
+    var parentFolder = app.project.itemByID(parent_item_id);
+    if (childItem && parentFolder){
+        childItem.parentFolder = parentFolder;
+    }else{
+        return _prepareError("There is a problem with "+ parentFolder.name + "or" + childItem.name);
     }
 }
 

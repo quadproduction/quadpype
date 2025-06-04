@@ -755,23 +755,8 @@ def get_and_select_camera(objects):
             return camera
 
 
-def extract_sequence_and_shot():
-    asset_name = get_current_context()['asset_name']
-    is_valid_pattern = re.match('^[a-zA-Z.]+\d+_[a-zA-Z.]+\d+[a-zA-Z0-9_.]*$', asset_name)
-    if not is_valid_pattern:
-        raise RuntimeError(f"Can not extract sequence and shot from asset_name {asset_name}")
-
-    return asset_name.split('_')
-
-
 def is_camera(obj):
     return isinstance(obj, bpy.types.Object) and obj.type == "CAMERA"
 
-
 def is_collection(obj):
     return isinstance(obj, bpy.types.Collection)
-
-
-def is_shot():
-    asset_data = get_current_project_asset()["data"]
-    return asset_data['parents'][0].lower() == "shots"

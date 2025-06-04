@@ -112,6 +112,24 @@ from .action import (
     action_with_repre_context
 )
 
+from .templates import (
+    get_load_naming_template,
+    get_loaded_naming_finder_template,
+    get_task_hierarchy_templates,
+    get_workfile_build_template,
+    get_resolved_name,
+    format_data,
+    get_parent_data,
+    split_hierarchy,
+    is_current_asset_shot,
+    extract_sequence_and_shot
+)
+
+from .settings import (
+    get_available_resolutions,
+    extract_width_and_height
+)
+
 install = install_host
 uninstall = uninstall_host
 
@@ -229,4 +247,21 @@ __all__ = (
     # Backwards compatible function names
     "install",
     "uninstall",
+
+    # --- Templates ---
+    "get_load_naming_template",
+    "get_loaded_naming_finder_template",
+    "get_task_hierarchy_templates",
+    "get_workfile_build_template",
+    "get_resolved_name",
+    "format_data",
+    "get_parent_data",
+    "split_hierarchy",
+    "is_current_asset_shot",
+    "extract_sequence_and_shot"
+
+    # --- Settings ---
+    "get_available_resolutions",
+    "extract_width_and_height",
+
 )

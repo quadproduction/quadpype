@@ -5,7 +5,7 @@ from quadpype.hosts.aftereffects import api
 
 from quadpype.hosts.aftereffects.api.lib import (
     get_background_layers,
-    get_unique_layer_name,
+    get_unique_number,
 )
 
 
@@ -28,10 +28,10 @@ class BackgroundLoader(api.AfterEffectsLoader):
         items = stub.get_items(comps=True)
         existing_items = [layer.name.replace(stub.LOADED_ICON, '')
                           for layer in items]
-
-        comp_name = get_unique_layer_name(
-            existing_items,
-            "{}_{}".format(context["asset"]["name"], name))
+        name = "{}_{}".format(context["asset"]["name"], name)
+        unique_number = get_unique_number(
+            existing_items, name)
+        comp_name = f"{name}_{unique_number}"
 
         path = self.filepath_from_context(context)
         layers = get_background_layers(path)
@@ -71,9 +71,11 @@ class BackgroundLoader(api.AfterEffectsLoader):
         if namespace_from_container != comp_name:
             items = stub.get_items(comps=True)
             existing_items = [layer.name for layer in items]
-            comp_name = get_unique_layer_name(
-                existing_items,
-                "{}_{}".format(context["asset"], context["subset"]))
+            name = "{}_{}".format(context["asset"], context["subset"])
+            unique_number = get_unique_number(
+                existing_items, name)
+            comp_name = f"{name}_{unique_number}"
+
         else:  # switching version - keep same name
             comp_name = container["namespace"]
 

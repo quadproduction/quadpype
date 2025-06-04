@@ -177,6 +177,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             instances[0]["subset"],
             instance.context,
             instances[0]["family"],
+            data["ext"],
             override_version
         )
 
@@ -489,7 +490,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
 
     def _get_publish_folder(self, anatomy, template_data,
                             asset, subset, context,
-                            family, version=None):
+                            family, ext, version=None):
         """
             Extracted logic to pre-calculate real publish folder, which is
             calculated in IntegrateNew inside of Deadline process.
@@ -550,6 +551,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
         template_data["subset"] = subset
         template_data["family"] = family
         template_data["version"] = version
+        template_data["ext"] = ext
 
         render_templates = anatomy.templates_obj[template_name]
         if "folder" in render_templates:

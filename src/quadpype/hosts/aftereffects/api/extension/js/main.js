@@ -199,6 +199,16 @@ function main(websocket_url) {
             });
     });
 
+    RPC.addRoute('AfterEffects.add_comp_to_render_queue', function (data) {
+        log.warn('Server called client route "add_comp_to_render_queue":', data);
+        return runEvalScript("addCompToRenderQueue(" + data.comp_id + ")")
+    });
+
+        RPC.addRoute('AfterEffects.parent_items', function (data) {
+        log.warn('Server called client route "parent_items":', data);
+        return runEvalScript("parentItems(" + data.item_id + ", " + data.parent_item_id + ")")
+    });
+
     RPC.addRoute('AfterEffects.delete_item', function (data) {
         log.warn('Server called client route "delete_item":', data);
         return runEvalScript("deleteItem(" + data.item_id + ")")

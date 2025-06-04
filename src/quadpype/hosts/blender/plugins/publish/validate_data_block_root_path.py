@@ -8,7 +8,7 @@ from quadpype.pipeline import (
     Anatomy
 )
 
-from quadpype.hosts.blender.api import (
+from quadpype.pipeline import (
     get_resolved_name
 )
 from quadpype.pipeline.publish import (

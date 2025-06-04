@@ -9,11 +9,40 @@ import re
 
 import pyblish.api
 
+from quadpype.pipeline.settings import extract_width_and_height
+from quadpype.pipeline.publish import RepairAction
 from quadpype.pipeline import (
     PublishXmlValidationError,
     OptionalPyblishPluginMixin
 )
+
 from quadpype.hosts.aftereffects.api import get_asset_settings
+from quadpype.hosts.aftereffects.api.lib import set_settings
+
+
+# class ValidateSceneSettingsRepair(pyblish.api.Action):
+#     """Repair the instance asset with value from Context."""
+#
+#     label = "Repair"
+#     icon = "wrench"
+#     on = "failed"
+#
+#     def process(self, context, plugin):
+#         # Get the errored instances
+#         failed = []
+#         for result in context.data["results"]:
+#             if (result["error"] is not None and result["instance"] is not None
+#                     and result["instance"] not in failed):
+#                 failed.append(result["instance"])
+#
+#         # Apply pyblish.logic to get the instances for the plug-in
+#         instances = pyblish.api.instances_by_plugin(failed, plugin)
+#         stub = get_stub()
+#         for instance in instances:
+#             data = stub.read(instance[0])
+#
+#             data["asset"] = get_current_asset_name()
+#             stub.imprint(instance[0].instance_id, data)
 
 
 class ValidateSceneSettings(OptionalPyblishPluginMixin,
@@ -55,6 +84,7 @@ class ValidateSceneSettings(OptionalPyblishPluginMixin,
     label = "Validate Scene Settings"
     families = ["render.farm", "render.local", "render"]
     hosts = ["aftereffects"]
+    actions = [RepairAction]
     optional = True
 
     skip_timelines_check = [".*"]  # * >> skip for all
@@ -66,18 +96,41 @@ class ValidateSceneSettings(OptionalPyblishPluginMixin,
         if not self.is_active(instance.data):
             return
 
-        asset_doc = instance.data["assetEntity"]
-        expected_settings = get_asset_settings(asset_doc)
+        publish_attributes = instance.data.get("publish_attributes")
+        auto_set_resolution_state = publish_attributes.get("AutoSetResolution", {}).get("active", None)
+
+        expected_settings = {"resolutionWidth": instance.data["resolutionWidth"],
+                            "resolutionHeight": instance.data["resolutionHeight"]}
+
+        resolution_override = instance.data.get("creator_attributes", {}).get('resolution')
+        width, height = extract_width_and_height(resolution_override)
+        if width and height and not self._resolutions_are_identical(expected_settings, width, height):
+            self.log.info(
+                f"Resolution data has been replaced by following values : \n"
+                f"- 'resolutionWidth': {expected_settings['resolutionWidth']} -> {width}\n"
+                f"- 'resolutionHeight' : {expected_settings['resolutionHeight']} -> {height}"
+            )
+
+            expected_settings['resolutionWidth'] = width
+            expected_settings['resolutionHeight'] = height
+
         self.log.info("config from DB::{}".format(expected_settings))
 
         task_name = instance.data["anatomyData"]["task"]["name"]
-        if any(re.search(pattern, task_name)
+
+        not_empty = self.skip_resolution_check != ['']
+        if auto_set_resolution_state is True:
+            self.log.warning("Skipping resolution check because auto set resolution is active.")
+            self.remove_resolution_data_from_settings(expected_settings)
+            instance.data["resolutionWidth"] = width
+            instance.data["resolutionHeight"] = height
+
+        elif not_empty and any(re.search(pattern, task_name)
                 for pattern in self.skip_resolution_check):
             self.log.debug(
                 f"Skipping resolution check for task name: {task_name}"
             )
-            expected_settings.pop("resolutionWidth")
-            expected_settings.pop("resolutionHeight")
+            self.remove_resolution_data_from_settings(expected_settings)
 
         if any(re.search(pattern, task_name)
                 for pattern in self.skip_timelines_check):
@@ -165,3 +218,35 @@ class ValidateSceneSettings(OptionalPyblishPluginMixin,
             }
             raise PublishXmlValidationError(self, msg, key="file_not_found",
                                             formatting_data=formatting_data)
+
+    @staticmethod
+    def _resolutions_are_identical(settings, width, height):
+        write_width = settings['resolutionWidth']
+        write_height = settings['resolutionHeight']
+        return int(width) == int(write_width) and int(height) == int(write_height)
+
+    @staticmethod
+    def remove_resolution_data_from_settings(settings):
+        settings.pop("resolutionWidth")
+        settings.pop("resolutionHeight")
+
+    @classmethod
+    def repair(cls, instance):
+        instance_data = instance.data
+        resolution_override = instance_data.get("creator_attributes", {}).get('resolution')
+        if not resolution_override:
+            cls.log.warning('Can not find resolution creator attribute from instance data. Process has been aborted.')
+            return False
+
+        width, height = extract_width_and_height(resolution_override)
+        set_settings(
+            frames=False,
+            resolution=True,
+            comp_ids=[instance_data["comp_id"]],
+            print_msg=False,
+            override_width=width,
+            override_height=height
+        )
+        instance.data["resolutionWidth"] = width
+        instance.data["resolutionHeight"] = height
+        cls.log.info(f"Resolution for comp with '{instance_data['comp_id']}' has been set to '{resolution_override}'.")

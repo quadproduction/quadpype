@@ -1,6 +1,7 @@
 {
     "general": {
         "set_resolution_startup": true,
+        "set_frames_startup": true,
         "menu": {
             "create": "ctrl+alt+c",
             "publish": "ctrl+alt+p",
@@ -28,6 +29,12 @@
         "workfile": {
             "colorManagement": "OCIO",
             "OCIO_config": "aces_1.2",
+
+            "customOCIOConfigPath": [{
+                "windows": "",
+                "darwin": "",
+                "linux": ""
+            }],
             "workingSpaceLUT": "role_scene_linear",
             "monitorLut": "ACES/sRGB",
             "monitorOutLUT": "ACES/sRGB",
@@ -277,6 +284,7 @@
                 "reviewable",
                 "farm_rendering"
             ],
+            "auto_resolution_resize": true,
             "prenodes": {
                 "Reformat01": {
                     "nodeclass": "Reformat",

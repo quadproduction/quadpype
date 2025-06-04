@@ -3,13 +3,20 @@ from copy import copy
 import re
 import bpy
 
-from quadpype.pipeline import publish, get_current_context
+from quadpype.pipeline import (
+    publish,
+    get_current_context,
+    get_loaded_naming_finder_template,
+    get_task_hierarchy_templates,
+    get_resolved_name,
+    is_current_asset_shot,
+    extract_sequence_and_shot
+)
 from quadpype.hosts.blender.api import (
     plugin,
     pipeline,
     lib,
-    ops,
-    template_resolving
+    ops
 )
 
 DEFAULT_VARIANT_NAME = "Main"
@@ -45,8 +52,8 @@ class ExtractBlend(
 
         # if from a loaded subset, must rename before extract to avoid namespace accumulation in names
         corresponding_renaming = {}
-        namespace_regex = template_resolving.get_loaded_naming_finder_template("namespace", instance.data)
-        unique_number_regex = template_resolving.get_loaded_naming_finder_template("unique-number", instance.data)
+        namespace_regex = get_loaded_naming_finder_template("namespace")
+        unique_number_regex = get_loaded_naming_finder_template("unique-number")
 
         for loaded_coll in from_loaded_coll:
             avalon_data = pipeline.get_avalon_node(loaded_coll)
@@ -107,16 +114,16 @@ class ExtractBlend(
 
         data_blocks = set()
 
-        templates = template_resolving.get_task_collection_templates(
+        templates = get_task_hierarchy_templates(
             data=instance.data,
         )
 
-        if lib.is_shot():
-            instance.data['sequence'], instance.data['shot'] = lib.extract_sequence_and_shot()
+        if is_current_asset_shot():
+            instance.data['sequence'], instance.data['shot'] = extract_sequence_and_shot()
 
         hierarchies = {}
         for template in templates:
-            task_hierarchy = template_resolving.get_resolved_name(
+            task_hierarchy = get_resolved_name(
                 data=instance.data,
                 template=template,
                 parent=parent,

@@ -100,7 +100,7 @@ def get_output_nodes(scene):
 
 
 def _flatten_path(path):
-    return path.replace('\\\\', '\\').replace('\\', '/') if path else None
+    return str(Path(path).as_posix()) if path else None
 
 
 def replace_root(original_path, root_paths, replaced_root):
@@ -116,9 +116,9 @@ def execute(args):
     replaced_paths = list()
     for root_category, root_paths in root_paths.items():
         category_label = f"Treating category named '{root_category}'."
-        print('-'*len(category_label))
+        logging.info('-'*len(category_label))
         logging.info(category_label)
-        print('-'*len(category_label))
+        logging.info('-'*len(category_label))
         if args.convert_to_os:
             replaced_root = root_paths[Platform[args.convert_to_os].value]
 

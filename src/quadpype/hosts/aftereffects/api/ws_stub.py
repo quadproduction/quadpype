@@ -663,6 +663,32 @@ class AfterEffectsServerStub():
 
         return self._handle_return(res)
 
+    def add_comp_to_render_queue(self, comp_id):
+        """
+            Add the comp corresponding to comp_id to the render queue
+        Args:
+            comp_id(int): id of target composition
+        Returns: None
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.add_comp_to_render_queue',
+                                         comp_id=comp_id))
+        return self._handle_return(res)
+
+    def parent_items(self, item_id, parent_item_id):
+        """
+            Parent an item to a given folder
+        Args:
+            item_id(int): id of item to parent
+            parent_item_id(int): id of target parent folder
+        Returns: None
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.parent_items',
+                                         item_id=item_id,
+                                         parent_item_id=parent_item_id))
+        return self._handle_return(res)
+
     def print_msg(self, msg):
         """Triggers Javascript alert dialog."""
         self.websocketserver.call(self.client.call

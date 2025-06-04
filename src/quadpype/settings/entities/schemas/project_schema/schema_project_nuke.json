@@ -18,6 +18,12 @@
                     "default": true
                 },
                 {
+                    "key": "set_frames_startup",
+                    "type": "boolean",
+                    "label": "Set Start/End Frames and FPS on Startup",
+                    "default": true
+                },
+                {
                     "type": "dict",
                     "collapsible": true,
                     "key": "menu",
@@ -126,6 +132,12 @@
                         {
                             "type": "schema_template",
                             "name": "template_nuke_write_attrs"
+                        },
+                        {
+                            "type": "boolean",
+                            "key": "auto_resolution_resize",
+                            "label": "Auto resolution resize",
+                            "default": true
                         },
                         {
                             "key": "prenodes",

@@ -258,7 +258,6 @@ class PackageHandler:
                 location=self._install_dir_path
             )
 
-        running_version_str = running_version_str
         if not running_version_str:
             # If no version specified gets the latest version
             latest_version = self.get_latest_version()
@@ -289,10 +288,14 @@ class PackageHandler:
             else:
                 running_version = self.find_version(running_version_str)
                 if not running_version:
+                    current_version_string = ''
                     if self._install_dir_path:
-                        running_version_str = self.get_package_version_from_dir(self._name, self._install_dir_path)
+                        current_version_str = self.get_package_version_from_dir(self._name, self._install_dir_path)
+                        current_version_string = f" (Current version is : {current_version_str})"
                     raise ValueError(
-                        f"Specified version \"{running_version_str}\" is not available locally and on the remote path directory.")
+                        f"Specified version \"{running_version_str}\" is not available locally "
+                        f"and on the remote path directory.{current_version_string}"
+                    )
 
                 if retrieve_locally or running_version.download_required:
                     self._running_version = self.retrieve_version_locally(running_version_str)
@@ -569,7 +572,7 @@ class PackageHandler:
         # Iterate over directory at the first level
         for item in source_path.iterdir():
             # If the item is a directory with a major.minor version format, dive deeper
-            if item.is_dir() and re.match(r"^v?\d+\.\d+$", item.name) and parent_version is None:
+            if item.is_dir() and re.match(r"^v?\d+\.\d+.*$", item.name) and parent_version is None:
                 parent_version_str = f"{item.name.removeprefix('v')}.0"
                 detected_versions = cls.get_versions_from_dir(
                     pkg_name,
@@ -674,7 +677,7 @@ class PackageHandler:
             item_full_url = SourceURL(f"{source_url}{item.name}")
 
             # If the item is a directory with a major.minor version format, dive deeper
-            if item.name.endswith("/") and re.match(r"^v?\d+\.\d+/$", item.name) and parent_version is None:
+            if item.name.endswith("/") and re.match(r"^v?\d+\.\d+.*/$", item.name) and parent_version is None:
                 parent_version_str = f"{item.name.removeprefix('v')[:-1]}.0"
                 detected_versions = cls.get_versions_from_url(
                     pkg_name,

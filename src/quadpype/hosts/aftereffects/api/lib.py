@@ -34,7 +34,7 @@ def get_extension_manifest_path():
     )
 
 
-def get_unique_layer_name(layers, name, is_psd=False):
+def get_unique_number(layers, name, is_psd=False):
     """
         Gets all layer names and if 'name' is present in them, increases
         suffix by 1 (eg. creates unique layer name - for Loader)
@@ -60,7 +60,7 @@ def get_unique_layer_name(layers, name, is_psd=False):
     if occurrences !=0 and is_psd:
         occurrences = int(occurrences/2)
 
-    return "{}_{:0>3d}".format(name, occurrences + 1)
+    return "{:0>3d}".format(occurrences + 1)
 
 
 def get_background_layers(file_url):
@@ -123,7 +123,7 @@ def get_asset_settings(asset_doc):
     }
 
 
-def set_settings(frames, resolution, comp_ids=None, print_msg=True):
+def set_settings(frames, resolution, comp_ids=None, print_msg=True, override_width=None, override_height=None):
     """Sets number of frames and resolution to selected comps.
 
     Args:
@@ -132,6 +132,8 @@ def set_settings(frames, resolution, comp_ids=None, print_msg=True):
         comp_ids (list): specific composition ids, if empty
             it tries to look for currently selected
         print_msg (bool): True throw JS alert with msg
+        override_width (int): use given value instead of settings when setting comp width
+        override_height (int): use given height instead of settings when setting comp height
     """
     frame_start = frames_duration = fps = width = height = None
     current_context = get_current_context()
@@ -149,8 +151,9 @@ def set_settings(frames, resolution, comp_ids=None, print_msg=True):
                f"fps:{fps}"
 
     if resolution:
-        width = settings["resolutionWidth"]
-        height = settings["resolutionHeight"]
+        width = override_width if override_width else settings["resolutionWidth"]
+        height = override_height if override_height else settings["resolutionHeight"]
+
         msg += f"width:{width} and height:{height}"
 
     stub = get_stub()

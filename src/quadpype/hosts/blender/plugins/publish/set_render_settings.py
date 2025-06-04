@@ -14,7 +14,7 @@ class SetRenderSettings(
     plugin.BlenderInstancePlugin,
     OptionalPyblishPluginMixin,
 ):
-    """Validate that the objects in the instance are in Object Mode."""
+    """Activate or deactivate scene settings based on subset inputs"""
 
     order = pyblish.api.IntegratorOrder - 0.2
     hosts = ["blender"]
@@ -29,11 +29,25 @@ class SetRenderSettings(
         creator_attributes = instance.data.get('creator_attributes', None)
         assert creator_attributes, "Can not retrieve creator attributes for instance. Abort process."
 
+        layers_to_render = creator_attributes.get('render_layers', None)
+        if layers_to_render is None:
+            self.log.warning("Can not find render layers attribute from creator attributes.")
+            return
+
+        assert layers_to_render, "Render layers attribute retrieved from creator is empty. Nothing will be rendered."
+
         scene = bpy.context.scene
         properties_and_attributes = {
             scene.render: ['use_single_layer', 'use_simplify', 'use_motion_blur', 'use_border'],
             scene: ['use_nodes'],
             scene.cycles: ['device']
+        }
+
+        scene_properties = self.get_scene_attributes(properties_and_attributes)
+        activated_render_layers = [layer for layer in bpy.context.scene.view_layers if layer.use]
+        instance.data['transientData']['scene_render_settings'] = {
+            'scene_properties': scene_properties,
+            'activated_render_layers': activated_render_layers
         }
 
         for blender_attribute, blender_properties in properties_and_attributes.items():
@@ -44,16 +58,30 @@ class SetRenderSettings(
                     value=creator_attributes.get(single_property, None),
                 )
 
-        layers_to_render = creator_attributes.get('render_layers', None)
-        if layers_to_render is None:
-            self.log.warning("Can not find render layers attribute from creator attributes.")
-            return
-
-        assert layers_to_render, "Render layers attribute retrieved from creator is empty. Nothing will be rendered."
-
         for layer in bpy.context.scene.view_layers:
             layer.use = layer.name in layers_to_render
             self.log.info(f"Layer {layer.name} has been {'enabled' if layer.use else 'disabled'}.")
+
+    def get_scene_attributes(self, properties_and_attributes):
+        retrieved_attributes = list()
+        for blender_attribute, blender_properties in properties_and_attributes.items():
+            for single_property in blender_properties:
+                retrieved_attributes.append(
+                    [
+                        blender_attribute,
+                        single_property,
+                        self.get_property(blender_attribute, single_property)
+                    ]
+                )
+        return retrieved_attributes
+
+    def get_property(self, scene_property, property_name):
+        value = getattr(scene_property, property_name, None)
+        if value is None:
+            self.log.warning(f"Cannot find property named '{property_name}' for object {scene_property}.")
+            return
+
+        return value
 
     def set_property(self, scene_property, property_name, value):
         if value is None:
