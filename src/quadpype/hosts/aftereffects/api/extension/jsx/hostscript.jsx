@@ -407,7 +407,7 @@ function _importFileWithDialog(path, item_name, import_options){
 
         renameFolderItems(importedCompFolder);
 
-        if ('fps' in import_options){
+        if (import_options.hasOwnProperty("fps") && import_options.hasOwnProperty("sequence")){
             fps = import_options['fps']
             importedComp.frameRate = fps;
             setFolderItemsFPS(importedCompFolder, fps);
@@ -467,7 +467,9 @@ function extensionsAreDifferents(sourceFilePath, targetFilePath){
 
 
 function _extractFirstPart(layerName){
-    return layerName.match(/.+?(?=[\/])/)[0];
+    var decomposedName = layerName.match(/.+?(?=[\/])/);
+    if (decomposedName === null){ return layerName; }
+    else{ return decomposedName[0]; }
 }
 
 
