@@ -595,7 +595,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
 
                     converted_paths.append(replace_path)
 
-        return converted_paths
+        return ';'.join(converted_paths)
 
     def preflight_check(self, instance):
         """Ensure the startFrame, endFrame and byFrameStep are integers"""
