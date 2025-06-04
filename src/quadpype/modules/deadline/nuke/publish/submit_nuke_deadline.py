@@ -4,6 +4,7 @@ import json
 import getpass
 import platform
 from copy import copy
+from pathlib import Path
 
 from datetime import datetime, timezone
 
@@ -512,6 +513,8 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         environment = dict({key: os.environ[key] for key in keys
                             if key in os.environ}, **legacy_io.Session)
 
+        environment['NUKE_PATH'] = self._convert_paths_for_all_os(environment['NUKE_PATH'])
+
         for _path in os.environ:
             if _path.lower().startswith('quadpype_'):
                 environment[_path] = os.environ[_path]
@@ -556,6 +559,43 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
             raise Exception(response.text)
 
         return response
+
+    def _convert_paths_for_all_os(self, nuke_paths):
+        """Take all paths from the given environment string and add
+        a converted path for each operating system as specified
+        in the root's anatomy settings. This ensures that at least
+        one path format will work for each primary entry.
+        """
+        all_paths = nuke_paths.split(';')
+        root_paths = Anatomy().get('roots', None)
+
+        converted_paths = list()
+
+        base_pattern = r'^({windows})|({linux})|({darwin})'
+        for single_path in all_paths:
+            single_path = Path(single_path).as_posix()
+            converted_paths.append(single_path)
+
+            for _, os_paths_parts in root_paths.items():
+                pattern = base_pattern.format(
+                    windows=Path(os_paths_parts.get('windows')).as_posix(),
+                    linux=Path(os_paths_parts.get('linux')).as_posix(),
+                    darwin=Path(os_paths_parts.get('darwin')).as_posix()
+                )
+
+                for _, specific_part in os_paths_parts.items():
+                    replace_path = re.sub(
+                        pattern=pattern,
+                        repl=Path(specific_part).as_posix(),
+                        string=single_path
+                    )
+
+                    if replace_path in converted_paths:
+                        continue
+
+                    converted_paths.append(replace_path)
+
+        return converted_paths
 
     def preflight_check(self, instance):
         """Ensure the startFrame, endFrame and byFrameStep are integers"""
