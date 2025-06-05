@@ -177,7 +177,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             instances[0]["subset"],
             instance.context,
             instances[0]["family"],
-            data["ext"],
+            data.get("ext", None),
             override_version
         )
 
@@ -551,7 +551,8 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
         template_data["subset"] = subset
         template_data["family"] = family
         template_data["version"] = version
-        template_data["ext"] = ext
+        if ext:
+            template_data["ext"] = ext
 
         render_templates = anatomy.templates_obj[template_name]
         if "folder" in render_templates:
