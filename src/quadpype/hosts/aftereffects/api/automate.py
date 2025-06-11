@@ -4,6 +4,7 @@ import pyautogui
 import time
 from mss import mss
 import logging
+import platform
 import imutils
 from pathlib import Path
 
@@ -54,7 +55,7 @@ class ElementCoordinates:
     shape: Shape
     default_click: None
 
-    def __init__(self, point, shape, click=None):
+    def __init__(self, point, shape):
         self.anchor_point = point
         self.shape = shape
 
@@ -67,7 +68,31 @@ class ElementCoordinates:
 
     @property
     def bottom(self):
-        return Point(self.anchor_point.x + self.shape.width / 2, self.anchor_point.y + self.shape.height)
+        return Point(self.anchor_point.x + self.shape.width / 2, self.anchor_point.y + (self.shape.height / 1.25))
+
+
+class ClickableElement:
+    file_name: str
+    folder_path: str
+    wait_after: float
+    threshold: float
+    default_click: str
+
+    def __init__(self, file_name, folder_path, wait_after=0.0, threshold=0.7, click="center"):
+        self.file_name = file_name
+        self.folder_path = folder_path
+        self.wait_after = wait_after
+        self.threshold = threshold
+        self.default_click = click
+
+        file_path = Path(folder_path, file_name)
+        if not file_path.is_file():
+            logging.error(f"File at path {file_path} does not exists.")
+            raise FileNotFoundError
+
+    @property
+    def file_path(self):
+        return str(Path(self.folder_path, self.file_name))
 
 
 def get_combined_monitors_offset():
@@ -78,7 +103,7 @@ def get_combined_monitors_offset():
 def get_monitors_screenshot():
     with mss() as sct:
         screenshot = np.array(sct.grab(sct.monitors[0]))
-        return cv2.cvtColor(screenshot, cv2.COLOR_BGR2HSV)
+        return cv2.cvtColor(screenshot, cv2.COLOR_RGB2HSV)
 
 
 def get_element_coordinates(template_path, screenshot, threshold, fixed_scale=None):
@@ -88,7 +113,7 @@ def get_element_coordinates(template_path, screenshot, threshold, fixed_scale=No
         return
 
     template = cv2.imread(str(template_path), cv2.IMREAD_COLOR)
-    template = cv2.cvtColor(template, cv2.COLOR_BGR2HSV)
+    template = cv2.cvtColor(template, cv2.COLOR_RGB2HSV)
     template_height, template_width = template.shape[:2]
 
     found = get_match(
@@ -161,53 +186,42 @@ def move_cursor_and_click(coordinates, offset, click="center"):
     return True
 
 
-class ClickableElement:
-    file_name: str
-    folder_path: str
-    wait_after: float
-    threshold: float
-    default_click: str
+def import_file_dialog_clic():
+    screen_offset = get_combined_monitors_offset()
+    folder_path = Path(__file__).parent / "resources" / "auto_click" / platform.system().lower()
 
-    def __init__(self, file_name, folder_path, wait_after=0.0, threshold=0.7, click="center"):
-        self.file_name = file_name
-        self.folder_path = folder_path
-        self.wait_after = wait_after
-        self.threshold = threshold
-        self.default_click = click
+    assert folder_path.is_dir(), "Folder containing image ressources used for comparison can not be found."
 
-    @property
-    def file_path(self):
-        return str(Path(self.folder_path, self.file_name))
+    elements_to_click = list()
 
+    try:
+        elements_to_click.append(ClickableElement("photoshop_file_icon.png", folder_path))
+        elements_to_click.append(ClickableElement("metrage.png", folder_path, wait_after=0.1))
+        elements_to_click.append(ClickableElement("composition.png", folder_path, click="bottom"))
+        elements_to_click.append(ClickableElement("importer.png", folder_path, wait_after=0.2))
+        elements_to_click.append(ClickableElement("ok.png", folder_path))
 
-screen_offset = get_combined_monitors_offset()
-folder_path = "c:/users/gcompain/downloads"
+    except FileNotFoundError:
+        logging.error("An error has occured when retrieving image for comparison. Abort process.")
+        return False
 
-elements_to_click = list()
-elements_to_click.append(ClickableElement("photoshop_file_icon.png", folder_path))
-elements_to_click.append(ClickableElement("metrage.png", folder_path, wait_after=0.1))
-elements_to_click.append(ClickableElement("composition_2.png", folder_path, click="bottom"))
-elements_to_click.append(ClickableElement("importer.png", folder_path, wait_after=0.2))
-elements_to_click.append(ClickableElement("ok.png", folder_path))
+    scale_used = None
+    for concerned_element in elements_to_click:
+        logging.debug(f"Will try to click on element named {concerned_element.file_name}.")
+        element_coordinates, scale_used = get_element_coordinates(
+            concerned_element.file_path,
+            get_monitors_screenshot(),
+            concerned_element.threshold,
+            fixed_scale=scale_used
+        )
+        if not element_coordinates:
+            logging.error(f"Process has been aborted because button was not found.")
+            return
 
+        move_cursor_and_click(element_coordinates, screen_offset, click=concerned_element.default_click)
+        logging.debug(f"Button named {concerned_element.file_name} has ben correctly clicked.")
 
-logging.getLogger().setLevel(logging.DEBUG)
+        if concerned_element.wait_after:
+            time.sleep(concerned_element.wait_after)
 
-scale_used = None
-for concerned_element in elements_to_click:
-    logging.debug(f"Will try to click on element named {concerned_element.file_name}.")
-    element_coordinates, scale_used = get_element_coordinates(
-        concerned_element.file_path,
-        get_monitors_screenshot(),
-        concerned_element.threshold,
-        fixed_scale=scale_used
-    )
-    if not element_coordinates:
-        logging.error(f"Process has been aborted because button was not found.")
-        quit()
-
-    move_cursor_and_click(element_coordinates, screen_offset, click=concerned_element.default_click)
-    logging.debug(f"Button named {concerned_element.file_name} has ben correctly clicked.")
-
-    if concerned_element.wait_after:
-        time.sleep(concerned_element.wait_after)
+    return True
