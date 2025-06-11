@@ -47,7 +47,9 @@
         "custom_templates": []
     },
     "templated_workfile_build": {
-        "profiles": [],
+        "profiles": []
+    },
+    "load": {
         "entity_type_name_matcher":{
             "profiles": []
         },

@@ -6,10 +6,17 @@ from quadpype.client import (
     get_version_by_id,
     get_last_version_by_subset_id,
 )
+from quadpype.lib import Logger
 from quadpype.pipeline import (
     load,
     get_current_project_name,
     get_representation_path,
+    get_current_host_name,
+    get_current_context,
+    get_task_hierarchy_templates,
+    get_resolved_name,
+    format_data,
+    split_hierarchy
 )
 from quadpype.hosts.nuke.api.lib import (
     get_imageio_input_colorspace
@@ -19,14 +26,22 @@ from quadpype.hosts.nuke.api import (
     update_container,
     viewer_update_and_undo_stop
 )
+from quadpype.hosts.nuke.api.backdrops import (
+    create_main_backdrops_from_list,
+    get_main_backdrops_profiles,
+    align_main_backdrops_from_list,
+    create_backdrops_from_hierarchy,
+    move_nodes_in_backdrop
+)
 from quadpype.lib.transcoding import (
     IMAGE_EXTENSIONS
 )
+from quadpype.hosts.nuke.api import plugin
 
 
-class LoadImage(load.LoaderPlugin):
+class LoadImage(plugin.NukeLoader):
     """Load still image into Nuke"""
-
+    log = Logger.get_logger(__name__)
     families = [
         "render2d",
         "source",
@@ -109,6 +124,11 @@ class LoadImage(load.LoaderPlugin):
 
         # Create the Loader with the filename path set
         with viewer_update_and_undo_stop():
+
+            main_backdrops_profiles = get_main_backdrops_profiles()
+            # create_main_backdrops_from_list(main_backdrops_profiles)
+            align_main_backdrops_from_list(main_backdrops_profiles)
+
             r = nuke.createNode(
                 "Read",
                 "name {}".format(read_name),
@@ -133,7 +153,7 @@ class LoadImage(load.LoaderPlugin):
             r["last"].setValue(last)
 
             # add additional metadata from the version to imprint Avalon knob
-            add_keys = ["source", "colorspace", "author", "fps", "version"]
+            add_keys = ["source", "colorspace", "author", "fps", "version", "task"]
 
             data_imprint = {
                 "frameStart": first,
@@ -142,11 +162,38 @@ class LoadImage(load.LoaderPlugin):
             for k in add_keys:
                 if k == 'version':
                     data_imprint.update({k: context["version"]['name']})
+                elif k == 'task':
+                    data_imprint.update({k: context["representation"]["context"]["task"]['name']})
                 else:
                     data_imprint.update(
                         {k: context["version"]['data'].get(k, str(None))})
 
             r["tile_color"].setValue(int("0x4ecd25ff", 16))
+
+            template_data = format_data(
+                original_data=context['representation'],
+                filter_variant=True,
+                app=get_current_host_name()
+            )
+
+            backdrop_templates = get_task_hierarchy_templates(
+                template_data,
+                task=data_imprint["task"]
+            )
+
+            storage_backdrop = None
+            if backdrop_templates:
+                backdrops_hierarchy = [
+                    get_resolved_name(
+                        data=template_data,
+                        template=template
+                    )
+                    for template in backdrop_templates
+                ]
+                storage_backdrop = create_backdrops_from_hierarchy(backdrops_hierarchy, template_data)
+
+            if storage_backdrop:
+                move_nodes_in_backdrop(r, storage_backdrop)
 
             return containerise(r,
                                 name=name,
