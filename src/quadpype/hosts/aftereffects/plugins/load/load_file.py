@@ -86,9 +86,6 @@ class FileLoader(api.AfterEffectsLoader):
             existing_layers, name, is_psd=is_psd)
         comp_name = f"{name}_{unique_number}"
         if is_psd:
-            print(path_str)
-            print(stub.LOADED_ICON + comp_name)
-            print(import_options)
             import_options['ImportAsType'] = 'ImportAsType.COMP'
             comp = stub.import_file_with_dialog(
                 path_str,
@@ -195,8 +192,15 @@ class FileLoader(api.AfterEffectsLoader):
         """
         stub = self.get_stub()
         layer = container.pop("layer")
+        namespace = container.pop("namespace")
+
         stub.imprint(layer.id, {})
         stub.delete_item(layer.id)
+
+        psd_folder = find_folder(stub.LOADED_ICON + namespace)
+        self.log.warning(psd_folder)
+        if psd_folder:
+            stub.delete_item_with_hierarchy(psd_folder.id)
 
     def switch(self, container, representation):
         self.update(container, representation)

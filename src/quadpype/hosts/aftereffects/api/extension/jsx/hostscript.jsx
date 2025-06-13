@@ -779,6 +779,34 @@ function deleteItem(item_id){
     }
 }
 
+function deleteItemWithHierarchy(item_id){
+    /**
+     *  Delete any 'item_id' with hierarchy until first not empty folder.
+     *
+     *  Not restricted only to comp, it could delete
+     *  any item with 'id'
+     */
+    var item = app.project.itemByID(item_id);
+    var folder = item.parentFolder;
+    var parent_folder = folder;
+
+    if (item){
+        item.remove();
+    }else{
+        return _prepareError("There is no composition with "+ comp_id);
+    }
+
+    while(parent_folder !== null){
+        folder = parent_folder
+        parent_folder = parent_folder.parentFolder
+        if ((!folder.items.length) && (folder.parentFolder !== null)) {
+            folder.remove();
+        } else { break; }
+
+    }
+
+}
+
 function getCompProperties(comp_id){
     /**
      * Returns information about composition - are that will be

@@ -369,6 +369,18 @@ class AfterEffectsServerStub():
 
         return self._handle_return(res)
 
+    def delete_item_with_hierarchy(self, item_id):
+        """ Deletes *Items in a file with hierary until not none Folder
+            Args:
+                items (list): of int item ids
+
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.delete_item_with_hierarchy',
+                                         item_id=item_id))
+
+        return self._handle_return(res)
+
     def remove_instance(self, instance_id, metadata=None):
         """
             Removes instance with 'instance_id' from file's metadata and
