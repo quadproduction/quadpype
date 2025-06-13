@@ -2,6 +2,9 @@ import re
 import threading
 from pathlib import Path
 
+import notifypy
+
+from quadpype.style import get_app_icon_path
 from quadpype.pipeline import (
     get_representation_path,
     get_current_context,
@@ -97,8 +100,12 @@ class FileLoader(api.AfterEffectsLoader):
                 Window(
                     parent=None,
                     title='Import File',
-                    message='File will be automatically imported with mouse automation. '
-                            'Please do not touch your mouse or your keyboard !',
+                    message='<p>File will be automatically imported with mouse automation.<br/>'
+                            '<b>Please do not touch your mouse or your keyboard !</b></p>'
+                            '<p><i>Process should ends in less than 10 seconds. If nothing happens, '
+                            'it means that something has gone wrong, and you will need to end '
+                            'process by yourself.</i></p>'
+                            '<p><i>Check your os notifications to monitor process results.</p></i>',
                     level="warning"
                 )
 
@@ -113,23 +120,17 @@ class FileLoader(api.AfterEffectsLoader):
                     stub.LOADED_ICON + comp_name,
                     import_options
                 )
-
                 auto_clic_thread.join()
 
-                Window(
-                    parent=None,
-                    title='Import File',
-                    message='File has been imported with success. You can now reuse your mouse and keyboard.',
-                    level="warning"
-                )
-
             else:
-                self.log.warning('oupsi')
                 comp = stub.import_file_with_dialog(
                     path_str,
                     stub.LOADED_ICON + comp_name,
                     import_options
                 )
+
+            if comp:
+                self.notify_import_result("Import has ended with success !")
 
         else:
             frame = repr_cont.get("frame")
@@ -147,6 +148,8 @@ class FileLoader(api.AfterEffectsLoader):
                 "Representation `{}` is failing to load".format(path_str))
             self.log.warning("Check host app for alert error.")
             return
+
+        self.log.info("File has been loaded with success.")
 
         self[:] = [comp]
         namespace = namespace or comp_name
@@ -186,9 +189,23 @@ class FileLoader(api.AfterEffectsLoader):
         )
 
     @staticmethod
-    def launch_auto_click(tries):
+    def notify_import_result(message):
+        notification = notifypy.Notify()
+        notification.title = "Import File"
+        notification.message = message
+        notification.icon = get_app_icon_path()
+        notification.send(block=False)
+
+    def launch_auto_click(self, tries):
+        import time
+        time.sleep(.5)
         for _ in range(tries):
-            import_file_dialog_clic()
+            success = import_file_dialog_clic(self.log)
+            if success:
+                return
+
+        self.log.warning(f"Maximum tries value {tries} reached.")
+        self.notify_import_result("Auto clic has failed. You will need to end import file process by yourself.")
 
     def update(self, container, representation):
         """ Switch asset or change version """

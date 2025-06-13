@@ -3,7 +3,6 @@ import numpy as np
 import pyautogui
 import time
 from mss import mss
-import logging
 import platform
 import imutils
 from pathlib import Path
@@ -68,31 +67,35 @@ class ElementCoordinates:
 
     @property
     def bottom(self):
-        return Point(self.anchor_point.x + self.shape.width / 2, self.anchor_point.y + (self.shape.height / 1.25))
+        return Point(self.anchor_point.x + self.shape.width / 2, self.anchor_point.y + (self.shape.height / 1.2))
 
 
 class ClickableElement:
-    file_name: str
+    file_name: list[str]
     folder_path: str
     wait_after: float
     threshold: float
     default_click: str
 
-    def __init__(self, file_name, folder_path, wait_after=0.0, threshold=0.7, click="center"):
-        self.file_name = file_name
+    def __init__(self, files_names, folder_path, wait_after=0.0, threshold=0.6, click="center"):
+        self.files_names = files_names
         self.folder_path = folder_path
         self.wait_after = wait_after
         self.threshold = threshold
         self.default_click = click
 
-        file_path = Path(folder_path, file_name)
-        if not file_path.is_file():
-            logging.error(f"File at path {file_path} does not exists.")
+        if not all([file_path.is_file() for file_path in self.files_paths]):
             raise FileNotFoundError
 
     @property
-    def file_path(self):
-        return str(Path(self.folder_path, self.file_name))
+    def files_paths(self):
+        return [Path(self.folder_path, file_name) for file_name in self.files_names]
+
+    def file_path(self, file_name):
+        return Path(self.folder_path, file_name)
+
+    def get_file_name(self, file_path):
+        return getattr(file_path, "stem", Path(file_path).stem)
 
 
 def get_combined_monitors_offset():
@@ -106,10 +109,10 @@ def get_monitors_screenshot():
         return cv2.cvtColor(screenshot, cv2.COLOR_RGB2HSV)
 
 
-def get_element_coordinates(template_path, screenshot, threshold, fixed_scale=None):
+def get_element_coordinates(template_path, screenshot, threshold, log, fixed_scale=None):
     template_path = Path(template_path)
     if not template_path.is_file():
-        logging.error(f"Can not find file at path {template_path}.")
+        log.error(f"Can not find file at path {template_path}.")
         return
 
     template = cv2.imread(str(template_path), cv2.IMREAD_COLOR)
@@ -117,47 +120,51 @@ def get_element_coordinates(template_path, screenshot, threshold, fixed_scale=No
     template_height, template_width = template.shape[:2]
 
     found = get_match(
-        scales=[fixed_scale] if fixed_scale else np.linspace(0.25, 1.0, 20)[::-1],
+        scales=[fixed_scale] if fixed_scale else np.linspace(0.25, 1.0, 10)[::-1],
         screenshot=screenshot,
-        template=template
+        template=template,
+        log=log
     )
 
-    if not found and fixed_scale:
-        logging.debug(
+    if _match_is_not_valid(found, threshold) and fixed_scale:
+        log.debug(
             f"No match found with previous memorized scale ({fixed_scale}). Will try again with all available spaces."
         )
         found = get_match(
             scales=np.linspace(0.25, 1.0, 20)[::-1],
             screenshot=screenshot,
-            template=template
+            template=template,
+            log=log
         )
 
-    if found is None or found.confidence < threshold:
-        logging.warning(f"Can not found {template_path.stem} in user monitor.")
+    if _match_is_not_valid(found, threshold):
+        log.warning(f"Can not found {template_path.stem} in user monitor.")
         return None, None
 
     return ElementCoordinates(
         point=Point(int(found.anchor_point.x * found.ratio), int(found.anchor_point.y * found.ratio)),
-        shape=Shape(template_width, template_height)
+        shape=Shape(template_width * found.ratio, template_height * found.ratio)
     ), found.scale
 
 
-def get_match(scales, screenshot, template):
+def _match_is_not_valid(found, threshold):
+    return found is None or found.confidence < threshold
+
+
+def get_match(scales, screenshot, template, log):
     template_height, template_width = template.shape[:2]
     found = None
-    get_first_result = len(scales) == 1
 
     for scale in scales:
         resized = imutils.resize(screenshot, width=int(screenshot.shape[1] * scale))
         ratio = screenshot.shape[1] / float(resized.shape[1])
 
         if resized.shape[0] < template_height or resized.shape[1] < template_width:
-            logging.warning("Resized screenshot is too large in comparison of given image. Process will be stopped.")
+            log.warning("Resized screenshot is too large in comparison of given image. Process will be stopped.")
             break
 
         result = cv2.matchTemplate(resized, template, cv2.TM_CCOEFF_NORMED)
         _, confidence, _, location = cv2.minMaxLoc(result)
-
         match_result = MatchResult(
             anchor_point=location,
             confidence=confidence,
@@ -165,20 +172,15 @@ def get_match(scales, screenshot, template):
             scale=scale
         )
 
-        if get_first_result:
-            return match_result
+        if not found or match_result.confidence > found.confidence:
+            found = match_result
 
-        if found and match_result.confidence < found.confidence:
-            return found
-
-        found = match_result
-
-    return None
+    return found
 
 
-def move_cursor_and_click(coordinates, offset, click="center"):
+def move_cursor_and_click(coordinates, offset, log, click="center"):
     if not coordinates:
-        logging.error("Can not move cursor because coordinates are null.")
+        log.error("Can not move cursor because coordinates are null.")
         return
     click_coordinates = getattr(coordinates, click)
     pyautogui.moveTo(offset[0] + click_coordinates.x, offset[1] + click_coordinates.y)
@@ -186,7 +188,7 @@ def move_cursor_and_click(coordinates, offset, click="center"):
     return True
 
 
-def import_file_dialog_clic():
+def import_file_dialog_clic(log):
     screen_offset = get_combined_monitors_offset()
     folder_path = Path(__file__).parent / "resources" / "auto_click" / platform.system().lower()
 
@@ -195,33 +197,45 @@ def import_file_dialog_clic():
     elements_to_click = list()
 
     try:
-        elements_to_click.append(ClickableElement("photoshop_file_icon.png", folder_path))
-        elements_to_click.append(ClickableElement("metrage.png", folder_path, wait_after=0.1))
-        elements_to_click.append(ClickableElement("composition.png", folder_path, click="bottom"))
-        elements_to_click.append(ClickableElement("importer.png", folder_path, wait_after=0.2))
-        elements_to_click.append(ClickableElement("ok.png", folder_path))
+        elements_to_click.append(ClickableElement(["photoshop_file_icon_1.png", "photoshop_file_icon_2.png"], folder_path))
+        elements_to_click.append(ClickableElement(["metrage.png"], folder_path, wait_after=0.1))
+        elements_to_click.append(ClickableElement(["composition.png"], folder_path, click="bottom"))
+        elements_to_click.append(ClickableElement(["importer.png"], folder_path, wait_after=0.3))
+        elements_to_click.append(ClickableElement(["ok.png"], folder_path))
 
-    except FileNotFoundError:
-        logging.error("An error has occured when retrieving image for comparison. Abort process.")
+    except FileNotFoundError as err:
+        log.error("An error has occured when retrieving image for comparison. Abort process.")
+        log.error(err)
         return False
 
     scale_used = None
     for concerned_element in elements_to_click:
-        logging.debug(f"Will try to click on element named {concerned_element.file_name}.")
-        element_coordinates, scale_used = get_element_coordinates(
-            concerned_element.file_path,
-            get_monitors_screenshot(),
-            concerned_element.threshold,
-            fixed_scale=scale_used
-        )
+        element_coordinates = None
+
+        for file_path in concerned_element.files_paths:
+            file_name = concerned_element.get_file_name(file_path)
+            log.debug(f"Will try to click on element named {file_name}.")
+            element_coordinates, scale_used = get_element_coordinates(
+                file_path,
+                get_monitors_screenshot(),
+                concerned_element.threshold,
+                log,
+                fixed_scale=scale_used
+            )
+
+            if not element_coordinates:
+                continue
+
+            move_cursor_and_click(element_coordinates, screen_offset, log, click=concerned_element.default_click)
+            log.info(f"Button named {file_name} has ben correctly clicked.")
+
+            if concerned_element.wait_after:
+                time.sleep(concerned_element.wait_after)
+
+            break
+
         if not element_coordinates:
-            logging.error(f"Process has been aborted because button was not found.")
+            log.error(f"Process has been aborted because button was not found.")
             return
-
-        move_cursor_and_click(element_coordinates, screen_offset, click=concerned_element.default_click)
-        logging.debug(f"Button named {concerned_element.file_name} has ben correctly clicked.")
-
-        if concerned_element.wait_after:
-            time.sleep(concerned_element.wait_after)
 
     return True
