@@ -97,24 +97,7 @@ class FileLoader(api.AfterEffectsLoader):
             auto_clic = load_settings.get('auto_clic_import_dialog')
 
             if auto_clic:
-                Window(
-                    parent=None,
-                    title='Import File',
-                    message='<p>File will be automatically imported with mouse automation.<br/>'
-                            '<b>Please do not touch your mouse or your keyboard !</b></p>'
-                            '<p><i>Process should ends in less than 10 seconds. If nothing happens, '
-                            'it means that something has gone wrong, and you will need to end '
-                            'process by yourself.</i></p>'
-                            '<p><i>Check your os notifications to monitor process results.</p></i>',
-                    level="warning"
-                )
-
-                auto_clic_thread = threading.Thread(
-                    target=self.launch_auto_click,
-                    args=(load_settings.get('attempts_number', 3),)
-                )
-                auto_clic_thread.start()
-
+                auto_clic_thread = self.trigger_auto_clic_thread(load_settings.get('attempts_number', 3))
                 comp = stub.import_file_with_dialog(
                     path_str,
                     stub.LOADED_ICON + comp_name,
@@ -122,15 +105,15 @@ class FileLoader(api.AfterEffectsLoader):
                 )
                 auto_clic_thread.join()
 
+                if comp:
+                    self.notify_import_result("Import has ended with success !")
+
             else:
                 comp = stub.import_file_with_dialog(
                     path_str,
                     stub.LOADED_ICON + comp_name,
                     import_options
                 )
-
-            if comp:
-                self.notify_import_result("Import has ended with success !")
 
         else:
             frame = repr_cont.get("frame")
@@ -196,6 +179,26 @@ class FileLoader(api.AfterEffectsLoader):
         notification.icon = get_app_icon_path()
         notification.send(block=False)
 
+    def trigger_auto_clic_thread(self, attempts_number):
+        Window(
+            parent=None,
+            title='Import File',
+            message='<p>File will be automatically imported with mouse automation.<br/>'
+                    '<b>Please do not touch your mouse or your keyboard !</b></p>'
+                    '<p><i>Process should ends in less than 10 seconds. If nothing happens, '
+                    'it means that something has gone wrong, and you will need to end '
+                    'process by yourself.</i></p>'
+                    '<p><i>Check your os notifications to monitor process results.</p></i>',
+            level="warning"
+        )
+
+        auto_clic_thread = threading.Thread(
+            target=self.launch_auto_click,
+            args=(attempts_number,)
+        )
+        auto_clic_thread.start()
+        return auto_clic_thread
+
     def launch_auto_click(self, tries):
         import time
         time.sleep(.5)
@@ -233,11 +236,26 @@ class FileLoader(api.AfterEffectsLoader):
 
         # Convert into a Path object
         path = Path(path)
+        is_psd = path.suffix == '.psd'
 
-        # Resolve and then get a string
         path_str = str(path.resolve())
 
-        stub.replace_item(layer.id, path_str, stub.LOADED_ICON + layer_name)
+        if is_psd:
+            project_name = context.get('project', {}).get('name', None)
+            load_settings = get_project_settings(project_name).get(get_current_host_name(), {}).get('load', {})
+            auto_clic = load_settings.get('auto_clic_import_dialog')
+
+            if auto_clic:
+                auto_clic_thread = self.trigger_auto_clic_thread(load_settings.get('attempts_number', 3))
+
+                result = stub.replace_item(layer.id, path_str, stub.LOADED_ICON + layer_name)
+
+                auto_clic_thread.join()
+
+                # If result is an empty string, it means that everything went well
+                if result == '':
+                    self.notify_import_result("Import has ended with success !")
+
         stub.imprint(
             layer.id, {"representation": str(representation["_id"]),
                        "name": context["subset"],
