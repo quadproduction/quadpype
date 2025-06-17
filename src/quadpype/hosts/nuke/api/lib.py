@@ -10,6 +10,7 @@ import contextlib
 from collections import OrderedDict
 
 import nuke
+from .stamps import stamps_autoClickedOk
 from qtpy import QtCore, QtWidgets
 
 from quadpype.client import (
@@ -3539,3 +3540,155 @@ def get_custom_res(width, height):
         nuke.addFormat(f"{width} {height} {node_name}")
 
     return node_name
+
+def decompose_layers(read_node):
+    """Will create a shuffle_node for each layer in the read_node that is not RGB based
+    Args:
+        read_node(Read): a nuke read node
+    Returns:
+        (dict) listing all newly created node sorted by type
+    """
+    read_node_name = read_node['name'].value()
+    if read_node.Class() != 'Read':
+        raise RuntimeError("Selected node is not a Read node.")
+
+    all_layer_names = read_node.channels()
+
+    if not all_layer_names:
+        raise RuntimeError("No layers found in the selected Read node.")
+
+    layer_names = list()
+
+    for layer in all_layer_names:
+        layer_base = layer.split('.')[0]
+        if layer_base and layer_base != 'rgba' and layer_base not in layer_names:
+            layer_names.append(layer_base)
+
+    if not layer_names:
+        raise RuntimeError("No layers found in the selected Read node. \nAre you sure this is a layered PSD?")
+
+    shuffle_nodes = []
+    remove_nodes = []
+    premult_nodes = []
+    dot_nodes = []
+
+    return_nodes = {}
+
+    for i, layer in enumerate(layer_names):
+        shuffle_node = nuke.createNode('Shuffle', inpanel=False)
+        shuffle_node['label'].setValue(f"Extracted from {read_node_name}: {layer}")
+        shuffle_node['in'].setValue(layer)
+        shuffle_node['out'].setValue('rgba')
+        shuffle_node.setInput(0, read_node)
+        shuffle_nodes.append(shuffle_node)
+
+        remove_node = nuke.createNode('Remove', inpanel=False)
+        remove_node['operation'].setValue('keep')
+        remove_node['channels'].setValue('rgba')
+        remove_node.setInput(0, shuffle_node)
+        remove_node['ypos'].setValue(remove_node.ypos() + 15)
+        remove_nodes.append(remove_node)
+
+        premult_node = nuke.createNode('Premult', inpanel=False)
+        premult_node.setInput(0, remove_node)
+        premult_nodes.append(premult_node)
+
+        dot_node = nuke.createNode('Dot', inpanel=False)
+        dot_node['label'].setValue(layer)
+        dot_node['ypos'].setValue(dot_node.ypos() + 100)
+        dot_nodes.append(dot_node)
+
+    read_node["ypos"].setValue(read_node.ypos()-50)
+
+    return_nodes["shuffle_nodes"] = shuffle_nodes
+    return_nodes["remove_nodes"] = remove_nodes
+    return_nodes["premult_nodes"] = premult_nodes
+    return_nodes["dot_nodes"] = dot_nodes
+    return return_nodes
+
+def generate_stamps(nodes):
+    """Generate a stamp for each given nodes
+    Args:
+        nodes(list): a list of nuke node
+    Returns:
+       (dict) listing all newly created node sorted by type"""
+    return_nodes = dict()
+    stamp_nodes = list()
+    anchor_nodes = list()
+
+    if not nodes:
+        return
+    if not isinstance(nodes, list):
+        nodes = [nodes]
+
+    for i, node in enumerate(nodes):
+        ns = nuke.selectedNodes()
+        for n in ns:
+            n.setSelected(False)
+        node.setSelected(True)
+        stamps_autoClickedOk.goStamp(autoClickedOk=True)
+        stamp_node = nuke.selectedNode()
+        stamp_nodes.append(stamp_node)
+
+        anchor_node = [n for n in nuke.allNodes() if node in [n.input(i) for i in range(n.inputs())]]
+        anchor_nodes.extend(anchor_node)
+        anchor_node[0]['ypos'].setValue(node.ypos() + node.screenHeight() +50)
+
+        stamp_node['xpos'].setValue(anchor_node[0].xpos())
+        stamp_node['ypos'].setValue(anchor_node[0].ypos() + 100)
+
+    return_nodes["stamp_nodes"] = stamp_nodes
+    return_nodes["anchor_nodes"] = anchor_nodes
+    return return_nodes
+
+def create_precomp_merge(nodes):
+    """Generate a succession of merge depending on given nodes
+    Args:
+        nodes(list): a list of nuke node
+    Returns:
+       (dict) listing all newly created node sorted by type"""
+    return_nodes = dict()
+    dot_nodes = list()
+    merge_nodes = list()
+
+    merge_input = nodes[0]
+    merge_xpos = nodes[0]['xpos'].value()
+    merge_ypos = nodes[-1]['ypos'].value() + 150
+
+    for node in nodes[1:]:
+        ns = nuke.selectedNodes()
+        for n in ns:
+            n.setSelected(False)
+        node.setSelected(True)
+
+        connect_dot_node = nuke.createNode('Dot', inpanel=False)
+        dot_nodes.append(connect_dot_node)
+
+        merge_node = nuke.createNode("Merge2")
+        merge_node["operation"].setValue("over")
+        merge_node.setInput(0, merge_input)
+        merge_node.setInput(1, connect_dot_node)
+        merge_nodes.append(merge_node)
+        merge_input = merge_node
+        merge_node['xpos'].setValue(merge_xpos)
+        merge_node['ypos'].setValue(merge_ypos)
+
+        connect_dot_node_x = node.xpos() + (node.screenWidth() - connect_dot_node.screenWidth()) // 2
+        connect_dot_node_y = merge_ypos + (merge_node.screenHeight() - connect_dot_node.screenHeight()) // 2
+        connect_dot_node['xpos'].setValue(connect_dot_node_x)
+        connect_dot_node['ypos'].setValue(connect_dot_node_y)
+
+        merge_ypos += 50
+
+    last_merge_node = merge_nodes[-1]
+    last_merge_xpos = last_merge_node['xpos'].value()
+    last_merge_ypos = last_merge_node['ypos'].value()
+
+    last_dot_node = nuke.createNode('Dot', inpanel=False)
+    dot_nodes.append(last_dot_node)
+    last_dot_node['xpos'].setValue(last_merge_xpos + 35)
+    last_dot_node['ypos'].setValue(last_merge_ypos + 100)
+
+    return_nodes["dot_nodes"] = dot_nodes
+    return_nodes["merge_nodes"] = merge_nodes
+    return return_nodes

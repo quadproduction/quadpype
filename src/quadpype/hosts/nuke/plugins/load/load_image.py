@@ -1,6 +1,10 @@
 import nuke
 
 import qargparse
+from quadpype.lib.attribute_definitions import (
+    BoolDef,
+    NumberDef
+)
 
 from quadpype.client import (
     get_version_by_id,
@@ -12,7 +16,6 @@ from quadpype.pipeline import (
     get_current_project_name,
     get_representation_path,
     get_current_host_name,
-    get_current_context,
     get_task_hierarchy_templates,
     get_resolved_name,
     format_data,
@@ -27,17 +30,15 @@ from quadpype.hosts.nuke.api import (
     viewer_update_and_undo_stop
 )
 from quadpype.hosts.nuke.api.backdrops import (
-    create_main_backdrops_from_list,
-    get_main_backdrops_profiles,
-    align_main_backdrops_from_list,
-    create_backdrops_from_hierarchy,
-    move_nodes_in_backdrop
+    pre_organize_by_backdrop,
+    organize_by_backdrop
 )
 from quadpype.lib.transcoding import (
     IMAGE_EXTENSIONS
 )
 from quadpype.hosts.nuke.api import plugin
 
+PREP_LAYER_EXT = ["psd", "psb", "exr"]
 
 class LoadImage(plugin.NukeLoader):
     """Load still image into Nuke"""
@@ -65,27 +66,57 @@ class LoadImage(plugin.NukeLoader):
     _representations = []
 
     node_name_template = "{class_name}_{ext}"
-
-    options = [
-        qargparse.Integer(
-            "frame_number",
-            label="Frame Number",
-            default=int(nuke.root()["first_frame"].getValue()),
-            min=1,
-            max=999999,
-            help="What frame is reading from?"
-        )
-    ]
+    defaults = {
+        "prep_layers": True,
+        "create_stamps": True,
+        "pre_comp": True,
+        "frame_number":{
+            "minimum":0,
+            "maximum":99999,
+            "decimals":0
+        }
+    }
 
     @classmethod
     def get_representations(cls):
         return cls._representations or cls.representations
 
+    @classmethod
+    def get_options(cls, contexts):
+        return [
+            NumberDef(
+                "frame_number",
+                label="Frame Number",
+                default=int(nuke.root()["first_frame"].getValue()),
+                minimum=1,
+                maximum=999999
+            ),
+            BoolDef(
+                "prep_layers",
+                label="Prep Layers",
+                default=cls.defaults["prep_layers"],
+                tooltip="Separate each layer in shuffle nodes"
+            ),
+            BoolDef(
+                "create_stamps",
+                label="Create Stamps",
+                default=cls.defaults["create_stamps"],
+                tooltip="Create a stamp for each created nodes"
+            ),
+            BoolDef(
+                "pre_comp",
+                label="Pre Comp",
+                default=cls.defaults["pre_comp"],
+                tooltip="Generate the merge tree for generated nodes"
+            )
+        ]
+
     def load(self, context, name, namespace, options):
         self.log.info("__ options: `{}`".format(options))
-        frame_number = options.get(
-            "frame_number", int(nuke.root()["first_frame"].getValue())
-        )
+        frame_number = options.get("frame_number", int(nuke.root()["first_frame"].getValue()))
+        prep_layers = options.get("prep_layers", True)
+        create_stamps = options.get("create_stamps", True)
+        pre_comp = options.get("pre_comp", True)
 
         version = context['version']
         version_data = version.get("data", {})
@@ -112,6 +143,10 @@ class LoadImage(plugin.NukeLoader):
         file = file.replace("\\", "/")
 
         representation = context["representation"]
+
+        ext = context["representation"]["context"]["ext"].lower()
+        is_prep_layer_compatible = ext in PREP_LAYER_EXT
+
         repr_cont = representation["context"]
         frame = repr_cont.get("frame")
         if frame:
@@ -125,16 +160,13 @@ class LoadImage(plugin.NukeLoader):
         # Create the Loader with the filename path set
         with viewer_update_and_undo_stop():
 
-            main_backdrops_profiles = get_main_backdrops_profiles()
-            # create_main_backdrops_from_list(main_backdrops_profiles)
-            align_main_backdrops_from_list(main_backdrops_profiles)
+            nodes_in_main_backdrops = pre_organize_by_backdrop()
 
             r = nuke.createNode(
                 "Read",
                 "name {}".format(read_name),
                 inpanel=False
             )
-
             r["file"].setValue(file)
 
             # Set colorspace defined in version data
@@ -153,7 +185,7 @@ class LoadImage(plugin.NukeLoader):
             r["last"].setValue(last)
 
             # add additional metadata from the version to imprint Avalon knob
-            add_keys = ["source", "colorspace", "author", "fps", "version", "task"]
+            add_keys = ["source", "colorspace", "author", "fps", "version"]
 
             data_imprint = {
                 "frameStart": first,
@@ -162,38 +194,19 @@ class LoadImage(plugin.NukeLoader):
             for k in add_keys:
                 if k == 'version':
                     data_imprint.update({k: context["version"]['name']})
-                elif k == 'task':
-                    data_imprint.update({k: context["representation"]["context"]["task"]['name']})
                 else:
                     data_imprint.update(
                         {k: context["version"]['data'].get(k, str(None))})
 
             r["tile_color"].setValue(int("0x4ecd25ff", 16))
 
-            template_data = format_data(
-                original_data=context['representation'],
-                filter_variant=True,
-                app=get_current_host_name()
-            )
-
-            backdrop_templates = get_task_hierarchy_templates(
-                template_data,
-                task=data_imprint["task"]
-            )
-
-            storage_backdrop = None
-            if backdrop_templates:
-                backdrops_hierarchy = [
-                    get_resolved_name(
-                        data=template_data,
-                        template=template
-                    )
-                    for template in backdrop_templates
-                ]
-                storage_backdrop = create_backdrops_from_hierarchy(backdrops_hierarchy, template_data)
-
-            if storage_backdrop:
-                move_nodes_in_backdrop(r, storage_backdrop)
+            organize_by_backdrop(context=context,
+                                 read_node=r,
+                                 nodes_in_main_backdrops=nodes_in_main_backdrops,
+                                 is_prep_layer_compatible=is_prep_layer_compatible,
+                                 prep_layers=prep_layers,
+                                 create_stamps=create_stamps,
+                                 pre_comp=pre_comp)
 
             return containerise(r,
                                 name=name,

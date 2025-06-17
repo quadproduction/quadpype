@@ -1,5 +1,4 @@
 import nuke
-import qargparse
 from pprint import pformat
 from copy import deepcopy
 from quadpype.lib import Logger
@@ -10,6 +9,15 @@ from quadpype.client import (
 from quadpype.pipeline import (
     get_current_project_name,
     get_representation_path,
+    get_current_host_name,
+    get_task_hierarchy_templates,
+    get_resolved_name,
+    format_data,
+    split_hierarchy
+)
+from quadpype.lib.attribute_definitions import (
+    BoolDef,
+    NumberDef
 )
 from quadpype.pipeline.colorspace import (
     get_imageio_file_rules_colorspace_from_filepath
@@ -17,6 +25,10 @@ from quadpype.pipeline.colorspace import (
 from quadpype.hosts.nuke.api.lib import (
     get_imageio_input_colorspace,
     maintained_selection
+)
+from quadpype.hosts.nuke.api.backdrops import (
+    pre_organize_by_backdrop,
+    organize_by_backdrop
 )
 from quadpype.hosts.nuke.api import (
     containerise,
@@ -30,6 +42,7 @@ from quadpype.lib.transcoding import (
 )
 from quadpype.hosts.nuke.api import plugin
 
+PREP_LAYER_EXT = ["psd", "psb", "exr"]
 
 class LoadClip(plugin.NukeLoader):
     """Load clip into Nuke
@@ -60,26 +73,48 @@ class LoadClip(plugin.NukeLoader):
 
     script_start = int(nuke.root()["first_frame"].value())
 
-    # option gui
-    options_defaults = {
-        "start_at_workfile": True,
-        "add_retime": True
-    }
-
     node_name_template = "{class_name}_{ext}"
+    # option gui
+    defaults = {
+        "start_at_workfile": True,
+        "add_retime": True,
+        "prep_layers": True,
+        "create_stamps": True,
+        "pre_comp": True
+    }
 
     @classmethod
     def get_options(cls, *args):
         return [
-            qargparse.Boolean(
+            BoolDef(
                 "start_at_workfile",
-                help="Load at workfile start frame",
-                default=cls.options_defaults["start_at_workfile"]
+                label="Start at Workfile",
+                tooltip="Load at workfile start frame",
+                default=cls.defaults["start_at_workfile"]
             ),
-            qargparse.Boolean(
+            BoolDef(
                 "add_retime",
-                help="Load with retime",
-                default=cls.options_defaults["add_retime"]
+                label="Add Retime",
+                tooltip="Load with retime",
+                default=cls.defaults["add_retime"]
+            ),
+            BoolDef(
+                "prep_layers",
+                label="Prep Layers",
+                default=cls.defaults["prep_layers"],
+                tooltip="Separate each layer in shuffle nodes"
+            ),
+            BoolDef(
+                "create_stamps",
+                label="Create Stamps",
+                default=cls.defaults["create_stamps"],
+                tooltip="Create a stamp for each created nodes"
+            ),
+            BoolDef(
+                "pre_comp",
+                label="Pre Comp",
+                default=cls.defaults["pre_comp"],
+                tooltip="Generate the merge tree for generated nodes"
             )
         ]
 
@@ -105,11 +140,11 @@ class LoadClip(plugin.NukeLoader):
         filepath = self.filepath_from_context(context)
         filepath = filepath.replace("\\", "/")
 
-        start_at_workfile = options.get(
-            "start_at_workfile", self.options_defaults["start_at_workfile"])
-
-        add_retime = options.get(
-            "add_retime", self.options_defaults["add_retime"])
+        start_at_workfile = options.get("start_at_workfile", self.options_defaults["start_at_workfile"])
+        add_retime = options.get("add_retime", self.options_defaults["add_retime"])
+        prep_layers = options.get("prep_layers", True)
+        create_stamps = options.get("create_stamps", True)
+        pre_comp = options.get("pre_comp", True)
 
         version = context['version']
         version_data = version.get("data", {})
@@ -133,6 +168,9 @@ class LoadClip(plugin.NukeLoader):
             first = 1
             last = first + duration
 
+        ext = context["representation"]["context"]["ext"].lower()
+        is_prep_layer_compatible = ext in PREP_LAYER_EXT
+
         # Fallback to asset name when namespace is None
         if namespace is None:
             namespace = context['asset']['name']
@@ -154,6 +192,9 @@ class LoadClip(plugin.NukeLoader):
         # to avoid multiple undo steps for rest of process
         # we will switch off undo-ing
         with viewer_update_and_undo_stop():
+
+            nodes_in_main_backdrops = pre_organize_by_backdrop()
+
             read_node["file"].setValue(filepath)
 
             self.set_colorspace_to_node(
@@ -193,6 +234,14 @@ class LoadClip(plugin.NukeLoader):
                 data_imprint["addRetime"] = True
 
             read_node["tile_color"].setValue(int("0x4ecd25ff", 16))
+
+            organize_by_backdrop(context=context,
+                                 read_node=read_node,
+                                 nodes_in_main_backdrops=nodes_in_main_backdrops,
+                                 is_prep_layer_compatible=is_prep_layer_compatible,
+                                 prep_layers=prep_layers,
+                                 create_stamps=create_stamps,
+                                 pre_comp=pre_comp)
 
             container = containerise(
                 read_node,
