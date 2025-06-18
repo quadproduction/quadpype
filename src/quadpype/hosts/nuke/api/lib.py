@@ -10,7 +10,7 @@ import contextlib
 from collections import OrderedDict
 
 import nuke
-from .stamps import stamps_autoClickedOk
+from quadpype.hosts.nuke.nuke_addon.stamps import stamps_autoClickedOk
 from qtpy import QtCore, QtWidgets
 
 from quadpype.client import (
@@ -35,8 +35,7 @@ from quadpype.lib import (
 
 from quadpype.settings import (
     get_project_settings,
-    get_current_project_settings,
-    GENERAL_SETTINGS_KEY
+    get_current_project_settings
 )
 from quadpype.modules import ModulesManager
 from quadpype.pipeline.template_data import get_template_data_with_names
