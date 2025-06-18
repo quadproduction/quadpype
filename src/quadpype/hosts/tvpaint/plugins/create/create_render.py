@@ -1049,7 +1049,7 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
         self.default_pass_name = plugin_settings["default_pass_name"]
         self.extract_psd = plugin_settings.get("extract_psd", True)
 
-        self.keep_frame_index = False
+        self.keep_frame_index = True
         self.exports_types = ['scene', 'camera']
         self.apply_background = ['No Operation', 'Color From Settings', 'Transparent']
         self.review_types = [el.name for el in TVPaintReviewType]
