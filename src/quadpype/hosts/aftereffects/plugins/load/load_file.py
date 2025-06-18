@@ -122,7 +122,7 @@ class FileLoader(api.AfterEffectsLoader):
         )
         folder_templates = get_task_hierarchy_templates(
             template_data,
-            task=get_current_context()['task_name']
+            task=context["representation"]["context"]["task"]['name']
         )
 
         if folder_templates:

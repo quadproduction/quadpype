@@ -1,15 +1,25 @@
 import nuke
 
 import qargparse
+from quadpype.lib.attribute_definitions import (
+    BoolDef,
+    NumberDef
+)
 
 from quadpype.client import (
     get_version_by_id,
     get_last_version_by_subset_id,
 )
+from quadpype.lib import Logger
 from quadpype.pipeline import (
     load,
     get_current_project_name,
     get_representation_path,
+    get_current_host_name,
+    get_task_hierarchy_templates,
+    get_resolved_name,
+    format_data,
+    split_hierarchy
 )
 from quadpype.hosts.nuke.api.lib import (
     get_imageio_input_colorspace
@@ -19,14 +29,20 @@ from quadpype.hosts.nuke.api import (
     update_container,
     viewer_update_and_undo_stop
 )
+from quadpype.hosts.nuke.api.backdrops import (
+    pre_organize_by_backdrop,
+    organize_by_backdrop
+)
 from quadpype.lib.transcoding import (
     IMAGE_EXTENSIONS
 )
+from quadpype.hosts.nuke.api import plugin
 
+PREP_LAYER_EXT = ["psd", "psb", "exr"]
 
-class LoadImage(load.LoaderPlugin):
+class LoadImage(plugin.NukeLoader):
     """Load still image into Nuke"""
-
+    log = Logger.get_logger(__name__)
     families = [
         "render2d",
         "source",
@@ -50,27 +66,57 @@ class LoadImage(load.LoaderPlugin):
     _representations = []
 
     node_name_template = "{class_name}_{ext}"
-
-    options = [
-        qargparse.Integer(
-            "frame_number",
-            label="Frame Number",
-            default=int(nuke.root()["first_frame"].getValue()),
-            min=1,
-            max=999999,
-            help="What frame is reading from?"
-        )
-    ]
+    defaults = {
+        "prep_layers": True,
+        "create_stamps": True,
+        "pre_comp": True,
+        "frame_number":{
+            "minimum":0,
+            "maximum":99999,
+            "decimals":0
+        }
+    }
 
     @classmethod
     def get_representations(cls):
         return cls._representations or cls.representations
 
+    @classmethod
+    def get_options(cls, contexts):
+        return [
+            NumberDef(
+                "frame_number",
+                label="Frame Number",
+                default=int(nuke.root()["first_frame"].getValue()),
+                minimum=1,
+                maximum=999999
+            ),
+            BoolDef(
+                "prep_layers",
+                label="Prep Layers",
+                default=cls.defaults["prep_layers"],
+                tooltip="Separate each layer in shuffle nodes"
+            ),
+            BoolDef(
+                "create_stamps",
+                label="Create Stamps",
+                default=cls.defaults["create_stamps"],
+                tooltip="Create a stamp for each created nodes"
+            ),
+            BoolDef(
+                "pre_comp",
+                label="Pre Comp",
+                default=cls.defaults["pre_comp"],
+                tooltip="Generate the merge tree for generated nodes"
+            )
+        ]
+
     def load(self, context, name, namespace, options):
         self.log.info("__ options: `{}`".format(options))
-        frame_number = options.get(
-            "frame_number", int(nuke.root()["first_frame"].getValue())
-        )
+        frame_number = options.get("frame_number", int(nuke.root()["first_frame"].getValue()))
+        prep_layers = options.get("prep_layers", True)
+        create_stamps = options.get("create_stamps", True)
+        pre_comp = options.get("pre_comp", True)
 
         version = context['version']
         version_data = version.get("data", {})
@@ -97,6 +143,10 @@ class LoadImage(load.LoaderPlugin):
         file = file.replace("\\", "/")
 
         representation = context["representation"]
+
+        ext = context["representation"]["context"]["ext"].lower()
+        is_prep_layer_compatible = ext in PREP_LAYER_EXT
+
         repr_cont = representation["context"]
         frame = repr_cont.get("frame")
         if frame:
@@ -109,12 +159,14 @@ class LoadImage(load.LoaderPlugin):
 
         # Create the Loader with the filename path set
         with viewer_update_and_undo_stop():
+
+            nodes_in_main_backdrops = pre_organize_by_backdrop()
+
             r = nuke.createNode(
                 "Read",
                 "name {}".format(read_name),
                 inpanel=False
             )
-
             r["file"].setValue(file)
 
             # Set colorspace defined in version data
@@ -147,6 +199,14 @@ class LoadImage(load.LoaderPlugin):
                         {k: context["version"]['data'].get(k, str(None))})
 
             r["tile_color"].setValue(int("0x4ecd25ff", 16))
+
+            organize_by_backdrop(context=context,
+                                 read_node=r,
+                                 nodes_in_main_backdrops=nodes_in_main_backdrops,
+                                 is_prep_layer_compatible=is_prep_layer_compatible,
+                                 prep_layers=prep_layers,
+                                 create_stamps=create_stamps,
+                                 pre_comp=pre_comp)
 
             return containerise(r,
                                 name=name,

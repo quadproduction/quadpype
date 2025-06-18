@@ -9,7 +9,7 @@ from quadpype.settings import get_project_settings
 from quadpype.pipeline.anatomy import Anatomy
 
 
-RES_SEPARATOR = '*'
+RES_SEPARATOR = 'x'
 RES_REGEX = r'(\d+).{1}(\d+)'
 RES_RECONSTRUCTION = fr'\1{RES_SEPARATOR}\2'
 

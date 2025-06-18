@@ -38,7 +38,7 @@ def get_loaded_naming_finder_template(setting_key):
 
 def get_workfile_build_template(template_name):
     return _get_template(
-        category="templated_workfile_build",
+        category="load",
         name=template_name,
         setting="profiles"
     )

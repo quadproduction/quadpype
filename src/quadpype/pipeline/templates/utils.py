@@ -28,6 +28,8 @@ def format_data(original_data, filter_variant=True, app=""):
 
     if is_current_asset_shot():
         data['sequence'], data['shot'] = extract_sequence_and_shot()
+    if is_origin_asset_shot(data["hierarchy"]):
+        data['asset_sequence'], data['asset_shot'] = extract_sequence_and_shot(asset=data["asset"])
     if filter_variant:
         _remove_default_variant(data)
     return data
@@ -139,9 +141,13 @@ def is_current_asset_shot():
     asset_data = get_current_project_asset()["data"]
     return asset_data['parents'][0].lower() == "shots"
 
+def is_origin_asset_shot(hierarchy):
+    return hierarchy.split("/")[0].lower() == "shots"
 
-def extract_sequence_and_shot():
+def extract_sequence_and_shot(asset=None):
     asset_name = get_current_context()['asset_name']
+    if asset:
+        asset_name = asset
     is_valid_pattern = re.match('^SQ[a-zA-Z0-9_.]+_[a-zA-Z.]+[a-zA-Z0-9_.]*$', asset_name)
     if not is_valid_pattern:
         raise RuntimeError(f"Can not extract sequence and shot from asset_name {asset_name}")

@@ -1,0 +1,71 @@
+{
+    "type": "dict",
+    "collapsible": true,
+    "key": "load",
+    "label": "Load plugins",
+    "children": [
+       {
+        "type": "dict",
+        "collapsible": true,
+        "key": "entity_type_name_matcher",
+        "label": "Entity Type Name Matcher",
+        "children": [
+            {
+                "type": "list",
+                "key": "profiles",
+                "label": "Profiles",
+                "object_type": {
+                    "type": "dict",
+                    "children": [
+                        {
+                            "type": "text",
+                            "key": "entity_types",
+                            "label": "Entity Types"
+                        },
+                        {
+                            "type": "text",
+                            "key": "entity_prefix",
+                            "label": "Entity Prefix"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "type": "dict",
+        "collapsible": true,
+        "key": "working_hierarchy_templates_by_tasks",
+        "label": "Working Hierarchy Templates By Tasks",
+        "children": [
+            {
+                "type": "list",
+                "key": "profiles",
+                "label": "Profiles",
+                "object_type": {
+                    "type": "dict",
+                    "children": [
+                        {
+                            "key": "task_types",
+                            "label": "Task types",
+                            "type": "task-types-enum"
+                        },
+                        {
+                            "key": "families",
+                            "label": "Families",
+                            "type": "list",
+                            "object_type": "text"
+                        },
+                        {
+                            "key": "templates",
+                            "label": "Templates",
+                            "type": "list",
+                            "object_type": "text"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+    ]
+}
