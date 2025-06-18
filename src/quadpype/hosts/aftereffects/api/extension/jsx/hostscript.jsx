@@ -784,7 +784,7 @@ function deleteItemWithHierarchy(item_id){
      *  Delete any 'item_id' with hierarchy until first not empty folder.
      *
      *  Not restricted only to comp, it could delete
-     *  any item with 'id'
+     *  any item with 'id'.
      */
     var item = app.project.itemByID(item_id);
     var folder = item.parentFolder;
@@ -792,19 +792,58 @@ function deleteItemWithHierarchy(item_id){
 
     if (item){
         item.remove();
+
     }else{
-        return _prepareError("There is no composition with "+ comp_id);
+        return _prepareError("There is no item with id "+ item_id);
+    }
+    return deleteHierarchy(parent_folder.id)
+}
+
+function isFolderWithItems(item){
+    return (item instanceof Folder) && (folder.items.length > 0)
+}
+
+function deleteHierarchy(folderId){
+    /**
+     *  Delete given folder and all his parents while they are empty.
+     */
+    var parentFolder = app.project.itemByID(folderId);
+    if (!parentFolder){
+        return _prepareError("There is no folder with id "+ item_id);
     }
 
-    while(parent_folder !== null){
-        folder = parent_folder
-        parent_folder = parent_folder.parentFolder
+    var deletedFolders = [];
+    while(parentFolder !== null){
+
+        var folder = parentFolder
+        parentFolder = parentFolder.parentFolder
+
         if ((!folder.items.length) && (folder.parentFolder !== null)) {
+            deletedFolders.push(folder.name)
             folder.remove();
-        } else { break; }
+        } else {
+            break;
+        }
 
     }
 
+    return _prepareSingleValue(deletedFolders)
+}
+
+function getItemParent(item_id){
+    /**
+     *  Return parent from item with given id.
+     */
+    var item = app.project.itemByID(item_id);
+    if (!item){
+        return _prepareError("There is no item with id "+ item_id);
+    }
+
+    var parentFolder = item.parentFolder
+    if (!parentFolder){
+        return _prepareError("There is no parent for folder with id "+ item_id);
+    }
+    return _prepareSingleValue(parentFolder);
 }
 
 function getCompProperties(comp_id){

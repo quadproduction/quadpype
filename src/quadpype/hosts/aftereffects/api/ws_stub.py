@@ -370,14 +370,28 @@ class AfterEffectsServerStub():
         return self._handle_return(res)
 
     def delete_item_with_hierarchy(self, item_id):
-        """ Deletes *Items in a file with hierary until not none Folder
+        """ Deletes *Items in a file with hierarchy until not none Folder
             Args:
-                items (list): of int item ids
+                item_id (int):
+                only_delete_if_empty (bool): check if item is folder and contains items before removing it
 
         """
         res = self.websocketserver.call(self.client.call
                                         ('AfterEffects.delete_item_with_hierarchy',
                                          item_id=item_id))
+
+        return self._handle_return(res)
+
+    def delete_hierarchy(self, folder_id):
+        """ Deletes folder with given id (if not empty) and all empty parents.
+            Args:
+                item_id (int):
+                only_delete_if_empty (bool): check if item is folder and contains items before removing it
+
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.delete_hierarchy',
+                                         folder_id=folder_id))
 
         return self._handle_return(res)
 
@@ -426,6 +440,24 @@ class AfterEffectsServerStub():
                                          color_idx=color_idx))
 
         return self._handle_return(res)
+
+    def get_item_parent(self, item_id):
+        """ Get item parent from scene
+
+            Args:
+                item_id (int):
+
+            Returns:
+                (AEItem)
+
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.get_item_parent',
+                                         item_id=item_id))
+
+        records = self._to_records(self._handle_return(res))
+        if records:
+            return records.pop()
 
     def get_comp_properties(self, comp_id):
         """ Get composition information for render purposes

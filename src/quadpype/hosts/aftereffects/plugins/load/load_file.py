@@ -189,6 +189,7 @@ class FileLoader(api.AfterEffectsLoader):
         # Resolve and then get a string
         path_str = str(path.resolve())
 
+        parent_folder = stub.get_item_parent(layer.id)
         stub.replace_item(layer.id, path_str, stub.LOADED_ICON + layer_name)
         stub.imprint(
             layer.id, {"representation": str(representation["_id"]),
@@ -200,6 +201,11 @@ class FileLoader(api.AfterEffectsLoader):
         if template_folder:
             folders_hierarchy = self.get_folder_hierarchy(template_data, template_folder, unique_number)
             self.create_folders(stub, folders_hierarchy, layer, stub.LOADED_ICON + layer_name)
+
+            if not parent_folder:
+                return
+
+            stub.delete_hierarchy(parent_folder.id)
 
     def remove(self, container):
         """
@@ -215,7 +221,6 @@ class FileLoader(api.AfterEffectsLoader):
         stub.delete_item(layer.id)
 
         psd_folder = find_folder(stub.LOADED_ICON + namespace)
-        self.log.warning(psd_folder)
         if psd_folder:
             stub.delete_item_with_hierarchy(psd_folder.id)
 
