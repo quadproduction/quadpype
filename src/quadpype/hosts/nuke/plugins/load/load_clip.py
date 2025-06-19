@@ -28,7 +28,8 @@ from quadpype.hosts.nuke.api.lib import (
 )
 from quadpype.hosts.nuke.api.backdrops import (
     pre_organize_by_backdrop,
-    organize_by_backdrop
+    organize_by_backdrop,
+    reorganize_inside_main_backdrop
 )
 from quadpype.hosts.nuke.api import (
     containerise,
@@ -196,7 +197,8 @@ class LoadClip(plugin.NukeLoader):
             nodes_in_main_backdrops = pre_organize_by_backdrop()
 
             read_node["file"].setValue(filepath)
-
+            read_node["xpos"].setValue(-100000)
+            read_node["ypos"].setValue(-100000)
             self.set_colorspace_to_node(
                 read_node, filepath, version, representation)
 
@@ -235,13 +237,13 @@ class LoadClip(plugin.NukeLoader):
 
             read_node["tile_color"].setValue(int("0x4ecd25ff", 16))
 
-            organize_by_backdrop(context=context,
-                                 read_node=read_node,
-                                 nodes_in_main_backdrops=nodes_in_main_backdrops,
-                                 is_prep_layer_compatible=is_prep_layer_compatible,
-                                 prep_layers=prep_layers,
-                                 create_stamps=create_stamps,
-                                 pre_comp=pre_comp)
+            main_backdrop, storage_backdrop, nodes = organize_by_backdrop(context=context,
+                                                                    read_node=read_node,
+                                                                    nodes_in_main_backdrops=nodes_in_main_backdrops,
+                                                                    is_prep_layer_compatible=is_prep_layer_compatible,
+                                                                    prep_layers=prep_layers,
+                                                                    create_stamps=create_stamps,
+                                                                    pre_comp=pre_comp)
 
             container = containerise(
                 read_node,
@@ -254,7 +256,14 @@ class LoadClip(plugin.NukeLoader):
         if add_retime and version_data.get("retime", None):
             self._make_retimes(read_node, version_data)
 
-        self.set_as_member(read_node)
+        if storage_backdrop:
+            data_imprint["storage_backdrop"] = storage_backdrop['name'].value()
+            data_imprint["main_backdrop"] = main_backdrop['name'].value()
+            self.set_as_member(storage_backdrop)
+            for n in nodes:
+                self.set_as_member(n)
+        else:
+            self.set_as_member(read_node)
 
         return container
 
@@ -429,11 +438,14 @@ class LoadClip(plugin.NukeLoader):
         read_node = container["node"]
         assert read_node.Class() == "Read", "Must be Read"
 
+        main_backdrop = container["main_backdrop"]
         with viewer_update_and_undo_stop():
             members = self.get_members(read_node)
             nuke.delete(read_node)
             for member in members:
                 nuke.delete(member)
+            if main_backdrop:
+                reorganize_inside_main_backdrop(main_backdrop)
 
     def _set_range_to_node(self, read_node, first, last, start_at_workfile):
         read_node['origfirst'].setValue(int(first))

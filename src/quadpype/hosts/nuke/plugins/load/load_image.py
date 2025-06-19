@@ -31,7 +31,8 @@ from quadpype.hosts.nuke.api import (
 )
 from quadpype.hosts.nuke.api.backdrops import (
     pre_organize_by_backdrop,
-    organize_by_backdrop
+    organize_by_backdrop,
+    reorganize_inside_main_backdrop
 )
 from quadpype.lib.transcoding import (
     IMAGE_EXTENSIONS
@@ -112,6 +113,7 @@ class LoadImage(plugin.NukeLoader):
         ]
 
     def load(self, context, name, namespace, options):
+        self.reset_container_id()
         self.log.info("__ options: `{}`".format(options))
         frame_number = options.get("frame_number", int(nuke.root()["first_frame"].getValue()))
         prep_layers = options.get("prep_layers", True)
@@ -168,7 +170,8 @@ class LoadImage(plugin.NukeLoader):
                 inpanel=False
             )
             r["file"].setValue(file)
-
+            r["xpos"].setValue(-100000)
+            r["ypos"].setValue(-100000)
             # Set colorspace defined in version data
             colorspace = context["version"]["data"].get("colorspace")
             if colorspace:
@@ -200,13 +203,22 @@ class LoadImage(plugin.NukeLoader):
 
             r["tile_color"].setValue(int("0x4ecd25ff", 16))
 
-            organize_by_backdrop(context=context,
-                                 read_node=r,
-                                 nodes_in_main_backdrops=nodes_in_main_backdrops,
-                                 is_prep_layer_compatible=is_prep_layer_compatible,
-                                 prep_layers=prep_layers,
-                                 create_stamps=create_stamps,
-                                 pre_comp=pre_comp)
+            main_backdrop, storage_backdrop, nodes = organize_by_backdrop(context=context,
+                                                                   read_node=r,
+                                                                   nodes_in_main_backdrops=nodes_in_main_backdrops,
+                                                                   is_prep_layer_compatible=is_prep_layer_compatible,
+                                                                   prep_layers=prep_layers,
+                                                                   create_stamps=create_stamps,
+                                                                   pre_comp=pre_comp)
+
+            if storage_backdrop:
+                data_imprint["storage_backdrop"] = storage_backdrop['name'].value()
+                data_imprint["main_backdrop"] = main_backdrop['name'].value()
+                self.set_as_member(storage_backdrop)
+                for n in nodes:
+                    self.set_as_member(n)
+            else:
+                self.set_as_member(r)
 
             return containerise(r,
                                 name=name,
@@ -300,8 +312,14 @@ class LoadImage(plugin.NukeLoader):
         node = container["node"]
         assert node.Class() == "Read", "Must be Read"
 
+        main_backdrop = container["main_backdrop"]
         with viewer_update_and_undo_stop():
+            members = self.get_members(node)
             nuke.delete(node)
+            for member in members:
+                nuke.delete(member)
+            if main_backdrop:
+                reorganize_inside_main_backdrop(main_backdrop)
 
     def _get_node_name(self, representation):
 

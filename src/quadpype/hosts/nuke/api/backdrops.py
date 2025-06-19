@@ -450,6 +450,8 @@ def organize_by_backdrop(context, read_node, nodes_in_main_backdrops,
         task=context["representation"]["context"]["task"]['name']
     )
 
+    storage_backdrop = None
+    main_backdrop = None
     if backdrop_templates:
         backdrops_hierarchy = [
             get_resolved_name(
@@ -462,6 +464,27 @@ def organize_by_backdrop(context, read_node, nodes_in_main_backdrops,
 
         if storage_backdrop:
             move_nodes_in_backdrop(nodes, storage_backdrop)
-            adjust_main_backdrops(main_backdrop=get_first_backdrop_in_first_template(backdrops_hierarchy),
+            main_backdrop = get_first_backdrop_in_first_template(backdrops_hierarchy)
+            adjust_main_backdrops(main_backdrop=main_backdrop,
                                   backdrop=storage_backdrop,
                                   nodes_in_main_backdrops=nodes_in_main_backdrops)
+
+    return main_backdrop, storage_backdrop, nodes
+
+def reorganize_inside_main_backdrop(main_backdrop_name):
+    padding = 15
+
+    main_backdrop = _get_backdrop_by_name(main_backdrop_name)
+    backdrops_in_main_backdrop = _get_backdrops_in_backdrops(main_backdrop)
+
+    backdrops_in_main_backdrop.sort(key=lambda bd: bd['xpos'].value())
+
+    current_x =  main_backdrop['xpos'].value() + padding * 2
+
+    for backdrop in backdrops_in_main_backdrop:
+        nodes = _get_nodes_in_backdrops(backdrop)
+        backdrop['xpos'].setValue(current_x)
+        current_x += backdrop['bdwidth'].value() + padding
+        move_nodes_in_backdrop(nodes, backdrop)
+
+    return main_backdrop_name, main_backdrop, backdrops_in_main_backdrop
