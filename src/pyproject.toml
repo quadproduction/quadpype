@@ -84,6 +84,12 @@ colorama = "0.4.6"
 fastapi = "^0.115.0"
 uvicorn = "^0.34.0"
 htmllistparse = "^0.6.1"
+opencv-python = "^4.11.0"
+pyautogui = "^0.9.54"
+mss = "^10.0.0"
+imutils = "^0.5.4"
+numpy = "^2.0.2"
+notify-py = "^0.3.42"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^6.0"

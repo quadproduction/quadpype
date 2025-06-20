@@ -7,7 +7,12 @@ import qtawesome
 from quadpype import style
 from quadpype.client import get_projects
 from quadpype.widgets import BaseToolDialog
-from quadpype.pipeline import legacy_io
+from quadpype.settings import get_project_settings
+from quadpype.pipeline import (
+    legacy_io,
+    get_current_host_name,
+    get_current_project_name
+)
 from quadpype.tools.utils.delegates import VersionDelegate
 from quadpype.tools.utils.lib import (
     qt_app_context,
@@ -33,7 +38,12 @@ class SceneInventoryWindow(BaseToolDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        if self.can_stay_on_top:
+        project_settings = get_project_settings(get_current_project_name())
+        host_settings = project_settings.get(get_current_host_name(), {})
+        disable_stay_on_top = host_settings.get('load', {}).get('auto_clic_import_dialog', False)
+
+        # Enable minimize and maximize for app
+        if self.can_stay_on_top and not disable_stay_on_top:
             self.setWindowFlags(
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )

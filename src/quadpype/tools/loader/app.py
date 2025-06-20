@@ -7,9 +7,12 @@ from quadpype.client import get_projects, get_project
 from quadpype import style
 from quadpype.lib import register_event_callback
 from quadpype.widgets import BaseToolDialog
+from quadpype.settings import get_project_settings
 from quadpype.pipeline import (
     install_quadpype_plugins,
     legacy_io,
+    get_current_host_name,
+    get_current_project_name
 )
 from quadpype.tools.utils import (
     lib,
@@ -50,9 +53,13 @@ class LoaderWindow(BaseToolDialog):
         self.groups_config = lib.GroupsConfig(legacy_io)
         self.family_config_cache = lib.FamilyConfigCache(legacy_io)
 
+        project_settings = get_project_settings(get_current_project_name())
+        host_settings = project_settings.get(get_current_host_name(), {})
+        disable_stay_on_top = host_settings.get('load', {}).get('auto_clic_import_dialog', False)
+
         # Enable minimize and maximize for app
         window_flags = QtCore.Qt.Window
-        if self.can_stay_on_top:
+        if self.can_stay_on_top and not disable_stay_on_top:
             window_flags |= QtCore.Qt.WindowStaysOnTopHint
         self.setWindowFlags(window_flags)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)

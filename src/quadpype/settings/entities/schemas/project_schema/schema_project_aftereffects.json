@@ -66,6 +66,29 @@
             ]
         },
         {
+            "key": "load",
+            "type": "dict",
+            "label": "Load plugins",
+            "collapsible": true,
+            "is_group": true,
+            "children": [
+                {
+                    "type": "boolean",
+                    "key": "auto_clic_import_dialog",
+                    "label": "Activate import file dialog auto clic when importing assets"
+                },
+                {
+                    "type": "label",
+                    "label": "<i>Activating this will automatically disable 'stay on top' features for this software.</i>"
+                },
+                {
+                    "type": "number",
+                    "key": "attempts_number",
+                    "label": "Number of auto clics attempts to be performed before giving up process."
+                }
+            ]
+        },
+        {
             "type": "dict",
             "collapsible": true,
             "key": "publish",

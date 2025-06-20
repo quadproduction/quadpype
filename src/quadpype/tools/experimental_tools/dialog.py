@@ -5,6 +5,11 @@ from quadpype.style import (
     load_stylesheet,
     app_icon_path
 )
+from quadpype.pipeline import (
+    get_current_host_name,
+    get_current_project_name
+)
+from quadpype.settings import get_project_settings
 
 from .tools_def import ExperimentalTools
 
@@ -33,7 +38,11 @@ class ExperimentalToolsDialog(BaseToolDialog):
         self.setWindowIcon(icon)
         self.setStyleSheet(load_stylesheet())
 
-        if self.can_stay_on_top:
+        project_settings = get_project_settings(get_current_project_name())
+        host_settings = project_settings.get(get_current_host_name(), {})
+        disable_stay_on_top = host_settings.get('load', {}).get('auto_clic_import_dialog', False)
+
+        if self.can_stay_on_top and not disable_stay_on_top:
             self.setWindowFlags(
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )
