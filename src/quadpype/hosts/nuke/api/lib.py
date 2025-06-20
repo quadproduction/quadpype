@@ -3540,17 +3540,7 @@ def get_custom_res(width, height):
 
     return node_name
 
-def decompose_layers(read_node):
-    """Will create a shuffle_node for each layer in the read_node that is not RGB based
-    Args:
-        read_node(Read): a nuke read node
-    Returns:
-        (dict) listing all newly created node sorted by type
-    """
-    read_node_name = read_node['name'].value()
-    if read_node.Class() != 'Read':
-        raise RuntimeError("Selected node is not a Read node.")
-
+def get_layers(read_node):
     all_layer_names = read_node.channels()
 
     if not all_layer_names:
@@ -3564,7 +3554,55 @@ def decompose_layers(read_node):
             layer_names.append(layer_base)
 
     if not layer_names:
-        raise RuntimeError("No layers found in the selected Read node. \nAre you sure this is a layered PSD?")
+        raise RuntimeError("No layers found in the selected Read node. \nAre you sure this is a layered file?")
+
+    return layer_names
+
+def compare_layers(old_layers, new_layers, ask_proceed=False):
+    new_layers_to_add = []
+    old_layers_to_delete = []
+
+    for new_layer in new_layers:
+        if new_layer not in old_layers:
+            new_layers_to_add.append(new_layer)
+
+    for old_layer in old_layers:
+        if old_layer not in new_layers:
+            old_layers_to_delete.append(old_layer)
+
+    if not ask_proceed:
+        return new_layers_to_add, old_layers_to_delete
+
+    msg = ""
+    if new_layers_to_add:
+        msg = (f"Some layers in this new PSD have been added:\n"
+              f"{', '.join(new_layers_to_add)}\n\n")
+
+    if old_layers_to_delete:
+        msg = msg + (f"Some layers in this new PSD have been removed:\n"
+              f"{', '.join(old_layers_to_delete)}\n\n")
+
+    msg = msg + ("Do you want to proceed?")
+
+    if new_layers_to_add or old_layers_to_delete:
+        proceed = nuke.ask(msg)
+        if not proceed:
+            return
+        else:
+            return new_layers_to_add, old_layers_to_delete
+
+def decompose_layers(read_node):
+    """Will create a shuffle_node for each layer in the read_node that is not RGB based
+    Args:
+        read_node(Read): a nuke read node
+    Returns:
+        (dict) listing all newly created node sorted by type
+    """
+    read_node_name = read_node['name'].value()
+    if read_node.Class() != 'Read':
+        raise RuntimeError("Selected node is not a Read node.")
+
+    layer_names = get_layers(read_node)
 
     shuffle_nodes = []
     remove_nodes = []

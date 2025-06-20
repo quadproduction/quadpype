@@ -187,9 +187,8 @@ def align_main_backdrops_from_list(backdrop_profiles):
         if backdrop and backdrop_reference:
             align_backdrops(backdrop_reference, backdrop, position)
 
-def align_backdrops(backdrop_ref, backdrop_to_move, alignment):
+def align_backdrops(backdrop_ref, backdrop_to_move, alignment, padding=15):
     """Align a given backdrop depending on a reference backdrop"""
-    margin = 15
 
     x1 = backdrop_ref['xpos'].value()
     y1 = backdrop_ref['ypos'].value()
@@ -201,38 +200,38 @@ def align_backdrops(backdrop_ref, backdrop_to_move, alignment):
 
     if alignment == "to_left":
         backdrop_to_move["ypos"].setValue(y1)
-        new_x = x1 - w2 - margin
+        new_x = x1 - w2 - padding
         backdrop_to_move["xpos"].setValue(int(new_x))
         return True
 
     elif alignment == "to_right":
         backdrop_to_move["ypos"].setValue(y1)
-        new_x = x1 + w1 + margin
+        new_x = x1 + w1 + padding
         backdrop_to_move["xpos"].setValue(int(new_x))
         return True
 
     elif alignment == "on_top":
         backdrop_to_move["xpos"].setValue(x1)
-        new_y = y1 - h2 - margin
+        new_y = y1 - h2 - padding
         backdrop_to_move["ypos"].setValue(int(new_y))
         return True
 
     elif alignment == "under":
         backdrop_to_move["xpos"].setValue(x1)
-        new_y = y1 + h1 + margin
+        new_y = y1 + h1 + padding
         backdrop_to_move["ypos"].setValue(new_y)
         return True
 
     elif alignment == "inside":
 
-        new_y = y1 + margin*10
-        new_x = x1 + margin*2
+        new_y = y1 + padding*10
+        new_x = x1 + padding*2
         inside_backdrops = _get_backdrops_in_backdrops(backdrop_ref)
         if inside_backdrops:
             inside_nodes_w, inside_nodes_h, inside_node_x, inside_node_y = _get_nodes_dimensions(
                                                                             _get_backdrops_in_backdrops(backdrop_ref)
                                                                         )
-            new_x = new_x + inside_nodes_w + margin
+            new_x = new_x + inside_nodes_w + padding
             new_y = inside_node_y
 
             if backdrop_to_move not in inside_backdrops:
@@ -314,21 +313,21 @@ def color_backdrop(backdrop, bd_color):
     r, g, b, a = bd_color
     backdrop["tile_color"].setValue(_convert_rgb_to_nuke_color(r, g, b))
 
-def resize_backdrop_based_on_nodes(backdrop, nodes, padding = 50):
+def resize_backdrop_based_on_nodes(backdrop, nodes, padding=50, shrink=False):
     """Will resize a backdrop to match the size of a given group of nodes."""
     new_width, new_height, new_x, new_y = _get_nodes_dimensions(nodes)
     bd_width, bd_height, bd_x, bd_y = _get_nodes_dimensions(backdrop)
 
     new_bd_width = bd_width
     new_bd_height = bd_height
-    if new_width + padding > bd_width:
+    if new_width + padding > bd_width or shrink:
         new_bd_width = new_width+padding
-    if new_height + padding > bd_height:
+    if new_height + padding > bd_height or shrink:
         new_bd_height = new_height+padding*2
 
     resize_backdrop(backdrop, new_bd_width, new_bd_height)
 
-def move_nodes_in_backdrop(nodes, backdrop, padding = 50):
+def move_nodes_in_backdrop(nodes, backdrop, padding=50):
     """Will move the given list of nodes into the given backdrop.
     Will resize the backdrop if necessary"""
     if not nodes:
@@ -409,10 +408,14 @@ def pre_organize_by_backdrop():
     adjust_main_backdrops(nodes_in_main_backdrops=nodes_in_main_backdrops)
     return nodes_in_main_backdrops
 
-def organize_by_backdrop(context, read_node, nodes_in_main_backdrops,
-                         is_prep_layer_compatible, prep_layers, create_stamps, pre_comp):
+def organize_by_backdrop(context, read_node, nodes_in_main_backdrops, options):
 
     nodes = [read_node]
+
+    is_prep_layer_compatible = options.get("is_prep_layer_compatible", True)
+    prep_layers = options.get("prep_layers", True)
+    create_stamps = options.get("create_stamps", True)
+    pre_comp = options.get("pre_comp", True)
 
     new_nodes = dict()
     if is_prep_layer_compatible and prep_layers:
@@ -484,7 +487,10 @@ def reorganize_inside_main_backdrop(main_backdrop_name):
     for backdrop in backdrops_in_main_backdrop:
         nodes = _get_nodes_in_backdrops(backdrop)
         backdrop['xpos'].setValue(current_x)
+        main_backdrop['bdwidth'].setValue(main_backdrop.xpos() + current_x)
         current_x += backdrop['bdwidth'].value() + padding
         move_nodes_in_backdrop(nodes, backdrop)
 
-    return main_backdrop_name, main_backdrop, backdrops_in_main_backdrop
+    pre_organize_by_backdrop()
+
+    return

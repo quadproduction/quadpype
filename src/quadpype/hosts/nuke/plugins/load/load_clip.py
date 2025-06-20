@@ -101,7 +101,7 @@ class LoadClip(plugin.NukeLoader):
             ),
             BoolDef(
                 "prep_layers",
-                label="Prep Layers",
+                label="Decompose Layers",
                 default=cls.defaults["prep_layers"],
                 tooltip="Separate each layer in shuffle nodes"
             ),
@@ -113,7 +113,7 @@ class LoadClip(plugin.NukeLoader):
             ),
             BoolDef(
                 "pre_comp",
-                label="Pre Comp",
+                label="Create PreComp",
                 default=cls.defaults["pre_comp"],
                 tooltip="Generate the merge tree for generated nodes"
             )
@@ -147,6 +147,13 @@ class LoadClip(plugin.NukeLoader):
         create_stamps = options.get("create_stamps", True)
         pre_comp = options.get("pre_comp", True)
 
+        if not options:
+            options = {"start_at_workfile":start_at_workfile,
+                       "add_retime":add_retime,
+                       "prep_layers":prep_layers,
+                       "create_stamps":create_stamps,
+                       "pre_comp":pre_comp}
+
         version = context['version']
         version_data = version.get("data", {})
         repre_id = representation["_id"]
@@ -171,6 +178,7 @@ class LoadClip(plugin.NukeLoader):
 
         ext = context["representation"]["context"]["ext"].lower()
         is_prep_layer_compatible = ext in PREP_LAYER_EXT
+        options["is_prep_layer_compatible"] = is_prep_layer_compatible
 
         # Fallback to asset name when namespace is None
         if namespace is None:
@@ -240,10 +248,7 @@ class LoadClip(plugin.NukeLoader):
             main_backdrop, storage_backdrop, nodes = organize_by_backdrop(context=context,
                                                                     read_node=read_node,
                                                                     nodes_in_main_backdrops=nodes_in_main_backdrops,
-                                                                    is_prep_layer_compatible=is_prep_layer_compatible,
-                                                                    prep_layers=prep_layers,
-                                                                    create_stamps=create_stamps,
-                                                                    pre_comp=pre_comp)
+                                                                    options=options)
 
             container = containerise(
                 read_node,

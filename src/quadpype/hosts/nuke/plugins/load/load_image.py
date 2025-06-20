@@ -22,7 +22,9 @@ from quadpype.pipeline import (
     split_hierarchy
 )
 from quadpype.hosts.nuke.api.lib import (
-    get_imageio_input_colorspace
+    get_imageio_input_colorspace,
+    get_layers,
+    compare_layers
 )
 from quadpype.hosts.nuke.api import (
     containerise,
@@ -38,6 +40,8 @@ from quadpype.lib.transcoding import (
     IMAGE_EXTENSIONS
 )
 from quadpype.hosts.nuke.api import plugin
+
+from src.quadpype.pipeline.editorial import frames_to_seconds
 
 PREP_LAYER_EXT = ["psd", "psb", "exr"]
 
@@ -94,7 +98,7 @@ class LoadImage(plugin.NukeLoader):
             ),
             BoolDef(
                 "prep_layers",
-                label="Prep Layers",
+                label="Decompose Layers",
                 default=cls.defaults["prep_layers"],
                 tooltip="Separate each layer in shuffle nodes"
             ),
@@ -106,7 +110,7 @@ class LoadImage(plugin.NukeLoader):
             ),
             BoolDef(
                 "pre_comp",
-                label="Pre Comp",
+                label="Create PreComp",
                 default=cls.defaults["pre_comp"],
                 tooltip="Generate the merge tree for generated nodes"
             )
@@ -119,6 +123,12 @@ class LoadImage(plugin.NukeLoader):
         prep_layers = options.get("prep_layers", True)
         create_stamps = options.get("create_stamps", True)
         pre_comp = options.get("pre_comp", True)
+
+        if not options:
+            options = {"frame_number":frame_number,
+                       "prep_layers":prep_layers,
+                       "create_stamps":create_stamps,
+                       "pre_comp":pre_comp}
 
         version = context['version']
         version_data = version.get("data", {})
@@ -148,6 +158,7 @@ class LoadImage(plugin.NukeLoader):
 
         ext = context["representation"]["context"]["ext"].lower()
         is_prep_layer_compatible = ext in PREP_LAYER_EXT
+        options["is_prep_layer_compatible"] = is_prep_layer_compatible
 
         repr_cont = representation["context"]
         frame = repr_cont.get("frame")
@@ -206,10 +217,7 @@ class LoadImage(plugin.NukeLoader):
             main_backdrop, storage_backdrop, nodes = organize_by_backdrop(context=context,
                                                                    read_node=r,
                                                                    nodes_in_main_backdrops=nodes_in_main_backdrops,
-                                                                   is_prep_layer_compatible=is_prep_layer_compatible,
-                                                                   prep_layers=prep_layers,
-                                                                   create_stamps=create_stamps,
-                                                                   pre_comp=pre_comp)
+                                                                   options=options)
 
             if storage_backdrop:
                 data_imprint["storage_backdrop"] = storage_backdrop['name'].value()
@@ -220,6 +228,8 @@ class LoadImage(plugin.NukeLoader):
             else:
                 self.set_as_member(r)
 
+            self.log.info("__ options: `{}`".format(options))
+            data_imprint["options"] = options
             return containerise(r,
                                 name=name,
                                 namespace=namespace,
@@ -230,7 +240,7 @@ class LoadImage(plugin.NukeLoader):
     def switch(self, container, representation):
         self.update(container, representation)
 
-    def update(self, container, representation):
+    def update(self, container, representation, ask_proceed=True):
         """Update the Loader's path
 
         Nuke automatically tries to reset some variables when changing
@@ -273,6 +283,8 @@ class LoadImage(plugin.NukeLoader):
 
         last = first = int(frame_number)
 
+        old_layers = get_layers(node)
+
         # Set the global in to the start frame of the sequence
         read_name = self._get_node_name(representation)
         node["name"].setValue(read_name)
@@ -281,6 +293,10 @@ class LoadImage(plugin.NukeLoader):
         node["first"].setValue(first)
         node["origlast"].setValue(last)
         node["last"].setValue(last)
+
+        new_layers = get_layers(node)
+        #Todo
+        new_layers_to_add, old_layers_to_delete = (compare_layers(old_layers, new_layers, ask_proceed))
 
         updated_dict = {}
         updated_dict.update({
@@ -319,7 +335,7 @@ class LoadImage(plugin.NukeLoader):
             for member in members:
                 nuke.delete(member)
             if main_backdrop:
-                reorganize_inside_main_backdrop(main_backdrop)
+                self.log.info(reorganize_inside_main_backdrop(main_backdrop))
 
     def _get_node_name(self, representation):
 
