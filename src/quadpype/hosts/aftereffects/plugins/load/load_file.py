@@ -138,7 +138,8 @@ class FileLoader(api.AfterEffectsLoader):
             task=get_current_context()['task_name']
         )
 
-    def get_folder_hierarchy(self, template_data, folder_templates, unique_number):
+    @staticmethod
+    def get_folder_hierarchy(template_data, folder_templates, unique_number):
         return [
             get_resolved_name(
                 data=template_data,
@@ -192,9 +193,12 @@ class FileLoader(api.AfterEffectsLoader):
         parent_folder = stub.get_item_parent(layer.id)
         stub.replace_item(layer.id, path_str, stub.LOADED_ICON + layer_name)
         stub.imprint(
-            layer.id, {"representation": str(representation["_id"]),
-                       "name": context["subset"],
-                       "namespace": layer_name}
+            layer.id,
+            {
+                "representation": str(representation["_id"]),
+                "name": context["subset"],
+                "namespace": layer_name
+            }
         )
 
         template_data, template_folder = self.get_folder_and_data_template(representation)

@@ -650,6 +650,8 @@ function replaceCompSequenceItems(item, path, item_name){
 
     importedComp.remove();
     previousCompFolder.remove();
+
+    return true
 }
 
 
