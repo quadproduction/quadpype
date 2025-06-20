@@ -126,6 +126,9 @@ sys.path.insert(0, vendor_python_path)
 # - common contains common code for bootstraping and QuadPype processes
 sys.path.insert(0, os.path.join(QUADPYPE_ROOT, "common"))
 
+# Ensure Python Encoding
+os.environ["PYTHONIOENCODING"] = 'utf-8'
+
 import blessed  # noqa: E402
 import certifi  # noqa: E402
 
