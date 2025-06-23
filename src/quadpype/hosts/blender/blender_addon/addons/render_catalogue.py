@@ -2,7 +2,7 @@ bl_info = {
     "name": "Render Catalogue",
     "version": (1, 0),
     "description": "Display render slots in a catalogue.",
-    "blender": (3, 6, 1),
+    "blender": (4, 1, 1),
     "category": "Render",
 }
 
@@ -10,26 +10,23 @@ import bpy
 import os
 import bpy.utils.previews
 import time
-import math
 from bpy_extras.view3d_utils import location_3d_to_region_2d
 
 # Set addon path
-addonPath =  os.path.join(os.path.dirname(__file__), "") #r"C:\Users\lgermain\AppData\Local\quad\quadpype\4.3\4.3.4\quadpype\hosts\blender\blender_addon\addons"
-
-'''
-toolsPy = os.path.join(addonPath, "tools.py")
-exec(compile(open(toolsPy).read(), toolsPy, 'exec'))
-'''
+addonPath = os.path.join(os.path.dirname(__file__), "")
 
 # Global variables
 rendering = None
 loadingThumb = None
+modalCompete= None
 RrImageSize = (0,0)
 switchIconPath = os.path.join(addonPath, r"render_catalogue\icon\switch.png")
 RrFilePath = os.path.join(addonPath, "render_catalogue/renderResult.blend")
 RrImage = "RC Render Result"
 thumbnailDir = os.path.join(bpy.app.tempdir, "thumbnail/")
 thumbName = "thumbRenderCat_"
+missingRenderThumbName= "maybeNoRenderImage_"
+failedRenderThumbName= "noRenderImage_"
 thumbSize = 128
 thumbExt = ".jpg"
 BG_SlotIndex = ''
@@ -40,7 +37,6 @@ addon_keymaps = []
 
 def sceneInit():
     """Initialize scene and setup keymaps."""
-    #global RrImageSize
     renderResult = is_RR_image()
 
     if renderResult is not None:
@@ -55,8 +51,6 @@ def sceneInit():
     else:
         importRrImageRef(RrFilePath, RrImage)
         setImageEditorContext(bpy.data.images[RrImage])
-    #RrImageSize= getRrImageSize()
-
 
 
 def getRrImageSize():
@@ -65,19 +59,22 @@ def getRrImageSize():
     RrImageSize = (int(res.resolution_x * (resPercentage / 100)), int(res.resolution_y * (resPercentage / 100)))
     return RrImageSize
 
+
 def loadThumb():
     """Load thumbnail images as icons for UI display."""
     global loadingThumb
     iconsThumb.clear()
     renderSlots = is_RR_image()
-
     if renderSlots and renderSlots != False:
         renderSlots = renderSlots.render_slots
         for slot in renderSlots:
             if slot.name != thumbName + "0" and os.path.isdir(thumbnailDir):
                 thumbFile = slot.name
-                iconsThumb.load(thumbFile, os.path.join(thumbnailDir, thumbFile + thumbExt), 'IMAGE')
+                thumbnailPath= os.path.join(thumbnailDir, thumbFile + thumbExt)
 
+                if not os.path.isfile(thumbnailPath):
+                    thumbFile = f"{missingRenderThumbName}{slot.name.split('_')[-1]}"
+                iconsThumb.load(thumbFile, thumbnailPath, 'IMAGE')
     loadingThumb = False
 
 
@@ -95,23 +92,26 @@ def setImageEditorContext(img):
         if area.type == 'IMAGE_EDITOR':
             area.spaces.active.image = img
             return area
-    return None
 
+    return None
 
 def saveRender(renderResult,thumbnailPath):
     """Save the render result to a file."""
-    setImageEditorContext(renderResult)
     scene = bpy.context.scene
     render_settings = scene.render.image_settings
     original_format = render_settings.file_format
     original_colorDepth = render_settings.color_depth
     render_settings.file_format = 'JPEG'
+
     try:
-        bpy.ops.image.save_as(filepath=thumbnailPath, save_as_render= False, copy= True)
+        renderResult.save_render(thumbnailPath, scene=bpy.context.scene, quality=0) #bpy.ops.image.save_as(filepath=thumbnailPath, save_as_render= False, copy= True)
         render_settings.file_format= original_format
         render_settings.color_depth= original_colorDepth
         return True
-    except RuntimeError:
+
+    except Exception as e:
+        #print(f"Render catalogue error saving image: {e}")
+        #print(f"(probably missing render)")
         render_settings.file_format= original_format
         render_settings.color_depth= original_colorDepth
         return False
@@ -119,16 +119,17 @@ def saveRender(renderResult,thumbnailPath):
 
 def createThumbnail(thumbnailDir, thumbName, thumbExt, thumbSize):
     """Create and save a thumbnail from render result."""
-    #global RrImageSize
-    RrImageSize= getRrImageSize()
+    global loadingThumb
     renderResult = is_RR_image()
+
     if not renderResult:
+        loadingThumb = False
         return
 
     slotIndex = renderResult.render_slots.active.name.split('_')[1]
     thumbnailPath = os.path.join(thumbnailDir, f"{thumbName}{slotIndex}{thumbExt}")
 
-    if saveRender(renderResult, thumbnailPath):
+    if not os.path.isfile(thumbnailPath) and saveRender(renderResult, thumbnailPath):
         bpy.ops.image.open(filepath=thumbnailPath)
         imgThumb = bpy.data.images.get(os.path.basename(thumbnailPath))
 
@@ -141,14 +142,20 @@ def createThumbnail(thumbnailDir, thumbName, thumbExt, thumbSize):
             imgThumb.user_clear()
         bpy.data.images.remove(imgThumb, do_unlink=True)
         setImageEditorContext(renderResult)
+        return True
+    else:
+        loadingThumb = False
+        return False
 
 
 def addRenderSlot(thumbnailDir, thumbName, empty=None):
     """Add a new render slot."""
+    global rendering, loadingThumb, modalCompete
     renderResult = is_RR_image()
     if renderResult is None:
         importRrImageRef(RrFilePath, RrImage)
         renderResult = is_RR_image()
+
     if renderResult == False:
         for img in bpy.data.images:
             if img.type == 'RENDER_RESULT' and img.name != RrImage:
@@ -159,7 +166,9 @@ def addRenderSlot(thumbnailDir, thumbName, empty=None):
         renderResult = bpy.data.images[RrImage]
 
     if renderResult:
-        setImageEditorContext(renderResult)
+        area= setImageEditorContext(renderResult)
+
+        #get new slot name and index
         slotIndex = "1"
         if len(renderResult.render_slots) > 1:
             slotNameList = []
@@ -171,9 +180,17 @@ def addRenderSlot(thumbnailDir, thumbName, empty=None):
         name = f"SS{thumbName}{slotIndex}" if empty else f"{thumbName}{slotIndex}"
         newSlot = renderResult.render_slots.new(name=name)
         renderResult.render_slots.active = newSlot
-
         if empty is None:
-            bpy.ops.render.render("INVOKE_DEFAULT")
+            try:
+                bpy.ops.render.render("INVOKE_DEFAULT")
+            except Exception as e:
+                print(f"Error saving new image: {e}")
+                rendering = None
+                loadingThumb = None
+                modalCompete= None
+                if setImageEditorContext(renderResult):
+                    deleteCurrentSlot()
+
         else:
             return renderResult
 
@@ -224,7 +241,7 @@ def getCamBorder(region, rv3d):
     return frame_px
 
 
-def setScreenshotUI(area, overlays=None, gizmo=None, region_ui=None, toolbar=None):
+def setScreenshotUI(overlays=None, gizmo=None, region_ui=None, toolbar=None):
     """Set UI state for screenshot."""
     spaceData = bpy.context.space_data
 
@@ -243,7 +260,7 @@ def setScreenshotUI(area, overlays=None, gizmo=None, region_ui=None, toolbar=Non
     return overlays, gizmo, region_ui, toolbar
 
 
-def reSetScreenshotUI(area=None, overlays=True, gizmo=None, region_ui=None, toolbar=None):
+def reSetScreenshotUI(overlays=True, gizmo=None, region_ui=None, toolbar=None):
     """Reset UI state after screenshot."""
     spaceData = bpy.context.space_data
     spaceData.overlay.show_overlays = overlays
@@ -265,6 +282,8 @@ def takeScreenshot(thumbnailDir, scrshotName, thumbExt, area):
     bpy.ops.screen.screenshot_area(filepath=scrshotPath)
 
     scrshot = bpy.data.images.load(scrshotPath)
+    scrshot.pack()
+    scrshot.filepath = ""
 
     viewPoint = area.spaces[0].region_3d.view_perspective
     if viewPoint == 'CAMERA':
@@ -295,25 +314,28 @@ def createScrshotThumbnail(scrshotImg, thumbnailDir, thumbName, thumbExt):
     scrshotImg.scale(thumbSize, thumbnailHeight)
     scrshotImg.save(filepath=thumbnailPath, quality=0)
 
-
-def deleteCurrentSlot(thumbnailDir):
+def deleteCurrentSlot(thumbnailDir= None):
     """Delete the current render slot."""
     renderResult = is_RR_image()
     area = setImageEditorContext(renderResult)
-
-    if renderResult and renderResult != False and area:
+    if renderResult and renderResult != False and bpy.context.area == area:
         nextSlot = renderResult.render_slots.active_index - 1
         currentSlotName = renderResult.render_slots.active.name
 
         if currentSlotName != thumbName + "0":
             bpy.ops.image.remove_render_slot()
+            print(currentSlotName)
+            print(scrshotName in currentSlotName)
+            if 'SS' in currentSlotName:
+                bpy.data.images.remove(bpy.data.images[f"{scrshotName}{currentSlotName.split('_')[-1]}{thumbExt}"])
         else:
             bpy.ops.image.clear_render_slot()
             print("Can't delete thumbRv_0. | in tools.py --> deleteCurrentSlot()")
 
-        thumbnailPath = os.path.join(thumbnailDir, f"{currentSlotName}{thumbExt}")
-        if os.path.exists(thumbnailPath):
-            os.remove(thumbnailPath)
+        if thumbnailDir != None:
+            thumbnailPath = os.path.join(thumbnailDir, f"{currentSlotName}{thumbExt}")
+            if os.path.exists(thumbnailPath):
+                os.remove(thumbnailPath)
 
         for i, Rslot in enumerate(renderResult.render_slots):
             if i == nextSlot:
@@ -399,8 +421,9 @@ class AddRenderSlot(bpy.types.Operator):
         rendering = False
 
     def execute(self, context):
-        global rendering, loadingThumb
-        if rendering in (False, None) and loadingThumb != True:
+        global rendering, loadingThumb, modalCompete
+        if rendering in (False, None) and modalCompete in (True, None):
+            modalCompete= False
             rendering = True
             loadingThumb = True
             bpy.app.handlers.render_pre.append(self.pre)
@@ -408,17 +431,45 @@ class AddRenderSlot(bpy.types.Operator):
             self._timer = context.window_manager.event_timer_add(0.5, window=context.window)
             context.window_manager.modal_handler_add(self)
             addRenderSlot(thumbnailDir, thumbName)
-        return {'RUNNING_MODAL'}
+            return {'RUNNING_MODAL'}
+        else:
+            return {'FINISHED'}
 
     def modal(self, context, event):
-        global loadingThumb
+        global loadingThumb, modalCompete
         if event.type == 'TIMER' and rendering is False:
-            handlers.render_pre.remove(self.pre)
-            handlers.render_post.remove(self.post)
+            modalCompete= True
+            if self._timer is not None:
+                context.window_manager.event_timer_remove(self._timer)
+                self._timer = None
             createThumbnail(thumbnailDir, thumbName, thumbExt, thumbSize)
             loadThumb()
+            self.finish()
+
             return {'FINISHED'}
         return {'PASS_THROUGH'}
+
+    def finish(self):
+        global loadingThumb
+        # Safely remove handlers when operator finishes
+        loadingThumb= False
+        try:
+            bpy.app.handlers.render_pre.remove(self.pre)
+        except ValueError:
+            pass  # Handler already removed
+        try:
+            bpy.app.handlers.render_post.remove(self.post)
+        except ValueError:
+            pass  # Handler already removed
+
+    def cancel(self, context):
+        # Clean up on cancel
+        global loadingThumb, modalCompete
+        loadingThumb= False
+        modalCompete= True
+        if self._timer is not None:
+            context.window_manager.event_timer_remove(self._timer)
+        self.finish()
 
 
 class AddViewportSlot(bpy.types.Operator):
@@ -433,12 +484,12 @@ class AddViewportSlot(bpy.types.Operator):
 
     def executeUI(self, context):
         global rendering
-        if rendering in (False, None) and loadingThumb != True:
+        if rendering in (False, None): #and loadingThumb != True:
             area = bpy.context.area
             if area.type == 'VIEW_3D':
                 if self.running is None:
                     self.running = True
-                    self.UI_status = setScreenshotUI(area)
+                    self.UI_status = setScreenshotUI()
                     self.start_time = time.time()
                 elif self.running == False:
                     return {'FINISHED'}
@@ -456,7 +507,7 @@ class AddViewportSlot(bpy.types.Operator):
                 area = bpy.context.area
                 if area.type == 'VIEW_3D':
                     scrshotImg = takeScreenshot(thumbnailDir, scrshotName, thumbExt, area)
-                    reSetScreenshotUI(area, *self.UI_status)
+                    reSetScreenshotUI(*self.UI_status)
                     createScrshotThumbnail(scrshotImg, thumbnailDir, thumbName, thumbExt)
                     scrshotImg.reload()
                     setImageEditorContext(scrshotImg)
@@ -513,11 +564,14 @@ class SwitchView(bpy.types.Operator):
     bl_label = "Rcat Switch Render Slot"
 
     def execute(self, context):
-        global BG_SlotIndex
+        global BG_SlotIndex, rendering, loadingThumb
         renderResult = is_RR_image()
         if renderResult and renderResult != False:
             activeSlotIndex = renderResult.render_slots.active.name
             setRenderSlotActive(BG_SlotIndex)
+            if rendering in (False, None) and loadingThumb in (False, None) and not 'SS' in BG_SlotIndex:
+                if createThumbnail(thumbnailDir, thumbName, thumbExt, thumbSize):
+                    loadThumb()
             BG_SlotIndex = activeSlotIndex
         return {'FINISHED'}
 
@@ -528,19 +582,29 @@ class CycleUp(bpy.types.Operator):
     bl_label = "Rcat Cycle Render Slot Up"
 
     def execute(self, context):
+        global rendering, loadingThumb
         renderResult = is_RR_image()
         if renderResult and renderResult != False and len(renderResult.render_slots) > 1:
             currentSlotName = renderResult.render_slots.active.name
+
+            if currentSlotName in (False, "thumbRenderCat_0"):
+                if renderResult.render_slots[-1]:
+                    currentSlotName= renderResult.render_slots[-1].name
+
             for i in range(1, len(renderResult.render_slots)):
                 slotName = renderResult.render_slots[i].name
                 if slotName == currentSlotName:
                     newIndex = 1 if i == len(renderResult.render_slots) - 1 else i + 1
                     renderResult.render_slots.active_index = newIndex
                     newSlotName = renderResult.render_slots.active.name
+
                     if 'SS' in newSlotName:
                         setRenderSlotActive(newSlotName)
                     else:
                         setImageEditorContext(renderResult)
+                        if rendering in (False, None) and loadingThumb in (False, None):
+                            if createThumbnail(thumbnailDir, thumbName, thumbExt, thumbSize):
+                                 loadThumb()
                     break
         return {'FINISHED'}
 
@@ -551,19 +615,29 @@ class CycleDown(bpy.types.Operator):
     bl_label = "Rcat Cycle Render Slot Down"
 
     def execute(self, context):
+        global rendering, loadingThumb
         renderResult = is_RR_image()
         if renderResult and renderResult != False and len(renderResult.render_slots) > 1:
             currentSlotName = renderResult.render_slots.active.name
+
+            if currentSlotName in (False, "thumbRenderCat_0"):
+                if renderResult.render_slots[1]:
+                    currentSlotName= renderResult.render_slots[1].name
+
             for i in range(1, len(renderResult.render_slots)):
                 slotName = renderResult.render_slots[i].name
                 if slotName == currentSlotName:
                     newIndex = len(renderResult.render_slots) if i == 1 else i - 1
                     renderResult.render_slots.active_index = newIndex
                     newSlotName = renderResult.render_slots.active.name
+
                     if 'SS' in newSlotName:
                         setRenderSlotActive(newSlotName)
                     else:
                         setImageEditorContext(renderResult)
+                        if rendering in (False, None) and loadingThumb in (False, None):
+                            if createThumbnail(thumbnailDir, thumbName, thumbExt, thumbSize):
+                                loadThumb()
                     break
         return {'FINISHED'}
 
@@ -578,7 +652,11 @@ class SetSlotView(bpy.types.Operator):
     click = 0
 
     def execute_setView_FG(self, context):
+        global rendering, loadingThumb
         setRenderSlotActive(self.buttonName)
+        if rendering == False and loadingThumb == False and 'SS' not in self.buttonName :
+            if createThumbnail(thumbnailDir, thumbName, thumbExt, thumbSize):
+                loadThumb()
         return {'FINISHED'}
 
     def execute_setView_BG(self, context):
@@ -605,12 +683,36 @@ class SetSlotView(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
 
+class ReloadThumbnail(bpy.types.Operator):
+    """Empty operator for UI purposes. used in key map panel to display the buutton correctly."""
+    bl_idname = "render.reload_thumbnail"
+    bl_label = "Rcat Reload Thumbnail"
+
+    def execute(self, context):
+        global rendering, loadingThumb
+        if rendering in (False, None) and loadingThumb in (False, None):
+            renderResult = is_RR_image()
+            if renderResult and renderResult != False and len(renderResult.render_slots) > 1:
+                renderSlots = renderResult.render_slots
+                currentSlotName = renderSlots.active.name
+                for i, Rslot in enumerate(reversed(renderSlots)):
+                    if not 'SS' in Rslot.name and Rslot.name != 'thumbRenderCat_0':
+                        setRenderSlotActive(Rslot.name)
+                        if createThumbnail(thumbnailDir, thumbName, thumbExt, thumbSize):
+                            loadThumb()
+
+                setRenderSlotActive(currentSlotName)
+
+        return {'FINISHED'}
+
+
 class EmptyOp(bpy.types.Operator):
-    """Empty operator for UI purposes."""
+    """Empty operator for UI purposes. used in key map panel to display the buutton correctly."""
     bl_idname = "render.empty_op"
     bl_label = "Rcat Empty Op"
 
     def execute(self, context):
+
         return {'FINISHED'}
 
 
@@ -656,6 +758,10 @@ class RC_PT_PanelButton(LayoutRenderCatalogue, bpy.types.Panel):
         col.operator("render.cycle_down", text='', icon="SORT_ASC")
         col.scale_y = 1.5
 
+        col= layout.column(align=True)
+        col.operator("render.reload_thumbnail", text='', icon="IMAGE_RGB")
+        col.scale_y = 1.5
+
 
 class RC_PT_DocPanel(LayoutRenderCatalogue, bpy.types.Panel):
     """Documentation sub-panel."""
@@ -674,16 +780,20 @@ class RC_PT_DocPanel(LayoutRenderCatalogue, bpy.types.Panel):
 
         mappings = [
             ('F12', "ADD", 'Render.'),
+            ('CTRL+F12', "NONE", 'Take a screenshot when over the 3D viewport. '),
             ('Del', "REMOVE", 'Delete current slot.'),
             ('Ctrl+Del', "X", 'Clear render catalogue.'),
             ('S', 'UV_SYNC_SELECT', 'Switch between forward/backward slot.'),
             ('Page up', "SORT_DESC", 'Cycle up through slot.'),
-            ('Page down', "SORT_ASC", 'Cycle down through slot.')
+            ('Page down', "SORT_ASC", 'Cycle down through slot.'),
+            ('F5', "IMAGE_RGB", 'Reload all thumbnail of the catalogue.')
+
         ]
 
         for key, icon, text in mappings:
             col = slot.row(align=True)
-            col.label(text=f'{key: <14} => ')
+            emptyspace= f'<{str(16-len(key))}'
+            col.label(text=f'{key: {emptyspace}} =>')
             col.scale_x = scaleX
             if isinstance(icon, int):
                 col.label(icon_value=icon, text=text)
@@ -724,11 +834,11 @@ class RC_PT_PanelThumb(LayoutRenderCatalogue, bpy.types.Panel):
         renderResult = is_RR_image()
 
         if renderResult and renderResult != False:
-            box = layout.box()
             renderSlots = renderResult.render_slots
             activeSlotIndex = int(renderResult.render_slots.active.name.split('_')[-1])
             lastSlot = renderSlots[-1].name
 
+            box = layout.box()
             for i, Rslot in enumerate(reversed(renderSlots)):
                 if Rslot.name != thumbName + "0":
                     row = box.row(align=True)
@@ -752,7 +862,11 @@ class RC_PT_PanelThumb(LayoutRenderCatalogue, bpy.types.Panel):
                     col.scale_x = scaleX
 
                     if len(iconsThumb) > 0:
-                        thumbIcon = 168 if loadingThumb and Rslot.name == lastSlot else iconsThumb[Rslot.name].icon_id
+                        if not Rslot.name in iconsThumb:
+                            iconKey= "None"
+                        else:
+                            iconKey= Rslot.name
+                        thumbIcon = 168 if loadingThumb and Rslot.name == lastSlot else iconsThumb[iconKey].icon_id if iconKey in iconsThumb else 257 #.....168 if loadingThumb and Rslot.name == lastSlot else iconsThumb[iconKey].icon_id if iconKey in iconsThumb else 257 if iconKey == "False" else 1 #...... 168 if loadingThumb and Rslot.name == lastSlot else (iconsThumb[iconKey].icon_id if thumbName in iconKey else (257 if iconKey == "None" else 1))
                         col.template_icon(icon_value=thumbIcon)
 
 
@@ -766,6 +880,7 @@ def register():
     bpy.utils.register_class(CycleUp)
     bpy.utils.register_class(CycleDown)
     bpy.utils.register_class(SetSlotView)
+    bpy.utils.register_class(ReloadThumbnail)
     bpy.utils.register_class(EmptyOp)
     bpy.utils.register_class(LayoutRenderCataloguePanel)
     bpy.utils.register_class(RC_PT_PanelButton)
@@ -779,6 +894,7 @@ def register():
         (SwitchView.bl_idname, 'S', 'PRESS', False, False, False),
         (CycleUp.bl_idname, 'PAGE_UP', 'PRESS', False, False, False),
         (CycleDown.bl_idname, 'PAGE_DOWN', 'PRESS', False, False, False),
+        (ReloadThumbnail.bl_idname, 'F5', 'PRESS', False, False, False),
     )
 
     wm = bpy.context.window_manager
@@ -833,6 +949,7 @@ def unregister():
     bpy.utils.unregister_class(CycleUp)
     bpy.utils.unregister_class(CycleDown)
     bpy.utils.unregister_class(SetSlotView)
+    bpy.utils.unregister_class(ReloadThumbnail)
     bpy.utils.unregister_class(EmptyOp)
     bpy.utils.unregister_class(LayoutRenderCataloguePanel)
     bpy.utils.unregister_class(RC_PT_PanelButton)
@@ -844,7 +961,6 @@ def unregister():
     customIcon.clear()
     bpy.utils.previews.remove(iconsThumb)
     bpy.utils.previews.remove(customIcon)
-
 
 if __name__ == "__main__":
     register()
