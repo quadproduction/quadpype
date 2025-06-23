@@ -33,6 +33,11 @@
             "active_on_create": true,
             "default_variant": ""
         },
+        "JsonCreator": {
+            "enabled": true,
+            "active_on_create": true,
+            "default_variant": ""
+        },
         "WorkfileCreator": {
             "enabled": true,
             "active_on_create": true,

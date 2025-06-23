@@ -123,6 +123,35 @@
                 {
                     "type": "dict",
                     "collapsible": true,
+                    "key": "JsonCreator",
+                    "label": "Create Json",
+                    "checkbox_key": "enabled",
+                    "children": [
+                        {
+                            "type": "label",
+                            "label": "Auto create json file containing all data describing scene, with all layers."
+                        },
+                        {
+                            "type": "boolean",
+                            "key": "enabled",
+                            "label": "Enabled",
+                            "default": true
+                        },
+                        {
+                            "type": "boolean",
+                            "key": "active_on_create",
+                            "label": "Active by default"
+                        },
+                        {
+                            "type": "text",
+                            "key": "default_variant",
+                            "label": "Default variant"
+                        }
+                    ]
+                },
+                {
+                    "type": "dict",
+                    "collapsible": true,
                     "key": "WorkfileCreator",
                     "label": "Create Workfile",
                     "checkbox_key": "enabled",
