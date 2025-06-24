@@ -83,7 +83,6 @@ class ExtractJson(pyblish.api.ContextPlugin):
                 if instance.data.get('family') == "imagesequence":
                     instance.data.get('representations').append(files_repre)
                     self.log.debug("Add json representation: {}".format(files_repre))
-                    self.log.error(files_repre)
 
     def get_files(self, json_path):
         all_links = {}
