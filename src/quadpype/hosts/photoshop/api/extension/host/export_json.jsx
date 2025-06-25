@@ -1,3 +1,15 @@
+#include "json_photoshop_scripting/jamEngine-min.jsxinc"
+#include "json_photoshop_scripting/jamActions-min.jsxinc"
+#include "json_photoshop_scripting/jamBooks-min.jsxinc"
+#include "json_photoshop_scripting/jamColors-min.jsxinc"
+#include "json_photoshop_scripting/jamHelpers-min.jsxinc"
+#include "json_photoshop_scripting/jamJSON-min.jsxinc"
+#include "json_photoshop_scripting/jamLayers-min.jsxinc"
+#include "json_photoshop_scripting/jamShapes-min.jsxinc"
+#include "json_photoshop_scripting/jamStyles-min.jsxinc"
+#include "json_photoshop_scripting/jamText-min.jsxinc"
+#include "json_photoshop_scripting/jamUtils-min.jsxinc"
+
 function listLayersFromScene(doc){
 
     var layers = doc.layers;
@@ -275,130 +287,9 @@ function getLayerBounds(layer) {
 }
 
 function getLayerEffects(layer) {
-    try {
-        if (!layer.hasOwnProperty("layerEffects")) return null;
-
-        var effects = layer.layerEffects;
-        if (!effects.enabled) return null;
-
-        var effectData = {};
-        if (effects.dropShadow.enabled) {
-            effectData.dropShadow = {
-                color: colorToString(effects.dropShadow.color),
-                opacity: effects.dropShadow.opacity,
-                angle: effects.dropShadow.localLightingAngle,
-                distance: effects.dropShadow.distance,
-                spread: effects.dropShadow.spread,
-                size: effects.dropShadow.blur
-            };
-        }
-
-        if (effects.innerShadow.enabled) {
-            effectData.innerShadow = {
-                color: colorToString(effects.innerShadow.color),
-                opacity: effects.innerShadow.opacity,
-                angle: effects.innerShadow.localLightingAngle,
-                distance: effects.innerShadow.distance,
-                choke: effects.innerShadow.choke,
-                size: effects.innerShadow.blur
-            };
-        }
-
-        if (effects.outerGlow.enabled) {
-            effectData.outerGlow = {
-                color: colorToString(effects.outerGlow.color),
-                opacity: effects.outerGlow.opacity,
-                spread: effects.outerGlow.spread,
-                size: effects.outerGlow.blur,
-                technique: effects.outerGlow.technique
-            };
-        }
-
-        if (effects.innerGlow.enabled) {
-            effectData.innerGlow = {
-                color: colorToString(effects.innerGlow.color),
-                opacity: effects.innerGlow.opacity,
-                choke: effects.innerGlow.choke,
-                size: effects.innerGlow.blur,
-                technique: effects.innerGlow.technique
-            };
-        }
-
-        if (effects.bevelAndEmboss.enabled) {
-            effectData.bevelAndEmboss = {
-                style: effects.bevelAndEmboss.style,
-                technique: effects.bevelAndEmboss.technique,
-                depth: effects.bevelAndEmboss.depth,
-                direction: effects.bevelAndEmboss.direction,
-                size: effects.bevelAndEmboss.size,
-                soften: effects.bevelAndEmboss.soften,
-                angle: effects.bevelAndEmboss.localLightingAngle,
-                altitude: effects.bevelAndEmboss.localLightingAltitude,
-                highlightColor: colorToString(effects.bevelAndEmboss.highlightColor),
-                highlightOpacity: effects.bevelAndEmboss.highlightOpacity,
-                shadowColor: colorToString(effects.bevelAndEmboss.shadowColor),
-                shadowOpacity: effects.bevelAndEmboss.shadowOpacity
-            };
-        }
-
-        if (effects.satin.enabled) {
-            effectData.satin = {
-                color: colorToString(effects.satin.color),
-                opacity: effects.satin.opacity,
-                angle: effects.satin.localLightingAngle,
-                distance: effects.satin.distance,
-                size: effects.satin.blur
-            };
-        }
-
-        if (effects.colorOverlay.enabled) {
-            effectData.colorOverlay = {
-                color: colorToString(effects.colorOverlay.color),
-                opacity: effects.colorOverlay.opacity,
-                blendMode: blendingModeToString(effects.colorOverlay.blendMode)
-            };
-        }
-
-        if (effects.gradientOverlay.enabled) {
-            effectData.gradientOverlay = {
-                opacity: effects.gradientOverlay.opacity,
-                blendMode: blendingModeToString(effects.gradientOverlay.blendMode),
-                gradient: effects.gradientOverlay.gradient.name,
-                style: effects.gradientOverlay.style,
-                angle: effects.gradientOverlay.angle,
-                scale: effects.gradientOverlay.scale,
-                reverse: effects.gradientOverlay.reverse,
-                alignWithLayer: effects.gradientOverlay.alignWithLayer
-            };
-        }
-
-        if (effects.patternOverlay.enabled) {
-            effectData.patternOverlay = {
-                opacity: effects.patternOverlay.opacity,
-                blendMode: blendingModeToString(effects.patternOverlay.blendMode),
-                pattern: effects.patternOverlay.pattern.name,
-                scale: effects.patternOverlay.scale,
-                linkWithLayer: effects.patternOverlay.linkWithLayer
-            };
-        }
-
-        if (effects.stroke.enabled) {
-            effectData.stroke = {
-                size: effects.stroke.size,
-                position: effects.stroke.position,
-                blendMode: blendingModeToString(effects.stroke.blendMode),
-                opacity: effects.stroke.opacity,
-                fillType: effects.stroke.fillType,
-                color: effects.stroke.color ? colorToString(effects.stroke.color) : null,
-                gradient: effects.stroke.gradient ? effects.stroke.gradient.name : null,
-                pattern: effects.stroke.pattern ? effects.stroke.pattern.name : null
-            };
-        }
-
-        return effectData;
-    } catch (e) {
-        return null;
-    }
+    app.activeDocument.activeLayer = layer
+    var extraInfo = { "patterns": null };
+	return jamStyles.getLayerStyle(extraInfo);
 }
 
 function getLayerMaskInfo(layer) {
@@ -681,6 +572,3 @@ function getIptcData(doc) {
         return null;
     }
 }
-
-// Run the exporter
-//exportSceneToJSON("C:/Users/gcompain/quad/quadpype/src/quadpype/hosts/photoshop/api/extension/host/test.json");
