@@ -87,6 +87,9 @@
                     "ftrackreview"
                 ]
             }
+        },
+        "ExtractJson":  {
+            "enabled": true
         }
     },
     "workfile_builder": {
