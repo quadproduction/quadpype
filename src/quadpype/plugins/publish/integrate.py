@@ -647,6 +647,10 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
 
         is_udim = bool(repre.get("udim"))
 
+        name = repre.get('name')
+        if name:
+            template_data['name'] = name
+
         # handle publish in place
         if "{originalDirname}" in template:
             # store as originalDirname only original value without project root
@@ -811,10 +815,6 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
             template_data.pop("frame", None)
             if is_udim:
                 template_data["udim"] = repre["udim"][0]
-
-            name = repre.get('name')
-            if name:
-                template_data['name'] = name
 
             # Construct destination filepath from template
             template_filled = path_template_obj.format_strict(template_data)
