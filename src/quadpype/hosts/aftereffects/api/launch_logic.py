@@ -335,6 +335,9 @@ class AfterEffectsRoute(WebSocketRoute):
     async def setall_route(self):
         self._settings_route(True, True)
 
+    async def transfer_exposition_tools_route(self):
+        self._tool_route("transfer_exposition_tools")
+
     async def experimental_tools_route(self):
         self._tool_route("experimental_tools")
 
@@ -343,7 +346,8 @@ class AfterEffectsRoute(WebSocketRoute):
 
         partial_method = functools.partial(show_tool_by_name,
                                            _tool_name)
-
+        print('--')
+        print(partial_method)
         ProcessLauncher.execute_in_main_thread(partial_method)
 
         # Required return statement.
