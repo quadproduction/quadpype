@@ -113,6 +113,34 @@ function getActiveDocumentFullName(){
 }
 
 
+function getLayerAttributesNames(layer_id){
+    /**
+     * Return all existing attributes for given layer id.
+     *
+     * Args:
+     *      layer_id (str): layer identifier
+     * Returns:
+     *      list of attributes
+     */
+
+    properties = []
+    var layer = app.project.layerByID(parseInt(layer_id));
+    function traverseProperties(propGroup) {
+        for (var i = 1; i <= propGroup.numProperties; i++) {
+            var prop = propGroup.property(i);
+            properties.push(prop.name);
+            if (prop instanceof PropertyGroup) {
+                traverseProperties(prop);
+            }
+        }
+    }
+
+    traverseProperties(layer)
+
+    return _prepareSingleValue(properties)
+}
+
+
 function addItem(name, item_type){
     /**
      * Adds comp or folder to project items.
@@ -139,6 +167,33 @@ function addItem(name, item_type){
 }
 
 function getItems(comps, folders, footages){
+    /**
+     * Returns JSON representation of compositions and
+     * if 'collectLayers' then layers in comps too.
+     *
+     * Args:
+     *     comps (bool): return selected compositions
+     *     folders (bool): return folders
+     *     footages (bool): return FootageItem
+     * Returns:
+     *     (list) of JSON items
+     */
+    var items = []
+    for (i = 1; i <= app.project.items.length; ++i){
+        var item = app.project.items[i];
+        if (!item){
+            continue;
+        }
+        var ret = _getItem(item, comps, folders, footages);
+        if (ret){
+            items.push(ret);
+        }
+    }
+    return '[' + items.join() + ']';
+
+}
+
+function getCompsWithLayers(){
     /**
      * Returns JSON representation of compositions and
      * if 'collectLayers' then layers in comps too.
@@ -250,6 +305,33 @@ function _getItem(item, comps, folders, footages){
                 "path": path,
                 "containing_comps": containing_comps};
     return JSON.stringify(item);
+}
+
+function getCompsWithInnerLayers(){
+    retrieved_comps = []
+
+    for (var i=1; i<=app.project.numItems; i++){
+        item = app.project.item(i)
+        if (item instanceof FootageItem || item instanceof FolderItem){ continue;  }
+        comp = {
+            "name": item.name,
+            "id": item.id,
+            "layers": []
+        }
+        for (var j=1; j<=item.numLayers; j++){
+            layer = item.layer(j)
+            if(layer.source instanceof CompItem){ continue; }
+            comp['layers'].push(
+                {
+                    "name": layer.name,
+                    "id": layer.id,
+                }
+            )
+        }
+        retrieved_comps.push(comp)
+    }
+
+    return JSON.stringify(retrieved_comps);
 }
 
 function importFile(path, item_name, import_options){

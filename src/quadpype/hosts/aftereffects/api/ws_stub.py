@@ -256,6 +256,21 @@ class AfterEffectsServerStub():
                                         )
         return self._to_records(self._handle_return(res))
 
+    def get_layer_attributes_names(self, layer_id):
+        """
+            Same as get_items but using selected items only
+        Args:
+            layer_id (bool): layer identifier
+
+        Returns:
+            (list) of layer attributes
+
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.get_layer_attributes_names',
+                                         layer_id=layer_id))
+        return self._handle_return(res)
+
     def add_item(self, name, item_type):
         """
             Adds either composition or folder to project item list.
@@ -283,6 +298,15 @@ class AfterEffectsServerStub():
                 return item
 
         return None
+
+    def get_comps_with_inner_layers(self):
+        """
+            Get all comps in scene with inner layers.
+        """
+        res = self.websocketserver.call(
+            self.client.call('AfterEffects.get_comps_with_inner_layers')
+        )
+        return self._handle_return(res)
 
     def import_file(self, path, item_name, import_options=None):
         """

@@ -50,18 +50,19 @@ class TransferExpositionToolsDialog(BaseToolDialog):
             )
 
         # Left list
-        self.left_list = QtWidgets.QListWidget()
-        self.left_list.setSelectionMode(QtWidgets.QListWidget.MultiSelection)
+        self.left_list = QtWidgets.QTreeWidget()
+        self.left_list.setHeaderHidden(True)
         left_label = QtWidgets.QLabel("Options disponibles:")
-        clear_left_btn = QtWidgets.QPushButton("Clear selection")
+        empty_widget = QtWidgets.QWidget()
         left_layout = QtWidgets.QVBoxLayout()
         left_layout.addWidget(left_label)
         left_layout.addWidget(self.left_list)
-        left_layout.addWidget(clear_left_btn)
+        left_layout.addWidget(empty_widget)
 
         # Right list
-        self.right_list = QtWidgets.QListWidget()
-        self.right_list.setSelectionMode(QtWidgets.QListWidget.MultiSelection)
+        self.right_list = QtWidgets.QTreeWidget()
+        self.right_list.setHeaderHidden(True)
+        # self.right_list.setSelectionMode(QtWidgets.QListWidget.MultiSelection)
         right_label = QtWidgets.QLabel("Options sélectionnées:")
         clear_right_btn = QtWidgets.QPushButton("Clear selection")
         right_layout = QtWidgets.QVBoxLayout()
@@ -72,10 +73,10 @@ class TransferExpositionToolsDialog(BaseToolDialog):
         # Center buttons
         center_layout = QtWidgets.QVBoxLayout()
         connect_btn = QtWidgets.QPushButton("Connect >")
-        unconnect_btn = QtWidgets.QPushButton("< Disconnect")
+        disconnect_btn = QtWidgets.QPushButton("< Disconnect")
         center_layout.addStretch()
         center_layout.addWidget(connect_btn)
-        center_layout.addWidget(unconnect_btn)
+        center_layout.addWidget(disconnect_btn)
         center_layout.addStretch()
 
         # Separator line
@@ -104,9 +105,9 @@ class TransferExpositionToolsDialog(BaseToolDialog):
         self.populate_lists()
 
         # Connect signals
+        self.left_list.itemClicked.connect(self.on_item_clicked)
         connect_btn.clicked.connect(self.connect_items)
-        unconnect_btn.clicked.connect(self.disconnect_items)
-        clear_left_btn.clicked.connect(self.left_list.clearSelection)
+        disconnect_btn.clicked.connect(self.disconnect_items)
         clear_right_btn.clicked.connect(self.right_list.clearSelection)
         ok_btn.clicked.connect(self.on_ok)
 
@@ -114,11 +115,18 @@ class TransferExpositionToolsDialog(BaseToolDialog):
 
     def populate_lists(self):
         """Fill the lists with sample data"""
-        for item in self.stub.get_items(True):
-            self.left_list.addItem(item.name)
+        for comp in self.stub.get_comps_with_inner_layers():
+            parent = QtWidgets.QTreeWidgetItem(self.left_list, [comp["name"]])
+            parent.setData(0, QtCore.Qt.UserRole, comp["id"])
+            for layer in comp['layers']:
+                child = QtWidgets.QTreeWidgetItem(parent, [layer["name"]])
+                child.setData(0, QtCore.Qt.UserRole, layer["id"])
 
-        for item in ["Selected 1", "Selected 2"]:
-            self.right_list.addItem(item)
+    def on_item_clicked(self, item, column):
+        comp_id = item.data(column, QtCore.Qt.UserRole)
+        self.right_list.clear()
+        for item in self.stub.get_layer_attributes_names(comp_id):
+            QtWidgets.QTreeWidgetItem(self.right_list, [item])
 
     def connect_items(self):
         """Move selected items from left to right list"""
