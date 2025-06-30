@@ -52,8 +52,6 @@ class ValidateNamesStartWithLegal(
         if not self.is_active(context.data):
             return
 
-        msg = ""
-
         layers_with_errors = list()
 
         for layer in photoshop.stub().get_layers():
