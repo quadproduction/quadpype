@@ -40,7 +40,7 @@ class ValidateNamesStartWithLegal(
     ):
     """Validate if all the layers have unique names"""
 
-    label = "Validate Numbers in Names"
+    label = "Validate Names Start With Legal"
     hosts = ["photoshop"]
     order = ValidateContentsOrder
     families = ["image"]

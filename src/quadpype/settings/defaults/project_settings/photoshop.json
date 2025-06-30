@@ -61,7 +61,7 @@
             "invalid_chars": "[ \\\\/+\\*\\?\\(\\)\\[\\]\\{\\}:,;]",
             "replace_char": "_"
         },
-        "ValidateNumbersInNames": {
+        "ValidateNamesStartWithLegal": {
             "enabled": true
         },
         "ExtractImage": {

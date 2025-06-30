@@ -311,8 +311,8 @@
                 {
                     "type": "dict",
                     "collapsible": true,
-                    "key": "ValidateNumbersInNames",
-                    "label": "Validate numbers in layers names",
+                    "key": "ValidateNamesStartWithLegal",
+                    "label": "Validate names that start with legal characters",
                     "checkbox_key": "enabled",
                     "children": [
                         {
