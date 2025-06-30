@@ -311,6 +311,21 @@
                 {
                     "type": "dict",
                     "collapsible": true,
+                    "key": "ValidateNumbersInNames",
+                    "label": "Validate numbers in layers names",
+                    "checkbox_key": "enabled",
+                    "children": [
+                        {
+                            "type": "boolean",
+                            "key": "enabled",
+                            "label": "Enabled",
+                            "default": true
+                        }
+                    ]
+                 },
+                {
+                    "type": "dict",
+                    "collapsible": true,
                     "key": "ExtractImage",
                     "label": "Extract Image",
                     "children": [
