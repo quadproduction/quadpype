@@ -14,7 +14,7 @@ REPLACE_PATTERN = r'_\1'
 
 
 class ValidateNamesStartWithLegalRepair(pyblish.api.Action):
-    """Select the layers that haven't a unique name"""
+    """Rename layers with errors by adding legal character in front of names"""
 
     label = "Repair"
     icon = "wrench"
@@ -38,7 +38,7 @@ class ValidateNamesStartWithLegal(
         OptionalPyblishPluginMixin,
         pyblish.api.ContextPlugin
     ):
-    """Validate if all the layers have unique names"""
+    """Validate if all the layers starts with a legal character"""
 
     label = "Validate Names Start With Legal"
     hosts = ["photoshop"]
