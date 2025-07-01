@@ -16,7 +16,7 @@ REPLACE_PATTERN = r'_\1'
 class ValidateNamesStartWithLegalRepair(pyblish.api.Action):
     """Rename layers with errors by adding legal character in front of names"""
 
-    label = "Repair"
+    label = "Rename"
     icon = "wrench"
     on = "failed"
 
