@@ -256,11 +256,20 @@ class AfterEffectsServerStub():
                                         )
         return self._to_records(self._handle_return(res))
 
+    def get_selected_layers(self):
+        """
+            Return selected layers from timeline
+        Returns:
+            (list) of layers
+        """
+        res = self.websocketserver.call(self.client.call('AfterEffects.get_selected_layers'))
+        return self._to_records(self._handle_return(res))
+
     def get_layer_attributes_names(self, layer_id):
         """
-            Same as get_items but using selected items only
+            Get layer attributes for layer with given id.
         Args:
-            layer_id (bool): layer identifier
+            layer_id (itn): if filled, will get properties for layer with given ID
 
         Returns:
             (list) of layer attributes
@@ -299,12 +308,14 @@ class AfterEffectsServerStub():
 
         return None
 
-    def get_comps_with_inner_layers(self):
+    def get_active_comp_with_inner_layers(self, depth=-1):
         """
             Get all comps in scene with inner layers.
+        Args:
+            depth (int): Depth of comps to browse. Default value -1 means that we don't put any limit.
         """
         res = self.websocketserver.call(
-            self.client.call('AfterEffects.get_comps_with_inner_layers')
+            self.client.call('AfterEffects.get_active_comp_with_inner_layers', depth=depth)
         )
         return self._handle_return(res)
 

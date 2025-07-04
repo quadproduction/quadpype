@@ -110,7 +110,7 @@ function main(websocket_url) {
 
     RPC.addRoute('AfterEffects.get_layer_attributes_names', function (data) {
         log.warn('Server called client route "get_layer_attributes_names":', data);
-        return runEvalScript("getLayerAttributesNames('" + data.layer_id + "')")
+        return runEvalScript("getLayerAttributesNames(" + data.layer_id + ")")
             .then(function (result) {
                 log.warn("get_layer_attributes_names: " + result);
                 return result;
@@ -154,16 +154,26 @@ function main(websocket_url) {
             data.folders + "," +
             data.footages + ")")
             .then(function (result) {
-                log.warn("get_items: " + result);
+                log.warn("get_selected_items: " + result);
                 return result;
             });
     });
 
-    RPC.addRoute('AfterEffects.get_comps_with_inner_layers', function (data) {
-        log.warn('Server called client route "get_comps_with_inner_layers":', data);
-        return runEvalScript("getCompsWithInnerLayers()")
+    RPC.addRoute('AfterEffects.get_selected_layers', function (data) {
+        log.warn('Server called client route "get_selected_layers":', data);
+        return runEvalScript("getSelectedLayers()")
             .then(function (result) {
-                log.warn("get_comps_with_inner_layers: " + result);
+                log.warn("get_selected_layers: " + result);
+                return result;
+            });
+    });
+
+
+    RPC.addRoute('AfterEffects.get_active_comp_with_inner_layers', function (data) {
+        log.warn('Server called client route "get_active_comp_with_inner_layers":', data);
+        return runEvalScript("getActiveCompWithInnerLayers(" + data.depth + ")")
+            .then(function (result) {
+                log.warn("get_active_comp_with_inner_layers: " + result);
                 return result;
             });
     });

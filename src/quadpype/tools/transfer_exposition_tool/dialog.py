@@ -49,36 +49,34 @@ class TransferExpositionToolsDialog(BaseToolDialog):
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )
 
-        # Left list
-        self.left_list = QtWidgets.QTreeWidget()
-        self.left_list.setHeaderHidden(True)
-        left_label = QtWidgets.QLabel("Options disponibles:")
-        empty_widget = QtWidgets.QWidget()
+        self.comps_and_layers = QtWidgets.QTreeWidget()
+        self.comps_and_layers.setHeaderHidden(True)
+        refresh_comps_btn = QtWidgets.QPushButton("Refresh")
+        refresh_comps_btn.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_BrowserReload))
         left_layout = QtWidgets.QVBoxLayout()
-        left_layout.addWidget(left_label)
-        left_layout.addWidget(self.left_list)
-        left_layout.addWidget(empty_widget)
+        left_layout.addWidget(self.comps_and_layers)
+        left_layout.addWidget(refresh_comps_btn)
 
-        # Right list
-        self.right_list = QtWidgets.QTreeWidget()
-        self.right_list.setHeaderHidden(True)
-        # self.right_list.setSelectionMode(QtWidgets.QListWidget.MultiSelection)
-        right_label = QtWidgets.QLabel("Options sélectionnées:")
-        clear_right_btn = QtWidgets.QPushButton("Clear selection")
+        search_box = QtWidgets.QLineEdit()
+        search_box.setPlaceholderText("Rechercher...")
+        search_erase = QtWidgets.QPushButton()
+        search_erase.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_DialogCloseButton))
+        search_layout = QtWidgets.QHBoxLayout()
+        search_layout.addWidget(search_box)
+        search_layout.addWidget(search_erase)
+
+        self.properties = QtWidgets.QTreeWidget()
+        self.properties.setSelectionMode(QtWidgets.QTreeWidget.ExtendedSelection)
+        clear_btn = QtWidgets.QPushButton("Clear selection")
+        refresh_properties_btn = QtWidgets.QPushButton("Refresh")
+        refresh_properties_btn.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_BrowserReload))
+        buttons_layout = QtWidgets.QHBoxLayout()
+        buttons_layout.addWidget(clear_btn)
+        buttons_layout.addWidget(refresh_properties_btn)
         right_layout = QtWidgets.QVBoxLayout()
-        right_layout.addWidget(right_label)
-        right_layout.addWidget(self.right_list)
-        right_layout.addWidget(clear_right_btn)
-
-        # Center buttons
-        center_layout = QtWidgets.QVBoxLayout()
-        connect_btn = QtWidgets.QPushButton("Connect >")
-        disconnect_btn = QtWidgets.QPushButton("< Disconnect")
-        center_layout.addStretch()
-        center_layout.addWidget(connect_btn)
-        center_layout.addWidget(disconnect_btn)
-        center_layout.addStretch()
-
+        right_layout.addLayout(search_layout)
+        right_layout.addWidget(self.properties)
+        right_layout.addLayout(buttons_layout)
         # Separator line
         separator_widget = QtWidgets.QWidget(self)
         separator_widget.setObjectName("Separator")
@@ -93,54 +91,94 @@ class TransferExpositionToolsDialog(BaseToolDialog):
 
         # Combine all layouts
         lists_layout = QtWidgets.QHBoxLayout()
-        lists_layout.addLayout(left_layout, 40)
-        lists_layout.addLayout(center_layout, 20)
-        lists_layout.addLayout(right_layout, 40)
+        lists_layout.addLayout(left_layout)
+        lists_layout.addLayout(right_layout)
 
         main_vlayout = QtWidgets.QVBoxLayout(self)
         main_vlayout.addLayout(lists_layout, 90)
         main_vlayout.addLayout(bottom_layout, 10)
 
-        # Populate lists with sample data
-        self.populate_lists()
+        self.populate_comps()
+        self.populate_properties()
 
-        # Connect signals
-        self.left_list.itemClicked.connect(self.on_item_clicked)
-        connect_btn.clicked.connect(self.connect_items)
-        disconnect_btn.clicked.connect(self.disconnect_items)
-        clear_right_btn.clicked.connect(self.right_list.clearSelection)
+        self.comps_and_layers.itemClicked.connect(self.on_item_clicked)
+        search_box.textChanged.connect(self.filter_items)
+        search_erase.clicked.connect(lambda: search_box.setText(""))
+        clear_btn.clicked.connect(self.properties.clearSelection)
+        refresh_comps_btn.clicked.connect(self.populate_comps)
+        refresh_properties_btn.clicked.connect(self.populate_properties)
         ok_btn.clicked.connect(self.on_ok)
 
-        self.resize(600, 600)
+        self.resize(1000, 400)
 
-    def populate_lists(self):
-        """Fill the lists with sample data"""
-        for comp in self.stub.get_comps_with_inner_layers():
-            parent = QtWidgets.QTreeWidgetItem(self.left_list, [comp["name"]])
-            parent.setData(0, QtCore.Qt.UserRole, comp["id"])
-            for layer in comp['layers']:
-                child = QtWidgets.QTreeWidgetItem(parent, [layer["name"]])
-                child.setData(0, QtCore.Qt.UserRole, layer["id"])
+    def filter_items(self, text):
+        filter_text = text.lower()
 
-    def on_item_clicked(self, item, column):
-        comp_id = item.data(column, QtCore.Qt.UserRole)
-        self.right_list.clear()
-        for item in self.stub.get_layer_attributes_names(comp_id):
-            QtWidgets.QTreeWidgetItem(self.right_list, [item])
+        def filter_recursive(item):
+            child_visible = False
 
-    def connect_items(self):
-        """Move selected items from left to right list"""
-        selected_items = self.left_list.selectedItems()
-        for item in selected_items:
-            row = self.left_list.row(item)
-            self.right_list.addItem(self.left_list.takeItem(row))
+            item_text = item.text(0).lower()
+            item_match = filter_text in item_text
 
-    def disconnect_items(self):
-        """Move selected items from right to left list"""
-        selected_items = self.right_list.selectedItems()
-        for item in selected_items:
-            row = self.right_list.row(item)
-            self.left_list.addItem(self.right_list.takeItem(row))
+            for i in range(item.childCount()):
+                child = item.child(i)
+                if filter_recursive(child) or item_match:
+                    child_visible = True
+
+            item.setHidden(not (item_match or child_visible))
+            if child_visible and item.parent():
+                item.parent().setExpanded(True)
+
+            return item_match or child_visible
+
+        for i in range(self.properties.topLevelItemCount()):
+            filter_recursive(self.properties.topLevelItem(i))
+
+    def populate_comps(self):
+        self.comps_and_layers.clear()
+        for comp in self.stub.get_active_comp_with_inner_layers():
+            self._add_layer_to_parent(self.comps_and_layers, comp)
+        self.comps_and_layers.expandAll()
+
+    def _add_layer_to_parent(self, parent, layer):
+        child = QtWidgets.QTreeWidgetItem(parent, [layer["name"]])
+        child.setData(0, QtCore.Qt.UserRole, layer['id'])
+        child.setData(1, QtCore.Qt.UserRole, layer['markers'])
+
+        if layer.get('markers'):
+            child.setForeground(0, QtGui.QBrush(QtGui.QColor(200, 200, 200)))
+            child.setFlags(
+                QtCore.Qt.ItemIsEnabled
+                | QtCore.Qt.ItemFlag.ItemIsUserCheckable
+                | QtCore.Qt.ItemIsDropEnabled
+                | QtCore.Qt.ItemIsDragEnabled
+                | QtCore.Qt.ItemIsSelectable
+            )
+        else:
+            child.setForeground(0, QtGui.QBrush(QtGui.QColor(70, 70, 80)))
+            child.setFlags(QtCore.Qt.ItemIsEnabled)
+            child.flags()
+
+        for layer in layer.get('layers', []):
+            self._add_layer_to_parent(child, layer)
+
+    def populate_properties(self):
+        bold = QtGui.QFont()
+        bold.setBold(True)
+
+        self.properties.clear()
+        for layer in self.stub.get_selected_layers():
+            parent = QtWidgets.QTreeWidgetItem(self.properties, [layer.name])
+            parent.setData(0, QtCore.Qt.UserRole, layer.id)
+            for item in self.stub.get_layer_attributes_names(layer.id):
+                has_marker = item.get('marker', False)
+                child = QtWidgets.QTreeWidgetItem(
+                    parent,
+                    ["◢ " + item['name']] if has_marker else [item['name']]
+                )
+                child.setFont(0, bold) if has_marker else (
+                    child.setForeground(0, QtGui.QBrush(QtGui.QColor(170, 170, 180)))
+                )
 
     def on_ok(self):
         self.close()

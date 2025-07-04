@@ -115,7 +115,7 @@ function getActiveDocumentFullName(){
 
 function getLayerAttributesNames(layer_id){
     /**
-     * Return all existing attributes for given layer id.
+     * Return all existing attributes for layer with given id OR selected layer.
      *
      * Args:
      *      layer_id (str): layer identifier
@@ -123,21 +123,27 @@ function getLayerAttributesNames(layer_id){
      *      list of attributes
      */
 
-    properties = []
-    var layer = app.project.layerByID(parseInt(layer_id));
+    var layer = app.project.layerByID(layer_id);
+    properties = [];
+
     function traverseProperties(propGroup) {
         for (var i = 1; i <= propGroup.numProperties; i++) {
             var prop = propGroup.property(i);
-            properties.push(prop.name);
+            properties.push(
+                {
+                    "name": prop.name,
+                    "marker": prop.isTimeVarying
+                }
+            );
             if (prop instanceof PropertyGroup) {
                 traverseProperties(prop);
             }
         }
     }
 
-    traverseProperties(layer)
+    traverseProperties(layer);
 
-    return _prepareSingleValue(properties)
+    return _prepareSingleValue(properties);
 }
 
 
@@ -263,6 +269,34 @@ function getSelectedItems(comps, folders, footages){
     return '[' + items.join() + ']';
 }
 
+function getSelectedLayers(){
+    /**
+     * Returns list of selected layers in timeline
+     *
+     * Returns:
+     *     (list) of JSON items
+     */
+    retrieved_layers = []
+    for (var i=0; i<app.project.activeItem.selectedLayers.length; i++){
+        layer = app.project.activeItem.selectedLayers[i]
+
+        if (layer instanceof FolderItem){ item_type = 'folder'; }
+        else if (layer instanceof FootageItem){ item_type = 'footage'; }
+        else if (layer instanceof CompItem){ item_type = 'comp'; }
+        else { item_type = undefined; }
+
+        retrieved_layers.push(
+            {
+                "name": layer.name,
+                "id": layer.id,
+                "type": item_type,
+            }
+        );
+    }
+
+    return _prepareSingleValue(retrieved_layers)
+}
+
 function _getItem(item, comps, folders, footages){
     /**
      * Auxiliary function as project items and selections
@@ -307,31 +341,52 @@ function _getItem(item, comps, folders, footages){
     return JSON.stringify(item);
 }
 
-function getCompsWithInnerLayers(){
-    retrieved_comps = []
+function getActiveCompWithInnerLayers(depth){
+    retrieved_comps = [];
 
-    for (var i=1; i<=app.project.numItems; i++){
-        item = app.project.item(i)
-        if (item instanceof FootageItem || item instanceof FolderItem){ continue;  }
-        comp = {
-            "name": item.name,
-            "id": item.id,
-            "layers": []
-        }
-        for (var j=1; j<=item.numLayers; j++){
-            layer = item.layer(j)
-            if(layer.source instanceof CompItem){ continue; }
-            comp['layers'].push(
-                {
-                    "name": layer.name,
-                    "id": layer.id,
-                }
-            )
-        }
-        retrieved_comps.push(comp)
-    }
+    item = app.project.activeItem;
+    if (item instanceof FootageItem || item instanceof FolderItem){ return;  }
+    comp = {
+        "name": item.name,
+        "id": item.id,
+        "markers": item.markerProperty.numKeys > 0,
+        "type": "comp",
+        "layers": []
+    };
+
+    retrieved_comps.push(comp);
+    _getInnerLayers(comp, item, depth, 0);
 
     return JSON.stringify(retrieved_comps);
+}
+
+function _getInnerLayers(previousComp, item, depth, recursive_level){
+    if (depth >= 0 && recursive_level >= depth){ return; }
+    recursive_level++;
+
+    for (var j=1; j<=item.numLayers; j++){
+        layer = item.layer(j);
+        retrievedItem = {
+            "name": layer.name,
+            "id": layer.id,
+            "markers": layer.property("Marker").numKeys > 0
+        };
+        previousComp['layers'].push(retrievedItem);
+
+        if(layer.source instanceof CompItem){
+            retrievedItem['type'] = "comp";
+            retrievedItem['layers'] = [];
+            _getInnerLayers(retrievedItem, layer.source, depth, recursive_level);
+        }
+        else if(layer.source instanceof FootageItem){
+            retrievedItem['type'] = "footage";
+            retrievedItem['layers'] = [];
+        }
+        else if(layer.source instanceof FolderItem){
+            retrievedItem['type'] = "folder";
+            retrievedItem['layers'] = [];
+        }
+    }
 }
 
 function importFile(path, item_name, import_options){
