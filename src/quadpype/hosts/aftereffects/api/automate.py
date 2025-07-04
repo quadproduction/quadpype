@@ -67,7 +67,23 @@ class ElementCoordinates:
 
     @property
     def bottom(self):
-        return Point(self.anchor_point.x + self.shape.width / 2, self.anchor_point.y + (self.shape.height / 1.2))
+        return Point(self.anchor_point.x + self.shape.width / 2, self.anchor_point.y + self.shape.height / 1.2)
+
+    @property
+    def bottom_limit(self):
+        return Point(self.anchor_point.x + self.shape.width / 2, self.anchor_point.y + self.shape.height - 1)
+
+    @property
+    def left(self):
+        return Point(self.anchor_point.x + self.shape.width / 8, self.anchor_point.y + self.shape.height / 2)
+
+    @property
+    def bottom_right(self):
+        return Point(self.anchor_point.x + self.shape.width / 1.2, self.anchor_point.y + self.shape.height / 1.2)
+
+    @property
+    def bottom_left(self):
+        return Point(self.anchor_point.x + self.shape.width / 8, self.anchor_point.y + self.shape.height / 1.2)
 
 
 class ClickableElement:
@@ -105,8 +121,12 @@ def get_combined_monitors_offset():
 
 def get_monitors_screenshot():
     with mss() as sct:
-        screenshot = np.array(sct.grab(sct.monitors[0]))
-        return cv2.cvtColor(screenshot, cv2.COLOR_RGB2HSV)
+        return apply_threshold(np.array(sct.grab(sct.monitors[0])))
+
+
+def apply_threshold(image):
+    return cv2.cvtColor(image, cv2.COLOR_RGB2RGBA)
+    #return cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 7, 5)
 
 
 def get_element_coordinates(template_path, screenshot, threshold, log, fixed_scale=None):
@@ -116,11 +136,12 @@ def get_element_coordinates(template_path, screenshot, threshold, log, fixed_sca
         return
 
     template = cv2.imread(str(template_path), cv2.IMREAD_COLOR)
-    template = cv2.cvtColor(template, cv2.COLOR_RGB2HSV)
+    template = apply_threshold(template)
+
     template_height, template_width = template.shape[:2]
 
     found = get_match(
-        scales=[fixed_scale] if fixed_scale else np.linspace(0.25, 1.0, 10)[::-1],
+        scales=[fixed_scale] if fixed_scale else np.linspace(0.25, 1.0, 20)[::-1],
         screenshot=screenshot,
         template=template,
         log=log
@@ -136,6 +157,37 @@ def get_element_coordinates(template_path, screenshot, threshold, log, fixed_sca
             template=template,
             log=log
         )
+    log.warning("Template : " + str(template_path))
+    log.warning("Confidence : " + str(found.confidence))
+    log.warning("Ratio : " + str(found.ratio))
+    log.warning('--')
+
+    (endX, endY) = (int((found.anchor_point.x + template_width) * found.ratio),
+                    int((found.anchor_point.y + template_height) * found.ratio))
+    # draw a bounding box around the detected result and display the image
+    cv2.rectangle(screenshot, (found.anchor_point.x, found.anchor_point.y), (endX, endY), (255, 255, 255), 10)
+    # cv2.imshow("Image", screenshot)
+    # cv2.waitKey(0)
+
+    import os
+    import uuid
+    from shutil import copyfile
+    # Obtenir le chemin du dossier temporaire de Windows
+    dossier_temp = os.environ.get('TEMP', os.environ.get('TMP', 'C:\\Windows\\Temp'))
+
+    # Générer un nom de fichier aléatoire avec extension
+    nom_aleatoire = str(uuid.uuid4()) + ".png"
+
+    # Chemin complet de destination
+    chemin_destination = os.path.join(dossier_temp, nom_aleatoire)
+
+    try:
+        # Copier l'image source vers la destination
+        cv2.imwrite(chemin_destination, screenshot)
+        print(f"Image sauvegardée avec succès : {chemin_destination}")
+
+    except Exception as e:
+        print(f"Erreur lors de la sauvegarde de l'image : {e}")
 
     if _match_is_not_valid(found, threshold):
         log.warning(f"Can not found {template_path.stem} in user monitor.")
@@ -172,6 +224,8 @@ def get_match(scales, screenshot, template, log):
             scale=scale
         )
 
+        log.warning("scale : " + str(scale) + ", confidence : " + str(match_result.confidence))
+
         if not found or match_result.confidence > found.confidence:
             found = match_result
 
@@ -197,11 +251,17 @@ def import_file_dialog_clic(log):
     elements_to_click = list()
 
     try:
-        elements_to_click.append(ClickableElement(["photoshop_file_icon_1.png", "photoshop_file_icon_2.png"], folder_path))
-        elements_to_click.append(ClickableElement(["metrage.png"], folder_path, wait_after=0.1))
-        elements_to_click.append(ClickableElement(["composition.png"], folder_path, click="bottom"))
-        elements_to_click.append(ClickableElement(["importer.png"], folder_path, wait_after=0.3))
-        elements_to_click.append(ClickableElement(["ok.png"], folder_path))
+        elements_to_click.append(
+            ClickableElement(
+                files_names=["photoshop_file_icon_1.png", "photoshop_file_icon_2.png"],
+                folder_path=folder_path,
+                click="bottom_right"
+            )
+        )
+        elements_to_click.append(ClickableElement(["metrage.png"], folder_path, click="bottom"))
+        elements_to_click.append(ClickableElement(["composition.png"], folder_path, click="bottom_limit", wait_after=0.3))
+        elements_to_click.append(ClickableElement(["importer.png"], folder_path, click="bottom_left", wait_after=0.3))
+        elements_to_click.append(ClickableElement(["ok.png"], folder_path, click="left"))
 
     except FileNotFoundError as err:
         log.error("An error has occured when retrieving image for comparison. Abort process.")

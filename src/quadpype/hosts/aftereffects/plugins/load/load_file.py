@@ -5,6 +5,7 @@ from pathlib import Path
 import notifypy
 
 from quadpype.style import get_app_icon_path
+from quadpype.lib import get_user_settings
 from quadpype.pipeline import (
     get_representation_path,
     get_current_context,
@@ -93,10 +94,12 @@ class FileLoader(api.AfterEffectsLoader):
 
         if is_psd:
             import_options['ImportAsType'] = 'ImportAsType.COMP'
+            user_override_auto_clic = get_user_settings().get('general', {}).get('enable_auto_clic_scripts', True)
+
             load_settings = get_project_settings(project_name).get(host_name, {}).get('load', {})
             auto_clic = load_settings.get('auto_clic_import_dialog')
 
-            if auto_clic:
+            if auto_clic and user_override_auto_clic:
                 auto_clic_thread = self.trigger_auto_clic_thread(load_settings.get('attempts_number', 3))
                 comp = stub.import_file_with_dialog(
                     path_str,

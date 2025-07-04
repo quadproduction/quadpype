@@ -21,25 +21,35 @@ class LocalGeneralWidgets(QtWidgets.QWidget):
         self.windows_can_stay_on_top_input = QtWidgets.QCheckBox("", self)
         layout.addRow("Windows can Stay On Top", self.windows_can_stay_on_top_input)
 
+        self.enable_auto_clic_scripts_input = QtWidgets.QCheckBox("", self)
+        layout.addRow("Enable auto clic scripts", self.enable_auto_clic_scripts_input)
+
     def update_user_settings(self, value):
         self._loading_user_settings = True
 
         username = ""
         windows_can_stay_on_top = True
+        enable_auto_clic_scripts = True
 
         if value:
             username = value.get("username", username)
             windows_can_stay_on_top = value.get("windows_can_stay_on_top", windows_can_stay_on_top)
+            enable_auto_clic_scripts = value.get("enable_auto_clic_scripts", enable_auto_clic_scripts)
 
         self.username_input.setText(username)
 
-        if self.windows_can_stay_on_top_input.isChecked() != windows_can_stay_on_top:
-            # Use state as `stateChanged` is connected to callbacks
-            if windows_can_stay_on_top:
-                state = QtCore.Qt.CheckState.Checked
-            else:
-                state = QtCore.Qt.CheckState.Unchecked
-            self.windows_can_stay_on_top_input.setCheckState(state)
+        for input_with_attribute in [
+            (self.windows_can_stay_on_top_input, windows_can_stay_on_top),
+            (self.enable_auto_clic_scripts_input, enable_auto_clic_scripts)
+        ]:
+            attribute, input = input_with_attribute
+            if attribute.isChecked() != input:
+                # Use state as `stateChanged` is connected to callbacks
+                if input:
+                    state = QtCore.Qt.CheckState.Checked
+                else:
+                    state = QtCore.Qt.CheckState.Unchecked
+                attribute.setCheckState(state)
 
         self._loading_user_settings = False
 
@@ -53,5 +63,9 @@ class LocalGeneralWidgets(QtWidgets.QWidget):
         windows_can_stay_on_top = self.windows_can_stay_on_top_input.isChecked()
         if not windows_can_stay_on_top:
             output["windows_can_stay_on_top"] = windows_can_stay_on_top
+
+        enable_auto_clic_scripts = self.enable_auto_clic_scripts_input.isChecked()
+        if not enable_auto_clic_scripts:
+            output["enable_auto_clic_scripts"] = enable_auto_clic_scripts
 
         return output
