@@ -49,21 +49,29 @@ class TransferExpositionToolsDialog(BaseToolDialog):
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )
 
+        search_box_comps = QtWidgets.QLineEdit()
+        search_box_comps.setPlaceholderText("Rechercher...")
+        search_erase_comps = QtWidgets.QPushButton()
+        search_erase_comps.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_DialogCloseButton))
+        search_layout_comps = QtWidgets.QHBoxLayout()
+        search_layout_comps.addWidget(search_box_comps)
+        search_layout_comps.addWidget(search_erase_comps)
+
         self.comps_and_layers = QtWidgets.QTreeWidget()
-        self.comps_and_layers.setHeaderHidden(True)
         refresh_comps_btn = QtWidgets.QPushButton("Refresh")
         refresh_comps_btn.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_BrowserReload))
         left_layout = QtWidgets.QVBoxLayout()
+        left_layout.addLayout(search_layout_comps)
         left_layout.addWidget(self.comps_and_layers)
         left_layout.addWidget(refresh_comps_btn)
 
-        search_box = QtWidgets.QLineEdit()
-        search_box.setPlaceholderText("Rechercher...")
-        search_erase = QtWidgets.QPushButton()
-        search_erase.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_DialogCloseButton))
-        search_layout = QtWidgets.QHBoxLayout()
-        search_layout.addWidget(search_box)
-        search_layout.addWidget(search_erase)
+        search_box_properties = QtWidgets.QLineEdit()
+        search_box_properties.setPlaceholderText("Rechercher...")
+        search_erase_properties = QtWidgets.QPushButton()
+        search_erase_properties.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_DialogCloseButton))
+        search_layout_properties = QtWidgets.QHBoxLayout()
+        search_layout_properties.addWidget(search_box_properties)
+        search_layout_properties.addWidget(search_erase_properties)
 
         self.properties = QtWidgets.QTreeWidget()
         self.properties.setSelectionMode(QtWidgets.QTreeWidget.ExtendedSelection)
@@ -74,7 +82,7 @@ class TransferExpositionToolsDialog(BaseToolDialog):
         buttons_layout.addWidget(clear_btn)
         buttons_layout.addWidget(refresh_properties_btn)
         right_layout = QtWidgets.QVBoxLayout()
-        right_layout.addLayout(search_layout)
+        right_layout.addLayout(search_layout_properties)
         right_layout.addWidget(self.properties)
         right_layout.addLayout(buttons_layout)
         # Separator line
@@ -101,9 +109,11 @@ class TransferExpositionToolsDialog(BaseToolDialog):
         self.populate_comps()
         self.populate_properties()
 
-        self.comps_and_layers.itemClicked.connect(self.on_item_clicked)
-        search_box.textChanged.connect(self.filter_items)
-        search_erase.clicked.connect(lambda: search_box.setText(""))
+        # self.comps_and_layers.itemClicked.connect(self.on_item_clicked)
+        search_box_comps.textChanged.connect(self.filter_comps)
+        search_box_properties.textChanged.connect(self.filter_properties)
+        search_erase_properties.clicked.connect(lambda: search_box_properties.setText(""))
+        search_erase_comps.clicked.connect(lambda: search_box_comps.setText(""))
         clear_btn.clicked.connect(self.properties.clearSelection)
         refresh_comps_btn.clicked.connect(self.populate_comps)
         refresh_properties_btn.clicked.connect(self.populate_properties)
@@ -111,33 +121,45 @@ class TransferExpositionToolsDialog(BaseToolDialog):
 
         self.resize(1000, 400)
 
-    def filter_items(self, text):
+    def filter_comps(self, text):
         filter_text = text.lower()
+        for i in range(self.comps_and_layers.topLevelItemCount()):
+            self._filter_item(self.comps_and_layers.topLevelItem(i), filter_text)
 
-        def filter_recursive(item):
-            child_visible = False
-
-            item_text = item.text(0).lower()
-            item_match = filter_text in item_text
-
-            for i in range(item.childCount()):
-                child = item.child(i)
-                if filter_recursive(child) or item_match:
-                    child_visible = True
-
-            item.setHidden(not (item_match or child_visible))
-            if child_visible and item.parent():
-                item.parent().setExpanded(True)
-
-            return item_match or child_visible
-
+    def filter_properties(self, text):
+        filter_text = text.lower()
         for i in range(self.properties.topLevelItemCount()):
-            filter_recursive(self.properties.topLevelItem(i))
+            self._filter_item(self.properties.topLevelItem(i), filter_text)
+
+    def _filter_item(self, item, filter_text):
+        child_visible = False
+
+        item_text = item.text(0).lower()
+        item_match = filter_text in item_text
+
+        for i in range(item.childCount()):
+            child = item.child(i)
+            if self._filter_item(child, filter_text) or item_match:
+                child_visible = True
+
+        item.setHidden(not (item_match or child_visible))
+        if child_visible and item.parent():
+            item.parent().setExpanded(True)
+
+        return item_match or child_visible
 
     def populate_comps(self):
         self.comps_and_layers.clear()
-        for comp in self.stub.get_active_comp_with_inner_layers():
+
+        comps = self.stub.get_active_comp_with_inner_layers()
+        if not comps:
+            self.comps_and_layers.setHeaderLabel("No layer selected yet.")
+
+        self.comps_and_layers.setHeaderLabel(', '.join([layer['name'] for layer in comps]))
+
+        for comp in comps:
             self._add_layer_to_parent(self.comps_and_layers, comp)
+
         self.comps_and_layers.expandAll()
 
     def _add_layer_to_parent(self, parent, layer):
@@ -167,7 +189,14 @@ class TransferExpositionToolsDialog(BaseToolDialog):
         bold.setBold(True)
 
         self.properties.clear()
-        for layer in self.stub.get_selected_layers():
+        layers = self.stub.get_selected_layers()
+
+        if not layers:
+            self.properties.setHeaderLabel("No layer selected yet.")
+
+        self.properties.setHeaderLabel(', '.join([layer.name for layer in layers]))
+
+        for layer in layers:
             parent = QtWidgets.QTreeWidgetItem(self.properties, [layer.name])
             parent.setData(0, QtCore.Qt.UserRole, layer.id)
             for item in self.stub.get_layer_attributes_names(layer.id):
