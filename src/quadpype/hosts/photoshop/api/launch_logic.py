@@ -1,13 +1,16 @@
 import os
 import subprocess
+import platform
 import collections
 import asyncio
+import shlex
 
 from wsrpc_aiohttp import (
     WebSocketRoute,
     WebSocketAsync
 )
 
+from pathlib import Path
 from qtpy import QtCore
 
 from quadpype.lib import Logger, StringTemplate
@@ -140,6 +143,9 @@ class ProcessLauncher(QtCore.QObject):
         self._start_process_timer = start_process_timer
         self._loop_timer = loop_timer
 
+        if self.mac_with_arm_chip():
+            self.add_rosetta_execution_order()
+
     @property
     def log(self):
         if self._log is None:
@@ -180,6 +186,19 @@ class ProcessLauncher(QtCore.QObject):
         item = MainThreadItem(callback, *args, **kwargs)
         cls._main_thread_callbacks.append(item)
         return item
+
+    @staticmethod
+    def mac_with_arm_chip():
+        return platform.system().lower() == 'darwin' and platform.processor().lower() == 'arm'
+
+    def add_rosetta_execution_order(self):
+        for index, arg in enumerate(self._subprocess_args):
+            if Path(arg).exists():
+                subprocess_args_list = list(self._subprocess_args)
+                subprocess_args_list[0] = f"\"{subprocess_args_list[0]}\""
+                subprocess_args_list.insert(index, "arch -x86_64")
+                self._subprocess_args = tuple(subprocess_args_list)
+                return
 
     def start(self):
         if self._started:
@@ -285,9 +304,13 @@ class ProcessLauncher(QtCore.QObject):
         if self._process is not None:
             return
         self.log.info("Starting host process")
+
+        # Re-format command if arg is passed in front of application path
+        command = shlex.split(' '.join(self._subprocess_args)) if self.mac_with_arm_chip() \
+            else self._subprocess_args
         try:
             self._process = subprocess.Popen(
-                self._subprocess_args,
+                command,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
             )
