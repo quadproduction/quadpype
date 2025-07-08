@@ -290,7 +290,6 @@ class AfterEffectsServerStub():
                 target_layer_id (int): id from layer on which to apply expression
                 target_property_name (str): property on which to apply expression
         """
-        print('in ws stub')
         res = self.websocketserver.call(self.client.call
                                         ('AfterEffects.apply_exposure',
                                          effect_layer_name=effect_layer_name,

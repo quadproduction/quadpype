@@ -119,10 +119,13 @@ function main(websocket_url) {
 
     RPC.addRoute('AfterEffects.apply_exposure', function (data) {
         log.warn('Server called client route "apply_exposure":', data);
-        return runEvalScript("applyExposure('" + data.effect_layer_name + "', " +
-            "'" + data.effect_layer_parent_name + "', " +
+        var effect_layer_name = EscapeStringForJSX(data.effect_layer_name);
+        var effect_layer_parent_name = EscapeStringForJSX(data.effect_layer_parent_name);
+        var target_property_name = EscapeStringForJSX(data.target_property_name);
+        return runEvalScript("applyExposure('" + effect_layer_name + "', " +
+            "'" + effect_layer_parent_name + "', " +
             data.target_layer_id + ", " +
-            "'" + data.target_property_name + "')")
+            "'" + target_property_name + "')")
             .then(function (result) {
                 log.warn("apply_exposure: " + result);
                 return result;

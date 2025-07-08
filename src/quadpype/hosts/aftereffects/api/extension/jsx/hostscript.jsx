@@ -156,9 +156,14 @@ function applyExposure(effect_layer_name, effect_layer_parent_name, target_layer
      *      target_layer_id (int): id from layer on which to apply expression
      *      target_property_name (str): property on which to apply expression
      */
-    target_layer = app.project.layerByID(target_layer_id)
+    try{
+        target_layer = app.project.layerByID(target_layer_id)
+        if (target_layer === null){ return _prepareError("Couldn't find layer with id " + target_layer_id) }
+        if (target_layer.property(target_property_name).expression === undefined){
+            return _prepareError("Couldn't apply expression on layer named " + target_layer.name);
+        }
 
-	target_layer.property(target_property_name).expression =
+        target_layer.property(target_property_name).expression =
 	    'TARGET = comp("' + effect_layer_parent_name + '").layer("' + effect_layer_name  + '");\n' +
         'NEAREST_KEY_TIME = TARGET.marker.nearestKey(time).time;\n' +
         'NEAREST_KEY_INDEX = TARGET.marker.nearestKey(time).index;\n' +
@@ -170,6 +175,13 @@ function applyExposure(effect_layer_name, effect_layer_parent_name, target_layer
         '   NEW_TIME = TARGET.timeRemap.key(INDEX).time;\n' +
         '}catch(err){0};\n' +
         'valueAtTime(NEW_TIME)'
+
+    } catch (e){
+        return _prepareError("Couldn't apply expression on layer named " + target_layer.name);
+    }
+
+    return _prepareSingleValue(true)
+
 }
 
 

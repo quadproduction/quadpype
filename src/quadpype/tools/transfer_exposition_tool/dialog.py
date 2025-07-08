@@ -85,19 +85,35 @@ class TransferExpositionToolsDialog(BaseToolDialog):
         right_layout.addLayout(search_layout_properties)
         right_layout.addWidget(self.properties)
         right_layout.addLayout(buttons_layout)
-        # Separator line
+
         separator_widget = QtWidgets.QWidget(self)
         separator_widget.setObjectName("Separator")
         separator_widget.setMinimumHeight(2)
         separator_widget.setMaximumHeight(2)
 
-        # Bottom button
-        bottom_layout = QtWidgets.QVBoxLayout()
-        apply_btn = QtWidgets.QPushButton("Apply Exposure")
-        bottom_layout.addWidget(separator_widget)
-        bottom_layout.addWidget(apply_btn)
+        self.result_success_label = QtWidgets.QLabel("")
+        self.result_errors_label = QtWidgets.QLabel("")
+        self.apply_btn = QtWidgets.QPushButton("Apply Exposure")
+        self.apply_btn.setFixedHeight(40)
+        self.apply_btn.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_DialogApplyButton))
+        self.result_success_label.setStyleSheet("color: #038C3E;")
+        self.result_errors_label.setStyleSheet("color: #BF372A;")
+        font = QtGui.QFont()
+        font.setItalic(True)
+        self.result_success_label.setFont(font)
+        self.result_errors_label.setFont(font)
+        self.result_success_label.setVisible(False)
+        self.result_errors_label.setVisible(False)
 
-        # Combine all layouts
+        results_layout = QtWidgets.QVBoxLayout()
+        results_layout.addWidget(self.result_success_label)
+        results_layout.addWidget(self.result_errors_label)
+
+        bottom_layout = QtWidgets.QHBoxLayout()
+        bottom_layout.addLayout(results_layout, 100)
+        bottom_layout.addWidget(separator_widget)
+        bottom_layout.addWidget(self.apply_btn)
+
         lists_layout = QtWidgets.QHBoxLayout()
         lists_layout.addLayout(left_layout)
         lists_layout.addLayout(right_layout)
@@ -109,7 +125,8 @@ class TransferExpositionToolsDialog(BaseToolDialog):
         self.populate_comps()
         self.populate_properties()
 
-        # self.comps_and_layers.itemClicked.connect(self.on_item_clicked)
+        self.comps_and_layers.itemClicked.connect(self.update_apply_btn_state)
+        self.properties.itemClicked.connect(self.update_apply_btn_state)
         search_box_comps.textChanged.connect(self.filter_comps)
         search_box_properties.textChanged.connect(self.filter_properties)
         search_erase_properties.clicked.connect(lambda: search_box_properties.setText(""))
@@ -117,7 +134,11 @@ class TransferExpositionToolsDialog(BaseToolDialog):
         clear_btn.clicked.connect(self.properties.clearSelection)
         refresh_comps_btn.clicked.connect(self.populate_comps)
         refresh_properties_btn.clicked.connect(self.populate_properties)
-        apply_btn.clicked.connect(self.on_apply)
+        self.comps_and_layers.selectionModel().selectionChanged.connect(self.update_apply_btn_state)
+        self.properties.selectionModel().selectionChanged.connect(self.update_apply_btn_state)
+        self.apply_btn.clicked.connect(self.on_apply)
+
+        self.update_apply_btn_state()
 
         self.resize(1000, 400)
 
@@ -179,7 +200,6 @@ class TransferExpositionToolsDialog(BaseToolDialog):
         else:
             child.setForeground(0, QtGui.QBrush(QtGui.QColor(70, 70, 80)))
             child.setFlags(QtCore.Qt.ItemIsEnabled)
-            child.flags()
 
         for layer in layer.get('layers', []):
             self._add_layer_to_parent(child, layer)
@@ -196,29 +216,57 @@ class TransferExpositionToolsDialog(BaseToolDialog):
 
         bold = QtGui.QFont()
         bold.setBold(True)
+        masked_brush = QtGui.QBrush(QtGui.QColor(170, 170, 180))
 
         for layer in layers:
             parent = QtWidgets.QTreeWidgetItem(self.properties, [layer.name])
             parent.setData(0, QtCore.Qt.UserRole, layer.id)
+            parent.setFlags(QtCore.Qt.ItemIsEnabled)
+            parent.setForeground(0, masked_brush)
+
             for item in self.stub.get_layer_attributes_names(layer.id):
                 child = QtWidgets.QTreeWidgetItem(parent, [item['name']])
                 child.setData(0, QtCore.Qt.UserRole, layer.id)
-                child.setFont(0, bold) if item.get('marker', False) else (
-                    child.setForeground(0, QtGui.QBrush(QtGui.QColor(170, 170, 180)))
-                )
+                child.setFont(0, bold) if item.get('marker', False) else child.setForeground(0, masked_brush)
 
     def on_apply(self):
         layers = self.comps_and_layers.selectedItems()
         properties = self.properties.selectedItems()
+        results_success = list()
+        results_errors = list()
 
         for layer in layers:
             parent_layer_name = layer.parent().text(0)
             for layer_property in properties:
                 selected_layer_id = layer_property.data(0, QtCore.Qt.UserRole)
+                property_name = layer_property.text(0)
+                try:
+                    success = self.stub.apply_exposure(
+                        effect_layer_name=layer.text(0),
+                        effect_layer_parent_name=parent_layer_name,
+                        target_layer_id=selected_layer_id,
+                        target_property_name=property_name
+                    )
+                    if success:
+                        results_success.append(f"{layer_property.parent().text(0)}/{property_name}")
+                    else:
+                        results_errors.append(f"{layer_property.parent().text(0)}/{property_name}")
 
-                self.stub.apply_exposure(
-                    effect_layer_name=layer.text(0),
-                    effect_layer_parent_name=parent_layer_name,
-                    target_layer_id=selected_layer_id,
-                    target_property_name=layer_property.text(0)
-                )
+                except ValueError:
+                    results_errors.append(f"{layer_property.parent().text(0)}/{property_name}")
+
+        if results_success:
+            self.result_success_label.setVisible(True)
+            self.result_success_label.setText(
+                f"Applied with success : {', '.join([result for result in results_success])}."
+            )
+        if results_errors:
+            self.result_errors_label.setVisible(True)
+            self.result_errors_label.setText(
+                f"Couldn't apply : {', '.join([result for result in results_errors])}."
+            )
+
+    def update_apply_btn_state(self):
+        self.result_success_label.setVisible(False)
+        self.result_errors_label.setVisible(False)
+        self.apply_btn.setEnabled(all([self.comps_and_layers.selectedItems(), self.properties.selectedItems()]))
