@@ -146,6 +146,32 @@ function getLayerAttributesNames(layer_id){
     return _prepareSingleValue(properties);
 }
 
+function applyExposure(effect_layer_name, effect_layer_parent_name, target_layer_id, target_property_name){
+    /**
+     * Apply exposure on layer property from given effect layer.
+     *
+     * Args:
+     *      effect_layer_name (int): layer effect name used as target in expression
+     *      effect_layer_parent_name (int): parent name of previous layer effect
+     *      target_layer_id (int): id from layer on which to apply expression
+     *      target_property_name (str): property on which to apply expression
+     */
+    target_layer = app.project.layerByID(target_layer_id)
+
+	target_layer.property(target_property_name).expression =
+	    'TARGET = comp("' + effect_layer_parent_name + '").layer("' + effect_layer_name  + '");\n' +
+        'NEAREST_KEY_TIME = TARGET.marker.nearestKey(time).time;\n' +
+        'NEAREST_KEY_INDEX = TARGET.marker.nearestKey(time).index;\n' +
+        'PREVIOUS_KEY_INDEX = TARGET.marker.nearestKey(time).index-1;\n' +
+        'NEW_TIME = 0;\n' +
+        'try{\n' +
+        '   if (NEAREST_KEY_TIME>time) INDEX = PREVIOUS_KEY_INDEX;\n' +
+        '   else INDEX = NEAREST_KEY_INDEX;\n' +
+        '   NEW_TIME = TARGET.timeRemap.key(INDEX).time;\n' +
+        '}catch(err){0};\n' +
+        'valueAtTime(NEW_TIME)'
+}
+
 
 function addItem(name, item_type){
     /**

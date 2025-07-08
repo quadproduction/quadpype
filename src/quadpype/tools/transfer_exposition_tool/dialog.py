@@ -93,9 +93,9 @@ class TransferExpositionToolsDialog(BaseToolDialog):
 
         # Bottom button
         bottom_layout = QtWidgets.QVBoxLayout()
-        ok_btn = QtWidgets.QPushButton("OK")
+        apply_btn = QtWidgets.QPushButton("Apply Exposure")
         bottom_layout.addWidget(separator_widget)
-        bottom_layout.addWidget(ok_btn)
+        bottom_layout.addWidget(apply_btn)
 
         # Combine all layouts
         lists_layout = QtWidgets.QHBoxLayout()
@@ -117,7 +117,7 @@ class TransferExpositionToolsDialog(BaseToolDialog):
         clear_btn.clicked.connect(self.properties.clearSelection)
         refresh_comps_btn.clicked.connect(self.populate_comps)
         refresh_properties_btn.clicked.connect(self.populate_properties)
-        ok_btn.clicked.connect(self.on_ok)
+        apply_btn.clicked.connect(self.on_apply)
 
         self.resize(1000, 400)
 
@@ -185,10 +185,8 @@ class TransferExpositionToolsDialog(BaseToolDialog):
             self._add_layer_to_parent(child, layer)
 
     def populate_properties(self):
-        bold = QtGui.QFont()
-        bold.setBold(True)
-
         self.properties.clear()
+
         layers = self.stub.get_selected_layers()
 
         if not layers:
@@ -196,18 +194,31 @@ class TransferExpositionToolsDialog(BaseToolDialog):
 
         self.properties.setHeaderLabel(', '.join([layer.name for layer in layers]))
 
+        bold = QtGui.QFont()
+        bold.setBold(True)
+
         for layer in layers:
             parent = QtWidgets.QTreeWidgetItem(self.properties, [layer.name])
             parent.setData(0, QtCore.Qt.UserRole, layer.id)
             for item in self.stub.get_layer_attributes_names(layer.id):
-                has_marker = item.get('marker', False)
-                child = QtWidgets.QTreeWidgetItem(
-                    parent,
-                    ["◢ " + item['name']] if has_marker else [item['name']]
-                )
-                child.setFont(0, bold) if has_marker else (
+                child = QtWidgets.QTreeWidgetItem(parent, [item['name']])
+                child.setData(0, QtCore.Qt.UserRole, layer.id)
+                child.setFont(0, bold) if item.get('marker', False) else (
                     child.setForeground(0, QtGui.QBrush(QtGui.QColor(170, 170, 180)))
                 )
 
-    def on_ok(self):
-        self.close()
+    def on_apply(self):
+        layers = self.comps_and_layers.selectedItems()
+        properties = self.properties.selectedItems()
+
+        for layer in layers:
+            parent_layer_name = layer.parent().text(0)
+            for layer_property in properties:
+                selected_layer_id = layer_property.data(0, QtCore.Qt.UserRole)
+
+                self.stub.apply_exposure(
+                    effect_layer_name=layer.text(0),
+                    effect_layer_parent_name=parent_layer_name,
+                    target_layer_id=selected_layer_id,
+                    target_property_name=layer_property.text(0)
+                )

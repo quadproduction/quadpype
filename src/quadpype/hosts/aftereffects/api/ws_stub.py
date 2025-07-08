@@ -280,6 +280,26 @@ class AfterEffectsServerStub():
                                          layer_id=layer_id))
         return self._handle_return(res)
 
+    def apply_exposure(self, effect_layer_name, effect_layer_parent_name, target_layer_id, target_property_name):
+        """
+            Apply exposure on layer property from given effect layer.
+
+            Args:
+                effect_layer_name (int): layer effect name used as target in expression
+                effect_layer_parent_name (int): parent name of previous layer effect
+                target_layer_id (int): id from layer on which to apply expression
+                target_property_name (str): property on which to apply expression
+        """
+        print('in ws stub')
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.apply_exposure',
+                                         effect_layer_name=effect_layer_name,
+                                         effect_layer_parent_name=effect_layer_parent_name,
+                                         target_layer_id= target_layer_id,
+                                         target_property_name=target_property_name))
+
+        return self._handle_return(res)
+
     def add_item(self, name, item_type):
         """
             Adds either composition or folder to project item list.
