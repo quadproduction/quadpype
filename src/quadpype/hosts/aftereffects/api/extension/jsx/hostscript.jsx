@@ -126,27 +126,29 @@ function getLayerAttributesNames(layer_id){
     var layer = app.project.layerByID(layer_id);
     properties = [];
 
-    function traverseProperties(propGroup) {
-        for (var i = 1; i <= propGroup.numProperties; i++) {
-            var prop = propGroup.property(i);
-            properties.push(
-                {
-                    "name": prop.name,
-                    "marker": prop.isTimeVarying
-                }
-            );
-            if (prop instanceof PropertyGroup) {
-                traverseProperties(prop);
-            }
-        }
-    }
-
-    traverseProperties(layer);
+    _traverseProperties(layer, properties);
 
     return _prepareSingleValue(properties);
 }
 
-function applyExposure(effect_layer_name, effect_layer_parent_name, target_layer_id, target_property_name){
+function _traverseProperties(propGroup, given_properties) {
+        property_index = 0
+        for (var i = 1; i <= propGroup.numProperties; i++) {
+            var prop = propGroup.property(i);
+            new_property = {
+                "name": prop.name,
+                "marker": prop.isTimeVarying,
+                "index": i
+            }
+            given_properties.push(new_property);
+            if (prop instanceof PropertyGroup) {
+                new_property['properties'] = []
+                _traverseProperties(prop, new_property['properties']);
+            }
+        }
+    }
+
+function applyExposure(effect_layer_name, effect_layer_parent_name, target_layer_id, target_property_index_hierarchy){
     /**
      * Apply exposure on layer property from given effect layer.
      *
@@ -156,14 +158,17 @@ function applyExposure(effect_layer_name, effect_layer_parent_name, target_layer
      *      target_layer_id (int): id from layer on which to apply expression
      *      target_property_name (str): property on which to apply expression
      */
+
     try{
         target_layer = app.project.layerByID(target_layer_id)
         if (target_layer === null){ return _prepareError("Couldn't find layer with id " + target_layer_id) }
-        if (target_layer.property(target_property_name).expression === undefined){
-            return _prepareError("Couldn't apply expression on layer named " + target_layer.name);
+
+        var property = target_layer
+        while(target_property_index_hierarchy.length){
+            property = property.property(target_property_index_hierarchy.shift())
         }
 
-        target_layer.property(target_property_name).expression =
+        property.expression =
 	    'TARGET = comp("' + effect_layer_parent_name + '").layer("' + effect_layer_name  + '");\n' +
         'NEAREST_KEY_TIME = TARGET.marker.nearestKey(time).time;\n' +
         'NEAREST_KEY_INDEX = TARGET.marker.nearestKey(time).index;\n' +

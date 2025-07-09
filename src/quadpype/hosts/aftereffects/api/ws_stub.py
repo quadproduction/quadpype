@@ -280,7 +280,7 @@ class AfterEffectsServerStub():
                                          layer_id=layer_id))
         return self._handle_return(res)
 
-    def apply_exposure(self, effect_layer_name, effect_layer_parent_name, target_layer_id, target_property_name):
+    def apply_exposure(self, effect_layer_name, effect_layer_parent_name, target_layer_id, target_property_index_hierarchy):
         """
             Apply exposure on layer property from given effect layer.
 
@@ -288,14 +288,14 @@ class AfterEffectsServerStub():
                 effect_layer_name (int): layer effect name used as target in expression
                 effect_layer_parent_name (int): parent name of previous layer effect
                 target_layer_id (int): id from layer on which to apply expression
-                target_property_name (str): property on which to apply expression
+                target_property_index_hierarchy (str): property on which to apply expression
         """
         res = self.websocketserver.call(self.client.call
                                         ('AfterEffects.apply_exposure',
                                          effect_layer_name=effect_layer_name,
                                          effect_layer_parent_name=effect_layer_parent_name,
                                          target_layer_id= target_layer_id,
-                                         target_property_name=target_property_name))
+                                         target_property_index_hierarchy=target_property_index_hierarchy))
 
         return self._handle_return(res)
 

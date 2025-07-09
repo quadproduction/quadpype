@@ -208,14 +208,13 @@ class TransferExpositionToolsDialog(BaseToolDialog):
         self.properties.clear()
 
         layers = self.stub.get_selected_layers()
-
         if not layers:
             self.properties.setHeaderLabel("No layer selected yet.")
 
         self.properties.setHeaderLabel(', '.join([layer.name for layer in layers]))
 
-        bold = QtGui.QFont()
-        bold.setBold(True)
+        bold_brush = QtGui.QFont()
+        bold_brush.setBold(True)
         masked_brush = QtGui.QBrush(QtGui.QColor(170, 170, 180))
 
         for layer in layers:
@@ -223,13 +222,20 @@ class TransferExpositionToolsDialog(BaseToolDialog):
             parent.setData(0, QtCore.Qt.UserRole, layer.id)
             parent.setFlags(QtCore.Qt.ItemIsEnabled)
             parent.setForeground(0, masked_brush)
-
             for item in self.stub.get_layer_attributes_names(layer.id):
-                child = QtWidgets.QTreeWidgetItem(parent, [item['name']])
-                child.setData(0, QtCore.Qt.UserRole, layer.id)
-                child.setFont(0, bold) if item.get('marker', False) else child.setForeground(0, masked_brush)
+                self._add_property_to_parent(parent, item, layer.id, bold_brush, masked_brush)
+
+    def _add_property_to_parent(self, parent, item, layer_id, bold_brush, masked_brush):
+        child = QtWidgets.QTreeWidgetItem(parent, [item['name']])
+        child.setData(0, QtCore.Qt.UserRole, layer_id)
+        child.setData(1, QtCore.Qt.UserRole, item['index'])
+        child.setFont(0, bold_brush) if item.get('marker', False) else child.setForeground(0, masked_brush)
+        for item in item.get('properties', []):
+            self._add_property_to_parent(child, item, layer_id, bold_brush, masked_brush)
 
     def on_apply(self):
+        self.disable_results_labels()
+
         layers = self.comps_and_layers.selectedItems()
         properties = self.properties.selectedItems()
         results_success = list()
@@ -239,13 +245,17 @@ class TransferExpositionToolsDialog(BaseToolDialog):
             parent_layer_name = layer.parent().text(0)
             for layer_property in properties:
                 selected_layer_id = layer_property.data(0, QtCore.Qt.UserRole)
+                parent_indexes = list()
+                self._get_parents_indexes(layer_property, parent_indexes)
+                parent_indexes.reverse()
+
                 property_name = layer_property.text(0)
                 try:
                     success = self.stub.apply_exposure(
                         effect_layer_name=layer.text(0),
                         effect_layer_parent_name=parent_layer_name,
                         target_layer_id=selected_layer_id,
-                        target_property_name=property_name
+                        target_property_index_hierarchy=parent_indexes
                     )
                     if success:
                         results_success.append(f"{layer_property.parent().text(0)}/{property_name}")
@@ -266,7 +276,20 @@ class TransferExpositionToolsDialog(BaseToolDialog):
                 f"Couldn't apply : {', '.join([result for result in results_errors])}."
             )
 
+    def _get_parents_indexes(self, item, retrieved_indexes):
+        index = item.data(1, QtCore.Qt.UserRole)
+        if not index:
+            return
+
+        retrieved_indexes.append(index)
+        parent = item.parent()
+        if parent:
+            self._get_parents_indexes(parent, retrieved_indexes)
+
     def update_apply_btn_state(self):
+        self.disable_results_labels()
+        self.apply_btn.setEnabled(all([self.comps_and_layers.selectedItems(), self.properties.selectedItems()]))
+
+    def disable_results_labels(self):
         self.result_success_label.setVisible(False)
         self.result_errors_label.setVisible(False)
-        self.apply_btn.setEnabled(all([self.comps_and_layers.selectedItems(), self.properties.selectedItems()]))

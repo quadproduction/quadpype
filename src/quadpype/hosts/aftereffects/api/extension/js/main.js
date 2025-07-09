@@ -121,11 +121,10 @@ function main(websocket_url) {
         log.warn('Server called client route "apply_exposure":', data);
         var effect_layer_name = EscapeStringForJSX(data.effect_layer_name);
         var effect_layer_parent_name = EscapeStringForJSX(data.effect_layer_parent_name);
-        var target_property_name = EscapeStringForJSX(data.target_property_name);
         return runEvalScript("applyExposure('" + effect_layer_name + "', " +
             "'" + effect_layer_parent_name + "', " +
             data.target_layer_id + ", " +
-            "'" + target_property_name + "')")
+            JSON.stringify(data.target_property_index_hierarchy) + ")")
             .then(function (result) {
                 log.warn("apply_exposure: " + result);
                 return result;
