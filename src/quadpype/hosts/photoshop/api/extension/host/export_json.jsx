@@ -10,6 +10,7 @@
 #include "json_photoshop_scripting/jamText-min.jsxinc"
 #include "json_photoshop_scripting/jamUtils-min.jsxinc"
 
+
 function listLayersFromScene(doc){
 
     var layers = doc.layers;
@@ -42,19 +43,73 @@ function _addLayers(layers, retrievedLayers){
 function getDocumentInfo(doc) {
     return {
         name: doc.name,
-        width: doc.width.value + " " + doc.width.type,
-        height: doc.height.value + " " + doc.height.type,
-        resolution: doc.resolution + " ppi",
-        mode: colorModeToString(doc.mode),
-        bitsPerChannel: doc.bitsPerChannel,
-        pixelAspectRatio: doc.pixelAspectRatio,
-        activeChannels: getActiveChannels(doc),
-        artboards: doc.artboards ? doc.artboards.length : 0,
-        layerCount: doc.layers.length,
-        backgroundColor: getBackgroundColor(doc),
-        documentID: doc.id
+        width: doc.width.value + doc.width.type,
+        height: doc.height.value + doc.height.type,
+        bg: getBackgroundColor(doc),
+        layers: getLayersForExport()
     };
 }
+
+
+function getLayersForExport() {
+    /**
+     * Get json representation of list of layers.
+     * Similar to GetLayers base method, but adapted for json export
+	 * (names are updated and we get parents names instead of parents ids).
+	 * Also remove backgroundlayer handling.
+     *
+     * Format of single layer info:
+     *      id :    number
+     *      name:   string
+     *      group:  boolean - true if layer is a group
+     *      parents:array - list of ids of parent groups, useful for selection
+     *          all children layers from parent layerSet (eg. group)
+     *      type:   string - type of layer guessed from its name
+     *      visible:boolean - true if visible
+     **/
+    if (documents.length == 0){
+        return '[]';
+    }
+    var ref1 = new ActionReference();
+    ref1.putEnumerated(charIDToTypeID('Dcmn'), charIDToTypeID('Ordn'),
+                       charIDToTypeID('Trgt'));
+    var count = executeActionGet(ref1).getInteger(charIDToTypeID('NmbL'));
+
+    var layers = [];
+    var parents = [];
+    for (var i = count; i >= 1; i--) {
+        var layer = {};
+        var ref2 = new ActionReference();
+        ref2.putIndex(charIDToTypeID('Lyr '), i);
+
+        var desc = executeActionGet(ref2);  // Access layer index #i
+        var layerSection = typeIDToStringID(desc.getEnumerationValue(stringIDToTypeID('layerSection')));
+        layer.name = desc.getString(stringIDToTypeID("name"));
+
+        if (layerSection == 'layerSectionStart') {
+            parents.push(layer.name);
+            continue;
+        }
+        if (layerSection == 'layerSectionEnd') {
+            parents.pop();
+            continue;
+        }
+
+        layer.visible = desc.getBoolean(stringIDToTypeID("visible"));
+        layer.opacity = desc.getInteger(charIDToTypeID("Opct"));
+        layer.blending-mode = typeIDToStringID(desc.getEnumerationValue(stringIDToTypeID('mode')));
+        layer.id = desc.getInteger(stringIDToTypeID("layerID"));
+        layer.parents = parents.slice();
+        layer.group = getLayerColor(typeIDToStringID(desc.getEnumerationValue(stringIDToTypeID('color'))));
+        layers.push(layer);
+    }
+    for (var i = layers.length-1; i >= 0; i--) {
+        layers[i].position = i;
+    }
+    alert(JSON.stringify(layers))
+    return layers;
+}
+
 
 function colorModeToString(mode) {
     switch(mode){
@@ -125,10 +180,11 @@ function colorToString(color) {
 
 function processLayers(layers) {
     var layerData = [];
-    for (var i = 0; i < layers.length; i++) {
-        var layerInfo = getLayerInfo(layers[i]);
-        if (layerInfo){ layerData.push(layerInfo); }
-    }
+//     for (var i = 0; i < layers.length; i++) {
+//         var layerInfo = getLayerInfo(layers[i]);
+//         layerInfo['position'] = i+1
+//         if (layerInfo){ layerData.push(layerInfo); }
+//     }
     return layerData;
 }
 
@@ -142,14 +198,13 @@ function getLayerInfo(layer) {
         blendingMode: blendingModeToString(layer.blendMode),
         locked: layer.allLocked,
         bounds: getLayerBounds(layer),
-        layerEffects: getLayerEffects(layer),
         mask: getLayerMaskInfo(layer),
         text: layer.kind === LayerKind.TEXT ? getTextLayerInfo(layer) : null,
         smartObject: layer.kind === LayerKind.SMARTOBJECT ? getSmartObjectInfo(layer) : null,
         adjustment: isAdjustmentLayer(layer) ? getAdjustmentLayerInfo(layer) : null,
-        group: layer.typename === "LayerSet" ? {isGroup: true, layers: processLayers(layer.layers)} : null,
         id: layer.id,
         parent: layer.parent ? layer.parent.name : null,
+        group: getLayerColor(layer),
     };
 
     return layerInfo;
@@ -186,6 +241,69 @@ function layerKindToString(kind) {
             break;
         default:
             return "Unknown"
+    };
+}
+
+function getLayerColor(colorCode) {
+    switch(colorCode){
+        case 'none':
+            return {
+                "red": 255,
+                "green": 255,
+                "blue": 255
+            };
+            break;
+        case 'red':
+            return {
+                "red": 255,
+                "green": 0,
+                "blue": 0
+            };
+            break;
+        case 'orange':
+            return {
+                "red": 255,
+                "green": 128,
+                "blue": 0
+            };
+            break;
+        case 'yellowColor':
+            return {
+                "red": 255,
+                "green": 255,
+                "blue": 0
+            };
+            break;
+        case 'grain':
+            return {
+                "red": 0,
+                "green": 255,
+                "blue": 0
+            };
+            break;
+        case 'blue':
+            return {
+                "red": 0,
+                "green": 0,
+                "blue": 225
+            };
+            break;
+        case 'violet':
+            return {
+                "red": 127,
+                "green": 0,
+                "blue": 255
+            };
+            break;
+        case 'gray':
+            return {
+                "red": 128,
+                "green": 128,
+                "blue": 128
+            };
+            break;
+        default:
+            return "Unknown";
     };
 }
 
@@ -274,12 +392,12 @@ function getLayerBounds(layer) {
     try {
         var bounds = layer.bounds;
         return {
-            left: bounds[0].value + " " + bounds[0].type,
-            top: bounds[1].value + " " + bounds[1].type,
-            right: bounds[2].value + " " + bounds[2].type,
-            bottom: bounds[3].value + " " + bounds[3].type,
-            width: (bounds[2].value - bounds[0].value) + " " + bounds[0].type,
-            height: (bounds[3].value - bounds[1].value) + " " + bounds[1].type
+            left: bounds[0].value + bounds[0].type,
+            top: bounds[1].value + bounds[1].type,
+            right: bounds[2].value + bounds[2].type,
+            bottom: bounds[3].value + bounds[3].type,
+            width: (bounds[2].value - bounds[0].value) + bounds[0].type,
+            height: (bounds[3].value - bounds[1].value) + bounds[1].type
         };
     } catch (e) {
         return "Bounds not available";

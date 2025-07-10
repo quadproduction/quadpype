@@ -85,7 +85,9 @@ function getLayers() {
       layer.parents = parents.slice();
       layer.type = getLayerTypeWithName(layer.name);
       layer.visible = desc.getBoolean(stringIDToTypeID("visible"));
+      layer.opacity = desc.getInteger(charIDToTypeID("Opct"));
       layer.blendMode = typeIDToStringID(desc.getEnumerationValue(stringIDToTypeID('mode')));
+      layer.blending-mode = layer.blendMode; // Duplicate attribute to make it compatible with tvpaint export
       //log(" name: " + layer.name + " groupId " + layer.groupId +
       //" group " + layer.group);
       if (layerSection == 'layerSectionStart') { // Group start and end
@@ -582,15 +584,14 @@ function _get_parents_names(layer, itself_name){
 
 function exportSceneToJSON(path) {
     var doc = app.activeDocument;
-    var layers = [];
-    layers = listLayersFromScene(doc, layers);
-
     var sceneData = {
-        documentInfo: getDocumentInfo(doc),
-        layers: processLayers(layers),
-        colorInfo: getColorInfo(doc),
-        guidesAndGrids: getGuidesAndGrids(doc),
-        metadata: getMetadata(doc)
+        version: app.version,
+        project: {
+            format: {
+                extension: "png"
+            },
+            clip: getDocumentInfo(doc)
+        }
     };
 
     // Prompt user to save JSON file
