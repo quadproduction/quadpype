@@ -106,7 +106,7 @@ function getLayersForExport() {
     for (var i = layers.length-1; i >= 0; i--) {
         layers[i].position = i;
     }
-    alert(JSON.stringify(layers))
+
     return layers;
 }
 

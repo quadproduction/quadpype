@@ -2,9 +2,12 @@ from pathlib import Path
 
 from quadpype.pipeline import publish
 from quadpype.hosts.photoshop import api as photoshop
+from quadpype.pipeline.publish import (
+    OptionalPyblishPluginMixin
+)
 
-
-class ExtractJson(publish.Extractor):
+class ExtractJson(publish.Extractor,
+                  OptionalPyblishPluginMixin):
     """Extract all layers (groups) marked for publish.
 
     Usually publishable instance is created as a wrapper of layer(s). For each
@@ -18,7 +21,10 @@ class ExtractJson(publish.Extractor):
     order = publish.Extractor.order - 0.47
     label = "Extract Json"
     hosts = ["photoshop"]
-    families = ["imagesequence"]
+
+    families = ["image", "background"]
+    formats = ["json"]
+    optional = True
 
     def process(self, instance):
         staging_dir = self.staging_dir(instance)
