@@ -7,27 +7,33 @@ import json
 import pyblish.api
 from quadpype.hosts.tvpaint.api import lib
 from quadpype.settings import get_project_settings
+from quadpype.pipeline.publish import (
+    OptionalPyblishPluginMixin
+)
 
 
-class ExtractJson(pyblish.api.ContextPlugin):
+class ExtractJson(pyblish.api.InstancePlugin,
+                  OptionalPyblishPluginMixin):
     """ Extract a JSON file and add it to the instance representation.
     """
     order = pyblish.api.ExtractorOrder + 0.01
     label = "Extract JSON"
     hosts = ["tvpaint"]
-    families = ["imagesequence"]
+    family = "render"
+    optional = True
 
     project_name = os.environ['AVALON_PROJECT']
     project_settings = get_project_settings(project_name)
 
     enabled = project_settings['tvpaint']['publish']['ExtractJson']['enabled']
 
-    def process(self, context):
+    def process(self, instance):
         # Create temp folder
         output_dir = (
             tempfile.mkdtemp(prefix="tvpaint_render_")
         ).replace("\\", "/")
 
+        context = instance.context
         context.data["tvpaint_export_json"] = {"stagingDir": output_dir}
 
         context_data = context.data.get("tvpaint_export_json")
@@ -59,14 +65,12 @@ class ExtractJson(pyblish.api.ContextPlugin):
             "stagingDir": output_dir,
             "tags": ["json"]
         }
-
-        for instance in context:
-            if instance.data.get('family') == 'imagesequence':
-                instance.data.get('representations').append(json_repres)
+        instance.data.get('representations').append(json_repres)
 
         self.log.debug("Add json representation: {}".format(json_repres))
 
         files_path = self.get_files(raw_json_path)
+        # TODO : adding png sequences makes integrate asset plugin fail because outputs paths are identical
         for subfolder, files in files_path.items():
             output = os.path.join(output_dir, subfolder)
             if len(files) < 2:
@@ -79,10 +83,9 @@ class ExtractJson(pyblish.api.ContextPlugin):
                 "stagingDir": output,
                 "tags": ["json_png"]
             }
-            for instance in context:
-                if instance.data.get('family') == "imagesequence":
-                    instance.data.get('representations').append(files_repre)
-                    self.log.debug("Add json representation: {}".format(files_repre))
+
+            instance.data.get('representations').append(files_repre)
+            self.log.debug("Add json representation: {}".format(files_repre))
 
     def get_files(self, json_path):
         all_links = {}
