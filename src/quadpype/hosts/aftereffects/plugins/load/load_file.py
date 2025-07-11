@@ -2,11 +2,9 @@ import re
 
 from pathlib import Path
 
-from quadpype.pipeline import (
-    get_representation_path,
-    get_current_context,
-    get_current_host_name
-)
+
+from quadpype.settings import get_project_settings
+from quadpype.lib import BoolDef, filter_profiles, StringTemplate
 from quadpype.pipeline.anatomy import Anatomy
 from quadpype.hosts.aftereffects import api
 from quadpype.hosts.aftereffects.api.lib import get_unique_number
@@ -15,13 +13,17 @@ from quadpype.hosts.aftereffects.api.folder_hierarchy import (
     get_last_folder_from_first_template,
     find_folder
 )
-
+from quadpype.pipeline.publish.lib import get_template_name_profiles
 from quadpype.pipeline import (
     get_task_hierarchy_templates,
+    get_representation_path,
+    get_current_context,
+    get_current_host_name,
     get_resolved_name,
     format_data,
     split_hierarchy
 )
+
 
 class FileLoader(api.AfterEffectsLoader):
     """Load images
@@ -40,8 +42,16 @@ class FileLoader(api.AfterEffectsLoader):
                 "audio",
                 "workfile"]
     representations = ["*"]
+    apply_interval_default=True
+
+    @classmethod
+    def get_options(cls, contexts):
+        return [
+            BoolDef("apply_interval", label="Apply interval", default=cls.apply_interval_default)
+        ]
 
     def load(self, context, name=None, namespace=None, data=None):
+        project_name = context['project']['name']
 
         import_options = {}
 
@@ -50,7 +60,6 @@ class FileLoader(api.AfterEffectsLoader):
         except KeyError:
             self.log.warning(f"Can't retrieve fps information for asset {name}. Will try to load data from project.")
             try:
-                project_name = context['project']['name']
                 import_options['fps'] = Anatomy(project_name)['attributes']['fps']
             except KeyError:
                 self.log.warning(f"Can't retrieve fps information for project {project_name}. Frame rate will not be set at import.")
@@ -86,9 +95,6 @@ class FileLoader(api.AfterEffectsLoader):
             existing_layers, name, is_psd=is_psd)
         comp_name = f"{name}_{unique_number}"
         if is_psd:
-            print(path_str)
-            print(stub.LOADED_ICON + comp_name)
-            print(import_options)
             import_options['ImportAsType'] = 'ImportAsType.COMP'
             comp = stub.import_file_with_dialog(
                 path_str,
@@ -114,7 +120,7 @@ class FileLoader(api.AfterEffectsLoader):
             return
 
         self[:] = [comp]
-        namespace = namespace or comp_name
+        # namespace = namespace or comp_name
         template_data = format_data(
             original_data=context['representation'],
             filter_variant=True,
@@ -141,6 +147,26 @@ class FileLoader(api.AfterEffectsLoader):
             if is_psd:
                 psd_folder = find_folder(stub.LOADED_ICON + comp_name)
                 stub.parent_items(psd_folder.id, last_folder.id)
+
+        if data.get(
+            'apply_interval',
+            self.apply_interval_default
+        ):
+            profiles = get_template_name_profiles(
+                project_name, get_project_settings(project_name), self.log
+            )
+
+            template_data.update(
+                {
+                    'families': 'imagesequence',
+                    'ext': 'json'
+                }
+            )
+            profile = filter_profiles(profiles, template_data)
+
+            anatomy = Anatomy()
+            templates = anatomy.templates.get(profile['template_name'])
+            path = StringTemplate.format_template(templates['path'], template_data)
 
         return api.containerise(
             name,
