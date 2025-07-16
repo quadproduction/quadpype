@@ -2,6 +2,7 @@
 """
 import os
 import tempfile
+import shutil
 import json
 
 import pyblish.api
@@ -66,37 +67,6 @@ class ExtractJson(pyblish.api.InstancePlugin,
             "tags": ["json"]
         }
         instance.data.get('representations').append(json_repres)
+        instance.context.data["cleanupFullPaths"].append(output_dir)
 
         self.log.debug("Add json representation: {}".format(json_repres))
-
-        files_path = self.get_files(raw_json_path)
-        for subfolder, files in files_path.items():
-            output = os.path.join(output_dir, subfolder)
-            if len(files) < 2:
-                files = files[0]
-
-            files_repre = {
-                "name": subfolder,
-                "ext": "png",
-                "outputName": subfolder,
-                "files": files,
-                "stagingDir": output,
-                "tags": ["json_png"]
-            }
-
-            instance.data.get('representations').append(files_repre)
-            self.log.debug("Add json representation: {}".format(files_repre))
-
-    def get_files(self, json_path):
-        all_links = {}
-        with open(json_path) as tvpaint_json:
-            tvpaint_data = json.load(tvpaint_json)
-
-        layers = tvpaint_data['project']['clip']['layers']
-        for layer in layers:
-            links = [l['file'] for l in layer['link']]
-            subfolder = links[0].split('/')[0]
-            files = [l.split('/')[-1] for l in links]
-            all_links[subfolder] = files
-
-        return all_links
