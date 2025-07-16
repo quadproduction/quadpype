@@ -1324,6 +1324,54 @@ function reloadBackground(comp_id, composition_name, files_to_import){
     return JSON.stringify(item);
 }
 
+
+function addMarkerToLayer(compId, layerName, frameNumber) {
+    try {
+
+        var comp = app.project.itemByID(compId)
+        if (!comp) {
+			alert('no comp')
+            throw new Error("Composition with id " + compId + " can not be found.");
+        }
+
+        var layer = _getLayerByName(comp, layerName);
+
+		var timeInSeconds = frameNumber / comp.frameRate;
+        if (_timeOutsideLayerBoundaries(timeInSeconds, layer)) {
+            throw new Error("Frame with number " + frameNumber + " is outside of layer boundaries.");
+        }
+
+        layer.marker.setValueAtTime(timeInSeconds, new MarkerValue(''));
+
+    } catch (error) {
+        return _prepareError(error.toString());
+    }
+    return _prepareSingleValue("Marker applied at frame " + frameNumber + " on layer " + layerName + ".")
+}
+
+
+function _getLayerByName(comp, layerName){
+	var layer = null;
+	for (var j = 1; j <= comp.numLayers; j++) {
+		if (comp.layer(j).name === layerName) {
+			layer = comp.layer(j);
+			break;
+		}
+	}
+
+	if (!layer) {
+		throw new Error("Calque '" + layerName + "' introuvable dans la composition");
+	}
+
+	return layer;
+}
+
+
+function _timeOutsideLayerBoundaries(timeInSeconds, layer){
+	return (timeInSeconds < layer.inPoint || timeInSeconds > layer.outPoint)
+}
+
+
 function _get_file_name(file_url){
     /**
      * Returns file name without extension from 'file_url'

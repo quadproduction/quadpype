@@ -59,10 +59,6 @@ from .collections import (
     get_top_collection
 )
 
-from .json_loader import (
-    load_content,
-    apply_intervals
-)
 
 __all__ = [
     "install",
@@ -116,8 +112,4 @@ __all__ = [
     "get_corresponding_hierarchies_numbered",
     "create_collections_from_hierarchy",
     "create_collection",
-
-    # .json loader
-    "load_content",
-    "apply_intervals"
 ]

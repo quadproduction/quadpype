@@ -362,6 +362,18 @@ function main(websocket_url) {
             });
     });
 
+    RPC.addRoute('AfterEffects.add_marker_to_layer', function (data) {
+        log.warn('Server called client route "add_marker_to_layer":', data);
+        var escapedLayerName = EscapeStringForJSX(data.layer_name);
+        return runEvalScript("addMarkerToLayer(" + data.comp_id + ", " +
+            "'" + escapedLayerName + "', " +
+            data.frame_number + ")")
+            .then(function (result) {
+                log.warn("add_marker_to_layer: " + result);
+                return result;
+            });
+    });
+
     RPC.addRoute('AfterEffects.add_item_as_layer', function (data) {
         log.warn('Server called client route "add_item_as_layer":', data);
         return runEvalScript("addItemAsLayerToComp(" + data.comp_id + ", " +

@@ -625,6 +625,22 @@ class AfterEffectsServerStub():
         if records:
             return records.pop()
 
+    def add_marker_to_layer(self, comp_id, layer_name, frame_number):
+        """
+            Add marker to layer at given frame.
+
+            Args:
+                comp_id (int): id of concerned composition
+                layer_name (str): name of concerned layer
+                frame_number (int): frame at which to put marker
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.add_marker_to_layer',
+                                         comp_id=comp_id,
+                                         layer_name=layer_name,
+                                         frame_number=frame_number))
+        return self._handle_return(res)
+
     def add_item_as_layer(self, comp_id, item_id):
         """
             Adds already imported FootageItem ('item_id') as a new
@@ -781,6 +797,8 @@ class AfterEffectsServerStub():
             payload(dict): - dictionary from json representation, expected to
                 come from _handle_return
         """
+        print("to records")
+        print(payload)
         if not payload:
             return []
 
