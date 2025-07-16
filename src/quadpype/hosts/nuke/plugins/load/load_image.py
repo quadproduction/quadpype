@@ -1,5 +1,5 @@
 import nuke
-
+import ast
 import qargparse
 from quadpype.lib.attribute_definitions import (
     BoolDef,
@@ -24,7 +24,9 @@ from quadpype.pipeline import (
 from quadpype.hosts.nuke.api.lib import (
     get_imageio_input_colorspace,
     get_layers,
-    compare_layers
+    compare_layers,
+    PREP_LAYER_PSD_EXT,
+    PREP_LAYER_EXR_EXT
 )
 from quadpype.hosts.nuke.api import (
     containerise,
@@ -34,7 +36,9 @@ from quadpype.hosts.nuke.api import (
 from quadpype.hosts.nuke.api.backdrops import (
     pre_organize_by_backdrop,
     organize_by_backdrop,
-    reorganize_inside_main_backdrop
+    reorganize_inside_main_backdrop,
+    update_by_backdrop,
+    get_nodes_in_backdrops
 )
 from quadpype.lib.transcoding import (
     IMAGE_EXTENSIONS
@@ -42,8 +46,6 @@ from quadpype.lib.transcoding import (
 from quadpype.hosts.nuke.api import plugin
 
 from src.quadpype.pipeline.editorial import frames_to_seconds
-
-PREP_LAYER_EXT = ["psd", "psb", "exr"]
 
 class LoadImage(plugin.NukeLoader):
     """Load still image into Nuke"""
@@ -123,15 +125,25 @@ class LoadImage(plugin.NukeLoader):
         prep_layers = options.get("prep_layers", True)
         create_stamps = options.get("create_stamps", True)
         pre_comp = options.get("pre_comp", True)
-
+        ext = context["representation"]["context"]["ext"].lower()
+        is_prep_layer_compatible = ext in (set(PREP_LAYER_PSD_EXT) | set(PREP_LAYER_EXR_EXT))
+        if ext in PREP_LAYER_EXR_EXT:
+            pre_comp = False
         if not options:
             options = {"frame_number":frame_number,
                        "prep_layers":prep_layers,
                        "create_stamps":create_stamps,
-                       "pre_comp":pre_comp}
+                       "pre_comp":pre_comp,
+                       "is_prep_layer_compatible":is_prep_layer_compatible,
+                       "ext":ext}
 
         version = context['version']
         version_data = version.get("data", {})
+        project_name = get_current_project_name()
+        version_doc = get_version_by_id(project_name, context["representation"]["parent"])
+        last_version_doc = get_last_version_by_subset_id(
+            project_name, version_doc["parent"], fields=["_id"]
+        )
         repr_id = context["representation"]["_id"]
 
         self.log.info("version_data: {}\n".format(version_data))
@@ -155,10 +167,6 @@ class LoadImage(plugin.NukeLoader):
         file = file.replace("\\", "/")
 
         representation = context["representation"]
-
-        ext = context["representation"]["context"]["ext"].lower()
-        is_prep_layer_compatible = ext in PREP_LAYER_EXT
-        options["is_prep_layer_compatible"] = is_prep_layer_compatible
 
         repr_cont = representation["context"]
         frame = repr_cont.get("frame")
@@ -230,6 +238,14 @@ class LoadImage(plugin.NukeLoader):
 
             self.log.info("__ options: `{}`".format(options))
             data_imprint["options"] = options
+
+            # change color of node
+            if version_doc["_id"] == last_version_doc["_id"]:
+                color_value = "0x4ecd25ff"
+            else:
+                color_value = "0xd84f20ff"
+            r["tile_color"].setValue(int(color_value, 16))
+
             return containerise(r,
                                 name=name,
                                 namespace=namespace,
@@ -254,7 +270,7 @@ class LoadImage(plugin.NukeLoader):
         assert node.Class() == "Read", "Must be Read"
 
         repr_cont = representation["context"]
-
+        old_file = node["file"].value()
         file = get_representation_path(representation)
 
         if not file:
@@ -283,20 +299,31 @@ class LoadImage(plugin.NukeLoader):
 
         last = first = int(frame_number)
 
-        old_layers = get_layers(node)
+        options = ast.literal_eval(container.get("options"))
+        prep_layers = options.get("prep_layers", False)
+        is_prep_layer_compatible = options.get("is_prep_layer_compatible", False)
+        ext = options.get("ext", None)
+        old_layers = dict()
+        new_layers = dict()
+        if is_prep_layer_compatible:
+            old_layers = get_layers(node, ext)
+            node["file"].setValue(file)
+            new_layers = get_layers(node, ext)
+
+            if prep_layers:
+                if not compare_layers(old_layers, new_layers, ask_proceed=ask_proceed):
+                    node["file"].setValue(old_file)
+                    return
 
         # Set the global in to the start frame of the sequence
         read_name = self._get_node_name(representation)
         node["name"].setValue(read_name)
-        node["file"].setValue(file)
         node["origfirst"].setValue(first)
         node["first"].setValue(first)
         node["origlast"].setValue(last)
         node["last"].setValue(last)
 
-        new_layers = get_layers(node)
-        #Todo
-        new_layers_to_add, old_layers_to_delete = (compare_layers(old_layers, new_layers, ask_proceed))
+        update_by_backdrop(container, old_layers, new_layers, ask_proceed=False)
 
         updated_dict = {}
         updated_dict.update({
@@ -327,15 +354,16 @@ class LoadImage(plugin.NukeLoader):
     def remove(self, container):
         node = container["node"]
         assert node.Class() == "Read", "Must be Read"
+        storage_backdrop = nuke.toNode(container["storage_backdrop"])
 
         main_backdrop = container["main_backdrop"]
         with viewer_update_and_undo_stop():
-            members = self.get_members(node)
-            nuke.delete(node)
+            members = [node for node in get_nodes_in_backdrops(storage_backdrop)]
+            nuke.delete(storage_backdrop)
             for member in members:
                 nuke.delete(member)
             if main_backdrop:
-                self.log.info(reorganize_inside_main_backdrop(main_backdrop))
+                reorganize_inside_main_backdrop(main_backdrop)
 
     def _get_node_name(self, representation):
 

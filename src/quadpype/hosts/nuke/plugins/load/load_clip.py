@@ -1,4 +1,5 @@
 import nuke
+import ast
 from pprint import pformat
 from copy import deepcopy
 from quadpype.lib import Logger
@@ -24,12 +25,18 @@ from quadpype.pipeline.colorspace import (
 )
 from quadpype.hosts.nuke.api.lib import (
     get_imageio_input_colorspace,
-    maintained_selection
+    maintained_selection,
+    get_layers,
+    compare_layers,
+    PREP_LAYER_PSD_EXT,
+    PREP_LAYER_EXR_EXT
 )
 from quadpype.hosts.nuke.api.backdrops import (
     pre_organize_by_backdrop,
     organize_by_backdrop,
-    reorganize_inside_main_backdrop
+    reorganize_inside_main_backdrop,
+    update_by_backdrop,
+    get_nodes_in_backdrops
 )
 from quadpype.hosts.nuke.api import (
     containerise,
@@ -43,7 +50,6 @@ from quadpype.lib.transcoding import (
 )
 from quadpype.hosts.nuke.api import plugin
 
-PREP_LAYER_EXT = ["psd", "psb", "exr"]
 
 class LoadClip(plugin.NukeLoader):
     """Load clip into Nuke
@@ -146,17 +152,27 @@ class LoadClip(plugin.NukeLoader):
         prep_layers = options.get("prep_layers", True)
         create_stamps = options.get("create_stamps", True)
         pre_comp = options.get("pre_comp", True)
-
+        ext = context["representation"]["context"]["ext"].lower()
+        is_prep_layer_compatible = ext in (set(PREP_LAYER_PSD_EXT) | set(PREP_LAYER_EXR_EXT))
+        if ext in PREP_LAYER_EXR_EXT:
+            pre_comp = False
         if not options:
             options = {"start_at_workfile":start_at_workfile,
                        "add_retime":add_retime,
                        "prep_layers":prep_layers,
                        "create_stamps":create_stamps,
-                       "pre_comp":pre_comp}
+                       "pre_comp":pre_comp,
+                       "is_prep_layer_compatible": is_prep_layer_compatible,
+                       "ext":ext}
 
         version = context['version']
         version_data = version.get("data", {})
         repre_id = representation["_id"]
+        project_name = get_current_project_name()
+        version_doc = get_version_by_id(project_name, context["representation"]["parent"])
+        last_version_doc = get_last_version_by_subset_id(
+            project_name, version_doc["parent"], fields=["_id"]
+        )
 
         self.log.debug("_ version_data: {}\n".format(
             pformat(version_data)))
@@ -175,10 +191,6 @@ class LoadClip(plugin.NukeLoader):
             duration = last - first
             first = 1
             last = first + duration
-
-        ext = context["representation"]["context"]["ext"].lower()
-        is_prep_layer_compatible = ext in PREP_LAYER_EXT
-        options["is_prep_layer_compatible"] = is_prep_layer_compatible
 
         # Fallback to asset name when namespace is None
         if namespace is None:
@@ -250,13 +262,6 @@ class LoadClip(plugin.NukeLoader):
                                                                     nodes_in_main_backdrops=nodes_in_main_backdrops,
                                                                     options=options)
 
-            container = containerise(
-                read_node,
-                name=name,
-                namespace=namespace,
-                context=context,
-                loader=self.__class__.__name__,
-                data=data_imprint)
 
         if add_retime and version_data.get("retime", None):
             self._make_retimes(read_node, version_data)
@@ -269,6 +274,24 @@ class LoadClip(plugin.NukeLoader):
                 self.set_as_member(n)
         else:
             self.set_as_member(read_node)
+
+        self.log.info("__ options: `{}`".format(options))
+        data_imprint["options"] = options
+
+        container = containerise(
+            read_node,
+            name=name,
+            namespace=namespace,
+            context=context,
+            loader=self.__class__.__name__,
+            data=data_imprint)
+
+        # change color of node
+        if version_doc["_id"] == last_version_doc["_id"]:
+            color_value = "0x4ecd25ff"
+        else:
+            color_value = "0xd84f20ff"
+        read_node["tile_color"].setValue(int(color_value, 16))
 
         return container
 
@@ -304,7 +327,7 @@ class LoadClip(plugin.NukeLoader):
         representation["context"]["frame"] = hashed_frame
         return representation
 
-    def update(self, container, representation):
+    def update(self, container, representation, ask_proceed=True):
         """Update the Loader's path
 
         Nuke automatically tries to reset some variables when changing
@@ -316,6 +339,7 @@ class LoadClip(plugin.NukeLoader):
         is_sequence = len(representation["files"]) > 1
 
         read_node = container["node"]
+        old_file = read_node["file"].value()
 
         if is_sequence:
             representation = self._representation_with_hash_in_frame(
@@ -360,11 +384,26 @@ class LoadClip(plugin.NukeLoader):
                 "Representation id `{}` is failing to load".format(repre_id))
             return
 
-        read_node["file"].setValue(filepath)
+        options = ast.literal_eval(container.get("options"))
+        prep_layers = options.get("prep_layers", False)
+        is_prep_layer_compatible = options.get("is_prep_layer_compatible", False)
+        ext = options.get("ext", None)
+        old_layers = dict()
+        new_layers = dict()
+        if is_prep_layer_compatible:
+            old_layers = get_layers(read_node, ext)
+            read_node["file"].setValue(filepath)
+            new_layers = get_layers(read_node, ext)
+
+            if prep_layers:
+                if not compare_layers(old_layers, new_layers, ask_proceed=ask_proceed):
+                    read_node["file"].setValue(old_file)
+                    return
 
         # to avoid multiple undo steps for rest of process
         # we will switch off undo-ing
         with viewer_update_and_undo_stop():
+            update_by_backdrop(container, old_layers, new_layers, ask_proceed=False)
             self.set_colorspace_to_node(
                 read_node, filepath, version_doc, representation)
 
@@ -404,10 +443,6 @@ class LoadClip(plugin.NukeLoader):
 
         if add_retime and version_data.get("retime", None):
             self._make_retimes(read_node, version_data)
-        else:
-            self.clear_members(read_node)
-
-        self.set_as_member(read_node)
 
     def set_colorspace_to_node(
             self,
@@ -442,11 +477,11 @@ class LoadClip(plugin.NukeLoader):
     def remove(self, container):
         read_node = container["node"]
         assert read_node.Class() == "Read", "Must be Read"
-
+        storage_backdrop = nuke.toNode(container["storage_backdrop"])
         main_backdrop = container["main_backdrop"]
         with viewer_update_and_undo_stop():
-            members = self.get_members(read_node)
-            nuke.delete(read_node)
+            members = [node for node in get_nodes_in_backdrops(storage_backdrop)]
+            nuke.delete(storage_backdrop)
             for member in members:
                 nuke.delete(member)
             if main_backdrop:
