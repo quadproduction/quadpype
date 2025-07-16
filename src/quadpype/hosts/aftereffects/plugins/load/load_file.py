@@ -57,6 +57,7 @@ class FileLoader(api.AfterEffectsLoader):
         project_name = context['project']['name']
         repr_cont = context["representation"]["context"]
         repre_task_name = repr_cont.get('task', {}).get('name', None)
+        frame = repr_cont.get("frame", None)
         template_data = format_data(
             original_data=context['representation'],
             filter_variant=True,
@@ -110,8 +111,6 @@ class FileLoader(api.AfterEffectsLoader):
                 "Representation id `{}` is failing to load".format(repr_id))
             return
 
-        frame = None
-
         if is_psd:
             import_options['ImportAsType'] = 'ImportAsType.COMP'
             comp = stub.import_file_with_dialog(
@@ -121,7 +120,6 @@ class FileLoader(api.AfterEffectsLoader):
             )
 
         else:
-            frame = repr_cont.get("frame")
             if frame:
                 import_options['sequence'] = True
 
@@ -164,7 +162,7 @@ class FileLoader(api.AfterEffectsLoader):
         if data.get(
             'apply_interval',
             self.apply_interval_default
-        ):
+        ) and frame:
             self.load_json(stub, template_data, project_name, comp.id, repre_task_name)
 
         return api.containerise(
