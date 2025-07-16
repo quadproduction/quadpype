@@ -42,8 +42,8 @@ class FileLoader(api.AfterEffectsLoader):
                 "review",
                 "audio",
                 "workfile"]
-    representations = ["*"]
-    apply_interval_default=True
+    representations = ["*", "-json"]
+    apply_interval_default = True
 
     @classmethod
     def get_options(cls, contexts):
