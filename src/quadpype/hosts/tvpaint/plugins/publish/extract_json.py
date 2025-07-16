@@ -70,7 +70,6 @@ class ExtractJson(pyblish.api.InstancePlugin,
         self.log.debug("Add json representation: {}".format(json_repres))
 
         files_path = self.get_files(raw_json_path)
-        # TODO : adding png sequences makes integrate asset plugin fail because outputs paths are identical
         for subfolder, files in files_path.items():
             output = os.path.join(output_dir, subfolder)
             if len(files) < 2:
@@ -79,6 +78,7 @@ class ExtractJson(pyblish.api.InstancePlugin,
             files_repre = {
                 "name": subfolder,
                 "ext": "png",
+                "outputName": subfolder,
                 "files": files,
                 "stagingDir": output,
                 "tags": ["json_png"]
