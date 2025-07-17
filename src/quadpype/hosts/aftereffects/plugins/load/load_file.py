@@ -74,20 +74,6 @@ class FileLoader(api.AfterEffectsLoader):
         unique_number = get_unique_number(
             existing_layers, name, is_psd=is_psd)
         comp_name = f"{name}_{unique_number}"
-        comp = None
-
-        if Path(path).suffix == '.json':
-            try:
-                comp = next(
-                    iter(
-                        comp for comp in stub.get_items(comps=True)
-                        if comp.name == stub.LOADED_ICON + comp_name
-                    )
-                )
-            except StopIteration:
-                self.log.error(f"Can not retrieve comp named {comp_name} in scene.")
-
-            self.load_json(stub, template_data, project_name, comp.id, repre_task_name)
 
         import_options = {}
         try:
@@ -136,6 +122,7 @@ class FileLoader(api.AfterEffectsLoader):
             return
 
         self[:] = [comp]
+        namespace = namespace or comp_name
         folder_templates = get_task_hierarchy_templates(
             template_data,
             task=get_current_context()['task_name']
