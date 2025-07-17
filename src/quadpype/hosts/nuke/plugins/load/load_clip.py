@@ -10,11 +10,6 @@ from quadpype.client import (
 from quadpype.pipeline import (
     get_current_project_name,
     get_representation_path,
-    get_current_host_name,
-    get_task_hierarchy_templates,
-    get_resolved_name,
-    format_data,
-    split_hierarchy
 )
 from quadpype.lib.attribute_definitions import (
     BoolDef,
@@ -28,6 +23,7 @@ from quadpype.hosts.nuke.api.lib import (
     maintained_selection,
     get_layers,
     compare_layers,
+    get_unique_name_and_number,
     PREP_LAYER_PSD_EXT,
     PREP_LAYER_EXR_EXT
 )
@@ -201,7 +197,11 @@ class LoadClip(plugin.NukeLoader):
                 "Representation id `{}` is failing to load".format(repre_id))
             return
 
-        read_name = self._get_node_name(representation)
+        # Get unique name
+        read_name, unique_number = get_unique_name_and_number(representation=representation,
+                                                              template=self.node_name_template,
+                                                              unique_number=None,
+                                                              node_type="Read")
 
         # Create the Loader with the filename path set
         read_node = nuke.createNode(
@@ -260,7 +260,8 @@ class LoadClip(plugin.NukeLoader):
             main_backdrop, storage_backdrop, nodes = organize_by_backdrop(context=context,
                                                                     read_node=read_node,
                                                                     nodes_in_main_backdrops=nodes_in_main_backdrops,
-                                                                    options=options)
+                                                                    options=options,
+                                                                    unique_number=unique_number)
 
 
         if add_retime and version_data.get("retime", None):
@@ -277,6 +278,8 @@ class LoadClip(plugin.NukeLoader):
 
         self.log.info("__ options: `{}`".format(options))
         data_imprint["options"] = options
+        self.log.info("__ unique_number: `{}`".format(unique_number))
+        data_imprint["unique_number"] = unique_number
 
         container = containerise(
             read_node,
@@ -399,6 +402,14 @@ class LoadClip(plugin.NukeLoader):
                 if not compare_layers(old_layers, new_layers, ask_proceed=ask_proceed):
                     read_node["file"].setValue(old_file)
                     return
+
+        # Get unique name and number
+        unique_number = container.get("unique_number", None)
+        read_name, unique_number = get_unique_name_and_number(representation=representation,
+                                                              template=self.node_name_template,
+                                                              unique_number=unique_number,
+                                                              node_type="Read")
+        read_node["name"].setValue(read_name)
 
         # to avoid multiple undo steps for rest of process
         # we will switch off undo-ing
@@ -562,20 +573,6 @@ class LoadClip(plugin.NukeLoader):
         if workfile_start:
             read_node['frame_mode'].setValue("start at")
             read_node['frame'].setValue(str(self.script_start))
-
-    def _get_node_name(self, representation):
-
-        repre_cont = representation["context"]
-        name_data = {
-            "asset": repre_cont["asset"],
-            "subset": repre_cont["subset"],
-            "representation": representation["name"],
-            "ext": repre_cont["representation"].lower(),
-            "id": representation["_id"],
-            "class_name": self.__class__.__name__
-        }
-
-        return self.node_name_template.format(**name_data)
 
     def _get_colorspace_data(self, version_doc, representation_doc, filepath):
         """Get colorspace data from version and representation documents

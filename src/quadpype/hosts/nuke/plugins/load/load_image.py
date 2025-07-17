@@ -1,6 +1,6 @@
 import nuke
 import ast
-import qargparse
+
 from quadpype.lib.attribute_definitions import (
     BoolDef,
     NumberDef
@@ -15,16 +15,12 @@ from quadpype.pipeline import (
     load,
     get_current_project_name,
     get_representation_path,
-    get_current_host_name,
-    get_task_hierarchy_templates,
-    get_resolved_name,
-    format_data,
-    split_hierarchy
 )
 from quadpype.hosts.nuke.api.lib import (
     get_imageio_input_colorspace,
     get_layers,
     compare_layers,
+    get_unique_name_and_number,
     PREP_LAYER_PSD_EXT,
     PREP_LAYER_EXR_EXT
 )
@@ -176,8 +172,11 @@ class LoadImage(plugin.NukeLoader):
                 frame,
                 format(frame_number, "0{}".format(padding)))
 
-        read_name = self._get_node_name(representation)
-
+        #Get unique name
+        read_name, unique_number = get_unique_name_and_number(representation=representation,
+                                                              template=self.node_name_template,
+                                                              unique_number=None,
+                                                              node_type="Read")
         # Create the Loader with the filename path set
         with viewer_update_and_undo_stop():
 
@@ -225,7 +224,8 @@ class LoadImage(plugin.NukeLoader):
             main_backdrop, storage_backdrop, nodes = organize_by_backdrop(context=context,
                                                                    read_node=r,
                                                                    nodes_in_main_backdrops=nodes_in_main_backdrops,
-                                                                   options=options)
+                                                                   options=options,
+                                                                   unique_number=unique_number)
 
             if storage_backdrop:
                 data_imprint["storage_backdrop"] = storage_backdrop['name'].value()
@@ -238,6 +238,8 @@ class LoadImage(plugin.NukeLoader):
 
             self.log.info("__ options: `{}`".format(options))
             data_imprint["options"] = options
+            self.log.info("__ unique_number: `{}`".format(unique_number))
+            data_imprint["unique_number"] = unique_number
 
             # change color of node
             if version_doc["_id"] == last_version_doc["_id"]:
@@ -315,8 +317,13 @@ class LoadImage(plugin.NukeLoader):
                     node["file"].setValue(old_file)
                     return
 
+        # Get unique name and number
+        unique_number = container.get("unique_number", None)
+        read_name, unique_number = get_unique_name_and_number(representation=representation,
+                                                              template=self.node_name_template,
+                                                              unique_number=unique_number,
+                                                              node_type="Read")
         # Set the global in to the start frame of the sequence
-        read_name = self._get_node_name(representation)
         node["name"].setValue(read_name)
         node["origfirst"].setValue(first)
         node["first"].setValue(first)
@@ -364,17 +371,3 @@ class LoadImage(plugin.NukeLoader):
                 nuke.delete(member)
             if main_backdrop:
                 reorganize_inside_main_backdrop(main_backdrop)
-
-    def _get_node_name(self, representation):
-
-        repre_cont = representation["context"]
-        name_data = {
-            "asset": repre_cont["asset"],
-            "subset": repre_cont["subset"],
-            "representation": representation["name"],
-            "ext": repre_cont["representation"].lower(),
-            "id": representation["_id"],
-            "class_name": self.__class__.__name__
-        }
-
-        return self.node_name_template.format(**name_data)

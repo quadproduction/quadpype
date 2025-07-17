@@ -429,7 +429,7 @@ def pre_organize_by_backdrop():
     adjust_main_backdrops(nodes_in_main_backdrops=nodes_in_main_backdrops)
     return nodes_in_main_backdrops
 
-def organize_by_backdrop(context, read_node, nodes_in_main_backdrops, options):
+def organize_by_backdrop(context, read_node, nodes_in_main_backdrops, options, unique_number):
     """
     Create and organize in backdrop the loaded media
     Args:
@@ -437,6 +437,7 @@ def organize_by_backdrop(context, read_node, nodes_in_main_backdrops, options):
         read_node: the nuke read node
         nodes_in_main_backdrops(dict): A dict representing nodes in each main backdrops
         options(dict): A dict of load options
+        unique_number(str): a sting of "###" to indicate the unique number
     """
     nodes = [read_node]
 
@@ -488,7 +489,8 @@ def organize_by_backdrop(context, read_node, nodes_in_main_backdrops, options):
         backdrops_hierarchy = [
             get_resolved_name(
                 data=template_data,
-                template=template
+                template=template,
+                unique_number = unique_number
             )
             for template in backdrop_templates
         ]

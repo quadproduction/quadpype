@@ -45,6 +45,8 @@ from quadpype.pipeline import (
     get_current_host_name,
     get_current_project_name,
     get_current_asset_name,
+    get_resolved_name,
+    format_data
 )
 from quadpype.pipeline.context_tools import (
     get_custom_workfile_template_from_session
@@ -3893,3 +3895,47 @@ def classify_downstream_nodes_inputs(node_list):
                          "is_last": index+1==len(node_list),
                          "is_dot": node.Class()=="Dot"}
             for index, node in enumerate(node_list)}
+
+def get_unique_name_and_number(representation, template, unique_number, node_type):
+    template_data = format_data(
+        original_data=representation,
+        filter_variant=True,
+        app="nuke"
+    )
+
+    if unique_number:
+        return get_resolved_name(data=template_data, template=template, unique_number=unique_number), unique_number
+
+    temp_name = get_resolved_name(data=template_data, template=template)
+    node_names = {n["name"].value() for n in nuke.allNodes(node_type)}
+    unique_number = get_unique_number(node_names, temp_name)
+    read_name = get_resolved_name(data=template_data,
+                                  template=template,
+                                  unique_number=unique_number)
+    if read_name in node_names:
+        unique_number = "{:0>3d}".format(int(unique_number) + 1)
+        read_name = get_resolved_name(data=template_data,
+                                      template=template,
+                                      unique_number=unique_number)
+
+    return read_name, unique_number
+
+def get_unique_number(existing_names, name):
+    """
+        Gets all layer names and if 'name' is present in them, increases
+        suffix by 1 (eg. creates unique layer name - for Loader)
+    Args:
+        existing_names (list or set): of strings, names only
+        name (string):  checked value
+    Returns:
+        (string): 00X (without version)
+    """
+    names = {}
+    for read in existing_names:
+        read_name = re.sub(r'_\d{3}$', '', read)
+        if read_name in names.keys():
+            names[read_name] = names[read_name] + 1
+        else:
+            names[read_name] = 1
+    occurrences = names.get(name, 0)
+    return "{:0>3d}".format(occurrences + 1)
