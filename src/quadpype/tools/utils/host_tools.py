@@ -370,7 +370,6 @@ class HostToolsHelper:
 
         This is helper for
         """
-        print(tool_name)
         if tool_name == "workfiles":
             self.show_workfiles(parent, *args, **kwargs)
 

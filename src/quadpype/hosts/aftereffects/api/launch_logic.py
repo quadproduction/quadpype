@@ -346,8 +346,6 @@ class AfterEffectsRoute(WebSocketRoute):
 
         partial_method = functools.partial(show_tool_by_name,
                                            _tool_name)
-        print('--')
-        print(partial_method)
         ProcessLauncher.execute_in_main_thread(partial_method)
 
         # Required return statement.
