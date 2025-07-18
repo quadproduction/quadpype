@@ -201,7 +201,7 @@ function main(websocket_url) {
 
     RPC.addRoute('AfterEffects.add_comp_to_render_queue', function (data) {
         log.warn('Server called client route "add_comp_to_render_queue":', data);
-        return runEvalScript("addCompToRenderQueue(" + data.comp_id + ", " + "'" + data.path + "')")
+        return runEvalScript("addCompToRenderQueue(" + data.comp_id + ")")
     });
 
     RPC.addRoute('AfterEffects.remove_comp_in_render_queue', function (data) {
