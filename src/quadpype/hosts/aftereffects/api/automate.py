@@ -67,7 +67,23 @@ class ElementCoordinates:
 
     @property
     def bottom(self):
-        return Point(self.anchor_point.x + self.shape.width / 2, self.anchor_point.y + (self.shape.height / 1.2))
+        return Point(self.anchor_point.x + self.shape.width / 2, self.anchor_point.y + self.shape.height / 1.2)
+
+    @property
+    def bottom_limit(self):
+        return Point(self.anchor_point.x + self.shape.width / 2, self.anchor_point.y + self.shape.height - 1)
+
+    @property
+    def left(self):
+        return Point(self.anchor_point.x + self.shape.width / 8, self.anchor_point.y + self.shape.height / 2)
+
+    @property
+    def bottom_right(self):
+        return Point(self.anchor_point.x + self.shape.width / 1.2, self.anchor_point.y + self.shape.height / 1.2)
+
+    @property
+    def bottom_left(self):
+        return Point(self.anchor_point.x + self.shape.width / 8, self.anchor_point.y + self.shape.height / 1.2)
 
 
 class ClickableElement:
@@ -106,7 +122,7 @@ def get_combined_monitors_offset():
 def get_monitors_screenshot():
     with mss() as sct:
         screenshot = np.array(sct.grab(sct.monitors[0]))
-        return cv2.cvtColor(screenshot, cv2.COLOR_RGB2HSV)
+        return cv2.cvtColor(screenshot, cv2.COLOR_RGB2RGBA)
 
 
 def get_element_coordinates(template_path, screenshot, threshold, log, fixed_scale=None):
@@ -116,11 +132,11 @@ def get_element_coordinates(template_path, screenshot, threshold, log, fixed_sca
         return
 
     template = cv2.imread(str(template_path), cv2.IMREAD_COLOR)
-    template = cv2.cvtColor(template, cv2.COLOR_RGB2HSV)
+    template = cv2.cvtColor(template, cv2.COLOR_RGB2RGBA)
     template_height, template_width = template.shape[:2]
 
     found = get_match(
-        scales=[fixed_scale] if fixed_scale else np.linspace(0.25, 1.0, 10)[::-1],
+        scales=[fixed_scale] if fixed_scale else np.linspace(0.25, 1.0, 20)[::-1],
         screenshot=screenshot,
         template=template,
         log=log
@@ -197,11 +213,17 @@ def import_file_dialog_clic(log):
     elements_to_click = list()
 
     try:
-        elements_to_click.append(ClickableElement(["photoshop_file_icon_1.png", "photoshop_file_icon_2.png"], folder_path))
-        elements_to_click.append(ClickableElement(["metrage.png"], folder_path, wait_after=0.1))
-        elements_to_click.append(ClickableElement(["composition.png"], folder_path, click="bottom"))
-        elements_to_click.append(ClickableElement(["importer.png"], folder_path, wait_after=0.3))
-        elements_to_click.append(ClickableElement(["ok.png"], folder_path))
+        elements_to_click.append(
+            ClickableElement(
+                files_names=["photoshop_file_icon_1.png", "photoshop_file_icon_2.png"],
+                folder_path=folder_path,
+                click="bottom_right"
+            )
+        )
+        elements_to_click.append(ClickableElement(["metrage.png"], folder_path, click="bottom"))
+        elements_to_click.append(ClickableElement(["composition.png"], folder_path, click="bottom_limit", wait_after=0.3))
+        elements_to_click.append(ClickableElement(["importer.png"], folder_path, click="bottom_left", wait_after=0.3))
+        elements_to_click.append(ClickableElement(["ok.png"], folder_path, click="left"))
 
     except FileNotFoundError as err:
         log.error("An error has occured when retrieving image for comparison. Abort process.")
