@@ -797,8 +797,6 @@ class AfterEffectsServerStub():
             payload(dict): - dictionary from json representation, expected to
                 come from _handle_return
         """
-        print("to records")
-        print(payload)
         if not payload:
             return []
 

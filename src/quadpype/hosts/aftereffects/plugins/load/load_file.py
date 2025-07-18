@@ -65,7 +65,9 @@ class FileLoader(api.AfterEffectsLoader):
         )
 
         # Determine if the imported file is a PSD file (Special case)
-        is_psd = Path(path).suffix == '.psd'
+        path = Path(path)
+        is_psd = path.suffix == '.psd'
+        path = str(path.resolve())
 
         layers = stub.get_items(comps=True, folders=True, footages=True)
         existing_layers = [layer.name for layer in layers]
@@ -97,6 +99,7 @@ class FileLoader(api.AfterEffectsLoader):
                 "Representation id `{}` is failing to load".format(repr_id))
             return
 
+        self.log.info("Loading asset...")
         if is_psd:
             import_options['ImportAsType'] = 'ImportAsType.COMP'
             comp = stub.import_file_with_dialog(
@@ -121,6 +124,7 @@ class FileLoader(api.AfterEffectsLoader):
             self.log.warning("Check host app for alert error.")
             return
 
+        self.log.info("Asset has been loaded.")
         self[:] = [comp]
         namespace = namespace or comp_name
         folder_templates = get_task_hierarchy_templates(
@@ -129,6 +133,7 @@ class FileLoader(api.AfterEffectsLoader):
         )
 
         if folder_templates:
+            self.log.info("Creating hiearchy...")
             folders_hierarchy = [
                 get_resolved_name(
                     data=template_data,
@@ -146,11 +151,13 @@ class FileLoader(api.AfterEffectsLoader):
                 psd_folder = find_folder(stub.LOADED_ICON + comp_name)
                 stub.parent_items(psd_folder.id, last_folder.id)
 
+            self.log.info("Hierarchy has been created.")
+
         if data.get(
             'apply_interval',
             self.apply_interval_default
         ) and frame:
-            self.load_json(stub, template_data, project_name, comp.id, repre_task_name)
+            self.apply_intervals(stub, template_data, project_name, comp.id, repre_task_name)
 
         return api.containerise(
             name,
@@ -160,7 +167,8 @@ class FileLoader(api.AfterEffectsLoader):
             self.__class__.__name__
         )
 
-    def load_json(self, stub, template_data, project_name, comp_id, repre_task_name=None):
+    def apply_intervals(self, stub, template_data, project_name, comp_id, repre_task_name=None):
+        self.log.info("Applying intervals from json file...")
         if not repre_task_name:
             self.log.error("Can not retrieve task_name for representation context. Abort json loading.")
 
