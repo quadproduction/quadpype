@@ -170,8 +170,6 @@ function applyExposure(effect_layer_name, effect_layer_parent_name, target_layer
             property = property.property(target_property_index_hierarchy.shift())
         }
 
-        applyTimeRemapAndKeyAtMarkers(target_layer)
-
         property.expression =
 	    'TARGET = comp("' + effect_layer_parent_name + '").layer("' + effect_layer_name  + '");\n' +
         'NEAREST_KEY_TIME = TARGET.marker.nearestKey(time).time;\n' +
@@ -191,22 +189,6 @@ function applyExposure(effect_layer_name, effect_layer_parent_name, target_layer
 
     app.endUndoGroup();
     return _prepareSingleValue(true)
-
-}
-
-
-function applyTimeRemapAndKeyAtMarkers(layer) {
-    if (!layer.canSetTimeRemapEnabled) {
-        throw Error("Layer named " + layer.name + " can not have time remap.")
-    }
-
-    layer.timeRemapEnabled = true;
-    var remap = layer.property("ADBE Time Remapping");
-    var numMarkers = layer.marker.numKeys;
-    for (var i = 1; i <= numMarkers; i++) {
-        var markerTime = layer.marker.keyTime(i);
-        remap.setValueAtTime(markerTime, remap.valueAtTime(markerTime, false));
-    }
 
 }
 
@@ -1362,6 +1344,14 @@ function addMarkerToLayer(compId, layerName, frameNumber) {
         }
 
         layer.marker.setValueAtTime(timeInSeconds, new MarkerValue(''));
+
+        if (!layer.canSetTimeRemapEnabled) {
+            throw Error("Layer named " + layer.name + " can not have time remap.")
+        }
+
+        layer.timeRemapEnabled = true;
+        var remap = layer.property("ADBE Time Remapping");
+        remap.setValueAtTime(timeInSeconds, remap.valueAtTime(timeInSeconds, false));
 
     } catch (error) {
         return _prepareError(error.toString());
