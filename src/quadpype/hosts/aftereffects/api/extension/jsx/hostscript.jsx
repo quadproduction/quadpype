@@ -770,14 +770,30 @@ function renameItem(item_id, new_name){
     }
 }
 
-function addCompToRenderQueue(comp_id){
+function addCompToRenderQueue(comp_id, path){
     var comp = app.project.itemByID(comp_id);
     if (isComp(comp)) {
         var renderQueueItem = app.project.renderQueue.items.add(comp);
-        renderQueueItem.outputModule(1).file = new File("C:/temp/render_output.mov");
+        renderQueueItem.outputModule(1).file = new File(path);
 
     } else {
         return _prepareError("The following item is not a comp : "+ comp.name);
+    }
+}
+
+function removeCompInRenderQueue(comp_id){
+    var rq = app.project.renderQueue;
+    var removedCount = 0;
+
+    for (var i = rq.numItems; i >= 1; i--) {
+        var rqItem = rq.item(i);
+        if (rqItem.comp && rqItem.comp.id === comp_id) {
+            rqItem.remove();
+            removedCount++;
+        }
+    }
+    if (removedCount == 0) {
+        _prepareError("No matching comp found in render queue.");
     }
 }
 
