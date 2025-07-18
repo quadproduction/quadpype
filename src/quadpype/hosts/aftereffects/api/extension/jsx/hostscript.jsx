@@ -781,6 +781,22 @@ function addCompToRenderQueue(comp_id){
     }
 }
 
+function removeCompInRenderQueue(comp_id){
+    var rq = app.project.renderQueue;
+    var removedCount = 0;
+
+    for (var i = rq.numItems; i >= 1; i--) {
+        var rqItem = rq.item(i);
+        if (rqItem.comp && rqItem.comp.id === comp_id) {
+            rqItem.remove();
+            removedCount++;
+        }
+    }
+    if (removedCount == 0) {
+        _prepareError("No matching comp found in render queue.");
+    }
+}
+
 function parentItems(item_id, parent_item_id){
     var childItem = app.project.itemByID(item_id);
     var parentFolder = app.project.itemByID(parent_item_id);
