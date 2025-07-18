@@ -937,8 +937,12 @@ def boot():
 
     running_version = package_manager["quadpype"].running_version
     running_version_fullpath = running_version.location.resolve()
-    _print(">>> Check ZXP extensions ...")
-    _update_zxp_extensions(running_version_fullpath, global_settings)
+
+    current_app = os.environ.get('AVALON_APP_NAME', None)
+    allowed_apps = ['photoshop', 'aftereffects']
+    if not current_app or re.match(rf'^({"|".join(allowed_apps)})[/\\\-_]', current_app):
+        _print(">>> Check ZXP extensions ...")
+        _update_zxp_extensions(running_version_fullpath, global_settings)
 
     # print info when not running scripts defined in 'silent commands'
     if all(arg not in silent_commands for arg in sys.argv):
