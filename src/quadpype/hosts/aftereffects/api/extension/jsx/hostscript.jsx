@@ -132,21 +132,21 @@ function getLayerAttributesNames(layer_id){
 }
 
 function _traverseProperties(propGroup, given_properties) {
-        property_index = 0
-        for (var i = 1; i <= propGroup.numProperties; i++) {
-            var prop = propGroup.property(i);
-            new_property = {
-                "name": prop.name,
-                "marker": prop.isTimeVarying,
-                "index": i
-            }
-            given_properties.push(new_property);
-            if (prop instanceof PropertyGroup) {
-                new_property['properties'] = []
-                _traverseProperties(prop, new_property['properties']);
-            }
+    property_index = 0
+    for (var i = 1; i <= propGroup.numProperties; i++) {
+        var prop = propGroup.property(i);
+        new_property = {
+            "name": prop.name,
+            "marker": prop.isTimeVarying,
+            "index": i
+        }
+        given_properties.push(new_property);
+        if (prop instanceof PropertyGroup) {
+            new_property['properties'] = []
+            _traverseProperties(prop, new_property['properties']);
         }
     }
+}
 
 function applyExposure(effect_layer_name, effect_layer_parent_name, target_layer_id, target_property_index_hierarchy){
     /**
@@ -159,6 +159,8 @@ function applyExposure(effect_layer_name, effect_layer_parent_name, target_layer
      *      target_property_name (str): property on which to apply expression
      */
 
+     app.beginUndoGroup("Apply exposure");
+
     try{
         target_layer = app.project.layerByID(target_layer_id)
         if (target_layer === null){ return _prepareError("Couldn't find layer with id " + target_layer_id) }
@@ -167,6 +169,8 @@ function applyExposure(effect_layer_name, effect_layer_parent_name, target_layer
         while(target_property_index_hierarchy.length){
             property = property.property(target_property_index_hierarchy.shift())
         }
+
+        applyTimeRemapAndKeyAtMarkers(target_layer)
 
         property.expression =
 	    'TARGET = comp("' + effect_layer_parent_name + '").layer("' + effect_layer_name  + '");\n' +
@@ -185,10 +189,26 @@ function applyExposure(effect_layer_name, effect_layer_parent_name, target_layer
         return _prepareError("Couldn't apply expression on layer named " + target_layer.name);
     }
 
+    app.endUndoGroup();
     return _prepareSingleValue(true)
 
 }
 
+
+function applyTimeRemapAndKeyAtMarkers(layer) {
+    if (!layer.canSetTimeRemapEnabled) {
+        throw Error("Layer named " + layer.name + " can not have time remap.")
+    }
+
+    layer.timeRemapEnabled = true;
+    var remap = layer.property("ADBE Time Remapping");
+    var numMarkers = layer.marker.numKeys;
+    for (var i = 1; i <= numMarkers; i++) {
+        var markerTime = layer.marker.keyTime(i);
+        remap.setValueAtTime(markerTime, remap.valueAtTime(markerTime, false));
+    }
+
+}
 
 function addItem(name, item_type){
     /**
