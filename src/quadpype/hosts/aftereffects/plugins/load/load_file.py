@@ -135,36 +135,13 @@ class FileLoader(api.AfterEffectsLoader):
             self.log.warning("Check host app for alert error.")
             return
 
-        self.log.info("File has been loaded with success.")
+        template_data, template_folder = self.get_folder_and_data_template(context['representation'])
+        if template_folder:
+            folders_hierarchy = self.get_folder_hierarchy(template_data, template_folder, unique_number)
+            self.create_folders(stub, folders_hierarchy, comp, stub.LOADED_ICON + comp_name)
 
         self[:] = [comp]
         namespace = namespace or comp_name
-        template_data = format_data(
-            original_data=context['representation'],
-            filter_variant=True,
-            app=host_name
-        )
-        folder_templates = get_task_hierarchy_templates(
-            template_data,
-            task=get_current_context()['task_name']
-        )
-
-        if folder_templates:
-            folders_hierarchy = [
-                get_resolved_name(
-                    data=template_data,
-                    template=template,
-                    numbering=unique_number
-                )
-                for template in folder_templates
-            ]
-            create_folders_from_hierarchy(folders_hierarchy)
-            last_folder = find_folder(get_last_folder_from_first_template(folders_hierarchy))
-            stub.parent_items(comp.id, last_folder.id)
-            # if psd, must retrieve the folder to parent it too
-            if is_psd:
-                psd_folder = find_folder(stub.LOADED_ICON + comp_name)
-                stub.parent_items(psd_folder.id, last_folder.id)
 
         return api.containerise(
             name,
@@ -173,6 +150,39 @@ class FileLoader(api.AfterEffectsLoader):
             context,
             self.__class__.__name__
         )
+
+    @staticmethod
+    def get_folder_and_data_template(representation):
+        template_data = format_data(
+            original_data=representation,
+            filter_variant=True,
+            app=get_current_host_name()
+        )
+        return template_data, get_task_hierarchy_templates(
+            template_data,
+            task=get_current_context()['task_name']
+        )
+
+    @staticmethod
+    def get_folder_hierarchy(template_data, folder_templates, unique_number):
+        return [
+            get_resolved_name(
+                data=template_data,
+                template=template,
+                numbering=unique_number
+            )
+            for template in folder_templates
+        ]
+
+    @staticmethod
+    def create_folders(stub, folders_hierarchy, comp, parent_folder_name):
+        create_folders_from_hierarchy(folders_hierarchy)
+        last_folder = find_folder(get_last_folder_from_first_template(folders_hierarchy))
+        stub.parent_items(comp.id, last_folder.id)
+
+        if parent_folder_name:
+            psd_folder = find_folder(parent_folder_name)
+            stub.parent_items(psd_folder.id, last_folder.id)
 
     @staticmethod
     def notify_import_result(message):
@@ -217,6 +227,7 @@ class FileLoader(api.AfterEffectsLoader):
         """ Switch asset or change version """
         stub = self.get_stub()
         layer = container.pop("layer")
+        unique_number = container.get('version')
 
         context = representation.get("context", {})
 
@@ -260,10 +271,23 @@ class FileLoader(api.AfterEffectsLoader):
                     self.notify_import_result("Import has ended with success !")
 
         stub.imprint(
-            layer.id, {"representation": str(representation["_id"]),
-                       "name": context["subset"],
-                       "namespace": layer_name}
+            layer.id,
+            {
+                "representation": str(representation["_id"]),
+                "name": context["subset"],
+                "namespace": layer_name
+            }
         )
+
+        template_data, template_folder = self.get_folder_and_data_template(representation)
+        if template_folder:
+            folders_hierarchy = self.get_folder_hierarchy(template_data, template_folder, unique_number)
+            self.create_folders(stub, folders_hierarchy, layer, stub.LOADED_ICON + layer_name)
+
+            if not parent_folder:
+                return
+
+            stub.delete_hierarchy(parent_folder.id)
 
     def remove(self, container):
         """
@@ -273,8 +297,14 @@ class FileLoader(api.AfterEffectsLoader):
         """
         stub = self.get_stub()
         layer = container.pop("layer")
+        namespace = container.pop("namespace")
+
         stub.imprint(layer.id, {})
         stub.delete_item(layer.id)
+
+        psd_folder = find_folder(stub.LOADED_ICON + namespace)
+        if psd_folder:
+            stub.delete_item_with_hierarchy(psd_folder.id)
 
     def switch(self, container, representation):
         self.update(container, representation)

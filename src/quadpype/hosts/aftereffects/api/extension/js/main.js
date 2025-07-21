@@ -209,7 +209,7 @@ function main(websocket_url) {
         return runEvalScript("removeCompInRenderQueue(" + data.comp_id + ")")
     });
 
-        RPC.addRoute('AfterEffects.parent_items', function (data) {
+    RPC.addRoute('AfterEffects.parent_items', function (data) {
         log.warn('Server called client route "parent_items":', data);
         return runEvalScript("parentItems(" + data.item_id + ", " + data.parent_item_id + ")")
     });
@@ -218,7 +218,25 @@ function main(websocket_url) {
         log.warn('Server called client route "delete_item":', data);
         return runEvalScript("deleteItem(" + data.item_id + ")")
             .then(function (result) {
-                log.warn("deleteItem: " + result);
+                log.warn("delete_item: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.delete_item_with_hierarchy', function (data) {
+        log.warn('Server called client route "delete_item_with_hierarchy":', data);
+        return runEvalScript("deleteItemWithHierarchy(" + data.item_id + ")")
+            .then(function (result) {
+                log.warn("delete_item_with_hierarchy: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.delete_hierarchy', function (data) {
+        log.warn('Server called client route "delete_hierarchy":', data);
+        return runEvalScript("deleteHierarchy(" + data.folder_id + ")")
+            .then(function (result) {
+                log.warn("delete_hierarchy: " + result);
                 return result;
             });
     });
@@ -238,7 +256,16 @@ function main(websocket_url) {
         return runEvalScript("setLabelColor(" + data.item_id + "," +
             data.color_idx + ")")
             .then(function (result) {
-                log.warn("imprint: " + result);
+                log.warn("set_label_color: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.get_item_parent', function (data) {
+        log.warn('Server called client route "get_item_parent":', data);
+        return runEvalScript("getItemParent(" + data.item_id + ")")
+            .then(function (result) {
+                log.warn("get_item_parent: " + result);
                 return result;
             });
     });

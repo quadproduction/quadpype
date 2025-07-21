@@ -677,6 +677,8 @@ function replaceCompSequenceItems(item, path, item_name){
 
     importedComp.remove();
     previousCompFolder.remove();
+
+    return true
 }
 
 
@@ -690,10 +692,13 @@ function _delete_layers_dialog(compItem, deletedLayers){
      *    deletedLayers(array): array of layers to delete.
      */
 
+    var deletedLayersMsg = '';
+    for (var i = 0; i < deletedLayers.length; i++) {
+        deletedLayersMsg += '\n - ' + deletedLayers[i].name;
+    }
     var deletionConfirmation = confirm(
         "Do you want to delete the following elements from composition '" +
-        compItem.name + "' :\n -" +
-        deletedLayers.map(function(layer){ return layer.name }).join('\n -')
+        compItem.name + "' :" + deletedLayersMsg
     );
     if (deletionConfirmation){
         for (var index = 0; index < deletedLayers.length; index++) {
@@ -734,10 +739,13 @@ function _add_new_layers_dialog(compItem, importedComp, newLayers){
      *    compItem(compItem): given compItem in which we wants to add missing layers
      *    importedComp(compItem): compItem used for comparison
      */
+    var newLayersMsg = '';
+    for (var i = 0; i < newLayers.length; i++) {
+        newLayersMsg += '\n - ' + newLayers[i].name;
+    }
     var additionConfirmation = confirm(
         "New elements have been detected in newer version. Do you want to add them to composition '" +
-        compItem.name + "' ?\n -" +
-        newLayers.map(function(layer){ return layer.name }).join('\n -')
+        compItem.name + "' :" + newLayersMsg
     );
     if (additionConfirmation){
         for(var index=0; index < newLayers.length; index++){
@@ -820,6 +828,73 @@ function deleteItem(item_id){
     }else{
         return _prepareError("There is no composition with "+ comp_id);
     }
+}
+
+function deleteItemWithHierarchy(item_id){
+    /**
+     *  Delete any 'item_id' with hierarchy until first not empty folder.
+     *
+     *  Not restricted only to comp, it could delete
+     *  any item with 'id'.
+     */
+    var item = app.project.itemByID(item_id);
+    var folder = item.parentFolder;
+    var parent_folder = folder;
+
+    if (item){
+        item.remove();
+
+    }else{
+        return _prepareError("There is no item with id "+ item_id);
+    }
+    return deleteHierarchy(parent_folder.id)
+}
+
+function isFolderWithItems(item){
+    return (item instanceof Folder) && (folder.items.length > 0)
+}
+
+function deleteHierarchy(folderId){
+    /**
+     *  Delete given folder and all his parents while they are empty.
+     */
+    var parentFolder = app.project.itemByID(folderId);
+    if (!parentFolder){
+        return _prepareError("There is no folder with id "+ item_id);
+    }
+
+    var deletedFolders = [];
+    while(parentFolder !== null){
+
+        var folder = parentFolder
+        parentFolder = parentFolder.parentFolder
+
+        if ((!folder.items.length) && (folder.parentFolder !== null)) {
+            deletedFolders.push(folder.name)
+            folder.remove();
+        } else {
+            break;
+        }
+
+    }
+
+    return _prepareSingleValue(deletedFolders)
+}
+
+function getItemParent(item_id){
+    /**
+     *  Return parent from item with given id.
+     */
+    var item = app.project.itemByID(item_id);
+    if (!item){
+        return _prepareError("There is no item with id "+ item_id);
+    }
+
+    var parentFolder = item.parentFolder
+    if (!parentFolder){
+        return _prepareError("There is no parent for folder with id "+ item_id);
+    }
+    return _prepareSingleValue(parentFolder);
 }
 
 function getCompProperties(comp_id){
