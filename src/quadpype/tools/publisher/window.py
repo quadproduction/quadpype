@@ -17,6 +17,11 @@ from quadpype.tools.utils import (
     PixmapLabel,
 )
 from quadpype.tools.utils.lib import center_window
+from quadpype.pipeline import (
+    get_current_host_name,
+    get_current_project_name
+)
+from quadpype.settings import get_project_settings
 
 from .constants import ResetKeySequence
 from .publish_report_viewer import PublishReportViewerWidget
@@ -68,7 +73,11 @@ class PublisherWindow(BaseToolDialog):
                        | QtCore.Qt.WindowMinimizeButtonHint \
                        | QtCore.Qt.WindowCloseButtonHint
 
-        if self.can_stay_on_top:
+        project_settings = get_project_settings(get_current_project_name())
+        host_settings = project_settings.get(get_current_host_name(), {})
+        disable_stay_on_top = host_settings.get('load', {}).get('auto_clic_import_dialog', False)
+
+        if self.can_stay_on_top and not disable_stay_on_top:
             window_flags |= QtCore.Qt.WindowStaysOnTopHint
 
         self.setWindowFlags(window_flags)

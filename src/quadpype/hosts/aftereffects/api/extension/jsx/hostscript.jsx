@@ -343,10 +343,21 @@ function importFileWithDialog(path, item_name, import_options){
         return _prepareError("Couldn't parse import options " + import_options);
     }
 
-    var importedObjects = _importFileWithDialog(path, item_name, import_options)
+    var importedComp = openImportFileWithDialog(path)
+    if (importedComp === '') {
+        return false;
+    }
+
+    error = checkImportedCompProperties(importedComp, path)
+    if (typeof error === 'string') {
+        // We return the object because it's a string error
+        return _prepareError(error);
+    }
+
+    var importedObjects = setImportedCompProperties(importedComp, item_name, import_options)
     if (typeof importedObjects === 'string') {
         // We return the object because it's a string error
-        return importedObjects;
+        return _prepareError(importedObjects);
     }
 
     var importedComp = importedObjects[0]
@@ -356,9 +367,7 @@ function importFileWithDialog(path, item_name, import_options){
     return JSON.stringify(ret);
 }
 
-function _importFileWithDialog(path, item_name, import_options){
-    if (!import_options) { import_options = {}; }
-
+function openImportFileWithDialog(path){
     var folderPath = undefined;
     if (_pathIsFile(path)){
         folderPath = new Folder(path.match(new RegExp("(.*)[/\\\\]"))[0] || '')
@@ -376,47 +385,54 @@ function _importFileWithDialog(path, item_name, import_options){
         return ''
     }
 
-    importedComp = importedCompArray[0]
-    if (importedComp.layers === undefined){
+    return importedCompArray[0]
+}
+
+function checkImportedCompProperties(comp, path){
+    if (comp.layers === undefined){
         undoLastActions();
         return _prepareError('Wrong file type imported (impossible to access layers composition).');
     }
 
-    importedCompFilePath = getCompFilepath(importedComp);
-
-    if (importedCompFilePath === undefined){
+    compFilePath = getCompFilepath(comp);
+    if (compFilePath === undefined){
         undoLastActions();
         return _prepareError('Wrong file type imported (impossible to access layers composition).');
     }
 
-    if (extensionsAreDifferents(importedCompFilePath, path)){
+    if (extensionsAreDifferents(compFilePath, path)){
         undoLastActions();
         return _prepareError('Wrong file selected (incorrect extension).');
     }
 
-    if (versionsAreDifferents(importedCompFilePath, path)){
+    if (versionsAreDifferents(compFilePath, path)){
         undoLastActions();
         return _prepareError('Wrong file selected (incorrect asset / version).');
     }
 
+    return true
+}
+
+function setImportedCompProperties(comp, item_name, import_options){
+    if (!import_options) { import_options = {}; }
     try {
-        importedCompFolder = getImportedCompFolder(importedComp);
+        compFolder = getImportedCompFolder(comp);
 
-        importedCompFolder.name = item_name;
-        importedComp.name = item_name;
+        compFolder.name = item_name;
+        comp.name = item_name;
 
-        renameFolderItems(importedCompFolder);
+        renameFolderItems(compFolder);
 
         if (import_options.hasOwnProperty("fps") && import_options.hasOwnProperty("sequence")){
             fps = import_options['fps']
-            importedComp.frameRate = fps;
-            setFolderItemsFPS(importedCompFolder, fps);
+            comp.frameRate = fps;
+            setFolderItemsFPS(compFolder, fps);
         }
     } catch (error) {
         return _prepareError(error.toString() + item_name);
     }
 
-    return [importedComp, importedCompFolder];
+    return [comp, compFolder];
 }
 
 
@@ -600,10 +616,21 @@ function replaceCompSequenceItems(item, path, item_name){
 
     var previousCompFolder = getImportedCompFolder(item);
 
-    var importedObjects = _importFileWithDialog(path, item_name, undefined)
+    var importedComp = openImportFileWithDialog(path)
+    if (importedComp === '') {
+        return false;
+    }
+
+    error = checkImportedCompProperties(importedComp, path)
+    if (typeof error === 'string') {
+        // We return the object because it's a string error
+        return _prepareError(error);
+    }
+
+    var importedObjects = setImportedCompProperties(importedComp, item_name, undefined)
     if (typeof importedObjects === 'string') {
         // We return the object because it's a string error
-        return importedObjects
+        return _prepareError(importedObjects);
     }
 
     var importedComp = importedObjects[0]
@@ -759,6 +786,22 @@ function addCompToRenderQueue(comp_id){
 
     } else {
         return _prepareError("The following item is not a comp : "+ comp.name);
+    }
+}
+
+function removeCompInRenderQueue(comp_id){
+    var rq = app.project.renderQueue;
+    var removedCount = 0;
+
+    for (var i = rq.numItems; i >= 1; i--) {
+        var rqItem = rq.item(i);
+        if (rqItem.comp && rqItem.comp.id === comp_id) {
+            rqItem.remove();
+            removedCount++;
+        }
+    }
+    if (removedCount == 0) {
+        _prepareError("No matching comp found in render queue.");
     }
 }
 

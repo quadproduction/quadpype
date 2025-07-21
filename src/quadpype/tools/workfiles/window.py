@@ -18,14 +18,17 @@ from quadpype.client.operations import (
 from quadpype import style
 from quadpype import resources
 from quadpype.pipeline import (
+    legacy_io,
     Anatomy,
     get_current_asset_name,
     get_current_task_name,
+    get_current_host_name,
+    get_current_project_name
 )
 from quadpype.widgets import BaseToolWidget
-from quadpype.pipeline import legacy_io
 from quadpype.tools.utils.assets_widget import SingleSelectAssetsWidget
 from quadpype.tools.utils.tasks_widget import TasksWidget
+from quadpype.settings import get_project_settings
 
 from .files_widget import FilesWidget
 
@@ -173,7 +176,7 @@ class SidePanelWidget(QtWidgets.QWidget):
 
 class Window(BaseToolWidget):
     """Work Files Window"""
-    title = "Work Files"
+    title = "Work Files test"
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -181,8 +184,12 @@ class Window(BaseToolWidget):
         icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(icon)
 
+        project_settings = get_project_settings(get_current_project_name())
+        host_settings = project_settings.get(get_current_host_name(), {})
+        self.disable_stay_on_top = host_settings.get('load', {}).get('auto_clic_import_dialog', False)
+
         window_flags = self.windowFlags() | QtCore.Qt.Window
-        if self.can_stay_on_top:
+        if self.can_stay_on_top and not self.disable_stay_on_top:
             window_flags |= QtCore.Qt.WindowStaysOnTopHint
         self.setWindowFlags(window_flags)
 
@@ -279,9 +286,9 @@ class Window(BaseToolWidget):
 
         window_flags = self.windowFlags()
         new_window_flags = window_flags
-        if on_top is True:
+        if on_top is True and not self.disable_stay_on_top:
             new_window_flags = window_flags | QtCore.Qt.WindowStaysOnTopHint
-        elif on_top is False:
+        elif on_top is False or self.disable_stay_on_top:
             new_window_flags = window_flags & ~QtCore.Qt.WindowStaysOnTopHint
 
         if new_window_flags != window_flags:
