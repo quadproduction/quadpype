@@ -315,6 +315,15 @@ function main(websocket_url) {
             });
     });
 
+    RPC.addRoute('Photoshop.export_scene_to_json', function (data) {
+        log.warn('Server called client route "export_scene_to_json":', data);
+        return runEvalScript("exportSceneToJSON('" + data.path + "')")
+            .then(function (result) {
+                log.warn("export_scene_to_json: " + result);
+                return result;
+            });
+    });
+
     RPC.addRoute('Photoshop.get_extension_version', function (data) {
         log.warn('Server called client route "get_extension_version":', data);
         return get_extension_version();
