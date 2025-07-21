@@ -21,6 +21,10 @@
             "auto_resolution_resize": true
         }
     },
+    "load": {
+        "auto_clic_import_dialog": true,
+        "attempts_number": 3
+    },
     "publish": {
         "CollectReview": {
             "enabled": true

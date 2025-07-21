@@ -204,6 +204,11 @@ function main(websocket_url) {
         return runEvalScript("addCompToRenderQueue(" + data.comp_id + ")")
     });
 
+    RPC.addRoute('AfterEffects.remove_comp_in_render_queue', function (data) {
+        log.warn('Server called client route "remove_comp_in_render_queue":', data);
+        return runEvalScript("removeCompInRenderQueue(" + data.comp_id + ")")
+    });
+
         RPC.addRoute('AfterEffects.parent_items', function (data) {
         log.warn('Server called client route "parent_items":', data);
         return runEvalScript("parentItems(" + data.item_id + ", " + data.parent_item_id + ")")

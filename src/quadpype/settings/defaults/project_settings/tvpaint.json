@@ -100,6 +100,9 @@
             "optional": true,
             "active": true
         },
+        "ValidateNamesStartWithLegal": {
+            "enabled": true
+        },
         "ExtractConvertToEXR": {
             "enabled": false,
             "replace_pngs": true,
