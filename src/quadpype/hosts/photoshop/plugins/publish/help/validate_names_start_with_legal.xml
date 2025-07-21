@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<error id="main">
+<title>Names Start With Legal Validator</title>
+<description>
+## Name start with a number
+
+Layers or Groups names can not begin with a number.
+
+### How to repair?
+
+You can fix this with "repair" button on the right and press Refresh publishing button at the bottom right. It will
+automatically add a '_' character at the beginning of each incriminated name.
+</description>
+</error>
+</root>

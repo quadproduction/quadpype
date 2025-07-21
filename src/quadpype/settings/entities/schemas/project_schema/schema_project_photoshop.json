@@ -311,6 +311,21 @@
                 {
                     "type": "dict",
                     "collapsible": true,
+                    "key": "ValidateNamesStartWithLegal",
+                    "label": "Validate names that start with legal characters",
+                    "checkbox_key": "enabled",
+                    "children": [
+                        {
+                            "type": "boolean",
+                            "key": "enabled",
+                            "label": "Enabled",
+                            "default": true
+                        }
+                    ]
+                 },
+                {
+                    "type": "dict",
+                    "collapsible": true,
                     "key": "ExtractImage",
                     "label": "Extract Image",
                     "children": [

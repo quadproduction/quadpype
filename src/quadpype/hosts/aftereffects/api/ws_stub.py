@@ -742,6 +742,19 @@ class AfterEffectsServerStub():
         """
         res = self.websocketserver.call(self.client.call
                                         ('AfterEffects.add_comp_to_render_queue',
+                                         comp_id=comp_id)
+                                        )
+        return self._handle_return(res)
+
+    def remove_comp_in_render_queue(self, comp_id):
+        """
+            Remove the comp corresponding to comp_id in the render queue
+        Args:
+            comp_id(int): id of target composition
+        Returns: None
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.remove_comp_in_render_queue',
                                          comp_id=comp_id))
         return self._handle_return(res)
 

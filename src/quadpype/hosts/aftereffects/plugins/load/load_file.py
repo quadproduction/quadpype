@@ -1,20 +1,28 @@
 import re
-
+import threading
+import notifypy
 from pathlib import Path
 
-
-from quadpype.settings import get_project_settings
 from quadpype.lib import BoolDef, filter_profiles, StringTemplate
+from quadpype.hosts.aftereffects.api.json_loader import load_content, apply_intervals
+
+from quadpype.style import get_app_icon_path
+from quadpype.lib import get_user_settings
+from quadpype.settings import get_project_settings
 from quadpype.pipeline.anatomy import Anatomy
 from quadpype.hosts.aftereffects import api
 from quadpype.hosts.aftereffects.api.lib import get_unique_number
-from quadpype.hosts.aftereffects.api.json_loader import load_content, apply_intervals
+from quadpype.hosts.aftereffects.api.automate import import_file_dialog_clic
+from quadpype.widgets.message_window import Window
+
 from quadpype.hosts.aftereffects.api.folder_hierarchy import (
     create_folders_from_hierarchy,
     get_last_folder_from_first_template,
     find_folder
 )
+
 from quadpype.pipeline.publish.lib import get_template_name_profiles
+
 from quadpype.pipeline import (
     get_task_hierarchy_templates,
     get_representation_path,
@@ -52,8 +60,14 @@ class FileLoader(api.AfterEffectsLoader):
         ]
 
     def load(self, context, name=None, namespace=None, data=None):
-        stub = self.get_stub()
         path = self.filepath_from_context(context)
+        if not path:
+            repr_id = context["representation"]["_id"]
+            self.log.warning(
+                "Representation id `{}` is failing to load".format(repr_id))
+            return
+
+        stub = self.get_stub()
         project_name = context['project']['name']
         repr_cont = context["representation"]["context"]
         repre_task_name = repr_cont.get('task', {}).get('name', None)
@@ -63,6 +77,7 @@ class FileLoader(api.AfterEffectsLoader):
             filter_variant=True,
             app=get_current_host_name()
         )
+        host_name = get_current_host_name()
 
         # Determine if the imported file is a PSD file (Special case)
         path = Path(path)
@@ -93,20 +108,32 @@ class FileLoader(api.AfterEffectsLoader):
         if len(context["representation"]["files"]) > 1:
             import_options['sequence'] = True
 
-        if not path:
-            repr_id = context["representation"]["_id"]
-            self.log.warning(
-                "Representation id `{}` is failing to load".format(repr_id))
-            return
-
         self.log.info("Loading asset...")
         if is_psd:
             import_options['ImportAsType'] = 'ImportAsType.COMP'
-            comp = stub.import_file_with_dialog(
-                path,
-                stub.LOADED_ICON + comp_name,
-                import_options
-            )
+            user_override_auto_clic = get_user_settings().get('general', {}).get('enable_auto_clic_scripts', True)
+
+            load_settings = get_project_settings(project_name).get(host_name, {}).get('load', {})
+            auto_clic = load_settings.get('auto_clic_import_dialog')
+
+            if auto_clic and user_override_auto_clic:
+                auto_clic_thread = self.trigger_auto_clic_thread(load_settings.get('attempts_number', 3))
+                comp = stub.import_file_with_dialog(
+                    path,
+                    stub.LOADED_ICON + comp_name,
+                    import_options
+                )
+                auto_clic_thread.join()
+
+                if comp:
+                    self.notify_import_result("Import has ended with success !")
+
+            else:
+                comp = stub.import_file_with_dialog(
+                    path,
+                    stub.LOADED_ICON + comp_name,
+                    import_options
+                )
 
         else:
             if frame:
@@ -124,32 +151,12 @@ class FileLoader(api.AfterEffectsLoader):
             self.log.warning("Check host app for alert error.")
             return
 
-        self.log.info("Asset has been loaded.")
-        self[:] = [comp]
-        namespace = namespace or comp_name
-        folder_templates = get_task_hierarchy_templates(
-            template_data,
-            task=get_current_context()['task_name']
-        )
+        self.log.info("Asset has been loaded with success.")
 
-        if folder_templates:
-            self.log.info("Creating hiearchy...")
-            folders_hierarchy = [
-                get_resolved_name(
-                    data=template_data,
-                    template=template,
-                    numbering=unique_number
-                )
-                for template in folder_templates
-            ]
-            create_folders_from_hierarchy(folders_hierarchy)
-            last_folder = find_folder(get_last_folder_from_first_template(folders_hierarchy))
-            stub.parent_items(comp.id, last_folder.id)
-
-            # if psd, must retrieve the folder to parent it too
-            if is_psd:
-                psd_folder = find_folder(stub.LOADED_ICON + comp_name)
-                stub.parent_items(psd_folder.id, last_folder.id)
+        template_data, template_folder = self.get_folder_and_data_template(context['representation'])
+        if template_folder:
+            folders_hierarchy = self.get_folder_hierarchy(template_data, template_folder, unique_number)
+            self.create_folders(stub, folders_hierarchy, comp, stub.LOADED_ICON + comp_name)
 
             self.log.info("Hierarchy has been created.")
 
@@ -159,6 +166,9 @@ class FileLoader(api.AfterEffectsLoader):
         ) and frame:
             self.apply_intervals(stub, template_data, project_name, comp.id, repre_task_name)
 
+        self[:] = [comp]
+        namespace = namespace or comp_name
+
         return api.containerise(
             name,
             namespace,
@@ -166,6 +176,39 @@ class FileLoader(api.AfterEffectsLoader):
             context,
             self.__class__.__name__
         )
+
+    @staticmethod
+    def get_folder_and_data_template(representation):
+        template_data = format_data(
+            original_data=representation,
+            filter_variant=True,
+            app=get_current_host_name()
+        )
+        return template_data, get_task_hierarchy_templates(
+            template_data,
+            task=get_current_context()['task_name']
+        )
+
+    @staticmethod
+    def get_folder_hierarchy(template_data, folder_templates, unique_number):
+        return [
+            get_resolved_name(
+                data=template_data,
+                template=template,
+                numbering=unique_number
+            )
+            for template in folder_templates
+        ]
+
+    @staticmethod
+    def create_folders(stub, folders_hierarchy, comp, parent_folder_name):
+        create_folders_from_hierarchy(folders_hierarchy)
+        last_folder = find_folder(get_last_folder_from_first_template(folders_hierarchy))
+        stub.parent_items(comp.id, last_folder.id)
+
+        if parent_folder_name:
+            psd_folder = find_folder(parent_folder_name)
+            stub.parent_items(psd_folder.id, last_folder.id)
 
     def apply_intervals(self, stub, template_data, project_name, comp_id, repre_task_name=None):
         self.log.info("Applying intervals from json file...")
@@ -193,6 +236,45 @@ class FileLoader(api.AfterEffectsLoader):
         json_content = load_content(json_path, self.log)
         apply_intervals(json_content, comp_id, stub, self.log)
 
+    @staticmethod
+    def notify_import_result(message):
+        notification = notifypy.Notify()
+        notification.title = "Import File"
+        notification.message = message
+        notification.icon = get_app_icon_path()
+        notification.send(block=False)
+
+    def trigger_auto_clic_thread(self, attempts_number):
+        Window(
+            parent=None,
+            title='Import File',
+            message='<p>File will be automatically imported with mouse automation.<br/>'
+                    '<b>Please do not touch your mouse or your keyboard !</b></p>'
+                    '<p><i>Process should ends in less than 10 seconds. If nothing happens, '
+                    'it means that something has gone wrong, and you will need to end '
+                    'process by yourself.</i></p>'
+                    '<p><i>Check your os notifications to monitor process results.</p></i>',
+            level="warning"
+        )
+
+        auto_clic_thread = threading.Thread(
+            target=self.launch_auto_click,
+            args=(attempts_number,)
+        )
+        auto_clic_thread.start()
+        return auto_clic_thread
+
+    def launch_auto_click(self, tries):
+        import time
+        time.sleep(.5)
+        for _ in range(tries):
+            success = import_file_dialog_clic(self.log)
+            if success:
+                return
+
+        self.log.warning(f"Maximum tries value {tries} reached.")
+        self.notify_import_result("Auto clic has failed. You will need to end import file process by yourself.")
+
     def update(self, container, representation):
         """ Switch asset or change version """
         stub = self.get_stub()
@@ -219,11 +301,26 @@ class FileLoader(api.AfterEffectsLoader):
 
         # Convert into a Path object
         path = Path(path)
+        is_psd = path.suffix == '.psd'
 
-        # Resolve and then get a string
         path_str = str(path.resolve())
 
-        stub.replace_item(layer.id, path_str, stub.LOADED_ICON + layer_name)
+        if is_psd:
+            project_name = context.get('project', {}).get('name', None)
+            load_settings = get_project_settings(project_name).get(get_current_host_name(), {}).get('load', {})
+            auto_clic = load_settings.get('auto_clic_import_dialog')
+
+            if auto_clic:
+                auto_clic_thread = self.trigger_auto_clic_thread(load_settings.get('attempts_number', 3))
+
+                result = stub.replace_item(layer.id, path_str, stub.LOADED_ICON + layer_name)
+
+                auto_clic_thread.join()
+
+                # If result is an empty string, it means that everything went well
+                if result == '':
+                    self.notify_import_result("Import has ended with success !")
+
         stub.imprint(
             layer.id, {"representation": str(representation["_id"]),
                        "name": context["subset"],

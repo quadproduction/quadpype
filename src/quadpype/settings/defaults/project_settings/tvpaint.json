@@ -69,7 +69,7 @@
             ]
         },
         "ExtractPsd":  {
-                        "enabled": false
+            "enabled": false
         },
         "ValidateProjectSettings": {
             "enabled": true,
@@ -91,6 +91,9 @@
             "enabled": true,
             "optional": true,
             "active": true
+        },
+        "ValidateNamesStartWithLegal": {
+            "enabled": true
         },
         "ExtractConvertToEXR": {
             "enabled": false,

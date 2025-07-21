@@ -1,5 +1,6 @@
 import os
 import re
+import uuid
 import shutil
 import zipfile
 import platform
@@ -117,6 +118,8 @@ def get_zxp_extensions_to_update(running_version_fullpath, global_settings, forc
         cur_manifest = user_extensions_dir.joinpath(running_extension_id, "CSXS", "manifest.xml")
         # Get the installed version
         installed_extension_id, installed_extension_version = extract_zxp_info_from_manifest(cur_manifest)
+        mac_address = get_mac_address()
+        mac_installer_file_path = Path(user_extensions_dir, f".mac_installer_{running_extension_id}")
 
         if not force:
             # Is the update required?
@@ -126,17 +129,43 @@ def get_zxp_extensions_to_update(running_version_fullpath, global_settings, forc
                 # The update isn't necessary if the soft is disabled for the studio, skipping
                 continue
 
-            # Compare the installed version with the new version
-            if installed_extension_version and installed_extension_version == running_extension_version:
-                # The two extensions have the same version number, skipping
+            # Compare the installed version with the new version and check current mac address
+            # with mac entry in .mac_installer file
+            if installed_extension_version and \
+                    installed_extension_version == running_extension_version and \
+                    get_mac_installer_file_content(mac_installer_file_path) == mac_address:
+                # The two extensions have the same version number and mac address is identical, skipping
                 continue
 
-        zxp_hosts_to_update.append(ZXPExtensionData(zxp_host_id,
-                                                    running_extension_id,
-                                                    installed_extension_version,
-                                                    running_extension_version))
+        print(f'Installing zxp extension for host {running_extension_id}...')
+        zxp_hosts_to_update.append(
+            ZXPExtensionData(
+                zxp_host_id,
+                running_extension_id,
+                installed_extension_version,
+                running_extension_version
+            )
+        )
+        write_user_installer_file_content(mac_installer_file_path, mac_address)
 
     return zxp_hosts_to_update
+
+
+def get_mac_installer_file_content(mac_installer_file_path):
+    if not mac_installer_file_path.is_file():
+        return ""
+    with open(str(mac_installer_file_path)) as mac_installer_file:
+        return mac_installer_file.read()
+
+
+def write_user_installer_file_content(mac_installer_file_path, mac_address):
+    os.makedirs(mac_installer_file_path.parent, exist_ok=True)
+    with open(str(mac_installer_file_path), 'w') as mac_installer_file:
+        return mac_installer_file.write(mac_address)
+
+
+def get_mac_address():
+    return ':'.join(re.findall('..', '%012x' % uuid.getnode()))
 
 
 class ZXPUpdateThread(QtCore.QThread):
