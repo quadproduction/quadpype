@@ -279,6 +279,7 @@ class FileLoader(api.AfterEffectsLoader):
         """ Switch asset or change version """
         stub = self.get_stub()
         layer = container.pop("layer")
+        unique_number = container.get('version')
 
         context = representation.get("context", {})
 
@@ -302,8 +303,8 @@ class FileLoader(api.AfterEffectsLoader):
         # Convert into a Path object
         path = Path(path)
         is_psd = path.suffix == '.psd'
-
-        path_str = str(path.resolve())
+        path = str(path.resolve())
+        parent_folder = stub.get_item_parent(layer.id)
 
         if is_psd:
             project_name = context.get('project', {}).get('name', None)
@@ -313,7 +314,7 @@ class FileLoader(api.AfterEffectsLoader):
             if auto_clic:
                 auto_clic_thread = self.trigger_auto_clic_thread(load_settings.get('attempts_number', 3))
 
-                result = stub.replace_item(layer.id, path_str, stub.LOADED_ICON + layer_name)
+                result = stub.replace_item(layer.id, path, stub.LOADED_ICON + layer_name)
 
                 auto_clic_thread.join()
 
@@ -321,11 +322,27 @@ class FileLoader(api.AfterEffectsLoader):
                 if result == '':
                     self.notify_import_result("Import has ended with success !")
 
+        else:
+            stub.replace_item(layer.id, path, stub.LOADED_ICON + layer_name)
+
         stub.imprint(
-            layer.id, {"representation": str(representation["_id"]),
-                       "name": context["subset"],
-                       "namespace": layer_name}
+            layer.id,
+            {
+                "representation": str(representation["_id"]),
+                "name": context["subset"],
+                "namespace": layer_name
+            }
         )
+
+        template_data, template_folder = self.get_folder_and_data_template(representation)
+        if template_folder:
+            folders_hierarchy = self.get_folder_hierarchy(template_data, template_folder, unique_number)
+            self.create_folders(stub, folders_hierarchy, layer, stub.LOADED_ICON + layer_name)
+
+            if not parent_folder:
+                return
+
+            stub.delete_hierarchy(parent_folder.id)
 
     def remove(self, container):
         """
@@ -335,8 +352,14 @@ class FileLoader(api.AfterEffectsLoader):
         """
         stub = self.get_stub()
         layer = container.pop("layer")
+        namespace = container.pop("namespace")
+
         stub.imprint(layer.id, {})
         stub.delete_item(layer.id)
+
+        psd_folder = find_folder(stub.LOADED_ICON + namespace)
+        if psd_folder:
+            stub.delete_item_with_hierarchy(psd_folder.id)
 
     def switch(self, container, representation):
         self.update(container, representation)

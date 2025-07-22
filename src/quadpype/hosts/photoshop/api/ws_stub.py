@@ -622,6 +622,12 @@ class PhotoshopServerStub:
             self.client.call('Photoshop.imprint', payload=payload)
         )
 
+    def export_scene_to_json(self, path):
+        """Export scene content at json file at given path."""
+        return self.websocketserver.call(
+            self.client.call('Photoshop.export_scene_to_json', path=path)
+        )
+
     def get_extension_version(self):
         """Returns version number of installed extension."""
         return self.websocketserver.call(
