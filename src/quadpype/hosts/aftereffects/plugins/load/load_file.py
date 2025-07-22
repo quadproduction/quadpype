@@ -160,10 +160,7 @@ class FileLoader(api.AfterEffectsLoader):
 
             self.log.info("Hierarchy has been created.")
 
-        if data.get(
-            'apply_interval',
-            self.apply_interval_default
-        ) and frame:
+        if self.apply_interval_asked(data, frame, is_psd):
             self.apply_intervals(stub, template_data, project_name, comp.id, repre_task_name)
 
         self[:] = [comp]
@@ -176,6 +173,9 @@ class FileLoader(api.AfterEffectsLoader):
             context,
             self.__class__.__name__
         )
+
+    def apply_interval_asked(self, data, frame, is_psd):
+        return data.get('apply_interval', self.apply_interval_default) and frame and is_psd
 
     @staticmethod
     def get_folder_and_data_template(representation):
