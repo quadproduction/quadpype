@@ -156,7 +156,7 @@ class FileLoader(api.AfterEffectsLoader):
         template_data, template_folder = self.get_folder_and_data_template(context['representation'])
         if template_folder:
             folders_hierarchy = self.get_folder_hierarchy(template_data, template_folder, unique_number)
-            self.create_folders(stub, folders_hierarchy, comp, stub.LOADED_ICON + comp_name)
+            self.create_folders(stub, folders_hierarchy, comp, stub.LOADED_ICON + comp_name, parent_item=is_psd)
 
             self.log.info("Hierarchy has been created.")
 
@@ -201,14 +201,16 @@ class FileLoader(api.AfterEffectsLoader):
         ]
 
     @staticmethod
-    def create_folders(stub, folders_hierarchy, comp, parent_folder_name):
+    def create_folders(stub, folders_hierarchy, comp, parent_folder_name, parent_item=False):
         create_folders_from_hierarchy(folders_hierarchy)
         last_folder = find_folder(get_last_folder_from_first_template(folders_hierarchy))
         stub.parent_items(comp.id, last_folder.id)
 
-        if parent_folder_name:
-            psd_folder = find_folder(parent_folder_name)
-            stub.parent_items(psd_folder.id, last_folder.id)
+        if not parent_item:
+            return
+
+        psd_folder = find_folder(parent_folder_name)
+        stub.parent_items(psd_folder.id, last_folder.id)
 
     def apply_intervals(self, stub, template_data, project_name, comp_id, repre_task_name=None):
         self.log.info("Applying intervals from json file...")
@@ -337,7 +339,7 @@ class FileLoader(api.AfterEffectsLoader):
         template_data, template_folder = self.get_folder_and_data_template(representation)
         if template_folder:
             folders_hierarchy = self.get_folder_hierarchy(template_data, template_folder, unique_number)
-            self.create_folders(stub, folders_hierarchy, layer, stub.LOADED_ICON + layer_name)
+            self.create_folders(stub, folders_hierarchy, layer, stub.LOADED_ICON + layer_name, parent_item=is_psd)
 
             if not parent_folder:
                 return
