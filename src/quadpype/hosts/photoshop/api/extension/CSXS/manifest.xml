@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<ExtensionManifest ExtensionBundleId="io.quad.PS.panel" ExtensionBundleVersion="1.0.6" Version="7.0">
+<ExtensionManifest ExtensionBundleId="io.quad.PS.panel" ExtensionBundleVersion="1.0.4" Version="7.0">
   <ExtensionList>
     <Extension Id="io.quad.PS.panel" Version="1.0.0" />
   </ExtensionList>
