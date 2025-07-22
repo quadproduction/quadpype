@@ -70,10 +70,6 @@ class ElementCoordinates:
         return Point(self.anchor_point.x + self.shape.width / 2, self.anchor_point.y + self.shape.height / 1.2)
 
     @property
-    def bottom_limit(self):
-        return Point(self.anchor_point.x + self.shape.width / 2, self.anchor_point.y + self.shape.height - 1)
-
-    @property
     def left(self):
         return Point(self.anchor_point.x + self.shape.width / 8, self.anchor_point.y + self.shape.height / 2)
 
@@ -221,7 +217,7 @@ def import_file_dialog_clic(log):
             )
         )
         elements_to_click.append(ClickableElement(["metrage.png"], folder_path, click="bottom"))
-        elements_to_click.append(ClickableElement(["composition.png"], folder_path, click="bottom_limit", wait_after=0.3))
+        elements_to_click.append(ClickableElement(["composition.png"], folder_path, click="bottom", wait_after=0.3))
         elements_to_click.append(ClickableElement(["importer.png"], folder_path, click="bottom_left", wait_after=0.3))
         elements_to_click.append(ClickableElement(["ok.png"], folder_path, click="left"))
 
