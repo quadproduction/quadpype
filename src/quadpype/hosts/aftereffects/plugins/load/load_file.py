@@ -1,33 +1,38 @@
 import re
 import threading
+import notifypy
 from pathlib import Path
 
-import notifypy
+from quadpype.lib import BoolDef, filter_profiles, StringTemplate
+from quadpype.hosts.aftereffects.api.json_loader import load_content, apply_intervals
 
 from quadpype.style import get_app_icon_path
 from quadpype.lib import get_user_settings
-from quadpype.pipeline import (
-    get_representation_path,
-    get_current_context,
-    get_current_host_name,
-)
 from quadpype.settings import get_project_settings
 from quadpype.pipeline.anatomy import Anatomy
 from quadpype.hosts.aftereffects import api
 from quadpype.hosts.aftereffects.api.lib import get_unique_number
 from quadpype.hosts.aftereffects.api.automate import import_file_dialog_clic
 from quadpype.widgets.message_window import Window
+
 from quadpype.hosts.aftereffects.api.folder_hierarchy import (
     create_folders_from_hierarchy,
     get_last_folder_from_first_template,
     find_folder
 )
+
+from quadpype.pipeline.publish.lib import get_template_name_profiles
+
 from quadpype.pipeline import (
     get_task_hierarchy_templates,
+    get_representation_path,
+    get_current_context,
+    get_current_host_name,
     get_resolved_name,
     format_data,
     split_hierarchy
 )
+
 
 class FileLoader(api.AfterEffectsLoader):
     """Load images
@@ -45,13 +50,49 @@ class FileLoader(api.AfterEffectsLoader):
                 "review",
                 "audio",
                 "workfile"]
-    representations = ["*"]
+    representations = ["*", "-json"]
+    apply_interval_default = True
+
+    @classmethod
+    def get_options(cls, contexts):
+        return [
+            BoolDef("apply_interval", label="Apply interval", default=cls.apply_interval_default)
+        ]
 
     def load(self, context, name=None, namespace=None, data=None):
-        host_name = get_current_host_name()
-        project_name = context['project']['name']
-        import_options = {}
+        path = self.filepath_from_context(context)
+        if not path:
+            repr_id = context["representation"]["_id"]
+            self.log.warning(
+                "Representation id `{}` is failing to load".format(repr_id))
+            return
 
+        stub = self.get_stub()
+        project_name = context['project']['name']
+        repr_cont = context["representation"]["context"]
+        repre_task_name = repr_cont.get('task', {}).get('name', None)
+        frame = repr_cont.get("frame", None)
+        template_data = format_data(
+            original_data=context['representation'],
+            filter_variant=True,
+            app=get_current_host_name()
+        )
+        host_name = get_current_host_name()
+
+        # Determine if the imported file is a PSD file (Special case)
+        path = Path(path)
+        is_psd = path.suffix == '.psd'
+        path = str(path.resolve())
+
+        layers = stub.get_items(comps=True, folders=True, footages=True)
+        existing_layers = [layer.name for layer in layers]
+
+        name = "{}_{}".format(context["asset"]["name"], name)
+        unique_number = get_unique_number(
+            existing_layers, name, is_psd=is_psd)
+        comp_name = f"{name}_{unique_number}"
+
+        import_options = {}
         try:
             import_options['fps'] = context['asset']['data']['fps']
         except KeyError:
@@ -59,39 +100,15 @@ class FileLoader(api.AfterEffectsLoader):
             try:
                 import_options['fps'] = Anatomy(project_name)['attributes']['fps']
             except KeyError:
-                self.log.warning(f"Can't retrieve fps information for project {project_name}. Frame rate will not be set at import.")
-
-        stub = self.get_stub()
-        layers = stub.get_items(comps=True, folders=True, footages=True)
-        existing_layers = [layer.name for layer in layers]
-
-        path = self.filepath_from_context(context)
-        repr_cont = context["representation"]["context"]
+                self.log.warning(
+                    f"Can't retrieve fps information for project {project_name}. "
+                    f"Frame rate will not be set at import."
+                )
 
         if len(context["representation"]["files"]) > 1:
             import_options['sequence'] = True
 
-        if not path:
-            repr_id = context["representation"]["_id"]
-            self.log.warning(
-                "Representation id `{}` is failing to load".format(repr_id))
-            return
-
-        # Convert into a Path object
-        path = Path(path)
-
-        # Resolve and then get a string
-        path_str = str(path.resolve())
-
-        frame = None
-
-        # Determine if the imported file is a PSD file (Special case)
-        is_psd = path.suffix == '.psd'
-        name = "{}_{}".format(context["asset"]["name"], name)
-        unique_number = get_unique_number(
-            existing_layers, name, is_psd=is_psd)
-        comp_name = f"{name}_{unique_number}"
-
+        self.log.info("Loading asset...")
         if is_psd:
             import_options['ImportAsType'] = 'ImportAsType.COMP'
             user_override_auto_clic = get_user_settings().get('general', {}).get('enable_auto_clic_scripts', True)
@@ -102,7 +119,7 @@ class FileLoader(api.AfterEffectsLoader):
             if auto_clic and user_override_auto_clic:
                 auto_clic_thread = self.trigger_auto_clic_thread(load_settings.get('attempts_number', 3))
                 comp = stub.import_file_with_dialog(
-                    path_str,
+                    path,
                     stub.LOADED_ICON + comp_name,
                     import_options
                 )
@@ -113,32 +130,41 @@ class FileLoader(api.AfterEffectsLoader):
 
             else:
                 comp = stub.import_file_with_dialog(
-                    path_str,
+                    path,
                     stub.LOADED_ICON + comp_name,
                     import_options
                 )
 
         else:
-            frame = repr_cont.get("frame")
             if frame:
                 import_options['sequence'] = True
 
-            comp = stub.import_file(path_str, stub.LOADED_ICON + comp_name, import_options)
+            comp = stub.import_file(path, stub.LOADED_ICON + comp_name, import_options)
 
         if not comp:
             if frame:
                 padding = len(frame)
-                path_str = path_str.replace(frame, "#" * padding)
+                path = path.replace(frame, "#" * padding)
 
             self.log.warning(
-                "Representation `{}` is failing to load".format(path_str))
+                "Representation `{}` is failing to load".format(path))
             self.log.warning("Check host app for alert error.")
             return
+
+        self.log.info("Asset has been loaded with success.")
 
         template_data, template_folder = self.get_folder_and_data_template(context['representation'])
         if template_folder:
             folders_hierarchy = self.get_folder_hierarchy(template_data, template_folder, unique_number)
             self.create_folders(stub, folders_hierarchy, comp, stub.LOADED_ICON + comp_name)
+
+            self.log.info("Hierarchy has been created.")
+
+        if data.get(
+            'apply_interval',
+            self.apply_interval_default
+        ) and frame:
+            self.apply_intervals(stub, template_data, project_name, comp.id, repre_task_name)
 
         self[:] = [comp]
         namespace = namespace or comp_name
@@ -183,6 +209,32 @@ class FileLoader(api.AfterEffectsLoader):
         if parent_folder_name:
             psd_folder = find_folder(parent_folder_name)
             stub.parent_items(psd_folder.id, last_folder.id)
+
+    def apply_intervals(self, stub, template_data, project_name, comp_id, repre_task_name=None):
+        self.log.info("Applying intervals from json file...")
+        if not repre_task_name:
+            self.log.error("Can not retrieve task_name for representation context. Abort json loading.")
+
+        profiles = get_template_name_profiles(
+            project_name, get_project_settings(project_name), self.log
+        )
+
+        template_data.update(
+            {
+                'families': 'render',
+                'task_types': repre_task_name,
+                'ext': 'json'
+            }
+        )
+        del template_data['frame']
+        profile = filter_profiles(profiles, template_data)
+
+        anatomy = Anatomy()
+        templates = anatomy.templates.get(profile['template_name'])
+        json_path = StringTemplate.format_template(templates['path'], template_data)
+
+        json_content = load_content(json_path, self.log)
+        apply_intervals(json_content, comp_id, stub, self.log)
 
     @staticmethod
     def notify_import_result(message):
@@ -251,8 +303,8 @@ class FileLoader(api.AfterEffectsLoader):
         # Convert into a Path object
         path = Path(path)
         is_psd = path.suffix == '.psd'
-
-        path_str = str(path.resolve())
+        path = str(path.resolve())
+        parent_folder = stub.get_item_parent(layer.id)
 
         if is_psd:
             project_name = context.get('project', {}).get('name', None)
@@ -262,13 +314,16 @@ class FileLoader(api.AfterEffectsLoader):
             if auto_clic:
                 auto_clic_thread = self.trigger_auto_clic_thread(load_settings.get('attempts_number', 3))
 
-                result = stub.replace_item(layer.id, path_str, stub.LOADED_ICON + layer_name)
+                result = stub.replace_item(layer.id, path, stub.LOADED_ICON + layer_name)
 
                 auto_clic_thread.join()
 
                 # If result is an empty string, it means that everything went well
                 if result == '':
                     self.notify_import_result("Import has ended with success !")
+
+        else:
+            stub.replace_item(layer.id, path, stub.LOADED_ICON + layer_name)
 
         stub.imprint(
             layer.id,

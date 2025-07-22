@@ -113,6 +113,85 @@ function getActiveDocumentFullName(){
 }
 
 
+function getLayerAttributesNames(layer_id){
+    /**
+     * Return all existing attributes for layer with given id OR selected layer.
+     *
+     * Args:
+     *      layer_id (str): layer identifier
+     * Returns:
+     *      list of attributes
+     */
+
+    var layer = app.project.layerByID(layer_id);
+    properties = [];
+
+    _traverseProperties(layer, properties);
+
+    return _prepareSingleValue(properties);
+}
+
+function _traverseProperties(propGroup, given_properties) {
+    property_index = 0
+    for (var i = 1; i <= propGroup.numProperties; i++) {
+        var prop = propGroup.property(i);
+        new_property = {
+            "name": prop.name,
+            "marker": prop.isTimeVarying,
+            "index": i
+        }
+        given_properties.push(new_property);
+        if (prop instanceof PropertyGroup) {
+            new_property['properties'] = []
+            _traverseProperties(prop, new_property['properties']);
+        }
+    }
+}
+
+function applyExposure(effect_layer_name, effect_layer_parent_name, target_layer_id, target_property_index_hierarchy){
+    /**
+     * Apply exposure on layer property from given effect layer.
+     *
+     * Args:
+     *      effect_layer_name (int): layer effect name used as target in expression
+     *      effect_layer_parent_name (int): parent name of previous layer effect
+     *      target_layer_id (int): id from layer on which to apply expression
+     *      target_property_name (str): property on which to apply expression
+     */
+
+     app.beginUndoGroup("Apply exposure");
+
+    try{
+        target_layer = app.project.layerByID(target_layer_id)
+        if (target_layer === null){ return _prepareError("Couldn't find layer with id " + target_layer_id) }
+
+        var property = target_layer
+        while(target_property_index_hierarchy.length){
+            property = property.property(target_property_index_hierarchy.shift())
+        }
+
+        property.expression =
+	    'TARGET = comp("' + effect_layer_parent_name + '").layer("' + effect_layer_name  + '");\n' +
+        'NEAREST_KEY_TIME = TARGET.marker.nearestKey(time).time;\n' +
+        'NEAREST_KEY_INDEX = TARGET.marker.nearestKey(time).index;\n' +
+        'PREVIOUS_KEY_INDEX = TARGET.marker.nearestKey(time).index-1;\n' +
+        'NEW_TIME = 0;\n' +
+        'try{\n' +
+        '   if (NEAREST_KEY_TIME>time) INDEX = PREVIOUS_KEY_INDEX;\n' +
+        '   else INDEX = NEAREST_KEY_INDEX;\n' +
+        '   NEW_TIME = TARGET.timeRemap.key(INDEX).time;\n' +
+        '}catch(err){0};\n' +
+        'valueAtTime(NEW_TIME)'
+
+    } catch (e){
+        return _prepareError("Couldn't apply expression on layer named " + target_layer.name);
+    }
+
+    app.endUndoGroup();
+    return _prepareSingleValue(true)
+
+}
+
 function addItem(name, item_type){
     /**
      * Adds comp or folder to project items.
@@ -139,6 +218,33 @@ function addItem(name, item_type){
 }
 
 function getItems(comps, folders, footages){
+    /**
+     * Returns JSON representation of compositions and
+     * if 'collectLayers' then layers in comps too.
+     *
+     * Args:
+     *     comps (bool): return selected compositions
+     *     folders (bool): return folders
+     *     footages (bool): return FootageItem
+     * Returns:
+     *     (list) of JSON items
+     */
+    var items = []
+    for (i = 1; i <= app.project.items.length; ++i){
+        var item = app.project.items[i];
+        if (!item){
+            continue;
+        }
+        var ret = _getItem(item, comps, folders, footages);
+        if (ret){
+            items.push(ret);
+        }
+    }
+    return '[' + items.join() + ']';
+
+}
+
+function getCompsWithLayers(){
     /**
      * Returns JSON representation of compositions and
      * if 'collectLayers' then layers in comps too.
@@ -208,6 +314,34 @@ function getSelectedItems(comps, folders, footages){
     return '[' + items.join() + ']';
 }
 
+function getSelectedLayers(){
+    /**
+     * Returns list of selected layers in timeline
+     *
+     * Returns:
+     *     (list) of JSON items
+     */
+    retrieved_layers = []
+    for (var i=0; i<app.project.activeItem.selectedLayers.length; i++){
+        layer = app.project.activeItem.selectedLayers[i]
+
+        if (layer instanceof FolderItem){ item_type = 'folder'; }
+        else if (layer instanceof FootageItem){ item_type = 'footage'; }
+        else if (layer instanceof CompItem){ item_type = 'comp'; }
+        else { item_type = undefined; }
+
+        retrieved_layers.push(
+            {
+                "name": layer.name,
+                "id": layer.id,
+                "type": item_type,
+            }
+        );
+    }
+
+    return _prepareSingleValue(retrieved_layers)
+}
+
 function _getItem(item, comps, folders, footages){
     /**
      * Auxiliary function as project items and selections
@@ -250,6 +384,54 @@ function _getItem(item, comps, folders, footages){
                 "path": path,
                 "containing_comps": containing_comps};
     return JSON.stringify(item);
+}
+
+function getActiveCompWithInnerLayers(depth){
+    retrieved_comps = [];
+
+    item = app.project.activeItem;
+    if (item instanceof FootageItem || item instanceof FolderItem){ return;  }
+    comp = {
+        "name": item.name,
+        "id": item.id,
+        "markers": item.markerProperty.numKeys > 0,
+        "type": "comp",
+        "layers": []
+    };
+
+    retrieved_comps.push(comp);
+    _getInnerLayers(comp, item, depth, 0);
+
+    return JSON.stringify(retrieved_comps);
+}
+
+function _getInnerLayers(previousComp, item, depth, recursive_level){
+    if (depth >= 0 && recursive_level >= depth){ return; }
+    recursive_level++;
+
+    for (var j=1; j<=item.numLayers; j++){
+        layer = item.layer(j);
+        retrievedItem = {
+            "name": layer.name,
+            "id": layer.id,
+            "markers": layer.property("Marker").numKeys > 0
+        };
+        previousComp['layers'].push(retrievedItem);
+
+        if(layer.source instanceof CompItem){
+            retrievedItem['type'] = "comp";
+            retrievedItem['layers'] = [];
+            _getInnerLayers(retrievedItem, layer.source, depth, recursive_level);
+        }
+        else if(layer.source instanceof FootageItem){
+            retrievedItem['type'] = "footage";
+            retrievedItem['layers'] = [];
+        }
+        else if(layer.source instanceof FolderItem){
+            retrievedItem['type'] = "folder";
+            retrievedItem['layers'] = [];
+        }
+    }
 }
 
 function importFile(path, item_name, import_options){
@@ -1261,6 +1443,62 @@ function reloadBackground(comp_id, composition_name, files_to_import){
 
     return JSON.stringify(item);
 }
+
+
+function addMarkerToLayer(compId, layerName, frameNumber) {
+    try {
+
+        var comp = app.project.itemByID(compId)
+        if (!comp) {
+			alert('no comp')
+            throw new Error("Composition with id " + compId + " can not be found.");
+        }
+
+        var layer = _getLayerByName(comp, layerName);
+
+		var timeInSeconds = frameNumber / comp.frameRate;
+        if (_timeOutsideLayerBoundaries(timeInSeconds, layer)) {
+            throw new Error("Frame with number " + frameNumber + " is outside of layer boundaries.");
+        }
+
+        layer.marker.setValueAtTime(timeInSeconds, new MarkerValue(''));
+
+        if (!layer.canSetTimeRemapEnabled) {
+            throw Error("Layer named " + layer.name + " can not have time remap.")
+        }
+
+        layer.timeRemapEnabled = true;
+        var remap = layer.property("ADBE Time Remapping");
+        remap.setValueAtTime(timeInSeconds, remap.valueAtTime(timeInSeconds, false));
+
+    } catch (error) {
+        return _prepareError(error.toString());
+    }
+    return _prepareSingleValue("Marker applied at frame " + frameNumber + " on layer " + layerName + ".")
+}
+
+
+function _getLayerByName(comp, layerName){
+	var layer = null;
+	for (var j = 1; j <= comp.numLayers; j++) {
+		if (comp.layer(j).name === layerName) {
+			layer = comp.layer(j);
+			break;
+		}
+	}
+
+	if (!layer) {
+		throw new Error("Calque '" + layerName + "' introuvable dans la composition");
+	}
+
+	return layer;
+}
+
+
+function _timeOutsideLayerBoundaries(timeInSeconds, layer){
+	return (timeInSeconds < layer.inPoint || timeInSeconds > layer.outPoint)
+}
+
 
 function _get_file_name(file_url){
     /**

@@ -1,0 +1,272 @@
+INFO: Collected project context
+Project: PIPE_3D_RD_24_192
+Asset: wizzard
+Task: 3D_Rig
+DEBUG: collected instance: {'family': 'camera', 'name': 'camera3D_RigMain', 'subset': 'camera3D_RigMain', 'asset': 'wizzard', 'task': '3D_Rig', 'label': 'camera3D_RigMain', 'families': [], 'representations': [], 'thumbnailSource': None, 'id': 'pyblish.avalon.instance', 'active': True, 'creator_identifier': 'io.quadpype.creators.blender.camera', 'variant': 'Main', 'instance_id': '1c8e0756-5860-45e0-8c2b-c672d4ae0131', 'creator_attributes': {'frameStart': 1, 'frameEnd': 200, 'handleStart': 0, 'handleEnd': 0}, 'publish_attributes': {'CollectSlackFamilies': {'additional_message': ''}, 'ValidateFrameRange': {'active': True}, 'ExtractBlend': {'active': True}, 'ExtractCameraABC': {'active': True}}, 'transientData': {'instance_node': bpy.data.collections['wizzard_camera3D_RigMain']}}
+DEBUG: parsing data: OrderedDict([('id', 'pyblish.avalon.instance'), ('family', 'camera'), ('subset', 'camera3D_RigMain'), ('active', True), ('creator_identifier', 'io.quadpype.creators.blender.camera'), ('variant', 'Main'), ('asset', 'wizzard'), ('task', '3D_Rig'), ('instance_id', '1c8e0756-5860-45e0-8c2b-c672d4ae0131'), ('creator_attributes', {'frameStart': 1, 'frameEnd': 200, 'handleStart': 0, 'handleEnd': 0}), ('publish_attributes', {'CollectSlackFamilies': {'additional_message': ''}, 'ValidateFrameRange': {'active': True}, 'ExtractBlend': {'active': True}, 'ExtractCameraABC': {'active': True}})])
+DEBUG: collected instance: {'family': 'workfile', 'name': 'workfile3D_Rig', 'subset': 'workfile3D_Rig', 'asset': 'wizzard', 'task': '3D_Rig', 'label': 'workfile3D_Rig', 'families': [], 'representations': [], 'thumbnailSource': None, 'id': 'pyblish.avalon.instance', 'active': True, 'creator_identifier': 'io.quadpype.creators.blender.workfile', 'variant': '3D_Rig', 'instance_id': '8a538862-ee0a-40ea-ad5e-6e7a1810b7c0', 'creator_attributes': {}, 'publish_attributes': {'CollectSlackFamilies': {'additional_message': ''}}, 'transientData': {'instance_node': bpy.data.collections['AVALON_CONTAINERS']}}
+DEBUG: parsing data: OrderedDict([('id', 'pyblish.avalon.instance'), ('family', 'workfile'), ('subset', 'workfile3D_Rig'), ('active', True), ('creator_identifier', 'io.quadpype.creators.blender.workfile'), ('variant', '3D_Rig'), ('task', '3D_Rig'), ('asset', 'wizzard'), ('instance_id', '8a538862-ee0a-40ea-ad5e-6e7a1810b7c0'), ('creator_attributes', {}), ('publish_attributes', {'CollectSlackFamilies': {'additional_message': ''}})])
+INFO: Machine name: z52
+DEBUG: *** QuadPype Add-ons initialization.
+DEBUG: [X] WebServerModule
+DEBUG: [X] AfterEffectsAddon
+DEBUG: [X] BlenderAddon
+DEBUG: [X] CelactionAddon
+DEBUG: [X] FlameAddon
+DEBUG: [X] FusionAddon
+DEBUG: [X] HarmonyAddon
+DEBUG: [X] HieroAddon
+DEBUG: [X] HoudiniAddon
+DEBUG: [X] MaxAddon
+DEBUG: [X] MayaAddon
+DEBUG: [X] NukeAddon
+DEBUG: [X] OpenRVAddon
+DEBUG: [X] PhotoshopAddon
+DEBUG: [X] ResolveAddon
+DEBUG: [ ] StandAlonePublishAddon
+DEBUG: [X] SubstanceAddon
+DEBUG: [X] TrayPublishAddon
+DEBUG: [X] TVPaintAddon
+DEBUG: [X] WebpublisherAddon
+DEBUG: [ ] AssetReporterAction
+DEBUG: [X] AvalonModule
+DEBUG: [ ] ClockifyModule
+DEBUG: [ ] DeadlineModule
+DEBUG: [ ] FtrackModule
+DEBUG: [X] JobQueueModule
+DEBUG: [ ] KitsuModule
+DEBUG: [X] LauncherAction
+DEBUG: [X] LogViewModule
+DEBUG: [ ] ProjectManagerAction
+DEBUG: [X] PythonInterpreterAction
+DEBUG: [X] ControlPanelAction
+DEBUG: [X] UserSettingsAction
+DEBUG: [ ] ShotgridModule
+DEBUG: [X] SlackIntegrationModule
+DEBUG: [ ] SyncServerModule
+DEBUG: [ ] TimersManager
+DEBUG: [X] QuadStudioAddon
+DEBUG: [X] EventHandlerModule
+DEBUG: Has 29 enabled modules.
+DEBUG: *** QuadPype Add-ons initialization.
+DEBUG: [X] WebServerModule
+DEBUG: [X] AfterEffectsAddon
+DEBUG: [X] BlenderAddon
+DEBUG: [X] CelactionAddon
+DEBUG: [X] FlameAddon
+DEBUG: [X] FusionAddon
+DEBUG: [X] HarmonyAddon
+DEBUG: [X] HieroAddon
+DEBUG: [X] HoudiniAddon
+DEBUG: [X] MaxAddon
+DEBUG: [X] MayaAddon
+DEBUG: [X] NukeAddon
+DEBUG: [X] OpenRVAddon
+DEBUG: [X] PhotoshopAddon
+DEBUG: [X] ResolveAddon
+DEBUG: [ ] StandAlonePublishAddon
+DEBUG: [X] SubstanceAddon
+DEBUG: [X] TrayPublishAddon
+DEBUG: [X] TVPaintAddon
+DEBUG: [X] WebpublisherAddon
+DEBUG: [ ] AssetReporterAction
+DEBUG: [X] AvalonModule
+DEBUG: [ ] ClockifyModule
+DEBUG: [ ] DeadlineModule
+DEBUG: [ ] FtrackModule
+DEBUG: [X] JobQueueModule
+DEBUG: [ ] KitsuModule
+DEBUG: [X] LauncherAction
+DEBUG: [X] LogViewModule
+DEBUG: [ ] ProjectManagerAction
+DEBUG: [X] PythonInterpreterAction
+DEBUG: [X] ControlPanelAction
+DEBUG: [X] UserSettingsAction
+DEBUG: [ ] ShotgridModule
+DEBUG: [X] SlackIntegrationModule
+DEBUG: [ ] SyncServerModule
+DEBUG: [ ] TimersManager
+DEBUG: [X] QuadStudioAddon
+DEBUG: [X] EventHandlerModule
+DEBUG: Has 29 enabled modules.
+DEBUG: Anatomy object collected for project "PIPE_3D_RD_24_192".
+DEBUG: Collected Project "{'_id': ObjectId('67505fc37439d23d6a730514'), 'type': 'project', 'name': 'PIPE_3D_RD_24_192', 'data': {'code': 'pipe_3d_rd_24_192', 'library_project': False, 'active': True, 'clipIn': 1, 'clipOut': 1, 'fps': 24.0, 'frameEnd': 200, 'frameStart': 1, 'handleEnd': 0, 'handleStart': 0, 'pixelAspect': 1.0, 'resolutionHeight': 1442, 'resolutionWidth': 2366, 'tools_env': ['mtoa_maya_windows/5-2-1-1', 'kentools/2022-1-1', 'maya-usd/0-17-0', 'nukeshared_global/1-0', 'opticalflares/1-0-9'], 'zou_id': 'c3ed1895-e8e3-4467-b7a6-ffd4ce124042'}, 'schema': 'quadpype:project-3.0', 'config': {'apps': [{'name': 'photoshop/2023'}, {'name': 'nuke/14-0'}, {'name': 'blender/4-1'}, {'name': 'aftereffects/2023'}, {'name': 'maya/2023'}, {'name': 'tvpaint/11-5'}], 'imageio': {'hiero': {'workfile': {'ocioConfigName': 'nuke-default', 'ocioconfigpath': {'windows': [], 'darwin': [], 'linux': []}, 'workingSpace': 'linear', 'sixteenBitLut': 'sRGB', 'eightBitLut': 'sRGB', 'floatLut': 'linear', 'logLut': 'Cineon', 'viewerLut': 'sRGB', 'thumbnailLut': 'sRGB'}, 'regexInputs': {'inputs': [{'regex': '[^-a-zA-Z0-9](plateRef).*(?=mp4)', 'colorspace': 'sRGB'}]}}, 'nuke': {'viewer': {'viewerProcess': 'sRGB'}, 'baking': {'viewerProcess': 'rec709'}, 'workfile': {'colorManagement': 'Nuke', 'OCIO_config': 'nuke-default', 'customOCIOConfigPath': {'windows': [], 'darwin': [], 'linux': []}, 'workingSpaceLUT': 'linear', 'monitorLut': 'sRGB', 'int8Lut': 'sRGB', 'int16Lut': 'sRGB', 'logLut': 'Cineon', 'floatLut': 'linear'}, 'nodes': {'requiredNodes': [{'plugins': ['CreateWriteRender'], 'nukeNodeClass': 'Write', 'knobs': [{'type': 'text', 'name': 'file_type', 'value': 'exr'}, {'type': 'text', 'name': 'datatype', 'value': '16 bit half'}, {'type': 'text', 'name': 'compression', 'value': 'Zip (1 scanline)'}, {'type': 'bool', 'name': 'autocrop', 'value': True}, {'type': 'color_gui', 'name': 'tile_color', 'value': [186, 35, 35, 255]}, {'type': 'text', 'name': 'channels', 'value': 'rgb'}, {'type': 'text', 'name': 'colorspace', 'value': 'linear'}, {'type': 'bool', 'name': 'create_directories', 'value': True}]}, {'plugins': ['CreateWritePrerender'], 'nukeNodeClass': 'Write', 'knobs': [{'type': 'text', 'name': 'file_type', 'value': 'exr'}, {'type': 'text', 'name': 'datatype', 'value': '16 bit half'}, {'type': 'text', 'name': 'compression', 'value': 'Zip (1 scanline)'}, {'type': 'bool', 'name': 'autocrop', 'value': True}, {'type': 'color_gui', 'name': 'tile_color', 'value': [171, 171, 10, 255]}, {'type': 'text', 'name': 'channels', 'value': 'rgb'}, {'type': 'text', 'name': 'colorspace', 'value': 'linear'}, {'type': 'bool', 'name': 'create_directories', 'value': True}]}, {'plugins': ['CreateWriteImage'], 'nukeNodeClass': 'Write', 'knobs': [{'type': 'text', 'name': 'file_type', 'value': 'tiff'}, {'type': 'text', 'name': 'datatype', 'value': '16 bit'}, {'type': 'text', 'name': 'compression', 'value': 'Deflate'}, {'type': 'color_gui', 'name': 'tile_color', 'value': [56, 162, 7, 255]}, {'type': 'text', 'name': 'channels', 'value': 'rgb'}, {'type': 'text', 'name': 'colorspace', 'value': 'sRGB'}, {'type': 'bool', 'name': 'create_directories', 'value': True}]}], 'overrideNodes': []}, 'regexInputs': {'inputs': [{'regex': '(beauty).*(?=.exr)', 'colorspace': 'linear'}]}}, 'maya': {'colorManagementPreference_v2': {'enabled': True, 'configFilePath': {'windows': [], 'darwin': [], 'linux': []}, 'renderSpace': 'ACEScg', 'displayName': 'sRGB', 'viewName': 'ACES 1.0 SDR-video'}, 'colorManagementPreference': {'configFilePath': {'windows': [], 'darwin': [], 'linux': []}, 'renderSpace': 'scene-linear Rec 709/sRGB', 'viewTransform': 'sRGB gamma'}}, 'flame': {'project': {'colourPolicy': 'ACES 1.1', 'frameDepth': '16-bit fp', 'fieldDominance': 'PROGRESSIVE'}, 'profilesMapping': {'inputs': [{'flameName': 'ACEScg', 'ocioName': 'ACES - ACEScg'}, {'flameName': 'Rec.709 video', 'ocioName': 'Output - Rec.709'}]}}}, 'roots': {'work': {'windows': 'L:/2024', 'darwin': '/prod/prod2/Projets/2024', 'linux': '/prod/prod2/Projets/2024'}, 'resources': {'windows': 'L:/RESSOURCES', 'darwin': '', 'linux': ''}, 'project': {'windows': 'L:/2024/{project[name]}', 'darwin': '', 'linux': ''}}, 'tasks': {'3D_Model': {'short_name': ''}, '3D_Rig': {'short_name': ''}, '3D_Surface': {'short_name': ''}, 'Anim_3D': {'short_name': ''}, 'CFXSim_3D': {'short_name': ''}, 'COMPOSITING': {'short_name': ''}, 'Compositing': {'short_name': ''}, 'Concept': {'short_name': ''}, 'FX_3D': {'short_name': ''}, 'Layout_3D': {'short_name': ''}, 'Lighting_3D': {'short_name': ''}}, 'templates': {'defaults': {'version_padding': 3, 'version': 'v{version:0>{@version_padding}}', 'frame_padding': 4, 'frame': '{frame:0>{@frame_padding}}'}, 'work': {'folder': '{root[work]}/{project[name]}/{hierarchy}/{asset}/work/{task[name]}', 'file': '{asset}_{task[name]}_{@version}<_{comment}>.{ext}', 'path': '{@folder}/{@file}'}, 'render': {'folder': '{root[work]}/{project[name]}/{hierarchy}/{asset}/publish/{family}/{subset}/{@version}', 'file': '{asset}_{subset}_{@version}<_{output}><.{@frame}>.{ext}', 'path': '{@folder}/{@file}'}, 'publish': {'folder': '{root[work]}/{project[name]}/{hierarchy}/{asset}/publish/{family}/{subset}/{@version}', 'file': '{asset}_{subset}_{@version}<_{output}><.{@frame}><_{udim}>.{ext}', 'path': '{@folder}/{@file}', 'thumbnail': '{thumbnail_root}/{project[name]}/{_id}_{thumbnail_type}.{ext}'}, 'hero': {'folder': '{root[work]}/{project[name]}/{hierarchy}/{asset}/publish/{family}/{subset}/hero', 'file': '{asset}_{subset}_hero<_{output}><.{frame}>.{ext}', 'path': '{@folder}/{@file}'}, 'delivery': {}, 'others': {'maya2unreal': {'folder': '{root[work]}/{project[name]}/{hierarchy}/{asset}/publish/{family}', 'file': '{subset}_{@version}<_{output}><.{@frame}>.{ext}', 'path': '{@folder}/{@file}'}, 'simpleUnrealTextureHero': {'folder': '{root[work]}/{project[name]}/{hierarchy}/{asset}/publish/{family}/hero', 'file': '{originalBasename}.{ext}', 'path': '{@folder}/{@file}'}, 'simpleUnrealTexture': {'folder': '{root[work]}/{project[name]}/{hierarchy}/{asset}/publish/{family}/{@version}', 'file': '{originalBasename}_{@version}.{ext}', 'path': '{@folder}/{@file}'}, 'online': {'folder': '{root[work]}/{project[name]}/{hierarchy}/{asset}/publish/{family}/{subset}/{@version}', 'file': '{originalBasename}<.{@frame}><_{udim}>.{ext}', 'path': '{@folder}/{@file}'}, 'source': {'folder': '{root[work]}/{originalDirname}', 'file': '{originalBasename}.{ext}', 'path': '{@folder}/{@file}'}, 'transient': {'folder': '{root[work]}/{project[name]}/{hierarchy}/{asset}/work/{family}/{subset}'}, 'deadline_render': {'folder': '{root[work]}/{project[name]}/{hierarchy}/{asset}/publish/3D_exports/render/render{task[name]}Main', 'global_output': '{@folder}/_temp/{project[code]}_{asset}_temp.', 'node_output': '{@folder}/{render_layer_name}/{@version}/{asset}_{render_layer_name}_{@version}.'}, 'playblast': {'folder': '{root[work]}/{project[name]}/{hierarchy}/{asset}/publish/3D_exports/playblast/playblast{task[name]}Main', 'file': '{asset}_playblast{task[name]}Main_{@version}.{ext}', 'path': '{@folder}/{@version}/{@file}'}, '2d_asset_work': {'folder': '{root[work]}/{project[name]}/02_FILM/Assets/2D/{parent}/{asset}/{task[name]}/work', 'file': '{asset}_{task[name]}_{@version}<_{comment}>.{ext}', 'path': '{@folder}/{@file}'}, '2d_asset_publish': {'folder': '{root[work]}/{project[name]}/02_FILM/Assets/2D/{parent}/{asset}/{task[name]}/publish/{family}/{subset}/{@version}/{ext}', 'file': '{asset}_{subset}_{@version}<_{output}><.{@frame}><_{udim}>.{ext}', 'path': '{@folder}/{@file}', 'thumbnail': '{thumbnail_root}/{project[name]}/{_id}_{thumbnail_type}.{ext}'}, '2d_asset_work_publish': {'folder': '{root[work]}/{project[name]}/02_FILM/Assets/2D/{parent}/{asset}/{task[name]}/publish/{family}/{subset}/{@version}', 'file': '{asset}_{subset}_{@version}.{ext}', 'path': '{@folder}/{@file}'}, '2d_asset_hero': {'folder': '{root[work]}/{project[name]}/02_FILM/Assets/2D/{parent}/{asset}/{task[name]}/publish/{family}/{subset}/hero/{ext}', 'file': '{asset}_{subset}_hero<.{frame}>.{ext}', 'path': '{@folder}/{@file}'}, '3d_asset_work': {'folder': '{root[work]}/{project[name]}/02_FILM/Assets/3D/{parent}/{asset}/{task[name]}/work', 'file': '{asset}_{task[name]}_{@version}<_{comment}>.{ext}', 'path': '{@folder}/{@file}'}, '3d_asset_publish': {'folder': '{root[work]}/{project[name]}/02_FILM/Assets/3D/{parent}/{asset}/{task[name]}/publish/{family}/{subset}/{@version}/{ext}', 'file': '{asset}_{subset}_{@version}.{ext}', 'path': '{@folder}/{@file}'}, '3d_asset_work_and_render_publish': {'folder': '{root[work]}/{project[name]}/02_FILM/Assets/3D/{parent}/{asset}/{task[name]}/publish/{family}/{subset}/{@version}', 'file': '{asset}_{subset}_{@version}<_{output}><.{@frame}>.{ext}', 'path': '{@folder}/{@file}'}, '3d_asset_hero': {'folder': '{root[work]}/{project[name]}/02_FILM/Assets/3D/{parent}/{asset}/{task[name]}/publish/{family}/{subset}/hero', 'file': '{asset}_{subset}_hero.{ext}', 'path': '{@folder}/{@file}'}, '2d_shot_work': {'folder': '{root[work]}/{project[name]}/02_FILM/{hierarchy}/{asset}/work/2D_ANIM/{task[name]}', 'file': '{asset}_{task[name]}_{@version}<_{comment}>.{ext}', 'path': '{@folder}/{@file}'}, '3d_shot_work': {'folder': '{root[work]}/{project[name]}/02_FILM/{hierarchy}/{asset}/work/3D/{task[name]}', 'file': '{asset}_{task[name]}_{@version}<_{comment}>.{ext}', 'path': '{@folder}/{@file}'}, 'shot_work_publish': {'folder': '{root[work]}/{project[name]}/02_FILM/{hierarchy}/{asset}/publish/{family}/{task[name]}/{subset}/{@version}', 'file': '{asset}_{subset}_{@version}.{ext}', 'path': '{@folder}/{@file}'}, '2d_shot_publish': {'folder': '{root[work]}/{project[name]}/{hierarchy}/02_FILM/{asset}/publish/2D_exports/{task[name]}/{subset}/{@version}/{ext}', 'file': '{asset}_{subset}_{@version}<_{output}><.{@frame}><_{udim}>.{ext}', 'path': '{@folder}/{@file}'}, '3d_shot_publish': {'folder': '{root[work]}/{project[name]}/{hierarchy}/02_FILM/{asset}/publish/3D_exports/{family}/{subset}/{@version}/{ext}', 'file': '{asset}_{subset}_{@version}<_{output}><.{@frame}><_{udim}>.{ext}', 'path': '{@folder}/{@file}'}, 'compositing_work': {'folder': '{root[work]}/{project[name]}/{hierarchy}/02_FILM/{asset}/work/{task[name]}', 'file': '{asset}_{task[name]}_{@version}<_{comment}>.{ext}', 'path': '{@folder}/{@file}'}, 'compositing_publish': {'folder': '{root[work]}/{project[name]}/{hierarchy}/02_FILM/{asset}/publish/{task[name]}/{@version}/{ext}', 'file': '{asset}_{subset}_{@version}<_{output}><.{@frame}><_{udim}>.{ext}', 'path': '{@folder}/{@file}'}, '3d_shot_render_publish': {'folder': '{root[work]}/{project[name]}/{hierarchy}/02_FILM/{asset}/publish/3D_exports/{family}/{subset}', 'global_output': '{@folder}/_temp/{project[code]}_{asset}_temp.', 'node_output': '{@folder}/{render_layer_name}/{@version}/{asset}_{render_layer_name}_{@version}.'}, '__dynamic_keys_labels__': {'maya2unreal': 'Maya to Unreal', 'simpleUnrealTextureHero': 'Simple Unreal Texture - Hero', 'simpleUnrealTexture': 'Simple Unreal Texture', 'online': 'online', 'source': 'source', 'transient': 'transient', 'deadline_render': 'Deadline_Render', 'playblast': 'Playblast'}}}}}"
+DEBUG: Collected Asset "{'_id': ObjectId('67505fc57439d23d6a73051d'), 'name': 'wizzard', 'type': 'asset', 'schema': 'quadpype:asset-3.0', 'data': {'zou': {'id': 'd57274bb-8c7b-4817-a330-c40a435a64e5', 'name': 'wizzard', 'code': None, 'description': '', 'shotgun_id': None, 'canceled': False, 'nb_frames': None, 'nb_entities_out': 0, 'is_casting_standby': False, 'is_shared': False, 'status': 'running', 'project_id': 'c3ed1895-e8e3-4467-b7a6-ffd4ce124042', 'entity_type_id': '6a89758f-d3df-4e1f-801f-ad90c0d574d5', 'parent_id': None, 'source_id': None, 'preview_file_id': '3e0ce0de-68f0-48f5-a830-b0f4d76e5087', 'data': {}, 'ready_for': None, 'created_by': '084e20c6-c52a-45a3-8697-565b909b088a', 'created_at': '2024-08-28T14:59:32', 'updated_at': '2024-09-09T08:15:31', 'type': 'Asset'}, 'tasks': {'3D_Model': {'type': '3D_Model', 'zou': {'name': 'main', 'description': None, 'priority': 0, 'difficulty': 3, 'duration': 0.0, 'estimation': 0.0, 'completion_rate': 0, 'retake_count': 0, 'sort_order': 0, 'start_date': None, 'due_date': None, 'real_start_date': None, 'end_date': '2024-10-10T12:27:28', 'done_date': '2024-09-04T08:43:00', 'last_comment_date': '2024-10-10T12:40:17', 'nb_assets_ready': 0, 'data': None, 'shotgun_id': None, 'last_preview_file_id': 'a3ea79d8-23cc-409a-9949-207eff62f54d', 'project_id': 'c3ed1895-e8e3-4467-b7a6-ffd4ce124042', 'task_type_id': 'a633cee2-7040-4386-ab03-e3628f15601a', 'task_status_id': '60199345-e7b8-48c9-8c7f-e16f1f8ba61a', 'entity_id': 'd57274bb-8c7b-4817-a330-c40a435a64e5', 'assigner_id': '084e20c6-c52a-45a3-8697-565b909b088a', 'assignees': [], 'id': '2b59610e-1afc-4520-88d5-259c9974377d', 'created_at': '2024-08-28T15:00:37', 'updated_at': '2024-10-10T12:40:23', 'type': 'Task', 'entity': {'id': 'd57274bb-8c7b-4817-a330-c40a435a64e5', 'name': 'wizzard', 'code': None, 'description': '', 'shotgun_id': None, 'canceled': False, 'nb_frames': None, 'nb_entities_out': 0, 'is_casting_standby': False, 'is_shared': False, 'status': 'running', 'project_id': 'c3ed1895-e8e3-4467-b7a6-ffd4ce124042', 'entity_type_id': '6a89758f-d3df-4e1f-801f-ad90c0d574d5', 'parent_id': None, 'source_id': None, 'preview_file_id': '3e0ce0de-68f0-48f5-a830-b0f4d76e5087', 'data': {}, 'ready_for': None, 'created_by': '084e20c6-c52a-45a3-8697-565b909b088a', 'created_at': '2024-08-28T14:59:32', 'updated_at': '2024-09-09T08:15:31', 'type': 'Entity'}, 'entity_type': {'name': 'CHARA', 'short_name': None, 'description': None, 'archived': None, 'id': '6a89758f-d3df-4e1f-801f-ad90c0d574d5', 'created_at': '2021-07-31T23:05:43', 'updated_at': '2021-10-05T10:57:19', 'type': 'EntityType'}, 'is_subscribed': False, 'persons': [], 'project': {'name': 'PIPE_3D_RD_24_192', 'code': 'pipe_3d_rd_24_192', 'description': None, 'shotgun_id': None, 'file_tree': None, 'data': None, 'has_avatar': True, 'fps': '24', 'ratio': '16:9', 'resolution': '2366x1442', 'production_type': 'short', 'production_style': '2d3d', 'start_date': '2024-08-12', 'end_date': '2026-08-12', 'man_days': None, 'nb_episodes': 0, 'episode_span': 0, 'max_retakes': 0, 'is_clients_isolated': False, 'is_preview_download_allowed': True, 'is_set_preview_automated': False, 'homepage': 'shots', 'is_publish_default_for_artists': False, 'hd_bitrate_compression': None, 'ld_bitrate_compression': None, 'project_status_id': 'a6e5f983-1725-4efc-8122-0c5147c4238c', 'default_preview_background_file_id': None, 'id': 'c3ed1895-e8e3-4467-b7a6-ffd4ce124042', 'created_at': '2024-08-12T12:43:01', 'updated_at': '2024-11-21T10:10:48', 'type': 'Project'}, 'task_status': {'name': 'Waiting For Approval', 'archived': False, 'short_name': 'wfa', 'description': None, 'color': '#FF7043', 'priority': 15, 'is_done': False, 'is_artist_allowed': True, 'is_client_allowed': False, 'is_retake': False, 'is_feedback_request': True, 'is_default': False, 'shotgun_id': None, 'for_concept': False, 'id': '60199345-e7b8-48c9-8c7f-e16f1f8ba61a', 'created_at': '2021-07-31T23:05:43', 'updated_at': '2024-12-10T14:16:35', 'type': 'TaskStatus'}, 'task_type': {'name': '3D_Model', 'short_name': '', 'description': None, 'color': '#F06292', 'priority': 11, 'for_entity': 'Asset', 'allow_timelog': False, 'archived': False, 'shotgun_id': None, 'department_id': '0404cf29-3f34-43d2-86f1-839617f95682', 'id': 'a633cee2-7040-4386-ab03-e3628f15601a', 'created_at': '2021-07-31T23:05:43', 'updated_at': '2024-11-25T16:08:11', 'type': 'TaskType'}, 'assigner': {'first_name': 'Hugo', 'last_name': 'Garnier', 'email': 'garnierhugo@gmail.com', 'phone': '', 'contract_type': 'open-ended', 'active': True, 'archived': None, 'last_presence': None, 'desktop_login': '', 'login_failed_attemps': None, 'last_login_failed': None, 'totp_enabled': None, 'email_otp_enabled': None, 'fido_enabled': None, 'preferred_two_factor_authentication': None, 'shotgun_id': None, 'timezone': 'Europe/Paris', 'locale': 'en_US', 'data': None, 'role': 'admin', 'has_avatar': False, 'notifications_enabled': False, 'notifications_slack_enabled': False, 'notifications_slack_userid': '', 'notifications_mattermost_enabled': False, 'notifications_mattermost_userid': '', 'notifications_discord_enabled': False, 'notifications_discord_userid': '', 'is_bot': False, 'expiration_date': None, 'departments': [], 'studio_id': None, 'is_generated_from_ldap': False, 'ldap_uid': None, 'full_name': 'Hugo Garnier', 'id': '084e20c6-c52a-45a3-8697-565b909b088a', 'created_at': '2022-04-07T15:05:58', 'updated_at': '2024-02-27T21:04:44', 'type': 'Person', 'fido_devices': []}}}, '3D_Rig': {'type': '3D_Rig', 'zou': {'name': 'main', 'description': None, 'priority': 0, 'difficulty': 3, 'duration': 0.0, 'estimation': 0.0, 'completion_rate': 0, 'retake_count': 0, 'sort_order': 0, 'start_date': None, 'due_date': None, 'real_start_date': None, 'end_date': None, 'done_date': '2024-09-04T09:35:34', 'last_comment_date': '2024-09-04T09:35:34', 'nb_assets_ready': 0, 'data': None, 'shotgun_id': None, 'last_preview_file_id': None, 'project_id': 'c3ed1895-e8e3-4467-b7a6-ffd4ce124042', 'task_type_id': 'd28976a8-fb67-41d3-a48a-56e04a6e4bcf', 'task_status_id': '4d11f0db-4a87-4779-b8a8-691f57b560e1', 'entity_id': 'd57274bb-8c7b-4817-a330-c40a435a64e5', 'assigner_id': '084e20c6-c52a-45a3-8697-565b909b088a', 'assignees': [], 'id': 'c75fac7b-a9de-4b8b-8ece-d754a8808095', 'created_at': '2024-09-04T09:14:55', 'updated_at': '2024-09-04T09:35:34', 'type': 'Task', 'entity': {'id': 'd57274bb-8c7b-4817-a330-c40a435a64e5', 'name': 'wizzard', 'code': None, 'description': '', 'shotgun_id': None, 'canceled': False, 'nb_frames': None, 'nb_entities_out': 0, 'is_casting_standby': False, 'is_shared': False, 'status': 'running', 'project_id': 'c3ed1895-e8e3-4467-b7a6-ffd4ce124042', 'entity_type_id': '6a89758f-d3df-4e1f-801f-ad90c0d574d5', 'parent_id': None, 'source_id': None, 'preview_file_id': '3e0ce0de-68f0-48f5-a830-b0f4d76e5087', 'data': {}, 'ready_for': None, 'created_by': '084e20c6-c52a-45a3-8697-565b909b088a', 'created_at': '2024-08-28T14:59:32', 'updated_at': '2024-09-09T08:15:31', 'type': 'Entity'}, 'entity_type': {'name': 'CHARA', 'short_name': None, 'description': None, 'archived': None, 'id': '6a89758f-d3df-4e1f-801f-ad90c0d574d5', 'created_at': '2021-07-31T23:05:43', 'updated_at': '2021-10-05T10:57:19', 'type': 'EntityType'}, 'is_subscribed': False, 'persons': [], 'project': {'name': 'PIPE_3D_RD_24_192', 'code': 'pipe_3d_rd_24_192', 'description': None, 'shotgun_id': None, 'file_tree': None, 'data': None, 'has_avatar': True, 'fps': '24', 'ratio': '16:9', 'resolution': '2366x1442', 'production_type': 'short', 'production_style': '2d3d', 'start_date': '2024-08-12', 'end_date': '2026-08-12', 'man_days': None, 'nb_episodes': 0, 'episode_span': 0, 'max_retakes': 0, 'is_clients_isolated': False, 'is_preview_download_allowed': True, 'is_set_preview_automated': False, 'homepage': 'shots', 'is_publish_default_for_artists': False, 'hd_bitrate_compression': None, 'ld_bitrate_compression': None, 'project_status_id': 'a6e5f983-1725-4efc-8122-0c5147c4238c', 'default_preview_background_file_id': None, 'id': 'c3ed1895-e8e3-4467-b7a6-ffd4ce124042', 'created_at': '2024-08-12T12:43:01', 'updated_at': '2024-11-21T10:10:48', 'type': 'Project'}, 'task_status': {'name': 'APPROVED', 'archived': False, 'short_name': 'DONE', 'description': None, 'color': '#22D160', 'priority': 2, 'is_done': True, 'is_artist_allowed': False, 'is_client_allowed': False, 'is_retake': False, 'is_feedback_request': False, 'is_default': False, 'shotgun_id': None, 'for_concept': False, 'id': '4d11f0db-4a87-4779-b8a8-691f57b560e1', 'created_at': '2021-08-03T15:41:38', 'updated_at': '2024-11-07T15:04:52', 'type': 'TaskStatus'}, 'task_type': {'name': '3D_Rig', 'short_name': None, 'description': None, 'color': '#999999', 'priority': 23, 'for_entity': 'Asset', 'allow_timelog': False, 'archived': False, 'shotgun_id': None, 'department_id': '0f7949ec-c5ec-4f36-85b7-02b3cafc8a1d', 'id': 'd28976a8-fb67-41d3-a48a-56e04a6e4bcf', 'created_at': '2024-09-04T09:14:30', 'updated_at': '2024-10-10T14:07:08', 'type': 'TaskType'}, 'assigner': {'first_name': 'Hugo', 'last_name': 'Garnier', 'email': 'garnierhugo@gmail.com', 'phone': '', 'contract_type': 'open-ended', 'active': True, 'archived': None, 'last_presence': None, 'desktop_login': '', 'login_failed_attemps': None, 'last_login_failed': None, 'totp_enabled': None, 'email_otp_enabled': None, 'fido_enabled': None, 'preferred_two_factor_authentication': None, 'shotgun_id': None, 'timezone': 'Europe/Paris', 'locale': 'en_US', 'data': None, 'role': 'admin', 'has_avatar': False, 'notifications_enabled': False, 'notifications_slack_enabled': False, 'notifications_slack_userid': '', 'notifications_mattermost_enabled': False, 'notifications_mattermost_userid': '', 'notifications_discord_enabled': False, 'notifications_discord_userid': '', 'is_bot': False, 'expiration_date': None, 'departments': [], 'studio_id': None, 'is_generated_from_ldap': False, 'ldap_uid': None, 'full_name': 'Hugo Garnier', 'id': '084e20c6-c52a-45a3-8697-565b909b088a', 'created_at': '2022-04-07T15:05:58', 'updated_at': '2024-02-27T21:04:44', 'type': 'Person', 'fido_devices': []}}}, '3D_Surface': {'type': '3D_Surface', 'zou': {'name': 'main', 'description': None, 'priority': 0, 'difficulty': 3, 'duration': 0.0, 'estimation': 0.0, 'completion_rate': 0, 'retake_count': 0, 'sort_order': 0, 'start_date': None, 'due_date': None, 'real_start_date': None, 'end_date': None, 'done_date': '2024-09-04T09:35:47', 'last_comment_date': '2024-09-09T08:14:46', 'nb_assets_ready': 0, 'data': None, 'shotgun_id': None, 'last_preview_file_id': '3e0ce0de-68f0-48f5-a830-b0f4d76e5087', 'project_id': 'c3ed1895-e8e3-4467-b7a6-ffd4ce124042', 'task_type_id': '2057acb8-762d-4bec-8222-184cbcf2ce9a', 'task_status_id': '4d11f0db-4a87-4779-b8a8-691f57b560e1', 'entity_id': 'd57274bb-8c7b-4817-a330-c40a435a64e5', 'assigner_id': '084e20c6-c52a-45a3-8697-565b909b088a', 'assignees': [], 'id': '47e59ef4-826d-4c6c-8d63-22b8c5afc1d4', 'created_at': '2024-09-04T09:08:53', 'updated_at': '2024-09-09T08:15:05', 'type': 'Task', 'entity': {'id': 'd57274bb-8c7b-4817-a330-c40a435a64e5', 'name': 'wizzard', 'code': None, 'description': '', 'shotgun_id': None, 'canceled': False, 'nb_frames': None, 'nb_entities_out': 0, 'is_casting_standby': False, 'is_shared': False, 'status': 'running', 'project_id': 'c3ed1895-e8e3-4467-b7a6-ffd4ce124042', 'entity_type_id': '6a89758f-d3df-4e1f-801f-ad90c0d574d5', 'parent_id': None, 'source_id': None, 'preview_file_id': '3e0ce0de-68f0-48f5-a830-b0f4d76e5087', 'data': {}, 'ready_for': None, 'created_by': '084e20c6-c52a-45a3-8697-565b909b088a', 'created_at': '2024-08-28T14:59:32', 'updated_at': '2024-09-09T08:15:31', 'type': 'Entity'}, 'entity_type': {'name': 'CHARA', 'short_name': None, 'description': None, 'archived': None, 'id': '6a89758f-d3df-4e1f-801f-ad90c0d574d5', 'created_at': '2021-07-31T23:05:43', 'updated_at': '2021-10-05T10:57:19', 'type': 'EntityType'}, 'is_subscribed': False, 'persons': [], 'project': {'name': 'PIPE_3D_RD_24_192', 'code': 'pipe_3d_rd_24_192', 'description': None, 'shotgun_id': None, 'file_tree': None, 'data': None, 'has_avatar': True, 'fps': '24', 'ratio': '16:9', 'resolution': '2366x1442', 'production_type': 'short', 'production_style': '2d3d', 'start_date': '2024-08-12', 'end_date': '2026-08-12', 'man_days': None, 'nb_episodes': 0, 'episode_span': 0, 'max_retakes': 0, 'is_clients_isolated': False, 'is_preview_download_allowed': True, 'is_set_preview_automated': False, 'homepage': 'shots', 'is_publish_default_for_artists': False, 'hd_bitrate_compression': None, 'ld_bitrate_compression': None, 'project_status_id': 'a6e5f983-1725-4efc-8122-0c5147c4238c', 'default_preview_background_file_id': None, 'id': 'c3ed1895-e8e3-4467-b7a6-ffd4ce124042', 'created_at': '2024-08-12T12:43:01', 'updated_at': '2024-11-21T10:10:48', 'type': 'Project'}, 'task_status': {'name': 'APPROVED', 'archived': False, 'short_name': 'DONE', 'description': None, 'color': '#22D160', 'priority': 2, 'is_done': True, 'is_artist_allowed': False, 'is_client_allowed': False, 'is_retake': False, 'is_feedback_request': False, 'is_default': False, 'shotgun_id': None, 'for_concept': False, 'id': '4d11f0db-4a87-4779-b8a8-691f57b560e1', 'created_at': '2021-08-03T15:41:38', 'updated_at': '2024-11-07T15:04:52', 'type': 'TaskStatus'}, 'task_type': {'name': '3D_Surface', 'short_name': None, 'description': None, 'color': '#999999', 'priority': 22, 'for_entity': 'Asset', 'allow_timelog': False, 'archived': False, 'shotgun_id': None, 'department_id': '0f7949ec-c5ec-4f36-85b7-02b3cafc8a1d', 'id': '2057acb8-762d-4bec-8222-184cbcf2ce9a', 'created_at': '2024-09-04T09:08:23', 'updated_at': '2024-10-10T14:07:08', 'type': 'TaskType'}, 'assigner': {'first_name': 'Hugo', 'last_name': 'Garnier', 'email': 'garnierhugo@gmail.com', 'phone': '', 'contract_type': 'open-ended', 'active': True, 'archived': None, 'last_presence': None, 'desktop_login': '', 'login_failed_attemps': None, 'last_login_failed': None, 'totp_enabled': None, 'email_otp_enabled': None, 'fido_enabled': None, 'preferred_two_factor_authentication': None, 'shotgun_id': None, 'timezone': 'Europe/Paris', 'locale': 'en_US', 'data': None, 'role': 'admin', 'has_avatar': False, 'notifications_enabled': False, 'notifications_slack_enabled': False, 'notifications_slack_userid': '', 'notifications_mattermost_enabled': False, 'notifications_mattermost_userid': '', 'notifications_discord_enabled': False, 'notifications_discord_userid': '', 'is_bot': False, 'expiration_date': None, 'departments': [], 'studio_id': None, 'is_generated_from_ldap': False, 'ldap_uid': None, 'full_name': 'Hugo Garnier', 'id': '084e20c6-c52a-45a3-8697-565b909b088a', 'created_at': '2022-04-07T15:05:58', 'updated_at': '2024-02-27T21:04:44', 'type': 'Person', 'fido_devices': []}}}}, 'frameStart': 1, 'frameEnd': 200, 'fps': 24.0, 'resolutionWidth': 2366, 'resolutionHeight': 1442, 'pixelAspect': 1.0, 'handleStart': 0, 'handleEnd': 0, 'clipIn': 1, 'clipOut': 1, 'visualParent': ObjectId('67505fc57439d23d6a730521'), 'parents': ['Assets', 'CHARA']}, 'parent': ObjectId('67505fc37439d23d6a730514')}"
+WARNING: MEMBERS
+WARNING: [bpy.data.collections['wizzard_camera3D_RigMain']]
+DEBUG: Collecting scene version from filename: wizzard_3D_Rig_v014.blend
+DEBUG: Collected scene version: 14
+DEBUG: Collected user "gcompain"
+DEBUG: Global Anatomy Context Data collected:
+{
+    "studio": {
+        "name": "Wizz",
+        "code": "wizz"
+    },
+    "user": "gcompain",
+    "project": {
+        "name": "PIPE_3D_RD_24_192",
+        "code": "pipe_3d_rd_24_192"
+    },
+    "asset": "wizzard",
+    "folder": {
+        "name": "wizzard"
+    },
+    "hierarchy": "Assets/CHARA",
+    "parent": "CHARA",
+    "task": {
+        "name": "3D_Rig",
+        "type": "3D_Rig",
+        "short": ""
+    },
+    "app": "blender",
+    "d": "25",
+    "dd": "25",
+    "ddd": "Tue",
+    "dddd": "Tuesday",
+    "m": "2",
+    "mm": "02",
+    "mmm": "Feb",
+    "mmmm": "February",
+    "yy": "25",
+    "yyyy": "2025",
+    "H": "11",
+    "HH": "11",
+    "h": "11",
+    "hh": "11",
+    "ht": "AM",
+    "M": "24",
+    "MM": "24",
+    "S": "58",
+    "SS": "58",
+    "username": "gcompain"
+}
+DEBUG: Context label is changed to "Blender - wizzard_3D_Rig_v014.blend"
+DEBUG: Collecting anatomy data for all instances.
+DEBUG: Querying asset documents for instances.
+DEBUG: All instances already had right asset document.
+DEBUG: Querying latest versions for instances.
+DEBUG: Storing anatomy data to instance data.
+DEBUG: Anatomy data for instance camera3D_RigMain (camera3D_RigMain): {
+    "studio": {
+        "name": "Wizz",
+        "code": "wizz"
+    },
+    "user": "gcompain",
+    "project": {
+        "name": "PIPE_3D_RD_24_192",
+        "code": "pipe_3d_rd_24_192"
+    },
+    "asset": "wizzard",
+    "folder": {
+        "name": "wizzard"
+    },
+    "hierarchy": "Assets/CHARA",
+    "parent": "CHARA",
+    "task": {
+        "name": "3D_Rig",
+        "type": "3D_Rig",
+        "short": ""
+    },
+    "app": "blender",
+    "d": "25",
+    "dd": "25",
+    "ddd": "Tue",
+    "dddd": "Tuesday",
+    "m": "2",
+    "mm": "02",
+    "mmm": "Feb",
+    "mmmm": "February",
+    "yy": "25",
+    "yyyy": "2025",
+    "H": "11",
+    "HH": "11",
+    "h": "11",
+    "hh": "11",
+    "ht": "AM",
+    "M": "24",
+    "MM": "24",
+    "S": "58",
+    "SS": "58",
+    "username": "gcompain",
+    "family": "camera",
+    "subset": "camera3D_RigMain",
+    "version": 22
+}
+DEBUG: Anatomy data for instance workfile3D_Rig (workfile3D_Rig): {
+    "studio": {
+        "name": "Wizz",
+        "code": "wizz"
+    },
+    "user": "gcompain",
+    "project": {
+        "name": "PIPE_3D_RD_24_192",
+        "code": "pipe_3d_rd_24_192"
+    },
+    "asset": "wizzard",
+    "folder": {
+        "name": "wizzard"
+    },
+    "hierarchy": "Assets/CHARA",
+    "parent": "CHARA",
+    "task": {
+        "name": "3D_Rig",
+        "type": "3D_Rig",
+        "short": ""
+    },
+    "app": "blender",
+    "d": "25",
+    "dd": "25",
+    "ddd": "Tue",
+    "dddd": "Tuesday",
+    "m": "2",
+    "mm": "02",
+    "mmm": "Feb",
+    "mmmm": "February",
+    "yy": "25",
+    "yyyy": "2025",
+    "H": "11",
+    "HH": "11",
+    "h": "11",
+    "hh": "11",
+    "ht": "AM",
+    "M": "24",
+    "MM": "24",
+    "S": "58",
+    "SS": "58",
+    "username": "gcompain",
+    "family": "workfile",
+    "subset": "workfile3D_Rig",
+    "version": 7
+}
+DEBUG: Anatomy Data collection finished.
+DEBUG: publishDir: "L:\2024\PIPE_3D_RD_24_192\Assets\CHARA\wizzard\publish\camera\camera3D_RigMain\v022"
+DEBUG: resourcesDir: "L:\2024\PIPE_3D_RD_24_192\Assets\CHARA\wizzard\publish\camera\camera3D_RigMain\v022\resources"
+DEBUG: publishDir: "L:\2024\PIPE_3D_RD_24_192\Assets\CHARA\wizzard\publish\workfile\workfile3D_Rig\v007"
+DEBUG: resourcesDir: "L:\2024\PIPE_3D_RD_24_192\Assets\CHARA\wizzard\publish\workfile\workfile3D_Rig\v007\resources"
+DEBUG: Not adding custom staging dir for instance with 'camera'
+DEBUG: Not adding custom staging dir for instance with 'workfile'
+DEBUG: Looking for matching profile for: families: "camera" | tasks: "3D_Rig" | task_types: "3D_Rig" | hosts: "blender" | subsets: "camera3D_RigMain"
+DEBUG: Profile selected: {'families': [], 'hosts': [], 'task_types': [], 'tasks': [], 'subsets': [], 'review_upload_limit': 50.0, 'channel_messages': []}
+INFO: Found profile: {'families': [], 'hosts': [], 'task_types': [], 'tasks': [], 'subsets': [], 'review_upload_limit': 50.0, 'channel_messages': []}
+DEBUG: Looking for matching profile for: families: "workfile" | tasks: "3D_Rig" | task_types: "3D_Rig" | hosts: "blender" | subsets: "workfile3D_Rig"
+DEBUG: Profile selected: {'families': [], 'hosts': [], 'task_types': [], 'tasks': [], 'subsets': [], 'review_upload_limit': 50.0, 'channel_messages': []}
+INFO: Found profile: {'families': [], 'hosts': [], 'task_types': [], 'tasks': [], 'subsets': [], 'review_upload_limit': 50.0, 'channel_messages': []}
+Traceback (most recent call last):
+  File "C:\Users\gcompain\quad\quadpype\src\.venv\lib\site-packages\pyblish\plugin.py", line 528, in __explicit_process
+    runner(*args)
+  File "C:\Users\gcompain\quad\quadpype\src\quadpype\hosts\blender\plugins\publish\validate_file_saved.py", line 64, in process
+    raise PublishValidationError("Workfile has unsaved changes.")
+quadpype.pipeline.publish.publish_plugins.PublishValidationError: Workfile has unsaved changes.
+
+DEBUG: Skipping Validate Absolute Data Block Paths...
+DEBUG: Skipping Validate Data Block Paths Location...
+DEBUG: Looking for matching profile for: hosts: "blender" | families: "camera" | task_names: "3D_Rig" | task_types: "3D_Rig"
+DEBUG: "camera" not found in "families": ['review', 'render', 'prerender']
+DEBUG: "camera" not found in "families": ['model', 'rig']
+DEBUG: "camera" not found in "families": ['workfile']
+DEBUG: Profile selected: {'families': [], 'hosts': [], 'task_types': [], 'task_names': [], 'template_name': 'publish'}
+DEBUG: Looking for matching profile for: hosts: "blender" | families: "workfile" | task_names: "3D_Rig" | task_types: "3D_Rig"
+DEBUG: "workfile" not found in "families": ['review', 'render', 'prerender']
+DEBUG: "workfile" not found in "families": ['model', 'rig']
+DEBUG: Profile selected: {'families': ['workfile'], 'hosts': ['blender'], 'task_types': [], 'task_names': [], 'template_name': '3d_asset_work_and_render_publish'}

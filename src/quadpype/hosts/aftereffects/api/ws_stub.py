@@ -256,6 +256,49 @@ class AfterEffectsServerStub():
                                         )
         return self._to_records(self._handle_return(res))
 
+    def get_selected_layers(self):
+        """
+            Return selected layers from timeline
+        Returns:
+            (list) of layers
+        """
+        res = self.websocketserver.call(self.client.call('AfterEffects.get_selected_layers'))
+        return self._to_records(self._handle_return(res))
+
+    def get_layer_attributes_names(self, layer_id):
+        """
+            Get layer attributes for layer with given id.
+        Args:
+            layer_id (itn): if filled, will get properties for layer with given ID
+
+        Returns:
+            (list) of layer attributes
+
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.get_layer_attributes_names',
+                                         layer_id=layer_id))
+        return self._handle_return(res)
+
+    def apply_exposure(self, effect_layer_name, effect_layer_parent_name, target_layer_id, target_property_index_hierarchy):
+        """
+            Apply exposure on layer property from given effect layer.
+
+            Args:
+                effect_layer_name (int): layer effect name used as target in expression
+                effect_layer_parent_name (int): parent name of previous layer effect
+                target_layer_id (int): id from layer on which to apply expression
+                target_property_index_hierarchy (str): property on which to apply expression
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.apply_exposure',
+                                         effect_layer_name=effect_layer_name,
+                                         effect_layer_parent_name=effect_layer_parent_name,
+                                         target_layer_id= target_layer_id,
+                                         target_property_index_hierarchy=target_property_index_hierarchy))
+
+        return self._handle_return(res)
+
     def add_item(self, name, item_type):
         """
             Adds either composition or folder to project item list.
@@ -283,6 +326,17 @@ class AfterEffectsServerStub():
                 return item
 
         return None
+
+    def get_active_comp_with_inner_layers(self, depth=-1):
+        """
+            Get all comps in scene with inner layers.
+        Args:
+            depth (int): Depth of comps to browse. Default value -1 means that we don't put any limit.
+        """
+        res = self.websocketserver.call(
+            self.client.call('AfterEffects.get_active_comp_with_inner_layers', depth=depth)
+        )
+        return self._handle_return(res)
 
     def import_file(self, path, item_name, import_options=None):
         """
@@ -614,6 +668,22 @@ class AfterEffectsServerStub():
         records = self._to_records(self._handle_return(res))
         if records:
             return records.pop()
+
+    def add_marker_to_layer(self, comp_id, layer_name, frame_number):
+        """
+            Add marker to layer at given frame.
+
+            Args:
+                comp_id (int): id of concerned composition
+                layer_name (str): name of concerned layer
+                frame_number (int): frame at which to put marker
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.add_marker_to_layer',
+                                         comp_id=comp_id,
+                                         layer_name=layer_name,
+                                         frame_number=frame_number))
+        return self._handle_return(res)
 
     def add_item_as_layer(self, comp_id, item_id):
         """
