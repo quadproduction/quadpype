@@ -93,7 +93,7 @@ class ClickableElement:
     threshold: float
     default_click: str
 
-    def __init__(self, files_names, folder_path, wait_after=0.0, threshold=0.6, click="center"):
+    def __init__(self, files_names, folder_path, wait_after=0.0, threshold=0.5, click="center"):
         self.files_names = files_names
         self.folder_path = folder_path
         self.wait_after = wait_after
