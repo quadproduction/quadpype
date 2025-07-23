@@ -228,8 +228,15 @@ class FileLoader(api.AfterEffectsLoader):
         anatomy = Anatomy()
         templates = anatomy.templates.get(profile['template_name'])
         json_path = StringTemplate.format_template(templates['path'], template_data)
+        if not json_path:
+            self.log.warning("There is no json file to apply for this asset. Abort applying intervals.")
+            return
 
         json_content = load_content(json_path, self.log)
+        if not json_content:
+            self.log.error("Can not load content from retrieved json. Abort applying intervals.")
+            return
+
         apply_intervals(json_content, comp_id, stub, self.log)
 
     @staticmethod
