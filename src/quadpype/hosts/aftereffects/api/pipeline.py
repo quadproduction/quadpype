@@ -251,7 +251,8 @@ def containerise(name,
                  comp,
                  context,
                  loader=None,
-                 suffix="_CON"):
+                 suffix="_CON",
+                 options=None):
     """
     Containerisation enables a tracking of version, author and origin
     for loaded assets.
@@ -267,6 +268,7 @@ def containerise(name,
         context (dict): Asset information
         loader (str, optional): Name of loader used to produce this container.
         suffix (str, optional): Suffix of container, defaults to `_CON`.
+        options (str, optional): Options used for container to memorize, in json format.
 
     Returns:
         container (str): Name of container assembly
@@ -278,7 +280,8 @@ def containerise(name,
         "namespace": namespace,
         "loader": str(loader),
         "representation": str(context["representation"]["_id"]),
-        "members": comp.members or [comp.id]
+        "members": comp.members or [comp.id],
+        "options": options if options else "{}"
     }
 
     stub = get_stub()

@@ -1,3 +1,4 @@
+import json
 import re
 import threading
 import notifypy
@@ -72,12 +73,6 @@ class FileLoader(api.AfterEffectsLoader):
         repr_cont = context["representation"]["context"]
         repre_task_name = repr_cont.get('task', {}).get('name', None)
         frame = repr_cont.get("frame", None)
-        template_data = format_data(
-            original_data=context['representation'],
-            filter_variant=True,
-            app=get_current_host_name()
-        )
-        host_name = get_current_host_name()
 
         # Determine if the imported file is a PSD file (Special case)
         path = Path(path)
@@ -113,7 +108,7 @@ class FileLoader(api.AfterEffectsLoader):
             import_options['ImportAsType'] = 'ImportAsType.COMP'
             user_override_auto_clic = get_user_settings().get('general', {}).get('enable_auto_clic_scripts', True)
 
-            load_settings = get_project_settings(project_name).get(host_name, {}).get('load', {})
+            load_settings = get_project_settings(project_name).get(get_current_host_name(), {}).get('load', {})
             auto_clic = load_settings.get('auto_clic_import_dialog')
 
             if auto_clic and user_override_auto_clic:
@@ -154,6 +149,8 @@ class FileLoader(api.AfterEffectsLoader):
         self.log.info("Asset has been loaded with success.")
 
         template_data, template_folder = self.get_folder_and_data_template(context['representation'])
+        self.log.warning('template_folder')
+        self.log.warning(template_folder)
         if template_folder:
             folders_hierarchy = self.get_folder_hierarchy(template_data, template_folder, unique_number)
             self.create_folders(stub, folders_hierarchy, comp, stub.LOADED_ICON + comp_name, parent_item=is_psd)
@@ -165,17 +162,14 @@ class FileLoader(api.AfterEffectsLoader):
 
         self[:] = [comp]
         namespace = namespace or comp_name
-
         return api.containerise(
             name,
             namespace,
             comp,
             context,
-            self.__class__.__name__
+            self.__class__.__name__,
+            options=data
         )
-
-    def apply_interval_asked(self, data, frame, is_psd):
-        return data.get('apply_interval', self.apply_interval_default) and frame and is_psd
 
     @staticmethod
     def get_folder_and_data_template(representation):
@@ -212,11 +206,11 @@ class FileLoader(api.AfterEffectsLoader):
         psd_folder = find_folder(parent_folder_name)
         stub.parent_items(psd_folder.id, last_folder.id)
 
-    def apply_intervals(self, stub, template_data, project_name, comp_id, repre_task_name=None):
-        self.log.info("Applying intervals from json file...")
-        if not repre_task_name:
-            self.log.error("Can not retrieve task_name for representation context. Abort json loading.")
+    def apply_interval_asked(self, data, frame, is_psd):
+        return data.get('apply_interval', self.apply_interval_default) and frame and is_psd
 
+    def apply_intervals(self, stub, template_data, project_name, comp_id, repre_task_name):
+        self.log.info("Applying intervals from json file...")
         profiles = get_template_name_profiles(
             project_name, get_project_settings(project_name), self.log
         )
@@ -288,6 +282,8 @@ class FileLoader(api.AfterEffectsLoader):
         namespace_from_container = re.sub(r'_\d{3}$', '',
                                           container["namespace"])
         layer_name = "{}_{}".format(context["asset"], context["subset"])
+        project_name = context.get('project', {}).get('name', None)
+
         # switching assets
         if namespace_from_container != layer_name:
             layers = stub.get_items(comps=True)
@@ -309,7 +305,6 @@ class FileLoader(api.AfterEffectsLoader):
         parent_folder = stub.get_item_parent(layer.id)
 
         if is_psd:
-            project_name = context.get('project', {}).get('name', None)
             load_settings = get_project_settings(project_name).get(get_current_host_name(), {}).get('load', {})
             auto_clic = load_settings.get('auto_clic_import_dialog')
 
@@ -345,6 +340,19 @@ class FileLoader(api.AfterEffectsLoader):
                 return
 
             stub.delete_hierarchy(parent_folder.id)
+
+        if self.apply_interval_asked(
+                data=json.loads(container.get('options', '{}')),
+                frame=representation["context"].get("frame", None),
+                is_psd=is_psd
+        ):
+            self.apply_intervals(
+                stub=stub,
+                template_data=template_data,
+                project_name=project_name,
+                comp_id=layer.id,
+                repre_task_name=representation["context"].get('task', {}).get('name', None)
+            )
 
     def remove(self, container):
         """
