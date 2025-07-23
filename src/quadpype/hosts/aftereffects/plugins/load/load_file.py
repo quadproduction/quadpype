@@ -240,18 +240,19 @@ class FileLoader(api.AfterEffectsLoader):
         notification.icon = get_app_icon_path()
         notification.send(block=False)
 
-    def trigger_auto_clic_thread(self, attempts_number):
-        Window(
-            parent=None,
-            title='Import File',
-            message='<p>File will be automatically imported with mouse automation.<br/>'
-                    '<b>Please do not touch your mouse or your keyboard !</b></p>'
-                    '<p><i>Process should ends in less than 10 seconds. If nothing happens, '
-                    'it means that something has gone wrong, and you will need to end '
-                    'process by yourself.</i></p>'
-                    '<p><i>Check your os notifications to monitor process results.</p></i>',
-            level="warning"
-        )
+    def trigger_auto_clic_thread(self, attempts_number, display_window=True):
+        if display_window:
+            Window(
+                parent=None,
+                title='Import File',
+                message='<p>File will be automatically imported with mouse automation.<br/>'
+                        '<b>Please do not touch your mouse or your keyboard !</b></p>'
+                        '<p><i>Process should ends in less than 10 seconds. If nothing happens, '
+                        'it means that something has gone wrong, and you will need to end '
+                        'process by yourself.</i></p>'
+                        '<p><i>Check your os notifications to monitor process results.</p></i>',
+                level="warning"
+            )
 
         auto_clic_thread = threading.Thread(
             target=self.launch_auto_click,
