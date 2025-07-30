@@ -216,20 +216,22 @@ class RenderCreator(Creator):
 
     def remove_instances(self, instances):
         """Removes metadata and renames to original comp name if available."""
+        stub = api.get_stub()
         for instance in instances:
             self._remove_instance_from_context(instance)
             self.host.remove_instance(instance)
 
             comp_id = instance.data["members"][0]
-            comp = api.get_stub().get_item(comp_id)
+            comp = stub.get_item(comp_id)
+
+            stub.remove_comp_in_render_queue(comp_id)
             orig_comp_name = instance.data.get("orig_comp_name")
             if comp:
                 if orig_comp_name:
                     new_comp_name = orig_comp_name
                 else:
                     new_comp_name = "dummyCompName"
-                api.get_stub().rename_item(comp_id,
-                                           new_comp_name)
+                stub.rename_item(comp_id, new_comp_name)
 
     def apply_settings(self, project_settings):
         plugin_settings = (

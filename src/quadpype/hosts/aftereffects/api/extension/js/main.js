@@ -108,13 +108,36 @@ function main(websocket_url) {
             });
     });
 
+    RPC.addRoute('AfterEffects.get_layer_attributes_names', function (data) {
+        log.warn('Server called client route "get_layer_attributes_names":', data);
+        return runEvalScript("getLayerAttributesNames(" + data.layer_id + ")")
+            .then(function (result) {
+                log.warn("get_layer_attributes_names: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.apply_exposure', function (data) {
+        log.warn('Server called client route "apply_exposure":', data);
+        var effect_layer_name = EscapeStringForJSX(data.effect_layer_name);
+        var effect_layer_parent_name = EscapeStringForJSX(data.effect_layer_parent_name);
+        return runEvalScript("applyExposure('" + effect_layer_name + "', " +
+            "'" + effect_layer_parent_name + "', " +
+            data.target_layer_id + ", " +
+            JSON.stringify(data.target_property_index_hierarchy) + ")")
+            .then(function (result) {
+                log.warn("apply_exposure: " + result);
+                return result;
+            });
+    });
+
     RPC.addRoute('AfterEffects.add_item', function (data) {
         log.warn('Server called client route "add_item":', data);
         var escapedName = EscapeStringForJSX(data.name);
         return runEvalScript("addItem('" + escapedName + "', " +
             "'" + data.item_type + "')")
             .then(function (result) {
-                log.warn("get_items: " + result);
+                log.warn("add_item: " + result);
                 return result;
             });
     });
@@ -139,14 +162,32 @@ function main(websocket_url) {
             });
     });
 
-
     RPC.addRoute('AfterEffects.get_selected_items', function (data) {
         log.warn('Server called client route "get_selected_items":', data);
         return runEvalScript("getSelectedItems(" + data.comps + "," +
             data.folders + "," +
             data.footages + ")")
             .then(function (result) {
-                log.warn("get_items: " + result);
+                log.warn("get_selected_items: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.get_selected_layers', function (data) {
+        log.warn('Server called client route "get_selected_layers":', data);
+        return runEvalScript("getSelectedLayers()")
+            .then(function (result) {
+                log.warn("get_selected_layers: " + result);
+                return result;
+            });
+    });
+
+
+    RPC.addRoute('AfterEffects.get_active_comp_with_inner_layers', function (data) {
+        log.warn('Server called client route "get_active_comp_with_inner_layers":', data);
+        return runEvalScript("getActiveCompWithInnerLayers(" + data.depth + ")")
+            .then(function (result) {
+                log.warn("get_active_comp_with_inner_layers: " + result);
                 return result;
             });
     });
@@ -204,7 +245,12 @@ function main(websocket_url) {
         return runEvalScript("addCompToRenderQueue(" + data.comp_id + ")")
     });
 
-        RPC.addRoute('AfterEffects.parent_items', function (data) {
+    RPC.addRoute('AfterEffects.remove_comp_in_render_queue', function (data) {
+        log.warn('Server called client route "remove_comp_in_render_queue":', data);
+        return runEvalScript("removeCompInRenderQueue(" + data.comp_id + ")")
+    });
+
+    RPC.addRoute('AfterEffects.parent_items', function (data) {
         log.warn('Server called client route "parent_items":', data);
         return runEvalScript("parentItems(" + data.item_id + ", " + data.parent_item_id + ")")
     });
@@ -213,7 +259,25 @@ function main(websocket_url) {
         log.warn('Server called client route "delete_item":', data);
         return runEvalScript("deleteItem(" + data.item_id + ")")
             .then(function (result) {
-                log.warn("deleteItem: " + result);
+                log.warn("delete_item: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.delete_item_with_hierarchy', function (data) {
+        log.warn('Server called client route "delete_item_with_hierarchy":', data);
+        return runEvalScript("deleteItemWithHierarchy(" + data.item_id + ")")
+            .then(function (result) {
+                log.warn("delete_item_with_hierarchy: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.delete_hierarchy', function (data) {
+        log.warn('Server called client route "delete_hierarchy":', data);
+        return runEvalScript("deleteHierarchy(" + data.folder_id + ")")
+            .then(function (result) {
+                log.warn("delete_hierarchy: " + result);
                 return result;
             });
     });
@@ -233,7 +297,16 @@ function main(websocket_url) {
         return runEvalScript("setLabelColor(" + data.item_id + "," +
             data.color_idx + ")")
             .then(function (result) {
-                log.warn("imprint: " + result);
+                log.warn("set_label_color: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.get_item_parent', function (data) {
+        log.warn('Server called client route "get_item_parent":', data);
+        return runEvalScript("getItemParent(" + data.item_id + ")")
+            .then(function (result) {
+                log.warn("get_item_parent: " + result);
                 return result;
             });
     });
@@ -317,6 +390,18 @@ function main(websocket_url) {
             JSON.stringify(data.files) + ")")
             .then(function (result) {
                 log.warn("reloadBackground: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.add_marker_to_layer', function (data) {
+        log.warn('Server called client route "add_marker_to_layer":', data);
+        var escapedLayerName = EscapeStringForJSX(data.layer_name);
+        return runEvalScript("addMarkerToLayer(" + data.comp_id + ", " +
+            "'" + escapedLayerName + "', " +
+            data.frame_number + ")")
+            .then(function (result) {
+                log.warn("add_marker_to_layer: " + result);
                 return result;
             });
     });

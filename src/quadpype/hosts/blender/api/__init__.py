@@ -52,13 +52,13 @@ from .capture import capture
 
 from .render_lib import prepare_rendering
 
-
 from .collections import (
     get_corresponding_hierarchies_numbered,
     create_collections_from_hierarchy,
     create_collection,
     get_top_collection
 )
+
 
 __all__ = [
     "install",
@@ -95,7 +95,6 @@ __all__ = [
     # "unique_name",
     "prepare_rendering",
 
-
     # Collections getters
     "get_parents_for_collection",
     "get_objects_in_collection",
@@ -112,5 +111,5 @@ __all__ = [
     # Collections tools
     "get_corresponding_hierarchies_numbered",
     "create_collections_from_hierarchy",
-    "create_collection"
+    "create_collection",
 ]
