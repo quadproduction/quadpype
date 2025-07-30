@@ -26,6 +26,7 @@ from quadpype.settings.constants import (
 from .log import Logger
 from .profiles_filtering import filter_profiles
 from .user import get_quadpype_username, get_user_settings
+from .path_templates import StringTemplate
 
 from .python_module_tools import (
     modules_from_path,
@@ -1505,6 +1506,24 @@ def _merge_env(env, current_env):
     return result
 
 
+def _format_paths_with_settings(environments_variables, roots, project_name):
+    for environment_key, environment_value in environments_variables.items():
+        formatted_paths = []
+        for single_path in environment_value.split(';'):
+            formatted_paths.append(
+                StringTemplate.format_template(
+                    template=single_path,
+                    data={
+                        'root': roots,
+                        'project': {
+                            'name': project_name
+                        }
+                    }
+                )
+            )
+        environments_variables[environment_key] = ';'.join(formatted_paths)
+
+
 def _add_python_version_paths(app, env, logger, modules_manager):
     """Add vendor packages specific for a Python version."""
 
@@ -1637,6 +1656,12 @@ def prepare_app_environments(
         env_values = _merge_env(tool_env, env_values)
 
     merged_env = _merge_env(env_values, source_env)
+
+    _format_paths_with_settings(
+        environments_variables=merged_env,
+        roots=data['anatomy'].roots,
+        project_name=data['project_name']
+    )
 
     loaded_env = acre.compute(merged_env, cleanup=False)
 

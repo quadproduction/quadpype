@@ -25,6 +25,11 @@ from .plugin import (
     AfterEffectsLoader
 )
 
+from src.quadpype.hosts.aftereffects.api.json_loader import (
+    load_content,
+    apply_intervals
+)
+
 
 __all__ = [
     # ws_stub
@@ -41,5 +46,9 @@ __all__ = [
     "set_settings",
 
     # plugin
-    "AfterEffectsLoader"
+    "AfterEffectsLoader",
+
+    # .json loader
+    "load_content",
+    "apply_intervals"
 ]

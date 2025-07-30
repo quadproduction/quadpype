@@ -138,6 +138,17 @@
     </script>
 
     <script type=text/javascript>
+      $(function() {
+        $("a#transfer-exposition-button").bind("click", function() {
+          RPC.call('AfterEffects.transfer_exposition_tools_route').then(function (data) {
+          }, function (error) {
+              alert(error);
+          });
+        });
+      });
+    </script>
+
+    <script type=text/javascript>
             $(function() {
               $("a#experimental-button").bind("click", function() {
                 RPC.call('AfterEffects.experimental_tools_route').then(function (data) {
@@ -168,6 +179,7 @@
             <div><a href=# id=create-placeholder-button><button class="hostFontSize">Create placeholder</button></a></div>
             <div><a href=# id=update-placeholder-button><button class="hostFontSize">Update placeholder</button></a></div>
             <div><a href=# id=build-workfile-button><button class="hostFontSize">Build Workfile from template</button></a></div>
+            <div><a href=# id=transfer-exposition-button><button class="hostFontSize">Transfer exposition to effects</button></a></div>
             <div><a href=# id=separator3><button class="hostFontSize">&nbsp;</button></a></div>
             <div><a href=# id=experimental-button><button class="hostFontSize">Experimental Tools...</button></a></div>
         </div>

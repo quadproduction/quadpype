@@ -48,6 +48,11 @@
             "group_name_template": "L{group_index}",
             "group_idx_offset": 10,
             "group_idx_padding": 3
+        },
+        "create_json": {
+            "enabled": true,
+            "default_variant": "Main",
+            "default_variants": []
         }
     },
     "publish": {
@@ -70,6 +75,9 @@
         },
         "ExtractPsd":  {
             "enabled": false
+        },
+         "ExtractJson":  {
+            "enabled": true
         },
         "ValidateProjectSettings": {
             "enabled": true,

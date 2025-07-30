@@ -1,4 +1,5 @@
 import os
+import re
 import logging
 
 from quadpype.settings import get_global_settings, get_project_settings
@@ -146,10 +147,8 @@ class LoaderPlugin(list):
             return False
 
         plugin_repre_names = set(plugin_repre_names)
-        if (
-            "*" not in plugin_repre_names
-            and repre_doc["name"] not in plugin_repre_names
-        ):
+        if cls.representation_is_not_in_list(repre_doc, plugin_repre_names) or \
+            cls.representation_is_excluded(repre_doc, plugin_repre_names):
             return False
 
         if not cls.has_valid_extension(repre_doc):
@@ -173,6 +172,17 @@ class LoaderPlugin(list):
         if not families:
             return False
         return any(family in plugin_families for family in families)
+
+    @staticmethod
+    def representation_is_not_in_list(repre_doc, plugin_repre_names):
+        return "*" not in plugin_repre_names and repre_doc["name"] not in plugin_repre_names
+
+    @staticmethod
+    def representation_is_excluded(repre_doc, plugin_repre_names):
+        return "*" in plugin_repre_names and repre_doc["name"] in [
+            re.sub(r'^-', '', plugin_repre_name) for plugin_repre_name in plugin_repre_names
+            if plugin_repre_name.startswith('-')
+        ]
 
     @classmethod
     def get_representations(cls):

@@ -22,10 +22,9 @@ AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}
 AppUpdatesURL={#AppURL}
 AppCopyright=2023-CurrYear {#AppPublisher}
-DefaultDirName={autopf}\{#AppNameLower}\{#AppVer}
+DefaultDirName={autopf}\{#AppNameLower}
 UsePreviousAppDir=no
 DisableProgramGroupPage=yes
-DisableDirPage=yes
 ; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
 ; on anything but x64 and Windows 11 on Arm.
 ArchitecturesAllowed=x64compatible
@@ -36,7 +35,9 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputBaseFilename={#AppNameLower}-{#AppVer}-installer
 AllowCancelDuringInstall=yes
-PrivilegesRequired=lowest
+; Uncomment the following line to run in non admin install mode (install for current user only.)
+;PrivilegesRequired=lowest
+PrivilegesRequiredOverridesAllowed=dialog
 SetupIconFile=igniter\resources\icons\quadpype.ico
 UninstallDisplayIcon={uninstallexe}
 OutputDir=build\
