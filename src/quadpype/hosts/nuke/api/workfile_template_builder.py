@@ -600,7 +600,8 @@ class NukePlaceholderCreatePlugin(
         return output
 
     def populate_placeholder(self, placeholder):
-        self.populate_create_placeholder(placeholder)
+        pre_create_data = {"use_selection": False}
+        self.populate_create_placeholder(placeholder, pre_create_data)
 
     def repopulate_placeholder(self, placeholder):
         self.populate_create_placeholder(placeholder)

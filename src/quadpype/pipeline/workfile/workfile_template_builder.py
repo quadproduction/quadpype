@@ -1910,7 +1910,8 @@ class PlaceholderCreateMixin(object):
         create_variant = placeholder.data["create_variant"]
 
         creator_plugin = self.builder.get_creators_by_name()[creator_name]
-        pre_create_data["create_new_comp"] = True
+        if pre_create_data:
+            pre_create_data["create_new_comp"] = True
 
         # create subset name
         context = self._builder.get_current_context()
@@ -1964,16 +1965,23 @@ class PlaceholderCreateMixin(object):
                     "resolution": resolution,
                     "asset_name": shot["name"]
                 }
-
+        asset_resolution = project_resolution
+        asset_width = asset_doc['data'].get('resolutionWidth', None)
+        asset_height = asset_doc['data'].get('resolutionHeight', None)
+        if asset_width and asset_height:
+            asset_resolution = RES_SEPARATOR.join([str(asset_width), str(asset_height)])
         creator_data[asset_name] = {
             "creator_name": creator_name,
             "create_variant": create_variant,
             "subset_name": subset_name,
             "creator_plugin": creator_plugin,
             "task_name": task_name,
-            "resolution": project_resolution,
+            "resolution": asset_resolution,
             "asset_name": asset_name
         }
+        self._before_instance_create(
+            placeholder
+        )
 
         # compile subset name from variant
         for name, create_data in creator_data.items():
