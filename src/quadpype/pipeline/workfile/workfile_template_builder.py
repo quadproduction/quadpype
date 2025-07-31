@@ -19,6 +19,8 @@ from abc import ABC, abstractmethod
 
 from quadpype.client import (
     get_asset_by_name,
+    get_casted_assets,
+    get_shots_in_seq,
     get_linked_assets,
     get_representations,
 )
@@ -57,7 +59,7 @@ from quadpype.pipeline.context_tools import (
     get_current_task_name,
     get_current_host_name
 )
-
+from quadpype.pipeline.settings import RES_SEPARATOR
 
 class TemplateNotFound(Exception):
     """Exception raised when template does not exist."""
@@ -129,6 +131,8 @@ class AbstractTemplateBuilder(ABC):
         self._project_settings = None
 
         self._current_asset_doc = None
+        self._casted_asset_docs = None
+        self._shots_in_seq_asset_docs = None
         self._linked_asset_docs = None
         self._task_type = None
 
@@ -185,6 +189,22 @@ class AbstractTemplateBuilder(ABC):
                 self.project_name, self.current_asset_name
             )
         return self._current_asset_doc
+
+    @property
+    def casted_asset_docs(self):
+        if self._casted_asset_docs is None:
+            self._casted_asset_docs = get_casted_assets(
+                self.project_name, self.current_asset_doc
+            )
+        return self._casted_asset_docs
+
+    @property
+    def shots_in_seq_asset_docs(self):
+        if self._shots_in_seq_asset_docs is None:
+            self._shots_in_seq_asset_docs = get_shots_in_seq(
+                self.project_name, self.current_asset_doc
+            )
+        return self._shots_in_seq_asset_docs
 
     @property
     def linked_asset_docs(self):
@@ -763,6 +783,18 @@ class AbstractTemplateBuilder(ABC):
             ["profiles"]
         )
 
+    def _get_shot_task_for_sequence_build(self):
+        """Get task to apply to newly created instance for shots in sequence
+
+        Returns:
+            Str: name of the task to apply
+        """
+        task = self.project_settings[self.host_name]["create"]["ShotInSeqRenderCreator"]["shot_task_in_seq_wf_build"]
+        if not task:
+            raise TemplateLoadFailed("A task must be set in ShotInSeqRenderCreator")
+        return task
+
+
     def get_template_preset(self):
         """Unified way how template preset is received using settings.
 
@@ -1318,6 +1350,7 @@ class PlaceholderLoadMixin(object):
         )
         builder_type_enum_items = [
             {"label": "Current asset", "value": "context_asset"},
+            {"label": "Casted assets", "value": "casted_assets"},
             {"label": "Linked assets", "value": "linked_asset"},
             {"label": "All assets", "value": "all_assets"},
         ] + libraries_project_items
@@ -1476,7 +1509,7 @@ class PlaceholderLoadMixin(object):
 
         return {}
 
-    def _get_representations(self, placeholder):
+    def _get_representations(self, placeholder, data=None):
         """Prepared query of representations based on load options.
 
         This function is directly connected to options defined in
@@ -1495,40 +1528,87 @@ class PlaceholderLoadMixin(object):
                 from placeholder data.
         """
         if "folder_path" in placeholder.data:
-            return []
+            return dict()
+        return_dict = {}
+        current_asset_doc = {}
+        casted_asset_docs = {}
+        linked_asset_docs = {}
 
         project_name = self.builder.project_name
-        current_asset_doc = self.builder.current_asset_doc
-        linked_asset_docs = self.builder.linked_asset_docs
+        current_asset_name = self.builder.current_asset_doc["name"]
+        shots_in_seq_asset_docs = self.builder.shots_in_seq_asset_docs
 
+        if shots_in_seq_asset_docs:
+            for shot in shots_in_seq_asset_docs:
+                current_asset_doc[shot["name"]] = shot
+                casted_asset_docs[shot["name"]] = get_casted_assets(project_name, shot)
+                linked_asset_docs[shot["name"]] = get_linked_assets(project_name, shot)
+        else:
+            current_asset_doc[current_asset_name] = self.builder.current_asset_doc
+            casted_asset_docs[current_asset_name] = self.builder.casted_asset_docs
+            linked_asset_docs[current_asset_name] = self.builder.linked_asset_docs
         builder_type = placeholder.data["builder_type"]
         if builder_type == "context_asset":
-            context_filters = {
-                "asset": [current_asset_doc["name"]],
-                "subset": [re.compile(placeholder.data["subset"])],
-                "hierarchy": [re.compile(placeholder.data["hierarchy"])],
-                "representation": [placeholder.data["representation"]],
-                "family": [placeholder.data["family"]]
-            }
+            for current_name, asset_doc in current_asset_doc.items():
+                context_filters = {
+                    "asset": [current_name],
+                    "subset": [re.compile(placeholder.data["subset"])],
+                    "hierarchy": [re.compile(placeholder.data["hierarchy"])],
+                    "representation": [placeholder.data["representation"]],
+                    "family": [placeholder.data["family"]]
+                }
+                return_dict[current_name] = list(get_representations(
+                    self.project_name,
+                    context_filters=context_filters
+                ))
+
+        elif builder_type == "casted_assets":
+            asset_regex = re.compile(placeholder.data["asset"])
+            for current_name, asset_docs in casted_asset_docs.items():
+                casted_asset_names = []
+                for asset_doc in  asset_docs:
+                    asset_name = asset_doc["name"]
+                    if asset_regex.match(asset_name):
+                        casted_asset_names.append(asset_name)
+
+                if not casted_asset_names:
+                    continue
+
+                context_filters = {
+                    "asset": casted_asset_names,
+                    "subset": [re.compile(placeholder.data["subset"])],
+                    "hierarchy": [re.compile(placeholder.data["hierarchy"])],
+                    "representation": [placeholder.data["representation"]],
+                    "family": [placeholder.data["family"]],
+                }
+                return_dict[current_name] = list(get_representations(
+                    self.project_name,
+                    context_filters=context_filters
+                ))
 
         elif builder_type == "linked_asset":
             asset_regex = re.compile(placeholder.data["asset"])
-            linked_asset_names = []
-            for asset_doc in linked_asset_docs:
-                asset_name = asset_doc["name"]
-                if asset_regex.match(asset_name):
-                    linked_asset_names.append(asset_name)
+            for current_name, asset_docs in casted_asset_docs.items():
+                linked_asset_names = []
+                for asset_doc in  asset_docs:
+                    asset_name = asset_doc["name"]
+                    if asset_regex.match(asset_name):
+                        linked_asset_names.append(asset_name)
 
-            if not linked_asset_names:
-                return []
+                if not linked_asset_names:
+                    return []
 
-            context_filters = {
-                "asset": linked_asset_names,
-                "subset": [re.compile(placeholder.data["subset"])],
-                "hierarchy": [re.compile(placeholder.data["hierarchy"])],
-                "representation": [placeholder.data["representation"]],
-                "family": [placeholder.data["family"]],
-            }
+                context_filters = {
+                    "asset": linked_asset_names,
+                    "subset": [re.compile(placeholder.data["subset"])],
+                    "hierarchy": [re.compile(placeholder.data["hierarchy"])],
+                    "representation": [placeholder.data["representation"]],
+                    "family": [placeholder.data["family"]],
+                }
+                return_dict[current_name] = list(get_representations(
+                    self.project_name,
+                    context_filters=context_filters
+                ))
 
         else:
             if builder_type != "all_assets":
@@ -1540,11 +1620,12 @@ class PlaceholderLoadMixin(object):
                 "representation": [placeholder.data["representation"]],
                 "family": [placeholder.data["family"]]
             }
+            return_dict[current_asset_name] = list(get_representations(
+                self.project_name,
+                context_filters=context_filters
+            ))
 
-        return list(get_representations(
-            self.project_name,
-            context_filters=context_filters
-        ))
+        return return_dict
 
     def _before_placeholder_load(self, placeholder):
         """Can be overridden. It's called before placeholder representations
@@ -1613,73 +1694,75 @@ class PlaceholderLoadMixin(object):
 
         placeholder_representations = self._get_representations(placeholder)
 
-        filtered_representations = []
-        for representation in self._reduce_last_version_repre_docs(
-            placeholder_representations
-        ):
-            repre_id = str(representation["_id"])
-            if repre_id not in ignore_repre_ids:
-                filtered_representations.append(representation)
+        for asset_name, representations in placeholder_representations.items():
+            filtered_representations = []
+            for representation in self._reduce_last_version_repre_docs(
+                representations
+            ):
+                repre_id = str(representation["_id"])
+                if repre_id not in ignore_repre_ids:
+                    filtered_representations.append(representation)
 
-        if not filtered_representations:
-            self.log.info((
-                "There's no representation for this placeholder: {}"
-            ).format(placeholder.scene_identifier))
-            self.post_placeholder_process(placeholder, failed=True)
-            if not placeholder.data.get("keep_placeholder", True):
-                self.delete_placeholder(placeholder)
-            return
+            if not filtered_representations:
+                self.log.info((
+                    "There's no representation for this placeholder: {}"
+                ).format(placeholder.scene_identifier))
+                self.post_placeholder_process(placeholder, failed=True)
+                if not placeholder.data.get("keep_placeholder", True):
+                    self.delete_placeholder(placeholder)
+                return
 
-        repre_load_contexts = get_contexts_for_repre_docs(
-            self.project_name, filtered_representations
-        )
-        loaders_by_name = self.builder.get_loaders_by_name()
-        self._before_placeholder_load(
-            placeholder
-        )
-
-        failed = False
-        for repre_load_context in repre_load_contexts.values():
-            representation = repre_load_context["representation"]
-            repre_context = representation["context"]
-            self._before_repre_load(
-                placeholder, representation
+            repre_load_contexts = get_contexts_for_repre_docs(
+                self.project_name, filtered_representations
             )
-            self.log.info(
-                "Loading {} from {} with loader {}\n"
-                "Loader arguments used : {}".format(
-                    repre_context["subset"],
-                    repre_context["asset"],
-                    loader_name,
-                    placeholder.data["loader_args"],
+            loaders_by_name = self.builder.get_loaders_by_name()
+            self._before_placeholder_load(
+                placeholder
+            )
+
+            failed = False
+            for repre_load_context in repre_load_contexts.values():
+                representation = repre_load_context["representation"]
+                repre_context = representation["context"]
+                self._before_repre_load(
+                    placeholder, representation
                 )
-            )
-            try:
-                container = load_with_repre_context(
-                    loaders_by_name[loader_name],
-                    repre_load_context,
-                    options=self.parse_loader_args(loader_args)
+                self.log.info(
+                    "Loading {} from {} with loader {}\n"
+                    "Loader arguments used : {}".format(
+                        repre_context["subset"],
+                        repre_context["asset"],
+                        loader_name,
+                        placeholder.data["loader_args"],
+                    )
+                )
+                try:
+                    container = load_with_repre_context(
+                        loaders_by_name[loader_name],
+                        repre_load_context,
+                        options=self.parse_loader_args(loader_args),
+                        asset_name_override=asset_name
+                    )
+
+                except Exception:
+                    self.load_failed(placeholder, representation)
+                    failed = True
+                else:
+                    self.load_succeed(placeholder, container)
+
+                self.populate_action_placeholder(
+                    placeholder,
+                    repre_load_contexts
                 )
 
-            except Exception:
-                self.load_failed(placeholder, representation)
-                failed = True
-            else:
-                self.load_succeed(placeholder, container)
+                self.post_placeholder_process(placeholder, failed)
 
-            self.populate_action_placeholder(
-                placeholder,
-                repre_load_contexts
-            )
-
-            self.post_placeholder_process(placeholder, failed)
-
-        if failed:
-            self.log.debug(
-                "Placeholder cleanup skipped due to failed placeholder "
-                "population."
-            )
-            return
+            if failed:
+                self.log.debug(
+                    "Placeholder cleanup skipped due to failed placeholder "
+                    "population."
+                )
+                return
 
         if not placeholder.data.get("keep_placeholder", True):
             self.delete_placeholder(placeholder)
@@ -1827,77 +1910,108 @@ class PlaceholderCreateMixin(object):
         create_variant = placeholder.data["create_variant"]
 
         creator_plugin = self.builder.get_creators_by_name()[creator_name]
+        pre_create_data["create_new_comp"] = True
 
         # create subset name
         context = self._builder.get_current_context()
-        project_name = context["project_name"]
-        asset_name = context["asset_name"]
+        project_name = self.builder.project_name
+        asset_doc = self.builder.current_asset_doc
+        assert asset_doc, "No current asset found in Session"
+        asset_name = self.builder.current_asset_doc["name"]
         task_name = context["task_name"]
 
-        if legacy_create:
-            asset_doc = get_asset_by_name(
-                project_name, asset_name, fields=["_id"]
-            )
-            assert asset_doc, "No current asset found in Session"
-            subset_name = creator_plugin.get_subset_name(
-                create_variant,
-                task_name,
-                asset_doc["_id"],
-                project_name
-            )
+        creator_data = {}
+        shots_in_seq_asset_docs = self.builder.shots_in_seq_asset_docs
 
-        else:
-            asset_doc = get_asset_by_name(project_name, asset_name)
-            assert asset_doc, "No current asset found in Session"
-            subset_name = creator_plugin.get_subset_name(
-                create_variant,
-                task_name,
-                asset_doc,
-                project_name,
-                self.builder.host_name
-            )
+        subset_name = creator_plugin.get_subset_name(
+            create_variant,
+            task_name,
+            asset_doc["_id"] if legacy_create else asset_doc,
+            project_name,
+            None if legacy_create else self.builder.host_name
+        )
 
-        creator_data = {
+        project_attributes = Anatomy().get('attributes', None)
+        assert project_attributes, "Can't find root paths to update render paths."
+        project_resolution = None
+        project_width = project_attributes.get('resolutionWidth', None)
+        project_height = project_attributes.get('resolutionHeight', None)
+        if project_width and project_height:
+            project_resolution = RES_SEPARATOR.join([str(project_width), str(project_height)])
+
+        if shots_in_seq_asset_docs:
+            shot_task = self.builder._get_shot_task_for_sequence_build()
+            for shot in shots_in_seq_asset_docs:
+                shot_subset_name = creator_plugin.get_subset_name(
+                    create_variant,
+                    "Compositing",
+                    shot["_id"] if legacy_create else shot,
+                    project_name,
+                    None if legacy_create else self.builder.host_name
+                )
+                resolution = project_resolution
+                asset_width = shot['data'].get('resolutionWidth', None)
+                asset_height = shot['data'].get('resolutionHeight', None)
+                if asset_width and asset_height:
+                    resolution = RES_SEPARATOR.join([str(asset_width), str(asset_height)])
+
+                creator_data[shot["name"]] = {
+                    "creator_name": creator_name,
+                    "create_variant": create_variant,
+                    "subset_name": shot_subset_name,
+                    "creator_plugin": creator_plugin,
+                    "task_name": shot_task,
+                    "resolution": resolution,
+                    "asset_name": shot["name"]
+                }
+
+        creator_data[asset_name] = {
             "creator_name": creator_name,
             "create_variant": create_variant,
             "subset_name": subset_name,
-            "creator_plugin": creator_plugin
+            "creator_plugin": creator_plugin,
+            "task_name": task_name,
+            "resolution": project_resolution,
+            "asset_name": asset_name
         }
 
-        self._before_instance_create(placeholder)
-
         # compile subset name from variant
-        try:
-            if legacy_create:
-                creator_instance = creator_plugin(
-                    subset_name,
-                    asset_name
-                ).process()
+        for name, create_data in creator_data.items():
+            try:
+                if legacy_create:
+                    creator_instance = creator_plugin(
+                        create_data["subset_name"],
+                        name
+                    ).process()
+                else:
+                    pre_create_data["resolution"] = create_data["resolution"]
+                    pre_create_data["asset_name"] = create_data["asset_name"]
+                    creator_instance = self.builder.create_context.create(
+                        creator_plugin.identifier,
+                        create_data["create_variant"],
+                        get_asset_by_name(
+                            project_name, name
+                        ),
+                        task_name=create_data["task_name"],
+                        pre_create_data=pre_create_data
+                    )
+
+            except:  # noqa: E722
+                failed = True
+                self.create_failed(placeholder, creator_data)
+
             else:
-                creator_instance = self.builder.create_context.create(
-                    creator_plugin.identifier,
-                    create_variant,
-                    asset_doc,
-                    task_name=task_name,
-                    pre_create_data=pre_create_data
+                failed = False
+                self.create_succeed(placeholder, creator_instance)
+
+            self.post_placeholder_process(placeholder, failed)
+
+            if failed:
+                self.log.debug(
+                    "Placeholder cleanup skipped due to failed placeholder "
+                    "population."
                 )
-
-        except:  # noqa: E722
-            failed = True
-            self.create_failed(placeholder, creator_data)
-
-        else:
-            failed = False
-            self.create_succeed(placeholder, creator_instance)
-
-        self.post_placeholder_process(placeholder, failed)
-
-        if failed:
-            self.log.debug(
-                "Placeholder cleanup skipped due to failed placeholder "
-                "population."
-            )
-            return
+                return
 
         if not placeholder.data.get("keep_placeholder", True):
             self.delete_placeholder(placeholder)

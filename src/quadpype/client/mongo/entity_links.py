@@ -46,6 +46,39 @@ def get_linked_asset_ids(project_name, asset_doc=None, asset_id=None):
         output.append(link_id)
     return output
 
+def get_casted_assets(
+    project_name, asset_doc=None, asset_id=None, fields=None
+):
+    if not asset_doc:
+        if not asset_id:
+            return []
+        asset_doc = get_asset_by_id(
+            project_name,
+            asset_id,
+            fields=["data.castedAssets"]
+        )
+        if not asset_doc:
+            return []
+
+    return list(asset_doc["data"].get("castedAssets", []))
+
+def get_shots_in_seq(
+    project_name, asset_doc=None, asset_id=None, fields=None
+):
+    if not asset_doc:
+        if not asset_id:
+            return []
+        asset_doc = get_asset_by_id(
+            project_name,
+            asset_id,
+            fields=["data.shotsInSeq"]
+        )
+        if not asset_doc:
+            return []
+    shots_in_seq = []
+    for shot_id in asset_doc["data"].get("shotsInSeq", []):
+        shots_in_seq.append(get_asset_by_id(project_name, shot_id))
+    return shots_in_seq
 
 def get_linked_assets(
     project_name, asset_doc=None, asset_id=None, fields=None

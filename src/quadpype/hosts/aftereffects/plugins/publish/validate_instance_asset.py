@@ -1,6 +1,6 @@
 import pyblish.api
-
-from quadpype.pipeline import get_current_asset_name
+import re
+from quadpype.pipeline import get_current_asset_name, get_current_task_name
 from quadpype.pipeline.publish import (
     ValidateContentsOrder,
     PublishXmlValidationError,
@@ -52,13 +52,22 @@ class ValidateInstanceAsset(pyblish.api.InstancePlugin):
     actions = [ValidateInstanceAssetRepair]
     order = ValidateContentsOrder
 
+    skip_instance_check = [".*"]
+
     def process(self, instance):
         instance_asset = instance.data["asset"]
         current_asset = get_current_asset_name()
+        current_task_name = get_current_task_name()
         msg = (
             f"Instance asset {instance_asset} is not the same "
             f"as current context {current_asset}."
         )
-
+        not_empty = self.skip_instance_check != ['']
+        if not_empty and any(re.search(pattern, current_task_name)
+                             for pattern in self.skip_instance_check):
+            self.log.debug(
+                f"Skipping resolution check on {instance_asset} for task name: {current_task_name}"
+            )
+            return
         if instance_asset != current_asset:
             raise PublishXmlValidationError(self, msg)

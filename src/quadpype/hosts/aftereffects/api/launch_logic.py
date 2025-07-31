@@ -21,6 +21,11 @@ from quadpype.pipeline import install_host, legacy_io
 from quadpype.modules import ModulesManager
 from quadpype.tools.utils import host_tools, get_quadpype_qt_app
 from quadpype.tools.adobe_webserver.app import WebServerTool
+from quadpype.pipeline.workfile.workfile_template_builder import (
+    is_last_workfile_exists,
+    should_build_first_workfile
+)
+from quadpype.hosts.aftereffects.api.workfile_template_builder import build_workfile_template
 
 from .ws_stub import get_stub
 from .lib import set_settings
@@ -71,6 +76,8 @@ def main(*subprocess_args):
         launcher.execute_in_main_thread(
             lambda: host_tools.show_tool_by_name("workfiles", save=save)
         )
+    if not is_last_workfile_exists() and should_build_first_workfile():
+        launcher.execute_in_main_thread(build_workfile_template)
 
     sys.exit(app.exec_())
 

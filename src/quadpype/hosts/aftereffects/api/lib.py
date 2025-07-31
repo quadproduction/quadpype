@@ -123,7 +123,8 @@ def get_asset_settings(asset_doc):
     }
 
 
-def set_settings(frames, resolution, comp_ids=None, print_msg=True, override_width=None, override_height=None):
+def set_settings(frames, resolution, comp_ids=None, print_msg=True, override_width=None, override_height=None,
+                 asset_name=None):
     """Sets number of frames and resolution to selected comps.
 
     Args:
@@ -134,12 +135,13 @@ def set_settings(frames, resolution, comp_ids=None, print_msg=True, override_wid
         print_msg (bool): True throw JS alert with msg
         override_width (int): use given value instead of settings when setting comp width
         override_height (int): use given height instead of settings when setting comp height
+        asset_name (str): optional specific asset name for asset_doc search
     """
     frame_start = frames_duration = fps = width = height = None
     current_context = get_current_context()
-
+    name = asset_name if asset_name else current_context["asset_name"]
     asset_doc = get_asset_by_name(current_context["project_name"],
-                                  current_context["asset_name"])
+                                  name)
     settings = get_asset_settings(asset_doc)
 
     msg = ''

@@ -72,11 +72,7 @@ class FileLoader(api.AfterEffectsLoader):
         repr_cont = context["representation"]["context"]
         repre_task_name = repr_cont.get('task', {}).get('name', None)
         frame = repr_cont.get("frame", None)
-        template_data = format_data(
-            original_data=context['representation'],
-            filter_variant=True,
-            app=get_current_host_name()
-        )
+
         host_name = get_current_host_name()
 
         # Determine if the imported file is a PSD file (Special case)
@@ -153,7 +149,7 @@ class FileLoader(api.AfterEffectsLoader):
 
         self.log.info("Asset has been loaded with success.")
 
-        template_data, template_folder = self.get_folder_and_data_template(context['representation'])
+        template_data, template_folder = self.get_folder_and_data_template(context['representation'], data)
         if template_folder:
             folders_hierarchy = self.get_folder_hierarchy(template_data, template_folder, unique_number)
             self.create_folders(stub, folders_hierarchy, comp, stub.LOADED_ICON + comp_name, parent_item=is_psd)
@@ -178,11 +174,12 @@ class FileLoader(api.AfterEffectsLoader):
         return data.get('apply_interval', self.apply_interval_default) and frame and is_psd
 
     @staticmethod
-    def get_folder_and_data_template(representation):
+    def get_folder_and_data_template(representation, data):
         template_data = format_data(
             original_data=representation,
             filter_variant=True,
-            app=get_current_host_name()
+            app=get_current_host_name(),
+            asset_name_override=data.get("asset_name_override", None)
         )
         return template_data, get_task_hierarchy_templates(
             template_data,

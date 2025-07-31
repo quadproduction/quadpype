@@ -3,6 +3,7 @@ from copy import deepcopy
 import re
 from typing import Dict, List, Tuple
 
+from gazu.exception import RouteNotFoundException
 from pymongo import DeleteOne, UpdateOne
 import gazu
 
@@ -118,6 +119,20 @@ def update_op_assets(
         except (TypeError, ValueError):
             frame_in = 1001
         item_data["frameStart"] = frame_in
+
+        #List Shots in Sequence
+        if item.get("type") == "Sequence":
+            shots = gazu.shot.all_shots_for_sequence(item)
+            item_data["shotsInSeq"] = [asset_doc_ids.get(i['id']).get("_id") for i in shots]
+
+        item_data.pop("inputLinks", None)
+        # Retrieve casting
+        try:
+            item_entity = gazu.entity.get_entity(item["id"])
+            item_data["castedAssets"] = [asset_doc_ids.get(i) for i in item_entity.get("entities_out", [])]
+        except RouteNotFoundException:
+            print(f"Can not retrieve entity from {item['name']}")
+
         # Frames duration, fallback on 1
         try:
             # NOTE nb_frames is stored directly in item

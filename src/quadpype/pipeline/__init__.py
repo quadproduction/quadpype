@@ -258,7 +258,7 @@ __all__ = (
     "get_parent_data",
     "split_hierarchy",
     "is_current_asset_shot",
-    "extract_sequence_and_shot"
+    "extract_sequence_and_shot",
 
     # --- Settings ---
     "get_available_resolutions",

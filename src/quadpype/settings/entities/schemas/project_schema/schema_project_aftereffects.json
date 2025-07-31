@@ -62,6 +62,24 @@
                             "default": true
                         }
                     ]
+                },
+                {
+                    "type": "dict",
+                    "collapsible": true,
+                    "key": "ShotInSeqRenderCreator",
+                    "label": "Shot in Sequence Create render",
+                    "children": [
+                        {
+                            "type": "label",
+                            "label": "Select task linked to render instance created for shots in sequence.\nUse during workfile build"
+                        },
+                        {
+                        "key": "shot_task_in_seq_wf_build",
+                        "label": "Task",
+                        "type": "task-types-enum",
+                        "multiselection": false
+                        }
+                    ]
                 }
             ]
         },
@@ -146,6 +164,30 @@
                             "key": "skip_timelines_check",
                             "object_type": "text",
                             "label": "Skip Timeline Check  for Tasks"
+                        }
+                    ]
+                },
+                {
+                    "type": "dict",
+                    "collapsible": true,
+                    "key": "ValidateInstanceAsset",
+                    "label": "Validate Instance Asset",
+                    "checkbox_key": "enabled",
+                    "children": [
+                        {
+                            "type": "boolean",
+                            "key": "enabled",
+                            "label": "Enabled"
+                        },
+                        {
+                            "type": "boolean",
+                            "key": "active",
+                            "label": "Active"
+                        },
+                        {
+                            "key": "skip_instance_check",
+                            "label": "Skip Check for Tasks",
+                            "type": "task-types-enum"
                         }
                     ]
                 },

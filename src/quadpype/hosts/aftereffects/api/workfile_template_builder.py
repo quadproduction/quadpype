@@ -156,14 +156,24 @@ class AEPlaceholderCreatePlugin(AEPlaceholderPlugin, PlaceholderCreateMixin):
         Renames prepared composition name, creates publishable instance, sets
         frame/duration settings according to DB.
         """
-        pre_create_data = {"use_selection": True}
-        item_id, item = self._get_item(placeholder)
-        get_stub().select_items([item_id])
+        pre_create_data = {"use_selection": False}
         self.populate_create_placeholder(placeholder, pre_create_data)
 
-        # apply settings for populated composition
-        item_id, metadata_item = self._get_item(placeholder)
-        set_settings(True, True, [item_id])
+        errors = placeholder.get_errors()
+        stub = get_stub()
+        if errors:
+            stub.print_msg("\n".join(errors))
+        else:
+            if not placeholder.data["keep_placeholder"]:
+                metadata = stub.get_metadata()
+                for item in metadata:
+                    if not item.get("is_placeholder"):
+                        continue
+                    scene_identifier = item.get("uuid")
+                    if (scene_identifier and
+                            scene_identifier == placeholder.scene_identifier):
+                        stub.delete_item(item["members"][0])
+                stub.remove_instance(placeholder.scene_identifier, metadata)
 
     def get_placeholder_options(self, options=None):
         return self.get_create_plugin_options(options)
@@ -219,6 +229,7 @@ class AEPlaceholderLoadPlugin(AEPlaceholderPlugin, PlaceholderLoadMixin):
 def build_workfile_template(*args, **kwargs):
     builder = AETemplateBuilder(registered_host())
     builder.build_template(*args, **kwargs)
+    get_stub().save()
 
 
 def update_workfile_template(*args):
