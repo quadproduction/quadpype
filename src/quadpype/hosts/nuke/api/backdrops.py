@@ -437,21 +437,21 @@ def organize_by_backdrop(context, read_node, nodes_in_main_backdrops, options, u
         read_node: the nuke read node
         nodes_in_main_backdrops(dict): A dict representing nodes in each main backdrops
         options(dict): A dict of load options
+            The primary options are:
+            - is_prep_layer_compatible: is the file composed of layer like an exr or psd
+            - prep_layers: Will decompose the layers
+            - create_stamps: trigger the creation of stamps per layers
+            - pre_comp: Generate the merge tree
+            - ext: Needed to know how to get the layers from media (psd and exr work differently)
         unique_number(str): a sting of "###" to indicate the unique number
     """
     nodes = [read_node]
 
-    default_options = {"is_prep_layer_compatible":True,
-                       "prep_layers":True,
-                       "create_stamps":True,
-                       "pre_comp":True,
-                       "ext": ""}
-
-    is_prep_layer_compatible = options.get("is_prep_layer_compatible", default_options["is_prep_layer_compatible"])
-    prep_layers = options.get("prep_layers", default_options["prep_layers"])
-    create_stamps = options.get("create_stamps", default_options["create_stamps"])
-    pre_comp = options.get("pre_comp", default_options["pre_comp"])
-    ext = options.get("ext", default_options["ext"])
+    is_prep_layer_compatible = options.get("is_prep_layer_compatible", True)
+    prep_layers = options.get("prep_layers", True)
+    create_stamps = options.get("create_stamps", True)
+    pre_comp = options.get("pre_comp", True)
+    ext = options.get("ext", "")
 
     new_nodes = dict()
     if is_prep_layer_compatible and prep_layers:
