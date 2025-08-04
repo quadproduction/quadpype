@@ -159,21 +159,17 @@ class AEPlaceholderCreatePlugin(AEPlaceholderPlugin, PlaceholderCreateMixin):
         pre_create_data = {"use_selection": False}
         self.populate_create_placeholder(placeholder, pre_create_data)
 
-        errors = placeholder.get_errors()
-        stub = get_stub()
-        if errors:
-            stub.print_msg("\n".join(errors))
-        else:
-            if not placeholder.data["keep_placeholder"]:
-                metadata = stub.get_metadata()
-                for item in metadata:
-                    if not item.get("is_placeholder"):
-                        continue
-                    scene_identifier = item.get("uuid")
-                    if (scene_identifier and
-                            scene_identifier == placeholder.scene_identifier):
-                        stub.delete_item(item["members"][0])
-                stub.remove_instance(placeholder.scene_identifier, metadata)
+        if not placeholder.data["keep_placeholder"]:
+            stub = get_stub()
+            metadata = stub.get_metadata()
+            for item in metadata:
+                if not item.get("is_placeholder"):
+                    continue
+                scene_identifier = item.get("uuid")
+                if (scene_identifier and
+                        scene_identifier == placeholder.scene_identifier):
+                    stub.delete_item(item["members"][0])
+            stub.remove_instance(placeholder.scene_identifier, metadata)
 
     def get_placeholder_options(self, options=None):
         return self.get_create_plugin_options(options)

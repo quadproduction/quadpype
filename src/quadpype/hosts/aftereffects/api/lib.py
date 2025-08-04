@@ -140,8 +140,7 @@ def set_settings(frames, resolution, comp_ids=None, print_msg=True, override_wid
     frame_start = frames_duration = fps = width = height = None
     current_context = get_current_context()
     name = asset_name if asset_name else current_context["asset_name"]
-    asset_doc = get_asset_by_name(current_context["project_name"],
-                                  name)
+    asset_doc = get_asset_by_name(current_context["project_name"], name)
     settings = get_asset_settings(asset_doc)
 
     msg = ''
