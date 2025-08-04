@@ -34,6 +34,10 @@ from quadpype.hosts.nuke.api.backdrops import (
     update_by_backdrop,
     get_nodes_in_backdrops
 )
+from quadpype.hosts.nuke.api.constants import (
+    COLOR_GREEN,
+    COLOR_RED
+)
 from quadpype.hosts.nuke.api import (
     containerise,
     update_container,
@@ -143,8 +147,8 @@ class LoadClip(plugin.NukeLoader):
         filepath = self.filepath_from_context(context)
         filepath = filepath.replace("\\", "/")
 
-        start_at_workfile = options.get("start_at_workfile", self.options_defaults["start_at_workfile"])
-        add_retime = options.get("add_retime", self.options_defaults["add_retime"])
+        start_at_workfile = options.get("start_at_workfile", self.defaults["start_at_workfile"])
+        add_retime = options.get("add_retime", self.defaults["add_retime"])
         prep_layers = options.get("prep_layers", True)
         create_stamps = options.get("create_stamps", True)
         pre_comp = options.get("pre_comp", True)
@@ -255,7 +259,7 @@ class LoadClip(plugin.NukeLoader):
             if add_retime and version_data.get("retime", None):
                 data_imprint["addRetime"] = True
 
-            read_node["tile_color"].setValue(int("0x4ecd25ff", 16))
+            read_node["tile_color"].setValue(int(COLOR_GREEN, 16))
 
             main_backdrop, storage_backdrop, nodes = organize_by_backdrop(context=context,
                                                                     read_node=read_node,
@@ -291,9 +295,9 @@ class LoadClip(plugin.NukeLoader):
 
         # change color of node
         if version_doc["_id"] == last_version_doc["_id"]:
-            color_value = "0x4ecd25ff"
+            color_value = COLOR_GREEN
         else:
-            color_value = "0xd84f20ff"
+            color_value = COLOR_RED
         read_node["tile_color"].setValue(int(color_value, 16))
 
         return container
@@ -438,9 +442,9 @@ class LoadClip(plugin.NukeLoader):
             )
             # change color of read_node
             if version_doc["_id"] == last_version_doc["_id"]:
-                color_value = "0x4ecd25ff"
+                color_value = COLOR_GREEN
             else:
-                color_value = "0xd84f20ff"
+                color_value = COLOR_RED
             read_node["tile_color"].setValue(int(color_value, 16))
 
             # Update the imprinted representation
@@ -491,7 +495,7 @@ class LoadClip(plugin.NukeLoader):
         storage_backdrop = nuke.toNode(container["storage_backdrop"])
         main_backdrop = container["main_backdrop"]
         with viewer_update_and_undo_stop():
-            members = [node for node in get_nodes_in_backdrops(storage_backdrop)]
+            members = get_nodes_in_backdrops(storage_backdrop)
             nuke.delete(storage_backdrop)
             for member in members:
                 nuke.delete(member)

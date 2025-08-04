@@ -24,6 +24,10 @@ from quadpype.hosts.nuke.api.lib import (
     PREP_LAYER_PSD_EXT,
     PREP_LAYER_EXR_EXT
 )
+from quadpype.hosts.nuke.api.constants import (
+    COLOR_GREEN,
+    COLOR_RED
+)
 from quadpype.hosts.nuke.api import (
     containerise,
     update_container,
@@ -118,9 +122,9 @@ class LoadImage(plugin.NukeLoader):
         self.reset_container_id()
         self.log.info("__ options: `{}`".format(options))
         frame_number = options.get("frame_number", int(nuke.root()["first_frame"].getValue()))
-        prep_layers = options.get("prep_layers", True)
-        create_stamps = options.get("create_stamps", True)
-        pre_comp = options.get("pre_comp", True)
+        prep_layers = options.get("prep_layers", self.defaults["prep_layers"])
+        create_stamps = options.get("create_stamps", self.defaults["create_stamps"])
+        pre_comp = options.get("pre_comp", self.defaults["pre_comp"])
         ext = context["representation"]["context"]["ext"].lower()
         is_prep_layer_compatible = ext in (set(PREP_LAYER_PSD_EXT) | set(PREP_LAYER_EXR_EXT))
         if ext in PREP_LAYER_EXR_EXT:
@@ -219,7 +223,7 @@ class LoadImage(plugin.NukeLoader):
                     data_imprint.update(
                         {k: context["version"]['data'].get(k, str(None))})
 
-            r["tile_color"].setValue(int("0x4ecd25ff", 16))
+            r["tile_color"].setValue(int(COLOR_GREEN, 16))
 
             main_backdrop, storage_backdrop, nodes = organize_by_backdrop(context=context,
                                                                    read_node=r,
@@ -243,9 +247,9 @@ class LoadImage(plugin.NukeLoader):
 
             # change color of node
             if version_doc["_id"] == last_version_doc["_id"]:
-                color_value = "0x4ecd25ff"
+                color_value = COLOR_GREEN
             else:
-                color_value = "0xd84f20ff"
+                color_value = COLOR_RED
             r["tile_color"].setValue(int(color_value, 16))
 
             return containerise(r,
@@ -346,9 +350,9 @@ class LoadImage(plugin.NukeLoader):
 
         # change color of node
         if version_doc["_id"] == last_version_doc["_id"]:
-            color_value = "0x4ecd25ff"
+            color_value = COLOR_GREEN
         else:
-            color_value = "0xd84f20ff"
+            color_value = COLOR_RED
         node["tile_color"].setValue(int(color_value, 16))
 
         # Update the imprinted representation
@@ -365,7 +369,7 @@ class LoadImage(plugin.NukeLoader):
 
         main_backdrop = container["main_backdrop"]
         with viewer_update_and_undo_stop():
-            members = [node for node in get_nodes_in_backdrops(storage_backdrop)]
+            members = get_nodes_in_backdrops(storage_backdrop)
             nuke.delete(storage_backdrop)
             for member in members:
                 nuke.delete(member)

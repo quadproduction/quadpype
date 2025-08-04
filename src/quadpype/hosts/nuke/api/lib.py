@@ -54,7 +54,7 @@ from quadpype.pipeline.context_tools import (
 from quadpype.pipeline.colorspace import get_imageio_config
 from quadpype.pipeline.workfile import BuildWorkfile
 from . import gizmo_menu
-from .constants import ASSIST
+from .constants import ASSIST, COLOR_GREEN, COLOR_RED, COLOR_BLUE
 
 from .workio import save_file
 from .utils import get_node_outputs
@@ -1045,9 +1045,9 @@ def check_inventory_versions():
         last_version = last_versions_by_subset_id[subset_id]
         # Check if last version is same as current version
         if last_version["_id"] == version_doc["_id"]:
-            color_value = "0x4ecd25ff"
+            color_value = COLOR_GREEN
         else:
-            color_value = "0xd84f20ff"
+            color_value = COLOR_RED
         node["tile_color"].setValue(int(color_value, 16))
 
 
@@ -3571,12 +3571,14 @@ def get_layers(read_node, ext):
 
     if ext in PREP_LAYER_PSD_EXT:
         for k, v in metadata.items():
-            if k.startswith('input/psd/layers/'):
-                parts = k.split('/')
-                if len(parts) >= 5:
-                    index = parts[3]
-                    attr = parts[4]
-                    layer_dict[index][attr] = v
+            if not k.startswith('input/psd/layers/'):
+                continue
+            parts = k.split('/')
+            if len(parts) < 5:
+                continue
+            index = parts[3]
+            attr = parts[4]
+            layer_dict[index][attr] = v
 
     elif ext in PREP_LAYER_EXR_EXT:
         all_layer_names = read_node.channels()
@@ -3733,6 +3735,7 @@ def generate_stamps(nodes):
 
         stamp_node['xpos'].setValue(anchor_node[0].xpos())
         stamp_node['ypos'].setValue(anchor_node[0].ypos() + GENERATE_STAMP_PADDING - y_offset)
+        stamp_node['tile_color'].setValue((int(COLOR_BLUE, 16)))
 
     return_nodes["stamp_nodes"] = stamp_nodes
     return_nodes["anchor_nodes"] = anchor_nodes
@@ -3891,10 +3894,16 @@ def classify_downstream_nodes_inputs(node_list):
     if it's the last node treated.
     Function used in the merge tree recreation.
     """
-    return {node.name():{"inputs":[node.input(i).name() for i in range(node.inputs()) if node.input(i)],
-                         "is_last": index+1==len(node_list),
-                         "is_dot": node.Class()=="Dot"}
-            for index, node in enumerate(node_list)}
+    return {
+        node.name():{
+            "inputs":[
+                node.input(i).name() for i in range(node.inputs())
+                if node.input(i)
+            ],
+            "is_last": index+1==len(node_list),
+            "is_dot": node.Class()=="Dot"
+        } for index, node in enumerate(node_list)
+    }
 
 def get_unique_name_and_number(representation, template, unique_number, node_type):
     template_data = format_data(

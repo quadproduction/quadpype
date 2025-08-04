@@ -96,7 +96,7 @@ def create_backdrop(bd_name, bd_color, bd_size=None, font_size=BACKDROP_FONT_SIZ
     Return:
         A nuke Backdrop.
         """
-    if not  bd_size:
+    if not bd_size:
         bd_size = "50x50"
     width, height = extract_width_and_height(bd_size)
 
@@ -441,11 +441,17 @@ def organize_by_backdrop(context, read_node, nodes_in_main_backdrops, options, u
     """
     nodes = [read_node]
 
-    is_prep_layer_compatible = options.get("is_prep_layer_compatible", True)
-    prep_layers = options.get("prep_layers", True)
-    create_stamps = options.get("create_stamps", True)
-    pre_comp = options.get("pre_comp", True)
-    ext = options.get("ext", "")
+    default_options = {"is_prep_layer_compatible":True,
+                       "prep_layers":True,
+                       "create_stamps":True,
+                       "pre_comp":True,
+                       "ext": ""}
+
+    is_prep_layer_compatible = options.get("is_prep_layer_compatible", default_options["is_prep_layer_compatible"])
+    prep_layers = options.get("prep_layers", default_options["prep_layers"])
+    create_stamps = options.get("create_stamps", default_options["create_stamps"])
+    pre_comp = options.get("pre_comp", default_options["pre_comp"])
+    ext = options.get("ext", default_options["ext"])
 
     new_nodes = dict()
     if is_prep_layer_compatible and prep_layers:
@@ -567,14 +573,18 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
             stop_class = "Dot"
             include_stop_node = True
         # Generate Node Data and Downstream
-        shuffle_nodes = {nuke.toNode(n)['in'].value() : {"name" : n,
-                                                         "downstream_nodes" : get_downstream_nodes(
-                                                             nuke.toNode(n),
-                                                             visited=None,
-                                                             stop_class=stop_class,
-                                                             include_stop_node=include_stop_node)}
-                         for n in node_names_in_backdrop if nuke.toNode(n) and
-                         nuke.toNode(n).Class() == "Shuffle"}
+        shuffle_nodes = {
+            nuke.toNode(n)['in'].value() : {
+                "name" : n,
+                "downstream_nodes" : get_downstream_nodes(
+                 nuke.toNode(n),
+                 visited=None,
+                 stop_class=stop_class,
+                 include_stop_node=include_stop_node
+                )
+            }
+            for n in node_names_in_backdrop if _is_node_and_shuffle_node(n)
+        }
         shuffle_y_origin = max([nuke.toNode(n["name"]).ypos() for n in shuffle_nodes.values()])
         # Delete Old
         delete_dict = dict()
@@ -635,7 +645,7 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                 sorted_downstream_nodes = sorted(list(downstream_nodes), key=lambda n: n.ypos())
                 last_node = sorted_downstream_nodes[-1]
                 #If the old layer 0 is present in new layers, but at a different index, retrieve the merge tree from it.
-                if next((k for k, v in old_layers.items() if v.get("name") == new_layer_data["name"]), None) == "0":
+                if _is_old_layer_zero_at_a_different_index(old_layers, new_layer_data):
                     existing_merge_nodes = get_downstream_nodes(last_node,
                                                                 visited=None,
                                                                 stop_class="Dot",
@@ -653,8 +663,7 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                     stop_class = "Dot"
                     # If the old layer 0 is present in new layers, but at a different index, it's connected to a merge
                     # and not a dot
-                    if next((k for k, v in old_layers.items() if v.get("name") == new_layer_data["name"]),
-                            None) == "0":
+                    if _is_old_layer_zero_at_a_different_index(old_layers, new_layer_data):
                         stop_class = "Merge2"
                     downstream_dot_nodes = get_downstream_nodes(last_node,
                                                                 visited=None,
@@ -728,7 +737,7 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                 stop_class = "Dot"
                 # If the old layer 0 is present in new layers, but at a different index, it's connected to a merge
                 # and not a dot
-                if next((k for k, v in old_layers.items() if v.get("name") == new_layer_data["name"]), None) == "0":
+                if _is_old_layer_zero_at_a_different_index(old_layers, new_layer_data):
                     stop_class = "Merge2"
                 stamp_downstream_nodes = get_downstream_nodes(stamp_node,
                                                               visited=None,
@@ -740,8 +749,7 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                     existing_node_inputs[stamp_node.name()] = classify_downstream_nodes_inputs(sorted_downstream_nodes)
 
                 #Retrieve Merge tree from moved stamp node if pre_comp
-                if (next((k for k, v in old_layers.items() if v.get("name") == new_layer_data["name"]), None) == "0"
-                        and pre_comp):
+                if _is_old_layer_zero_at_a_different_index(old_layers, new_layer_data) and pre_comp:
                     existing_merge_nodes = get_downstream_nodes(stamp_node,
                                                                  visited=None,
                                                                  stop_class="Dot",
@@ -800,6 +808,11 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
 
     return
 
+def _is_node_and_shuffle_node(node):
+    return nuke.toNode(node) and nuke.toNode(node).Class() == "Shuffle"
+
+def _is_old_layer_zero_at_a_different_index(old_layers, new_layer_data):
+    return next((k for k, v in old_layers.items() if v.get("name") == new_layer_data["name"]), None) == "0"
 
 def reorganize_inside_main_backdrop(main_backdrop_name):
     padding = 15
