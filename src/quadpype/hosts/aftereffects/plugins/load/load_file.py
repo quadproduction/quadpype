@@ -149,7 +149,10 @@ class FileLoader(api.AfterEffectsLoader):
 
         self.log.info("Asset has been loaded with success.")
 
-        template_data, template_folder = self.get_folder_and_data_template(context['representation'], data)
+        template_data, template_folder = self.get_folder_and_data_template(
+            context['representation'],
+            data.get("asset_name_override", None)
+        )
         if template_folder:
             folders_hierarchy = self.get_folder_hierarchy(template_data, template_folder, unique_number)
             self.create_folders(stub, folders_hierarchy, comp, stub.LOADED_ICON + comp_name, parent_item=is_psd)
@@ -174,12 +177,12 @@ class FileLoader(api.AfterEffectsLoader):
         return data.get('apply_interval', self.apply_interval_default) and frame and is_psd
 
     @staticmethod
-    def get_folder_and_data_template(representation, data):
+    def get_folder_and_data_template(representation, asset_name_override):
         template_data = format_data(
             original_data=representation,
             filter_variant=True,
             app=get_current_host_name(),
-            asset_name_override=data.get("asset_name_override", None)
+            asset_name_override=asset_name_override
         )
         return template_data, get_task_hierarchy_templates(
             template_data,
