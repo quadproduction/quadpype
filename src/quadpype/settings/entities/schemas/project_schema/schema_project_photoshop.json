@@ -419,7 +419,7 @@
                 {
                     "type": "dict",
                     "key": "ExtractJson",
-                    "label": "Extract JSON",
+                    "label": "Extract Json",
                     "is_group": false,
                     "checkbox_key": "enabled",
                     "children": [

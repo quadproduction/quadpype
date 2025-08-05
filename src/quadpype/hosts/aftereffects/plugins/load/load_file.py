@@ -1,3 +1,4 @@
+import json
 import re
 import threading
 import notifypy
@@ -73,8 +74,6 @@ class FileLoader(api.AfterEffectsLoader):
         repre_task_name = repr_cont.get('task', {}).get('name', None)
         frame = repr_cont.get("frame", None)
 
-        host_name = get_current_host_name()
-
         # Determine if the imported file is a PSD file (Special case)
         path = Path(path)
         is_psd = path.suffix == '.psd'
@@ -108,12 +107,13 @@ class FileLoader(api.AfterEffectsLoader):
         if is_psd:
             import_options['ImportAsType'] = 'ImportAsType.COMP'
             user_override_auto_clic = get_user_settings().get('general', {}).get('enable_auto_clic_scripts', True)
-
-            load_settings = get_project_settings(project_name).get(host_name, {}).get('load', {})
+            load_settings = get_project_settings(project_name).get(get_current_host_name(), {}).get('load', {})
             auto_clic = load_settings.get('auto_clic_import_dialog')
-
             if auto_clic and user_override_auto_clic:
-                auto_clic_thread = self.trigger_auto_clic_thread(load_settings.get('attempts_number', 3))
+                auto_clic_thread = self.trigger_auto_clic_thread(
+                    load_settings.get('attempts_number', 3),
+                    data.get("display_window", True)
+                )
                 comp = stub.import_file_with_dialog(
                     path,
                     stub.LOADED_ICON + comp_name,
@@ -121,7 +121,7 @@ class FileLoader(api.AfterEffectsLoader):
                 )
                 auto_clic_thread.join()
 
-                if comp:
+                if comp and data.get("display_window", True):
                     self.notify_import_result("Import has ended with success !")
 
             else:
@@ -170,11 +170,9 @@ class FileLoader(api.AfterEffectsLoader):
             namespace,
             comp,
             context,
-            self.__class__.__name__
+            self.__class__.__name__,
+            options=data
         )
-
-    def apply_interval_asked(self, data, frame, is_psd):
-        return data.get('apply_interval', self.apply_interval_default) and frame and is_psd
 
     @staticmethod
     def get_folder_and_data_template(representation, asset_name_override):
@@ -212,11 +210,11 @@ class FileLoader(api.AfterEffectsLoader):
         psd_folder = find_folder(parent_folder_name)
         stub.parent_items(psd_folder.id, last_folder.id)
 
-    def apply_intervals(self, stub, template_data, project_name, comp_id, repre_task_name=None):
-        self.log.info("Applying intervals from json file...")
-        if not repre_task_name:
-            self.log.error("Can not retrieve task_name for representation context. Abort json loading.")
+    def apply_interval_asked(self, data, frame, is_psd):
+        return data.get('apply_interval', self.apply_interval_default) and frame and is_psd
 
+    def apply_intervals(self, stub, template_data, project_name, comp_id, repre_task_name):
+        self.log.info("Applying intervals from json file...")
         profiles = get_template_name_profiles(
             project_name, get_project_settings(project_name), self.log
         )
@@ -234,8 +232,15 @@ class FileLoader(api.AfterEffectsLoader):
         anatomy = Anatomy()
         templates = anatomy.templates.get(profile['template_name'])
         json_path = StringTemplate.format_template(templates['path'], template_data)
+        if not json_path:
+            self.log.warning("There is no json file to apply for this asset. Abort applying intervals.")
+            return
 
         json_content = load_content(json_path, self.log)
+        if not json_content:
+            self.log.error("Can not load content from retrieved json. Abort applying intervals.")
+            return
+
         apply_intervals(json_content, comp_id, stub, self.log)
 
     @staticmethod
@@ -246,18 +251,19 @@ class FileLoader(api.AfterEffectsLoader):
         notification.icon = get_app_icon_path()
         notification.send(block=False)
 
-    def trigger_auto_clic_thread(self, attempts_number):
-        Window(
-            parent=None,
-            title='Import File',
-            message='<p>File will be automatically imported with mouse automation.<br/>'
-                    '<b>Please do not touch your mouse or your keyboard !</b></p>'
-                    '<p><i>Process should ends in less than 10 seconds. If nothing happens, '
-                    'it means that something has gone wrong, and you will need to end '
-                    'process by yourself.</i></p>'
-                    '<p><i>Check your os notifications to monitor process results.</p></i>',
-            level="warning"
-        )
+    def trigger_auto_clic_thread(self, attempts_number, display_window=True):
+        if display_window:
+            Window(
+                parent=None,
+                title='Import File',
+                message='<p>File will be automatically imported with mouse automation.<br/>'
+                        '<b>Please do not touch your mouse or your keyboard !</b></p>'
+                        '<p><i>Process should ends in less than 10 seconds. If nothing happens, '
+                        'it means that something has gone wrong, and you will need to end '
+                        'process by yourself.</i></p>'
+                        '<p><i>Check your os notifications to monitor process results.</p></i>',
+                level="warning"
+            )
 
         auto_clic_thread = threading.Thread(
             target=self.launch_auto_click,
@@ -288,6 +294,8 @@ class FileLoader(api.AfterEffectsLoader):
         namespace_from_container = re.sub(r'_\d{3}$', '',
                                           container["namespace"])
         layer_name = "{}_{}".format(context["asset"], context["subset"])
+        project_name = context.get('project', {}).get('name', None)
+
         # switching assets
         if namespace_from_container != layer_name:
             layers = stub.get_items(comps=True)
@@ -309,7 +317,6 @@ class FileLoader(api.AfterEffectsLoader):
         parent_folder = stub.get_item_parent(layer.id)
 
         if is_psd:
-            project_name = context.get('project', {}).get('name', None)
             load_settings = get_project_settings(project_name).get(get_current_host_name(), {}).get('load', {})
             auto_clic = load_settings.get('auto_clic_import_dialog')
 
@@ -345,6 +352,19 @@ class FileLoader(api.AfterEffectsLoader):
                 return
 
             stub.delete_hierarchy(parent_folder.id)
+
+        if self.apply_interval_asked(
+                data=json.loads(container.get('options', '{}')),
+                frame=representation["context"].get("frame", None),
+                is_psd=is_psd
+        ):
+            self.apply_intervals(
+                stub=stub,
+                template_data=template_data,
+                project_name=project_name,
+                comp_id=layer.id,
+                repre_task_name=representation["context"].get('task', {}).get('name', None)
+            )
 
     def remove(self, container):
         """

@@ -1741,7 +1741,8 @@ class PlaceholderLoadMixin(object):
                         loaders_by_name[loader_name],
                         repre_load_context,
                         options=self.parse_loader_args(loader_args),
-                        asset_name_override=asset_name
+                        asset_name_override=asset_name,
+                        display_window=False
                     )
 
                 except Exception:
@@ -1910,8 +1911,8 @@ class PlaceholderCreateMixin(object):
         create_variant = placeholder.data["create_variant"]
 
         creator_plugin = self.builder.get_creators_by_name()[creator_name]
-        if pre_create_data:
-            pre_create_data["create_new_comp"] = True
+        if not pre_create_data:
+            pre_create_data = {}
 
         # create subset name
         context = self._builder.get_current_context()

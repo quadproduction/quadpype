@@ -143,6 +143,8 @@ class AEPlaceholderCreatePlugin(AEPlaceholderPlugin, PlaceholderCreateMixin):
     identifier = "aftereffects.create"
     label = "AfterEffects create"
 
+    use_selection = True
+
     def create_placeholder(self, placeholder_data):
         stub = get_stub()
         name = "CREATEPLACEHOLDER"
@@ -156,11 +158,21 @@ class AEPlaceholderCreatePlugin(AEPlaceholderPlugin, PlaceholderCreateMixin):
         Renames prepared composition name, creates publishable instance, sets
         frame/duration settings according to DB.
         """
-        pre_create_data = {"use_selection": False}
+        pre_create_data = {"use_selection": self.use_selection}
+        stub = get_stub()
+        shots_in_seq_asset_docs = self.builder.shots_in_seq_asset_docs
+        if shots_in_seq_asset_docs:
+            pre_create_data["create_new_comp"] = True
+            pre_create_data["use_selection"] = False
+            self.use_selection = False
+        else:
+            item_id, item = self._get_item(placeholder)
+            stub.select_items([item_id])
         self.populate_create_placeholder(placeholder, pre_create_data)
 
-        if not placeholder.data["keep_placeholder"]:
-            stub = get_stub()
+    def delete_placeholder(self, placeholder):
+        stub = get_stub()
+        if not placeholder.data["keep_placeholder"] and not self.use_selection:
             metadata = stub.get_metadata()
             for item in metadata:
                 if not item.get("is_placeholder"):
@@ -197,21 +209,19 @@ class AEPlaceholderLoadPlugin(AEPlaceholderPlugin, PlaceholderLoadMixin):
         New FootageItems are created, files are imported.
         """
         self.populate_load_placeholder(placeholder)
-        errors = placeholder.get_errors()
+
+    def delete_placeholder(self, placeholder):
         stub = get_stub()
-        if errors:
-            stub.print_msg("\n".join(errors))
-        else:
-            if not placeholder.data["keep_placeholder"]:
-                metadata = stub.get_metadata()
-                for item in metadata:
-                    if not item.get("is_placeholder"):
-                        continue
-                    scene_identifier = item.get("uuid")
-                    if (scene_identifier and
-                            scene_identifier == placeholder.scene_identifier):
-                        stub.delete_item(item["members"][0])
-                stub.remove_instance(placeholder.scene_identifier, metadata)
+        if not placeholder.data["keep_placeholder"]:
+            metadata = stub.get_metadata()
+            for item in metadata:
+                if not item.get("is_placeholder"):
+                    continue
+                scene_identifier = item.get("uuid")
+                if (scene_identifier and
+                        scene_identifier == placeholder.scene_identifier):
+                    stub.delete_item(item["members"][0])
+            stub.remove_instance(placeholder.scene_identifier, metadata)
 
     def get_placeholder_options(self, options=None):
         return self.get_load_plugin_options(options)
