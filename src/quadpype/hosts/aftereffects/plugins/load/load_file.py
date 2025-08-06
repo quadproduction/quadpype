@@ -184,7 +184,7 @@ class FileLoader(api.AfterEffectsLoader):
         )
         return template_data, get_task_hierarchy_templates(
             template_data,
-            task=get_current_context()['task_name']
+            task=representation["context"]["task"]['name']
         )
 
     @staticmethod

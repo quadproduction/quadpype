@@ -1,10 +1,18 @@
 import nuke
+import ast
 
-import qargparse
+from quadpype.lib.attribute_definitions import (
+    BoolDef,
+    NumberDef
+)
 
 from quadpype.client import (
     get_version_by_id,
     get_last_version_by_subset_id,
+)
+from quadpype.lib import Logger
+from quadpype.pipeline.workfile.workfile_template_builder import (
+    TemplateProfileNotFound
 )
 from quadpype.pipeline import (
     load,
@@ -12,21 +20,39 @@ from quadpype.pipeline import (
     get_representation_path,
 )
 from quadpype.hosts.nuke.api.lib import (
-    get_imageio_input_colorspace
+    get_imageio_input_colorspace,
+    get_layers,
+    compare_layers,
+    get_unique_name_and_number,
+    PREP_LAYER_PSD_EXT,
+    PREP_LAYER_EXR_EXT
+)
+from quadpype.hosts.nuke.api.constants import (
+    COLOR_GREEN,
+    COLOR_RED
 )
 from quadpype.hosts.nuke.api import (
     containerise,
     update_container,
     viewer_update_and_undo_stop
 )
+from quadpype.hosts.nuke.api.backdrops import (
+    pre_organize_by_backdrop,
+    organize_by_backdrop,
+    reorganize_inside_main_backdrop,
+    update_by_backdrop,
+    get_nodes_in_backdrops
+)
 from quadpype.lib.transcoding import (
     IMAGE_EXTENSIONS
 )
+from quadpype.hosts.nuke.api import plugin
 
+from src.quadpype.pipeline.editorial import frames_to_seconds
 
-class LoadImage(load.LoaderPlugin):
+class LoadImage(plugin.NukeLoader):
     """Load still image into Nuke"""
-
+    log = Logger.get_logger(__name__)
     families = [
         "render2d",
         "source",
@@ -50,30 +76,77 @@ class LoadImage(load.LoaderPlugin):
     _representations = []
 
     node_name_template = "{class_name}_{ext}"
-
-    options = [
-        qargparse.Integer(
-            "frame_number",
-            label="Frame Number",
-            default=int(nuke.root()["first_frame"].getValue()),
-            min=1,
-            max=999999,
-            help="What frame is reading from?"
-        )
-    ]
+    defaults = {
+        "prep_layers": True,
+        "create_stamps": True,
+        "pre_comp": True,
+        "frame_number":{
+            "minimum":0,
+            "maximum":99999,
+            "decimals":0
+        }
+    }
 
     @classmethod
     def get_representations(cls):
         return cls._representations or cls.representations
 
+    @classmethod
+    def get_options(cls, contexts):
+        return [
+            NumberDef(
+                "frame_number",
+                label="Frame Number",
+                default=int(nuke.root()["first_frame"].getValue()),
+                minimum=1,
+                maximum=999999
+            ),
+            BoolDef(
+                "prep_layers",
+                label="Decompose Layers",
+                default=cls.defaults["prep_layers"],
+                tooltip="Separate each layer in shuffle nodes"
+            ),
+            BoolDef(
+                "create_stamps",
+                label="Create Stamps",
+                default=cls.defaults["create_stamps"],
+                tooltip="Create a stamp for each created nodes"
+            ),
+            BoolDef(
+                "pre_comp",
+                label="Create PreComp",
+                default=cls.defaults["pre_comp"],
+                tooltip="Generate the merge tree for generated nodes"
+            )
+        ]
+
     def load(self, context, name, namespace, options):
+        self.reset_container_id()
         self.log.info("__ options: `{}`".format(options))
-        frame_number = options.get(
-            "frame_number", int(nuke.root()["first_frame"].getValue())
-        )
+        frame_number = options.get("frame_number", int(nuke.root()["first_frame"].getValue()))
+        ext = context["representation"]["context"]["ext"].lower()
+        pre_comp = options.get("pre_comp", self.defaults["pre_comp"])
+
+        if ext in PREP_LAYER_EXR_EXT:
+            pre_comp = False
+        if not options:
+            options = {}
+
+        options["frame_number"] = frame_number
+        options["prep_layers"] = options.get("prep_layers", self.defaults["prep_layers"])
+        options["create_stamps"] = options.get("create_stamps", self.defaults["create_stamps"])
+        options["pre_comp"] = pre_comp
+        options["is_prep_layer_compatible"] = ext in (set(PREP_LAYER_PSD_EXT) | set(PREP_LAYER_EXR_EXT))
+        options["ext"] = ext
 
         version = context['version']
         version_data = version.get("data", {})
+        project_name = get_current_project_name()
+        version_doc = get_version_by_id(project_name, context["representation"]["parent"])
+        last_version_doc = get_last_version_by_subset_id(
+            project_name, version_doc["parent"], fields=["_id"]
+        )
         repr_id = context["representation"]["_id"]
 
         self.log.info("version_data: {}\n".format(version_data))
@@ -105,18 +178,24 @@ class LoadImage(load.LoaderPlugin):
                 frame,
                 format(frame_number, "0{}".format(padding)))
 
-        read_name = self._get_node_name(representation)
-
+        #Get unique name
+        read_name, unique_number = get_unique_name_and_number(representation=representation,
+                                                              template=self.node_name_template,
+                                                              unique_number=None,
+                                                              node_type="Read")
         # Create the Loader with the filename path set
         with viewer_update_and_undo_stop():
+
+            nodes_in_main_backdrops = pre_organize_by_backdrop()
+
             r = nuke.createNode(
                 "Read",
                 "name {}".format(read_name),
                 inpanel=False
             )
-
             r["file"].setValue(file)
-
+            r["xpos"].setValue(-100000)
+            r["ypos"].setValue(-100000)
             # Set colorspace defined in version data
             colorspace = context["version"]["data"].get("colorspace")
             if colorspace:
@@ -146,7 +225,44 @@ class LoadImage(load.LoaderPlugin):
                     data_imprint.update(
                         {k: context["version"]['data'].get(k, str(None))})
 
-            r["tile_color"].setValue(int("0x4ecd25ff", 16))
+            r["tile_color"].setValue(int(COLOR_GREEN, 16))
+
+            try:
+                nodes_before = list(nuke.allNodes())
+                main_backdrop, storage_backdrop, nodes = organize_by_backdrop(context=context,
+                                                                       read_node=r,
+                                                                       nodes_in_main_backdrops=nodes_in_main_backdrops,
+                                                                       options=options,
+                                                                       unique_number=unique_number)
+
+            except TemplateProfileNotFound:
+                for n in nuke.allNodes():
+                    if n not in nodes_before:
+                        nuke.delete(n)
+                nuke.delete(r)
+                raise Exception(f"No template found in loader for "
+                                f"{context['representation']['context']['task']['name']}")
+
+            if storage_backdrop:
+                data_imprint["storage_backdrop"] = storage_backdrop['name'].value()
+                data_imprint["main_backdrop"] = main_backdrop['name'].value()
+                self.set_as_member(storage_backdrop)
+                for n in nodes:
+                    self.set_as_member(n)
+            else:
+                self.set_as_member(r)
+
+            self.log.info("__ options: `{}`".format(options))
+            data_imprint["options"] = options
+            self.log.info("__ unique_number: `{}`".format(unique_number))
+            data_imprint["unique_number"] = unique_number
+
+            # change color of node
+            if version_doc["_id"] == last_version_doc["_id"]:
+                color_value = COLOR_GREEN
+            else:
+                color_value = COLOR_RED
+            r["tile_color"].setValue(int(color_value, 16))
 
             return containerise(r,
                                 name=name,
@@ -158,7 +274,7 @@ class LoadImage(load.LoaderPlugin):
     def switch(self, container, representation):
         self.update(container, representation)
 
-    def update(self, container, representation):
+    def update(self, container, representation, ask_proceed=True):
         """Update the Loader's path
 
         Nuke automatically tries to reset some variables when changing
@@ -172,7 +288,7 @@ class LoadImage(load.LoaderPlugin):
         assert node.Class() == "Read", "Must be Read"
 
         repr_cont = representation["context"]
-
+        old_file = node["file"].value()
         file = get_representation_path(representation)
 
         if not file:
@@ -201,14 +317,36 @@ class LoadImage(load.LoaderPlugin):
 
         last = first = int(frame_number)
 
+        options = ast.literal_eval(container.get("options"))
+        prep_layers = options.get("prep_layers", False)
+        is_prep_layer_compatible = options.get("is_prep_layer_compatible", False)
+        ext = options.get("ext", None)
+        old_layers = dict()
+        new_layers = dict()
+        if is_prep_layer_compatible:
+            old_layers = get_layers(node, ext)
+            node["file"].setValue(file)
+            new_layers = get_layers(node, ext)
+
+            if prep_layers:
+                if not compare_layers(old_layers, new_layers, ask_proceed=ask_proceed):
+                    node["file"].setValue(old_file)
+                    return
+
+        # Get unique name and number
+        unique_number = container.get("unique_number", None)
+        read_name, unique_number = get_unique_name_and_number(representation=representation,
+                                                              template=self.node_name_template,
+                                                              unique_number=unique_number,
+                                                              node_type="Read")
         # Set the global in to the start frame of the sequence
-        read_name = self._get_node_name(representation)
         node["name"].setValue(read_name)
-        node["file"].setValue(file)
         node["origfirst"].setValue(first)
         node["first"].setValue(first)
         node["origlast"].setValue(last)
         node["last"].setValue(last)
+
+        update_by_backdrop(container, old_layers, new_layers, ask_proceed=False)
 
         updated_dict = {}
         updated_dict.update({
@@ -224,9 +362,9 @@ class LoadImage(load.LoaderPlugin):
 
         # change color of node
         if version_doc["_id"] == last_version_doc["_id"]:
-            color_value = "0x4ecd25ff"
+            color_value = COLOR_GREEN
         else:
-            color_value = "0xd84f20ff"
+            color_value = COLOR_RED
         node["tile_color"].setValue(int(color_value, 16))
 
         # Update the imprinted representation
@@ -239,20 +377,13 @@ class LoadImage(load.LoaderPlugin):
     def remove(self, container):
         node = container["node"]
         assert node.Class() == "Read", "Must be Read"
+        storage_backdrop = nuke.toNode(container["storage_backdrop"])
 
+        main_backdrop = container["main_backdrop"]
         with viewer_update_and_undo_stop():
-            nuke.delete(node)
-
-    def _get_node_name(self, representation):
-
-        repre_cont = representation["context"]
-        name_data = {
-            "asset": repre_cont["asset"],
-            "subset": repre_cont["subset"],
-            "representation": representation["name"],
-            "ext": repre_cont["representation"].lower(),
-            "id": representation["_id"],
-            "class_name": self.__class__.__name__
-        }
-
-        return self.node_name_template.format(**name_data)
+            members = get_nodes_in_backdrops(storage_backdrop)
+            nuke.delete(storage_backdrop)
+            for member in members:
+                nuke.delete(member)
+            if main_backdrop:
+                reorganize_inside_main_backdrop(main_backdrop)
