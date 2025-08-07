@@ -121,7 +121,7 @@ class CreateWritePrerender(napi.NukeWriteCreator):
             exposed_write_knobs(
                 self.project_settings, self.__class__.__name__, instance_node
             )
-
+            self.set_group_attr(instance_node)
             return instance
 
         except Exception as e:

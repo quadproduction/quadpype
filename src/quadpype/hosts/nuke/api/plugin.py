@@ -4,6 +4,7 @@ import os
 import random
 import string
 from collections import OrderedDict, defaultdict
+from enum import Enum
 
 from quadpype.settings import get_current_project_settings
 from quadpype.lib import (
@@ -27,6 +28,7 @@ from quadpype.lib.transcoding import (
 )
 from .lib import (
     INSTANCE_DATA_KNOB,
+    AUTORESIZE_LABEL,
     Knobby,
     maintained_selection,
     get_avalon_knob_data,
@@ -42,6 +44,15 @@ from .pipeline import (
     list_instances,
     remove_instance
 )
+
+class WriteKnobType(Enum):
+    FILE_TYPE = {"name":"file_type", "knob":"Enumeration_Knob", "init":True}
+    CHANNELS = {"name":"channels", "knob":"ChannelMask_Knob"}
+    COLORSPACE = {"name":"colorspace", "knob":"Enumeration_Knob", "init":True}
+    FILE = {"name":"file", "knob":"File_Knob"}
+
+class ReformatKnobType(Enum):
+    FORMAT = {"name":"format", "knob":"Format_Knob"}
 
 
 def _collect_and_cache_nodes(creator):
@@ -390,6 +401,80 @@ class NukeWriteCreator(NukeCreator):
             or self.temp_rendering_path_template
         )
 
+    def set_group_attr(self, instance_node):
+        """Create attr on instance node linked to write attr"""
+        if instance_node.Class() != "Group":
+            self.log.info(f"{instance_node.name()} is not a Group, exiting attribute creation")
+            return
+        write_nodes = []
+        auto_reformat_node = None
+        instance_node.begin()
+        for node in nuke.allNodes():
+            if node.Class() == "Write":
+                write_nodes.append(node)
+            if node.name() == AUTORESIZE_LABEL:
+                auto_reformat_node = node
+        instance_node.end()
+        if len(write_nodes) > 1:
+            self.log.info(f"More than one write node found in {instance_node.name()}, exiting attribute creation")
+            return
+        write_node = write_nodes[0]
+        self._populate_node_with_knobs(instance_node, write_node, WriteKnobType)
+        auto_reformat_node_name = None
+        if auto_reformat_node:
+            auto_reformat_node_name = auto_reformat_node.name()
+            self._populate_node_with_knobs(instance_node, auto_reformat_node, ReformatKnobType)
+            auto_reformat_node.knob('knobChanged').setValue(
+                _create_render_group_attr_expression(
+                    write_node.name(),
+                    instance_node.name()
+                )
+            )
+
+        instance_node.knob('knobChanged').setValue(
+            _create_render_group_attr_expression(
+                write_node.name(),
+                auto_reformat_node_name
+            )
+        )
+        self.log.info(f"Set expression {instance_node.knob('knobChanged').value()} on {instance_node.name()}")
+
+    #@staticmethod
+    def _populate_node_with_knobs(self, instance_node, child_node, enum_class):
+        for node_type in enum_class:
+            name = node_type.value["name"]
+            class_name = node_type.value["knob"]
+            init = node_type.value.get("init", None)
+            knob_class = getattr(nuke, class_name)
+
+            if init:
+                knob = knob_class(name, name.title(), child_node[name].values())
+
+            else:
+                knob = knob_class(name)
+                knob.setName(name)
+                knob.setLabel(name.title())
+
+            knob.setValue(child_node[name].value())
+            instance_node.addKnob(knob)
+
+def _create_render_group_attr_expression(write_node_name, auto_reformat_node_name):
+    lines = ['knob = nuke.thisKnob()', 'node = nuke.thisNode()']
+    for node_type in WriteKnobType:
+        name = node_type.value["name"]
+        line = f'if knob.name() == "{name}":\n    nuke.toNode("{write_node_name}")["{name}"].setValue(knob.value())'
+        lines.append(line)
+    lines.append('if "file" in node.knobs():\n    ext = node["file"].value().rsplit(".", 1)[-1]')
+    lines.append('    if ext:\n        node["file_type"].setValue(ext)')
+    if not auto_reformat_node_name:
+        return "\n".join(lines)
+
+    for node_type in ReformatKnobType:
+        name = node_type.value["name"]
+        line = f'if knob.name() == "{name}":\n    nuke.toNode("{auto_reformat_node_name}")["{name}"].setValue(knob.value())'
+        lines.append(line)
+
+    return "\n".join(lines)
 
 def get_instance_group_node_children(instance):
     """Return list of instance group node children
