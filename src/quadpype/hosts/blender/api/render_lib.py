@@ -87,23 +87,25 @@ def get_render_product(output_path, name, aov_sep, view_layers, multiexr=False):
         ext (str): The image format to render.
     """
     beauty_render_product = {}
-    if multiexr:
-        vl_name = "_"
+
+    # Todo : get from settings
+    # if multiexr:
+    vl_name = "_"
+    beauty_render_product[vl_name] = []
+    output_dir = Path(output_path)
+    filepath = output_dir / name.lstrip("/")
+    render_product = f"{filepath}{aov_sep}beauty.####"
+    beauty_render_product[vl_name].append(
+        ("beauty", os.path.normpath(render_product)))
+    # else:
+    for view_layer in view_layers:
+        vl_name = view_layer.name
         beauty_render_product[vl_name] = []
-        output_dir = Path(output_path)
+        output_dir = Path(f"{output_path}/{vl_name}")
         filepath = output_dir / name.lstrip("/")
-        render_product = f"{filepath}{aov_sep}beauty.####"
+        render_product = f"{filepath}_{vl_name}{aov_sep}beauty.####"
         beauty_render_product[vl_name].append(
             ("beauty", os.path.normpath(render_product)))
-    else:
-        for view_layer in view_layers:
-            vl_name = view_layer.name
-            beauty_render_product[vl_name] = []
-            output_dir = Path(f"{output_path}/{vl_name}")
-            filepath = output_dir / name.lstrip("/")
-            render_product = f"{filepath}_{vl_name}{aov_sep}beauty.####"
-            beauty_render_product[vl_name].append(
-                ("beauty", os.path.normpath(render_product)))
 
     return beauty_render_product
 
@@ -275,6 +277,12 @@ def set_node_tree(
     output_type = "CompositorNodeOutputFile"
     compositor_type = "CompositorNodeComposite"
 
+    # In case of a multilayer exr, we don't need to use the output node,
+    # because the blender render already outputs a multilayer exr.
+    exr = ext == "exr"
+    multi_exr = exr and multilayer
+    orig_view_layers = {view_layer.name for view_layer in view_layers}
+
     # Get the Render Layer, Composite and the previous output nodes
     render_layer_nodes = set()
     composite_node = None
@@ -299,9 +307,11 @@ def set_node_tree(
             tree, comp_layer_type,
             view_layers, render_layer_nodes
         )
+
+        render_layer_nodes_without_output = render_layer_nodes
+
     else:
         missing_render_layer_nodes = set()
-        orig_view_layers = {view_layer.name for view_layer in view_layers}
         missing_view_layers_by_nodes = {node.layer for node in render_layer_nodes}
         missing_view_layers_set = orig_view_layers - missing_view_layers_by_nodes
         missing_view_layers = [
@@ -312,7 +322,13 @@ def set_node_tree(
             tree, comp_layer_type,
             missing_view_layers, missing_render_layer_nodes
         )
+
         render_layer_nodes.update(missing_render_layer_nodes)
+
+        render_layer_nodes_without_output = set(
+            node for node in render_layer_nodes
+            if not _has_file_output_in_chain(node)
+        )
 
     # Get the enabled output sockets, that are the active passes for the
     # render.
@@ -331,103 +347,119 @@ def set_node_tree(
         render_aovs_dict.update(render_dict)
 
     # Create a new output node
-    output = tree.nodes.new(output_type)
+    #TODO : only do this when rendering multiple layer ?
+    for index, render_layer_node in enumerate(render_layer_nodes_without_output):
+        output = tree.nodes.new(output_type)
+        output.location = (render_layer_node.location.x + 900, render_layer_node.location.y)
 
-    image_settings = bpy.context.scene.render.image_settings
-    output.format.file_format = image_settings.file_format
+        image_settings = bpy.context.scene.render.image_settings
+        output.format.file_format = image_settings.file_format
 
-    # In case of a multilayer exr, we don't need to use the output node,
-    # because the blender render already outputs a multilayer exr.
-    multi_exr = ext == "exr" and multilayer
+        slots = output.layer_slots if multi_exr else output.file_slots
 
-    slots = output.layer_slots if multi_exr else output.file_slots
+        #rn_layer_node = next((node for node in reversed(render_aovs_dict.keys())), None)
+        output_dir = Path(output_path)
+        filepath = output_dir / name.lstrip("/")
 
-    rn_layer_node = next((node for node in reversed(render_aovs_dict.keys())), None)
-    output_dir = Path(output_path)
-    filepath = output_dir / name.lstrip("/")
-    render_product_main_beauty = f"{filepath}{aov_sep}beauty.####"
+        render_product_file_name = f"{aov_sep}{render_layer_node.layer}{aov_sep}beauty.####"
+        render_product_main_beauty = f"{filepath}{render_product_file_name}"
 
-    output.base_path = render_product_main_beauty if multi_exr else str(output_path)
+        output.base_path = str(output_path)
+        output.base_path = str(Path(output_path.parent, output_path.name, render_layer_node.layer, render_product_file_name))
 
-    slots.clear()
+        slots.clear()
 
-    aov_file_products = {}
+        aov_file_products = {}
 
-    old_links = {
-        link.from_socket.name: link for link in tree.links
-        if link.to_node == old_output_node}
+        old_links = {
+            link.from_socket.name: link for link in tree.links
+            if link.to_node == old_output_node}
 
-    if multi_exr:
-        # If multi exr, we also need to first add socket with empty name
-        # to allow exr to be read by ffprobe later
-        slot, _ = _create_aov_slot(
-            name, aov_sep, slots, '', multi_exr, output_path, rn_layer_node.layer)
-        tree.links.new(rn_layer_node.outputs["Image"], slot)
-
-    # Create a new socket for the beauty output
-    pass_name = "rgba" if multi_exr else "beauty"
-
-    if not connect_only_current_layer:
-        for render_layer_node in render_aovs_dict.keys():
-            render_layer = render_layer_node.layer
+        if exr:
+            # If exr, we also need to first add socket with empty name
+            # to allow exr to be read by ffprobe later
             slot, _ = _create_aov_slot(
-                name, aov_sep, slots, f"{pass_name}_{render_layer}", multi_exr, output_path, render_layer)
+                name, aov_sep, slots, '', multi_exr, output_path, render_layer_node.layer)
             tree.links.new(render_layer_node.outputs["Image"], slot)
 
-    if compositing:
-        # Create a new socket for the composite output
-        # with only the one view layer
-        pass_name = "composite"
-        if rn_layer_node:
-            render_layer = rn_layer_node.layer
-            aov_file_products[render_layer] = []
-            comp_socket, filepath = _create_aov_slot(
-                name, aov_sep, slots, pass_name, multi_exr, output_path, render_layer)
-            aov_file_products[render_layer].append((pass_name, filepath))
-            # If there's a composite node, we connect its input with the new output
-            if composite_node:
-                for link in tree.links:
-                    if link.to_node == composite_node:
-                        tree.links.new(link.from_socket, comp_socket)
-                        break
+        # Create a new socket for the beauty output
+        pass_name = "rgba" if multi_exr else "beauty"
 
-        # For each active render pass, we add a new socket to the output node
-        # and link it
-        for render_layer_node, passes in render_aovs_dict.items():
-            render_layer = render_layer_node.layer
-            if not aov_file_products.get(render_layer, []):
+        # Todo : useless ?
+        # if not connect_only_current_layer:
+        #     for render_layer_node in render_aovs_dict.keys():
+        #         render_layer = render_layer_node.layer
+        #         slot, _ = _create_aov_slot(
+        #             name, aov_sep, slots, f"{pass_name}_{render_layer}", multi_exr, output_path, render_layer)
+        #         tree.links.new(render_layer_node.outputs["Image"], slot)
+
+        if compositing:
+            # Create a new socket for the composite output
+            # with only the one view layer
+            pass_name = "composite"
+            if render_layer_node:
+                render_layer = render_layer_node.layer
                 aov_file_products[render_layer] = []
-            for rpass in passes:
-                slot, filepath = _create_aov_slot(
-                    name, aov_sep, slots, f"{rpass.name}_{render_layer}", multi_exr, output_path, render_layer)
+                comp_socket, filepath = _create_aov_slot(
+                    name, aov_sep, slots, pass_name, multi_exr, output_path, render_layer)
+                aov_file_products[render_layer].append((pass_name, filepath))
+                # If there's a composite node, we connect its input with the new output
+                if composite_node:
+                    for link in tree.links:
+                        if link.to_node == composite_node:
+                            tree.links.new(link.from_socket, comp_socket)
+                            break
 
-                aov_file_products[render_layer].append((rpass.name, filepath))
+            # For each active render pass, we add a new socket to the output node
+            # and link it
+            for render_layer_node, passes in render_aovs_dict.items():
+                render_layer = render_layer_node.layer
+                if not aov_file_products.get(render_layer, []):
+                    aov_file_products[render_layer] = []
+                for rpass in passes:
+                    slot, filepath = _create_aov_slot(
+                        name, aov_sep, slots, f"{rpass.name}_{render_layer}", multi_exr, output_path, render_layer)
 
-                # If the rpass was not connected with the old output node, we connect
-                # it with the new one.
-                if not old_links.get(rpass.name):
-                    tree.links.new(rpass, slot)
+                    aov_file_products[render_layer].append((rpass.name, filepath))
 
-        for link in list(old_links.values()):
-            # Check if the socket is still available in the new output node.
-            socket = output.inputs.get(link.to_socket.name)
-            # If it is, we connect it with the new output node.
-            if socket:
-                tree.links.new(link.from_socket, socket)
-            # Then, we remove the old link.
-            tree.links.remove(link)
+                    # If the rpass was not connected with the old output node, we connect
+                    # it with the new one.
+                    if not old_links.get(rpass.name):
+                        tree.links.new(rpass, slot)
 
-    if old_output_node:
-        output.location = old_output_node.location
-        tree.nodes.remove(old_output_node)
+            for link in list(old_links.values()):
+                # Check if the socket is still available in the new output node.
+                socket = output.inputs.get(link.to_socket.name)
+                # If it is, we connect it with the new output node.
+                if socket:
+                    tree.links.new(link.from_socket, socket)
+                # Then, we remove the old link.
+                tree.links.remove(link)
 
-    output.name = "QuadPype File Output"
-    output.label = "QuadPype File Output"
+        # Todo: only if single layer render
+        # if old_output_node:
+        #     output.location = old_output_node.location
+        #     tree.nodes.remove(old_output_node)
+
+        output.name = "QuadPype File Output"
+        output.label = "QuadPype File Output"
 
     if not use_nodes:
         bpy.context.scene.use_nodes = False
 
     return {} if multi_exr else aov_file_products
+
+
+def _has_file_output_in_chain(node):
+    if node.type == 'OUTPUT_FILE':
+        return True
+
+    for output_socket in node.outputs:
+        for link in output_socket.links:
+            if _has_file_output_in_chain(link.to_node):
+                return True
+
+    return False
 
 
 def imprint_render_settings(node, data):
@@ -441,8 +473,9 @@ def imprint_render_settings(node, data):
 
 
 def create_node_with_new_view_layers(tree, comp_layer_type, view_layers, render_layer_nodes):
-    for view_layer in view_layers:
+    for index, view_layer in enumerate(view_layers):
         render_layer_node = tree.nodes.new(comp_layer_type)
+        render_layer_node.location = (0, 900 * index)
         render_layer_node.layer = view_layer.name
         render_layer_node.name = f"QuadPype Render Node - {view_layer.name}"
         render_layer_node.label = f"QuadPype Render Node"
@@ -490,6 +523,9 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
     aov_list, custom_passes = set_render_passes(settings, renderer, view_layers)
 
     output_path = Path.joinpath(dirpath, render_folder, file_name)
+
+    {"asset": "SQ01_SH020", "task": "3D_Layout", "variant": "Main", "family": "render", "id": "pyblish.avalon.instance",
+     "creator_identifier": "io.quadpype.creators.blender.render", "subset": "render3D_LayoutMain"}
 
     render_product = get_render_product(
         output_path, name, aov_sep, view_layers, multiexr=multilayer

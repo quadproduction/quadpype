@@ -28,11 +28,12 @@ class SetNodesOutputsPaths(
 
     order = pyblish.api.IntegratorOrder - 0.3
     hosts = ["blender"]
-    families = ["render"]
+    families = []
     label = "Set nodes outputs paths"
     optional = True
 
     def process(self, instance):
+        # TODO : update or delete
         if not self.is_active(instance.data):
             return
 
@@ -88,41 +89,54 @@ class SetNodesOutputsPaths(
 
             updated_anatomy_data['render_layer_name'] = render_node.layer
 
-            output_path = StringTemplate.format_template(
-                template=templates['node_output'],
-                data=updated_anatomy_data,
-            )
+            from quadpype.pipeline.farm.tools import iter_expected_files
+            import os
 
-            # If folder doesn't exists, it means that we render this layer for the first time
-            # and we can keep the previous path as generated with version retrieved from instance
-            if Path(output_path).parent.exists():
+            expected_files = instance.data["expectedFiles"]
+            if not expected_files:
+                raise RuntimeError("No Render Elements found!")
 
-                last_version_filename = get_last_version_from_path(
-                    path_dir=_get_version_folder_parent(
-                        output_template=templates['node_output'],
-                        template_data=updated_anatomy_data
-                    ),
-                    filter=[updated_anatomy_data['asset'], render_node.layer],
-                    search_in_subdirectories=True
-                )
-
-                if not last_version_filename:
-                    raise RuntimeError(
-                        f"An error has occured when trying to determine last version "
-                        f"from rendered layer named {render_node.layer}"
-                    )
-
-                last_version_number = int(get_version_from_path(last_version_filename))
-                output_path = StringTemplate.format_template(
-                    template=templates['node_output'],
-                    data={
-                        **updated_anatomy_data,
-                        'version': last_version_number+1
-                    },
-                )
-
+            first_file = next(iter_expected_files(expected_files))
+            # output_dir = os.path.dirname(first_file)
+            # output_path = f"{output_dir}/"
+            output_path = first_file
+            #
+            # output_path = StringTemplate.format_template(
+            #     template=templates['node_output'],
+            #     data=updated_anatomy_data,
+            # )
+            #
+            # # If folder doesn't exists, it means that we render this layer for the first time
+            # # and we can keep the previous path as generated with version retrieved from instance
+            # if Path(output_path).parent.exists():
+            #
+            #     last_version_filename = get_last_version_from_path(
+            #         path_dir=_get_version_folder_parent(
+            #             output_template=templates['node_output'],
+            #             template_data=updated_anatomy_data
+            #         ),
+            #         filter=[updated_anatomy_data['asset'], render_node.layer],
+            #         search_in_subdirectories=True
+            #     )
+            #
+            #     if not last_version_filename:
+            #         raise RuntimeError(
+            #             f"An error has occured when trying to determine last version "
+            #             f"from rendered layer named {render_node.layer}"
+            #         )
+            #
+            #     last_version_number = int(get_version_from_path(last_version_filename))
+            #     output_path = StringTemplate.format_template(
+            #         template=templates['node_output'],
+            #         data={
+            #             **updated_anatomy_data,
+            #             'version': last_version_number+1
+            #         },
+            #     )
+            #
             output_node.base_path = output_path
             self.log.info(f"File output path set to '{output_node.base_path}'.")
+        raise RuntimeError
 
         return
 

@@ -10,7 +10,7 @@ from quadpype.pipeline.publish import (
 from quadpype.hosts.blender.api import plugin
 
 
-class ReetRenderSettings(
+class ResetRenderSettings(
     plugin.BlenderInstancePlugin,
     OptionalPyblishPluginMixin,
 ):
