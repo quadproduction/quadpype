@@ -104,6 +104,11 @@
                     "label": "Note: Multilayer EXR is only used when output format type set to EXR."
                 },
                 {
+                    "key": "instance_per_layer",
+                    "type": "boolean",
+                    "label": "Render layers in separated instances"
+                },
+                {
                     "key": "use_nodes",
                     "type": "boolean",
                     "label": "Enable nodes use when creating render"

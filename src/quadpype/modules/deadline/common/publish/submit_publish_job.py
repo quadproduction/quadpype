@@ -376,7 +376,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             instances = create_instances_for_aov(
                 instance, instance_skeleton_data,
                 self.aov_filter, self.skip_integration_repre_list,
-                do_not_add_review)
+                do_not_add_review, subset_group=instance.data.get('subsetGroup'))
         else:
             representations = prepare_representations(
                 instance_skeleton_data,

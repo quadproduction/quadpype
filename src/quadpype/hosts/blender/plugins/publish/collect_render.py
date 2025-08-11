@@ -56,6 +56,7 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
         aov_file_product = render_data.get("aov_file_product")
         ext = render_data.get("image_format")
         multilayer = render_data.get("multilayer_exr")
+        instance_per_layer = render_data.get("instance_per_layer")
         review = render_data.get("review", False)
 
         frame_start = instance.data["frameStartHandle"]
@@ -70,8 +71,10 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
             expected_files, int(frame_start), int(frame_end),
             int(bpy.context.scene.frame_step), ext)
 
+        # Todo : update farm info when rendering global scene
         instance.data.update({
             "families": ["render", "render.farm"],
+            "subsetGroup": instance.data["subset"],
             "frameStart": frame_start,
             "frameEnd": frame_end,
             "productType": "render",
@@ -81,7 +84,7 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
             "byFrameStep": bpy.context.scene.frame_step,
             "review": review,
             "multipartExr": ext == "exr" and multilayer,
-            "farm": True,
+            "farm": False,
             "expectedFiles": [expected_beauty],
             # OCIO not currently implemented in Blender, but the following
             # settings are required by the schema, so it is hardcoded.
@@ -95,7 +98,9 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
             ),
         })
 
-        #TODO : Get info from settings
+        if not instance_per_layer:
+            return
+
         instance.data["integrate"] = False
         self.create_renderlayer_instance(
             instance, render_product,
@@ -121,7 +126,10 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
             viewlayer_name = view_layer.name
             rn_product = render_product.get(viewlayer_name, None)
             if not rn_product:
-                self.log.warning(f"Can not found render data for layer named '{viewlayer_name}'. Will not create instance.")
+                self.log.warning(
+                    f"Can not found render data for layer named '{viewlayer_name}'. "
+                    f"Will not create instance."
+                )
                 continue
 
             aov_product = aov_file_product[viewlayer_name] if aov_file_product else {}
@@ -154,6 +162,7 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
                 "name": viewlayer_product_name,
                 "label": viewlayer_product_name,
                 "subset": viewlayer_product_name,
+                "subsetGroup": instance.data["subset"],
                 "family": "renderlayer",
                 "families": ["renderlayer"],
                 "fps": context.data["fps"],

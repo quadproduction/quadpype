@@ -66,6 +66,7 @@ class CreateRenderlayer(plugin.BlenderCreator):
                     label="Layer(s) to render",
                     multiselection=True
                 ),
+                UISeparatorDef(),
                 EnumDef(
                     "device",
                     label="Device",

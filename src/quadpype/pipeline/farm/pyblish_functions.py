@@ -456,7 +456,7 @@ def prepare_representations(skeleton_data, exp_files, anatomy, aov_filter,
 
 def create_instances_for_aov(instance, skeleton, aov_filter,
                              skip_integration_repre_list,
-                             do_not_add_review):
+                             do_not_add_review, subset_group=None):
     """Create instances from AOVs.
 
     This will create new pyblish.api.Instances by going over expected
@@ -514,12 +514,13 @@ def create_instances_for_aov(instance, skeleton, aov_filter,
         aov_filter,
         additional_color_data,
         skip_integration_repre_list,
-        do_not_add_review
+        do_not_add_review,
+        subset_group
     )
 
 
 def _create_instances_for_aov(instance, skeleton, aov_filter, additional_data,
-                              skip_integration_repre_list, do_not_add_review):
+                              skip_integration_repre_list, do_not_add_review, subset_group=None):
     """Create instance for each AOV found.
 
     This will create new instance for every AOV it can detect in expected
@@ -575,11 +576,16 @@ def _create_instances_for_aov(instance, skeleton, aov_filter, additional_data,
         # create subset name `familyTaskSubset_AOV`
         # TODO refactor/remove me
         family = skeleton["family"]
-        if not subset.startswith(family):
+
+        if subset_group:
+            group_name = subset_group
+
+        elif not subset.startswith(family):
             group_name = '{}{}{}{}{}'.format(
                 family,
                 task[0].upper(), task[1:],
                 subset[0].upper(), subset[1:])
+
         else:
             group_name = subset
 

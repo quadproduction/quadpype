@@ -50,6 +50,14 @@ def get_multilayer(settings):
     ["multilayer_exr"])
 
 
+def get_instance_per_layer(settings):
+    """Get instance_per_layer from blender settings."""
+
+    return (settings["blender"]
+    ["RenderSettings"]
+    ["instance_per_layer"])
+
+
 def get_renderer(settings):
     """Get renderer from blender settings."""
 
@@ -74,7 +82,7 @@ def get_compositing(settings):
     ["compositing"])
 
 
-def get_render_product(output_path, name, aov_sep, view_layers, multiexr=False):
+def get_render_product(output_path, name, aov_sep, view_layers, instance_per_layer):
     """
     Generate the path to the render product. Blender interprets the `#`
     as the frame number, when it renders.
@@ -88,8 +96,6 @@ def get_render_product(output_path, name, aov_sep, view_layers, multiexr=False):
     """
     beauty_render_product = {}
 
-    # Todo : get from settings
-    # if multiexr:
     vl_name = "_"
     beauty_render_product[vl_name] = []
     output_dir = Path(output_path)
@@ -97,7 +103,10 @@ def get_render_product(output_path, name, aov_sep, view_layers, multiexr=False):
     render_product = f"{filepath}{aov_sep}beauty.####"
     beauty_render_product[vl_name].append(
         ("beauty", os.path.normpath(render_product)))
-    # else:
+
+    if not instance_per_layer:
+        return beauty_render_product
+
     for view_layer in view_layers:
         vl_name = view_layer.name
         beauty_render_product[vl_name] = []
@@ -266,8 +275,8 @@ def _create_aov_slot(name, aov_sep, slots, rpass_name, multi_exr, output_path, r
 
 
 def set_node_tree(
-        output_path, name, aov_sep, ext, multilayer, compositing, view_layers,
-        auto_connect_nodes, connect_only_current_layer, use_nodes
+        output_path, name, aov_sep, ext, multilayer, compositing, view_layers, instance_per_layer,
+        render_product, auto_connect_nodes, connect_only_current_layer, use_nodes
 ):
     bpy.context.scene.use_nodes = True
 
@@ -346,8 +355,11 @@ def set_node_tree(
         }
         render_aovs_dict.update(render_dict)
 
-    # Create a new output node
-    #TODO : only do this when rendering multiple layer ?
+    if not instance_per_layer:
+        render_layer_nodes_without_output = next((node for node in reversed(render_aovs_dict.keys())), None)
+
+    aov_file_products = {}
+
     for index, render_layer_node in enumerate(render_layer_nodes_without_output):
         output = tree.nodes.new(output_type)
         output.location = (render_layer_node.location.x + 900, render_layer_node.location.y)
@@ -357,23 +369,36 @@ def set_node_tree(
 
         slots = output.layer_slots if multi_exr else output.file_slots
 
-        #rn_layer_node = next((node for node in reversed(render_aovs_dict.keys())), None)
-        output_dir = Path(output_path)
-        filepath = output_dir / name.lstrip("/")
+        layer_render_product = render_product.get(render_layer_node.layer, None)
+        assert layer_render_product, f"Can not retrieve render product for layer named {render_layer_node.layer}"
 
-        render_product_file_name = f"{aov_sep}{render_layer_node.layer}{aov_sep}beauty.####"
-        render_product_main_beauty = f"{filepath}{render_product_file_name}"
+        beauty_filepath = next(
+            iter(
+                beauty_filepath[1] for beauty_filepath in layer_render_product
+                if beauty_filepath[0] == 'beauty'
+            ), None
+        )
+        if not beauty_filepath:
+            raise Exception(
+                f"Can not found beauty filepath in render product for layer named {render_layer_node.layer}"
+            )
 
-        output.base_path = str(output_path)
-        output.base_path = str(Path(output_path.parent, output_path.name, render_layer_node.layer, render_product_file_name))
+        output.base_path = str(
+            Path(
+                output_path.parent,
+                output_path.name,
+                render_layer_node.layer,
+                Path(beauty_filepath).name,
+
+            )
+        )
 
         slots.clear()
 
-        aov_file_products = {}
-
         old_links = {
             link.from_socket.name: link for link in tree.links
-            if link.to_node == old_output_node}
+            if link.to_node == old_output_node
+        }
 
         if exr:
             # If exr, we also need to first add socket with empty name
@@ -385,13 +410,12 @@ def set_node_tree(
         # Create a new socket for the beauty output
         pass_name = "rgba" if multi_exr else "beauty"
 
-        # Todo : useless ?
-        # if not connect_only_current_layer:
-        #     for render_layer_node in render_aovs_dict.keys():
-        #         render_layer = render_layer_node.layer
-        #         slot, _ = _create_aov_slot(
-        #             name, aov_sep, slots, f"{pass_name}_{render_layer}", multi_exr, output_path, render_layer)
-        #         tree.links.new(render_layer_node.outputs["Image"], slot)
+        if not connect_only_current_layer:
+            for render_layer_node in render_aovs_dict.keys():
+                render_layer = render_layer_node.layer
+                slot, _ = _create_aov_slot(
+                    name, aov_sep, slots, f"{pass_name}_{render_layer}", multi_exr, output_path, render_layer)
+                tree.links.new(render_layer_node.outputs["Image"], slot)
 
         if compositing:
             # Create a new socket for the composite output
@@ -436,10 +460,9 @@ def set_node_tree(
                 # Then, we remove the old link.
                 tree.links.remove(link)
 
-        # Todo: only if single layer render
-        # if old_output_node:
-        #     output.location = old_output_node.location
-        #     tree.nodes.remove(old_output_node)
+        if old_output_node and not instance_per_layer:
+            output.location = old_output_node.location
+            tree.nodes.remove(old_output_node)
 
         output.name = "QuadPype File Output"
         output.label = "QuadPype File Output"
@@ -499,6 +522,7 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
     aov_sep = get_aov_separator(settings)
     ext = get_image_format(settings)
     multilayer = get_multilayer(settings)
+    instance_per_layer = get_multilayer(settings)
     renderer = get_renderer(settings)
     use_nodes = get_use_nodes(settings)
     ver_major, ver_minor, _ = lib.get_blender_version()
@@ -524,15 +548,12 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
 
     output_path = Path.joinpath(dirpath, render_folder, file_name)
 
-    {"asset": "SQ01_SH020", "task": "3D_Layout", "variant": "Main", "family": "render", "id": "pyblish.avalon.instance",
-     "creator_identifier": "io.quadpype.creators.blender.render", "subset": "render3D_LayoutMain"}
-
     render_product = get_render_product(
-        output_path, name, aov_sep, view_layers, multiexr=multilayer
+        output_path, name, aov_sep, view_layers, instance_per_layer
     )
     aov_file_product = set_node_tree(
-        output_path, name, aov_sep, ext, multilayer, compositing, view_layers,
-        auto_connect_nodes, connect_only_current_layer, use_nodes
+        output_path, name, aov_sep, ext, multilayer, compositing, view_layers, instance_per_layer,
+        render_product, auto_connect_nodes, connect_only_current_layer, use_nodes
     )
 
     # Clear the render filepath, so that the output is handled only by the
@@ -546,6 +567,7 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
         "aov_separator": aov_sep,
         "image_format": ext,
         "multilayer_exr": multilayer,
+        "instance_per_layer": instance_per_layer,
         "aov_list": aov_list,
         "custom_passes": custom_passes,
         "render_product": render_product,
@@ -556,25 +578,27 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
     imprint_render_settings(asset_group, render_settings)
 
 
-def update_render_product(name, output_path, render_product, aov_sep, multilayer=False):
+def update_render_product(name, output_path, render_product, aov_sep, instance_per_layer):
     tmp_render_product = {}
-    if multilayer:
-        rl_name = "_"
+    rl_name = "_"
+    tmp_render_product[rl_name] = []
+    rn_product = render_product[rl_name]
+    for rpass_name, _ in rn_product:
+        filename = f"{name}{aov_sep}{rpass_name}.####"
+        filepath = str(output_path / filename.lstrip("/"))
+        tmp_render_product[rl_name].append((rpass_name, filepath))
+
+    if not instance_per_layer:
+        return tmp_render_product
+
+    render_layers = bpy.context.scene.view_layers
+    for render_layer in render_layers:
+        rl_name = render_layer.name
         tmp_render_product[rl_name] = []
         rn_product = render_product[rl_name]
         for rpass_name, _ in rn_product:
-            filename = f"{name}{aov_sep}{rpass_name}.####"
+            filename = f"{rl_name}/{name}_{rl_name}{aov_sep}{rpass_name}.####"
             filepath = str(output_path / filename.lstrip("/"))
             tmp_render_product[rl_name].append((rpass_name, filepath))
-    else:
-        render_layers = bpy.context.scene.view_layers
-        for render_layer in render_layers:
-            rl_name = render_layer.name
-            tmp_render_product[rl_name] = []
-            rn_product = render_product[rl_name]
-            for rpass_name, _ in rn_product:
-                filename = f"{rl_name}/{name}_{rl_name}{aov_sep}{rpass_name}.####"
-                filepath = str(output_path / filename.lstrip("/"))
-                tmp_render_product[rl_name].append((rpass_name, filepath))
 
     return tmp_render_product

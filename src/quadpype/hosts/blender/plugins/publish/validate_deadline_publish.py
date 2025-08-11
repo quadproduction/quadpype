@@ -95,8 +95,8 @@ class ValidateDeadlinePublish(
         aov_sep = render_data.get("aov_separator")
         filename = os.path.basename(bpy.data.filepath)
         filename, ext = os.path.splitext(filename)
-        ext = ext.strip(".")
         is_multilayer = render_data.get("multilayer_exr")
+        instance_per_layer = render_data.get("instance_per_layer")
         orig_output_path = output_node.base_path
         if is_multilayer:
             render_folder = render_data.get("render_folder")
@@ -119,7 +119,7 @@ class ValidateDeadlinePublish(
         updated_render_product = update_render_product(
             container.name, new_output_dir,
             render_product, aov_sep,
-            multilayer=is_multilayer
+            instance_per_layer=instance_per_layer
         )
         render_data["render_product"] = updated_render_product
         if aov_file_product:
