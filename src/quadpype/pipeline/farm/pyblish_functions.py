@@ -456,7 +456,7 @@ def prepare_representations(skeleton_data, exp_files, anatomy, aov_filter,
 
 def create_instances_for_aov(instance, skeleton, aov_filter,
                              skip_integration_repre_list,
-                             do_not_add_review, subset_group=None):
+                             do_not_add_review):
     """Create instances from AOVs.
 
     This will create new pyblish.api.Instances by going over expected
@@ -514,13 +514,12 @@ def create_instances_for_aov(instance, skeleton, aov_filter,
         aov_filter,
         additional_color_data,
         skip_integration_repre_list,
-        do_not_add_review,
-        subset_group
+        do_not_add_review
     )
 
 
 def _create_instances_for_aov(instance, skeleton, aov_filter, additional_data,
-                              skip_integration_repre_list, do_not_add_review, subset_group=None):
+                              skip_integration_repre_list, do_not_add_review):
     """Create instance for each AOV found.
 
     This will create new instance for every AOV it can detect in expected
@@ -577,8 +576,9 @@ def _create_instances_for_aov(instance, skeleton, aov_filter, additional_data,
         # TODO refactor/remove me
         family = skeleton["family"]
 
-        if subset_group:
-            group_name = subset_group
+        force_subset_group = instance.data.get('forceSubsetGroup', None)
+        if force_subset_group:
+            group_name = instance.data['subsetGroup']
 
         elif not subset.startswith(family):
             group_name = '{}{}{}{}{}'.format(
@@ -592,7 +592,12 @@ def _create_instances_for_aov(instance, skeleton, aov_filter, additional_data,
         # if there are multiple cameras, we need to add camera name
         expected_filepath = col[0] if isinstance(col, (list, tuple)) else col
         cams = [cam for cam in cameras if cam in expected_filepath]
-        if cams:
+
+        force_subset = instance.data.get('forceSubset', None)
+        if force_subset:
+            subset_name = instance.data['subset']
+
+        elif cams:
             for cam in cams:
                 if aov:
                     if not aov.startswith(cam):

@@ -7,8 +7,9 @@ import re
 import bpy
 import pyblish.api
 
-from quadpype.hosts.blender.api import colorspace, plugin
+from quadpype.pipeline.create import get_subset_name
 
+from quadpype.hosts.blender.api import colorspace, plugin
 
 class CollectBlenderRender(plugin.BlenderInstancePlugin):
     """Gather all publishable render instances."""
@@ -75,6 +76,7 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
         instance.data.update({
             "families": ["render", "render.farm"],
             "subsetGroup": instance.data["subset"],
+            "forceSubsetGroup": True,
             "frameStart": frame_start,
             "frameEnd": frame_end,
             "productType": "render",
@@ -116,6 +118,7 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
         prod_type = "render"
         project_name = instance.context.data["projectName"]
         task_name = instance.data.get("task")
+        render_layer_family = "renderlayer"
 
         layers = [
             layer for layer in bpy.context.scene.view_layers
@@ -133,20 +136,23 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
                 continue
 
             aov_product = aov_file_product[viewlayer_name] if aov_file_product else {}
-
-            # This name should normally be generated with ayon libs, but because they are not currently
-            # presents in Quadpype, we just generate a simple name with underscores between each part.
-            viewlayer_product_name = '_'.join(
-                [
-                    project_name,
-                    task_name,
-                    context.data["hostName"],
-                    prod_type,
-                    instance.data["variant"] + viewlayer_name,
-                ]
+            viewlayer_product_name = get_subset_name(
+                render_layer_family,
+                instance.data['variant'],
+                task_name,
+                instance.context.data["assetEntity"],
+                project_name=project_name,
+                dynamic_data={"render_layer_name": viewlayer_name},
             )
-            rn_layer_instance = context.create_instance(viewlayer_product_name)
 
+            if viewlayer_name not in viewlayer_product_name:
+                self.log.warning(
+                    "Corresponding template found is not using render layer name. "
+                    "Hardcoded subset name will be used toi avoid duplicates."
+                )
+                viewlayer_product_name += f"_{viewlayer_name}"
+
+            rn_layer_instance = context.create_instance(viewlayer_product_name)
             rn_layer_instance.data.update(instance.data)
 
             expected_beauty = self.generate_expected_files(
@@ -162,8 +168,10 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
                 "name": viewlayer_product_name,
                 "label": viewlayer_product_name,
                 "subset": viewlayer_product_name,
+                "forceSubset": True,
                 "subsetGroup": instance.data["subset"],
-                "family": "renderlayer",
+                "forceSubsetGroup": True,
+                "family": render_layer_family,
                 "families": ["renderlayer"],
                 "fps": context.data["fps"],
                 "byFrameStep": instance.data["creator_attributes"].get("step", 1),
