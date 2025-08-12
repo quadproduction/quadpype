@@ -122,7 +122,9 @@ from .templates import (
     get_parent_data,
     split_hierarchy,
     is_current_asset_shot,
-    extract_sequence_and_shot
+    extract_sequence_and_shot,
+    get_family_hierarchy_templates,
+    get_create_build_template
 )
 
 from .settings import (
@@ -259,6 +261,8 @@ __all__ = (
     "split_hierarchy",
     "is_current_asset_shot",
     "extract_sequence_and_shot",
+    "get_family_hierarchy_templates",
+    "get_create_build_template",
 
     # --- Settings ---
     "get_available_resolutions",
