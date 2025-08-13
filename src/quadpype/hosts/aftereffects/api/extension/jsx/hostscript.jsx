@@ -1151,6 +1151,27 @@ function setCompProperties(comp_id, frameStart, framesCount, frameRate,
     app.endUndoGroup();
 }
 
+function stretchLayersInComp(comp_id, framesCount, frameRate){
+    /**
+     * Stretch all the layers in comp to new frame count
+     */
+    var comp = app.project.itemByID(comp_id);
+    if (!comp){
+        return _prepareError("There is no composition with "+ comp_id);
+    }
+    var newOutTime = framesCount / frameRate;
+    app.beginUndoGroup('change comp properties');
+
+        for (var i = 1; i <= comp.numLayers; i++) {
+        var lyr = comp.layer(i);
+
+        if (lyr.outPoint < newOutTime) {
+            lyr.outPoint = newOutTime;
+        }
+    }
+
+    app.endUndoGroup();
+}
 function save(){
     /**
      * Saves current project

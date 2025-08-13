@@ -334,6 +334,17 @@ function main(websocket_url) {
             });
     });
 
+        RPC.addRoute('AfterEffects.stretch_layers_in_comp', function (data) {
+        log.warn('Server called client route "set_work_area":', data);
+        return runEvalScript("stretchLayersInComp(" + data.item_id + ',' +
+            data.duration + ',' +
+            data.frame_rate + ")")
+            .then(function (result) {
+                log.warn("stretch_layers_in_comp: " + result);
+                return result;
+            });
+    });
+
     RPC.addRoute('AfterEffects.saveAs', function (data) {
         log.warn('Server called client route "saveAs":', data);
         var escapedPath = EscapeStringForJSX(data.image_path);

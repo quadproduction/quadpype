@@ -73,6 +73,9 @@ class FileLoader(api.AfterEffectsLoader):
         repr_cont = context["representation"]["context"]
         repre_task_name = repr_cont.get('task', {}).get('name', None)
         frame = repr_cont.get("frame", None)
+        version_data = context["version"]["data"]
+        frame_start = version_data.get("frameStart", None)
+        frame_end = version_data.get("frameEnd", None)
 
         # Determine if the imported file is a PSD file (Special case)
         path = Path(path)
@@ -130,6 +133,17 @@ class FileLoader(api.AfterEffectsLoader):
                     stub.LOADED_ICON + comp_name,
                     import_options
                 )
+            stub.set_comp_properties(comp_id=comp.id,
+                                     start=frame_start,
+                                     duration=frame_end,
+                                     frame_rate=import_options['fps'],
+                                     width=None,
+                                     height=None
+                                     )
+            stub.stretch_layers_in_comp(comp_id=comp.id,
+                                        duration=frame_end,
+                                        frame_rate=import_options['fps']
+                                        )
 
         else:
             if frame:
