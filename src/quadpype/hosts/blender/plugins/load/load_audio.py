@@ -9,19 +9,16 @@ import bpy
 from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
+    get_current_host_name,
+    format_data,
+    get_load_naming_template,
+    get_resolved_name
 )
 from quadpype.hosts.blender.api import plugin, lib
 
 from quadpype.hosts.blender.api.pipeline import (
     AVALON_CONTAINERS,
     get_avalon_node
-)
-
-from src.quadpype.pipeline import (
-    get_current_host_name,
-    format_data,
-    get_load_naming_template,
-    get_resolved_name
 )
 
 
