@@ -1162,7 +1162,7 @@ function stretchLayersInComp(comp_id, framesCount, frameRate){
     var newOutTime = framesCount / frameRate;
     app.beginUndoGroup('change comp properties');
 
-        for (var i = 1; i <= comp.numLayers; i++) {
+    for (var i = 1; i <= comp.numLayers; i++) {
         var lyr = comp.layer(i);
 
         if (lyr.outPoint < newOutTime) {
