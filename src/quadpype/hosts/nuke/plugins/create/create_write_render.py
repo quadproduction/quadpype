@@ -195,9 +195,6 @@ class CreateWriteRender(napi.NukeWriteCreator):
                 self.project_settings, self.__class__.__name__, instance_node
             )
             self.set_group_attr(instance_node)
-            self.log.error("------------\n------------\n------------\n")
-            self.log.error(instance.transient_data)
-            self.log.error("------------\n------------\n------------\n")
 
             return instance
 
