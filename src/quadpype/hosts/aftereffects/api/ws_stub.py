@@ -562,8 +562,6 @@ class AfterEffectsServerStub():
     def stretch_layers_in_comp(self, comp_id, duration, frame_rate):
         """
             Stretch all the layers in a given comp to match comp duration.
-            Work area directs what gets rendered.
-            Beware of rounding, AE expects seconds, not frames directly.
 
         Args:
             comp_id (int):
