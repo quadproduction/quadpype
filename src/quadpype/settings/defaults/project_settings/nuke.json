@@ -274,6 +274,15 @@
         }
     ],
     "create": {
+        "create_hierarchy_templates_by_family": {
+            "profiles": [
+                {
+                    "families": [],
+                    "templates": [],
+                    "backdrop_color": [255, 0, 0]
+                }
+            ]
+        },
         "CreateWriteRender": {
             "temp_rendering_path_template": "{work}/renders/nuke/{subset}/{subset}.{frame}.{ext}",
             "default_variants": [
@@ -544,7 +553,21 @@
                 "start_at_workfile": true,
                 "add_retime": true
             }
-        }
+        },
+        "entity_type_name_matcher":{
+            "profiles": []
+        },
+        "working_hierarchy_templates_by_tasks": {
+            "profiles": [
+                {
+                    "task_types": [""],
+                    "families": [],
+                    "templates": ["{parent}-{asset}<-{numbering}>"],
+                    "backdrop_color":[255, 0, 0]
+                }
+            ]
+        },
+        "main_backdrops_manager": {"backdrop_profiles": []}
     },
     "workfile_builder": {
         "create_first_version": false,

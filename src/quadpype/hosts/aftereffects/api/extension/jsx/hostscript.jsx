@@ -1151,6 +1151,27 @@ function setCompProperties(comp_id, frameStart, framesCount, frameRate,
     app.endUndoGroup();
 }
 
+function stretchLayersInComp(comp_id, framesCount, frameRate){
+    /**
+     * Stretch all the layers in comp to new frame count
+     */
+    var comp = app.project.itemByID(comp_id);
+    if (!comp){
+        return _prepareError("There is no composition with "+ comp_id);
+    }
+    var newOutTime = framesCount / frameRate;
+    app.beginUndoGroup('change comp properties');
+
+    for (var i = 1; i <= comp.numLayers; i++) {
+        var lyr = comp.layer(i);
+
+        if (lyr.outPoint < newOutTime) {
+            lyr.outPoint = newOutTime;
+        }
+    }
+
+    app.endUndoGroup();
+}
 function save(){
     /**
      * Saves current project
@@ -1667,18 +1688,18 @@ function addItemInstead(placeholder_item_id, item_id){
             continue
         }
 
-        var i = 1;
-        while (i <= comp.numLayers) {
-            var layer = comp.layer(i);
+        var n = 1;
+        while (n <= comp.numLayers) {
+            var layer = comp.layer(n);
             var layer_source = layer.source;
             if (layer_source && layer_source.id == placeholder_item_id){
                 var new_layer = comp.layers.add(item);
                 new_layer.moveAfter(layer);
                 // copy all(?) properties to new layer
                 layer.property("ADBE Transform Group").copyToComp(new_layer);
-                i = i + 1;
+                n = n + 1;
             }
-            i = i + 1;
+            n = n + 1;
         }
     }
     app.endUndoGroup();

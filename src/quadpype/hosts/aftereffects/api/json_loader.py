@@ -26,12 +26,15 @@ def apply_intervals(json_data, composition_id, stub, log=logging):
             continue
 
         links = layer.get('link', [])
+        marker_index = []
         for instance in links:
-            instance_index = instance.get('instance-index', None)
-            if instance_index is None:
+            image_index = instance.get('images', None)
+            if image_index is None:
                 continue
+            marker_index.extend(image_index)
 
-            stub.add_marker_to_layer(composition_id, layer_name, instance_index)
-            log.info(f"Marker has been applied at frame {instance_index} on layer named {layer_name}.")
+        for index in marker_index:
+            stub.add_marker_to_layer(composition_id, layer_name, index)
+            log.info(f"Marker has been applied at frame {index} on layer named {layer_name}.")
 
     return

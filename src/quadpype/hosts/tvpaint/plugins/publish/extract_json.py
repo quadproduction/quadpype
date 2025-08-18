@@ -18,7 +18,7 @@ class ExtractJson(pyblish.api.InstancePlugin,
     """ Extract a JSON file and add it to the instance representation.
     """
     order = pyblish.api.ExtractorOrder + 0.01
-    label = "Extract JSON"
+    label = "Extract Json"
     hosts = ["tvpaint"]
     family = "render"
     optional = True

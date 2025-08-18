@@ -28,6 +28,7 @@ from .lib import (
     get_main_window,
     WorkfileSettings,
 )
+from quadpype.lib import attribute_definitions
 
 PLACEHOLDER_SET = "PLACEHOLDERS_SET"
 
@@ -196,7 +197,20 @@ class NukePlaceholderLoadPlugin(NukePlaceholderPlugin, PlaceholderLoadMixin):
         self.populate_load_placeholder(placeholder, repre_ids)
 
     def get_placeholder_options(self, options=None):
-        return self.get_load_plugin_options(options)
+        self.get_load_plugin_options(options)
+
+        attr_defs = self.get_load_plugin_options(options)
+
+        attr_defs.extend([
+            attribute_definitions.UISeparatorDef(),
+            attribute_definitions.BoolDef(
+                "move_nodes_to_placeholder_location",
+                label="Move Nodes To PlaceHolder Location",
+                default=False
+            ),
+            attribute_definitions.UISeparatorDef()
+        ])
+        return attr_defs
 
     def post_placeholder_process(self, placeholder, failed):
         """Cleanup placeholder after load of its corresponding representations.
@@ -206,6 +220,10 @@ class NukePlaceholderLoadPlugin(NukePlaceholderPlugin, PlaceholderLoadMixin):
                 representation.
             failed (bool): Loading of representation failed.
         """
+        if failed or not placeholder.data["move_nodes_to_placeholder_location"]:
+            self.log.debug("Move created nodes is disabled or something went wrong")
+            nuke.root().begin()
+            return
         # deselect all selected nodes
         placeholder_node = nuke.toNode(placeholder.scene_identifier)
 
@@ -600,13 +618,26 @@ class NukePlaceholderCreatePlugin(
         return output
 
     def populate_placeholder(self, placeholder):
-        self.populate_create_placeholder(placeholder)
+        pre_create_data = {"use_selection": False}
+        self.populate_create_placeholder(placeholder, pre_create_data)
 
     def repopulate_placeholder(self, placeholder):
         self.populate_create_placeholder(placeholder)
 
     def get_placeholder_options(self, options=None):
-        return self.get_create_plugin_options(options)
+        options = {"create_variant": "Main"}
+        attr_defs = self.get_create_plugin_options(options)
+
+        attr_defs.extend([
+            attribute_definitions.UISeparatorDef(),
+            attribute_definitions.BoolDef(
+                "move_nodes_to_placeholder_location",
+                label="Move Nodes To PlaceHolder Location",
+                default=False
+            ),
+            attribute_definitions.UISeparatorDef()
+        ])
+        return attr_defs
 
     def post_placeholder_process(self, placeholder, failed):
         """Cleanup placeholder after load of its corresponding representations.
@@ -616,6 +647,10 @@ class NukePlaceholderCreatePlugin(
                 representation.
             failed (bool): Loading of representation failed.
         """
+        if failed or not placeholder.data["move_nodes_to_placeholder_location"]:
+            self.log.debug("Move created nodes is disabled or something went wrong")
+            nuke.root().begin()
+            return
         # deselect all selected nodes
         placeholder_node = nuke.toNode(placeholder.scene_identifier)
 

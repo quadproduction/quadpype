@@ -38,19 +38,7 @@
         "custom_templates": []
     },
     "templated_workfile_build": {
-        "profiles": [],
-        "entity_type_name_matcher":{
-            "profiles": []
-        },
-        "working_hierarchy_templates_by_tasks": {
-            "profiles": [
-                {
-                    "task_types": [""],
-                    "families": [],
-                    "templates": ["{parent}-{asset}<-{numbering}>"]
-                }
-            ]
-        }
+        "profiles": []
     },
     "publish": {
         "ValidateCameraZeroKeyframe": {
@@ -246,6 +234,18 @@
             "container": "{namespace}_{subset}",
             "assetname": "{asset}_{subset}",
             "fullname": "{container}:{name}"
+        },
+        "entity_type_name_matcher":{
+            "profiles": []
+        },
+        "working_hierarchy_templates_by_tasks": {
+            "profiles": [
+                {
+                    "task_types": [""],
+                    "families": [],
+                    "templates": ["{parent}-{asset}<-{numbering}>"]
+                }
+            ]
         }
     }
 }
