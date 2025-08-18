@@ -13,8 +13,14 @@ from quadpype.lib import (
 from quadpype.hosts.nuke import api as napi
 from quadpype.pipeline.settings import get_available_resolutions, extract_width_and_height
 from quadpype.hosts.nuke.api.plugin import exposed_write_knobs
-from quadpype.hosts.nuke.api.lib import AUTORESIZE_LABEL, get_custom_res
-
+from quadpype.hosts.nuke.api.lib import (
+    AUTORESIZE_LABEL,
+    get_custom_res
+)
+from quadpype.hosts.nuke.api.backdrops import (
+    pre_organize_by_backdrop,
+    organize_by_backdrop
+)
 
 class CreateWriteRender(napi.NukeWriteCreator):
     identifier = "create_write_render"
@@ -147,6 +153,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
         }
 
     def create(self, subset_name, instance_data, pre_create_data):
+        nodes_in_main_backdrops = pre_organize_by_backdrop()
         # pass values from precreate to instance
         self.pass_pre_attributes_to_instance(
             instance_data,
@@ -181,10 +188,21 @@ class CreateWriteRender(napi.NukeWriteCreator):
 
             self._add_instance_to_context(instance)
 
+            imprint_data = instance.data_to_store()
+
+            main_backdrop, storage_backdrop, nodes = organize_by_backdrop(
+                data=dict(instance.data),
+                node=instance_node,
+                nodes_in_main_backdrops=nodes_in_main_backdrops,
+                options=dict()
+            )
+            imprint_data["main_backdrop"] = main_backdrop.name()
+            imprint_data["storage_backdrop"] = storage_backdrop.name()
+
             napi.set_node_data(
                 instance_node,
                 napi.INSTANCE_DATA_KNOB,
-                instance.data_to_store()
+                imprint_data
             )
 
             exposed_write_knobs(

@@ -5,6 +5,11 @@ from .load import (
     get_workfile_build_template,
 )
 
+from .create import (
+    get_family_hierarchy_templates,
+    get_create_build_template
+)
+
 from .utils import (
     get_resolved_name,
     format_data,
@@ -25,5 +30,8 @@ __all__ = (
     "get_parent_data",
     "split_hierarchy",
     "is_current_asset_shot",
-    "extract_sequence_and_shot"
+    "extract_sequence_and_shot",
+
+    "get_family_hierarchy_templates",
+    "get_create_build_template"
 )

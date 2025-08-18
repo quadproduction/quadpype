@@ -266,11 +266,13 @@ class LoadClip(plugin.NukeLoader):
 
             try:
                 nodes_before = list(nuke.allNodes())
-                main_backdrop, storage_backdrop, nodes = organize_by_backdrop(context=context,
-                                                                        read_node=read_node,
-                                                                        nodes_in_main_backdrops=nodes_in_main_backdrops,
-                                                                        options=options,
-                                                                        unique_number=unique_number)
+                main_backdrop, storage_backdrop, nodes = organize_by_backdrop(
+                    data=context,
+                    node=read_node,
+                    nodes_in_main_backdrops=nodes_in_main_backdrops,
+                    options=options,
+                    unique_number=unique_number
+                )
             except TemplateProfileNotFound:
                 for n in nuke.allNodes():
                     if n not in nodes_before:

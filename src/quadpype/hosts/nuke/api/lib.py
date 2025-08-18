@@ -83,6 +83,8 @@ PREP_LAYER_PSD_EXT = ["psd", "psb"]
 PREP_LAYER_EXR_EXT = ["exr"]
 
 DECOMPOSE_LAYER_PADDING = 35
+DECOMPOSE_PREMULT_Y_PADDING = 122
+DECOMPOSE_PREMULT_X_PADDING = 110
 DECOMPOSE_LAYER_PREMULT_PADDING = 70
 DECOMPOSE_LAYER_DOT_PADDING = 105
 DECOMPOSE_LAYER_READ_PADDING = 50
@@ -3657,6 +3659,8 @@ def decompose_layers(read_node,specific_layer=None, coordinates=None, ext=None):
     if read_node.Class() != 'Read':
         raise RuntimeError("Selected node is not a Read node.")
 
+    read_node_x = read_node['xpos'].value()
+    read_node_y = read_node['ypos'].value()
     layer_names = get_layers(read_node, ext)
     if specific_layer:
         layer_names = specific_layer
@@ -3668,7 +3672,7 @@ def decompose_layers(read_node,specific_layer=None, coordinates=None, ext=None):
 
     return_nodes = {}
 
-    for layer_data in layer_names.values():
+    for index, layer_data in enumerate(layer_names.values()):
         layer_name = layer_data.get("name")
         shuffle_node = nuke.createNode('Shuffle', inpanel=False)
         shuffle_node['label'].setValue(f"Extracted from {read_node_name}: {layer_name}")
@@ -3676,9 +3680,15 @@ def decompose_layers(read_node,specific_layer=None, coordinates=None, ext=None):
         shuffle_node['out'].setValue('rgba')
         shuffle_node.setInput(0, read_node)
         shuffle_nodes.append(shuffle_node)
+
+        shuffle_node_x = read_node_x + (DECOMPOSE_PREMULT_X_PADDING * index)
+        shuffle_node_y = read_node_y + DECOMPOSE_PREMULT_Y_PADDING
         if coordinates:
-            shuffle_node['xpos'].setValue(coordinates[0])
-            shuffle_node['ypos'].setValue(coordinates[1])
+            shuffle_node_x = coordinates[0]
+            shuffle_node_y = coordinates[1]
+
+        shuffle_node['xpos'].setValue(shuffle_node_x)
+        shuffle_node['ypos'].setValue(shuffle_node_y)
 
         remove_node = nuke.createNode('Remove', inpanel=False)
         remove_node['operation'].setValue('keep')

@@ -112,6 +112,42 @@
                 {
                     "type": "dict",
                     "collapsible": true,
+                    "key": "create_hierarchy_templates_by_family",
+                    "label": "Create Hierarchy Templates By Family",
+                    "children": [
+                        {
+                            "type": "list",
+                            "key": "profiles",
+                            "label": "Profiles",
+                            "object_type": {
+                                "type": "dict",
+                                "children": [
+                                    {
+                                        "key": "families",
+                                        "label": "Families",
+                                        "type": "list",
+                                        "object_type": "text"
+                                    },
+                                    {
+                                        "key": "templates",
+                                        "label": "Templates",
+                                        "type": "list",
+                                        "object_type": "text"
+                                    },
+                                    {
+                                        "type": "color",
+                                        "key": "backdrop_color",
+                                        "label": "Backdrop Color",
+                                        "use_alpha": false
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "dict",
+                    "collapsible": true,
                     "key": "CreateWriteRender",
                     "label": "CreateWriteRender",
                     "is_group": true,
