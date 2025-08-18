@@ -19,11 +19,27 @@
             "set_frames_create": true,
             "set_resolution_create": true,
             "auto_resolution_resize": true
+        },
+        "ShotInSeqRenderCreator": {
+            "shot_task_in_seq_wf_build": ""
         }
+
     },
     "load": {
         "auto_clic_import_dialog": true,
-        "attempts_number": 3
+        "attempts_number": 3,
+        "entity_type_name_matcher":{
+            "profiles": []
+        },
+        "working_hierarchy_templates_by_tasks": {
+            "profiles": [
+                {
+                    "task_types": [""],
+                    "families": [],
+                    "templates": ["{parent}-{asset}<-{numbering}>"]
+                }
+            ]
+        }
     },
     "publish": {
         "CollectReview": {
@@ -40,6 +56,11 @@
                 ".*"
             ]
         },
+        "ValidateInstanceAsset": {
+            "enabled": true,
+            "active": true,
+            "skip_instance_check": []
+        },
         "ValidateContainers": {
             "enabled": true,
             "optional": true,
@@ -51,18 +72,6 @@
         "custom_templates": []
     },
     "templated_workfile_build": {
-        "profiles": [],
-        "entity_type_name_matcher":{
-            "profiles": []
-        },
-        "working_hierarchy_templates_by_tasks": {
-            "profiles": [
-                {
-                    "task_types": [""],
-                    "families": [],
-                    "templates": ["{parent}-{asset}<-{numbering}>"]
-                }
-            ]
-        }
+        "profiles": []
     }
 }

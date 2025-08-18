@@ -110,6 +110,9 @@ class Listener:
         gazu.events.add_listener(
             self.event_client, "shot:delete", self._delete_shot
         )
+        gazu.events.add_listener(
+            self.event_client, "shot:casting-update", self._update_shot
+        )
 
         gazu.events.add_listener(
             self.event_client, "task:new", self._new_task
@@ -423,7 +426,7 @@ class Listener:
         project_doc = get_project(project_name)
 
         # Get gazu entity
-        sequence = gazu.shot.get_sequence(data["sequence_id"])
+        sequence = gazu.shot.get_sequence(data.get("sequence_id", data.get("id", None)))
 
         # Find asset doc
         # Query all assets of the local project
@@ -523,24 +526,27 @@ class Listener:
         }
         zou_ids_and_asset_docs[shot["project_id"]] = project_doc
         gazu_project = gazu.project.get_project(shot["project_id"])
+        sequence = gazu.shot.get_sequence(shot["parent_id"])
 
         # Update
         update_op_result = update_op_assets(
             self.dbcon,
             gazu_project,
             project_doc,
-            [shot],
+            [shot, sequence],
             zou_ids_and_asset_docs,
         )
 
         if update_op_result:
-            asset_doc_id, asset_update = update_op_result[0]
-            self.dbcon.update_one({"_id": asset_doc_id}, asset_update)
+            for result in update_op_result:
+                asset_doc_id, asset_update = result
+                self.dbcon.update_one({"_id": asset_doc_id}, asset_update)
 
     def _delete_shot(self, data):
         """Delete shot of QuadPype DB."""
         set_op_project(self.dbcon, data["project_id"])
         shot = self.dbcon.find_one({"data.zou.id": data["shot_id"]})
+        self._update_sequence(gazu.shot.get_sequence(shot["data"]["zou"]["parent_id"]))
 
         if shot:
             # Delete

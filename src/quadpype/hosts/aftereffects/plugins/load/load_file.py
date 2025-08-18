@@ -107,12 +107,13 @@ class FileLoader(api.AfterEffectsLoader):
         if is_psd:
             import_options['ImportAsType'] = 'ImportAsType.COMP'
             user_override_auto_clic = get_user_settings().get('general', {}).get('enable_auto_clic_scripts', True)
-
             load_settings = get_project_settings(project_name).get(get_current_host_name(), {}).get('load', {})
             auto_clic = load_settings.get('auto_clic_import_dialog')
-
             if auto_clic and user_override_auto_clic:
-                auto_clic_thread = self.trigger_auto_clic_thread(load_settings.get('attempts_number', 3))
+                auto_clic_thread = self.trigger_auto_clic_thread(
+                    load_settings.get('attempts_number', 3),
+                    data.get("display_window", True)
+                )
                 comp = stub.import_file_with_dialog(
                     path,
                     stub.LOADED_ICON + comp_name,
@@ -120,7 +121,7 @@ class FileLoader(api.AfterEffectsLoader):
                 )
                 auto_clic_thread.join()
 
-                if comp:
+                if comp and data.get("display_window", True):
                     self.notify_import_result("Import has ended with success !")
 
             else:
@@ -148,9 +149,10 @@ class FileLoader(api.AfterEffectsLoader):
 
         self.log.info("Asset has been loaded with success.")
 
-        template_data, template_folder = self.get_folder_and_data_template(context['representation'])
-        self.log.warning('template_folder')
-        self.log.warning(template_folder)
+        template_data, template_folder = self.get_folder_and_data_template(
+            context['representation'],
+            data.get("asset_name_override", None)
+        )
         if template_folder:
             folders_hierarchy = self.get_folder_hierarchy(template_data, template_folder, unique_number)
             self.create_folders(stub, folders_hierarchy, comp, stub.LOADED_ICON + comp_name, parent_item=is_psd)
@@ -162,6 +164,7 @@ class FileLoader(api.AfterEffectsLoader):
 
         self[:] = [comp]
         namespace = namespace or comp_name
+
         return api.containerise(
             name,
             namespace,
@@ -172,15 +175,16 @@ class FileLoader(api.AfterEffectsLoader):
         )
 
     @staticmethod
-    def get_folder_and_data_template(representation):
+    def get_folder_and_data_template(representation, asset_name_override):
         template_data = format_data(
             original_data=representation,
             filter_variant=True,
-            app=get_current_host_name()
+            app=get_current_host_name(),
+            asset_name_override=asset_name_override
         )
         return template_data, get_task_hierarchy_templates(
             template_data,
-            task=get_current_context()['task_name']
+            task=representation["context"]["task"]['name']
         )
 
     @staticmethod

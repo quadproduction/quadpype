@@ -47,6 +47,8 @@ from .mongo.entities import (
 
 from .mongo.entity_links import (
     get_linked_asset_ids,
+    get_casted_assets,
+    get_shots_in_seq,
     get_linked_assets,
     get_linked_representation_id,
 )
@@ -101,6 +103,8 @@ __all__ = (
     "get_workfile_info",
 
     "get_linked_asset_ids",
+    "get_casted_assets",
+    "get_shots_in_seq",
     "get_linked_assets",
     "get_linked_representation_id",
 

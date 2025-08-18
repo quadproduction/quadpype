@@ -57,13 +57,9 @@ class CreateWriteRender(napi.NukeWriteCreator):
             )
             return attr_defs
 
-        resolutions = list(
-            set(
-                get_available_resolutions(
-                    project_name=project_name,
-                    project_settings=project_settings
-                )
-            )
+        resolutions = get_available_resolutions(
+            project_name=project_name,
+            project_settings=project_settings
         )
         if resolutions:
             self.resolutions = resolutions
