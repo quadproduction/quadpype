@@ -1684,6 +1684,46 @@ function addItemInstead(placeholder_item_id, item_id){
     app.endUndoGroup();
 }
 
+function openCompById(comp_id) {
+    for (var i = 1; i <= app.project.numItems; i++) {
+        var item = app.project.item(i);
+        if (item instanceof CompItem && item.id === comp_id) {
+            var viewer = item.openInViewer();
+            viewer.setActive();
+        }
+    }
+    return _prepareError("No comp found with ID " + comp_id);
+}
+
+function assembleShotsInSeqComp(seq_comp_id, shots_data) {
+    var shots_data_parse = JSON.parse(shots_data);
+    var currentTime = 0;
+    var seqCompItem = app.project.itemByID(seq_comp_id);
+    for (var shotId in shots_data_parse) {
+        if (!shots_data_parse.hasOwnProperty(shotId)) continue;
+        var compInfo = shots_data_parse[shotId];
+        var shotItem = app.project.itemByID(parseInt(shotId));
+
+        if (shotItem && shotItem instanceof CompItem) {
+            var alreadyExists = false;
+            for (var i = 1; i <= seqCompItem.numLayers; i++) {
+                if (seqCompItem.layer(i).source === shotItem) {
+                    alreadyExists = true;
+                    break;
+                }
+            }
+
+             if (!alreadyExists) {
+                var layer = seqCompItem.layers.add(shotItem);
+                layer.startTime = currentTime;
+            }
+
+            currentTime += compInfo.framesDuration / compInfo.frameRate;
+        }
+    }
+}
+
+
 function _prepareSingleValue(value){
     return JSON.stringify({"result": value})
 }

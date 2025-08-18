@@ -721,6 +721,30 @@ class AfterEffectsServerStub():
 
         return self._handle_return(res)
 
+    def open_comp_by_id(self, comp_id):
+        """
+            Open the given comp by its ID
+            Args:
+                comp_id (int): CompItem id to open in viewer
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.open_comp_by_id',  # noqa # noqa
+                                         comp_id=comp_id))
+        return self._handle_return(res)
+
+    def assemble_shots_in_seq_comp(self, seq_comp_id, shots_data):
+        """
+            Will put end to end all the given comp in shots_data in the seq_comp
+            Args:
+                seq_comp_id (int): CompItem id of the sequence comp
+                shots_data (dict): a dict containing in keys the ids of the shots comp, and comp properties as values
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.assemble_shots_in_seq_comp',  # noqa # noqa
+                                         seq_comp_id=seq_comp_id,
+                                         shots_data=shots_data))
+        return self._handle_return(res)
+
     def add_placeholder(self, name, width, height, fps, duration):
         """
             Adds new FootageItem as a placeholder for workfile builder

@@ -345,6 +345,9 @@ class AfterEffectsRoute(WebSocketRoute):
     async def transfer_exposition_tools_route(self):
         self._tool_route("transfer_exposition_tools")
 
+    async def auto_assemble_shots_to_sequence_route(self):
+        self._tool_route("auto_assemble_shots_to_sequence")
+
     async def experimental_tools_route(self):
         self._tool_route("experimental_tools")
 

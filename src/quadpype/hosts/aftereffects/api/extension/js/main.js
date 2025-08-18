@@ -427,6 +427,26 @@ function main(websocket_url) {
             });
     });
 
+    RPC.addRoute('AfterEffects.open_comp_by_id', function (data) {
+        log.warn('Server called client route "open_comp_by_id":', data);
+        return runEvalScript("openCompById(" + data.comp_id+ ")")
+            .then(function (result) {
+                log.warn("open_comp_by_id: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.assemble_shots_in_seq_comp', function (data) {
+        log.warn('Server called client route "assemble_shots_in_seq_comp":', data);
+        return runEvalScript("assembleShotsInSeqComp(" + data.seq_comp_id + ", " +
+            "'" + JSON.stringify(
+                data.shots_data) + "')")
+            .then(function (result) {
+                log.warn("assemble_shots_in_seq_comp: " + result);
+                return result;
+            });
+    });
+
     RPC.addRoute('AfterEffects.render', function (data) {
         log.warn('Server called client route "render":', data);
         var escapedPath = EscapeStringForJSX(data.folder_url);
