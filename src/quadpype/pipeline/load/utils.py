@@ -301,6 +301,8 @@ def load_with_repre_context(
     # Ensure options is a dictionary when no explicit options provided
     if options is None:
         options = kwargs.get("data", dict())  # "data" for backward compat
+    if kwargs:
+        options = dict(options, **kwargs)
 
     assert isinstance(options, dict), "Options must be a dictionary"
 

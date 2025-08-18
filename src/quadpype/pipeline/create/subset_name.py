@@ -1,9 +1,8 @@
 import os
 
 from quadpype.settings import get_project_settings
-from quadpype.lib import filter_profiles, prepare_template_data
+from quadpype.lib import filter_profiles, prepare_template_data, StringTemplate
 from quadpype.pipeline import legacy_io
-
 from .constants import DEFAULT_SUBSET_TEMPLATE
 
 
@@ -171,7 +170,8 @@ def get_subset_name(
             fill_pairs[key] = value
 
     try:
-        return template.format(**prepare_template_data(fill_pairs))
+        template_obj = StringTemplate(template)
+        return template_obj.format_strict(prepare_template_data(fill_pairs)).normalized()
     except KeyError as exp:
         raise TemplateFillError(
             "Value for {} key is missing in template '{}'."

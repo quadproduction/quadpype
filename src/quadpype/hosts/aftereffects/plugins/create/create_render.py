@@ -54,19 +54,25 @@ class RenderCreator(Creator):
             comps = stub.get_selected_items(
                 comps=True, folders=False, footages=False
             )
+        elif pre_create_data.get("create_new_comp"):
+            new_comp = stub.add_item("new_create_render_comp", "COMP")
+            comps = [stub.get_item(new_comp)]
         else:
-            comps = stub.get_items(comps=True, folders=False, footages=False)
+            raise CreatorError(
+                "Options error in Create Options \nPlease make sure "
+                "'Use selection' is toggled."
+            )
 
         if not comps:
             raise CreatorError(
-                "Nothing to create. Select composition in Project Bin if "
-                "'Use selection' is toggled or create at least "
-                "one composition."
+                "Nothing to create. \nSince 'Use selection' is toggled."
+                "\nPlease, select one Composition in Project Bin."
             )
         use_composition_name = (pre_create_data.get("use_composition_name") or
                                 len(comps) > 1)
 
-        self.resolution = pre_create_data.get('resolution')
+        if pre_create_data.get("resolution"):
+            self.resolution = pre_create_data.get("resolution")
 
         for comp in comps:
             composition_name = re.sub(
@@ -118,7 +124,8 @@ class RenderCreator(Creator):
                 comp_ids=[comp.id],
                 print_msg=False,
                 override_width=width,
-                override_height=height
+                override_height=height,
+                asset_name=pre_create_data.get("asset_name", None)
             )
 
     def get_pre_create_attr_defs(self):
@@ -149,13 +156,9 @@ class RenderCreator(Creator):
             )
             return output
 
-        resolutions = list(
-            set(
-                get_available_resolutions(
-                    project_name=project_name,
-                    project_settings=project_settings
-                )
-            )
+        resolutions = get_available_resolutions(
+            project_name=project_name,
+            project_settings=project_settings
         )
         if resolutions:
             self.resolutions = resolutions
@@ -308,3 +311,8 @@ class RenderCreator(Creator):
             instance_data["creator_attributes"]["mark_for_review"] = True
 
         return instance_data
+
+    def get_dynamic_data(
+            self, variant, task_name, asset_doc, project_name, host_name, instance
+        ):
+        return {"shot": asset_doc["name"]}

@@ -62,31 +62,30 @@
                             "default": true
                         }
                     ]
+                },
+                {
+                    "type": "dict",
+                    "collapsible": true,
+                    "key": "ShotInSeqRenderCreator",
+                    "label": "Shot in Sequence Create render",
+                    "children": [
+                        {
+                            "type": "label",
+                            "label": "Select task linked to render instance created for shots in sequence.\nUse during workfile build"
+                        },
+                        {
+                        "key": "shot_task_in_seq_wf_build",
+                        "label": "Task",
+                        "type": "task-types-enum",
+                        "multiselection": false
+                        }
+                    ]
                 }
             ]
         },
         {
-            "key": "load",
-            "type": "dict",
-            "label": "Load plugins",
-            "collapsible": true,
-            "is_group": true,
-            "children": [
-                {
-                    "type": "boolean",
-                    "key": "auto_clic_import_dialog",
-                    "label": "Activate import file dialog auto clic when importing assets"
-                },
-                {
-                    "type": "label",
-                    "label": "<i>Activating this will automatically disable 'stay on top' features for this software.</i>"
-                },
-                {
-                    "type": "number",
-                    "key": "attempts_number",
-                    "label": "Number of auto clics attempts to be performed before giving up process."
-                }
-            ]
+            "type": "schema",
+            "name": "schema_aftereffects_load"
         },
         {
             "type": "dict",
@@ -146,6 +145,30 @@
                             "key": "skip_timelines_check",
                             "object_type": "text",
                             "label": "Skip Timeline Check  for Tasks"
+                        }
+                    ]
+                },
+                {
+                    "type": "dict",
+                    "collapsible": true,
+                    "key": "ValidateInstanceAsset",
+                    "label": "Validate Instance Asset",
+                    "checkbox_key": "enabled",
+                    "children": [
+                        {
+                            "type": "boolean",
+                            "key": "enabled",
+                            "label": "Enabled"
+                        },
+                        {
+                            "type": "boolean",
+                            "key": "active",
+                            "label": "Active"
+                        },
+                        {
+                            "key": "skip_instance_check",
+                            "label": "Skip Check for Tasks",
+                            "type": "task-types-enum"
                         }
                     ]
                 },
@@ -227,69 +250,6 @@
                             }
                         ]
                     }
-                },
-                {
-                    "type": "dict",
-                    "collapsible": true,
-                    "key": "entity_type_name_matcher",
-                    "label": "Entity Type Name Matcher",
-                    "children": [
-                        {
-                            "type": "list",
-                            "key": "profiles",
-                            "label": "Profiles",
-                            "object_type": {
-                                "type": "dict",
-                                "children": [
-                                    {
-                                        "type": "text",
-                                        "key": "entity_types",
-                                        "label": "Entity Types"
-                                    },
-                                    {
-                                        "type": "text",
-                                        "key": "entity_prefix",
-                                        "label": "Entity Prefix"
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                },
-                {
-                    "type": "dict",
-                    "collapsible": true,
-                    "key": "working_hierarchy_templates_by_tasks",
-                    "label": "Working Hierarchy Templates By Tasks",
-                    "children": [
-                        {
-                            "type": "list",
-                            "key": "profiles",
-                            "label": "Profiles",
-                            "object_type": {
-                                "type": "dict",
-                                "children": [
-                                    {
-                                        "key": "task_types",
-                                        "label": "Task types",
-                                        "type": "task-types-enum"
-                                    },
-                                    {
-                                        "key": "families",
-                                        "label": "Families",
-                                        "type": "list",
-                                        "object_type": "text"
-                                    },
-                                    {
-                                        "key": "templates",
-                                        "label": "Templates",
-                                        "type": "list",
-                                        "object_type": "text"
-                                    }
-                                ]
-                            }
-                        }
-                    ]
                 }
             ]
         }

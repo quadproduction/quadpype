@@ -7,9 +7,10 @@ import warnings
 import platform
 import tempfile
 import contextlib
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
-import nuke
+import nuke, nukescripts
+from quadpype.hosts.nuke.nuke_addon.stamps import stamps_autoClickedOk
 from qtpy import QtCore, QtWidgets
 
 from quadpype.client import (
@@ -34,8 +35,7 @@ from quadpype.lib import (
 
 from quadpype.settings import (
     get_project_settings,
-    get_current_project_settings,
-    GENERAL_SETTINGS_KEY
+    get_current_project_settings
 )
 from quadpype.modules import ModulesManager
 from quadpype.pipeline.template_data import get_template_data_with_names
@@ -45,6 +45,8 @@ from quadpype.pipeline import (
     get_current_host_name,
     get_current_project_name,
     get_current_asset_name,
+    get_resolved_name,
+    format_data
 )
 from quadpype.pipeline.context_tools import (
     get_custom_workfile_template_from_session
@@ -52,8 +54,12 @@ from quadpype.pipeline.context_tools import (
 from quadpype.pipeline.colorspace import get_imageio_config
 from quadpype.pipeline.workfile import BuildWorkfile
 from . import gizmo_menu
-from .constants import ASSIST
-
+from .constants import (
+    ASSIST,
+    COLOR_GREEN,
+    COLOR_RED,
+    COLOR_BLUE
+)
 from .workio import save_file
 from .utils import get_node_outputs
 
@@ -73,6 +79,22 @@ ROOT_DATA_KNOB = "publish_context"
 INSTANCE_DATA_KNOB = "publish_instance"
 AUTORESIZE_LABEL = "AutoResize"
 
+PREP_LAYER_PSD_EXT = ["psd", "psb"]
+PREP_LAYER_EXR_EXT = ["exr"]
+
+DECOMPOSE_LAYER_PADDING = 35
+DECOMPOSE_PREMULT_Y_PADDING = 122
+DECOMPOSE_PREMULT_X_PADDING = 110
+DECOMPOSE_LAYER_PREMULT_PADDING = 70
+DECOMPOSE_LAYER_DOT_PADDING = 105
+DECOMPOSE_LAYER_READ_PADDING = 50
+GENERATE_STAMP_PADDING = 100
+GENERATE_ANCHOR_PADDING = 50
+PRECOMP_PADDING = 50
+PRECOMP_MERGE_PADDING = 150
+PRECOMP_DOT_PADDING = 100
+DOT_OFFSET = 34
+DOT_OFFSET_Y = 3
 
 class DeprecatedWarning(DeprecationWarning):
     pass
@@ -1029,9 +1051,9 @@ def check_inventory_versions():
         last_version = last_versions_by_subset_id[subset_id]
         # Check if last version is same as current version
         if last_version["_id"] == version_doc["_id"]:
-            color_value = "0x4ecd25ff"
+            color_value = COLOR_GREEN
         else:
-            color_value = "0xd84f20ff"
+            color_value = COLOR_RED
         node["tile_color"].setValue(int(color_value, 16))
 
 
@@ -1079,7 +1101,6 @@ def writes_version_sync():
 def version_up_script():
     ''' Raising working script's version
     '''
-    import nukescripts
     nukescripts.script_and_write_nodes_version_up()
 
 
@@ -3539,3 +3560,405 @@ def get_custom_res(width, height):
         nuke.addFormat(f"{width} {height} {node_name}")
 
     return node_name
+
+def get_layers(read_node, ext):
+    """
+    Return Layers from read node
+    Args:
+        read_node(nuke.Node()): A read node from Nuke
+        ext(str): File type (psd, psb, exr)
+    return:
+        dict: An ordered dict of all the layers accessible in the read file classified by str(index)
+    """
+    layer_dict = defaultdict(dict)
+    filtered_layers = list()
+
+    metadata = read_node.metadata()
+
+    if ext in PREP_LAYER_PSD_EXT:
+        for k, v in metadata.items():
+            if not k.startswith('input/psd/layers/'):
+                continue
+            parts = k.split('/')
+            if len(parts) < 5:
+                continue
+            index = parts[3]
+            attr = parts[4]
+            layer_dict[index][attr] = v
+
+    elif ext in PREP_LAYER_EXR_EXT:
+        all_layer_names = read_node.channels()
+        if not all_layer_names:
+            raise RuntimeError("No layers found in the selected Read node.")
+        layers = {ch.split('.')[0] for ch in all_layer_names if ch.split('.')[0] != "rgba"}
+        for index, layer in enumerate(sorted(layers)):
+                layer_dict[index]["name"] = layer
+
+    filtered_layers = [layer_data for layer_data in layer_dict.values()
+                       if not any(key.startswith("divider") for key in layer_data)]
+
+    if not filtered_layers:
+        raise RuntimeError("No layers found in the selected Read node. \nAre you sure this is a layered file?")
+
+    return_dict = {str(i): layer for i, layer in enumerate(filtered_layers)}
+    return dict(sorted(return_dict.items(), key=lambda x: int(x[0]), reverse=True))
+
+def compare_layers(old_layers, new_layers, ask_proceed=False):
+    """
+    Given two dict, will compare the layers based on names. And return the ones that are no longer present, and the
+    new ones in distinct dict
+    Args:
+        old_layers(dict): The layers of the previous version
+        new_layers(dict): The layers of the new version
+        ask_proceed(bool): To make the validation window pop or not
+    """
+    new_layers_to_add = dict()
+    old_layers_to_delete = dict()
+
+    new_layer_names = [v["name"] for v in new_layers.values()]
+    old_layer_names = [v["name"] for v in old_layers.values()]
+    for position, new_layer_data in new_layers.items():
+        if new_layer_data["name"] not in old_layer_names:
+            new_layers_to_add[position] = new_layer_data
+
+    for position, old_layer_data in old_layers.items():
+        if old_layer_data["name"] not in new_layer_names:
+            old_layers_to_delete[position] = old_layer_data
+
+    if not ask_proceed:
+        return new_layers_to_add, old_layers_to_delete
+
+    msg = ""
+    if new_layers_to_add:
+        msg = (f"Some layers in this new PSD have been added:\n"
+              f"{', '.join([n['name'] for n in new_layers_to_add.values()])}\n\n")
+
+    if old_layers_to_delete:
+        msg = msg + (f"Some layers in this new PSD have been removed:\n"
+              f"{', '.join([n['name'] for n in old_layers_to_delete.values()])}\n\n")
+
+    msg = msg + ("Do you want to proceed?")
+
+    if new_layers_to_add or old_layers_to_delete:
+        proceed = nuke.ask(msg)
+        if not proceed:
+            return
+    return new_layers_to_add, old_layers_to_delete
+
+def decompose_layers(read_node,specific_layer=None, coordinates=None, ext=None):
+    """Will create a shuffle_node for each layer in the read_node that is not RGB based
+    Args:
+        read_node(Read): a nuke read node
+        specific_layer(dict): a specific layer to decompose
+        coordinates(list): x and y to position the newly created specific_layer
+        ext(str): psd or exr
+    Returns:
+        (dict) listing all newly created node sorted by type
+    """
+    read_node_name = read_node['name'].value()
+    if read_node.Class() != 'Read':
+        raise RuntimeError("Selected node is not a Read node.")
+
+    read_node_x = read_node['xpos'].value()
+    read_node_y = read_node['ypos'].value()
+    layer_names = get_layers(read_node, ext)
+    if specific_layer:
+        layer_names = specific_layer
+
+    shuffle_nodes = []
+    remove_nodes = []
+    premult_nodes = []
+    dot_nodes = []
+
+    return_nodes = {}
+
+    for index, layer_data in enumerate(layer_names.values()):
+        layer_name = layer_data.get("name")
+        shuffle_node = nuke.createNode('Shuffle', inpanel=False)
+        shuffle_node['label'].setValue(f"Extracted from {read_node_name}: {layer_name}")
+        shuffle_node['in'].setValue(layer_name)
+        shuffle_node['out'].setValue('rgba')
+        shuffle_node.setInput(0, read_node)
+        shuffle_nodes.append(shuffle_node)
+
+        shuffle_node_x = read_node_x + (DECOMPOSE_PREMULT_X_PADDING * index)
+        shuffle_node_y = read_node_y + DECOMPOSE_PREMULT_Y_PADDING
+        if coordinates:
+            shuffle_node_x = coordinates[0]
+            shuffle_node_y = coordinates[1]
+
+        shuffle_node['xpos'].setValue(shuffle_node_x)
+        shuffle_node['ypos'].setValue(shuffle_node_y)
+
+        remove_node = nuke.createNode('Remove', inpanel=False)
+        remove_node['operation'].setValue('keep')
+        remove_node['channels'].setValue('rgba')
+        remove_node.setInput(0, shuffle_node)
+        remove_node['ypos'].setValue(shuffle_node.ypos() + DECOMPOSE_LAYER_PADDING)
+        remove_node['xpos'].setValue(shuffle_node.xpos())
+        remove_nodes.append(remove_node)
+
+        premult_node = nuke.createNode('Premult', inpanel=False)
+        premult_node.setInput(0, remove_node)
+        premult_node['xpos'].setValue(shuffle_node.xpos())
+        premult_node['ypos'].setValue(shuffle_node.ypos() + DECOMPOSE_LAYER_PREMULT_PADDING)
+        premult_nodes.append(premult_node)
+
+        dot_node = nuke.createNode('Dot', inpanel=False)
+        dot_node['label'].setValue(layer_name)
+        dot_node['ypos'].setValue(premult_node.ypos() + DECOMPOSE_LAYER_DOT_PADDING)
+        dot_node['xpos'].setValue(shuffle_node.xpos() + DECOMPOSE_LAYER_PADDING)
+        dot_nodes.append(dot_node)
+
+    if not specific_layer:
+        read_node["ypos"].setValue(read_node.ypos() - DECOMPOSE_LAYER_READ_PADDING)
+
+    return_nodes["shuffle_nodes"] = shuffle_nodes
+    return_nodes["remove_nodes"] = remove_nodes
+    return_nodes["premult_nodes"] = premult_nodes
+    return_nodes["dot_nodes"] = dot_nodes
+    return return_nodes
+
+def generate_stamps(nodes):
+    """Generate a stamp for each given nodes
+    Args:
+        nodes(list): a list of nuke node
+    Returns:
+       (dict) listing all newly created node sorted by type"""
+    return_nodes = dict()
+    stamp_nodes = list()
+    anchor_nodes = list()
+
+    if not nodes:
+        return
+    if not isinstance(nodes, list):
+        nodes = [nodes]
+
+    for index, node in enumerate(nodes):
+        for n in nuke.selectedNodes():
+            n.setSelected(False)
+        node.setSelected(True)
+        y_offset = (GENERATE_ANCHOR_PADDING/2) if index % 2 == 0 else 0
+        stamps_autoClickedOk.goStamp(autoClickedOk=True)
+        stamp_node = nuke.selectedNode()
+        stamp_nodes.append(stamp_node)
+
+        anchor_node = [n for n in nuke.allNodes() if node in [n.input(i) for i in range(n.inputs())]]
+        anchor_nodes.extend(anchor_node)
+        anchor_node[0]['ypos'].setValue(node.ypos() + node.screenHeight() + GENERATE_ANCHOR_PADDING + y_offset)
+
+        stamp_node['xpos'].setValue(anchor_node[0].xpos())
+        stamp_node['ypos'].setValue(anchor_node[0].ypos() + GENERATE_STAMP_PADDING - y_offset)
+        stamp_node['tile_color'].setValue((int(COLOR_BLUE, 16)))
+
+    return_nodes["stamp_nodes"] = stamp_nodes
+    return_nodes["anchor_nodes"] = anchor_nodes
+    return return_nodes
+
+def create_precomp_merge(nodes, last_nodes_to_connect=None, existing_node_inputs=None):
+    """Generate a succession of merge depending on given nodes
+    Args:
+        nodes(list): a list of nuke node
+        last_nodes_to_connect(list[nuke.Node]): a list of specifics node to use to connect last merge output
+        existing_node_inputs(dict): A dict of existing extra nodes to reconnect to the tree
+    Returns:
+       (dict) listing all newly created node sorted by type"""
+    return_nodes = dict()
+    dot_nodes = list()
+    merge_nodes = list()
+
+    #Reverse the nodes to start properly at 0, and go from right to left
+    nodes.reverse()
+
+    first_node = nodes[0]
+    merge_input = first_node
+    dot_offset = 0
+    if first_node.Class() == "Dot":
+        dot_offset = DOT_OFFSET
+    merge_xpos = first_node['xpos'].value() - dot_offset
+    merge_ypos = nodes[-1]['ypos'].value() + PRECOMP_MERGE_PADDING
+
+    #Security in case there only two layers
+    if len(nodes) > 1:
+        nodes = [n for n in nodes[1:]]
+
+    for index, node in enumerate(nodes):
+        for n in nuke.selectedNodes():
+            n.setSelected(False)
+        node.setSelected(True)
+
+        connect_dot_node = nuke.createNode('Dot', inpanel=False)
+        dot_nodes.append(connect_dot_node)
+
+        merge_node = nuke.createNode("Merge2")
+        merge_node["operation"].setValue("over")
+        merge_node.setInput(0, merge_input)
+        merge_node.setInput(1, connect_dot_node)
+        merge_nodes.append(merge_node)
+        merge_input = merge_node
+        merge_node['xpos'].setValue(merge_xpos)
+        merge_node['ypos'].setValue(merge_ypos)
+
+        connect_dot_node['xpos'].setValue(node.xpos() + DOT_OFFSET)
+        connect_dot_node['ypos'].setValue(merge_ypos + DOT_OFFSET_Y)
+
+        # Treatment of extra existing node to reconnect
+        if existing_node_inputs and existing_node_inputs.get(node.name()):
+            #Loop through node to reconnect
+            for existing_node_name, data in existing_node_inputs.get(node.name()).items():
+                existing_node = nuke.toNode(existing_node_name)
+                #Do not treat last node, or deleted nodes (like Dots)
+                if data["is_last"] or not existing_node:
+                    continue
+                #Position the extra node and set inputs
+                existing_node["xpos"].setValue(node.xpos() - dot_offset)
+                for input_index, input_node_name in enumerate(data["inputs"]):
+                    existing_node.setInput(input_index, nuke.toNode(input_node_name))
+
+            #Retrieve the last previous node of extra node downstream.
+            last_nodes_existing = next(({k: v} for k, v in existing_node_inputs.get(node.name(), {}).items()
+                                        if v.get("is_last")),None)
+            for last_name, last_data in last_nodes_existing.items():
+                #Special case, for a Dot or first layer to treat
+                if last_data["is_dot"] or index == 0:
+                    for input_index, input_node_name in enumerate(last_data["inputs"]):
+                        #Do not reconnect Dots, in case a newly created one have the same name as a previous one
+                        if nuke.toNode(input_node_name).Class() == "Dot":
+                            continue
+                        connect_dot_node.setInput(input_index, nuke.toNode(input_node_name))
+                    continue
+                #If for some reason, the last node is something else, connect directly to merge node
+                for input_index, input_node_name in enumerate(last_data["inputs"]):
+                    if not nuke.toNode(input_node_name):
+                        continue
+                    merge_node.setInput(input_index, nuke.toNode(input_node_name))
+
+        merge_ypos += PRECOMP_PADDING
+
+    #Re-loop once more, only if the old number "0" is still present at another index
+    #Because, in the first for loop, we don't integrate the first node of the list
+    if existing_node_inputs and existing_node_inputs.get(first_node.name()):
+        for existing_node_name, data in existing_node_inputs.get(first_node.name()).items():
+            existing_node = nuke.toNode(existing_node_name)
+            if data["is_last"]:
+                continue
+            existing_node["xpos"].setValue(first_node.xpos() - dot_offset)
+            for input_index, input_node_name in enumerate(data["inputs"]):
+                existing_node.setInput(input_index, nuke.toNode(input_node_name))
+
+        last_nodes_existing = next(({k: v} for k, v in existing_node_inputs.get(first_node.name(), {}).items()
+                                    if v.get("is_last")), None)
+        for last_name, last_data in last_nodes_existing.items():
+            for input_index, input_node_name in enumerate(last_data["inputs"]):
+                if not nuke.toNode(input_node_name):
+                    continue
+                merge_nodes[0].setInput(input_index, nuke.toNode(input_node_name))
+
+    last_merge_node = merge_nodes[-1]
+    last_merge_xpos = last_merge_node['xpos'].value()
+    last_merge_ypos = last_merge_node['ypos'].value()
+
+    # If a set or list of nodes is given, loop through it to position and reconnect
+    if last_nodes_to_connect:
+        last_nodes_to_connect[0].setInput(0, last_merge_node)
+        for node in last_nodes_to_connect:
+            dot_offset = 0
+            if node.Class() == "Dot":
+                dot_offset = DOT_OFFSET
+            node['xpos'].setValue(last_merge_xpos + dot_offset)
+            node['ypos'].setValue(merge_ypos)
+            merge_ypos += PRECOMP_PADDING
+
+    else:
+        last_dot_node = nuke.createNode('Dot', inpanel=False)
+        dot_nodes.append(last_dot_node)
+        last_dot_node['xpos'].setValue(last_merge_xpos + DOT_OFFSET)
+        last_dot_node['ypos'].setValue(last_merge_ypos + PRECOMP_DOT_PADDING)
+
+    return_nodes["dot_nodes"] = dot_nodes
+    return_nodes["merge_nodes"] = merge_nodes
+    return return_nodes
+
+def get_downstream_nodes(node, visited=None, stop_class="", include_stop_node=False):
+    """
+    Go downstream from a strat node and return all connected node until a specific "stop class" is encounter.
+    Args:
+        node(nuke.Node()): A nuke node to start from.
+        visited(set): Include or not the starting node.
+        stop_class(str): Name of the class to stop the downstream search.
+        include_stop_node(bool): Return the stop node or not.
+    return:
+        set
+    """
+    if visited is None:
+        visited = set()
+    for dep in node.dependent(nuke.INPUTS):
+        if dep not in visited:
+            if include_stop_node:
+                visited.add(dep)
+            if dep.Class() == stop_class:
+                return visited
+            visited.add(dep)
+            get_downstream_nodes(dep, visited, stop_class, include_stop_node)
+    return visited
+
+def classify_downstream_nodes_inputs(node_list):
+    """
+    Create a dict for given nodes, classifying all inputs. On top of that, this will return if it's a dot or not, and
+    if it's the last node treated.
+    Function used in the merge tree recreation.
+    """
+    return {
+        node.name():{
+            "inputs":[
+                node.input(i).name() for i in range(node.inputs())
+                if node.input(i)
+            ],
+            "is_last": index+1==len(node_list),
+            "is_dot": node.Class()=="Dot"
+        } for index, node in enumerate(node_list)
+    }
+
+def get_unique_name_and_number(representation, template, unique_number, node_type):
+    template_data = format_data(
+        original_data=representation,
+        filter_variant=True,
+        app="nuke"
+    )
+
+    if unique_number:
+        return get_resolved_name(data=template_data, template=template, unique_number=unique_number), unique_number
+
+    temp_name = get_resolved_name(data=template_data, template=template)
+    node_names = {n["name"].value() for n in nuke.allNodes(node_type)}
+    unique_number = get_unique_number(node_names, temp_name)
+    read_name = get_resolved_name(data=template_data,
+                                  template=template,
+                                  unique_number=unique_number)
+    if read_name in node_names:
+        unique_number = "{:0>3d}".format(int(unique_number) + 1)
+        read_name = get_resolved_name(data=template_data,
+                                      template=template,
+                                      unique_number=unique_number)
+
+    return read_name, unique_number
+
+def get_unique_number(existing_names, name):
+    """
+        Gets all layer names and if 'name' is present in them, increases
+        suffix by 1 (eg. creates unique layer name - for Loader)
+    Args:
+        existing_names (list or set): of strings, names only
+        name (string):  checked value
+    Returns:
+        (string): 00X (without version)
+    """
+    names = {}
+    for read in existing_names:
+        read_name = re.sub(r'_\d{3}$', '', read)
+        if read_name in names.keys():
+            names[read_name] = names[read_name] + 1
+        else:
+            names[read_name] = 1
+    occurrences = names.get(name, 0)
+    return "{:0>3d}".format(occurrences + 1)
