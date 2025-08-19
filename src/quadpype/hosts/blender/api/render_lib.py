@@ -391,15 +391,12 @@ def set_node_tree(
                 f"Can not found beauty filepath in render product for layer named {render_layer_node.layer}"
             )
 
-        output.base_path = str(
-            Path(
-                output_path.parent,
-                output_path.name,
-                render_layer_node.layer,
-                Path(beauty_filepath).name,
-
-            )
-        )
+        output.base_path = Path(
+            output_path.parent,
+            output_path.name,
+            render_layer_node.layer,
+            Path(beauty_filepath).name,
+        ).as_posix()
 
         slots.clear()
 

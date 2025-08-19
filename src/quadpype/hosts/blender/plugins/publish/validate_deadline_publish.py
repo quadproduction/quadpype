@@ -113,7 +113,7 @@ class ValidateDeadlinePublish(
 
         filename = f"{asset_name}_{task}"
         render_folder = render_data.get("render_folder")
-        output_path = str(Path(dirpath, render_folder, filename))
+        output_path = Path(dirpath, render_folder, filename).as_posix()
 
         for output_node in outputs_nodes:
             orig_output_path = output_node.base_path
