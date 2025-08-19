@@ -48,10 +48,13 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
         return expected_files
 
     def process(self, instance):
-        instance_node = instance.data["transientData"]["instance_node"]
-        render_data = instance_node.get("render_data")
-
+        transient_data = instance.data["transientData"]
+        render_data = transient_data.get('instance_node', {}).get("render_data", None)
         assert render_data, "No render data found."
+
+        creator_attributes = instance.data.get('creator_attributes', None)
+        assert creator_attributes, "Can not retrieve creator attributes for instance. Abort process."
+        publish_global = creator_attributes.get("publish_global", None)
 
         render_product = render_data.get("render_product")
         aov_file_product = render_data.get("aov_file_product")
@@ -86,7 +89,7 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
             "byFrameStep": bpy.context.scene.frame_step,
             "review": review,
             "multipartExr": ext == "exr" and multilayer,
-            "farm": False if instance_per_layer else True,
+            "farm": False if (instance_per_layer and not publish_global) else True,
             "expectedFiles": [expected_beauty],
             # OCIO not currently implemented in Blender, but the following
             # settings are required by the schema, so it is hardcoded.

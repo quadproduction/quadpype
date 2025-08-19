@@ -70,6 +70,11 @@ class CreateRenderlayer(plugin.BlenderCreator):
                         ],
                         label="Layer(s) to render",
                         multiselection=True
+                    ),
+                    BoolDef(
+                        "publish_global",
+                        label="Also publish global render",
+                        default=False
                     )
                 ]
             )
