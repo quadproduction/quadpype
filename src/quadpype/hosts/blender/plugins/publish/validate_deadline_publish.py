@@ -13,7 +13,7 @@ from quadpype.hosts.blender.api import plugin
 from quadpype.hosts.blender.api.render_lib import update_render_product
 
 
-def get_composite_output_node():
+def get_composite_outputs_nodes():
     """Get composite output node for validation
 
     Returns:
@@ -21,14 +21,14 @@ def get_composite_output_node():
     """
     tree = bpy.context.scene.node_tree
     output_type = "CompositorNodeOutputFile"
-    output_node = None
+    outputs_nodes = list()
     # Remove all output nodes that include "QuadPype" in the name.
     # There should be only one.
     for node in tree.nodes:
         if node.bl_idname == output_type and "QuadPype" in node.name:
-            output_node = node
-            break
-    return output_node
+            outputs_nodes.append(node)
+
+    return outputs_nodes
 
 
 class ValidateDeadlinePublish(
@@ -65,20 +65,24 @@ class ValidateDeadlinePublish(
     @classmethod
     def get_invalid(cls, instance):
         invalid = []
-        output_node = get_composite_output_node()
-        if not output_node:
+        outputs_nodes = get_composite_outputs_nodes()
+        if not outputs_nodes:
             msg = "No output node found in the compositor tree."
             invalid.append(msg)
 
-        filepath = bpy.data.filepath
-        file = os.path.basename(filepath)
-        filename, ext = os.path.splitext(file)
-        if output_node and filename not in output_node.base_path:
-            msg = (
-                "Render output folder doesn't match the blender scene name! "
-                "Use Repair action to fix the folder file path."
-            )
-            invalid.append(msg)
+        asset_name = instance.data.get('asset', None)
+        task = instance.data.get('task', None)
+        assert asset_name and task, "Can not generate layer render path because data is missing from container node."
+
+        file_name = f"{asset_name}_{task}"
+
+        for output_node in outputs_nodes:
+            if file_name not in output_node.base_path:
+                msg = (
+                    f"Render output folder with path {output_node.base_path} doesn't match the blender scene name! "
+                    f"Use Repair action to fix the folder file path."
+                )
+                invalid.append(msg)
         if not bpy.context.scene.render.filepath:
             msg = (
                 "No render filepath set in the scene!"
@@ -90,36 +94,43 @@ class ValidateDeadlinePublish(
     @classmethod
     def repair(cls, instance):
         container = instance.data["transientData"]["instance_node"]
-        output_node = get_composite_output_node()
+        outputs_nodes = get_composite_outputs_nodes()
         render_data = container.get("render_data")
-        aov_sep = render_data.get("aov_separator")
-        filename = os.path.basename(bpy.data.filepath)
-        filename, ext = os.path.splitext(filename)
-        ext = ext.strip(".")
-        is_multilayer = render_data.get("multilayer_exr")
-        orig_output_path = output_node.base_path
-        if is_multilayer:
-            render_folder = render_data.get("render_folder")
-            output_dir = os.path.dirname(bpy.data.filepath)
-            output_dir = os.path.join(output_dir, render_folder, filename)
-            orig_output_dir = os.path.dirname(orig_output_path)
-            new_output_dir = orig_output_path.replace(orig_output_dir, output_dir)
-        else:
-            output_node_dir = os.path.dirname(orig_output_path)
-            new_output_dir = os.path.join(output_node_dir, filename)
-
-        output_node.base_path = new_output_dir
-
-        new_output_dir = (
-            Path(new_output_dir).parent
-            if is_multilayer else Path(new_output_dir)
-        )
         render_product = render_data.get("render_product")
         aov_file_product = render_data.get("aov_file_product")
+        aov_sep = render_data.get("aov_separator")
+
+        instance_per_layer = render_data.get("instance_per_layer")
+
+        asset_name = instance.data.get('asset', None)
+        task = instance.data.get('task', None)
+        assert asset_name and task, "Can not generate layer render path because data is missing from container node."
+
+        filepath = Path(bpy.data.filepath)
+        assert filepath, "Workfile not saved. Please save the file first."
+
+        dirpath = filepath.parent
+
+        filename = f"{asset_name}_{task}"
+        render_folder = render_data.get("render_folder")
+        output_path = Path(dirpath, render_folder, filename).as_posix()
+
+        for output_node in outputs_nodes:
+            orig_output_path = output_node.base_path
+
+            orig_output_dir = os.path.dirname(orig_output_path)
+            new_output_dir = orig_output_path.replace(orig_output_dir, output_path)
+
+            output_node.base_path = new_output_dir
+
+        new_output_dir = (
+            Path(output_path).parent
+        )
+
         updated_render_product = update_render_product(
             container.name, new_output_dir,
             render_product, aov_sep,
-            multilayer=is_multilayer
+            instance_per_layer=instance_per_layer
         )
         render_data["render_product"] = updated_render_product
         if aov_file_product:

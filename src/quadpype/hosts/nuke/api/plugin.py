@@ -437,9 +437,14 @@ class NukeWriteCreator(NukeCreator):
                 auto_reformat_node_name
             )
         )
-        self.log.info(f"Set expression {instance_node.knob('knobChanged').value()} on {instance_node.name()}")
+        write_node.knob('knobChanged').setValue(
+            _create_render_group_attr_expression(
+                instance_node.name(),
+                None
+            )
+        )
+        self.log.info(f"Set expression:\n {instance_node.knob('knobChanged').value()} on {instance_node.name()}")
 
-    #@staticmethod
     def _populate_node_with_knobs(self, instance_node, child_node, enum_class):
         for node_type in enum_class:
             name = node_type.value["name"]
@@ -464,8 +469,9 @@ def _create_render_group_attr_expression(write_node_name, auto_reformat_node_nam
         name = node_type.value["name"]
         line = f'if knob.name() == "{name}":\n    nuke.toNode("{write_node_name}")["{name}"].setValue(knob.value())'
         lines.append(line)
-    lines.append('if "file" in node.knobs():\n    ext = node["file"].value().rsplit(".", 1)[-1]')
-    lines.append('    if ext:\n        node["file_type"].setValue(ext)')
+    lines.append('if "file" in node.knobs() and knob.name() == "file":\n    ext = node["file"].value().rsplit(".", 1)[-1]')
+    lines.append('    if ext:\n        node["file_type"].setValue(ext)\n        node["file_type"].setValue(ext)')
+    lines.append('\n        nuke.toNode("{write_node_name}")["file_type"].setValue(ext)')
     if not auto_reformat_node_name:
         return "\n".join(lines)
 

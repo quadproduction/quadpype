@@ -32,9 +32,10 @@ class SetRenderSettings(
         layers_to_render = creator_attributes.get('render_layers', None)
         if layers_to_render is None:
             self.log.warning("Can not find render layers attribute from creator attributes.")
+            instance.data['transientData']['scene_render_settings'] = False
             return
 
-        assert layers_to_render, "Render layers attribute retrieved from creator is empty. Nothing will be rendered."
+        assert layers_to_render != [], "No render layers has been selected from publish. Nothing will be rendered."
 
         scene = bpy.context.scene
         properties_and_attributes = {

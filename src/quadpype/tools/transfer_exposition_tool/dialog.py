@@ -13,19 +13,6 @@ from quadpype.pipeline import (
 from quadpype.settings import get_project_settings
 
 
-class ToolButton(QtWidgets.QPushButton):
-    triggered = QtCore.Signal(str)
-
-    def __init__(self, identifier, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._identifier = identifier
-
-        self.clicked.connect(self._on_click)
-
-    def _on_click(self):
-        self.triggered.emit(self._identifier)
-
-
 class TransferExpositionToolsDialog(BaseToolDialog):
 
     def __init__(self, parent=None):

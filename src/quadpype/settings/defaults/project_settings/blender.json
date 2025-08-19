@@ -26,6 +26,7 @@
         "aov_separator": "underscore",
         "image_format": "exr",
         "multilayer_exr": true,
+        "instance_per_layer": true,
         "use_nodes": false,
         "renderer": "CYCLES",
         "compositing": true,

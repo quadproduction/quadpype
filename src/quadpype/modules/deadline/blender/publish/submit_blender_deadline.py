@@ -36,7 +36,7 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
                             DeadlineDefaultJobAttrs):
     label = "Submit Render to Deadline"
     hosts = ["blender"]
-    families = ["render"]
+    families = ["render", "renderlayer"]
     order = pyblish.api.IntegratorOrder + 0.12
 
     optional = True
@@ -172,6 +172,11 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         output_dir = os.path.dirname(first_file)
         instance.data["outputDir"] = output_dir
         instance.data["toBeRenderedOn"] = "deadline"
+
+        # If render layer, it means that there is already a master render which
+        # has submitted a render job and we avoid triggering another one
+        if 'renderlayer' in instance.data['families']:
+            return False
 
         payload = self.assemble_payload(job_info, plugin_info, aux_files)
         return self.submit(payload)

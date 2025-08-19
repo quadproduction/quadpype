@@ -149,6 +149,17 @@
     </script>
 
     <script type=text/javascript>
+      $(function() {
+        $("a#auto-assemble-shots-to-sequence_button").bind("click", function() {
+          RPC.call('AfterEffects.auto_assemble_shots_to_sequence_route').then(function (data) {
+          }, function (error) {
+              alert(error);
+          });
+        });
+      });
+    </script>
+
+    <script type=text/javascript>
             $(function() {
               $("a#experimental-button").bind("click", function() {
                 RPC.call('AfterEffects.experimental_tools_route').then(function (data) {
@@ -180,6 +191,7 @@
             <div><a href=# id=update-placeholder-button><button class="hostFontSize">Update placeholder</button></a></div>
             <div><a href=# id=build-workfile-button><button class="hostFontSize">Build Workfile from template</button></a></div>
             <div><a href=# id=transfer-exposition-button><button class="hostFontSize">Transfer exposition to effects</button></a></div>
+            <div><a href=# id=auto-assemble-shots-to-sequence_button><button class="hostFontSize">Auto assemble Shots to Sequence</button></a></div>
             <div><a href=# id=separator3><button class="hostFontSize">&nbsp;</button></a></div>
             <div><a href=# id=experimental-button><button class="hostFontSize">Experimental Tools...</button></a></div>
         </div>
