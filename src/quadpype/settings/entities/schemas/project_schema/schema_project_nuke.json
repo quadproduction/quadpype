@@ -12,6 +12,12 @@
             "label": "General",
             "children": [
                 {
+                    "key": "use_backdrop_loader_creator",
+                    "type": "boolean",
+                    "label": "Use New System Backdrop Load Create",
+                    "default": true
+                },
+                {
                     "type": "boolean",
                     "key": "set_resolution_startup",
                     "label": "Set Resolution On Startup",

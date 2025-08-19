@@ -25,7 +25,7 @@ from .plugin import (
     AfterEffectsLoader
 )
 
-from quadpype.hosts.aftereffects.api.json_loader import (
+from .json_loader import (
     load_content,
     apply_intervals
 )

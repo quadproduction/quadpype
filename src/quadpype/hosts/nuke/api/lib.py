@@ -3919,12 +3919,14 @@ def classify_downstream_nodes_inputs(node_list):
         } for index, node in enumerate(node_list)
     }
 
-def get_unique_name_and_number(representation, template, unique_number, node_type):
+def get_unique_name_and_number(representation, template, unique_number, node_type, **additional_data):
     template_data = format_data(
         original_data=representation,
         filter_variant=True,
         app="nuke"
     )
+    if additional_data:
+        template_data = dict(template_data, **additional_data)
 
     if unique_number:
         return get_resolved_name(data=template_data, template=template, unique_number=unique_number), unique_number
