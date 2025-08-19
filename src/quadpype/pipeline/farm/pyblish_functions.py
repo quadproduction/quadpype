@@ -575,18 +575,29 @@ def _create_instances_for_aov(instance, skeleton, aov_filter, additional_data,
         # create subset name `familyTaskSubset_AOV`
         # TODO refactor/remove me
         family = skeleton["family"]
-        if not subset.startswith(family):
+
+        force_subset_group = instance.data.get('forceSubsetGroup', None)
+        if force_subset_group:
+            group_name = instance.data['subsetGroup']
+
+        elif not subset.startswith(family):
             group_name = '{}{}{}{}{}'.format(
                 family,
                 task[0].upper(), task[1:],
                 subset[0].upper(), subset[1:])
+
         else:
             group_name = subset
 
         # if there are multiple cameras, we need to add camera name
         expected_filepath = col[0] if isinstance(col, (list, tuple)) else col
         cams = [cam for cam in cameras if cam in expected_filepath]
-        if cams:
+
+        force_subset = instance.data.get('forceSubset', None)
+        if force_subset:
+            subset_name = instance.data['subset']
+
+        elif cams:
             for cam in cams:
                 if aov:
                     if not aov.startswith(cam):

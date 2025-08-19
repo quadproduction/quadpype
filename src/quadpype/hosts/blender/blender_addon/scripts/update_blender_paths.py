@@ -18,6 +18,7 @@ class Platform(Enum):
 
 # Object type (for logging), then access property / function, then attribute to update
 objects_attr_to_update = [
+    ["Output path", "[bpy.context.scene.render]", "filepath"],
     ["Render nodes", "get_output_nodes(bpy.context.scene)", "base_path"],
     ["Cache files", "bpy.data.cache_files", "filepath"],
     ["Image Files", "bpy.data.images", "filepath"],
