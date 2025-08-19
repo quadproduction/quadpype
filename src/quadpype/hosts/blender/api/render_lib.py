@@ -517,7 +517,8 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
     node = get_avalon_node(asset_group)
     asset_name = node.get('asset', None)
     task = node.get('task', None)
-    assert asset_name and task, "Can not generate layer render path because data is missing from container node."
+    subset = node.get('subset', None)
+    assert asset_name and task and subset, "Can not prepare rendering because data is missing from container node."
 
     filepath = Path(bpy.data.filepath)
     assert filepath, "Workfile not saved. Please save the file first."
@@ -559,7 +560,7 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
     )
 
     os.makedirs(output_path, exist_ok=True)
-    tmp_render_path = Path(output_path, f"{file_name}{aov_sep}beauty.####").as_posix()
+    tmp_render_path = Path(output_path, f"{asset_name}_{subset}{aov_sep}beauty.####").as_posix()
     bpy.context.scene.render.filepath = tmp_render_path
     render_settings = {
         "render_folder": render_folder,
