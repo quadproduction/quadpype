@@ -558,9 +558,8 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
         render_product, auto_connect_nodes, connect_only_current_layer, use_nodes
     )
 
-    output_file_name = f"{file_name}{aov_sep}beauty.####"
-    tmp_render_path = Path(os.getenv("AVALON_WORKDIR"), "renders", "tmp", output_file_name).as_posix()
-    os.makedirs(tmp_render_path, exist_ok=True)
+    os.makedirs(output_path, exist_ok=True)
+    tmp_render_path = Path(output_path, f"{file_name}{aov_sep}beauty.####").as_posix()
     bpy.context.scene.render.filepath = tmp_render_path
     render_settings = {
         "render_folder": render_folder,
