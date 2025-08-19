@@ -5,6 +5,7 @@ import bpy
 
 from quadpype.settings import get_project_settings
 from quadpype.pipeline import get_current_project_name
+from quadpype.hosts.blender.api.pipeline import get_avalon_node
 
 from quadpype.hosts.blender.api import lib
 
@@ -509,11 +510,16 @@ def create_node_with_new_view_layers(tree, comp_layer_type, view_layers, render_
 def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_layer):
     name = asset_group.name
 
+    node = get_avalon_node(asset_group)
+    asset_name = node.get('asset', None)
+    task = node.get('task', None)
+    assert asset_name and task, "Can not generate layer render path because data is missing from container node."
+
     filepath = Path(bpy.data.filepath)
     assert filepath, "Workfile not saved. Please save the file first."
 
     dirpath = filepath.parent
-    file_name = Path(filepath.name).stem
+    file_name = f"{asset_name}_{task}"
 
     project = get_current_project_name()
     settings = get_project_settings(project)
