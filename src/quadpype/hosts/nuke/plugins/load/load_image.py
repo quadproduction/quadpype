@@ -19,6 +19,7 @@ from quadpype.pipeline import (
     get_current_project_name,
     get_representation_path,
 )
+from quadpype.settings import get_project_settings
 from quadpype.hosts.nuke.api.lib import (
     get_imageio_input_colorspace,
     get_layers,
@@ -48,7 +49,6 @@ from quadpype.lib.transcoding import (
 )
 from quadpype.hosts.nuke.api import plugin
 
-from src.quadpype.pipeline.editorial import frames_to_seconds
 
 class LoadImage(plugin.NukeLoader):
     """Load still image into Nuke"""
@@ -182,11 +182,16 @@ class LoadImage(plugin.NukeLoader):
         read_name, unique_number = get_unique_name_and_number(representation=representation,
                                                               template=self.node_name_template,
                                                               unique_number=None,
-                                                              node_type="Read")
+                                                              node_type="Read",
+                                                              class_name = self.__class__.__name__)
+
+        settings = get_project_settings(get_current_project_name()).get("nuke")
+        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
+
         # Create the Loader with the filename path set
         with viewer_update_and_undo_stop():
-
-            nodes_in_main_backdrops = pre_organize_by_backdrop()
+            if use_backdrop:
+                nodes_in_main_backdrops = pre_organize_by_backdrop()
 
             r = nuke.createNode(
                 "Read",
@@ -194,8 +199,9 @@ class LoadImage(plugin.NukeLoader):
                 inpanel=False
             )
             r["file"].setValue(file)
-            r["xpos"].setValue(-100000)
-            r["ypos"].setValue(-100000)
+            if use_backdrop:
+                r["xpos"].setValue(-100000)
+                r["ypos"].setValue(-100000)
             # Set colorspace defined in version data
             colorspace = context["version"]["data"].get("colorspace")
             if colorspace:
@@ -226,24 +232,23 @@ class LoadImage(plugin.NukeLoader):
                         {k: context["version"]['data'].get(k, str(None))})
 
             r["tile_color"].setValue(int(COLOR_GREEN, 16))
+            storage_backdrop = None
+            if use_backdrop:
+                try:
+                    nodes_before = list(nuke.allNodes())
+                    main_backdrop, storage_backdrop, nodes = organize_by_backdrop(data=context,
+                                                                           node=r,
+                                                                           nodes_in_main_backdrops=nodes_in_main_backdrops,
+                                                                           options=options,
+                                                                           unique_number=unique_number)
 
-            try:
-                nodes_before = list(nuke.allNodes())
-                main_backdrop, storage_backdrop, nodes = organize_by_backdrop(
-                    data=context,
-                    node=r,
-                    nodes_in_main_backdrops=nodes_in_main_backdrops,
-                    options=options,
-                    unique_number=unique_number
-                )
-
-            except TemplateProfileNotFound:
-                for n in nuke.allNodes():
-                    if n not in nodes_before:
-                        nuke.delete(n)
-                nuke.delete(r)
-                raise Exception(f"No template found in loader for "
-                                f"{context['representation']['context']['task']['name']}")
+                except TemplateProfileNotFound:
+                    for n in nuke.allNodes():
+                        if n not in nodes_before:
+                            nuke.delete(n)
+                    nuke.delete(r)
+                    raise Exception(f"No template found in loader for "
+                                    f"{context['representation']['context']['task']['name']}")
 
             if storage_backdrop:
                 data_imprint["storage_backdrop"] = storage_backdrop['name'].value()
@@ -288,6 +293,9 @@ class LoadImage(plugin.NukeLoader):
         frame_number = node["first"].value()
 
         assert node.Class() == "Read", "Must be Read"
+
+        settings = get_project_settings(get_current_project_name()).get("nuke")
+        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
 
         repr_cont = representation["context"]
         old_file = node["file"].value()
@@ -340,15 +348,18 @@ class LoadImage(plugin.NukeLoader):
         read_name, unique_number = get_unique_name_and_number(representation=representation,
                                                               template=self.node_name_template,
                                                               unique_number=unique_number,
-                                                              node_type="Read")
+                                                              node_type="Read",
+                                                              class_name = self.__class__.__name__)
         # Set the global in to the start frame of the sequence
         node["name"].setValue(read_name)
+        node["file"].setValue(file)
         node["origfirst"].setValue(first)
         node["first"].setValue(first)
         node["origlast"].setValue(last)
         node["last"].setValue(last)
 
-        update_by_backdrop(container, old_layers, new_layers, ask_proceed=False)
+        if use_backdrop:
+            update_by_backdrop(container, old_layers, new_layers, ask_proceed=False)
 
         updated_dict = {}
         updated_dict.update({
@@ -377,12 +388,17 @@ class LoadImage(plugin.NukeLoader):
         self.log.info("updated to version: {}".format(version_doc.get("name")))
 
     def remove(self, container):
+        settings = get_project_settings(get_current_project_name()).get("nuke")
+        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
         node = container["node"]
         assert node.Class() == "Read", "Must be Read"
-        storage_backdrop = nuke.toNode(container["storage_backdrop"])
-
-        main_backdrop = container["main_backdrop"]
         with viewer_update_and_undo_stop():
+            if not use_backdrop:
+                nuke.delete(node)
+                return
+            storage_backdrop = nuke.toNode(container["storage_backdrop"])
+            main_backdrop = container["main_backdrop"]
+
             members = get_nodes_in_backdrops(storage_backdrop)
             nuke.delete(storage_backdrop)
             for member in members:

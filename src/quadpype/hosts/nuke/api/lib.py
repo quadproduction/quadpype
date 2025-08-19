@@ -58,7 +58,8 @@ from .constants import (
     ASSIST,
     COLOR_GREEN,
     COLOR_RED,
-    COLOR_BLUE
+    COLOR_BLUE,
+    RGBA
 )
 from .workio import save_file
 from .utils import get_node_outputs
@@ -1339,7 +1340,7 @@ def create_write_node(
             # generic input node connected to nothing
             prev_node = nuke.createNode(
                 "Input",
-                "name {}".format("rgba"),
+                "name {}".format(RGBA),
                 inpanel=False
             )
 
@@ -3571,8 +3572,7 @@ def get_layers(read_node, ext):
         dict: An ordered dict of all the layers accessible in the read file classified by str(index)
     """
     layer_dict = defaultdict(dict)
-    filtered_layers = list()
-
+    rgba_layer = None
     metadata = read_node.metadata()
 
     if ext in PREP_LAYER_PSD_EXT:
@@ -3590,18 +3590,21 @@ def get_layers(read_node, ext):
         all_layer_names = read_node.channels()
         if not all_layer_names:
             raise RuntimeError("No layers found in the selected Read node.")
-        layers = {ch.split('.')[0] for ch in all_layer_names if ch.split('.')[0] != "rgba"}
+        layers = {ch.split('.')[0] for ch in all_layer_names if ch.split('.')[0] != RGBA}
+        rgba_layer = {ch.split('.')[0] for ch in all_layer_names if ch.split('.')[0] == RGBA}
         for index, layer in enumerate(sorted(layers)):
                 layer_dict[index]["name"] = layer
 
     filtered_layers = [layer_data for layer_data in layer_dict.values()
                        if not any(key.startswith("divider") for key in layer_data)]
 
-    if not filtered_layers:
+    if not filtered_layers and not rgba_layer:
         raise RuntimeError("No layers found in the selected Read node. \nAre you sure this is a layered file?")
-
-    return_dict = {str(i): layer for i, layer in enumerate(filtered_layers)}
-    return dict(sorted(return_dict.items(), key=lambda x: int(x[0]), reverse=True))
+    if filtered_layers:
+        return_dict = {str(i): layer for i, layer in enumerate(filtered_layers)}
+        return dict(sorted(return_dict.items(), key=lambda x: int(x[0]), reverse=True))
+    if rgba_layer:
+        return {"0": {"name":RGBA}}
 
 def compare_layers(old_layers, new_layers, ask_proceed=False):
     """
@@ -3677,7 +3680,7 @@ def decompose_layers(read_node,specific_layer=None, coordinates=None, ext=None):
         shuffle_node = nuke.createNode('Shuffle', inpanel=False)
         shuffle_node['label'].setValue(f"Extracted from {read_node_name}: {layer_name}")
         shuffle_node['in'].setValue(layer_name)
-        shuffle_node['out'].setValue('rgba')
+        shuffle_node['out'].setValue(RGBA)
         shuffle_node.setInput(0, read_node)
         shuffle_nodes.append(shuffle_node)
 
@@ -3692,7 +3695,7 @@ def decompose_layers(read_node,specific_layer=None, coordinates=None, ext=None):
 
         remove_node = nuke.createNode('Remove', inpanel=False)
         remove_node['operation'].setValue('keep')
-        remove_node['channels'].setValue('rgba')
+        remove_node['channels'].setValue(RGBA)
         remove_node.setInput(0, shuffle_node)
         remove_node['ypos'].setValue(shuffle_node.ypos() + DECOMPOSE_LAYER_PADDING)
         remove_node['xpos'].setValue(shuffle_node.xpos())
@@ -3919,12 +3922,14 @@ def classify_downstream_nodes_inputs(node_list):
         } for index, node in enumerate(node_list)
     }
 
-def get_unique_name_and_number(representation, template, unique_number, node_type):
+def get_unique_name_and_number(representation, template, unique_number, node_type, **additional_data):
     template_data = format_data(
         original_data=representation,
         filter_variant=True,
         app="nuke"
     )
+    if additional_data:
+        template_data = dict(template_data, **additional_data)
 
     if unique_number:
         return get_resolved_name(data=template_data, template=template, unique_number=unique_number), unique_number

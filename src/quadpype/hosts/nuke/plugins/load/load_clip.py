@@ -11,6 +11,7 @@ from quadpype.pipeline import (
     get_current_project_name,
     get_representation_path,
 )
+from quadpype.settings import get_project_settings
 from quadpype.lib.attribute_definitions import (
     BoolDef,
     NumberDef
@@ -135,6 +136,9 @@ class LoadClip(plugin.NukeLoader):
     def load(self, context, name, namespace, options):
         """Load asset via database
         """
+        settings = get_project_settings(get_current_project_name()).get("nuke")
+        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
+
         representation = context["representation"]
         # reset container id so it is always unique for each instance
         self.reset_container_id()
@@ -208,7 +212,8 @@ class LoadClip(plugin.NukeLoader):
         read_name, unique_number = get_unique_name_and_number(representation=representation,
                                                               template=self.node_name_template,
                                                               unique_number=None,
-                                                              node_type="Read")
+                                                              node_type="Read",
+                                                              class_name = self.__class__.__name__)
 
         # Create the Loader with the filename path set
         read_node = nuke.createNode(
@@ -220,12 +225,15 @@ class LoadClip(plugin.NukeLoader):
         # to avoid multiple undo steps for rest of process
         # we will switch off undo-ing
         with viewer_update_and_undo_stop():
-
-            nodes_in_main_backdrops = pre_organize_by_backdrop()
+            if use_backdrop:
+                nodes_in_main_backdrops = pre_organize_by_backdrop()
 
             read_node["file"].setValue(filepath)
-            read_node["xpos"].setValue(-100000)
-            read_node["ypos"].setValue(-100000)
+
+            if use_backdrop:
+                read_node["xpos"].setValue(-100000)
+                read_node["ypos"].setValue(-100000)
+
             self.set_colorspace_to_node(
                 read_node, filepath, version, representation)
 
@@ -263,48 +271,47 @@ class LoadClip(plugin.NukeLoader):
                 data_imprint["addRetime"] = True
 
             read_node["tile_color"].setValue(int(COLOR_GREEN, 16))
+            storage_backdrop = None
+            if use_backdrop:
+                try:
+                    nodes_before = list(nuke.allNodes())
+                    main_backdrop, storage_backdrop, nodes = organize_by_backdrop(data=context,
+                                                                            node=read_node,
+                                                                            nodes_in_main_backdrops=nodes_in_main_backdrops,
+                                                                            options=options,
+                                                                            unique_number=unique_number)
+                except TemplateProfileNotFound:
+                    for n in nuke.allNodes():
+                        if n not in nodes_before:
+                            nuke.delete(n)
+                    nuke.delete(read_node)
+                    raise Exception(f"No template found in loader for "
+                                    f"{context['representation']['context']['task']['name']}")
 
-            try:
-                nodes_before = list(nuke.allNodes())
-                main_backdrop, storage_backdrop, nodes = organize_by_backdrop(
-                    data=context,
-                    node=read_node,
-                    nodes_in_main_backdrops=nodes_in_main_backdrops,
-                    options=options,
-                    unique_number=unique_number
-                )
-            except TemplateProfileNotFound:
-                for n in nuke.allNodes():
-                    if n not in nodes_before:
-                        nuke.delete(n)
-                nuke.delete(read_node)
-                raise Exception(f"No template found in loader for "
-                                f"{context['representation']['context']['task']['name']}")
+            if add_retime and version_data.get("retime", None):
+                self._make_retimes(read_node, version_data)
 
-        if add_retime and version_data.get("retime", None):
-            self._make_retimes(read_node, version_data)
+            if storage_backdrop:
+                data_imprint["storage_backdrop"] = storage_backdrop['name'].value()
+                data_imprint["main_backdrop"] = main_backdrop['name'].value()
+                self.set_as_member(storage_backdrop)
+                for n in nodes:
+                    self.set_as_member(n)
+            else:
+                self.set_as_member(read_node)
 
-        if storage_backdrop:
-            data_imprint["storage_backdrop"] = storage_backdrop['name'].value()
-            data_imprint["main_backdrop"] = main_backdrop['name'].value()
-            self.set_as_member(storage_backdrop)
-            for n in nodes:
-                self.set_as_member(n)
-        else:
-            self.set_as_member(read_node)
+            self.log.info("__ options: `{}`".format(options))
+            data_imprint["options"] = options
+            self.log.info("__ unique_number: `{}`".format(unique_number))
+            data_imprint["unique_number"] = unique_number
 
-        self.log.info("__ options: `{}`".format(options))
-        data_imprint["options"] = options
-        self.log.info("__ unique_number: `{}`".format(unique_number))
-        data_imprint["unique_number"] = unique_number
-
-        container = containerise(
-            read_node,
-            name=name,
-            namespace=namespace,
-            context=context,
-            loader=self.__class__.__name__,
-            data=data_imprint)
+            container = containerise(
+                read_node,
+                name=name,
+                namespace=namespace,
+                context=context,
+                loader=self.__class__.__name__,
+                data=data_imprint)
 
         # change color of node
         if version_doc["_id"] == last_version_doc["_id"]:
@@ -355,6 +362,8 @@ class LoadClip(plugin.NukeLoader):
         inputs:
 
         """
+        settings = get_project_settings(get_current_project_name()).get("nuke")
+        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
 
         is_sequence = len(representation["files"]) > 1
 
@@ -425,13 +434,16 @@ class LoadClip(plugin.NukeLoader):
         read_name, unique_number = get_unique_name_and_number(representation=representation,
                                                               template=self.node_name_template,
                                                               unique_number=unique_number,
-                                                              node_type="Read")
+                                                              node_type="Read",
+                                                              class_name = self.__class__.__name__)
         read_node["name"].setValue(read_name)
+        read_node["file"].setValue(filepath)
 
         # to avoid multiple undo steps for rest of process
         # we will switch off undo-ing
         with viewer_update_and_undo_stop():
-            update_by_backdrop(container, old_layers, new_layers, ask_proceed=False)
+            if use_backdrop:
+                update_by_backdrop(container, old_layers, new_layers, ask_proceed=False)
             self.set_colorspace_to_node(
                 read_node, filepath, version_doc, representation)
 
@@ -505,11 +517,20 @@ class LoadClip(plugin.NukeLoader):
     def remove(self, container):
         read_node = container["node"]
         assert read_node.Class() == "Read", "Must be Read"
-        storage_backdrop = nuke.toNode(container["storage_backdrop"])
-        main_backdrop = container["main_backdrop"]
+
+        settings = get_project_settings(get_current_project_name()).get("nuke")
+        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
+
+        main_backdrop = None
         with viewer_update_and_undo_stop():
-            members = get_nodes_in_backdrops(storage_backdrop)
-            nuke.delete(storage_backdrop)
+            if use_backdrop:
+                storage_backdrop = nuke.toNode(container["storage_backdrop"])
+                main_backdrop = container["main_backdrop"]
+                members = get_nodes_in_backdrops(storage_backdrop)
+                nuke.delete(storage_backdrop)
+            else:
+                members = self.get_members(read_node)
+                nuke.delete(read_node)
             for member in members:
                 nuke.delete(member)
             if main_backdrop:
