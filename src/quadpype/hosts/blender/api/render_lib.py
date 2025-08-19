@@ -120,12 +120,7 @@ def get_render_product(output_path, name, aov_sep, view_layers, instance_per_lay
     return beauty_render_product
 
 
-def set_render_format(ext, multilayer):
-    # Set Blender to save the file with the right extension
-    bpy.context.scene.render.use_file_extension = True
-
-    image_settings = bpy.context.scene.render.image_settings
-
+def set_render_format(ext, image_settings, multilayer=None):
     if ext == "exr":
         image_settings.file_format = (
             "OPEN_EXR_MULTILAYER" if multilayer else "OPEN_EXR")
@@ -372,8 +367,7 @@ def set_node_tree(
         output = tree.nodes.new(output_type)
         output.location = (render_layer_node.location.x + 900, render_layer_node.location.y)
 
-        image_settings = bpy.context.scene.render.image_settings
-        output.format.file_format = image_settings.file_format
+        set_render_format(ext, output.format, multilayer)
 
         slots = output.layer_slots if multi_exr else output.file_slots
 
@@ -543,7 +537,10 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
         renderer = "BLENDER_EEVEE_NEXT"
     compositing = get_compositing(settings)
 
-    set_render_format(ext, multilayer)
+    # Set Blender to save the file with the right extension
+    bpy.context.scene.render.use_file_extension = True
+    set_render_format(ext, bpy.context.scene.render.image_settings)
+
     bpy.context.scene.render.engine = renderer
 
     view_layers = bpy.context.scene.view_layers
