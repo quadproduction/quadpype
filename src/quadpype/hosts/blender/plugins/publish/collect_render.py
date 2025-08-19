@@ -86,7 +86,7 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
             "byFrameStep": bpy.context.scene.frame_step,
             "review": review,
             "multipartExr": ext == "exr" and multilayer,
-            "farm": False,
+            "farm": False if instance_per_layer else True,
             "expectedFiles": [expected_beauty],
             # OCIO not currently implemented in Blender, but the following
             # settings are required by the schema, so it is hardcoded.

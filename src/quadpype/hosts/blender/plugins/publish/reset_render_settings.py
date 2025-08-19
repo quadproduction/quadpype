@@ -30,6 +30,10 @@ class ResetRenderSettings(
         assert creator_attributes, "Can not retrieve creator attributes for instance. Abort process."
 
         scene_render_settings = instance.data.get('transientData', {}).get('scene_render_settings', None)
+        if scene_render_settings is False:
+            self.log.info('No render settings has been set previously. Bypassing plugin.')
+            return
+
         assert scene_render_settings, "Can not retrieve previous scene render settings from transient data."
 
         scene_render_properties = scene_render_settings.get('scene_properties', None)

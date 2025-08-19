@@ -357,11 +357,18 @@ def set_node_tree(
         render_aovs_dict.update(render_dict)
 
     if not instance_per_layer:
-        render_layer_nodes_without_output = next((node for node in reversed(render_aovs_dict.keys())), None)
+        render_layer_nodes_without_output = [
+            next(
+                iter(
+                    node for node in render_aovs_dict if
+                    node.layer == bpy.context.scene.view_layers[0].name
+                )
+            )
+        ]
 
     aov_file_products = {}
 
-    for index, render_layer_node in enumerate(render_layer_nodes_without_output):
+    for render_layer_node in render_layer_nodes_without_output:
         output = tree.nodes.new(output_type)
         output.location = (render_layer_node.location.x + 900, render_layer_node.location.y)
 
@@ -370,7 +377,7 @@ def set_node_tree(
 
         slots = output.layer_slots if multi_exr else output.file_slots
 
-        layer_render_product = render_product.get(render_layer_node.layer, None)
+        layer_render_product = render_product.get(render_layer_node.layer if instance_per_layer else '_', None)
         assert layer_render_product, f"Can not retrieve render product for layer named {render_layer_node.layer}"
 
         beauty_filepath = next(
@@ -528,7 +535,7 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
     aov_sep = get_aov_separator(settings)
     ext = get_image_format(settings)
     multilayer = get_multilayer(settings)
-    instance_per_layer = get_multilayer(settings)
+    instance_per_layer = get_instance_per_layer(settings)
     renderer = get_renderer(settings)
     use_nodes = get_use_nodes(settings)
     ver_major, ver_minor, _ = lib.get_blender_version()

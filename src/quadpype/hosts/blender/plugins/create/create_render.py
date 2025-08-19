@@ -2,6 +2,8 @@
 import bpy
 
 from quadpype.lib import version_up, EnumDef, BoolDef, UISeparatorDef
+from quadpype.pipeline import get_current_project_name
+from quadpype.settings import get_project_settings
 from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.render_lib import prepare_rendering
 from quadpype.hosts.blender.api.workio import save_file
@@ -53,19 +55,26 @@ class CreateRenderlayer(plugin.BlenderCreator):
 
     def get_instance_attr_defs(self):
         defs = lib.collect_animation_defs()
+        project_settings = get_project_settings(get_current_project_name())
+        instance_per_layer = project_settings["blender"].get("RenderSettings", {}).get("instance_per_layer", None)
+        if instance_per_layer:
+            defs.extend(
+                [
+                    UISeparatorDef(),
+                    EnumDef(
+                        "render_layers",
+                        items=[view_layer.name for view_layer in bpy.context.scene.view_layers],
+                        default=[
+                            view_layer.name for view_layer in bpy.context.scene.view_layers
+                            if view_layer.use
+                        ],
+                        label="Layer(s) to render",
+                        multiselection=True
+                    )
+                ]
+            )
         defs.extend(
             [
-                UISeparatorDef(),
-                EnumDef(
-                    "render_layers",
-                    items=[view_layer.name for view_layer in bpy.context.scene.view_layers],
-                    default=[
-                        view_layer.name for view_layer in bpy.context.scene.view_layers
-                        if view_layer.use
-                    ],
-                    label="Layer(s) to render",
-                    multiselection=True
-                ),
                 UISeparatorDef(),
                 EnumDef(
                     "device",
