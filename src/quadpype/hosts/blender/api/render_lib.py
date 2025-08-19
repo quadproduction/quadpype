@@ -113,7 +113,7 @@ def get_render_product(output_path, name, aov_sep, view_layers, instance_per_lay
         beauty_render_product[vl_name] = []
         output_dir = Path(f"{output_path}/{vl_name}")
         filepath = output_dir / name.lstrip("/")
-        render_product = f"{filepath}_{vl_name}{aov_sep}beauty.####"
+        render_product = f"{filepath}{aov_sep}{vl_name}{aov_sep}beauty.####"
         beauty_render_product[vl_name].append(
             ("beauty", os.path.normpath(render_product)))
 
@@ -558,12 +558,10 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
         render_product, auto_connect_nodes, connect_only_current_layer, use_nodes
     )
 
-    # Clear the render filepath, so that the output is handled only by the
-    # output node in the compositor.
-    tmp_render_path = os.path.join(os.getenv("AVALON_WORKDIR"), "renders", "tmp")
-    tmp_render_path = tmp_render_path.replace("\\", "/")
+    output_file_name = f"{file_name}{aov_sep}beauty.####"
+    tmp_render_path = Path(os.getenv("AVALON_WORKDIR"), "renders", "tmp", output_file_name).as_posix()
     os.makedirs(tmp_render_path, exist_ok=True)
-    bpy.context.scene.render.filepath = f"{tmp_render_path}/"
+    bpy.context.scene.render.filepath = tmp_render_path
     render_settings = {
         "render_folder": render_folder,
         "aov_separator": aov_sep,
