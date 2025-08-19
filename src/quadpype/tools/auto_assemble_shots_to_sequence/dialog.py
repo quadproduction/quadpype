@@ -52,7 +52,8 @@ class AutoAssembleShotsToSequenceDialog(BaseToolDialog):
         self.apply_btn.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_DialogResetButton))
         self.layout.addWidget(self.apply_btn)
 
-        self.refresh_btn = QtWidgets.QPushButton("🔄 Refresh")
+        self.refresh_btn = QtWidgets.QPushButton("Refresh")
+        self.refresh_btn.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_BrowserReload))
         self.refresh_btn.clicked.connect(self.refresh)
         self.layout.addWidget(self.refresh_btn)
 
@@ -69,15 +70,18 @@ class AutoAssembleShotsToSequenceDialog(BaseToolDialog):
             self.shots_list_widget.clear()
             for entry in self.shot_instances:
                 if not self.stub.get_item(entry['members'][0]):
-                    item = QtWidgets.QListWidgetItem(f"● {entry['asset']} Comp Not Found")
+                    item = QtWidgets.QListWidgetItem(f"{entry['asset']} Comp Not Found")
                     item.setForeground(QtGui.QColor("red"))
+                    item.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_DialogCancelButton))
                     font = item.font()
                     font.setBold(True)
                     item.setFont(font)
                     item.setFlags(item.flags() & ~QtCore.Qt.ItemIsSelectable)
                 else:
-                    item = QtWidgets.QListWidgetItem(f"● {entry['asset']}")
+                    item = QtWidgets.QListWidgetItem(f"- {entry['asset']}")
                     item.setData(QtCore.Qt.UserRole, entry)
+                    item.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_ArrowForward))
+
                 self.shots_list_widget.addItem(item)
 
             self.shots_list_widget.setFixedHeight(self.shots_list_widget.sizeHintForRow(0) * (len(self.shot_instances)+2))
@@ -96,14 +100,16 @@ class AutoAssembleShotsToSequenceDialog(BaseToolDialog):
             self.seq_list_widget.clear()
             self.layout_seq.addWidget(QtWidgets.QLabel(f"Will be assembled back-to-back in the compostion:"))
             if not self.stub.get_item(self.sequence_instance['members'][0]):
-                item = QtWidgets.QListWidgetItem(f"➽ {self.sequence_instance.get('subset', '')} Comp Not Found")
+                item = QtWidgets.QListWidgetItem(f"{self.sequence_instance.get('subset', '')} Comp Not Found")
+                item.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_BrowserStop))
                 item.setForeground(QtGui.QColor("red"))
                 font = item.font()
                 font.setBold(True)
                 item.setFont(font)
                 item.setFlags(item.flags() & ~QtCore.Qt.ItemIsSelectable)
             else:
-                item = QtWidgets.QListWidgetItem(f"➽ {self.sequence_instance.get('subset', '')}")
+                item = QtWidgets.QListWidgetItem(f"{self.sequence_instance.get('subset', '')}")
+                item.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_ArrowForward))
                 item.setData(QtCore.Qt.UserRole, self.sequence_instance)
 
             self.seq_list_widget.addItem(item)
