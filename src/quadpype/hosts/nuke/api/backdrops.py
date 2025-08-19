@@ -19,7 +19,9 @@ from quadpype.pipeline import (
     format_data,
     get_workfile_build_template,
     get_task_hierarchy_templates,
-    get_resolved_name
+    get_resolved_name,
+    get_family_hierarchy_templates,
+    get_create_build_template
 )
 
 from .lib import (
@@ -78,11 +80,18 @@ def get_task_hierarchy_color(data, task=None):
     Return:
         str: A template that can be solved later
     """
-    profiles = get_workfile_build_template("working_hierarchy_templates_by_tasks")
-    profile_key = {
-        "task_types": data["task"]["name"] if not task else task,
-        "families": data["family"]
-    }
+    # If from create write instance
+    if data.get("id") == "pyblish.avalon.instance":
+        profiles = get_create_build_template()
+        profile_key = {
+            "families": data["family"]
+        }
+    else:
+        profiles = get_workfile_build_template("working_hierarchy_templates_by_tasks")
+        profile_key = {
+            "task_types": data["task"]["name"] if not task else task,
+            "families": data["family"]
+        }
 
     profile = filter_profiles(profiles, profile_key)
 
@@ -436,12 +445,12 @@ def pre_organize_by_backdrop():
     adjust_main_backdrops(nodes_in_main_backdrops=nodes_in_main_backdrops)
     return nodes_in_main_backdrops
 
-def organize_by_backdrop(context, read_node, nodes_in_main_backdrops, options, unique_number):
+def organize_by_backdrop(data, node, nodes_in_main_backdrops, options, unique_number="001"):
     """
-    Create and organize in backdrop the loaded media
+    Create and organize in backdrop the loaded media or the created write instance node
     Args:
-        context(dict): the context of the loaded element
-        read_node: the nuke read node
+        data(dict): data to the context of the loaded element or data of the render create
+        node: the nuke node to treat, a Read or a Group
         nodes_in_main_backdrops(dict): A dict representing nodes in each main backdrops
         options(dict): A dict of load options
             The primary options are:
@@ -452,49 +461,58 @@ def organize_by_backdrop(context, read_node, nodes_in_main_backdrops, options, u
             - ext: Needed to know how to get the layers from media (psd and exr work differently)
         unique_number(str): a sting of "###" to indicate the unique number
     """
-    nodes = [read_node]
+    nodes = [node]
 
-    is_prep_layer_compatible = options.get("is_prep_layer_compatible", True)
-    prep_layers = options.get("prep_layers", True)
-    create_stamps = options.get("create_stamps", True)
-    pre_comp = options.get("pre_comp", True)
-    ext = options.get("ext", "")
+    # If created write instance, no options are given
+    if options:
+        is_prep_layer_compatible = options.get("is_prep_layer_compatible", True)
+        prep_layers = options.get("prep_layers", True)
+        create_stamps = options.get("create_stamps", True)
+        pre_comp = options.get("pre_comp", True)
+        ext = options.get("ext", "")
 
-    new_nodes = dict()
-    if is_prep_layer_compatible and prep_layers:
-        new_nodes = decompose_layers(read_node, ext=ext)
-        for new_nodes_list in new_nodes.values():
-            nodes.extend(new_nodes_list)
-
-    if create_stamps:
+        new_nodes = dict()
         if is_prep_layer_compatible and prep_layers:
-            new_stamp_nodes = generate_stamps(new_nodes["dot_nodes"])
-        else:
-            new_stamp_nodes = generate_stamps(read_node)
-        new_nodes.update(new_stamp_nodes)
-        for new_nodes_list in new_stamp_nodes.values():
-            nodes.extend(new_nodes_list)
+            new_nodes = decompose_layers(node, ext=ext)
+            for new_nodes_list in new_nodes.values():
+                nodes.extend(new_nodes_list)
 
-    if is_prep_layer_compatible and pre_comp and prep_layers:
-        send_nodes = new_nodes["dot_nodes"]
         if create_stamps:
-            send_nodes = new_nodes["stamp_nodes"]
+            if is_prep_layer_compatible and prep_layers:
+                new_stamp_nodes = generate_stamps(new_nodes["dot_nodes"])
+            else:
+                new_stamp_nodes = generate_stamps(node)
+            new_nodes.update(new_stamp_nodes)
+            for new_nodes_list in new_stamp_nodes.values():
+                nodes.extend(new_nodes_list)
 
-        new_precomp_nodes = create_precomp_merge(send_nodes)
-        new_nodes.update(new_precomp_nodes)
-        for new_nodes_list in new_precomp_nodes.values():
-            nodes.extend(new_nodes_list)
+        if is_prep_layer_compatible and pre_comp and prep_layers:
+            send_nodes = new_nodes["dot_nodes"]
+            if create_stamps:
+                send_nodes = new_nodes["stamp_nodes"]
 
-    template_data = format_data(
-        original_data=context['representation'],
-        filter_variant=True,
-        app=get_current_host_name()
-    )
+            new_precomp_nodes = create_precomp_merge(send_nodes)
+            new_nodes.update(new_precomp_nodes)
+            for new_nodes_list in new_precomp_nodes.values():
+                nodes.extend(new_nodes_list)
 
-    backdrop_templates = get_task_hierarchy_templates(
-        template_data,
-        task=context["representation"]["context"]["task"]["name"]
-    )
+    template_data = data
+    # If loaded element, "representation" is present, so set the data.
+    if data.get("representation"):
+        template_data = format_data(
+            original_data=data["representation"],
+            filter_variant=True,
+            app=get_current_host_name()
+        )
+        backdrop_templates = get_task_hierarchy_templates(
+            template_data,
+            task=data["representation"]["context"]["task"]["name"]
+        )
+    #Else if we create a write render instance
+    else:
+        backdrop_templates = get_family_hierarchy_templates(
+            template_data
+        )
 
     storage_backdrop = None
     main_backdrop = None
@@ -506,7 +524,7 @@ def organize_by_backdrop(context, read_node, nodes_in_main_backdrops, options, u
             get_resolved_name(
                 data=template_data,
                 template=template,
-                unique_number = unique_number
+                unique_number=unique_number
             )
             for template in backdrop_templates
         ]
@@ -588,7 +606,7 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                 "name" : n,
                 "downstream_nodes" : get_downstream_nodes(
                  nuke.toNode(n),
-                 visited=None,
+                 visited=set(),
                  stop_class=stop_class,
                  include_stop_node=include_stop_node
                 )
@@ -610,20 +628,20 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                 # For no known reason, sometimes get_downstream_nodes() return None
                 if not downstream_nodes:
                     downstream_nodes = get_downstream_nodes(shuffle_node,
-                                                            visited=None,
+                                                            visited=set(),
                                                             stop_class=stop_class,
                                                             include_stop_node=include_stop_node)
                 sorted_downstream_nodes = sorted(list(downstream_nodes), key=lambda n: n.ypos())
                 # Store the existing Merge Tree for later treatment if the layer "0" is deleted
                 if int(index) == 0 and pre_comp:
                     existing_merge_nodes = get_downstream_nodes(sorted_downstream_nodes[-1],
-                                                                visited=None,
+                                                                visited=set(),
                                                                 stop_class="Dot",
                                                                 include_stop_node=False)
 
                 if not create_stamps and pre_comp:
                     precomp_extra_nodes = get_downstream_nodes(sorted_downstream_nodes[-1],
-                                                            visited=None,
+                                                            visited=set(),
                                                             stop_class="Dot",
                                                             include_stop_node=False)
                     sorted_downstream_nodes.extend(list(precomp_extra_nodes))
@@ -649,7 +667,7 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                 # For no known reason, sometimes get_downstream_nodes() return None
                 if not downstream_nodes:
                     downstream_nodes = get_downstream_nodes(shuffle_node,
-                                                            visited=None,
+                                                            visited=set(),
                                                             stop_class=stop_class,
                                                             include_stop_node=include_stop_node)
                 sorted_downstream_nodes = sorted(list(downstream_nodes), key=lambda n: n.ypos())
@@ -657,7 +675,7 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                 #If the old layer 0 is present in new layers, but at a different index, retrieve the merge tree from it.
                 if _is_old_layer_zero_at_a_different_index(old_layers, new_layer_data):
                     existing_merge_nodes = get_downstream_nodes(last_node,
-                                                                visited=None,
+                                                                visited=set(),
                                                                 stop_class="Dot",
                                                                 include_stop_node=False)
                 # Move downstream Nodes
@@ -676,7 +694,7 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                     if _is_old_layer_zero_at_a_different_index(old_layers, new_layer_data):
                         stop_class = "Merge2"
                     downstream_dot_nodes = get_downstream_nodes(last_node,
-                                                                visited=None,
+                                                                visited=set(),
                                                                 stop_class=stop_class,
                                                                 include_stop_node=True)
                     sorted_downstream_dot_nodes = sorted(list(downstream_dot_nodes), key=lambda n: n.ypos())
@@ -713,13 +731,13 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                 # Store the existing Merge Tree for later treatment if the layer "0" is deleted
                 if int(index) == 0 and pre_comp:
                     existing_merge_nodes = get_downstream_nodes(nuke.toNode(stamp_nodes[old_layer_data["name"]]),
-                                                                visited=None,
+                                                                visited=set(),
                                                                 stop_class="Dot",
                                                                 include_stop_node=False)
                     stop_class = "Merge2"
 
                 stamp_downstream_nodes = get_downstream_nodes(nuke.toNode(stamp_nodes[old_layer_data["name"]]),
-                                                                visited=None,
+                                                                visited=set(),
                                                                 stop_class=stop_class,
                                                                 include_stop_node=False)
                 # Store nodes to delete by names, except Merge, they will be treated later
@@ -750,7 +768,7 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                 if _is_old_layer_zero_at_a_different_index(old_layers, new_layer_data):
                     stop_class = "Merge2"
                 stamp_downstream_nodes = get_downstream_nodes(stamp_node,
-                                                              visited=None,
+                                                              visited=set(),
                                                               stop_class=stop_class,
                                                               include_stop_node=True)
 
@@ -761,7 +779,7 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                 #Retrieve Merge tree from moved stamp node if pre_comp
                 if _is_old_layer_zero_at_a_different_index(old_layers, new_layer_data) and pre_comp:
                     existing_merge_nodes = get_downstream_nodes(stamp_node,
-                                                                 visited=None,
+                                                                 visited=set(),
                                                                  stop_class="Dot",
                                                                  include_stop_node=False)
             # Else Create
@@ -840,7 +858,7 @@ def reorganize_inside_main_backdrop(main_backdrop_name):
         main_backdrop['bdwidth'].setValue(main_backdrop.xpos() + current_x)
         current_x += backdrop['bdwidth'].value() + padding
         move_nodes_in_backdrop(nodes, backdrop)
-
+    main_backdrop['bdwidth'].setValue(main_backdrop.xpos() + current_x)
     pre_organize_by_backdrop()
 
     return

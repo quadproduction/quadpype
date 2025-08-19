@@ -559,6 +559,22 @@ class AfterEffectsServerStub():
                                          height=height))
         return self._handle_return(res)
 
+    def stretch_layers_in_comp(self, comp_id, duration, frame_rate):
+        """
+            Stretch all the layers in a given comp to match comp duration.
+
+        Args:
+            comp_id (int):
+            duration (int): in frames
+            frame_rate (float): frames in seconds
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.stretch_layers_in_comp',
+                                         item_id=comp_id,
+                                         duration=duration,
+                                         frame_rate=frame_rate))
+        return self._handle_return(res)
+
     def save(self):
         """
             Saves active document

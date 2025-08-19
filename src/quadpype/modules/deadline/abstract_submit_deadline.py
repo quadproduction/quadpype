@@ -466,6 +466,10 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
             aux_files = self.get_aux_files()
 
             job_id = self.process_submission(job_info=job_info, plugin_info=plugin_info, aux_files=aux_files)
+            if job_id is False:
+                self.log.warning('Job has not been sent.')
+                return
+
             self.add_as_dependency(job_info.BatchName, job_id)
             self.log.info("Submitted job to Deadline: {}.".format(job_id))
 
@@ -480,6 +484,10 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
                 plugin_info=render_plugin_info
             )
             render_job_id = self.submit(payload)
+            if render_job_id is False:
+                self.log.warning('Job has not been sent.')
+                return
+
             self.log.info("Render job id: %s", render_job_id)
 
     def process_submission(self, job_info=None, plugin_info=None, aux_files=None):
@@ -642,5 +650,6 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
 
         # for submit publish job
         self._instance.data["deadlineSubmissionJob"] = result
+        self._instance.context.data["last_render_job"] = result
 
         return result["_id"]

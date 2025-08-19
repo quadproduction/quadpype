@@ -53,6 +53,11 @@ from .workfile_template_builder import (
     create_placeholder,
     update_placeholder,
 )
+from .command import viewer_update_and_undo_stop
+from .backdrops import (
+    get_nodes_in_backdrops,
+    reorganize_inside_main_backdrop
+)
 from .workio import (
     open_file,
     save_file,
@@ -164,7 +169,7 @@ def add_nuke_callbacks():
     nuke.addOnCreate(start_workfile_template_builder, nodeClass="Root")
 
     # TODO: remove this callback once workfile builder will be removed
-    nuke.addOnCreate(process_workfile_builder, nodeClass="Root")
+    # nuke.addOnCreate(process_workfile_builder, nodeClass="Root")
 
     # fix ffmpeg settings on script
     nuke.addOnScriptLoad(on_script_load)
@@ -676,9 +681,22 @@ def remove_instance(instance):
         instance (dict): instance representation from subsetmanager model
     """
     instance_node = instance.transient_data["node"]
+    instance_node_name = instance_node.name()
+    instance_node_data = get_node_data(instance_node, INSTANCE_DATA_KNOB)
     instance_knob = instance_node.knobs()[INSTANCE_DATA_KNOB]
     instance_node.removeKnob(instance_knob)
-    nuke.delete(instance_node)
+    if instance_node_data.get("storage_backdrop"):
+        storage_backdrop = nuke.toNode(instance_node_data["storage_backdrop"])
+        main_backdrop = instance_node_data["main_backdrop"]
+        with viewer_update_and_undo_stop():
+            members = get_nodes_in_backdrops(storage_backdrop)
+            nuke.delete(storage_backdrop)
+            for member in members:
+                nuke.delete(member)
+            if main_backdrop:
+                reorganize_inside_main_backdrop(main_backdrop)
+    if nuke.toNode(instance_node_name):
+        nuke.delete(instance_node)
 
 
 def select_instance(instance):

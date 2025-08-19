@@ -9,8 +9,14 @@ from quadpype.lib import (
     UISeparatorDef,
     EnumDef
 )
+from quadpype.pipeline import get_current_project_name
+from quadpype.settings import get_project_settings
 from quadpype.hosts.nuke import api as napi
 from quadpype.hosts.nuke.api.plugin import exposed_write_knobs
+from quadpype.hosts.nuke.api.backdrops import (
+    pre_organize_by_backdrop,
+    organize_by_backdrop
+)
 
 
 class CreateWriteImage(napi.NukeWriteCreator):
@@ -90,6 +96,10 @@ class CreateWriteImage(napi.NukeWriteCreator):
         return created_node
 
     def create(self, subset_name, instance_data, pre_create_data):
+        settings = get_project_settings(get_current_project_name()).get("nuke")
+        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
+        if use_backdrop:
+            nodes_in_main_backdrops = pre_organize_by_backdrop()
         subset_name = subset_name.format(**pre_create_data)
 
         # pass values from precreate to instance
@@ -125,10 +135,21 @@ class CreateWriteImage(napi.NukeWriteCreator):
 
             self._add_instance_to_context(instance)
 
+            imprint_data = instance.data_to_store()
+            if use_backdrop:
+                main_backdrop, storage_backdrop, nodes = organize_by_backdrop(
+                    data=dict(instance.data),
+                    node=instance_node,
+                    nodes_in_main_backdrops=nodes_in_main_backdrops,
+                    options=dict()
+                )
+                imprint_data["main_backdrop"] = main_backdrop.name()
+                imprint_data["storage_backdrop"] = storage_backdrop.name()
+
             napi.set_node_data(
                 instance_node,
                 napi.INSTANCE_DATA_KNOB,
-                instance.data_to_store()
+                imprint_data
             )
 
             exposed_write_knobs(

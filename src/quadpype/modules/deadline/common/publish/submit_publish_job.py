@@ -413,6 +413,9 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
         '''
 
         render_job = instance.data.pop("deadlineSubmissionJob", None)
+        if not render_job:
+            render_job = instance.context.data.get("last_render_job", None)
+
         if not render_job and instance.data.get("tileRendering") is False:
             raise AssertionError(("Cannot continue without valid "
                                   "Deadline submission."))
