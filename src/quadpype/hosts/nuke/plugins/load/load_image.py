@@ -186,11 +186,11 @@ class LoadImage(plugin.NukeLoader):
                                                               class_name = self.__class__.__name__)
 
         settings = get_project_settings(get_current_project_name()).get("nuke")
-        use_new_backdrop_system = settings["general"].get("use_backdrop_loader_creator", True)
+        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
 
         # Create the Loader with the filename path set
         with viewer_update_and_undo_stop():
-            if use_new_backdrop_system:
+            if use_backdrop:
                 nodes_in_main_backdrops = pre_organize_by_backdrop()
 
             r = nuke.createNode(
@@ -199,7 +199,7 @@ class LoadImage(plugin.NukeLoader):
                 inpanel=False
             )
             r["file"].setValue(file)
-            if use_new_backdrop_system:
+            if use_backdrop:
                 r["xpos"].setValue(-100000)
                 r["ypos"].setValue(-100000)
             # Set colorspace defined in version data
@@ -233,7 +233,7 @@ class LoadImage(plugin.NukeLoader):
 
             r["tile_color"].setValue(int(COLOR_GREEN, 16))
             storage_backdrop = None
-            if use_new_backdrop_system:
+            if use_backdrop:
                 try:
                     nodes_before = list(nuke.allNodes())
                     main_backdrop, storage_backdrop, nodes = organize_by_backdrop(data=context,
@@ -295,7 +295,7 @@ class LoadImage(plugin.NukeLoader):
         assert node.Class() == "Read", "Must be Read"
 
         settings = get_project_settings(get_current_project_name()).get("nuke")
-        use_new_backdrop_system = settings["general"].get("use_backdrop_loader_creator", True)
+        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
 
         repr_cont = representation["context"]
         old_file = node["file"].value()
@@ -358,7 +358,7 @@ class LoadImage(plugin.NukeLoader):
         node["origlast"].setValue(last)
         node["last"].setValue(last)
 
-        if use_new_backdrop_system:
+        if use_backdrop:
             update_by_backdrop(container, old_layers, new_layers, ask_proceed=False)
 
         updated_dict = {}
@@ -389,11 +389,11 @@ class LoadImage(plugin.NukeLoader):
 
     def remove(self, container):
         settings = get_project_settings(get_current_project_name()).get("nuke")
-        use_new_backdrop_system = settings["general"].get("use_backdrop_loader_creator", True)
+        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
         node = container["node"]
         assert node.Class() == "Read", "Must be Read"
         with viewer_update_and_undo_stop():
-            if not use_new_backdrop_system:
+            if not use_backdrop:
                 nuke.delete(node)
                 return
             storage_backdrop = nuke.toNode(container["storage_backdrop"])

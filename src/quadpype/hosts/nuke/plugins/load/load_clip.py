@@ -137,7 +137,7 @@ class LoadClip(plugin.NukeLoader):
         """Load asset via database
         """
         settings = get_project_settings(get_current_project_name()).get("nuke")
-        use_new_backdrop_system = settings["general"].get("use_backdrop_loader_creator", True)
+        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
 
         representation = context["representation"]
         # reset container id so it is always unique for each instance
@@ -225,12 +225,12 @@ class LoadClip(plugin.NukeLoader):
         # to avoid multiple undo steps for rest of process
         # we will switch off undo-ing
         with viewer_update_and_undo_stop():
-            if use_new_backdrop_system:
+            if use_backdrop:
                 nodes_in_main_backdrops = pre_organize_by_backdrop()
 
             read_node["file"].setValue(filepath)
 
-            if use_new_backdrop_system:
+            if use_backdrop:
                 read_node["xpos"].setValue(-100000)
                 read_node["ypos"].setValue(-100000)
 
@@ -272,7 +272,7 @@ class LoadClip(plugin.NukeLoader):
 
             read_node["tile_color"].setValue(int(COLOR_GREEN, 16))
             storage_backdrop = None
-            if use_new_backdrop_system:
+            if use_backdrop:
                 try:
                     nodes_before = list(nuke.allNodes())
                     main_backdrop, storage_backdrop, nodes = organize_by_backdrop(data=context,
@@ -363,7 +363,7 @@ class LoadClip(plugin.NukeLoader):
 
         """
         settings = get_project_settings(get_current_project_name()).get("nuke")
-        use_new_backdrop_system = settings["general"].get("use_backdrop_loader_creator", True)
+        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
 
         is_sequence = len(representation["files"]) > 1
 
@@ -442,7 +442,7 @@ class LoadClip(plugin.NukeLoader):
         # to avoid multiple undo steps for rest of process
         # we will switch off undo-ing
         with viewer_update_and_undo_stop():
-            if use_new_backdrop_system:
+            if use_backdrop:
                 update_by_backdrop(container, old_layers, new_layers, ask_proceed=False)
             self.set_colorspace_to_node(
                 read_node, filepath, version_doc, representation)
@@ -519,11 +519,11 @@ class LoadClip(plugin.NukeLoader):
         assert read_node.Class() == "Read", "Must be Read"
 
         settings = get_project_settings(get_current_project_name()).get("nuke")
-        use_new_backdrop_system = settings["general"].get("use_backdrop_loader_creator", True)
+        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
 
         main_backdrop = None
         with viewer_update_and_undo_stop():
-            if use_new_backdrop_system:
+            if use_backdrop:
                 storage_backdrop = nuke.toNode(container["storage_backdrop"])
                 main_backdrop = container["main_backdrop"]
                 members = get_nodes_in_backdrops(storage_backdrop)
