@@ -546,17 +546,9 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
     bpy.context.scene.render.engine = renderer
 
     view_layers = bpy.context.scene.view_layers
-    if connect_only_current_layer:
-        for layer in view_layers:
-            if not layer.use:
-                continue
-
-            view_layers = [layer]
-            break
+    output_path = Path.joinpath(dirpath, render_folder, file_name)
 
     aov_list, custom_passes = set_render_passes(settings, renderer, view_layers)
-
-    output_path = Path.joinpath(dirpath, render_folder, file_name)
 
     render_product = get_render_product(
         output_path, name, aov_sep, view_layers, instance_per_layer
