@@ -37,6 +37,7 @@ class HostToolsHelper:
         self._scene_inventory_tool = None
         self._library_loader_tool = None
         self._transfer_exposition_tool_dialog = None
+        self._auto_assemble_shots_to_sequence = None
         self._experimental_tools_dialog = None
         self._create_placeholder_tool = None
         self._update_placeholder_tool = None
@@ -231,10 +232,37 @@ class HostToolsHelper:
             self._transfer_exposition_tool_dialog = TransferExpositionToolsDialog(parent)
         return self._transfer_exposition_tool_dialog
 
+    def get_auto_assemble_shots_to_sequence_dialog(self, parent=None):
+        """Dialog of experimental tools.
+
+        For some hosts it is not easy to modify menu of tools. For
+        those cases was added experimental tools dialog which is Qt based
+        and can dynamically filled by experimental tools so
+        host need only single "Experimental tools" button to see them.
+
+        Dialog can be also empty with a message that there are not available
+        experimental tools.
+        """
+        from quadpype.tools.auto_assemble_shots_to_sequence import (
+            AutoAssembleShotsToSequenceDialog
+        )
+        self._auto_assemble_shots_to_sequence = AutoAssembleShotsToSequenceDialog(parent)
+        return self._auto_assemble_shots_to_sequence
+
     def show_transfer_exposition_tools_dialog(self, parent=None):
         """Show dialog with experimental tools."""
         with qt_app_context():
             dialog = self.get_transfer_exposition_tools_dialog(parent)
+
+            dialog.show()
+            dialog.raise_()
+            dialog.activateWindow()
+            dialog.showNormal()
+
+    def show_auto_assemble_shots_to_sequence_dialog(self, parent=None):
+        """Show dialog with experimental tools."""
+        with qt_app_context():
+            dialog = self.get_auto_assemble_shots_to_sequence_dialog(parent)
 
             dialog.show()
             dialog.raise_()
@@ -397,6 +425,9 @@ class HostToolsHelper:
         elif tool_name == "transfer_exposition_tools":
             self.show_transfer_exposition_tools_dialog(parent, *args, **kwargs)
 
+        elif tool_name == "auto_assemble_shots_to_sequence":
+            self.show_auto_assemble_shots_to_sequence_dialog(parent, *args, **kwargs)
+
         elif tool_name == "experimental_tools":
             self.show_experimental_tools_dialog(parent, *args, **kwargs)
 
@@ -479,6 +510,8 @@ def show_publisher(parent=None, **kwargs):
 def show_transfer_exposition_tools_dialog(parent=None):
     _SingletonPoint.show_tool_by_name("transfer_exposition", parent)
 
+def show_auto_assemble_shots_to_sequence_dialog(parent=None):
+    _SingletonPoint.show_tool_by_name("auto_assemble_shots_to_sequence", parent)
 
 def show_experimental_tools_dialog(parent=None):
     _SingletonPoint.show_tool_by_name("experimental_tools", parent)
