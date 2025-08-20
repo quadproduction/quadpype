@@ -1203,6 +1203,7 @@ function getRenderInfo(comp_id){
 
     var comp_name = item.name;
     var output_metadata = []
+    var status_done = RQItemStatus.DONE;
     try{
         // render_item.duplicate() should create new item on renderQueue
         // BUT it works only sometimes, there are some weird synchronization issue
@@ -1213,10 +1214,9 @@ function getRenderInfo(comp_id){
             if (render_item.comp.id != comp_id){
                 continue;
             }
-
-            if (render_item.status == RQItemStatus.DONE){
-                render_item.duplicate();  // create new, cannot change status if DONE
-                render_item.remove();  // remove existing to limit duplications
+            var item_status = render_item.status;
+            if (item_status == status_done){
+                duplicateAndDeleteRQItem(render_item);
                 continue;
             }
         }
@@ -1269,6 +1269,35 @@ function getRenderInfo(comp_id){
     }
 
     return '[' + output_metadata.join() + ']';
+}
+
+function duplicateAndDeleteRQItem(oldRQItem) {
+    /***
+        Duplicate existing RenderQueueItem with same parameters and delete original one.
+    Args:
+        oldRQItem (RenderQueueItem): RenderQueueItem to duplicate and delete
+     Return:
+        (RenderQueueItem) newRQItem
+    **/
+    if (!oldRQItem || !(oldRQItem.comp instanceof CompItem)) {
+        return _prepareError("Item invalid '" + oldRQItem.comp.name + "'");
+    }
+
+    var newRQItem = oldRQItem.duplicate();
+
+    for (var i = 1; i <= render_item.outputModules.length; i++) {
+        var oldOM = oldRQItem.outputModules[i];
+        var newOM = newRQItem.outputModules[i];
+        try {
+            newOM.file = oldOM.file;
+        } catch (error) {
+            return _prepareError("Can't apply file output paht: '" + oldOM.file.fsName + "'");
+        }
+    }
+
+    render_item.remove();
+
+    return newRQItem;
 }
 
 function getAudioUrlForComp(comp_id){
