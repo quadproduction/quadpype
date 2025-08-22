@@ -2,26 +2,19 @@
 """
 import os
 import tempfile
-import shutil
-import json
 
 import pyblish.api
 from quadpype.hosts.tvpaint.api import lib
 from quadpype.settings import get_project_settings
-from quadpype.pipeline.publish import (
-    OptionalPyblishPluginMixin
-)
 
 
-class ExtractJson(pyblish.api.InstancePlugin,
-                  OptionalPyblishPluginMixin):
+class ExtractJson(pyblish.api.InstancePlugin):
     """ Extract a JSON file and add it to the instance representation.
     """
-    order = pyblish.api.ExtractorOrder + 0.01
+    order = pyblish.api.ExtractorOrder + 0.02
     label = "Extract Json"
     hosts = ["tvpaint"]
-    family = "render"
-    optional = True
+    families = ["renderLayer", "review", "render"]
 
     project_name = os.environ['AVALON_PROJECT']
     project_settings = get_project_settings(project_name)
@@ -29,6 +22,12 @@ class ExtractJson(pyblish.api.InstancePlugin,
     enabled = project_settings['tvpaint']['publish']['ExtractJson']['enabled']
 
     def process(self, instance):
+        if not self.enabled:
+            return
+
+        if not instance.data["creator_attributes"].get("extract_json", False):
+            return
+
         # Create temp folder
         output_dir = (
             tempfile.mkdtemp(prefix="tvpaint_render_")

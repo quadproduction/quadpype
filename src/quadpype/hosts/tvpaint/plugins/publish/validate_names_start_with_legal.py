@@ -57,7 +57,6 @@ class ValidateNamesStartWithLegal(
 
     label = "Validate Names Start With Legal"
     order = pyblish.api.ValidatorOrder
-    families = ["renderPass", "renderScene"]
     actions = [ValidateNamesStartWithLegalRepair]
     optional = True
     active = True
