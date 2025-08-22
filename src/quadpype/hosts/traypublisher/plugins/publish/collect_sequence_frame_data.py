@@ -1,8 +1,11 @@
 import pyblish.api
 import clique
+import cv2
+import os
 
 from quadpype.pipeline import OptionalPyblishPluginMixin
 
+VIDEO_EXTS = ["mov", "mp4", "avi"]
 
 class CollectSequenceFrameData(
     pyblish.api.InstancePlugin,
@@ -16,7 +19,7 @@ class CollectSequenceFrameData(
     """
 
     order = pyblish.api.CollectorOrder + 0.4905
-    label = "Collect Original Sequence Frame Data"
+    label = "Collect Frame Range From Media"
     families = ["plate", "pointcache",
                 "vdbcache", "online",
                 "render"]
@@ -55,22 +58,43 @@ class CollectSequenceFrameData(
                                  " in representation data")
                 return
 
-            files = first_repre["files"]
-            collections, _ = clique.assemble(files)
-            if not collections:
-                # No sequences detected and we can't retrieve
-                # frame range
-                self.log.debug(
-                    "No sequences detected in the representation data."
-                    " Skipping collecting frame range data.")
-                return
-            collection = collections[0]
-            repres_frames = list(collection.indexes)
+            if first_repre["ext"] in VIDEO_EXTS:
+                full_path = os.path.join(first_repre["stagingDir"], first_repre["files"])
+                fps, frame_count = self.get_video_frame_count(full_path)
+                frame_start = 1
+                frame_end = frame_count
+
+            else:
+                files = first_repre["files"]
+                collections, _ = clique.assemble(files)
+                if not collections:
+                    # No sequences detected and we can't retrieve
+                    # frame range
+                    self.log.debug(
+                        "No sequences detected in the representation data."
+                        " Skipping collecting frame range data.")
+                    return
+                collection = collections[0]
+                repres_frames = list(collection.indexes)
+                frame_start = repres_frames[0]
+                frame_end = repres_frames[-1]
+                fps = asset_data["fps"]
 
             return {
-                "frameStart": repres_frames[0],
-                "frameEnd": repres_frames[-1],
+                "frameStart": frame_start,
+                "frameEnd": frame_end,
                 "handleStart": 0,
                 "handleEnd": 0,
-                "fps": asset_data["fps"]
+                "fps": fps
             }
+
+    @staticmethod
+    def get_video_frame_count(path):
+        cap = cv2.VideoCapture(path)
+        if not cap.isOpened():
+            raise IOError("Can't open video")
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        fps = cap.get(cv2.CAP_PROP_FPS)
+
+        cap.release()
+        return fps, frame_count

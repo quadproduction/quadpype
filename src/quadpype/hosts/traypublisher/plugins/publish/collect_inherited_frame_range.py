@@ -12,7 +12,7 @@ class CollectInheritedFrameRange(pyblish.api.InstancePlugin, OptionalPyblishPlug
 
     """
 
-    label = "Collect Inherited Frame Range"
+    label = "Collect Frame Range From Tracker"
     order = pyblish.api.CollectorOrder + 0.491
     families = [
         "plate", "pointcache",
