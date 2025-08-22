@@ -1047,7 +1047,8 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
         self.mark_for_review = plugin_settings["mark_for_review"]
         self.active_on_create = plugin_settings["active_on_create"]
         self.default_pass_name = plugin_settings["default_pass_name"]
-        self.extract_psd = plugin_settings.get("extract_psd", True)
+        self.extract_psd = plugin_settings.get("extract_psd", False)
+        self.extract_json = plugin_settings.get("extract_json", False)
 
         self.keep_frame_index = True
         self.exports_types = ['scene', 'camera']
@@ -1090,6 +1091,7 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
                 "apply_background": self.apply_background,
                 "mark_for_review": True,
                 "extract_psd": self.extract_psd,
+                "extract_json": self.extract_json,
             },
             "label": self._get_label(
                 subset_name,
@@ -1219,5 +1221,10 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
                 "extract_psd",
                 label="Extract PSD",
                 default=self.extract_psd
+            ),
+            BoolDef(
+                "extract_json",
+                label="Extract Json",
+                default=self.extract_json
             )
         ]

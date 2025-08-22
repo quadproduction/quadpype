@@ -73,9 +73,13 @@ class PublisherWindow(BaseToolDialog):
                        | QtCore.Qt.WindowMinimizeButtonHint \
                        | QtCore.Qt.WindowCloseButtonHint
 
-        project_settings = get_project_settings(get_current_project_name())
-        host_settings = project_settings.get(get_current_host_name(), {})
-        disable_stay_on_top = host_settings.get('load', {}).get('auto_clic_import_dialog', False)
+        project_name = get_current_project_name()
+        disable_stay_on_top = False
+
+        if project_name:
+            project_settings = get_project_settings(get_current_project_name())
+            host_settings = project_settings.get(get_current_host_name(), {})
+            disable_stay_on_top = host_settings.get('load', {}).get('auto_clic_import_dialog', False)
 
         if self.can_stay_on_top and not disable_stay_on_top:
             window_flags |= QtCore.Qt.WindowStaysOnTopHint
