@@ -581,9 +581,6 @@ class SyncRepresentationSummaryModel(_SyncRepresentationModel):
                                                           self.project,
                                                           remote_site)
         current_date = datetime.now(timezone.utc)
-        print("........................................")
-        print(current_date)
-        print("........................................")
         for repre in result.get("paginatedResults"):
             files = repre.get("files", [])
             if isinstance(files, dict):  # aggregate returns dictionary
