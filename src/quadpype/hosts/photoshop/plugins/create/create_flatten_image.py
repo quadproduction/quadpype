@@ -22,6 +22,7 @@ class AutoImageCreator(PSAutoCreator):
     # - Mark by default instance for review
     mark_for_review = True
     export_psd = False
+    extract_json = False
     active_on_create = True
 
     def create(self, options=None):
@@ -58,7 +59,8 @@ class AutoImageCreator(PSAutoCreator):
                 data["active"] = False
 
             creator_attributes = {"mark_for_review": self.mark_for_review,
-                                  "export_psd": self.export_psd}
+                                  "export_psd": self.export_psd,
+                                  "extract_json": self.extract_json}
             data.update({"creator_attributes": creator_attributes})
 
             new_instance = CreatedInstance(
@@ -94,6 +96,11 @@ class AutoImageCreator(PSAutoCreator):
                 "export_psd",
                 label="Export PSD",
                 default=self.export_psd
+            ),
+            BoolDef(
+                "extract_json",
+                label="Extract Json",
+                default=self.extract_json
             )
         ]
 
@@ -106,6 +113,10 @@ class AutoImageCreator(PSAutoCreator):
             BoolDef(
                 "export_psd",
                 label="Export PSD"
+            ),
+            BoolDef(
+                "extract_json",
+                label="Extract Json"
             )
         ]
 

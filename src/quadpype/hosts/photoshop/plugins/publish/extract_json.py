@@ -1,13 +1,12 @@
 from pathlib import Path
+import os
 
 from quadpype.pipeline import publish
 from quadpype.hosts.photoshop import api as photoshop
-from quadpype.pipeline.publish import (
-    OptionalPyblishPluginMixin
-)
+from quadpype.settings import get_project_settings
 
-class ExtractJson(publish.Extractor,
-                  OptionalPyblishPluginMixin):
+
+class ExtractJson(publish.Extractor):
     """Extract all layers (groups) marked for publish.
 
     Usually publishable instance is created as a wrapper of layer(s). For each
@@ -22,11 +21,22 @@ class ExtractJson(publish.Extractor,
     label = "Extract Json"
     hosts = ["photoshop"]
 
-    families = ["image", "background"]
     formats = ["json"]
     optional = True
 
+    project_name = os.environ['AVALON_PROJECT']
+    project_settings = get_project_settings(project_name)
+
+    enabled = project_settings['photoshop']['publish']['ExtractJson']['enabled']
+
     def process(self, instance):
+
+        if not self.enabled:
+            return
+
+        if not instance.data["creator_attributes"].get("extract_json", False):
+            return
+
         staging_dir = self.staging_dir(instance)
         self.log.info("Outputting json to {}".format(staging_dir))
 
