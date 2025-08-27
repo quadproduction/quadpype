@@ -1311,15 +1311,15 @@ def create_write_node(
 
     data.update({
         "imageio_writes": imageio_writes,
-        "ext": ext.lower()
+        "ext": ext.lower(),
+        "root": Anatomy(get_current_project_name()).roots
     })
     anatomy_filled = format_anatomy(data)
 
     # build file path to workfiles
     fdir = str(anatomy_filled["work"]["folder"]).replace("\\", "/")
     data["work"] = fdir
-    fpath = StringTemplate(data["fpath_template"]).format_strict(data)
-
+    fpath = StringTemplate(data["fpath_template"]).format_strict(data).replace("\\", "/")
     # create directory
     if not os.path.isdir(os.path.dirname(fpath)):
         log.warning("Path does not exist! I am creating it.")
