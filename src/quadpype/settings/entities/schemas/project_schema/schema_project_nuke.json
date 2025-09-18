@@ -19,6 +19,12 @@
                 },
                 {
                     "type": "boolean",
+                    "key": "create_all_project_resolution",
+                    "label": "Create All Available Resolution On Startup",
+                    "default": true
+                },
+                {
+                    "type": "boolean",
                     "key": "set_resolution_startup",
                     "label": "Set Resolution On Startup",
                     "default": true
