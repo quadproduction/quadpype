@@ -208,6 +208,11 @@ class NukePlaceholderLoadPlugin(NukePlaceholderPlugin, PlaceholderLoadMixin):
                 label="Move Nodes To PlaceHolder Location",
                 default=False
             ),
+            attribute_definitions.BoolDef(
+                "keep_placeholder_connections",
+                label="Keep PlaceHolder Connections",
+                default=False
+            ),
             attribute_definitions.UISeparatorDef()
         ])
         return attr_defs
@@ -220,8 +225,8 @@ class NukePlaceholderLoadPlugin(NukePlaceholderPlugin, PlaceholderLoadMixin):
                 representation.
             failed (bool): Loading of representation failed.
         """
-        if failed or not placeholder.data["move_nodes_to_placeholder_location"]:
-            self.log.debug("Move created nodes is disabled or something went wrong")
+        if failed:
+            self.log.debug("Something went wrong")
             nuke.root().begin()
             return
         # deselect all selected nodes
@@ -236,23 +241,25 @@ class NukePlaceholderLoadPlugin(NukePlaceholderPlugin, PlaceholderLoadMixin):
             return
 
         placeholder.data["delete"] = True
-
-        nodes_loaded = self._move_to_placeholder_group(
-            placeholder, nodes_loaded
-        )
         placeholder.data["last_loaded"] = nodes_loaded
-        refresh_nodes(nodes_loaded)
 
-        # positioning of the loaded nodes
-        min_x, min_y, _, _ = get_extreme_positions(nodes_loaded)
-        for node in nodes_loaded:
-            xpos = (node.xpos() - min_x) + placeholder_node.xpos()
-            ypos = (node.ypos() - min_y) + placeholder_node.ypos()
-            node.setXYpos(xpos, ypos)
-        refresh_nodes(nodes_loaded)
+        if placeholder.data["move_nodes_to_placeholder_location"]:
+            nodes_loaded = self._move_to_placeholder_group(
+                placeholder, nodes_loaded
+            )
+            placeholder.data["last_loaded"] = nodes_loaded
+            refresh_nodes(nodes_loaded)
 
-        # fix the problem of z_order for backdrops
-        self._fix_z_order(placeholder)
+            # positioning of the loaded nodes
+            min_x, min_y, _, _ = get_extreme_positions(nodes_loaded)
+            for node in nodes_loaded:
+                xpos = (node.xpos() - min_x) + placeholder_node.xpos()
+                ypos = (node.ypos() - min_y) + placeholder_node.ypos()
+                node.setXYpos(xpos, ypos)
+            refresh_nodes(nodes_loaded)
+
+            # fix the problem of z_order for backdrops
+            self._fix_z_order(placeholder)
 
         if placeholder.data.get("keep_placeholder"):
             self._imprint_siblings(placeholder)
@@ -293,17 +300,17 @@ class NukePlaceholderLoadPlugin(NukePlaceholderPlugin, PlaceholderLoadMixin):
         else:
             # if the placeholder doesn't have siblings, the loaded
             # nodes will be placed in a free space
-
-            xpointer, ypointer = find_free_space_to_paste_nodes(
-                nodes_loaded, direction="bottom", offset=200
-            )
-            node = nuke.createNode("NoOp")
-            reset_selection()
-            nuke.delete(node)
-            for node in nodes_loaded:
-                xpos = (node.xpos() - min_x) + xpointer
-                ypos = (node.ypos() - min_y) + ypointer
-                node.setXYpos(xpos, ypos)
+            if placeholder.data["move_nodes_to_placeholder_location"]:
+                xpointer, ypointer = find_free_space_to_paste_nodes(
+                    nodes_loaded, direction="bottom", offset=200
+                )
+                node = nuke.createNode("NoOp")
+                reset_selection()
+                nuke.delete(node)
+                for node in nodes_loaded:
+                    xpos = (node.xpos() - min_x) + xpointer
+                    ypos = (node.ypos() - min_y) + ypointer
+                    node.setXYpos(xpos, ypos)
 
         placeholder.data["nb_children"] += 1
         reset_selection()
@@ -479,11 +486,21 @@ class NukePlaceholderLoadPlugin(NukePlaceholderPlugin, PlaceholderLoadMixin):
     def _set_loaded_connections(self, placeholder):
         """
         set inputs and outputs of loaded nodes"""
+        if not placeholder.data["keep_placeholder_connections"]:
+            return
 
         placeholder_node = nuke.toNode(placeholder.scene_identifier)
         input_node, output_node = get_group_io_nodes(
             placeholder.data["last_loaded"]
         )
+
+        if not output_node:
+            dot_noop_nodes = [n for n in placeholder.data["last_loaded"] if n.Class() in ("Dot", "NoOp")]
+            output_node = max(
+                dot_noop_nodes,
+                key=lambda n: n.ypos() + n.screenHeight()
+            )
+
         for node in placeholder_node.dependent():
             for idx in range(node.inputs()):
                 if node.input(idx) == placeholder_node and output_node:
