@@ -924,7 +924,8 @@ class NukePlaceholderCreatePlugin(
     def _set_created_connections(self, placeholder):
         """
         set inputs and outputs of created nodes"""
-
+        if not placeholder.data["keep_placeholder_connections"]:
+            return
         placeholder_node = nuke.toNode(placeholder.scene_identifier)
         input_node, output_node = get_group_io_nodes(
             placeholder.data["last_created"]
