@@ -107,10 +107,12 @@ def stub():
     return ps_stub
 
 
-def show_tool_by_name(tool_name):
+def show_tool_by_name(tool_name, tab_name):
     kwargs = {}
     if tool_name == "loader":
         kwargs["use_context"] = True
+    if tab_name:
+        kwargs["tab"] = tab_name
 
     host_tools.show_tool_by_name(tool_name, **kwargs)
 
@@ -378,8 +380,11 @@ class PhotoshopRoute(WebSocketRoute):
     async def loader_route(self):
         self._tool_route("loader")
 
+    async def create_route(self):
+        self._tool_route("publisher", "create")
+
     async def publish_route(self):
-        self._tool_route("publisher")
+        self._tool_route("publisher", "publish")
 
     async def sceneinventory_route(self):
         self._tool_route("sceneinventory")
@@ -387,11 +392,12 @@ class PhotoshopRoute(WebSocketRoute):
     async def experimental_tools_route(self):
         self._tool_route("experimental_tools")
 
-    def _tool_route(self, _tool_name):
+    def _tool_route(self, _tool_name, tab_name=None):
         """The address accessed when clicking on the buttons."""
-
-        ProcessLauncher.execute_in_main_thread(show_tool_by_name, _tool_name)
-
+        if tab_name:
+            ProcessLauncher.execute_in_main_thread(show_tool_by_name, _tool_name, tab_name)
+        else:
+            ProcessLauncher.execute_in_main_thread(show_tool_by_name, _tool_name)
         # Required return statement.
         return "nothing"
 

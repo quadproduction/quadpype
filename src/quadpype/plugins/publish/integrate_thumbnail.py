@@ -17,7 +17,12 @@ import pyblish.api
 
 from quadpype.client import get_versions
 from quadpype.client.operations import OperationsSession, new_thumbnail_doc
-from quadpype.pipeline.publish import get_publish_instance_label
+from quadpype.lib import StringTemplate
+from quadpype.pipeline.publish import (
+    get_publish_instance_label,
+    get_publish_template_name
+)
+from quadpype.settings import PROJECT_SETTINGS_KEY
 
 InstanceFilterResult = collections.namedtuple(
     "InstanceFilterResult",
@@ -234,6 +239,29 @@ class IntegrateThumbnails(pyblish.api.ContextPlugin):
             return thumbnail_path
         return None
 
+    def get_template_name(self, instance):
+        """Return anatomy template name to use for integration"""
+
+        # Anatomy data is pre-filled by Collectors
+        context = instance.context
+        project_name = context.data["projectName"]
+
+        # Task can be optional in anatomy data
+        host_name = context.data["hostName"]
+        anatomy_data = instance.data["anatomyData"]
+        family = anatomy_data["family"]
+        task_info = anatomy_data.get("task") or {}
+
+        return get_publish_template_name(
+            project_name,
+            host_name,
+            family,
+            task_name=task_info.get("name"),
+            task_type=task_info.get("type"),
+            project_settings=context.data[PROJECT_SETTINGS_KEY],
+            logger=self.log
+        )
+
     def _integrate_thumbnails(
         self,
         filtered_instance_items,
@@ -272,6 +300,15 @@ class IntegrateThumbnails(pyblish.api.ContextPlugin):
             template_obj = anatomy.templates_obj["publish"]["thumbnail"]
             template_filled = template_obj.format_strict(template_data)
             thumbnail_template = template_filled.template
+
+            custom_template_name = self.get_template_name(instance)
+            custom_thumbnail_template = anatomy.templates[custom_template_name].get("thumbnail")
+
+            if custom_thumbnail_template:
+                template_data.update({"root": anatomy.roots})
+                thumbnail_template = custom_thumbnail_template
+                template_obj = StringTemplate(custom_thumbnail_template)
+                template_filled = template_obj.format_strict(template_data).normalized()
 
             dst_full_path = os.path.normpath(str(template_filled))
             self.log.debug("Copying file .. {} -> {}".format(

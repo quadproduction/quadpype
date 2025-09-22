@@ -82,10 +82,12 @@ def main(*subprocess_args):
     sys.exit(app.exec_())
 
 
-def show_tool_by_name(tool_name):
+def show_tool_by_name(tool_name, tab_name):
     kwargs = {}
     if tool_name == "loader":
         kwargs["use_context"] = True
+    if tab_name:
+        kwargs["tab"] = tab_name
 
     host_tools.show_tool_by_name(tool_name, **kwargs)
 
@@ -327,8 +329,11 @@ class AfterEffectsRoute(WebSocketRoute):
     async def loader_route(self):
         self._tool_route("loader")
 
+    async def create_route(self):
+        self._tool_route("publisher", "create")
+
     async def publish_route(self):
-        self._tool_route("publisher")
+        self._tool_route("publisher", "publish")
 
     async def sceneinventory_route(self):
         self._tool_route("sceneinventory")
@@ -351,11 +356,17 @@ class AfterEffectsRoute(WebSocketRoute):
     async def experimental_tools_route(self):
         self._tool_route("experimental_tools")
 
-    def _tool_route(self, _tool_name):
+    def _tool_route(self, _tool_name, tab_name=None):
         """The address accessed when clicking on the buttons."""
 
-        partial_method = functools.partial(show_tool_by_name,
-                                           _tool_name)
+        if tab_name:
+            partial_method = functools.partial(show_tool_by_name,
+                                               _tool_name,
+                                               tab_name)
+        else:
+            partial_method = functools.partial(show_tool_by_name,
+                                               _tool_name)
+
         ProcessLauncher.execute_in_main_thread(partial_method)
 
         # Required return statement.

@@ -2,7 +2,10 @@ import os
 import copy
 import logging
 
-from quadpype.lib import Logger
+from quadpype.lib import (
+    Logger,
+    StringTemplate
+)
 from quadpype.client import get_project
 from . import legacy_io
 from .anatomy import Anatomy
@@ -109,8 +112,9 @@ class TemplateResolver(ThumbnailResolver):
             anatomy = Anatomy(project_name)
             template_data["root"] = anatomy.roots
 
+        template_obj = StringTemplate(template)
         try:
-            filepath = os.path.normpath(template.format(**template_data))
+            filepath = os.path.normpath(template_obj.format_strict(template_data).normalized())
         except KeyError:
             self.log.warning((
                 "Missing template data keys for template <{0}> || Data: {1}"

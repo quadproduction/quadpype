@@ -47,7 +47,7 @@ class ItemImage(BaseItem):
         source_image = Image.open(os.path.normpath(self.image_path))
         paste_image = source_image.resize(
             (self.value_width(), self.value_height()),
-            Image.ANTIALIAS
+            Image.Resampling.LANCZOS
         )
         image.paste(
             paste_image,

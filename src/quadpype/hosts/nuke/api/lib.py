@@ -39,6 +39,7 @@ from quadpype.settings import (
 )
 from quadpype.modules import ModulesManager
 from quadpype.pipeline.template_data import get_template_data_with_names
+from quadpype.pipeline.settings import get_available_resolutions, extract_width_and_height
 from quadpype.pipeline import (
     discover_legacy_creator_plugins,
     Anatomy,
@@ -1311,15 +1312,15 @@ def create_write_node(
 
     data.update({
         "imageio_writes": imageio_writes,
-        "ext": ext.lower()
+        "ext": ext.lower(),
+        "root": Anatomy(get_current_project_name()).roots
     })
     anatomy_filled = format_anatomy(data)
 
     # build file path to workfiles
     fdir = str(anatomy_filled["work"]["folder"]).replace("\\", "/")
     data["work"] = fdir
-    fpath = StringTemplate(data["fpath_template"]).format_strict(data)
-
+    fpath = StringTemplate(data["fpath_template"]).format_strict(data).replace("\\", "/")
     # create directory
     if not os.path.isdir(os.path.dirname(fpath)):
         log.warning("Path does not exist! I am creating it.")
@@ -2562,8 +2563,32 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
             pixel_aspect=asset_data.get('pixelAspect', asset_data.get('pixel_aspect', 1))
         )
 
+    def create_all_resolution(self):
+        project_name = Context.project_name
+        asset_data = self._asset_entity["data"]
+        pixel_aspect = asset_data.get('pixelAspect', asset_data.get('pixel_aspect', 1))
+
+        resolutions = get_available_resolutions(
+            project_name=project_name,
+            project_settings=get_project_settings(project_name)
+        )
+
+        for resolution in resolutions:
+            width, height = extract_width_and_height(resolution)
+            format_data = {
+                "width": width,
+                "height": height,
+                "pixel_aspect": pixel_aspect,
+                "name": f"{project_name}_{width}x{height}"
+            }
+            format_string = _make_format_string(**format_data)
+            log.info("Creating new format: {}".format(format_string))
+            nuke.addFormat(format_string)
+
     def set_context_settings(self):
         os.environ["QUADPYPE_NUKE_SKIP_SAVE_EVENT"] = "True"
+        if get_project_settings(Context.project_name)["nuke"]["general"].get("create_all_project_resolution", True):
+            self.create_all_resolution()
         if get_project_settings(Context.project_name)["nuke"]["general"].get("set_resolution_startup", True):
             self.reset_resolution()
         if get_project_settings(Context.project_name)["nuke"]["general"].get("set_frames_startup", True):
@@ -2632,7 +2657,7 @@ def set_resolution(width, height, pixel_aspect):
         "width": width,
         "height": height,
         "pixel_aspect": pixel_aspect,
-        "name": project_name
+        "name": f"{project_name}_{width}x{height}"
     }
 
     log.info(format_data)

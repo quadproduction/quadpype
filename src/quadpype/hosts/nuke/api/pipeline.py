@@ -56,7 +56,8 @@ from .workfile_template_builder import (
 from .command import viewer_update_and_undo_stop
 from .backdrops import (
     get_nodes_in_backdrops,
-    reorganize_inside_main_backdrop
+    reorganize_inside_main_backdrop,
+    pre_organize_by_backdrop
 )
 from .workio import (
     open_file,
@@ -328,6 +329,11 @@ def _install_menu():
         lambda: build_workfile_template()
     )
 
+    menu_template.addSeparator()
+    menu_template.addCommand(
+        "Generate Main Backdrops",
+        lambda: pre_organize_by_backdrop()
+    )
     if not ASSIST:
         menu_template.addSeparator()
         menu_template.addCommand(
