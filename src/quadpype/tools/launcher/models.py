@@ -31,6 +31,7 @@ from quadpype.pipeline.publish.lib import get_publish_workfile_representations_f
 from quadpype.tools.utils.lib import (
     DynamicQThread,
     get_project_icon,
+    set_item_state
 )
 from quadpype.tools.utils.assets_widget import (
     AssetModel,
@@ -203,7 +204,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(True, VARIANT_GROUP_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
             if self.is_application_action(actions[0]):
-                self.set_application_action_state(session, actions[0], item)
+                set_item_state(session, item, actions[0])
             items_by_order[order].append(item)
 
         for action in single_actions:
@@ -214,7 +215,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(action, ACTION_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
             if self.is_application_action(action):
-                self.set_application_action_state(session, action, item)
+                set_item_state(session, item, action)
             items_by_order[action.order].append(item)
 
         for group_name, actions in grouped_actions.items():
@@ -257,65 +258,6 @@ class ActionModel(QtGui.QStandardItemModel):
         self.invisibleRootItem().appendRows(items)
 
         self.endResetModel()
-
-    def set_application_action_state(self, session, app_action, item):
-        """
-        Will make the app looked different if a WF or PublishedWF exists
-        """
-        if session.get("AVALON_TASK"):
-            workfile_dir = self._workfile_folder(session)
-            publish_representations = self._workfile_publish_representations(session)
-
-            ext = HOST_WORKFILE_EXTENSIONS.get(app_action.label.lower())
-
-            font = QtGui.QFont()
-            is_bold = False
-            is_underline = False
-            color = "white"
-
-            if ext and self.has_file_with_ext(workfile_dir, ext):
-                is_bold = True
-                color = "orange"
-
-            repr_ext = set()
-            for repr in publish_representations:
-                repr_ext.add(f".{repr['name']}")
-
-            repr_ext = list(repr_ext)
-            if any(elem in ext for elem in repr_ext):
-                is_bold = True
-                is_underline = True
-                color = "green"
-
-            font.setBold(is_bold)
-            font.setUnderline(is_underline)
-            item.setFont(font)
-            item.setForeground(QtGui.QColor(color))
-
-    @staticmethod
-    def _workfile_folder(session):
-        workdir_path_str = get_workdir_from_session(session)
-        if not workdir_path_str:
-            return False
-        path = Path(workdir_path_str)
-        return path
-
-    @staticmethod
-    def _workfile_publish_representations(session):
-        publish_representations = get_publish_workfile_representations_from_session(session)
-        if not publish_representations:
-            return []
-        return publish_representations
-
-    @staticmethod
-    def has_file_with_ext(folder: Path, extensions: list[str]) -> bool:
-        if not folder.exists() or not folder.is_dir():
-            return False
-
-        for file in folder.iterdir():
-            if file.is_file() and file.suffix.lower() in extensions:
-                return True
-        return False
 
     def filter_compatible_actions(self, actions):
         """Collect all actions which are compatible with the environment

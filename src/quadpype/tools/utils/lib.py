@@ -3,6 +3,7 @@ import sys
 import contextlib
 import collections
 import traceback
+from pathlib import Path
 
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
@@ -23,8 +24,10 @@ from quadpype.pipeline import (
     registered_host,
     get_current_context,
     get_current_host_name,
+    HOST_WORKFILE_EXTENSIONS
 )
-
+from quadpype.pipeline.workfile import get_workdir_from_session
+from quadpype.pipeline.publish.lib import get_publish_workfile_representations_from_session
 from .constants import CHECKED_INT, UNCHECKED_INT
 
 log = Logger.get_logger(__name__)
@@ -894,3 +897,67 @@ def get_warning_pixmap(color=None):
         color = get_objected_colors("delete-btn-bg").get_qcolor()
 
     return paint_image_with_color(src_image, color)
+
+def set_item_state(session, item, app_action=None):
+    """
+    Will make the item looked different if a WF or PublishedWF exists
+    """
+    if not session.get("AVALON_TASK", None):
+        return
+    workfile_dir = _workfile_folder(session)
+    publish_representations = _workfile_publish_representations(session)
+
+    ext = [ext for exts in HOST_WORKFILE_EXTENSIONS.values() for ext in exts]
+    if app_action:
+        ext = HOST_WORKFILE_EXTENSIONS.get(app_action.label.lower())
+
+    font = QtGui.QFont()
+    is_bold = False
+    is_underline = False
+    color = "white"
+
+    if ext and _has_file_with_ext(workfile_dir, ext):
+        is_bold = True
+        color = "orange"
+
+    repr_ext = set()
+    for repr in publish_representations:
+        repr_ext.add(f".{repr['name']}")
+
+    repr_ext = list(repr_ext)
+    if any(elem in ext for elem in repr_ext):
+        is_bold = True
+        is_underline = True
+        #color = "green"
+
+    font.setBold(is_bold)
+    font.setUnderline(is_underline)
+    item.setFont(font)
+    item.setForeground(QtGui.QColor(color))
+
+def _workfile_folder(session):
+    workdir_path_str = get_workdir_from_session(session)
+    if not workdir_path_str:
+        return Path()
+    path = Path(workdir_path_str)
+    return path
+
+def _workfile_publish_representations(session):
+    publish_representations = get_publish_workfile_representations_from_session(session)
+    if not publish_representations:
+        return []
+    return publish_representations
+
+def _has_file_with_ext(folder: Path, extensions: list[str]) -> bool:
+    if not folder.is_dir():
+        return False
+
+    matching_files = [
+        file for file in folder.rglob("*")
+        if file.is_file() and file.suffix.lower() in extensions
+    ]
+
+    if matching_files:
+        return True
+
+    return False

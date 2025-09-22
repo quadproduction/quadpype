@@ -1,17 +1,16 @@
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 import copy
-from pathlib import Path
 
 from quadpype.client import (
     get_project,
     get_asset_by_id,
 )
 from quadpype.style import get_disabled_entity_icon_color
-from quadpype.tools.utils.lib import get_task_icon
-from quadpype.pipeline.workfile import get_workdir_from_session
-from quadpype.pipeline import HOST_WORKFILE_EXTENSIONS
-from quadpype.pipeline.publish.lib import get_publish_workfile_representations_from_session
+from quadpype.tools.utils.lib import (
+    get_task_icon,
+    set_item_state
+)
 from .views import DeselectableTreeView
 
 
@@ -136,7 +135,7 @@ class TasksModel(QtGui.QStandardItemModel):
             item.setData(task_assignees, TASK_ASSIGNEE_ROLE)
             item.setData(icon, QtCore.Qt.DecorationRole)
             item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-            self._set_task_state(session, item)
+            set_item_state(session, item)
             items.append(item)
 
         if not items:
@@ -147,59 +146,6 @@ class TasksModel(QtGui.QStandardItemModel):
 
         root_item.appendRows(items)
 
-    def _set_task_state(self, session, item):
-        if session.get("AVALON_TASK"):
-            extensions = [ext for exts in HOST_WORKFILE_EXTENSIONS.values() for ext in exts]
-            workfile_dir = self._workfile_folder(session)
-            publish_representations = self._workfile_publish_representations(session)
-
-            font = QtGui.QFont()
-            is_bold = False
-            is_underline = False
-            color = "white"
-            if self.has_file_with_ext(workfile_dir, extensions):
-                is_bold = True
-                color = "orange"
-
-            if publish_representations:
-                is_bold = True
-                is_underline = True
-                color = "green"
-
-            font.setBold(is_bold)
-            font.setUnderline(is_underline)
-            item.setFont(font)
-            item.setForeground(QtGui.QColor(color))
-
-    @staticmethod
-    def _workfile_folder(session):
-        workdir_path_str = get_workdir_from_session(session)
-        if not workdir_path_str:
-            return Path()
-        path = Path(workdir_path_str)
-        return path
-
-    @staticmethod
-    def _workfile_publish_representations(session):
-        publish_representations = get_publish_workfile_representations_from_session(session)
-        if not publish_representations:
-            return []
-        return publish_representations
-
-    @staticmethod
-    def has_file_with_ext(folder: Path, extensions: list[str]) -> bool:
-        if not folder.exists() or not folder.is_dir():
-            return False
-
-        matching_files = [
-            file for file in folder.rglob("*")
-            if file.is_file() and file.suffix.lower() in extensions
-        ]
-
-        if matching_files:
-            return True
-
-        return False
 
 class TasksProxyModel(QtCore.QSortFilterProxyModel):
     def lessThan(self, x_index, y_index):
