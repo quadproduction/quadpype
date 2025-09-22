@@ -422,6 +422,8 @@ class _SyncRepresentationModel(QtCore.QAbstractTableModel):
         """
         try:
             converted_date = None
+            # Convert to aware datetime data
+            date_value = date_value.replace(tzinfo=timezone.utc)
             # ignore date in the future - for sorting only
             if date_value and date_value < current_date:
                 converted_date = date_value.strftime("%Y%m%dT%H%M%SZ")
