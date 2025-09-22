@@ -12,6 +12,11 @@ class EventHandlerModule(QuadPypeModule, ITrayService):
     def __init__(self, manager, settings):
         super().__init__(manager, settings)
 
+        module_settings = settings.get(self.name, {})
+
+        # Enabled by settings
+        self.enabled = module_settings.get("enabled", False)
+
         self._event_handler = None
         self._module_settings = settings
 

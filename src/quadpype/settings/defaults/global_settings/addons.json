@@ -182,5 +182,6 @@
     },
     "asset_reporter": {
         "enabled": false
-    }
+    },
+    "event_handler": {"enabled": true}
 }
