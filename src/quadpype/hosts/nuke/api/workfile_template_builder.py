@@ -652,6 +652,11 @@ class NukePlaceholderCreatePlugin(
                 label="Move Nodes To PlaceHolder Location",
                 default=False
             ),
+            attribute_definitions.BoolDef(
+                "keep_placeholder_connections",
+                label="Keep PlaceHolder Connections",
+                default=False
+            ),
             attribute_definitions.UISeparatorDef()
         ])
         return attr_defs
@@ -664,8 +669,8 @@ class NukePlaceholderCreatePlugin(
                 representation.
             failed (bool): Loading of representation failed.
         """
-        if failed or not placeholder.data["move_nodes_to_placeholder_location"]:
-            self.log.debug("Move created nodes is disabled or something went wrong")
+        if failed:
+            self.log.debug("Something went wrong")
             nuke.root().begin()
             return
         # deselect all selected nodes
@@ -680,22 +685,25 @@ class NukePlaceholderCreatePlugin(
 
         placeholder.data["delete"] = True
 
-        nodes_created = self._move_to_placeholder_group(
-            placeholder, nodes_created
-        )
-        placeholder.data["last_created"] = nodes_created
+        if placeholder.data["move_nodes_to_placeholder_location"]:
+            nodes_created = self._move_to_placeholder_group(
+                placeholder, nodes_created
+            )
+        placeholder.data["last_created"] = [n for n in nodes_created if n.Class() != "BackdropNode"]
+        self.log.debug("Filtered Created nodes (No Backdrops): {}".format(placeholder.data["last_created"]))
         refresh_nodes(nodes_created)
 
+        if placeholder.data["move_nodes_to_placeholder_location"]:
         # positioning of the created nodes
-        min_x, min_y, _, _ = get_extreme_positions(nodes_created)
-        for node in nodes_created:
-            xpos = (node.xpos() - min_x) + placeholder_node.xpos()
-            ypos = (node.ypos() - min_y) + placeholder_node.ypos()
-            node.setXYpos(xpos, ypos)
-        refresh_nodes(nodes_created)
+            min_x, min_y, _, _ = get_extreme_positions(nodes_created)
+            for node in nodes_created:
+                xpos = (node.xpos() - min_x) + placeholder_node.xpos()
+                ypos = (node.ypos() - min_y) + placeholder_node.ypos()
+                node.setXYpos(xpos, ypos)
+            refresh_nodes(nodes_created)
 
-        # fix the problem of z_order for backdrops
-        self._fix_z_order(placeholder)
+            # fix the problem of z_order for backdrops
+            self._fix_z_order(placeholder)
 
         if placeholder.data.get("keep_placeholder"):
             self._imprint_siblings(placeholder)
@@ -735,19 +743,20 @@ class NukePlaceholderCreatePlugin(
             placeholder.data["siblings"] = new_siblings
 
         else:
-            # if the placeholder doesn't have siblings, the created
-            # nodes will be placed in a free space
+            if placeholder.data["move_nodes_to_placeholder_location"]:
+                # if the placeholder doesn't have siblings, the created
+                # nodes will be placed in a free space
 
-            xpointer, ypointer = find_free_space_to_paste_nodes(
-                nodes_created, direction="bottom", offset=200
-            )
-            node = nuke.createNode("NoOp")
-            reset_selection()
-            nuke.delete(node)
-            for node in nodes_created:
-                xpos = (node.xpos() - min_x) + xpointer
-                ypos = (node.ypos() - min_y) + ypointer
-                node.setXYpos(xpos, ypos)
+                xpointer, ypointer = find_free_space_to_paste_nodes(
+                    nodes_created, direction="bottom", offset=200
+                )
+                node = nuke.createNode("NoOp")
+                reset_selection()
+                nuke.delete(node)
+                for node in nodes_created:
+                    xpos = (node.xpos() - min_x) + xpointer
+                    ypos = (node.ypos() - min_y) + ypointer
+                    node.setXYpos(xpos, ypos)
 
         placeholder.data["nb_children"] += 1
         reset_selection()
