@@ -405,7 +405,8 @@ class InstanceCardWidget(CardWidget):
         icon_layout.addWidget(context_warning)
 
         label_widget = QtWidgets.QLabel(self)
-        label_asset_widget = QtWidgets.QLabel(f"| {instance.data.get('asset', '')}")
+        asset_name = instance.data.get('asset', None)
+        label_asset_widget = QtWidgets.QLabel(f"| {asset_name}" if asset_name else '')
         active_checkbox = NiceCheckbox(parent=self)
 
         expand_btn = QtWidgets.QToolButton(self)
