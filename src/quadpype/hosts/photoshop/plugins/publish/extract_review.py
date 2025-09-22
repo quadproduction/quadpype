@@ -248,7 +248,7 @@ class ExtractReview(publish.Extractor):
                     # 'thumbnail' automatically keeps aspect ratio
                     res_img.thumbnail((self.max_downscale_size,
                                        self.max_downscale_size),
-                                      Image.ANTIALIAS)
+                                      Image.Resampling.LANCZOS)
                     res_img.save(os.path.join(resized_dir, file_name))
 
         return source_files_pattern
