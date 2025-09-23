@@ -335,6 +335,7 @@ class QtTVPaintRpc(BaseTVPaintRpc):
         self.add_methods(
             (route_name, self.workfiles_tool),
             (route_name, self.loader_tool),
+            (route_name, self.create_tool),
             (route_name, self.publish_tool),
             (route_name, self.scene_inventory_tool),
             (route_name, self.library_loader_tool),
@@ -354,9 +355,17 @@ class QtTVPaintRpc(BaseTVPaintRpc):
         self._execute_in_main_thread(item, wait=False)
         return
 
+    async def create_tool(self):
+        log.info("Triggering Create tool")
+        kwargs = {"tab": "create"}
+        item = MainThreadItem(self.tools_helper.show_publisher_tool, **kwargs)
+        self._execute_in_main_thread(item, wait=False)
+        return
+
     async def publish_tool(self):
         log.info("Triggering Publish tool")
-        item = MainThreadItem(self.tools_helper.show_publisher_tool)
+        kwargs = {"tab": "publish"}
+        item = MainThreadItem(self.tools_helper.show_publisher_tool, **kwargs)
         self._execute_in_main_thread(item, wait=False)
         return
 
@@ -946,6 +955,10 @@ class QtCommunicator(BaseCommunicator):
                 "callback": "scene_inventory_tool",
                 "label": "Scene inventory",
                 "help": "Open scene inventory tool"
+            }, {
+                "callback": "create_tool",
+                "label": "Create",
+                "help": "Open creator"
             }, {
                 "callback": "publish_tool",
                 "label": "Publish",
