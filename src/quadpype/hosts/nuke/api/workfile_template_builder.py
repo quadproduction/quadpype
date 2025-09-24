@@ -243,7 +243,7 @@ class NukePlaceholderLoadPlugin(NukePlaceholderPlugin, PlaceholderLoadMixin):
         placeholder.data["delete"] = True
         placeholder.data["last_loaded"] = nodes_loaded
 
-        if placeholder.data["move_nodes_to_placeholder_location"]:
+        if placeholder.data.get("move_nodes_to_placeholder_location", False):
             nodes_loaded = self._move_to_placeholder_group(
                 placeholder, nodes_loaded
             )
@@ -300,7 +300,7 @@ class NukePlaceholderLoadPlugin(NukePlaceholderPlugin, PlaceholderLoadMixin):
         else:
             # if the placeholder doesn't have siblings, the loaded
             # nodes will be placed in a free space
-            if placeholder.data["move_nodes_to_placeholder_location"]:
+            if placeholder.data.get("move_nodes_to_placeholder_location", False):
                 xpointer, ypointer = find_free_space_to_paste_nodes(
                     nodes_loaded, direction="bottom", offset=200
                 )
@@ -486,7 +486,7 @@ class NukePlaceholderLoadPlugin(NukePlaceholderPlugin, PlaceholderLoadMixin):
     def _set_loaded_connections(self, placeholder):
         """
         set inputs and outputs of loaded nodes"""
-        if not placeholder.data["keep_placeholder_connections"]:
+        if not placeholder.data.get("keep_placeholder_connections", True):
             return
 
         placeholder_node = nuke.toNode(placeholder.scene_identifier)
@@ -685,7 +685,7 @@ class NukePlaceholderCreatePlugin(
 
         placeholder.data["delete"] = True
 
-        if placeholder.data["move_nodes_to_placeholder_location"]:
+        if placeholder.data.get("move_nodes_to_placeholder_location", False):
             nodes_created = self._move_to_placeholder_group(
                 placeholder, nodes_created
             )
@@ -693,7 +693,7 @@ class NukePlaceholderCreatePlugin(
         self.log.debug("Filtered Created nodes (No Backdrops): {}".format(placeholder.data["last_created"]))
         refresh_nodes(nodes_created)
 
-        if placeholder.data["move_nodes_to_placeholder_location"]:
+        if placeholder.data.get("move_nodes_to_placeholder_location", False):
         # positioning of the created nodes
             min_x, min_y, _, _ = get_extreme_positions(nodes_created)
             for node in nodes_created:
@@ -743,7 +743,7 @@ class NukePlaceholderCreatePlugin(
             placeholder.data["siblings"] = new_siblings
 
         else:
-            if placeholder.data["move_nodes_to_placeholder_location"]:
+            if placeholder.data.get("move_nodes_to_placeholder_location", False):
                 # if the placeholder doesn't have siblings, the created
                 # nodes will be placed in a free space
 
@@ -924,7 +924,7 @@ class NukePlaceholderCreatePlugin(
     def _set_created_connections(self, placeholder):
         """
         set inputs and outputs of created nodes"""
-        if not placeholder.data["keep_placeholder_connections"]:
+        if not placeholder.data.get("keep_placeholder_connections", True):
             return
         placeholder_node = nuke.toNode(placeholder.scene_identifier)
         input_node, output_node = get_group_io_nodes(
