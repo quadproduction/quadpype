@@ -42,7 +42,6 @@ class ValidateNoSpecialChar(
     active = True
 
     def process(self, context):
-
         project_name = os.environ['AVALON_PROJECT']
         project_settings = get_project_settings(project_name)
 
@@ -59,6 +58,7 @@ class ValidateNoSpecialChar(
 
         if not convert_accents and not replace_chars:
             self.log.warning("At least one option needs to be enabled in order to validate layers names.")
+            return
 
         if replace_chars:
             replace_chars = {

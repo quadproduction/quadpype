@@ -103,6 +103,18 @@
         "ValidateNamesStartWithLegal": {
             "enabled": true
         },
+        "ValidateNoSpecialChar": {
+            "enabled": true,
+            "convert_accents": true,
+            "replace_chars": {
+                " ": {
+                    "replace_by": "_"
+                },
+                "'": {
+                    "replace_by": ""
+                }
+            }
+        },
         "ExtractConvertToEXR": {
             "enabled": false,
             "replace_pngs": true,
