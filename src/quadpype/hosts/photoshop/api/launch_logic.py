@@ -107,7 +107,7 @@ def stub():
     return ps_stub
 
 
-def show_tool_by_name(tool_name, tab_name):
+def show_tool_by_name(tool_name, tab_name=None):
     kwargs = {}
     if tool_name == "loader":
         kwargs["use_context"] = True
