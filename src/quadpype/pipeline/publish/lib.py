@@ -21,9 +21,11 @@ from quadpype.settings import (
 )
 from quadpype.pipeline import (
     tempdir,
-    Anatomy
+    Anatomy,
+    legacy_io
 )
 from quadpype.pipeline.plugin_discover import DiscoverResult
+from quadpype.client.mongo.entities import get_representations
 
 from .constants import (
     DEFAULT_PUBLISH_TEMPLATE,
@@ -159,6 +161,32 @@ def get_publish_template_name(
         template = profile["template_name"]
     return template or default_template
 
+def get_publish_workfile_representations_from_session(session=None):
+    """Get all Published workfiles repres in mongoDB for a given session
+
+    Args:
+        session (Union[Dict[str, str], None]): The Session to use. If not
+            provided use the currently active global Session.
+
+    Returns:
+        Cursor: object of representations
+    """
+
+    if session is None:
+        session = legacy_io.Session
+    project_name = session["AVALON_PROJECT"]
+    task_name = session.get("AVALON_TASK")
+    asset_name = session.get("AVALON_ASSET")
+
+    repre_entities = get_representations(
+        project_name,
+        context_filters={"family":"workfile", "task":{'name':task_name}, "asset":asset_name},
+        fields={"context", "name"}
+    )
+    if repre_entities.count() > 0:
+        return repre_entities
+
+    return None
 
 class HelpContent:
     def __init__(self, title, description, detail=None):

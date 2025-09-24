@@ -1,13 +1,16 @@
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
+import copy
 
 from quadpype.client import (
     get_project,
     get_asset_by_id,
 )
 from quadpype.style import get_disabled_entity_icon_color
-from quadpype.tools.utils.lib import get_task_icon
-
+from quadpype.tools.utils.lib import (
+    get_task_icon,
+    set_item_state
+)
 from .views import DeselectableTreeView
 
 
@@ -109,8 +112,10 @@ class TasksModel(QtGui.QStandardItemModel):
         root_item.removeRows(0, root_item.rowCount())
 
         items = []
+        session = copy.deepcopy(self.dbcon.Session)
 
         for task_name, task_info in asset_tasks.items():
+            session["AVALON_TASK"] = task_name
             task_type = task_info.get("type")
             task_order = task_info.get("order")
             icon = get_task_icon(self._project_doc, asset_doc, task_name)
@@ -130,6 +135,7 @@ class TasksModel(QtGui.QStandardItemModel):
             item.setData(task_assignees, TASK_ASSIGNEE_ROLE)
             item.setData(icon, QtCore.Qt.DecorationRole)
             item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+            set_item_state(session, item)
             items.append(item)
 
         if not items:

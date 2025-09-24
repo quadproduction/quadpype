@@ -4,6 +4,7 @@ import copy
 import logging
 import collections
 import time
+from pathlib import Path
 
 import appdirs
 from qtpy import QtCore, QtGui
@@ -20,10 +21,17 @@ from quadpype.lib.applications import (
     ApplicationManager
 )
 from quadpype.settings import get_project_settings, APPS_SETTINGS_KEY
-from quadpype.pipeline import discover_launcher_actions, ApplicationAction
+from quadpype.pipeline import (
+    discover_launcher_actions,
+    ApplicationAction,
+    HOST_WORKFILE_EXTENSIONS
+)
+from quadpype.pipeline.workfile import get_workdir_from_session
+from quadpype.pipeline.publish.lib import get_publish_workfile_representations_from_session
 from quadpype.tools.utils.lib import (
     DynamicQThread,
     get_project_icon,
+    set_item_state
 )
 from quadpype.tools.utils.assets_widget import (
     AssetModel,
@@ -141,6 +149,7 @@ class ActionModel(QtGui.QStandardItemModel):
         self.clear()
 
         actions = self.filter_compatible_actions(self._registered_actions)
+        session = copy.deepcopy(self.dbcon.Session)
 
         single_actions = []
         varianted_actions = collections.defaultdict(list)
@@ -194,6 +203,8 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(actions, ACTION_ROLE)
             item.setData(True, VARIANT_GROUP_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
+            if self.is_application_action(actions[0]):
+                set_item_state(session, item, actions[0])
             items_by_order[order].append(item)
 
         for action in single_actions:
@@ -203,6 +214,8 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(label, QtCore.Qt.ToolTipRole)
             item.setData(action, ACTION_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
+            if self.is_application_action(action):
+                set_item_state(session, item, action)
             items_by_order[action.order].append(item)
 
         for group_name, actions in grouped_actions.items():
