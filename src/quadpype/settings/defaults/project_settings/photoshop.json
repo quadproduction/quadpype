@@ -69,6 +69,15 @@
         "ValidateNamesStartWithLegal": {
             "enabled": true
         },
+        "ValidateNoSpecialChar": {
+            "enabled": true,
+            "convert_accents": true,
+            "replace_chars": {
+                " ": {
+                    "replace_by": "_"
+                }
+            }
+        },
         "ExtractImage": {
             "formats": [
                 "png",
