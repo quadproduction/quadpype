@@ -154,6 +154,12 @@ class ActionModel(QtGui.QStandardItemModel):
         single_actions = []
         varianted_actions = collections.defaultdict(list)
         grouped_actions = collections.defaultdict(list)
+
+        use_icons = False
+        if session["AVALON_PROJECT"]:
+            settings = get_project_settings(session["AVALON_PROJECT"])
+            use_icons = settings["global"].get("launcher", False).get("use_icons", False)
+
         for action in actions:
             # Groups
             group_name = getattr(action, "group", None)
@@ -203,7 +209,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(actions, ACTION_ROLE)
             item.setData(True, VARIANT_GROUP_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
-            if self.is_application_action(actions[0]):
+            if self.is_application_action(actions[0]) and use_icons:
                 set_item_state(session, item, actions[0])
             items_by_order[order].append(item)
 
@@ -214,7 +220,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(label, QtCore.Qt.ToolTipRole)
             item.setData(action, ACTION_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
-            if self.is_application_action(action):
+            if self.is_application_action(action) and use_icons:
                 set_item_state(session, item, action)
             items_by_order[action.order].append(item)
 

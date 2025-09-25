@@ -11,6 +11,7 @@ from quadpype.tools.utils.lib import (
     get_task_icon,
     set_item_state
 )
+from quadpype.settings import get_project_settings
 from .views import DeselectableTreeView
 
 
@@ -114,6 +115,11 @@ class TasksModel(QtGui.QStandardItemModel):
         items = []
         session = copy.deepcopy(self.dbcon.Session)
 
+        use_icons = False
+        if session["AVALON_PROJECT"]:
+            settings = get_project_settings(session["AVALON_PROJECT"])
+            use_icons = settings["global"].get("launcher", False).get("use_icons", False)
+
         for task_name, task_info in asset_tasks.items():
             session["AVALON_TASK"] = task_name
             task_type = task_info.get("type")
@@ -135,7 +141,8 @@ class TasksModel(QtGui.QStandardItemModel):
             item.setData(task_assignees, TASK_ASSIGNEE_ROLE)
             item.setData(icon, QtCore.Qt.DecorationRole)
             item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-            set_item_state(session, item)
+            if use_icons:
+                set_item_state(session, item)
             items.append(item)
 
         if not items:

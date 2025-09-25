@@ -1,4 +1,7 @@
 {
+    "launcher": {
+        "use_icons": false
+    },
     "version_start_category": {
         "profiles": []
     },
