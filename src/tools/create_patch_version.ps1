@@ -59,9 +59,6 @@ if (-not (Test-Path -PathType Container -Path "$($env:POETRY_HOME)\bin")) {
     Write-Color -Text "OK" -Color Green
 }
 
-Write-Color -Text ">>> ", "Checking ZXP files (Updating them if necessary) ..." -Color Green, Gray
-& "$($SCRIPT_DIR)\generate_zxp.ps1"
-
 Write-Color -Text ">>> ", "Cleaning cache files ... " -Color Green, Gray -NoNewline
 Get-ChildItem "$($PATH_QUADPYPE_ROOT)" -Filter "__pycache__" -Force -Recurse|  Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force -Recurse
 Get-ChildItem "$($PATH_QUADPYPE_ROOT)" -Filter "*.pyc" -Force -Recurse | Where-Object {( $_.FullName -inotmatch '\\build\\' ) -and ( $_.FullName -inotmatch '\\.venv' )} | Remove-Item -Force
