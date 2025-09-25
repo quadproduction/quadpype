@@ -7,6 +7,19 @@
     "children": [
         {
             "type": "dict",
+            "collapsible": true,
+            "label": "Launcher",
+            "key": "launcher",
+            "children": [
+                {
+                    "type": "boolean",
+                    "key": "use_icons",
+                    "label": "Use Workfiles Icon in Launcher"
+                }
+            ]
+        },
+        {
+            "type": "dict",
             "key": "version_start_category",
             "label": "Version Start",
             "collapsible": true,
