@@ -19,6 +19,7 @@ def apply_intervals(json_data, composition_id, stub, log=logging):
         log.warning(f"Can not extract layers data from given json file content.")
         return
 
+    layers_with_indexes = list()
     for layer in layers:
         layer_name = layer.get('name', None)
         if not layer_name:
@@ -26,15 +27,21 @@ def apply_intervals(json_data, composition_id, stub, log=logging):
             continue
 
         links = layer.get('link', [])
-        marker_index = []
+        marker_indexes = []
         for instance in links:
             image_index = instance.get('images', None)
             if image_index is None:
                 continue
-            marker_index.extend(image_index)
+            marker_indexes.extend(image_index)
 
-        for index in marker_index:
-            stub.add_marker_to_layer(composition_id, layer_name, index)
-            log.info(f"Marker has been applied at frame {index} on layer named {layer_name}.")
+        layers_with_indexes.append(
+            {
+                'layer_name': layer_name,
+                'indexes': marker_indexes
+            }
+        )
+
+    stub.add_markers_to_layers(composition_id, layers_with_indexes)
+    log.info(f"Marker has been applied for {len(layers_with_indexes)} layers.")
 
     return

@@ -685,20 +685,22 @@ class AfterEffectsServerStub():
         if records:
             return records.pop()
 
-    def add_marker_to_layer(self, comp_id, layer_name, frame_number):
+    def add_markers_to_layers(self, comp_id, layers_with_indexes):
         """
-            Add marker to layer at given frame.
+            Add marker to layers at associated frames.
 
             Args:
                 comp_id (int): id of concerned composition
-                layer_name (str): name of concerned layer
-                frame_number (int): frame at which to put marker
+                layers_with_indexes (list): Objects composed of layer name and marker indexes, structured like :
+                {
+                    'layer_name': layer_name,
+                    'indexes': []
+                }
         """
         res = self.websocketserver.call(self.client.call
-                                        ('AfterEffects.add_marker_to_layer',
+                                        ('AfterEffects.add_markers_to_layers',
                                          comp_id=comp_id,
-                                         layer_name=layer_name,
-                                         frame_number=frame_number))
+                                         layers_with_indexes=layers_with_indexes))
         return self._handle_return(res)
 
     def add_item_as_layer(self, comp_id, item_id):

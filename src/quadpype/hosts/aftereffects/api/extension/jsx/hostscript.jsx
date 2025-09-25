@@ -1495,36 +1495,48 @@ function reloadBackground(comp_id, composition_name, files_to_import){
 }
 
 
-function addMarkerToLayer(compId, layerName, frameNumber) {
-    try {
+function addMarkersToLayers(compId, layersWithIndexes) {
+    app.beginUndoGroup("Add Marker to layers")
 
+    try {
         var comp = app.project.itemByID(compId)
         if (!comp) {
-			alert('no comp')
             throw new Error("Composition with id " + compId + " can not be found.");
         }
 
-        var layer = _getLayerByName(comp, layerName);
+        for (var i=0; i<layersWithIndexes.length; i++) {
+            var browsedLayer = layersWithIndexes[i]
+            var layerName = browsedLayer["layer_name"];
+            var indexes = browsedLayer["indexes"]
 
-		var timeInSeconds = frameNumber / comp.frameRate;
-        if (_timeOutsideLayerBoundaries(timeInSeconds, layer)) {
-            throw new Error("Frame with number " + frameNumber + " is outside of layer boundaries.");
+            var layer = _getLayerByName(comp, layerName);
+            if (!layer.canSetTimeRemapEnabled) {
+                throw Error("Layer named " + layer.name + " can not have time remap.")
+            }
+
+            layer.timeRemapEnabled = true;
+            var remap = layer.property("ADBE Time Remapping");
+
+            for (var j=0; j<indexes.length; j++){
+                var timeInSeconds = indexes[j] / comp.frameRate;
+                if (_timeOutsideLayerBoundaries(timeInSeconds, layer)) {
+                    throw new Error("Frame with number " + indexes[j] + " is outside of layer boundaries.");
+                }
+
+                layer.marker.setValueAtTime(timeInSeconds, new MarkerValue(''));
+                remap.setValueAtTime(timeInSeconds, remap.valueAtTime(timeInSeconds, false));
+
+            }
         }
-
-        layer.marker.setValueAtTime(timeInSeconds, new MarkerValue(''));
-
-        if (!layer.canSetTimeRemapEnabled) {
-            throw Error("Layer named " + layer.name + " can not have time remap.")
-        }
-
-        layer.timeRemapEnabled = true;
-        var remap = layer.property("ADBE Time Remapping");
-        remap.setValueAtTime(timeInSeconds, remap.valueAtTime(timeInSeconds, false));
 
     } catch (error) {
         return _prepareError(error.toString());
+
+    } finally {
+        app.endUndoGroup();
     }
-    return _prepareSingleValue("Marker applied at frame " + frameNumber + " on layer " + layerName + ".")
+
+    return _prepareSingleValue("Markers applied on " + layersWithIndexes.length + " layers.")
 }
 
 

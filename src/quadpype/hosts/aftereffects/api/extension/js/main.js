@@ -405,14 +405,12 @@ function main(websocket_url) {
             });
     });
 
-    RPC.addRoute('AfterEffects.add_marker_to_layer', function (data) {
-        log.warn('Server called client route "add_marker_to_layer":', data);
-        var escapedLayerName = EscapeStringForJSX(data.layer_name);
-        return runEvalScript("addMarkerToLayer(" + data.comp_id + ", " +
-            "'" + escapedLayerName + "', " +
-            data.frame_number + ")")
+    RPC.addRoute('AfterEffects.add_markers_to_layers', function (data) {
+        log.warn('Server called client route "add_markers_to_layers":', data);
+        return runEvalScript("addMarkersToLayers(" + data.comp_id + ", " +
+            JSON.stringify(data.layers_with_indexes) + ")")
             .then(function (result) {
-                log.warn("add_marker_to_layer: " + result);
+                log.warn("add_markers_to_layers: " + result);
                 return result;
             });
     });
