@@ -410,6 +410,51 @@
                     ]
                 },
                 {
+                    "type": "dict",
+                    "collapsible": true,
+                    "key": "ValidateNoSpecialChar",
+                    "label": "Validate names without special characters",
+                    "checkbox_key": "enabled",
+                    "children": [
+                        {
+                            "type": "boolean",
+                            "key": "enabled",
+                            "label": "Enabled",
+                            "default": true
+                        },
+                        {
+                            "type": "boolean",
+                            "key": "convert_accents",
+                            "label": "Automatically convert accents",
+                            "default": true
+                        },
+                        {
+                            "type": "label",
+                            "label": "Specify characters that will be kept at cleaning after accents conversion."
+                        },
+                        {
+                            "type": "list",
+                            "key": "replace_chars",
+                            "label": "Replace chars",
+                            "object_type": {
+                                "type": "dict",
+                                "children": [
+                                    {
+                                        "type": "text",
+                                        "key": "target",
+                                        "label": "Forbidden char"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "key": "replace_by",
+                                        "label": "Replace by"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
                     "type": "schema_template",
                     "name": "template_publish_plugin",
                     "template_data": [
