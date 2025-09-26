@@ -261,6 +261,7 @@ class LoaderWindow(BaseToolDialog):
         )
         families = self._subsets_widget.get_subsets_families()
         self._families_filter_view.set_enabled_families(families)
+        self._subsets_widget.set_version_combobox()
 
     def _on_load_end(self):
         # Delay hiding as click events happened during loading should be
