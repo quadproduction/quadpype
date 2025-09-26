@@ -62,7 +62,7 @@ class ValidateNoSpecialChar(
 
         if replace_chars:
             replace_chars = {
-                target_char: replace_value['replace_by'] for target_char, replace_value in replace_chars.items()
+                single_replace['target']: single_replace['replace_by'] for single_replace in replace_chars
             }
 
         for layer in photoshop.stub().get_layers():

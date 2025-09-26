@@ -376,12 +376,17 @@
                             "label": "Specify characters that will be kept at cleaning after accents conversion."
                         },
                         {
-                            "type": "dict-modifiable",
+                            "type": "list",
                             "key": "replace_chars",
                             "label": "Replace chars",
                             "object_type": {
                                 "type": "dict",
                                 "children": [
+                                    {
+                                        "type": "text",
+                                        "key": "target",
+                                        "label": "Forbidden char"
+                                    },
                                     {
                                         "type": "text",
                                         "key": "replace_by",

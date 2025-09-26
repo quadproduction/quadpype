@@ -72,11 +72,12 @@
         "ValidateNoSpecialChar": {
             "enabled": true,
             "convert_accents": true,
-            "replace_chars": {
-                " ": {
+            "replace_chars": [
+                {
+                    "target": " ",
                     "replace_by": "_"
                 }
-            }
+            ]
         },
         "ExtractImage": {
             "formats": [
