@@ -301,6 +301,7 @@ class LibraryLoaderWindow(BaseToolDialog):
         )
         families = self._subsets_widget.get_subsets_families()
         self._families_filter_view.set_enabled_families(families)
+        self._subsets_widget.set_version_combobox()
 
     # ------------------------------
     def set_context(self, context, refresh=True):

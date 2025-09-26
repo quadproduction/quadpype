@@ -314,6 +314,12 @@ class SubsetWidget(QtWidgets.QWidget):
         view.is_loading = loading
         view.is_empty = empty
 
+    def set_version_combobox(self):
+        for row in range(self.model.rowCount()):
+            index = self.family_proxy.index(row, 3)
+            self.view.closePersistentEditor(index)
+            self.view.openPersistentEditor(index)
+
     def _repre_contexts_for_loaders_filter(self, items):
         version_docs_by_id = {
             item["version_document"]["_id"]: item["version_document"]
