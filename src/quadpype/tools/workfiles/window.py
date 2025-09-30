@@ -176,7 +176,7 @@ class SidePanelWidget(QtWidgets.QWidget):
 
 class Window(BaseToolWidget):
     """Work Files Window"""
-    title = "Work Files test"
+    title = "Work Files tool"
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)

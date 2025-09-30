@@ -7,10 +7,8 @@ from quadpype.client import (
     get_asset_by_id,
 )
 from quadpype.style import get_disabled_entity_icon_color
-from quadpype.tools.utils.lib import (
-    get_task_icon,
-    set_item_state
-)
+from quadpype.tools.utils.lib import get_task_icon
+from quadpype.tools.utils.workfile_cache import set_item_state
 from quadpype.settings import get_project_settings
 from .views import DeselectableTreeView
 
@@ -24,9 +22,10 @@ TASK_ASSIGNEE_ROLE = QtCore.Qt.UserRole + 4
 class TasksModel(QtGui.QStandardItemModel):
     """A model listing the tasks combined for a list of assets"""
 
-    def __init__(self, dbcon, parent=None):
+    def __init__(self, dbcon, parent=None, use_icons=False):
         super().__init__(parent=parent)
         self.dbcon = dbcon
+        self.use_icons = use_icons
         self.setHeaderData(
             0, QtCore.Qt.Horizontal, "Tasks", QtCore.Qt.DisplayRole
         )
@@ -120,6 +119,9 @@ class TasksModel(QtGui.QStandardItemModel):
             settings = get_project_settings(session["AVALON_PROJECT"])
             use_icons = settings["global"].get("launcher", False).get("use_icons", False)
 
+        if not hasattr(self, "_launcher_model"):
+            use_icons = False
+
         for task_name, task_info in asset_tasks.items():
             session["AVALON_TASK"] = task_name
             task_type = task_info.get("type")
@@ -142,7 +144,7 @@ class TasksModel(QtGui.QStandardItemModel):
             item.setData(icon, QtCore.Qt.DecorationRole)
             item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
             if use_icons:
-                set_item_state(session, item)
+                set_item_state(session, item, task_name=task_name)
             items.append(item)
 
         if not items:

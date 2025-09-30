@@ -51,6 +51,7 @@ from quadpype.pipeline.workfile.lock_workfile import (
 )
 from quadpype.hosts.maya import MAYA_ROOT_DIR
 from quadpype.hosts.maya.lib import create_workspace_mel
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 
 from . import menu, lib
 from .workfile_template_builder import (
@@ -79,7 +80,7 @@ BUILDER_PATH = os.path.join(PLUGINS_DIR, "builder")
 AVALON_CONTAINERS = ":AVALON_CONTAINERS"
 
 
-class MayaHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
+class MayaHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCache):
     name = "maya"
 
     def __init__(self):
@@ -140,7 +141,10 @@ class MayaHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         return open_file(filepath)
 
     def save_workfile(self, filepath=None):
-        return save_file(filepath)
+        _, ext = os.path.splitext(filepath)
+        save = save_file(filepath)
+        self.add_task_extension(extension=ext)
+        return save
 
     def work_root(self, session):
         return work_root(session)

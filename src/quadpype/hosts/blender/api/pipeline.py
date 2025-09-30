@@ -36,7 +36,7 @@ from quadpype.pipeline.workfile.workfile_template_builder import (
     is_last_workfile_exists,
     should_build_first_workfile
 )
-
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 from .workfile_template_builder import (
     build_workfile_template,
     BlenderPlaceholderLoadPlugin,
@@ -80,7 +80,7 @@ DEFAULT_VARIANT_NAME = "Main"
 log = Logger.get_logger(__name__)
 
 
-class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost):
+class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost, WorkFileCache):
     name = "blender"
 
     def install(self):
@@ -109,7 +109,9 @@ class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost):
             dst_path (str): Where the current scene should be saved. Or use
                 current path if `None` is passed.
         """
+        _, ext = os.path.splitext(dst_path)
         save_file(dst_path if dst_path else bpy.data.filepath)
+        self.add_task_extension(extension=ext)
 
     def open_workfile(self, filepath: str):
         """Override open_workfile method from IWorkfileHost.

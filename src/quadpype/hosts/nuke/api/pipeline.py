@@ -6,6 +6,8 @@ from collections import OrderedDict, defaultdict
 
 import pyblish.api
 
+from quadpype.tools.utils.workfile_cache import WorkFileCache
+
 import quadpype
 from quadpype.host import (
     HostBase,
@@ -85,16 +87,17 @@ if os.getenv("PYBLISH_GUI", None):
     pyblish.api.register_gui(os.getenv("PYBLISH_GUI", None))
 
 
-class NukeHost(
-    HostBase, IWorkfileHost, ILoadHost, IPublishHost
-):
+class NukeHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCache):
     name = "nuke"
 
     def open_workfile(self, filepath):
         return open_file(filepath)
 
     def save_workfile(self, filepath=None):
-        return save_file(filepath)
+        _, ext = os.path.splitext(filepath)
+        save = save_file(filepath)
+        self.add_task_extension(extension=ext)
+        return save
 
     def work_root(self, session):
         return work_root(session)

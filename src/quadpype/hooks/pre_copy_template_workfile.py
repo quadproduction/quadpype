@@ -6,7 +6,7 @@ from quadpype.pipeline.workfile import (
     get_custom_workfile_template,
     get_custom_workfile_template_by_string_context
 )
-
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 
 class CopyTemplateWorkfile(PreLaunchHook):
     """Copy workfile template.
@@ -111,3 +111,5 @@ class CopyTemplateWorkfile(PreLaunchHook):
             os.path.normpath(template_path),
             os.path.normpath(last_workfile)
         )
+        _, ext = os.path.splitext(last_workfile)
+        WorkFileCache().add_task_extension(project_name, task_name, asset_name, ext)
