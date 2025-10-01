@@ -38,9 +38,17 @@ class CreateReview(plugin.BlenderCreator):
                     items=["camera", "viewport"],
                     default="viewport"
                 ),
-                BoolDef("use_transparent_background",
-                        label="Use transparent background",
-                        default=False)
+                BoolDef(
+                    "generate_image_sequence",
+                    label="Generate Image Sequence",
+                    tooltip="Generate image sequence",
+                    default=True
+                ),
+                BoolDef(
+                    "use_transparent_background",
+                    label="Use transparent background",
+                    default=False
+                ),
             ]
         )
 

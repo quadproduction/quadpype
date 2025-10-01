@@ -49,6 +49,7 @@ class ExtractPlayblast(
         use_viewport = False
         creator_attributes = instance.data.get('creator_attributes', {})
         render_view_type = creator_attributes.get('render_view', None)
+        generate_image_sequence = creator_attributes.get('generate_image_sequence', True)
         transparent_background = creator_attributes.get('use_transparent_background', False)
         if not render_view_type or render_view_type == "camera":
             camera = instance.data("review_camera", None)
@@ -123,7 +124,7 @@ class ExtractPlayblast(
             files = files[0]
 
         tags = ["review"]
-        if not instance.data.get("keepImages"):
+        if not instance.data.get("keepImages") and not generate_image_sequence:
             tags.append("delete")
 
         representation = {
