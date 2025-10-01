@@ -1,6 +1,7 @@
 """Create review."""
 
 from quadpype.hosts.blender.api import plugin, lib
+from quadpype.lib import EnumDef, BoolDef, UISeparatorDef
 
 
 class CreateReview(plugin.BlenderCreator):
@@ -28,5 +29,19 @@ class CreateReview(plugin.BlenderCreator):
 
     def get_instance_attr_defs(self):
         defs = lib.collect_animation_defs()
+        defs.extend(
+            [
+                UISeparatorDef(),
+                EnumDef(
+                    "render_view",
+                    label="Render view",
+                    items=["camera", "viewport"],
+                    default="viewport"
+                ),
+                BoolDef("use_transparent_background",
+                        label="Use transparent background",
+                        default=False)
+            ]
+        )
 
         return defs

@@ -22,7 +22,9 @@ def capture(
     maintain_aspect_ratio=True,
     overwrite=False,
     image_settings=None,
-    display_options=None
+    display_options=None,
+    use_viewport=False,
+    transparent_background=False
 ):
     """Playblast in an independent windows
     Arguments:
@@ -34,8 +36,6 @@ def capture(
         start_frame (int, optional): Defaults to current start frame.
         end_frame (int, optional): Defaults to current end frame.
         step_frame (int, optional): Defaults to 1.
-        sound (str, optional):  Specify the sound node to be used during
-            playblast. When None (default) no sound will be used.
         isolate (list): List of nodes to isolate upon capturing
         maintain_aspect_ratio (bool, optional): Modify height in order to
             maintain aspect ratio.
@@ -45,6 +45,8 @@ def capture(
         image_settings (dict, optional): Supplied image settings for render,
             using `ImageSettings`
         display_options (dict, optional): Supplied display options for render
+        use_viewport (bool, optional): Use current scene viewport for render
+        transparent_background (bool, optional): Use transparent background for render
     """
 
     scene = bpy.context.scene
@@ -82,9 +84,31 @@ def capture(
         "use_overwrite": overwrite,
     }
 
+    file_format = image_settings.get('file_format', None)
+    if _transparent_background_asked(transparent_background, file_format):
+        image_settings["color_mode"] = "RGBA"
+        render_options["film_transparent"] = True
+        render_options["engine"] = "CYCLES"
+
+    current_viewport = None
+    if use_viewport:
+        area = find_view_area()
+        if not area:
+            return
+
+        current_viewport = area.spaces[0].region_3d
+
     with _independent_window() as window:
 
-        applied_view(window, camera, isolate, options=display_options)
+        if use_viewport:
+            area = find_view_area(window)
+            if not area:
+                return
+
+            apply_viewport(current_viewport, area.spaces[0].region_3d)
+
+        else:
+            applied_view(window, camera, isolate, options=display_options)
 
         with contextlib.ExitStack() as stack:
             stack.enter_context(maintain_camera(window, camera))
@@ -102,6 +126,31 @@ def capture(
             )
 
     return filename
+
+
+def _transparent_background_asked(transparent_background, file_format):
+    return file_format == "PNG" and transparent_background
+
+
+def find_view_area(window=None):
+    try:
+        if not window:
+            window = bpy.data.window_managers[0].windows[0]
+
+        return next(iter(area for area in window.screen.areas if area.type == "VIEW_3D"))
+
+    except StopIteration:
+        return
+
+
+def apply_viewport(old_viewport, new_viewport):
+    new_viewport.view_matrix = old_viewport.view_matrix
+    new_viewport.view_distance = old_viewport.view_distance
+    new_viewport.view_location = old_viewport.view_location
+    new_viewport.view_rotation = old_viewport.view_rotation
+    new_viewport.view_camera_zoom = old_viewport.view_camera_zoom
+    new_viewport.view_distance = old_viewport.view_distance
+    new_viewport.view_camera_offset = old_viewport.view_camera_offset
 
 
 ImageSettings = {

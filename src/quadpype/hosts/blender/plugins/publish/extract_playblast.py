@@ -46,8 +46,15 @@ class ExtractPlayblast(
         self.log.info(f"start: {start}, end: {end}")
         assert end >= start, "Invalid time range!"
 
-        # get cameras
-        camera = instance.data("review_camera", None)
+        use_viewport = False
+        creator_attributes = instance.data.get('creator_attributes', {})
+        render_view_type = creator_attributes.get('render_view', None)
+        transparent_background = creator_attributes.get('use_transparent_background', False)
+        if not render_view_type or render_view_type == "camera":
+            camera = instance.data("review_camera", None)
+        else:
+            camera = "AUTO"
+            use_viewport = True
 
         # get isolate objects list
         isolate = instance.data("isolate", None)
@@ -72,6 +79,8 @@ class ExtractPlayblast(
             "filename": path,
             "overwrite": True,
             "isolate": isolate,
+            "use_viewport": use_viewport,
+            "transparent_background": transparent_background
         })
         preset.setdefault(
             "image_settings",
