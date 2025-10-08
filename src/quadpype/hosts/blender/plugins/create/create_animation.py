@@ -1,6 +1,7 @@
 """Create an animation asset."""
 import logging
 
+from quadpype.lib import BoolDef, UISeparatorDef
 from quadpype.hosts.blender.api import plugin, lib, pipeline
 from quadpype.pipeline.create import (
     subset_name,
@@ -79,4 +80,14 @@ class CreateAnimation(plugin.BlenderCreator):
 
     def get_instance_attr_defs(self):
         defs = lib.collect_animation_defs(step=False)
+        defs.extend([UISeparatorDef(),
+                     BoolDef("apply_subdiv",
+                             label="Apply Subdiv",
+                             default=False),
+                    UISeparatorDef(),
+                     BoolDef("export_hidden",
+                             label="Export Hidden Objects",
+                             default=False)]
+                    )
+
         return defs
