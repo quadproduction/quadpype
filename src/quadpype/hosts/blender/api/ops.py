@@ -393,6 +393,21 @@ class LaunchWorkFiles(LaunchQtApp):
         ))
         self._window.refresh()
 
+
+class LaunchLookAssigner(LaunchQtApp):
+    """Launch Avalon Work Files."""
+
+    bl_idname = "wm.look_assigner"
+    bl_label = "Look Assigner..."
+    _tool_name = "look_assigner"
+
+    def execute(self, context):
+        from quadpype.hosts.blender.tools import show_look_assigner
+        show_look_assigner()
+
+        return {"FINISHED"}
+
+
 class CreatePlaceholder(LaunchQtApp):
     bl_idname = "wm.ayon_create_placeholder"
     bl_label = "Create Placeholder"
@@ -422,6 +437,7 @@ class UpdatePlaceholder(LaunchQtApp):
     def after_window_show(self):
         """ Update the window """
         self._window.set_update_mode(self.item)
+
 
 class BuildWorkfileFromTemplate(bpy.types.Operator):
     bl_idname = "wm.ayon_build_workfile_from_tempalte"
@@ -516,6 +532,7 @@ class TOPBAR_MT_avalon(bpy.types.Menu):
         layout.operator(LaunchWorkFiles.bl_idname, text="Work Files...")
         layout.separator()
         layout.menu(SUBMENU_MT_avalon.bl_idname)
+        layout.operator(LaunchLookAssigner.bl_idname, text="Look Assigner...")
 
 
 class SUBMENU_MT_avalon(bpy.types.Menu):
@@ -547,6 +564,7 @@ classes = [
     UpdatePlaceholder,
     BuildWorkfileFromTemplate,
     UpdateWorkfileFromTemplate,
+    LaunchLookAssigner,
     SetFrameRange,
     SetResolution,
     SetUnitScale,

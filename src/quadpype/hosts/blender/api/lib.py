@@ -1,17 +1,14 @@
 import os
 import traceback
-import re
 import importlib
 import contextlib
-import json
-from enum import Enum
+import uuid
 from typing import Dict, List, Union, TYPE_CHECKING
 
 import bpy
 import addon_utils
 from quadpype.lib import Logger, NumberDef
 from quadpype.pipeline import get_current_project_name, get_current_asset_name, get_current_context
-from quadpype.pipeline.context_tools import get_current_project_asset
 from quadpype.client import get_asset_by_name
 if TYPE_CHECKING:
     from quadpype.pipeline.create import CreateContext  # noqa: F401
@@ -292,6 +289,7 @@ def get_object_types_correspondance():
                 pass
     return rna_to_bpy_data
 
+
 def map_to_classes_and_names(blender_objects):
     """ Get a list of blender_objects and produce a dictionary composed of all previous objects
     sorted by types (as accessible from `bpy.data`, and not `bpy.types`, to make it easier
@@ -318,10 +316,12 @@ def map_to_classes_and_names(blender_objects):
 
     return mapped_values
 
+
 def get_data_type_name(blender_data):
     """Retrieve the name of the data type base on a data block"""
     data_type_dict = map_to_classes_and_names([blender_data])
     return next((k for k, v in data_type_dict.items() if blender_data.name in v), None)
+
 
 def get_objects_from_mapped(mapped_objects):
     """ Get a list of mapped blender_objects (with objects types as keys and list of objects as values)
@@ -337,11 +337,34 @@ def get_objects_from_mapped(mapped_objects):
     for data_type, blender_objects_names in mapped_objects.items():
         blender_objects.extend(
             [
-                getattr(bpy.data, data_type).get(blender_object_name)
+                getattr(bpy.data, data_type)[blender_object_name]
                 for blender_object_name in blender_objects_names
             ]
         )
+
     return blender_objects
+
+
+def _outliner_context():
+    window = bpy.context.window or bpy.context.window_manager.windows[0]
+
+    try:
+        area = next(
+            area for area in window.screen.areas
+            if area.type == 'OUTLINER')
+        region = next(
+            region for region in area.regions
+            if region.type == 'WINDOW')
+    except StopIteration as e:
+        raise RuntimeError("Could not find outliner. An outliner space "
+                           "must be in the main Blender window.") from e
+
+    return bpy.context.temp_override(
+            window=window,
+            area=area,
+            region=region,
+            screen=window.screen
+    )
 
 
 def get_selected_collections():
@@ -356,28 +379,27 @@ def get_selected_collections():
         list: A list of `bpy.types.Collection` objects that are currently
         selected in the outliner.
     """
-    window = bpy.context.window or bpy.context.window_manager.windows[0]
-
-    try:
-        area = next(
-            area for area in window.screen.areas
-            if area.type == 'OUTLINER')
-        region = next(
-            region for region in area.regions
-            if region.type == 'WINDOW')
-    except StopIteration as e:
-        raise RuntimeError("Could not find outliner. An outliner space "
-                           "must be in the main Blender window.") from e
-
-    with bpy.context.temp_override(
-        window=window,
-        area=area,
-        region=region,
-        screen=window.screen
-    ):
+    with _outliner_context():
         ids = bpy.context.selected_ids
 
     return [id for id in ids if isinstance(id, bpy.types.Collection)]
+
+
+def get_selected_objects():
+    """
+    Returns a list of the currently selected objects in the outliner.
+
+    Raises:
+        RuntimeError: If the outliner cannot be found in the main Blender
+        window.
+
+    Returns:
+        list: A list of `bpy.types.Object` objects that are currently
+        selected in the outliner.
+    """
+
+    with _outliner_context():
+        return bpy.context.selected_objects
 
 
 def get_selection(include_collections: bool = False) -> List[bpy.types.Object]:
@@ -510,6 +532,97 @@ def get_highest_root(objects):
 
     minimum_parent = min(num_parents_to_obj)
     return num_parents_to_obj[minimum_parent]
+
+
+def get_id(entity=None, entity_name=None):
+    """Get the `cbId` attribute of the given entity.
+
+    Args:
+        entity (object): blender object to retrieve the attribute from
+        entity_name (str): the name of the entity to retrieve the attribute from
+    Returns:
+        str: id of asked entity
+
+    """
+    if not any([entity, entity_name]):
+        return None
+
+    if not entity:
+        try:
+            entity = next(
+                iter(
+                    entity for entity in bpy.data.objects + bpy.data.materials
+                    if entity.name == entity_name
+                )
+            )
+        except StopIteration:
+            return None
+
+    try:
+        return entity.get('id', None)
+    except RuntimeError:
+        log.warning("Failed to retrieve cbId on %s", entity)
+        return None
+
+
+def generate_ids(objects, asset_id=None):
+    """Returns new unique ids for the given objects.
+
+    Args:
+        objects (list): List of objects.
+        asset_id (str or bson.ObjectId): The database id for the *asset* to
+            generate for. When None provided the current asset in the
+            active session is used.
+
+    Returns:
+        list: A list of (objects, id) tuples.
+
+    """
+
+    if asset_id is None:
+        # Get the asset ID from the database for the asset of current context
+        project_name = get_current_project_name()
+        asset_name = get_current_asset_name()
+        asset_doc = get_asset_by_name(project_name, asset_name, fields=["_id"])
+        assert asset_doc, "No current asset found in Session"
+        asset_id = asset_doc['_id']
+
+    objects_ids = []
+    for entity in objects:
+        _, uid = str(uuid.uuid4()).rsplit("-", 1)
+        unique_id = "{}:{}".format(asset_id, uid)
+        objects_ids.append((entity, unique_id))
+
+    return objects_ids
+
+
+def set_id(entity, unique_id, overwrite=False):
+    """Add cbId to `entity` unless one already exists.
+
+    Args:
+        entity (object): the blender object to add the "cbId" on
+        unique_id (str): The unique node id to assign.
+            This should be generated by `generate_ids`.
+        overwrite (bool, optional): When True overrides the current value even
+            if `entity` already has an id. Defaults to False.
+
+    Returns:
+        None
+
+    """
+
+    exists = entity.get('id')
+    if not exists or overwrite:
+        entity['id'] = unique_id
+
+
+def has_materials(obj):
+    return (
+        obj and
+        not is_collection(obj) and
+        hasattr(obj, 'material_slots') and
+        len(obj.material_slots) > 0
+    )
 
 
 @contextlib.contextmanager
@@ -690,6 +803,7 @@ def get_parent_collections_for_object(obj):
 
     return parent_collections
 
+
 def make_scene_empty(scene=None):
     """Delete all objects, worlds and collections in given scene and clean everything.
         Args:
@@ -726,6 +840,7 @@ def make_scene_empty(scene=None):
     # Clean everything
     bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
 
+
 def purge_orphans(is_recursive):
     data_types = [attr for attr in dir(bpy.data) if
                     isinstance(getattr(bpy.data, attr), bpy.types.bpy_prop_collection)]
@@ -739,6 +854,7 @@ def purge_orphans(is_recursive):
 
     if is_recursive:
         purge_orphans(is_recursive=False)
+
 
 def get_asset_children(asset):
     return list(asset.objects) if isinstance(asset, bpy.types.Collection) else list(asset.children)
@@ -757,6 +873,7 @@ def get_and_select_camera(objects):
 
 def is_camera(obj):
     return isinstance(obj, bpy.types.Object) and obj.type == "CAMERA"
+
 
 def is_collection(obj):
     return isinstance(obj, bpy.types.Collection)

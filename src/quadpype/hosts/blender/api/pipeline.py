@@ -280,6 +280,7 @@ def get_frame_range(asset_entity=None) -> Union[Dict[str, int], None]:
         "frameEndHandle": frame_end_handle,
     }
 
+
 def get_parent_data(data):
     parent = data.get('parent', None)
     if not parent:
@@ -289,6 +290,7 @@ def get_parent_data(data):
 
         return hierarchy.split('/')[-1]
     return parent
+
 
 def set_frame_range(data):
     scene = bpy.context.scene
@@ -357,9 +359,11 @@ def set_unit_scale_from_settings(unit_scale_settings=None):
         unit_scale = unit_scale_settings["base_file_unit_scale"]
         bpy.context.scene.unit_settings.scale_length = unit_scale
 
+
 def _autobuild_first_workfile():
     if not is_last_workfile_exists() and should_build_first_workfile():
         build_workfile_template()
+
 
 def on_new():
     _autobuild_first_workfile()
@@ -414,6 +418,9 @@ def on_open():
 
 @bpy.app.handlers.persistent
 def _on_save_pre(*args):
+    for node, new_id in lib.generate_ids(list(bpy.data.objects) + list(bpy.data.materials)):
+        lib.set_id(node, new_id, overwrite=False)
+
     emit_event("before.save")
 
 

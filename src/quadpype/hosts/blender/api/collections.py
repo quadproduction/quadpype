@@ -1,6 +1,7 @@
 import bpy
 from quadpype.pipeline import split_hierarchy
 
+
 def create_collection(collection_name, link_to=None):
     """Create a collection based on a name and link it to a given
     Args:
@@ -60,6 +61,7 @@ def create_collections_from_hierarchy(hierarchies, parent_collection):
 
     return True
 
+
 def get_corresponding_hierarchies_numbered(collections, collections_numbered):
     """Create a dict associating the original asset_collection name to its numbered version
     Args:
@@ -75,6 +77,7 @@ def get_corresponding_hierarchies_numbered(collections, collections_numbered):
             result[name] = name_numbered
 
     return result
+
 
 def get_top_collection(collection_name, default_parent_collection_name):
     parent_collection = bpy.data.collections.get(collection_name, None)

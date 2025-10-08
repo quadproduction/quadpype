@@ -345,7 +345,6 @@ class BlenderCreator(Creator):
 
         return format_data(template_data, True, get_current_host_name())
 
-
     def collect_instances(self):
         """Override abstract method from BlenderCreator.
         Collect existing instances related to this creator plugin."""
@@ -493,8 +492,6 @@ class BlenderCreator(Creator):
                 return collection
 
         return None
-
-
 
 
 class BlenderLoader(LoaderPlugin):

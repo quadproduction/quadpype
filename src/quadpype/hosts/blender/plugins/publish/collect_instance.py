@@ -4,15 +4,16 @@ import pyblish.api
 
 from quadpype.pipeline.publish import KnownPublishError
 from quadpype.hosts.blender.api.pipeline import has_avalon_node
-from quadpype.hosts.blender.api import plugin
+from quadpype.hosts.blender.api import plugin, has_materials
+
 
 class CollectBlenderInstanceData(plugin.BlenderInstancePlugin):
-    """Validator to verify that the instance is not empty"""
+    """Add scene objects to instance"""
 
     order = pyblish.api.CollectorOrder
     hosts = ["blender"]
     families = ["model", "pointcache", "animation", "rig", "camera", "layout",
-                "blendScene", "usd"]
+                "blendScene", "usd", "look"]
     label = "Collect Instance"
 
     def process(self, instance):
@@ -32,6 +33,23 @@ class CollectBlenderInstanceData(plugin.BlenderInstancePlugin):
                             child for child in obj.children
                             if child.type == 'ARMATURE'
                         )
+
+            # Special case for shaders instances, include materials
+            elif instance.data["family"] == "look":
+                materials = set()
+                for obj in instance_node.objects:
+                    if not has_materials(obj):
+                        continue
+
+                    materials.update(
+                        [
+                            material_slot.material
+                            for material_slot in obj.material_slots
+                        ]
+                    )
+
+                members.extend(list(materials))
+
         elif isinstance(instance_node, bpy.types.Object):
             members.extend(instance_node.children_recursive)
         else:
