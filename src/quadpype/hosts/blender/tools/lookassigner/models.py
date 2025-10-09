@@ -104,16 +104,19 @@ class LookModel(models.TreeModel):
         for asset_item in items:
             asset_name = asset_item["name"]
 
-            item_node = models.Item()
-            item_node["label"] = f"{asset_name}_label"
-            item_node["subset"] = "subset"
+            for look in asset_item['looks']:
+                look_name = look.get('variant', '## UNDEFINED ##')
 
-            # Amount of matching assets for this look
-            item_node["match"] = "len(assets)"
+                item_node = models.Item()
+                item_node["label"] = look_name
+                item_node["subset"] = "subset"
 
-            # Store the assets that have this subset available
-            item_node["assets"] = "assets"
+                # Amount of matching assets for this look
+                item_node["match"] = "len(assets)"
 
-            self.add_child(item_node)
+                # Store the assets that have this subset available
+                # item_node["assets"] = "assets"
+
+                self.add_child(item_node)
 
         self.endResetModel()

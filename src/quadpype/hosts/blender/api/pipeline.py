@@ -418,7 +418,8 @@ def on_open():
 
 @bpy.app.handlers.persistent
 def _on_save_pre(*args):
-    for node, new_id in lib.generate_ids(list(bpy.data.objects) + list(bpy.data.materials)):
+    objects = list(bpy.data.objects) + list(bpy.data.materials) + list(bpy.data.collections)
+    for node, new_id in lib.generate_ids(objects):
         lib.set_id(node, new_id, overwrite=False)
 
     emit_event("before.save")

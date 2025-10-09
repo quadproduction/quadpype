@@ -548,10 +548,11 @@ def get_id(entity=None, entity_name=None):
         return None
 
     if not entity:
+        objects = list(bpy.data.objects) + list(bpy.data.materials) + list(bpy.data.collections)
         try:
             entity = next(
                 iter(
-                    entity for entity in bpy.data.objects + bpy.data.materials
+                    entity for entity in objects
                     if entity.name == entity_name
                 )
             )
@@ -561,7 +562,7 @@ def get_id(entity=None, entity_name=None):
     try:
         return entity.get('id', None)
     except RuntimeError:
-        log.warning("Failed to retrieve cbId on %s", entity)
+        log.warning("Failed to retrieve id on %s", entity)
         return None
 
 

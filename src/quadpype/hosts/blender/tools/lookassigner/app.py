@@ -88,12 +88,12 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
         footer.addWidget(status)
         footer.addWidget(warn_layer)
 
-    #     # Build up widgets
+        # Build up widgets
         main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.setSpacing(0)
         main_layout.addWidget(main_splitter)
         main_layout.addLayout(footer)
-    #
+
         # Set column width
         asset_outliner.view.setColumnWidth(0, 200)
         look_outliner.view.setColumnWidth(0, 150)
