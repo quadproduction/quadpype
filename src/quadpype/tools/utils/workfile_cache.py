@@ -123,7 +123,7 @@ def set_item_state(session, item, task_name=None, app_action=None):
 
     ext = KNOWN_EXTS
     if app_action:
-        ext = HOST_WORKFILE_EXTENSIONS.get(app_action.label.lower())
+        ext = HOST_WORKFILE_EXTENSIONS.get(app_action.label.lower(), [])
 
     workfile_icon = None
     publish_workfile_icon = None
