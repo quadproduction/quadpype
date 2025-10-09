@@ -1,7 +1,7 @@
 import os
 
 import bpy
-
+import pyblish.api
 from quadpype.pipeline import publish
 from quadpype.hosts.blender.api import plugin, lib
 from quadpype.lib import (
@@ -22,6 +22,7 @@ class ExtractAnimationABC(
     label = "Extract Animation ABC"
     hosts = ["blender"]
     families = ["animation"]
+    order = pyblish.api.ExtractorOrder + 0.001
     optional = True
     applySubdiv = False
     visibleOnly = False

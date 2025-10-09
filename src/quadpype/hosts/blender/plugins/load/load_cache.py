@@ -81,16 +81,18 @@ class CacheModelLoader(plugin.BlenderLoader):
         to update the filepath of the alembic.
         """
 
-        bpy.ops.cachefile.open(filepath=libpath.as_posix())
         avalon_node = get_avalon_node(asset_group)
         apply_subdiv = avalon_node["apply_subdiv"]
 
         members = lib.get_objects_from_mapped(avalon_node.get('members', []))
 
+        previous_file_caches = [file for file in bpy.data.cache_files]
         # Load temp new ABC to compare with old one
         bpy.ops.wm.alembic_import(
             filepath=str(libpath)
         )
+        file_caches = [file for file in bpy.data.cache_files]
+        new_file_cache = [x for x in file_caches if x not in previous_file_caches or previous_file_caches.remove(x)][0]
 
         temp_members = lib.get_selection()
 
@@ -140,7 +142,7 @@ class CacheModelLoader(plugin.BlenderLoader):
             names = [modifier.name for modifier in obj.modifiers
                      if modifier.type == "MESH_SEQUENCE_CACHE"]
             file_list = [file for file in bpy.data.cache_files
-                         if file.name.startswith(prev_filename)]
+                         if file.name.startswith(asset_group.name)]
             if names:
                 for name in names:
                     obj.modifiers.remove(obj.modifiers.get(name))
@@ -179,6 +181,8 @@ class CacheModelLoader(plugin.BlenderLoader):
 
         for obj in temp_members:
             bpy.data.objects.remove(obj)
+
+        new_file_cache.name = f"{asset_group.name}.cache"
         bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
         return libpath
 
@@ -213,6 +217,7 @@ class CacheModelLoader(plugin.BlenderLoader):
         plugin.deselect_all()
 
         relative = bpy.context.preferences.filepaths.use_relative_paths
+        previous_file_caches = [file for file in bpy.data.cache_files]
 
         if any(libpath.lower().endswith(ext)
                for ext in [".usd", ".usda", ".usdc"]):
@@ -252,6 +257,9 @@ class CacheModelLoader(plugin.BlenderLoader):
             lib.imprint(obj, {"container_name": container_name})
 
         plugin.deselect_all()
+        file_caches = [file for file in bpy.data.cache_files]
+        new_file_cache = [x for x in file_caches if x not in previous_file_caches or previous_file_caches.remove(x)][0]
+        new_file_cache.name = f"{container_name}.cache"
 
         return objects
 
@@ -439,7 +447,9 @@ class CacheModelLoader(plugin.BlenderLoader):
 
         namespace = namespace or get_resolved_name(template_data, namespace_template)
         container_name = get_resolved_name(template_data, group_name_template, namespace=namespace)
-
+        print("..................")
+        print(unique_number)
+        print("..................")
         container, members = self.load_assets_and_create_hierarchy(
             container_name=container_name,
             template_data=template_data,
