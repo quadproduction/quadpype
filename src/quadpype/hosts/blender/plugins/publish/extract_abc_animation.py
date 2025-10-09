@@ -4,6 +4,12 @@ import bpy
 
 from quadpype.pipeline import publish
 from quadpype.hosts.blender.api import plugin, lib
+from quadpype.lib import (
+    BoolDef,
+    TextDef,
+    UISeparatorDef,
+    UILabelDef,
+)
 
 NAME_SEPARATOR = ":"
 
@@ -17,6 +23,8 @@ class ExtractAnimationABC(
     hosts = ["blender"]
     families = ["animation"]
     optional = True
+    applySubdiv = False
+    visibleOnly = False
 
     def process(self, instance):
         if not self.is_active(instance.data):
@@ -24,10 +32,13 @@ class ExtractAnimationABC(
 
         # Define extract output file path
         stagingdir = self.staging_dir(instance)
-        creator_attributes = instance.data.get('creator_attributes', None)
-        assert creator_attributes, "Can not retrieve creator attributes for instance. Abort process."
-        apply_subdiv = creator_attributes.get("apply_subdiv", False)
-        export_hidden = creator_attributes.get("export_hidden", False)
+
+        attribute_values = self.get_attr_values_from_data(
+            instance.data
+        )
+
+        apply_subdiv = attribute_values.get("applySubdiv", 1)
+        visible_only = attribute_values.get("visibleOnly", 1)
 
         asset_name = instance.data["assetEntity"]["name"]
         subset = instance.data["subset"]
@@ -53,14 +64,15 @@ class ExtractAnimationABC(
         for obj in objects:
             children = [o for o in bpy.data.objects if o.parent == obj]
             for child in children:
-                if not child.visible_get() and not export_hidden:
+                if not child.visible_get() and visible_only:
                     continue
-                if not child.visible_get() and export_hidden:
+                if not child.visible_get() and not visible_only:
                     hidden_objects.append(child)
                     child.hide_set(False)
                     child.hide_viewport = False
                 objects.append(child)
 
+        objects = list(set(objects))
         renaming_object = dict()
         for obj in objects:
             obj.select_set(True)
@@ -128,3 +140,52 @@ class ExtractAnimationABC(
 
         self.log.info("Extracted instance '%s' to: %s",
                        instance.name, representation)
+
+    @classmethod
+    def get_attribute_defs(cls):
+        override_defs = {
+            "attr": {
+                "def": TextDef,
+                "kwargs": {
+                    "label": "Custom Attributes",
+                    "placeholder": "attr1; attr2; ...",
+                }
+            },
+            "attrPrefix": {
+                "def": TextDef,
+                "kwargs": {
+                    "label": "Custom Attributes Prefix",
+                    "placeholder": "prefix1; prefix2; ...",
+                }
+            },
+            "applySubdiv": {
+                "def": BoolDef,
+                "kwargs": {
+                    "label": "Apply Subdiv",
+                }
+            },
+            "visibleOnly": {
+                "def": BoolDef,
+                "kwargs": {
+                    "label": "Visible Only",
+                }
+            }
+        }
+        defs = super(plugin.BlenderExtractor, cls).get_attribute_defs()
+
+        defs.extend([
+            UISeparatorDef("sep_alembic_options"),
+            UILabelDef("Alembic Options"),
+        ])
+
+        for key, value in override_defs.items():
+
+            kwargs = value["kwargs"]
+            kwargs["default"] = getattr(cls, key, None)
+            defs.append(
+                value["def"](key, **value["kwargs"])
+            )
+        defs.append(
+            UISeparatorDef()
+        )
+        return defs
