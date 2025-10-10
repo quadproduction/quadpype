@@ -416,12 +416,37 @@ def on_open():
                 "Base file unit scale changed to match the project settings.")
 
 
-@bpy.app.handlers.persistent
-def _on_save_pre(*args):
-    objects = list(bpy.data.objects) + list(bpy.data.materials) + list(bpy.data.collections)
-    for node, new_id in lib.generate_ids(objects):
+def apply_ids():
+    for node, new_id in lib.generate_ids(lib.get_objects_concerned_by_ids()):
         lib.set_id(node, new_id, overwrite=False)
 
+    erased_materials_targets_ids = list()
+    for obj in bpy.data.objects:
+        if not lib.has_materials(obj):
+            continue
+
+        for material_slot in obj.material_slots:
+            material = material_slot.material
+            if not material:
+                continue
+
+            if material not in erased_materials_targets_ids:
+                lib.set_targets_ids(
+                    entity=material,
+                    targets_ids=[],
+                    overwrite=True
+                )
+                erased_materials_targets_ids.append(material)
+
+            lib.add_target_id(
+                concerned_object=material_slot.material,
+                target_id=lib.get_id(obj)
+            )
+
+
+@bpy.app.handlers.persistent
+def _on_save_pre(*args):
+    apply_ids()
     emit_event("before.save")
 
 
