@@ -203,7 +203,6 @@ class BlendLoader(plugin.BlenderLoader):
 
     def load_assets_and_create_hierarchy(self, representation, libpath, group_name, unique_number, import_method,
                                          template_data):
-
         avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
         if not avalon_container:
             avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)

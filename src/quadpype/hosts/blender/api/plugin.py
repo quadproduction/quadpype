@@ -85,6 +85,7 @@ def get_unique_number(
         c.name for c in coll_asset_groups
         if has_avalon_node(c)}
     container_names = obj_group_names.union(coll_group_names)
+
     count = 1
     name = f"{asset}_{count:0>2}_{subset}"
     namespace_template = ""
