@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional
+from pathlib import Path
 import bpy
 import os
 
@@ -98,12 +99,6 @@ class ShadersLoader(plugin.BlenderLoader):
         asset = context["asset"]["name"]
         representation = context['representation']
 
-        container, imported_materials = self.import_materials(libpath)
-        self.assign_materials(
-            materials=imported_materials,
-            filter_objects=selected_objects
-        )
-
         template_data = format_data(representation, True, get_current_host_name())
         asset_name_template = get_load_naming_template("assetname")
         namespace_template = get_load_naming_template("namespace")
@@ -111,6 +106,13 @@ class ShadersLoader(plugin.BlenderLoader):
         asset_name = get_resolved_name(template_data, asset_name_template)
         namespace = namespace or get_resolved_name(template_data, namespace_template)
         group_name = get_resolved_name(template_data, group_name_template, namespace=namespace)
+
+        container, imported_materials = self.import_materials(libpath)
+        container.name = group_name
+        self.assign_materials(
+            materials=imported_materials,
+            filter_objects=selected_objects,
+        )
 
         data = {
             "schema": "quadpype:container-2.0",
@@ -125,20 +127,78 @@ class ShadersLoader(plugin.BlenderLoader):
             "family": representation["context"]["family"],
             "objectName": group_name,
             "members": lib.map_to_classes_and_names(imported_materials),
+            "selected_objects_names": [selected_object.name for selected_object in selected_objects],
             "version": get_version_by_id(project_name, str(representation["parent"])).get('name', ''),
-            "test": "pourvoir"
         }
-
         lib.imprint(container, data)
 
     def exec_update(self, container: Dict, representation: Dict):
         """
         Update the loaded asset.
         """
-        pass
+        group_name = container["objectName"]
+        selected_objects_in_scene = [
+            bpy.data.objects[selected_object_name]
+            for selected_object_name in container["selected_objects_names"]
+            if bpy.data.objects.get(selected_object_name, None)
+        ]
+        #
+        asset_group = self._retrieve_undefined_asset_group(group_name)
+        assert asset_group, (f"The asset is not loaded: {container['objectName']}")
+
+        libpath = Path(get_representation_path(representation)).as_posix()
+        assert os.path.exists(libpath), f"File at path '{libpath}' does not exists."
+
+        project_name = representation.get('context', {}).get('project', {}).get('name', None)
+        assert project_name, "Can not retrieve project name from context data."
+
+        from copy import deepcopy
+        avalon_data = deepcopy(pipeline.get_avalon_node(asset_group))
+
+        self.exec_remove(avalon_data)
+
+        new_container, imported_materials = self.import_materials(libpath)
+        self.assign_materials(
+            materials=imported_materials,
+            filter_objects=selected_objects_in_scene
+        )
+
+        avalon_data.update(
+            {
+                "representation": str(representation["_id"]),
+                "members": lib.map_to_classes_and_names(imported_materials),
+                "version": get_version_by_id(project_name, str(representation["parent"])).get('name', ''),
+                "selected_objects": [selected_object.name for selected_object in selected_objects_in_scene],
+                "libpath":  libpath
+            }
+        )
+
+        lib.imprint(new_container, avalon_data, erase=True)
 
     def exec_remove(self, container: Dict):
         """
         Remove an existing container from a Blender scene.
         """
-        pass
+        group_name = container["objectName"]
+
+        asset_group = self._retrieve_undefined_asset_group(group_name)
+        assert asset_group, f"Can not find asset_group with name {group_name}"
+
+        avalon_node = pipeline.get_avalon_node(asset_group)
+        members = lib.get_objects_from_mapped(avalon_node.get('members', []))
+        for material in members:
+            bpy.data.materials.remove(material)
+
+        if isinstance(asset_group, bpy.types.Object):
+            bpy.data.objects.remove(asset_group)
+        else:
+            bpy.data.collections.remove(asset_group)
+
+    @staticmethod
+    def _retrieve_undefined_asset_group(group_name):
+        asset_group = bpy.data.objects.get(group_name)
+
+        if not asset_group:
+            return bpy.data.collections.get(group_name)
+
+        return asset_group
