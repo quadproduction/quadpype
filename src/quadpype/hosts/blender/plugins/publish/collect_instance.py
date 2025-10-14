@@ -22,11 +22,10 @@ class CollectBlenderInstanceData(plugin.BlenderInstancePlugin):
         # Collect members of the instance
         members = [instance_node]
         if isinstance(instance_node, bpy.types.Collection):
-            members.extend(instance_node.objects)
-            members.extend(instance_node.children)
-
             # Special case for animation instances, include armatures
             if instance.data["family"] == "animation":
+                members.extend(instance_node.objects)
+                members.extend(instance_node.children)
                 for obj in instance_node.objects:
                     if obj.type == 'EMPTY' and has_avalon_node(obj):
                         members.extend(
@@ -45,10 +44,15 @@ class CollectBlenderInstanceData(plugin.BlenderInstancePlugin):
                         [
                             material_slot.material
                             for material_slot in obj.material_slots
+                            if material_slot.material is not None
                         ]
                     )
 
                 members.extend(list(materials))
+
+            else:
+                members.extend(instance_node.objects)
+                members.extend(instance_node.children)
 
         elif isinstance(instance_node, bpy.types.Object):
             members.extend(instance_node.children_recursive)

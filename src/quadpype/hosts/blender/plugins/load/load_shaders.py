@@ -44,49 +44,6 @@ class ShadersLoader(plugin.BlenderLoader):
     icon = "paint-brush"
     color = "orange"
 
-    @staticmethod
-    def import_materials(filepath):
-        with bpy.data.libraries.load(filepath) as (data_from, data_to):
-            data_to.materials = data_from.materials
-            data_to.collections = data_from.collections
-
-        container = pipeline.get_container(data_to.objects, data_to.collections)
-        return container, list(data_to.materials)
-
-    def assign_materials(self, materials, filter_objects=None, override=True):
-        cleared_objects = list()
-        for material in materials:
-            targets_ids = get_targets_ids(material)
-            if not targets_ids:
-                continue
-
-            concerned_objects = get_objects_by_ids(targets_ids)
-            if filter_objects:
-                concerned_objects = list(set(concerned_objects) & set(filter_objects))
-
-            if not concerned_objects:
-                continue
-
-            for obj in concerned_objects:
-
-                if override and obj not in cleared_objects:
-                    obj.data.materials.clear()
-                    cleared_objects.append(obj)
-                    self.log.info(f"Materials cleared from object named '{obj.name}'.")
-
-                obj.data.materials.append(material)
-                self.log.info(f"Material named '{material.name}' added to object named '{obj.name}'.")
-
-    @staticmethod
-    def rename_materials(imported_materials, template_data, full_name_template, group_name):
-        for material in imported_materials:
-            material.name = get_resolved_name(
-                template_data,
-                full_name_template,
-                name=material.name,
-                container=group_name
-            )
-
     def process_asset(
             self, context: dict, name: str, namespace: Optional[str] = None,
             options: Optional[Dict] = None
@@ -125,17 +82,8 @@ class ShadersLoader(plugin.BlenderLoader):
         unique_number = plugin.get_unique_number(asset, subset, template_data)
         template_data.update({"unique_number":unique_number})
 
-        container, imported_materials = self.import_materials(libpath)
-        container.name = group_name
-        self.rename_materials(
-            imported_materials=imported_materials,
-            template_data=template_data,
-            full_name_template=get_load_naming_template("fullname"),
-            group_name=group_name
-        )
-        self.assign_materials(
-            materials=imported_materials,
-            filter_objects=selected_objects,
+        container, imported_materials = self.import_and_assign_materials(
+            libpath, group_name, template_data, selected_objects
         )
 
         data = {
@@ -156,9 +104,79 @@ class ShadersLoader(plugin.BlenderLoader):
         }
         lib.imprint(container, data)
 
+        self.add_container_to_scene(container, avalon_container)
+
+    def import_and_assign_materials(self, libpath, group_name, template_data, selected_objects):
+        container, imported_materials = self._import_materials(libpath)
+        container.name = group_name
+        self._rename_materials(
+            imported_materials=imported_materials,
+            template_data=template_data,
+            full_name_template=get_load_naming_template("fullname"),
+            group_name=group_name
+        )
+        self._assign_materials(
+            materials=imported_materials,
+            filter_objects=selected_objects,
+        )
+
+        return container, imported_materials
+
+    @staticmethod
+    def _import_materials(filepath):
+        with bpy.data.libraries.load(filepath) as (data_from, data_to):
+            data_to.materials = data_from.materials
+            data_to.collections = data_from.collections
+
+        container = pipeline.get_container(data_to.objects, data_to.collections)
+
+        return container, list(data_to.materials)
+
+    @staticmethod
+    def _assign_materials(materials, filter_objects=None, override=True):
+        cleared_objects = list()
+        for material in materials:
+            targets_ids = get_targets_ids(material)
+            if not targets_ids:
+                continue
+
+            concerned_objects = get_objects_by_ids(targets_ids)
+            if filter_objects:
+                concerned_objects = list(set(concerned_objects) & set(filter_objects))
+
+            if not concerned_objects:
+                continue
+
+            for obj in concerned_objects:
+
+                if override and obj not in cleared_objects:
+                    obj.data.materials.clear()
+                    cleared_objects.append(obj)
+
+                obj.data.materials.append(material)
+
+    @staticmethod
+    def _rename_materials(imported_materials, template_data, full_name_template, group_name):
+        for material in imported_materials:
+            material.name = get_resolved_name(
+                template_data,
+                full_name_template,
+                name=material.name,
+                container=group_name
+            )
+
+    @staticmethod
+    def add_container_to_scene(container, avalon_container):
         if isinstance(container, bpy.types.Object):
+            for child in list(container.children):
+                bpy.data.objects.remove(child, do_unlink=True)
+
             avalon_container.objects.link(container)
+
         elif isinstance(container, bpy.types.Collection) and container not in list(avalon_container.children):
+            for obj in list(container.objects):
+                container.objects.unlink(obj)
+
             avalon_container.children.link(container)
 
     def exec_update(self, container: Dict, representation: Dict):
@@ -169,12 +187,13 @@ class ShadersLoader(plugin.BlenderLoader):
         assert avalon_container, "Can not find avalon container in scene."
 
         group_name = container["objectName"]
+        selected_objects_names = container["selected_objects_names"]
         selected_objects_in_scene = [
             bpy.data.objects[selected_object_name]
-            for selected_object_name in container["selected_objects_names"]
+            for selected_object_name in selected_objects_names
             if bpy.data.objects.get(selected_object_name, None)
         ]
-        #
+
         asset_group = self._retrieve_undefined_asset_group(group_name)
         assert asset_group, (f"The asset is not loaded: {container['objectName']}")
 
@@ -184,15 +203,15 @@ class ShadersLoader(plugin.BlenderLoader):
         project_name = representation.get('context', {}).get('project', {}).get('name', None)
         assert project_name, "Can not retrieve project name from context data."
 
-        from copy import deepcopy
-        avalon_data = deepcopy(pipeline.get_avalon_node(asset_group))
+        avalon_data = pipeline.get_avalon_node(asset_group)
 
         self.exec_remove(avalon_data)
 
-        new_container, imported_materials = self.import_materials(libpath)
-        self.assign_materials(
-            materials=imported_materials,
-            filter_objects=selected_objects_in_scene
+        new_container, imported_materials = self.import_and_assign_materials(
+            libpath=libpath,
+            group_name=group_name,
+            template_data=format_data(representation, True, get_current_host_name()),
+            selected_objects=selected_objects_in_scene
         )
 
         avalon_data.update(
@@ -200,17 +219,13 @@ class ShadersLoader(plugin.BlenderLoader):
                 "representation": str(representation["_id"]),
                 "members": lib.map_to_classes_and_names(imported_materials),
                 "version": get_version_by_id(project_name, str(representation["parent"])).get('name', ''),
-                "selected_objects": [selected_object.name for selected_object in selected_objects_in_scene],
+                "selected_objects": selected_objects_names,
                 "libpath":  libpath
             }
         )
 
         lib.imprint(new_container, avalon_data, erase=True)
-
-        if isinstance(container, bpy.types.Object):
-            avalon_container.objects.link(container)
-        elif isinstance(container, bpy.types.Collection) and container not in list(avalon_container.children):
-            avalon_container.children.link(container)
+        self.add_container_to_scene(new_container, avalon_container)
 
     def exec_remove(self, container: Dict):
         """
