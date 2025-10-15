@@ -61,7 +61,9 @@ class ShadersLoader(plugin.BlenderLoader):
         libpath = self.filepath_from_context(context)
         assert os.path.exists(libpath), f"File at path '{libpath}' does not exists."
 
-        selected_objects = get_selected_objects()
+        selected_objects = options.get('selected_objects')
+        if not selected_objects:
+            selected_objects = get_selected_objects()
         assert selected_objects, "You need to select at least one object or collection to apply shaders on it."
 
         project_name = context.get('project', {}).get('name', None)
@@ -72,6 +74,9 @@ class ShadersLoader(plugin.BlenderLoader):
         representation = context['representation']
 
         template_data = format_data(representation, True, get_current_host_name())
+        unique_number = plugin.get_unique_number(asset, subset, template_data)
+        template_data.update({"unique_number": unique_number})
+
         asset_name_template = get_load_naming_template("assetname")
         namespace_template = get_load_naming_template("namespace")
         group_name_template = get_load_naming_template("container")
@@ -79,8 +84,6 @@ class ShadersLoader(plugin.BlenderLoader):
         namespace = namespace or get_resolved_name(template_data, namespace_template)
         group_name = get_resolved_name(template_data, group_name_template, namespace=namespace)
         asset_name = get_resolved_name(template_data, asset_name_template)
-        unique_number = plugin.get_unique_number(asset, subset, template_data)
-        template_data.update({"unique_number":unique_number})
 
         container, imported_materials = self.import_and_assign_materials(
             libpath, group_name, template_data, selected_objects

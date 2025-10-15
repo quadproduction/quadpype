@@ -6,7 +6,8 @@ from quadpype.hosts.blender.api.lib import (
     get_parent_collections_for_object,
     get_selected_objects,
     get_selected_collections,
-    get_all_parents
+    get_all_parents,
+    get_id
 )
 
 
@@ -22,6 +23,12 @@ def data_from_collections(collections):
         get_avalon_node(collection) for collection in collections
         if has_avalon_node(collection)
     ]
+
+
+def assets_ids_from_containers(containers):
+    return set(
+        get_id(container) for container in containers
+    )
 
 
 def containers_data_from_selected():

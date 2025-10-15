@@ -1,17 +1,21 @@
 import sys
-import time
 import logging
+from collections import defaultdict
 
 from qtpy import QtWidgets, QtCore
 import bpy
 
 from quadpype import style
 from quadpype.tools.utils.lib import qt_app_context
-#
+from quadpype.pipeline.load.utils import get_repres_contexts
+from quadpype.hosts.blender.plugins.load.load_shaders import ShadersLoader
+
 from .widgets import (
     AssetOutliner,
     LookOutliner
 )
+from .actions import display, filter_by, get
+
 
 module = sys.modules[__name__]
 module.window = None
@@ -84,7 +88,6 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
 
         footer = QtWidgets.QHBoxLayout()
         footer.setContentsMargins(0, 0, 0, 0)
-        footer.addWidget(QtWidgets.QLabel(bpy.data.filepath))
         footer.addWidget(status)
         footer.addWidget(warn_layer)
 
@@ -141,6 +144,7 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
         if not found_items:
             self.look_outliner.clear()
 
+    @display.error
     def on_asset_selection_changed(self):
         """Get selected items from asset loader and fill look outliner"""
 
@@ -148,10 +152,52 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
         self.look_outliner.clear()
         self.look_outliner.add_items(items)
 
+    @display.error
     def on_process_selected(self):
         """Process all selected looks for the selected assets"""
+        selected_looks = self.look_outliner.get_selected_items()
+        grouped_assets = filter_by.identical_assets(self.asset_outliner.get_selected_items())
 
-        return
+        for single_look in selected_looks:
+            repr_id = str(single_look['repr_id'])
+            shader_repr = get_repres_contexts([repr_id])
+            if not shader_repr:
+                logging.warning(f"Can not retrieve asset representation with id '{repr_id}'")
+                continue
+
+            shader_repr = next(iter(shader_repr.values()))
+
+            for grouped_items in grouped_assets:
+                first_item = next(iter(grouped_items))
+                label = first_item['name']
+
+                if self._selected_is_asset(grouped_items):
+                    for namespace in first_item.children():
+                        ShadersLoader().process_asset(
+                            name=label,
+                            context=shader_repr,
+                            options={
+                                'selected_objects': get.objects_from_collection_name(namespace['collection_name'])
+                            }
+                        )
+                    continue
+
+                for item in grouped_items:
+                    collection_name = item.get('collection_name')
+                    if not collection_name:
+                        continue
+
+                    ShadersLoader().process_asset(
+                        name=label,
+                        context=shader_repr,
+                        options={
+                            'selected_objects': get.objects_from_collection_name(collection_name)
+                        }
+                    )
+
+    @staticmethod
+    def _selected_is_asset(grouped_items):
+        return len(grouped_items) == 1 and not grouped_items[0].get('namespaces', None)
 
 
 self = sys.modules[__name__]

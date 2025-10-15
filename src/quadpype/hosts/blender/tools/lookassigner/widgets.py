@@ -1,4 +1,5 @@
 import logging
+import traceback
 from collections import defaultdict
 
 from qtpy import QtWidgets, QtCore
@@ -14,12 +15,9 @@ from .models import (
     LookModel
 )
 
-from .actions import get
+from .actions import get, display
 
-# from . import commands
 from .views import View
-#
-# from maya import cmds
 
 
 class AssetOutliner(QtWidgets.QWidget):
@@ -66,6 +64,7 @@ class AssetOutliner(QtWidgets.QWidget):
 
         self.log = logging.getLogger(__name__)
 
+    @display.error
     def clear(self):
         self.model.clear()
 
@@ -79,6 +78,7 @@ class AssetOutliner(QtWidgets.QWidget):
         self.model.add_items(items)
         self.refreshed.emit()
 
+    @display.error
     def get_selected_items(self):
         """Get current selected items from view
 
@@ -91,34 +91,39 @@ class AssetOutliner(QtWidgets.QWidget):
                 for row in selection_model.selectedRows(0)]
 
     def get_all_assets(self):
-        """Add all items from the current scene"""
+        @display.error
+        def _process():
+            self.clear()
+            items = get.all_assets()
+            self.add_items(items)
 
+        """Add all items from the current scene"""
         with preserve_expanded_rows(self.view):
             with preserve_selection(self.view):
-                self.clear()
-                items = get.all_assets()
-                self.add_items(items)
-
-                return len(items) > 0
+                _process()
 
     def get_selected_assets(self):
         """Add all selected items from the current scene"""
 
+        @display.error
+        def _process():
+            self.clear()
+            items = get.selected_assets()
+
+            self.add_items(items)
+            return len(items) > 0
+
         with preserve_expanded_rows(self.view):
             with preserve_selection(self.view):
-                self.clear()
-                items = get.selected_assets()
-
-                self.add_items(items)
-                return len(items) > 0
+                return _process()
 
     def get_nodes(self, selection=False):
         """Find the nodes in the current scene per asset."""
         return
 
+    @display.error
     def select_asset_from_items(self):
         """Select nodes from listed asset"""
-
         items = self.get_nodes(selection=False)
         nodes = []
         for item in items.values():
@@ -186,6 +191,7 @@ class LookOutliner(QtWidgets.QWidget):
     def add_items(self, items):
         self.model.add_items(items)
 
+    @display.error
     def get_selected_items(self):
         """Get current selected items from view
 
@@ -196,6 +202,7 @@ class LookOutliner(QtWidgets.QWidget):
         items = [i.data(TreeModel.ItemRole) for i in self.view.get_indices()]
         return [item for item in items if item is not None]
 
+    @display.error
     def right_mouse_menu(self, pos):
         """Build RMB menu for look view"""
 

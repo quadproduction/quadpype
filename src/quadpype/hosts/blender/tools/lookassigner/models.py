@@ -28,25 +28,26 @@ class AssetModel(models.TreeModel):
 
         self.beginResetModel()
 
-        sorter = lambda x: x["label"]
+        sorter = lambda x: x["name"]
+
         for item in sorted(items, key=sorter):
             asset_item = models.Item()
             asset_item.update(item)
-            asset_item["name"] = asset_item["label"]
             asset_item["icon"] = "folder"
 
-            # Add namespace children
-            namespaces = item["namespaces"]
-            for namespace in sorted(namespaces):
+            for asset_data in item["assets_data"]:
+                namespace = asset_data['namespace']
+                collection_name = asset_data['collection_name']
+
                 child = models.Item()
                 child.update(item)
                 child.update({
-                    "name": asset_item["label"],
-                    "label": (namespace if namespace != ":"
-                              else "(no namespace)"),
+                    "name": namespace,
                     "namespace": namespace,
+                    "collection_name": collection_name,
                     "looks": item["looks"],
-                    "icon": "folder-o"
+                    "icon": "folder-o",
+                    "asset": asset_item["name"]
                 })
                 asset_item.add_child(child)
 
@@ -101,18 +102,21 @@ class LookModel(models.TreeModel):
         self.beginResetModel()
         #
         # # Collect the assets per look name (from the items of the AssetModel)
+        browsed_looks = list()
         for asset_item in items:
             asset_name = asset_item["name"]
-
             for look in asset_item['looks']:
-                look_name = look.get('variant', '## UNDEFINED ##')
+                if look in browsed_looks:
+                    continue
+                browsed_looks.append(look)
 
                 item_node = models.Item()
-                item_node["label"] = look_name
+                item_node["label"] = look.get('variant', '## UNDEFINED ##')
+                item_node["repr_id"] = str(look.get('_id', ''))
                 item_node["subset"] = "subset"
 
                 # Amount of matching assets for this look
-                item_node["match"] = "len(assets)"
+                item_node["match"] = len(items)
 
                 # Store the assets that have this subset available
                 # item_node["assets"] = "assets"

@@ -113,7 +113,7 @@ class ScrollMessageBox(QtWidgets.QDialog):
             messages: <list> of messages
             cancelable: <boolean> - True if Cancel button should be added
     """
-    def __init__(self, icon, title, messages, cancelable=False):
+    def __init__(self, icon, title, messages, cancelable=False, max_width=None):
         super().__init__()
 
         self.setWindowTitle(title)
@@ -139,8 +139,10 @@ class ScrollMessageBox(QtWidgets.QDialog):
             message_len = max(message_len, len(msg))
 
         # guess size of scrollable area
-        desktop = QtWidgets.QApplication.desktop()
-        max_width = desktop.availableGeometry().width()
+        desktop = QtGui.QGuiApplication.primaryScreen()
+        desktop_max_width = desktop.availableGeometry().width()
+        max_width = max_width if max_width and max_width < desktop_max_width else desktop_max_width
+
         scroll_widget.setMinimumWidth(
             min(max_width, message_len * 6)
         )
