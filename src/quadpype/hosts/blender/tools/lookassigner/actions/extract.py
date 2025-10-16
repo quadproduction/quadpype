@@ -35,15 +35,21 @@ def containers_data_from_selected():
     containers = list()
     all_selected = set(get_selected_objects() + get_selected_collections())
     for blender_object in all_selected:
-        if has_avalon_node(blender_object):
-            containers.append(get_avalon_node(blender_object))
-            continue
+        _add_avalon_node_if_not_retrieved_yet(containers, blender_object)
 
         all_parents = set(get_all_parents(blender_object)).union(get_parent_collections_for_object(blender_object))
         for object_parent in all_parents:
-            avalon_node = get_avalon_node(object_parent)
-            if not avalon_node:
-                continue
-            containers.append(avalon_node)
+            _add_avalon_node_if_not_retrieved_yet(containers, object_parent)
 
     return containers
+
+
+def _add_avalon_node_if_not_retrieved_yet(retrieved_containers, browsed_object):
+    avalon_node = get_avalon_node(browsed_object)
+    if not avalon_node:
+        return
+
+    if avalon_node in retrieved_containers:
+        return
+
+    retrieved_containers.append(avalon_node)

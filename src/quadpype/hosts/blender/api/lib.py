@@ -478,6 +478,9 @@ def get_all_parents(obj):
         List[bpy.types.Object]: All parents of object
 
     """
+    if not isinstance(obj, bpy.types.Object):
+        return []
+
     result = []
     while True:
         obj = obj.parent
