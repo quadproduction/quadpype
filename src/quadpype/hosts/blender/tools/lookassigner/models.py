@@ -46,8 +46,7 @@ class AssetModel(models.TreeModel):
                     "namespace": namespace,
                     "collection_name": collection_name,
                     "looks": item["looks"],
-                    "icon": "folder-o",
-                    "asset": asset_item["name"]
+                    "icon": "folder-o"
                 })
                 asset_item.add_child(child)
 

@@ -8,6 +8,7 @@ import bpy
 from quadpype import style
 from quadpype.tools.utils.lib import qt_app_context
 from quadpype.pipeline.load.utils import get_repres_contexts
+from quadpype.hosts.blender.api.lib import purge_orphans
 from quadpype.hosts.blender.plugins.load.load_shaders import ShadersLoader
 
 from .widgets import (
@@ -109,7 +110,7 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
         )
 
         look_outliner.menu_apply_action.connect(self.on_process_selected)
-        # remove_unused_btn.clicked.connect(remove_unused_looks)
+        remove_unused_btn.clicked.connect(self.remove_unused_looks)
 
         # Open widgets
         self.asset_outliner = asset_outliner
@@ -135,6 +136,7 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
     def echo(self, message):
         self.status.showMessage(message, 1500)
 
+    @display.error
     def refresh(self):
         """Refresh the content"""
 
@@ -155,15 +157,15 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
     @display.error
     def on_process_selected(self):
         """Process all selected looks for the selected assets"""
+
         selected_looks = self.look_outliner.get_selected_items()
         grouped_assets = filter_by.identical_assets(self.asset_outliner.get_selected_items())
 
         for single_look in selected_looks:
             repr_id = str(single_look['repr_id'])
             shader_repr = get_repres_contexts([repr_id])
-            if not shader_repr:
-                logging.warning(f"Can not retrieve asset representation with id '{repr_id}'")
-                continue
+
+            assert shader_repr, f"Can not retrieve asset representation with id '{repr_id}'"
 
             shader_repr = next(iter(shader_repr.values()))
 
@@ -184,8 +186,7 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
 
                 for item in grouped_items:
                     collection_name = item.get('collection_name')
-                    if not collection_name:
-                        continue
+                    assert collection_name, f"Can not retrieve collection named '{collection_name}' in scene."
 
                     ShadersLoader().process_asset(
                         name=label,
@@ -195,9 +196,13 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
                         }
                     )
 
+    @display.error
+    def remove_unused_looks(self):
+        purge_orphans(is_recursive=True)
+
     @staticmethod
     def _selected_is_asset(grouped_items):
-        return len(grouped_items) == 1 and not grouped_items[0].get('namespaces', None)
+        return len(grouped_items) == 1 and not grouped_items[0].get('namespace', None)
 
 
 self = sys.modules[__name__]
