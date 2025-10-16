@@ -183,7 +183,7 @@ class CacheModelLoader(plugin.BlenderLoader):
             bpy.data.objects.remove(obj)
 
         new_file_cache.name = f"{asset_group.name}.cache"
-        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+        lib.purge_orphans(is_recursive=True)
         return libpath
 
     def _remove(self, asset_group):
@@ -601,7 +601,7 @@ class CacheModelLoader(plugin.BlenderLoader):
         elif isinstance(asset_group, bpy.types.Collection):
             bpy.data.collections.remove(asset_group)
 
-        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+        lib.purge_orphans(is_recursive=True)
         return True
 
     @staticmethod
