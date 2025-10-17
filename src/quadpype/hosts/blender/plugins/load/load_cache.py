@@ -195,19 +195,20 @@ class CacheModelLoader(plugin.BlenderLoader):
             if set(members).intersection(set(collection.objects)) and collection is not asset_group
         ]
 
-        empties = []
+        members.extend([child for obj in members if obj.type == 'EMPTY' for child in obj.children])
 
-        for obj in members:
+        empties = []
+        for obj in set(members):
             if obj.type == 'MESH':
                 for material_slot in list(obj.material_slots):
                     bpy.data.materials.remove(material_slot.material)
                 bpy.data.meshes.remove(obj.data)
             elif obj.type == 'EMPTY':
-                members.extend(obj.children)
                 empties.append(obj)
 
         for empty in empties:
-            bpy.data.objects.remove(empty)
+            if bpy.data.objects.get(empty.name):
+                bpy.data.objects.remove(empty)
 
         if isinstance(asset_group, bpy.types.Collection):
             for coll in collections_parents:
@@ -447,9 +448,7 @@ class CacheModelLoader(plugin.BlenderLoader):
 
         namespace = namespace or get_resolved_name(template_data, namespace_template)
         container_name = get_resolved_name(template_data, group_name_template, namespace=namespace)
-        print("..................")
-        print(unique_number)
-        print("..................")
+
         container, members = self.load_assets_and_create_hierarchy(
             container_name=container_name,
             template_data=template_data,
