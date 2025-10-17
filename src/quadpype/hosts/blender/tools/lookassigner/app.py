@@ -1,9 +1,7 @@
 import sys
 import logging
-from collections import defaultdict
 
 from qtpy import QtWidgets, QtCore
-import bpy
 
 from quadpype import style
 from quadpype.tools.utils.lib import qt_app_context
@@ -28,15 +26,9 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
         super().__init__(parent=parent)
 
         self.log = logging.getLogger(__name__)
-        #
-        # Store callback references
-        self._callbacks = []
-        self._connections_set_up = False
-
-        # filename = get_workfile()
 
         self.setObjectName("lookManager")
-        self.setWindowTitle("Look Manager 1.4.0 - [{}]".format("test"))
+        self.setWindowTitle("Look Manager 1.4.0")
         self.setWindowFlags(QtCore.Qt.Window)
         self.setParent(parent)
 
@@ -161,7 +153,8 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
         """Process all selected looks for the selected assets"""
 
         selected_looks = self.look_outliner.get_selected_items()
-        grouped_assets = filter_by.identical_assets(self.asset_outliner.get_selected_items())
+        selected_assets = self.asset_outliner.get_selected_items()
+        grouped_assets = filter_by.identical_assets(selected_assets)
 
         for single_look in selected_looks:
             repr_id = str(single_look['repr_id'])
@@ -199,6 +192,7 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
                             'reuse_materials': self.reuse_materials.isChecked()
                         }
                     )
+        self.echo(f"{len(selected_looks)} look(s) applied on {len(selected_assets)} asset(s).")
 
     @display.error
     def remove_unused_looks(self):
@@ -223,31 +217,6 @@ def get_main_window():
         }["BlenderWindow"]
     return self._parent
 
-
-# TODO : use same logic for this window ?
-# def show_message(title, message):
-#     from quadpype.widgets.message_window import Window
-#     from .ops import BlenderApplication
-#
-#     BlenderApplication.get_app()
-#
-#     Window(
-#         parent=None,
-#         title=title,
-#         message=message,
-#         level="warning")
-#
-#
-# def message_window(title, message):
-#     from .ops import (
-#         MainThreadItem,
-#         execute_in_main_thread,
-#         _process_app_events
-#     )
-#
-#     mti = MainThreadItem(show_message, title, message)
-#     execute_in_main_thread(mti)
-#     _process_app_events()
 
 def show():
     """Display Loader GUI

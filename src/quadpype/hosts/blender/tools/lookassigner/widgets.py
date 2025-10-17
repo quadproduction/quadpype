@@ -1,6 +1,4 @@
 import logging
-import traceback
-from collections import defaultdict
 
 from qtpy import QtWidgets, QtCore
 
@@ -67,9 +65,6 @@ class AssetOutliner(QtWidgets.QWidget):
     @display.error
     def clear(self):
         self.model.clear()
-
-        # fix looks remaining visible when no items present after "refresh"
-        # todo: figure out why this workaround is needed.
         self.selection_changed.emit()
 
     def add_items(self, items):

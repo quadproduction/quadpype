@@ -29,7 +29,6 @@ class AssetModel(models.TreeModel):
         self.beginResetModel()
 
         sorter = lambda x: x["name"]
-
         for item in sorted(items, key=sorter):
             asset_item = models.Item()
             asset_item.update(item)
@@ -99,11 +98,9 @@ class LookModel(models.TreeModel):
         """
 
         self.beginResetModel()
-        #
-        # # Collect the assets per look name (from the items of the AssetModel)
         browsed_looks = list()
         for asset_item in items:
-            asset_name = asset_item["name"]
+
             for look in asset_item['looks']:
                 if look in browsed_looks:
                     continue
@@ -113,12 +110,7 @@ class LookModel(models.TreeModel):
                 item_node["label"] = look.get('variant', '## UNDEFINED ##')
                 item_node["repr_id"] = str(look.get('_id', ''))
                 item_node["subset"] = "subset"
-
-                # Amount of matching assets for this look
                 item_node["match"] = len(items)
-
-                # Store the assets that have this subset available
-                # item_node["assets"] = "assets"
 
                 self.add_child(item_node)
 
