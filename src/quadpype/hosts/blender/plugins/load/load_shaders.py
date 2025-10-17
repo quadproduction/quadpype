@@ -58,28 +58,39 @@ class ShadersLoader(plugin.BlenderLoader):
         avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
         assert avalon_container, "Can not find avalon container in scene."
 
-        libpath = self.filepath_from_context(context)
-        assert os.path.exists(libpath), f"File at path '{libpath}' does not exists."
-
-        selected_objects = options.get('selected_objects')
+        selected_objects = options.get('selected_objects', None)
         if not selected_objects:
             selected_objects = get_selected_objects()
         assert selected_objects, "You need to select at least one object or collection to apply shaders on it."
 
-        project_name = context.get('project', {}).get('name', None)
-        assert project_name, "Can not retrieve project name from context data."
-
+        representation = context['representation']
         asset = context["asset"]["name"]
         subset = context["subset"]["name"]
-        representation = context['representation']
+
+        namespace_template = get_load_naming_template("namespace")
+        group_name_template = get_load_naming_template("container")
+
+        reuse_materials = options.get('reuse_materials', False)
+
+        if reuse_materials:
+            success = self.assign_already_loaded_materials(
+                representation, namespace_template, group_name_template, selected_objects
+            )
+            if success:
+                self.log.info(f"Materials from previous look has been successfully re-assigned.")
+                return
+
+        libpath = self.filepath_from_context(context)
+        assert os.path.exists(libpath), f"File at path '{libpath}' does not exists."
+
+        project_name = context.get('project', {}).get('name', None)
+        assert project_name, "Can not retrieve project name from context data."
 
         template_data = format_data(representation, True, get_current_host_name())
         unique_number = plugin.get_unique_number(asset, subset, template_data)
         template_data.update({"unique_number": unique_number})
 
         asset_name_template = get_load_naming_template("assetname")
-        namespace_template = get_load_naming_template("namespace")
-        group_name_template = get_load_naming_template("container")
 
         namespace = namespace or get_resolved_name(template_data, namespace_template)
         group_name = get_resolved_name(template_data, group_name_template, namespace=namespace)
@@ -109,8 +120,57 @@ class ShadersLoader(plugin.BlenderLoader):
 
         self.add_container_to_scene(container, avalon_container)
 
+        self.log.info(f"Materials from look '{namespace}' has been successfully imported and assigned.")
+
+    def assign_already_loaded_materials(
+            self, representation, namespace_template, group_name_template, selected_objects
+    ):
+        other_asset_container = self._search_for_other_asset_container(
+            representation, namespace_template, group_name_template
+        )
+
+        if not other_asset_container:
+            self.log.warning(f"Can not retrieve other container for this asset. Will import asked look instead.")
+            return False
+
+        previously_loaded_objects = lib.get_objects_from_mapped(
+            pipeline.get_avalon_node(other_asset_container).get('members', {})
+        )
+
+        if not previously_loaded_objects:
+            self.log.warning(
+                f"Can not retrieve loaded materials from container named '{other_asset_container}'."
+                f"Will import asked look instead."
+            )
+            return False
+
+        self._assign_materials(
+            materials=[
+                material for material in previously_loaded_objects
+                if isinstance(material, bpy.types.Material)
+            ],
+            filter_objects=selected_objects,
+        )
+        return True
+
+    @staticmethod
+    def _search_for_other_asset_container(representation, namespace_template, group_name_template):
+        for index in range(1, len(bpy.data.collections)):
+            template_data = format_data(representation, True, get_current_host_name())
+            template_data.update({"unique_number": f"{index:0>2}"})
+
+            namespace = get_resolved_name(template_data, namespace_template)
+            group_name = get_resolved_name(template_data, group_name_template, namespace=namespace)
+
+            other_asset_container = bpy.data.collections.get(group_name)
+            if other_asset_container:
+                return other_asset_container
+
+        return None
+
     def import_and_assign_materials(self, libpath, group_name, template_data, selected_objects):
         container, imported_materials = self._import_materials(libpath)
+
         container.name = group_name
         self._rename_materials(
             imported_materials=imported_materials,

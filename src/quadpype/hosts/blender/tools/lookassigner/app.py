@@ -57,18 +57,20 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
 
         look_outliner = LookOutliner(looks_widget)  # Database look overview
 
-        assign_selected = QtWidgets.QCheckBox(
-            "Assign to selected only", looks_widget
+        reuse_materials = QtWidgets.QCheckBox(
+            "Use already loaded materials", looks_widget
         )
-        assign_selected.setToolTip("Whether to assign only to selected nodes "
-                                   "or to the full asset")
+        reuse_materials.setToolTip(
+            "If checked, will avoid loading new materials if "
+            "previous materials with identical ids have been loaded before."
+        )
         remove_unused_btn = QtWidgets.QPushButton(
             "Remove Unused Looks", looks_widget
         )
 
         looks_layout = QtWidgets.QVBoxLayout(looks_widget)
         looks_layout.addWidget(look_outliner)
-        looks_layout.addWidget(assign_selected)
+        looks_layout.addWidget(reuse_materials)
         looks_layout.addWidget(remove_unused_btn)
 
         main_splitter.addWidget(asset_outliner)
@@ -120,7 +122,7 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
 
         # Buttons
         self.remove_unused = remove_unused_btn
-        self.assign_selected = assign_selected
+        self.reuse_materials = reuse_materials
 
         self._first_show = True
 
@@ -179,7 +181,8 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
                             name=label,
                             context=shader_repr,
                             options={
-                                'selected_objects': get.objects_from_collection_name(namespace['collection_name'])
+                                'selected_objects': get.objects_from_collection_name(namespace['collection_name']),
+                                'reuse_materials': self.reuse_materials.isChecked()
                             }
                         )
                     continue
@@ -192,7 +195,8 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
                         name=label,
                         context=shader_repr,
                         options={
-                            'selected_objects': get.objects_from_collection_name(collection_name)
+                            'selected_objects': get.objects_from_collection_name(collection_name),
+                            'reuse_materials': self.reuse_materials.isChecked()
                         }
                     )
 
