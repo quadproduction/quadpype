@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<error id="main">
+<title>No Special Character Validator</title>
+<description>
+## Special character detected
+
+Layers or Groups names can not include special character.
+
+### How to repair?
+
+You can fix this with "repair" button on the right and press Refresh publishing button at the bottom right. It will
+automatically convert accented character to equivalent and remove other special characters.
+</description>
+</error>
+</root>
