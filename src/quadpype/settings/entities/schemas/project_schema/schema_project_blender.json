@@ -175,6 +175,21 @@
                     "label": "Add custom AOVs. They are added to the view layer and in the Compositing Nodetree,\nbut they need to be added manually to the Shader Nodetree."
                 },
                 {
+                    "type": "dict",
+                    "collapsible": true,
+                    "key": "render_settings_template",
+                    "label": "Render Settings Template",
+                    "children": [
+                                    {
+                            "type": "path",
+                            "key": "template_path",
+                            "label": "Render Settings Template Path",
+                            "multiplatform": true,
+                            "multipath": false
+                        }
+                    ]
+                },
+                {
                     "type": "dict-modifiable",
                     "store_as_list": true,
                     "key": "custom_passes",

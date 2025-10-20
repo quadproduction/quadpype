@@ -788,3 +788,49 @@ def get_container_content(container):
         return [*container.objects, *container.children]
 
     return [obj for obj in bpy.data.objects if obj.parent == container]
+
+
+def copy_render_settings(src_scene, dst_scene):
+
+    engine = src_scene.render.engine
+    dst_scene.render.engine = engine
+
+    render_settings = {
+        "CYCLES": "cycles",
+        "BLENDER_EEVEE": "eevee",
+        "BLENDER_EEVEE_NEXT": "eevee",
+        "BLENDER_WORKBENCH": "workbench",
+        "RENDER": "render",
+        "DISPLAY": "display",
+        "DISPLAY_SETTINGS": "display_settings",
+        "VIEW_SETTINGS": "view_settings",
+        "SEQ_COLORSPACE": "sequencer_colorspace_settings"
+    }
+
+    for setting_name, attr in render_settings.items():
+        src_settings = getattr(src_scene, attr, None)
+        dst_settings = getattr(dst_scene, attr, None)
+        if not all([src_settings, dst_settings]):
+            continue
+
+        for prop in src_settings.bl_rna.properties:
+            if prop.identifier == "rna_type":
+                continue
+            try:
+                setattr(dst_settings, prop.identifier, getattr(src_settings, prop.identifier))
+            except Exception:
+                pass
+
+    data = get_asset_data()
+    set_resolution(data)
+    set_frame_range(data)
+
+    if not all([hasattr(src_scene.display, "shading"), hasattr(dst_scene.display, "shading")]):
+        return
+    for prop in src_scene.display.shading.bl_rna.properties:
+        if prop.identifier == "rna_type":
+            continue
+        try:
+            setattr(dst_scene.display.shading, prop.identifier, getattr(src_scene.display.shading, prop.identifier))
+        except Exception:
+            pass
