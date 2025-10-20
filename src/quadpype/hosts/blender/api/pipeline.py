@@ -819,6 +819,10 @@ def copy_render_settings(src_scene, dst_scene):
             except Exception:
                 pass
 
+    data = get_asset_data()
+    set_resolution(data)
+    set_frame_range(data)
+
     if not all([hasattr(src_scene.display, "shading"), hasattr(dst_scene.display, "shading")]):
         return
     for prop in src_scene.display.shading.bl_rna.properties:
@@ -828,7 +832,3 @@ def copy_render_settings(src_scene, dst_scene):
             setattr(dst_scene.display.shading, prop.identifier, getattr(src_scene.display.shading, prop.identifier))
         except Exception:
             pass
-
-    data = get_asset_data()
-    set_resolution(data)
-    set_frame_range(data)
