@@ -68,10 +68,11 @@ class ComparePublishToWorkfile(PreLaunchHook):
 
         # Get last Published WorkFile
         publish_representations = get_publish_workfile_representations_from_session({
-                        "AVALON_PROJECT":self.data["project_name"],
-                        "AVALON_TASK": self.data["task_name"],
-                        "AVALON_ASSET": self.data["asset_name"]
-                    })
+            "AVALON_PROJECT":self.data["project_name"],
+            "AVALON_TASK": self.data["task_name"],
+            "AVALON_ASSET": self.data["asset_name"]
+        })
+
         subset = f"workfile{self.data['task_name']}"
         if publish_representations:
             subset = publish_representations[0]["context"]["subset"]
@@ -101,101 +102,102 @@ class ComparePublishToWorkfile(PreLaunchHook):
             self.log.info("Workfile is newer than Published Workfile, continuing")
             return
 
-        else:
-            self.log.info("Workfile is older than Published Workfile, do something !")
+        self.log.info("Workfile is older than Published Workfile, do something !")
 
-            parents = {
-                widget.objectName(): widget
-                for widget in QtWidgets.QApplication.topLevelWidgets()
+        parents = {
+            widget.objectName(): widget
+            for widget in QtWidgets.QApplication.topLevelWidgets()
+        }
+        msg = (f"The WorkFile:\n {last_workfile} \nis older than the last published file for {self.data['asset_name']} "
+               f"on Task {self.data['task_name']}\n\nWould you like to Copy and Open the most recent Published WF "
+               f"(Click Yes)\nOr Procced with the older workfile on this machine(Click No)")
+
+        ask_window = Window(title="WF older than Published WF",
+                            message=msg,
+                            parent=parents.get("LauncherWindow"),
+                            level="ask")
+
+        if not ask_window.answer:
+            return
+
+        # Get new WorkFile Path
+        version_template = self.data.get("anatomy").templates.get("version")
+        parts = re.split(r"\{.*?\}", version_template)
+        version_prefix = "".join(parts)
+
+        last_version = self.get_version_from_path(last_workfile, prefix=version_prefix)
+        version = last_version + 1
+
+        wf_template_key = get_workfile_template_key(
+            self.data["task_name"],
+            host_name=self.data["workdir_data"].get("app", None),
+            project_name=self.data["project_name"]
+        )
+        anatomy = self.data.get("anatomy")
+        template = anatomy.templates[wf_template_key]["file"]
+        wf_data = copy.deepcopy(self.data.get("workdir_data"))
+        wf_data["version"] = version
+        wf_data["ext"] = last_workfile_path.suffix
+        work_filename = self.get_work_file(wf_data, template)
+
+        workdir = get_workdir_from_session(
+            {
+                "AVALON_PROJECT": self.data["project_name"],
+                "AVALON_TASK": self.data["task_name"],
+                "AVALON_ASSET": self.data["asset_name"]
             }
-            msg = (f"The WorkFile:\n {last_workfile} \nis older than the last published file for {self.data['asset_name']} "
-                   f"on Task {self.data['task_name']}\n\nWould you like to Copy and Open the most recent Published WF "
-                   f"(Click Yes)\nOr Procced with the older workfile on this machine(Click No)")
+            , wf_template_key
+        )
 
-            ask_window = Window(title="WF older than Published WF",
-                                message=msg,
-                                parent=parents.get("LauncherWindow"),
-                                level="ask")
+        workfile_file_path = os.path.join(os.path.normpath(workdir), work_filename)
+        workfile_path = Path(str(workfile_file_path))
 
-            if not ask_window.answer:
-                return
+        # Compute Published WorkFile Path
+        publish_template_key = get_publish_template_name(
+            self.data["project_name"],
+            self.data["workdir_data"].get("app", None),
+            "workfile",
+            task_name=self.data["task_name"],
+            task_type=self.data["task_name"],
+            project_settings=self.data["project_settings"]
+        )
 
-            # Get new WorkFile Path
-            version_template = (self.data.get("anatomy").templates.get("version"))
-            parts = re.split(r"\{.*?\}", version_template)
-            version_prefix = "".join(parts)
+        publish_template = anatomy.templates[publish_template_key]
+        publish_template_path = os.path.normpath(publish_template["path"])
 
-            last_version = self.get_version_from_path(last_workfile, prefix=version_prefix)
-            version = last_version + 1
+        publish_data = copy.deepcopy(wf_data)
+        publish_data.update({
+            "version": publish_version,
+            "subset": subset,
+            "family": "workfile",
+            "root": anatomy.roots
+        })
 
-            wf_template_key = get_workfile_template_key(
-                self.data["task_name"],
-                host_name=self.data["workdir_data"].get("app", None),
-                project_name=self.data["project_name"]
+        publish_file_path = Path(StringTemplate.format_template(
+            template=publish_template_path,
+            data=publish_data
+        )
+        )
+
+        if not publish_file_path.exists():
+            msg = (
+                f"The Published WorkFile:\n {str(publish_file_path)} \n does not exists on this computer.\n"
+                f"Please check that you downloaded it or if its upload is finished through the sync queue."
             )
-            anatomy = self.data.get("anatomy")
-            template = anatomy.templates[wf_template_key]["file"]
-            wf_data = copy.deepcopy(self.data.get("workdir_data"))
-            wf_data["version"] = version
-            wf_data["ext"] = last_workfile_path.suffix
-            work_filename = self.get_work_file(wf_data, template)
+            Window(title="title",
+                   message=msg,
+                   parent=parents.get("LauncherWindow"),
+                   level="warning")
 
-            workdir = get_workdir_from_session(
-                {
-                    "AVALON_PROJECT": self.data["project_name"],
-                    "AVALON_TASK": self.data["task_name"],
-                    "AVALON_ASSET": self.data["asset_name"]
-                }
-                , wf_template_key
-            )
+            raise ValueError(f"Path {str(publish_file_path)} was not found")
 
-            workfile_file_path = os.path.join(os.path.normpath(workdir), work_filename)
-            workfile_path = Path(str(workfile_file_path))
+        # Copy and open
+        self.launch_context.launch_args.remove(last_workfile)
+        shutil.copyfile(str(publish_file_path), str(workfile_path))
 
-            # Compute Published WorkFile Path
-            publish_template_key = get_publish_template_name(
-                self.data["project_name"],
-                self.data["workdir_data"].get("app", None),
-                "workfile",
-                task_name=self.data["task_name"],
-                task_type=self.data["task_name"],
-                project_settings=self.data["project_settings"]
-            )
-
-            publish_template = anatomy.templates[publish_template_key]
-            publish_template_path = os.path.normpath(publish_template["path"])
-
-            publish_data = copy.deepcopy(wf_data)
-            publish_data["version"] = publish_version
-            publish_data["subset"] = subset
-            publish_data["family"] = "workfile"
-            publish_data["root"] = anatomy.roots
-
-            publish_file_path = Path(StringTemplate.format_template(
-                template=publish_template_path,
-                data=publish_data
-            )
-            )
-
-            if not publish_file_path.exists():
-                msg = (
-                    f"The Published WorkFile:\n {str(publish_file_path)} \n does not exists on this computer.\n"
-                    f"Please check that you downloaded it or if its upload is finished through the sync queue."
-                )
-                Window(title="title",
-                       message=msg,
-                       parent=parents.get("LauncherWindow"),
-                       level="warning")
-
-                raise ValueError(f"Path {str(publish_file_path)} was not found")
-
-            # Copy and open
-            self.launch_context.launch_args.remove(last_workfile)
-            shutil.copyfile(str(publish_file_path), str(workfile_path))
-
-            self.data["env"]["AVALON_LAST_WORKFILE"] = str(workfile_path)
-            self.data["last_workfile_path"] = str(workfile_path)
-            self.launch_context.launch_args.append(str(workfile_path))
+        self.data["env"]["AVALON_LAST_WORKFILE"] = str(workfile_path)
+        self.data["last_workfile_path"] = str(workfile_path)
+        self.launch_context.launch_args.append(str(workfile_path))
 
         return
 
