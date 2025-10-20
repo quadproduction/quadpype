@@ -125,15 +125,19 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
             for key, value in os.environ.items()
         }
 
-        fill_data["root"] = anatomy.roots
-        fill_data["project"] = {
-            "name": project_name,
-            "code": anatomy.project_code,
-        }
-        fill_data["task"] = {
-            "type": task_type,
-            "name": task_name,
-        }
+        fill_data.update(
+            {
+                "root": anatomy.roots,
+                "projects": {
+                    "name": project_name,
+                    "code": anatomy.project_code,
+                },
+                "task": {
+                    "type": task_type,
+                    "name": task_name,
+                }
+            }
+        )
         result = StringTemplate.format_template(template, fill_data)
         if result.solved:
             template = result.normalized()
@@ -149,11 +153,13 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
             except KeyError as missing_key:
                 raise KeyError(
                     "Could not solve key '{}' in template path '{}'".format(
-                        missing_key, template))
+                        missing_key, template
+                    )
+                )
 
             if solved_path is None:
                 solved_path = template
-            if solved_path == template:
+            if solved_path == template :
                 break
             template = solved_path
 
@@ -162,7 +168,8 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
             raise TemplateNotFound(
                 "Template found in QuadPype settings for task '{}' with host "
                 "'{}' does not exists. (Not found : {})".format(
-                    task_name, host_name, solved_path))
+                    task_name, host_name, solved_path)
+            )
 
         self.log.info("Found template at: '{}'".format(solved_path))
 
