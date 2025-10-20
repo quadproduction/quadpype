@@ -541,8 +541,7 @@ class CacheModelLoader(plugin.BlenderLoader):
         template_data = format_data(representation, True, get_current_host_name())
         template_data.update({"unique_number": container.get("unique_number", "00")})
 
-        if any(str(libpath).lower().endswith(ext)
-               for ext in [".usd", ".usda", ".usdc"]):
+        if any(str(libpath).lower().endswith(ext) for ext in [".usd", ".usda", ".usdc"]):
             #ToDo rework when usd will be used
             mat = asset_group.matrix_basis.copy()
             self._remove(asset_group)
