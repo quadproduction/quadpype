@@ -471,6 +471,20 @@ class SetUnitScale(bpy.types.Operator):
             unit_scale_settings=unit_scale_settings)
         return {"FINISHED"}
 
+class SetRenderSettingsFromTemplate(bpy.types.Operator):
+    bl_idname = "wm.set_render_settings_from_template"
+    bl_label = "Set Render Settings From Template"
+
+    def execute(self, context):
+        host = registered_host()
+        builder = BlenderTemplateBuilder(host)
+        template_path = (builder.get_render_settings_template_preset())
+        with bpy.data.libraries.load(str(template_path), link=False) as (data_from, data_to):
+            data_to.scenes = [data_from.scenes[0]]
+        source_scene = data_to.scenes[0]
+        target_scene = bpy.context.scene
+        pipeline.copy_render_settings(source_scene, target_scene)
+        return {"FINISHED"}
 
 class TOPBAR_MT_avalon(bpy.types.Menu):
     """Avalon menu."""
@@ -512,6 +526,7 @@ class TOPBAR_MT_avalon(bpy.types.Menu):
         layout.operator(SetFrameRange.bl_idname, text="Set Frame Range")
         layout.operator(SetResolution.bl_idname, text="Set Resolution")
         layout.operator(SetUnitScale.bl_idname, text="Set Unit Scale")
+        layout.operator(SetRenderSettingsFromTemplate.bl_idname, text="Set Render Settings From Template")
         layout.separator()
         layout.operator(LaunchWorkFiles.bl_idname, text="Work Files...")
         layout.separator()
@@ -550,6 +565,7 @@ classes = [
     SetFrameRange,
     SetResolution,
     SetUnitScale,
+    SetRenderSettingsFromTemplate,
     TOPBAR_MT_avalon,
     SUBMENU_MT_avalon
 ]

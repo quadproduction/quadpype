@@ -3,7 +3,6 @@ import sys
 import contextlib
 import collections
 import traceback
-from pathlib import Path
 
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
@@ -26,14 +25,9 @@ from quadpype.pipeline import (
     get_current_host_name,
     HOST_WORKFILE_EXTENSIONS
 )
-from quadpype.pipeline.workfile import get_workdir_from_session
-from quadpype.pipeline.publish.lib import get_publish_workfile_representations_from_session
 from .constants import CHECKED_INT, UNCHECKED_INT
 
 log = Logger.get_logger(__name__)
-TASK_ICON_SIZE = 16
-APP_OVERLAY_ICON_SIZE = 32
-APP_ICON_SIZE = 64
 
 
 def checkstate_int_to_enum(state):
@@ -900,135 +894,3 @@ def get_warning_pixmap(color=None):
         color = get_objected_colors("delete-btn-bg").get_qcolor()
 
     return paint_image_with_color(src_image, color)
-
-def set_item_state(session, item, app_action=None):
-    """
-    Will set a different icon on the icon if a WF or PublishedWF exists
-    """
-    if not session.get("AVALON_TASK", None):
-        return
-    workfile_dir = get_workfile_folder(session)
-    publish_representations = get_workfile_publish_representations(session)
-
-    ext = [ext for exts in HOST_WORKFILE_EXTENSIONS.values() for ext in exts]
-    if app_action:
-        ext = HOST_WORKFILE_EXTENSIONS.get(app_action.label.lower())
-
-    workfile_icon = None
-    publish_workfile_icon = None
-
-    icon = get_qta_icon_by_name_and_color("fa.pencil-square-o", "grey")
-
-    if ext and _has_file_with_ext(workfile_dir, ext):
-        light_orange = QtGui.QColor(255, 200, 100)
-        workfile_icon = get_qta_icon_by_name_and_color("fa.file-word-o", light_orange)
-        icon = workfile_icon
-
-    repr_ext = set()
-    for repr in publish_representations:
-        repr_ext.add(f".{repr['name']}")
-
-    repr_ext = list(repr_ext)
-    if any(elem in ext for elem in repr_ext):
-        publish_workfile_icon = get_qta_icon_by_name_and_color("fa.check-square-o", "limegreen")
-        icon = publish_workfile_icon
-
-    if workfile_icon and publish_workfile_icon:
-        icon = merge_icons_diagonal(publish_workfile_icon, workfile_icon, TASK_ICON_SIZE)
-
-    if app_action:
-        if not workfile_icon and not publish_workfile_icon:
-            return
-        pixmap_small = icon.pixmap(TASK_ICON_SIZE, TASK_ICON_SIZE)
-        pixmap_resized = pixmap_small.scaled(APP_OVERLAY_ICON_SIZE, APP_OVERLAY_ICON_SIZE,
-                                             QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-        icon_large = QtGui.QIcon(pixmap_resized)
-        icon = add_overlay_icon(item.icon(), icon_large, APP_ICON_SIZE, APP_OVERLAY_ICON_SIZE)
-
-    item.setIcon(icon)
-
-def merge_icons_diagonal(icon1, icon2, size):
-    """Create a new icon based on 2 icons split in half diagonally"""
-    pixmap = QtGui.QPixmap(size, size)
-    pixmap.fill(QtGui.QColor(0, 0, 0, 0))
-
-    painter = QtGui.QPainter(pixmap)
-
-    p1 = icon1.pixmap(size, size)
-    p2 = icon2.pixmap(size, size)
-
-    path1 = QtGui.QPainterPath()
-    path1.moveTo(0, 0)
-    path1.lineTo(size, 0)
-    path1.lineTo(0, size)
-    path1.closeSubpath()
-    painter.setClipPath(path1)
-    painter.drawPixmap(0, 0, p1)
-
-    path2 = QtGui.QPainterPath()
-    path2.moveTo(size, size)
-    path2.lineTo(size, 0)
-    path2.lineTo(0, size)
-    path2.closeSubpath()
-    painter.setClipPath(path2)
-    painter.drawPixmap(0, 0, p2)
-
-    painter.end()
-    return QtGui.QIcon(pixmap)
-
-def add_overlay_icon(base_icon, overlay_icon, base_size, overlay_size,
-                     bg_color=QtGui.QColor("black")):
-    """
-    Add a icon in overlay at the bottom right on top of a main icon
-    """
-
-    base_pixmap = base_icon.pixmap(base_size, base_size)
-
-    result = QtGui.QPixmap(base_size, base_size)
-    result.fill(QtGui.QColor(0,0,0,0))
-
-    painter = QtGui.QPainter(result)
-    painter.setRenderHint(QtGui.QPainter.Antialiasing)
-
-    painter.drawPixmap(0, 0, base_pixmap)
-
-    x = base_size - overlay_size
-    y = base_size - overlay_size
-
-    painter.setBrush(QtGui.QBrush(bg_color))
-    painter.setPen(QtCore.Qt.NoPen)
-    painter.drawRect(x, y, overlay_size, overlay_size)
-
-    overlay_pixmap = overlay_icon.pixmap(overlay_size, overlay_size)
-
-    painter.drawPixmap(x, y, overlay_pixmap)
-
-    painter.end()
-    return QtGui.QIcon(result)
-
-def get_workfile_folder(session):
-    workdir_path_str = get_workdir_from_session(session)
-    if not workdir_path_str:
-        return Path()
-    path = Path(workdir_path_str)
-    return path
-
-def get_workfile_publish_representations(session):
-    publish_representations = get_publish_workfile_representations_from_session(session)
-    if not publish_representations:
-        return []
-    return publish_representations
-
-def _has_file_with_ext(folder, extensions):
-    if not folder.is_dir():
-        return False
-
-    matching_files = [
-        file for file in folder.rglob("*")
-        if file.is_file() and file.suffix.lower() in extensions
-    ]
-
-    if matching_files:
-        return True
-
-    return False
