@@ -1693,9 +1693,8 @@ class PlaceholderLoadMixin(object):
         loader_args = self.parse_loader_args(placeholder.data["loader_args"])
 
         placeholder_representations = self._get_representations(placeholder)
-        lenght_asset = len(placeholder_representations.keys())
-        iter_index = 0
-        for asset_name, representations in placeholder_representations.items():
+        lenght_asset = len(placeholder_representations)
+        for index, (asset_name, representations) in enumerate(placeholder_representations.items()):
             filtered_representations = []
             for representation in self._reduce_last_version_repre_docs(
                 representations
@@ -1703,7 +1702,7 @@ class PlaceholderLoadMixin(object):
                 repre_id = str(representation["_id"])
                 if repre_id not in ignore_repre_ids:
                     filtered_representations.append(representation)
-            iter_index += 1
+
             if not filtered_representations:
                 self.log.info((
                     "There's no representation for this placeholder: {}"
@@ -1711,7 +1710,7 @@ class PlaceholderLoadMixin(object):
                 self.log.info(f"For args: {asset_name}, {placeholder.data['family']},"
                               f" {placeholder.data['representation']}, {placeholder.data['subset']}")
                 self.post_placeholder_process(placeholder, failed=True)
-                if iter_index == lenght_asset:
+                if index == lenght_asset:
                     if not placeholder.data.get("keep_placeholder", True):
                         self.delete_placeholder(placeholder)
                     return
