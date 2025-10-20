@@ -15,6 +15,11 @@
                     "type": "boolean",
                     "key": "use_icons",
                     "label": "Use Workfiles Icon in Launcher"
+                },
+                {
+                    "key": "workfile_cache_file_path",
+                    "label": "Workfile Cache File Path",
+                    "type": "path"
                 }
             ]
         },

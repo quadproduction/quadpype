@@ -18,7 +18,7 @@ from quadpype.pipeline import (
 from quadpype.pipeline.load import any_outdated_containers
 from quadpype.hosts.houdini import HOUDINI_HOST_DIR
 from quadpype.hosts.houdini.api import lib, shelves, creator_node_shelves
-
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 from quadpype.lib import (
     register_event_callback,
     emit_event,
@@ -38,7 +38,7 @@ CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 INVENTORY_PATH = os.path.join(PLUGINS_DIR, "inventory")
 
 
-class HoudiniHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
+class HoudiniHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCache):
     name = "houdini"
 
     def __init__(self):
@@ -96,6 +96,8 @@ class HoudiniHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
             dst_path = dst_path.replace("\\", "/")
         hou.hipFile.save(file_name=dst_path,
                          save_to_recent_files=True)
+        _, ext = os.path.splitext(dst_path)
+        self.add_task_extension(extension=ext)
         return dst_path
 
     def open_workfile(self, filepath):

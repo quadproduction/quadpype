@@ -14,6 +14,7 @@ from quadpype.pipeline import (
     register_creator_plugin_path,
     AVALON_CONTAINER_ID,
 )
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 
 PLUGINS_DIR = os.path.join(OPENRV_ROOT_DIR, "plugins")
 PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
@@ -25,7 +26,7 @@ QUADPYPE_ATTR_PREFIX = "quadpype."
 JSON_PREFIX = "JSON:::"
 
 
-class OpenRVHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
+class OpenRVHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCache):
     name = "openrv"
 
     def __init__(self):
@@ -44,7 +45,10 @@ class OpenRVHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         return rv.commands.addSources([filepath])
 
     def save_workfile(self, filepath=None):
-        return rv.commands.saveSession(filepath)
+        _, ext = os.path.splitext(filepath)
+        save = rv.commands.saveSession(filepath)
+        self.add_task_extension(extension=ext)
+        return save
 
     def work_root(self, session):
         work_dir = session.get("AVALON_WORKDIR")
