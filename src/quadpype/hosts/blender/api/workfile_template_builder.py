@@ -128,7 +128,7 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
         fill_data.update(
             {
                 "root": anatomy.roots,
-                "projects": {
+                "project": {
                     "name": project_name,
                     "code": anatomy.project_code,
                 },
