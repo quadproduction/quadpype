@@ -31,6 +31,13 @@
         "renderer": "CYCLES",
         "compositing": true,
         "aov_list": ["combined"],
+        "render_settings_template": {
+            "template_path": {
+                "windows": "",
+                "darwin": "",
+                "linux": ""
+            }
+        },
         "custom_passes": []
     },
     "workfile_builder": {

@@ -744,7 +744,11 @@ def purge_orphans(is_recursive):
 
         for item in list(data_collection):
             if item.users == 0:
-                data_collection.remove(item)
+                try:
+                    bpy.data.batch_remove([item])
+                except Exception as e:
+                    print(f"Impossible to Delete {item.name} : {e}")
+
 
     if is_recursive:
         purge_orphans(is_recursive=False)

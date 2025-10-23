@@ -24,7 +24,7 @@ from quadpype.pipeline.load import any_outdated_containers
 from quadpype.hosts.fusion import FUSION_HOST_DIR
 from quadpype.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
 from quadpype.tools.utils import host_tools
-
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 
 from .lib import (
     get_current_comp,
@@ -65,7 +65,7 @@ class FusionLogHandler(logging.Handler):
         self.print(entry)
 
 
-class FusionHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
+class FusionHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCache):
     name = "fusion"
 
     def install(self):
@@ -116,7 +116,9 @@ class FusionHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
     def save_workfile(self, dst_path=None):
         comp = get_current_comp()
+        _, ext = os.path.splitext(dst_path)
         comp.Save(dst_path)
+        self.add_task_extension(extension=ext)
 
     def open_workfile(self, filepath):
         # Hack to get fusion, see

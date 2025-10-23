@@ -31,6 +31,7 @@ from quadpype.lib import (
 )
 from quadpype.pipeline.load import any_outdated_containers
 from quadpype.hosts.substancepainter import SUBSTANCE_HOST_DIR
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 
 from . import lib
 
@@ -48,7 +49,7 @@ QUADPYPE_METADATA_CONTEXT_KEY = "context"        # child key
 QUADPYPE_METADATA_INSTANCES_KEY = "instances"    # child key
 
 
-class SubstanceHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
+class SubstanceHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCache):
     name = "substancepainter"
 
     def __init__(self):
@@ -106,6 +107,9 @@ class SubstanceHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
         full_save_mode = substance_painter.project.ProjectSaveMode.Full
         substance_painter.project.save_as(dst_path, full_save_mode)
+
+        _, ext = os.path.splitext(dst_path)
+        self.add_task_extension(extension=ext)
 
         return dst_path
 

@@ -16,7 +16,7 @@ from quadpype.hosts.aftereffects.api.workfile_template_builder import (
 )
 from quadpype.pipeline.load import any_outdated_containers
 import quadpype.hosts.aftereffects
-
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 from quadpype.host import (
     HostBase,
     IWorkfileHost,
@@ -40,7 +40,7 @@ LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
 CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 
 
-class AfterEffectsHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
+class AfterEffectsHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCache):
     name = "aftereffects"
 
     def __init__(self):
@@ -86,7 +86,9 @@ class AfterEffectsHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         return [".aep"]
 
     def save_workfile(self, dst_path=None):
+        _, ext = os.path.splitext(dst_path)
         self.stub.saveAs(dst_path, True)
+        self.add_task_extension(extension=ext)
 
     def open_workfile(self, filepath):
         self.stub.open(filepath)

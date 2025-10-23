@@ -24,15 +24,13 @@ from quadpype.settings import get_project_settings, APPS_SETTINGS_KEY
 from quadpype.pipeline import (
     discover_launcher_actions,
     ApplicationAction,
-    HOST_WORKFILE_EXTENSIONS
 )
-from quadpype.pipeline.workfile import get_workdir_from_session
-from quadpype.pipeline.publish.lib import get_publish_workfile_representations_from_session
 from quadpype.tools.utils.lib import (
     DynamicQThread,
-    get_project_icon,
-    set_item_state
+    get_project_icon
 )
+from quadpype.tools.utils.workfile_cache import WorkFileCache, set_item_state
+from quadpype.pipeline.workfile import get_workdir_from_session
 from quadpype.tools.utils.assets_widget import (
     AssetModel,
     ASSET_NAME_ROLE
@@ -210,7 +208,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(True, VARIANT_GROUP_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
             if self.is_application_action(actions[0]) and use_icons:
-                set_item_state(session, item, actions[0])
+                set_item_state(session, item, app_action=actions[0])
             items_by_order[order].append(item)
 
         for action in single_actions:
@@ -221,7 +219,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(action, ACTION_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
             if self.is_application_action(action) and use_icons:
-                set_item_state(session, item, action)
+                set_item_state(session, item, app_action=action)
             items_by_order[action.order].append(item)
 
         for group_name, actions in grouped_actions.items():
@@ -691,6 +689,26 @@ class LauncherModel(QtCore.QObject):
         asset_docs = list(get_assets(
             self._last_project_name, fields=self._asset_projection.keys()
         ))
+
+        # Populate and create WF cache
+        workfile_db = WorkFileCache()
+        if not workfile_db.workfilde_db_exists(project_name=self._last_project_name):
+            workfile_db.init_workfile_db(project_name=self._last_project_name)
+            for doc in asset_docs:
+                for task in doc.get("data").get("tasks").keys():
+                    workfile_dir = get_workdir_from_session({
+                        "AVALON_PROJECT":self._last_project_name,
+                        "AVALON_TASK": task,
+                        "AVALON_ASSET": doc.get("name")
+                    })
+                    workfile_db.add_task_folder(
+                        self._last_project_name,
+                        task,
+                        doc.get("name"),
+                        workfile_dir
+                    )
+            print("Workfile cache created")
+
         if not self._refreshing_assets:
             return
         self._refreshing_assets = False

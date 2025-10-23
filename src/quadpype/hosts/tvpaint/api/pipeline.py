@@ -18,6 +18,7 @@ from quadpype.pipeline import (
     AVALON_CONTAINER_ID,
 )
 from quadpype.pipeline.context_tools import get_global_context
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 
 from .lib import (
     execute_george,
@@ -59,7 +60,7 @@ instances=2
 """
 
 
-class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
+class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCache):
     name = "tvpaint"
 
     def install(self):
@@ -159,6 +160,10 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         # Execute george script to save workfile.
         filepath = filepath.replace("\\", "/")
         george_script = u"tv_SaveProject '{}'".format(filepath)
+
+        _, ext = os.path.splitext(filepath)
+        self.add_task_extension(extension=ext)
+
         return execute_george_through_file(george_script)
 
     def work_root(self, session):

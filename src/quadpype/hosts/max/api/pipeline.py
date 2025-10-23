@@ -13,6 +13,7 @@ from quadpype.pipeline import (
     register_loader_plugin_path,
     AVALON_CONTAINER_ID,
 )
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 from quadpype.hosts.max.api.menu import QuadPypeMenu
 from quadpype.hosts.max.api import lib
 from quadpype.hosts.max.api.plugin import MS_CUSTOM_ATTRIB
@@ -29,7 +30,7 @@ CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 INVENTORY_PATH = os.path.join(PLUGINS_DIR, "inventory")
 
 
-class MaxHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
+class MaxHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCache):
 
     name = "max"
     menu = None
@@ -69,7 +70,9 @@ class MaxHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         return [".max"]
 
     def save_workfile(self, dst_path=None):
+        _, ext = os.path.splitext(dst_path)
         rt.saveMaxFile(dst_path)
+        self.add_task_extension(extension=ext)
         return dst_path
 
     def open_workfile(self, filepath):
