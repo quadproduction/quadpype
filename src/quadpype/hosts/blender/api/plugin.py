@@ -36,10 +36,12 @@ from quadpype.pipeline.publish import Extractor
 from quadpype.lib import BoolDef
 
 from .pipeline import (
-    AVALON_CONTAINERS,
-    AVALON_INSTANCES,
     get_avalon_node,
     has_avalon_node
+)
+from .constants import (
+    AVALON_CONTAINERS,
+    AVALON_INSTANCES
 )
 from .ops import (
     MainThreadItem,

@@ -135,6 +135,17 @@
             "optional": true,
             "active": false
         },
+        "ExtractNonKeyedProperties": {
+            "enabled": true,
+            "active": true,
+            "properties": [
+                "location",
+                "rotation_mode",
+                "rotation_euler",
+                "rotation_quaternion",
+                "scale"
+            ]
+        },
         "ExtractThumbnail": {
             "enabled": true,
             "optional": true,

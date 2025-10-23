@@ -1,18 +1,26 @@
 import os
 import traceback
-import re
+
 import importlib
 import contextlib
-import json
-from enum import Enum
+import functools
+
+from mathutils import Vector, Euler, Quaternion, Color
 from typing import Dict, List, Union, TYPE_CHECKING
 
 import bpy
 import addon_utils
 from quadpype.lib import Logger, NumberDef
 from quadpype.pipeline import get_current_project_name, get_current_asset_name, get_current_context
-from quadpype.pipeline.context_tools import get_current_project_asset
+
 from quadpype.client import get_asset_by_name
+from .constants import (
+    AVALON_PROPERTY,
+    SNAPSHOT_PROPERTY,
+    SNAPSHOT_POSE_BONE,
+    SNAPSHOT_CUSTOM_PROPERTIES
+)
+
 if TYPE_CHECKING:
     from quadpype.pipeline.create import CreateContext  # noqa: F401
 
@@ -166,13 +174,14 @@ def set_app_templates_path():
         os.environ["BLENDER_USER_SCRIPTS"] = app_templates_path
 
 
-def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool=False):
+def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool=False, set_property: str=AVALON_PROPERTY):
     r"""Write `data` to `node` as userDefined attributes
 
     Arguments:
         node: Long name of node
         data: Dictionary of key/value pairs
         erase(optional): Erase previous value insted of updating / adding data
+        set_property(optional): Name of the property to store data
 
     Example:
         >>> import bpy
@@ -205,7 +214,7 @@ def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool=Fals
 
         imprint_data[key] = value
 
-    pipeline.metadata_update(node, imprint_data, erase)
+    pipeline.metadata_update(node, imprint_data, erase, set_property)
 
 
 def lsattr(attr: str,
@@ -760,3 +769,135 @@ def is_camera(obj):
 
 def is_collection(obj):
     return isinstance(obj, bpy.types.Collection)
+
+def get_value_safe(v):
+    """Convert values to JSON friendly attributes"""
+    if isinstance(v, (Vector, Euler, Quaternion, Color)):
+        return list(v)
+    elif isinstance(v, (int, float, str, bool)):
+        return v
+    elif isinstance(v, (list, tuple)):
+        return [get_value_safe(x) for x in v]
+    return str(v)
+
+def rsetattr(obj, attr, val):
+    pre, _, post = attr.rpartition('.')
+    target = rgetattr(obj, pre) if pre else obj
+    current = getattr(target, post, None)
+
+    if isinstance(current, (Vector, Euler, Quaternion, Color)):
+        if isinstance(val, (list, tuple)):
+            current[:] = val
+        else:
+            raise TypeError(f"Incompatible value for {attr}: expected list/tuple, got {type(val)}")
+    else:
+        setattr(target, post, val)
+
+def rgetattr(obj, attr, *args):
+    def _getattr(obj, attr):
+        return getattr(obj, attr, *args)
+    return functools.reduce(_getattr, [obj] + attr.split('.'))
+
+def rhasattr(obj, attr):
+    def _hasattr(obj, attr):
+        if obj is None or not hasattr(obj, attr):
+            return None
+        return getattr(obj, attr)
+    result = functools.reduce(_hasattr, [obj] + attr.split('.'))
+    return result is not None
+
+def get_properties_on_object(obj, frame=1):
+    """Get the properties value on an object based on list of properties from setting.
+    At a given frame.
+    Arguments:
+        obj: object to get the property value from
+        frame: at which frame get the property
+
+    return: dict"""
+    bpy.context.scene.frame_set(frame)
+
+    data = {}
+
+    properties = pipeline.get_non_keyed_property_to_export()
+    for attr in properties:
+        if not rhasattr(obj, attr):
+            continue
+        data[attr] = get_value_safe(rgetattr(obj, attr))
+
+    # Custom properties
+    custom = {}
+    for key in obj.keys():
+        if key != "_RNA_UI":
+            custom[key] = get_value_safe(obj[key])
+    if custom:
+        data[SNAPSHOT_CUSTOM_PROPERTIES] = custom
+
+    if not obj.type == "ARMATURE":
+        return data
+
+    # If it's an armature, capture all bone pose
+    pose_data = {}
+    for pb in obj.pose.bones:
+        pb_data = {}
+        for attr in properties:
+            if not rhasattr(pb, attr):
+                continue
+            pb_data[attr] = get_value_safe(rgetattr(pb, attr))
+        pb_data[SNAPSHOT_CUSTOM_PROPERTIES] = {k: get_value_safe(v) for k, v in pb.items() if k != "_RNA_UI"}
+        pose_data[pb.name] = pb_data
+    data[SNAPSHOT_POSE_BONE] = pose_data
+
+    return data
+
+
+def set_properties_on_object(obj, data, frame=1):
+    """Set the properties value on an object based on list of properties from data.
+        At a given frame.
+        Arguments:
+            obj: object to set the property value from
+            data: dict {attr_name:value}
+            frame: at which frame get the property
+
+        return: dict"""
+    bpy.context.scene.frame_set(frame)
+
+    properties = pipeline.get_non_keyed_property_to_export()
+
+    for attr in properties:
+        if not attr in data or not rhasattr(obj, attr):
+            continue
+        rsetattr(obj, attr, data[attr])
+
+    # Custom properties
+    for k, v in data.get(SNAPSHOT_CUSTOM_PROPERTIES, {}).items():
+        obj[k] = v
+
+    if not obj.type == "ARMATURE" and SNAPSHOT_POSE_BONE not in data:
+        return
+
+    # If it's an armature, capture all bone pose
+    for bone_name, bone_data in data[SNAPSHOT_POSE_BONE].items():
+        if not bone_name in obj.pose.bones:
+            continue
+        pb = obj.pose.bones[bone_name]
+        for attr in properties:
+            if not attr in bone_data:
+                continue
+            rsetattr(pb, attr, bone_data[attr])
+
+        for k, v in bone_data.get(SNAPSHOT_CUSTOM_PROPERTIES, {}).items():
+            pb[k] = v
+
+
+def restore_properties_on_instance(instance_obj, corresponding_instance):
+    """Set properties of the data _snapshot exported with the blend animation
+    for all objects in the corresponding_instance"""
+    snapshot_data = pipeline.get_avalon_node(instance_obj, get_property=SNAPSHOT_PROPERTY)
+    if not snapshot_data:
+        print(f"No snapshot data found on {instance_obj.name}")
+        return
+    for obj in pipeline.get_container_content(corresponding_instance):
+        data = snapshot_data.get(obj.name, None)
+        if not data:
+            continue
+        set_properties_on_object(obj, data)
