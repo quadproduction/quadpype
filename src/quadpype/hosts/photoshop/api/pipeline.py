@@ -10,7 +10,7 @@ from quadpype.pipeline import (
     register_creator_plugin_path,
     AVALON_CONTAINER_ID,
 )
-
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 from quadpype.host import (
     HostBase,
     IWorkfileHost,
@@ -33,7 +33,7 @@ CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 INVENTORY_PATH = os.path.join(PLUGINS_DIR, "inventory")
 
 
-class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
+class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCache):
     name = "photoshop"
 
     def install(self):
@@ -77,6 +77,7 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     def save_workfile(self, filepath=None):
         _, ext = os.path.splitext(filepath)
         lib.stub().saveAs(filepath, ext[1:].lower(), True)
+        self.add_task_extension(extension=ext)
 
     def get_current_workfile(self):
         return self.current_file()

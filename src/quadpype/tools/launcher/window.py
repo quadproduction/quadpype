@@ -246,7 +246,7 @@ class LauncherWindow(QtWidgets.QDialog):
         self.setWindowTitle("QuadPype: Launcher")
         window_icon = QtGui.QIcon(resources.get_app_icon_filepath())
         self.setWindowIcon(window_icon)
-
+        self.setObjectName("LauncherWindow")
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
 

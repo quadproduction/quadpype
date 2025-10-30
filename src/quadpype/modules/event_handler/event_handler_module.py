@@ -21,7 +21,7 @@ class EventHandlerModule(QuadPypeModule, ITrayService):
         self._module_settings = settings
 
     def initialize(self, _module_settings):
-        self.enabled = True
+        self.enabled = _module_settings.get("enabled", False)
 
     def tray_init(self):
         from quadpype.events import get_event_handler

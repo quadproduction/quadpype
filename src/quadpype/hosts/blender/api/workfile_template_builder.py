@@ -1,25 +1,23 @@
 import json
-from os import unlink
-from pathlib import Path
+import os.path
+import shutil
+import platform
 from enum import Enum
 import bpy
 
-from quadpype.pipeline import registered_host
-
+from quadpype.pipeline import registered_host, Anatomy
 from .workio import (
     current_file,
-    save_file
+    save_file,
+    open_file
 )
-
-from quadpype.client import (
-    get_project
-)
-
-from quadpype.pipeline.template_data import get_template_data
 
 from quadpype.pipeline.workfile.workfile_template_builder import (
     TemplateAlreadyImported,
     AbstractTemplateBuilder,
+    TemplateProfileNotFound,
+    TemplateLoadFailed,
+    TemplateNotFound,
     PlaceholderPlugin,
     LoadPlaceholderItem,
     CreatePlaceholderItem,
@@ -32,7 +30,6 @@ from quadpype.hosts.blender.api.lib import (
     read,
     imprint,
     get_selection,
-    make_scene_empty,
     get_parent_collections_for_object,
     purge_orphans
 )
@@ -40,7 +37,8 @@ from quadpype.hosts.blender.api.lib import (
 from quadpype.hosts.blender.api import pipeline
 
 from quadpype.lib import (
-    attribute_definitions
+    attribute_definitions,
+    StringTemplate
 )
 
 AVALON_PLACEHOLDER = "AVALON_PLACEHOLDER"
@@ -66,6 +64,10 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
             bool: Whether the template was successfully imported or not
         """
 
+        if not os.path.exists(path):
+            self.log.info(f"Template file on {path} doesn't exist.")
+            return
+
         for scene in bpy.data.scenes:
             if scene.name == self.current_asset_name:
                 raise TemplateAlreadyImported((
@@ -73,49 +75,11 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
                     "Clean scene if needed (File > New Scene)"
                 ))
 
-        self.template_data = get_template_data(
-                                get_project(self.project_name),
-                                self.current_asset_doc,
-                                self.current_task_name,
-                                self.host_name
-                            )
+        workfile_path = save_file(current_file())
+        shutil.copy2(path, workfile_path)
+        open_file(workfile_path)
 
-        make_scene_empty()
-
-        path = Path(path)
-        tpl_element_names = self._get_elements_to_append(path)
-
-        bpy.ops.scene.new(type='EMPTY')
         bpy.context.scene.name = self.current_asset_name
-
-        for scene in bpy.data.scenes:
-            if scene.name == self.current_asset_name:
-                continue
-            bpy.data.scenes.remove(scene, do_unlink=True)
-
-        with bpy.data.libraries.load(str(path), link=False) as (data_from, data_to):
-            for data_type, names in tpl_element_names.items():
-                if hasattr(data_from, data_type):
-                    setattr(data_to, data_type, [item for item in getattr(data_from, data_type) if item in names])
-
-        for obj in getattr(data_to, 'objects', []):
-            if obj and not obj.users_collection:
-                bpy.context.scene.collection.objects.link(obj)
-
-        for collection in getattr(data_to, 'collections', []):
-            if collection:
-                bpy.context.scene.collection.children.link(collection)
-
-        for world in getattr(data_to, 'worlds', []):
-            if world:
-                bpy.context.scene.world = world
-
-        cameras = [cam for cam in bpy.data.objects.values() if cam.type == 'CAMERA']
-        if cameras:
-            bpy.context.scene.camera = cameras[0]
-
-        for lib in bpy.data.libraries:
-            bpy.data.libraries.remove(lib, do_unlink=True)
 
         purge_orphans(is_recursive=True)
 
@@ -126,45 +90,90 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
         return True
 
     @staticmethod
-    def _get_elements_to_append(path):
-        """List all elements to append in scene based on a templated .blend
-        Will avoid the instanced collections or collections in collections.
-        Args:
-            path (Path): A path to current template
-        Returns:
-            dict: {str: list}
-                A dict of element type associated to a list of names to append
-        """
-        return_dict = {}
-
-        with bpy.data.libraries.load(str(path), link=False) as (data_from, data_to):
-            data_to.objects = data_from.objects
-            data_collections = data_from.collections
-            return_dict["worlds"] = data_from.worlds
-
-        # Retrieve specific placeholder objects
-        return_dict["objects"] = [obj.name for obj in data_to.objects if
-                                  pipeline.get_avalon_node(obj).get("plugin_identifier", None)]
-
-        instanced_collections_names = set()
-        for obj in data_to.objects:
-            if obj.instance_type == 'COLLECTION' and obj.instance_collection:
-                print(f"The collection {obj.instance_collection.name} is instanced in {obj.name}")
-                instanced_collections_names.add(obj.instance_collection.name)
-
-            bpy.data.objects.remove(obj, do_unlink=True)
-
-
-        return_dict["collections"] = [coll_name for coll_name in data_collections
-                                      if coll_name not in instanced_collections_names]
-
-        return return_dict
-
-    @staticmethod
     def _set_settings():
         data = pipeline.get_asset_data()
         pipeline.set_resolution(data)
         pipeline.set_frame_range(data)
+
+    def get_render_settings_template_preset(self):
+
+        host_name = self.host_name
+        project_name = self.project_name
+        task_name = self.current_task_name
+        task_type = self.current_task_type
+
+        settings_templates = (
+            self.project_settings
+            [self.host_name]
+            ["RenderSettings"]
+            ["render_settings_template"]
+            ["template_path"]
+        )
+        template = settings_templates[platform.system().lower()]
+
+        if not template:
+            raise TemplateLoadFailed((
+                                         "Template path is not set.\n"
+                                         "Path need to be set in {}\\Render Settings Template "
+                                         "Settings\\Profiles"
+                                     ).format(host_name.title()))
+
+        # Try to fill path with environments and anatomy roots
+        anatomy = Anatomy(project_name)
+        fill_data = {
+            key: value
+            for key, value in os.environ.items()
+        }
+
+        fill_data.update(
+            {
+                "root": anatomy.roots,
+                "project": {
+                    "name": project_name,
+                    "code": anatomy.project_code,
+                },
+                "task": {
+                    "type": task_type,
+                    "name": task_name,
+                }
+            }
+        )
+        result = StringTemplate.format_template(template, fill_data)
+        if result.solved:
+            template = result.normalized()
+
+        if template and os.path.exists(template):
+            self.log.info("Found template at: '{}'".format(template))
+            return template
+
+        solved_path = None
+        while True:
+            try:
+                solved_path = anatomy.path_remapper(template)
+            except KeyError as missing_key:
+                raise KeyError(
+                    "Could not solve key '{}' in template path '{}'".format(
+                        missing_key, template
+                    )
+                )
+
+            if solved_path is None:
+                solved_path = template
+            if solved_path == template :
+                break
+            template = solved_path
+
+        solved_path = os.path.normpath(solved_path)
+        if not os.path.exists(solved_path):
+            raise TemplateNotFound(
+                "Template found in QuadPype settings for task '{}' with host "
+                "'{}' does not exists. (Not found : {})".format(
+                    task_name, host_name, solved_path)
+            )
+
+        self.log.info("Found template at: '{}'".format(solved_path))
+
+        return solved_path
 
 class BlenderPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
     identifier = "blender.load"

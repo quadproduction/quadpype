@@ -2,7 +2,7 @@ import sys
 import logging
 from qtpy import QtWidgets, QtCore, QtGui
 
-from quadpype.style import get_app_icon_path
+from quadpype.style import get_app_icon_path, load_stylesheet
 
 log = logging.getLogger(__name__)
 
@@ -14,10 +14,10 @@ class Window(QtWidgets.QWidget):
         self.title = title
         self.message = message
         self.level = level
-        self._answer = None
+        self.answer = None
 
         self.setWindowTitle(self.title)
-
+        self.setStyleSheet(load_stylesheet())
         if self.level == "info":
             self._info()
         elif self.level == "warning":
@@ -56,7 +56,7 @@ class Window(QtWidgets.QWidget):
             self.message,
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
         )
-        self._answer = False
+        self.answer = False
         if rc == QtWidgets.QMessageBox.Yes:
             self.answer = True
             self.exit()

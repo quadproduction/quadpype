@@ -94,7 +94,13 @@ class VersionDelegate(QtWidgets.QStyledItemDelegate):
         if item.get("isGroup") or item.get("isMerged"):
             return
 
-        editor = QtWidgets.QComboBox(parent)
+        class ComboboxWithoutWheel(QtWidgets.QComboBox):
+            def wheelEvent(self, event):
+                if self.hasFocus():
+                    event.accept()
+
+        editor = ComboboxWithoutWheel(parent)
+        editor.setFocusPolicy(QtCore.Qt.NoFocus)
 
         def commit_data():
             if not self.first_run:

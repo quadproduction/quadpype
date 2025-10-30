@@ -1,6 +1,7 @@
 {
     "launcher": {
-        "use_icons": false
+        "use_icons": false,
+        "workfile_cache_file_path": ""
     },
     "version_start_category": {
         "profiles": []

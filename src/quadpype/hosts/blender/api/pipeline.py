@@ -36,7 +36,7 @@ from quadpype.pipeline.workfile.workfile_template_builder import (
     is_last_workfile_exists,
     should_build_first_workfile
 )
-
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 from .workfile_template_builder import (
     build_workfile_template,
     BlenderPlaceholderLoadPlugin,
@@ -80,7 +80,7 @@ DEFAULT_VARIANT_NAME = "Main"
 log = Logger.get_logger(__name__)
 
 
-class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost):
+class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost, WorkFileCache):
     name = "blender"
 
     def install(self):
@@ -109,7 +109,9 @@ class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost):
             dst_path (str): Where the current scene should be saved. Or use
                 current path if `None` is passed.
         """
+        _, ext = os.path.splitext(dst_path)
         save_file(dst_path if dst_path else bpy.data.filepath)
+        self.add_task_extension(extension=ext)
 
     def open_workfile(self, filepath: str):
         """Override open_workfile method from IWorkfileHost.
@@ -819,3 +821,49 @@ def get_container_content(container):
         return [*container.objects, *container.children]
 
     return [obj for obj in bpy.data.objects if obj.parent == container]
+
+
+def copy_render_settings(src_scene, dst_scene):
+
+    engine = src_scene.render.engine
+    dst_scene.render.engine = engine
+
+    render_settings = {
+        "CYCLES": "cycles",
+        "BLENDER_EEVEE": "eevee",
+        "BLENDER_EEVEE_NEXT": "eevee",
+        "BLENDER_WORKBENCH": "workbench",
+        "RENDER": "render",
+        "DISPLAY": "display",
+        "DISPLAY_SETTINGS": "display_settings",
+        "VIEW_SETTINGS": "view_settings",
+        "SEQ_COLORSPACE": "sequencer_colorspace_settings"
+    }
+
+    for setting_name, attr in render_settings.items():
+        src_settings = getattr(src_scene, attr, None)
+        dst_settings = getattr(dst_scene, attr, None)
+        if not all([src_settings, dst_settings]):
+            continue
+
+        for prop in src_settings.bl_rna.properties:
+            if prop.identifier == "rna_type":
+                continue
+            try:
+                setattr(dst_settings, prop.identifier, getattr(src_settings, prop.identifier))
+            except Exception:
+                pass
+
+    data = get_asset_data()
+    set_resolution(data)
+    set_frame_range(data)
+
+    if not all([hasattr(src_scene.display, "shading"), hasattr(dst_scene.display, "shading")]):
+        return
+    for prop in src_scene.display.shading.bl_rna.properties:
+        if prop.identifier == "rna_type":
+            continue
+        try:
+            setattr(dst_scene.display.shading, prop.identifier, getattr(src_scene.display.shading, prop.identifier))
+        except Exception:
+            pass

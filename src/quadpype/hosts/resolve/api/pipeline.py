@@ -19,6 +19,7 @@ from quadpype.host import (
     IWorkfileHost,
     ILoadHost
 )
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 
 from . import lib
 from .utils import get_resolve_module
@@ -42,7 +43,7 @@ CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 AVALON_CONTAINERS = ":AVALON_CONTAINERS"
 
 
-class ResolveHost(HostBase, IWorkfileHost, ILoadHost):
+class ResolveHost(HostBase, IWorkfileHost, ILoadHost, WorkFileCache):
     name = "resolve"
 
     def install(self):
@@ -76,7 +77,10 @@ class ResolveHost(HostBase, IWorkfileHost, ILoadHost):
         return open_file(filepath)
 
     def save_workfile(self, filepath=None):
-        return save_file(filepath)
+        _, ext = os.path.splitext(filepath)
+        save = save_file(filepath)
+        self.add_task_extension(extension=ext)
+        return save
 
     def work_root(self, session):
         return work_root(session)
