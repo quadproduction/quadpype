@@ -15,10 +15,11 @@ from quadpype.pipeline import (
     loaders_from_representation,
     AVALON_CONTAINER_ID,
 )
-from quadpype.hosts.blender.api.pipeline import (
+from quadpype.hosts.blender.api.pipeline import get_avalon_node
+
+from quadpype.hosts.blender.api.constants import (
     AVALON_INSTANCES,
-    AVALON_CONTAINERS,
-    get_avalon_node
+    AVALON_CONTAINERS
 )
 from quadpype.hosts.blender.api import plugin, lib
 

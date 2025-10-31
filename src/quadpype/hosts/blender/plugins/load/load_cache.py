@@ -23,9 +23,9 @@ from quadpype.pipeline import (
 )
 
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
     get_avalon_node
 )
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
 from quadpype.hosts.blender.api import (
     get_top_collection,
     get_corresponding_hierarchies_numbered,
