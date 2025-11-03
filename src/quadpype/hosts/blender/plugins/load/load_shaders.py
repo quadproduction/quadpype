@@ -33,6 +33,7 @@ from quadpype.hosts.blender.api import (
     is_collection
 )
 
+from quadpype.hosts.blender.api.pipeline import get_avalon_node
 
 class ShadersLoader(plugin.BlenderLoader):
     """Load shaders from a .blend file."""
@@ -149,9 +150,29 @@ class ShadersLoader(plugin.BlenderLoader):
                 material for material in previously_loaded_objects
                 if isinstance(material, bpy.types.Material)
             ],
-            filter_objects=selected_objects,
+            filter_objects=list(set(selected_objects))
         )
+        self._update_already_selected_objects(selected_objects, other_asset_container)
         return True
+
+    @staticmethod
+    def _update_already_selected_objects(new_selected_objects, container):
+        if isinstance(new_selected_objects, bpy.types.bpy_prop_collection):
+            new_selected_objects = [obj for obj in new_selected_objects]
+
+        avalon_data = get_avalon_node(container)
+        already_selected_objects_names = (avalon_data.get("selected_objects_names", []))
+
+        already_selected_objects = [
+            bpy.data.objects[object_name]
+            for object_name in already_selected_objects_names
+            if bpy.data.objects.get(object_name, None)
+        ]
+        new_selected_objects.extend(already_selected_objects)
+        avalon_data.update({
+            "selected_objects_names": [selected_object.name for selected_object in list(set(new_selected_objects))]
+        })
+        lib.imprint(container, avalon_data)
 
     @staticmethod
     def _search_for_other_asset_container(representation, namespace_template, group_name_template):
@@ -187,11 +208,24 @@ class ShadersLoader(plugin.BlenderLoader):
 
     @staticmethod
     def _import_materials(filepath):
-        with bpy.data.libraries.load(filepath) as (data_from, data_to):
+        with bpy.data.libraries.load(filepath, link=False) as (data_from, data_to):
             data_to.materials = data_from.materials
             data_to.collections = data_from.collections
 
         container = pipeline.get_container(data_to.objects, data_to.collections)
+
+        #Do not append objects and meshes
+        for col in data_to.collections:
+            for obj in col.objects[:]:
+                mesh_data = obj.data
+                bpy.data.objects.remove(obj, do_unlink=True)
+                if not mesh_data and mesh_data.users != 0:
+                    continue
+                bpy.data.meshes.remove(mesh_data)
+
+        for lib in bpy.data.libraries:
+            if os.path.normpath(lib.filepath) == os.path.normpath(filepath):
+                bpy.data.libraries.remove(lib, do_unlink=True)
 
         return container, list(data_to.materials)
 
@@ -301,8 +335,19 @@ class ShadersLoader(plugin.BlenderLoader):
 
         avalon_node = pipeline.get_avalon_node(asset_group)
         members = lib.get_objects_from_mapped(avalon_node.get('members', []))
+        images_to_check = set()
         for material in members:
+            if not material.use_nodes:
+                continue
+            for node in material.node_tree.nodes:
+                if node.type == 'TEX_IMAGE' and node.image:
+                    images_to_check.add(node.image)
+
             bpy.data.materials.remove(material)
+        for img in images_to_check:
+            if img.users != 0:
+                continue
+            bpy.data.images.remove(img)
 
         if isinstance(asset_group, bpy.types.Object):
             bpy.data.objects.remove(asset_group)

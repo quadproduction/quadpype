@@ -1,12 +1,19 @@
 import sys
 import logging
 
+import bpy
+
 from qtpy import QtWidgets, QtCore
 
 from quadpype import style
 from quadpype.tools.utils.lib import qt_app_context
 from quadpype.pipeline.load.utils import get_repres_contexts
-from quadpype.hosts.blender.api.lib import purge_orphans
+from quadpype.hosts.blender.api.pipeline import (
+    AVALON_CONTAINERS,
+    get_avalon_node,
+    has_avalon_node
+)
+from quadpype.hosts.blender.api.lib import get_objects_from_mapped
 from quadpype.hosts.blender.plugins.load.load_shaders import ShadersLoader
 
 from .widgets import (
@@ -29,7 +36,10 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
 
         self.setObjectName("lookManager")
         self.setWindowTitle("Look Manager 1.4.0")
-        self.setWindowFlags(QtCore.Qt.Window)
+        window_flags = QtCore.Qt.Window \
+                       | QtCore.Qt.WindowStaysOnTopHint
+
+        self.setWindowFlags(window_flags)
         self.setParent(parent)
 
         self.resize(750, 500)
@@ -56,6 +66,7 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
             "If checked, will avoid loading new materials if "
             "previous materials with identical ids have been loaded before."
         )
+        reuse_materials.setChecked(True)
         remove_unused_btn = QtWidgets.QPushButton(
             "Remove Unused Looks", looks_widget
         )
@@ -120,6 +131,7 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
 
     def showEvent(self, event):
         super(BlenderLookAssignerWindow, self).showEvent(event)
+        self.asset_outliner.get_all_assets()
         if self._first_show:
             self._first_show = False
             self.setStyleSheet(style.load_stylesheet())
@@ -196,7 +208,35 @@ class BlenderLookAssignerWindow(QtWidgets.QWidget):
 
     @display.error
     def remove_unused_looks(self):
-        purge_orphans(is_recursive=True)
+        avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
+        assert avalon_container, "Can not found avalon container which contains scene assets."
+        look_instances = [col for col in avalon_container.children if has_avalon_node(col)
+                          and get_avalon_node(col).get("family") == "look"]
+
+        for look_col in look_instances:
+            avalon_node = get_avalon_node(look_col)
+            members = get_objects_from_mapped(avalon_node.get('members', []))
+            images_to_check = set()
+            for material in members:
+                if not material.use_nodes:
+                    continue
+                for node in material.node_tree.nodes:
+                    if node.type == 'TEX_IMAGE' and node.image:
+                        images_to_check.add(node.image)
+
+                if material.users != 0:
+                    continue
+
+                bpy.data.materials.remove(material)
+
+            for img in images_to_check:
+                if img.users != 0:
+                    continue
+                bpy.data.images.remove(img)
+
+            if any(m not in bpy.data.materials[:] for m in members):
+                bpy.data.collections.remove(look_col)
+                continue
 
     @staticmethod
     def _selected_is_asset(grouped_items):

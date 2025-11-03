@@ -42,6 +42,7 @@ def _assets_to_items(assets_data):
         namespaces_by_assets[asset_data['asset']].append(
             {
                 'namespace': asset_data['namespace'],
+                'family': asset_data['family'],
                 'collection_name': asset_data['objectName']
             }
         )

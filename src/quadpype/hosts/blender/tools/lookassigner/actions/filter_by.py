@@ -1,7 +1,7 @@
 from itertools import groupby
 
 
-ALLOWED_FAMILIES = ["animation", "model", "pointcache", " rig", "layout", "blendScene"]
+ALLOWED_FAMILIES = ["animation", "model", "pointcache", "rig", "layout", "blendScene"]
 
 
 def valid_representations(representations):

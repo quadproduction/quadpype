@@ -36,12 +36,13 @@ class AssetModel(models.TreeModel):
 
             for asset_data in item["assets_data"]:
                 namespace = asset_data['namespace']
+                family = asset_data['family']
                 collection_name = asset_data['collection_name']
 
                 child = models.Item()
                 child.update(item)
                 child.update({
-                    "name": namespace,
+                    "name": f"{namespace}-{family}",
                     "namespace": namespace,
                     "collection_name": collection_name,
                     "looks": item["looks"],

@@ -6,6 +6,7 @@ from quadpype.lib import BoolDef
 from quadpype.pipeline import publish
 from quadpype.hosts.blender.api import plugin
 
+NAME_SEPARATOR = ":"
 
 class ExtractABC(plugin.BlenderExtractor, publish.OptionalPyblishPluginMixin):
     """Extract as ABC."""
@@ -36,9 +37,14 @@ class ExtractABC(plugin.BlenderExtractor, publish.OptionalPyblishPluginMixin):
         asset_group = instance.data["transientData"]["instance_node"]
 
         selected = []
+        renaming_object = dict()
         for obj in instance:
             if isinstance(obj, bpy.types.Object):
                 obj.select_set(True)
+                old_name = obj.name
+                new_name = obj.name.split(NAME_SEPARATOR)[-1]
+                renaming_object[new_name] = old_name
+                obj.name = new_name
                 selected.append(obj)
 
         context = plugin.create_blender_context(
@@ -73,6 +79,11 @@ class ExtractABC(plugin.BlenderExtractor, publish.OptionalPyblishPluginMixin):
             "stagingDir": stagingdir,
         }
         instance.data["representations"].append(representation)
+
+        for new_name, old_name in renaming_object.items():
+            self.log.info(f"{new_name} renamed to {old_name}")
+            obj = bpy.data.objects.get(new_name)
+            obj.name = old_name
 
         self.log.info("Extracted instance '%s' to: %s",
                        instance.name, representation)

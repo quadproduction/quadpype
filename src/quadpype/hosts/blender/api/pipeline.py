@@ -546,7 +546,10 @@ def add_to_avalon_container(container: bpy.types.Collection):
         # unless you set a 'fake user'.
         bpy.context.scene.collection.children.link(avalon_container)
 
-    avalon_container.children.link(container)
+    if isinstance(container, bpy.types.Object):
+        avalon_container.objects.link(container)
+    elif isinstance(container, bpy.types.Collection) and container not in list(avalon_container.children):
+        avalon_container.children.link(container)
 
     # Disable Avalon containers for the view layers.
     for view_layer in bpy.context.scene.view_layers:
@@ -867,3 +870,15 @@ def copy_render_settings(src_scene, dst_scene):
             setattr(dst_scene.display.shading, prop.identifier, getattr(src_scene.display.shading, prop.identifier))
         except Exception:
             pass
+
+def is_material_from_loaded_look(material):
+    avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
+    if not avalon_container:
+        return False
+    look_instances = [col for col in avalon_container.children if has_avalon_node(col)
+                      and get_avalon_node(col).get("family") == "look"]
+    for look_instance in look_instances:
+        mats_members = lib.get_objects_from_mapped(get_avalon_node(look_instance)["members"])
+        if material in mats_members:
+            return True
+    return False

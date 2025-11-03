@@ -539,6 +539,8 @@ class TOPBAR_MT_avalon(bpy.types.Menu):
         layout.operator(LaunchManager.bl_idname, text="Manage...")
         layout.operator(LaunchLibrary.bl_idname, text="Library...")
         layout.separator()
+        layout.operator(LaunchLookAssigner.bl_idname, text="Look Assigner...")
+        layout.separator()
         layout.operator(SetFrameRange.bl_idname, text="Set Frame Range")
         layout.operator(SetResolution.bl_idname, text="Set Resolution")
         layout.operator(SetUnitScale.bl_idname, text="Set Unit Scale")
@@ -547,7 +549,6 @@ class TOPBAR_MT_avalon(bpy.types.Menu):
         layout.operator(LaunchWorkFiles.bl_idname, text="Work Files...")
         layout.separator()
         layout.menu(SUBMENU_MT_avalon.bl_idname)
-        layout.operator(LaunchLookAssigner.bl_idname, text="Look Assigner...")
 
 
 class SUBMENU_MT_avalon(bpy.types.Menu):
