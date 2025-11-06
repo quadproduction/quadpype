@@ -764,3 +764,18 @@ def is_camera(obj):
 
 def is_collection(obj):
     return isinstance(obj, bpy.types.Collection)
+
+def get_containers_from_selected():
+    containers = set()
+    all_selected = set(get_selection())
+    for blender_object in all_selected:
+        avalon_node = pipeline.get_avalon_node(blender_object)
+        if avalon_node:
+            containers.add(blender_object)
+
+        all_parents = set(get_all_parents(blender_object)).union(get_parent_collections_for_object(blender_object))
+        for object_parent in all_parents:
+            if pipeline.get_avalon_node(object_parent):
+                containers.add(object_parent)
+
+    return list(containers)

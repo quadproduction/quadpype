@@ -1,7 +1,15 @@
 """Create an animation asset."""
 import logging
+import bpy
+
+from quadpype.lib import (
+    EnumDef,
+    BoolDef,
+    UISeparatorDef
+)
 
 from quadpype.hosts.blender.api import plugin, lib, pipeline
+from quadpype.client.mongo.entities import get_asset_by_name
 from quadpype.pipeline.create import (
     subset_name,
     NamespaceNotSetError
@@ -15,23 +23,73 @@ class CreateAnimation(plugin.BlenderCreator):
     family = "animation"
     icon = "male"
 
+    variant = "Main"
+    task_name = ""
+    include_variant_in_name = False
+
+    animatable_families = ["model", "rig", "pointcache"]
+
     def create(
         self, subset_name: str, instance_data: dict, pre_create_data: dict
     ):
-        container_selected = lib.get_selection(include_collections=True)
-        data = pipeline.get_avalon_node(container_selected[0])
-        if data:
+        self.include_variant_in_name = pre_create_data.get("include_variant_in_name")
+
+        containers_to_treat = []
+        if pre_create_data.get("use_selection"):
+            containers_to_treat = lib.get_containers_from_selected()
+
+        if pre_create_data.get("animatable_container"):
+            containers_to_treat = [bpy.data.collections.get(container_name) for container_name in
+                                   pre_create_data.get("animatable_container")
+                                   if bpy.data.collections.get(container_name)]
+
+        if not containers_to_treat:
+            return self._create_one(instance_data, subset_name, pre_create_data)
+
+        for container in containers_to_treat:
+            self._create_one(instance_data, subset_name, pre_create_data, container)
+        return
+
+    def _create_one(
+        self, instance_data: dict, subset_name: str, pre_create_data: dict,
+        containers_to_treat: bpy.types.Collection = None
+    ):
+        avalon_data = {}
+        if containers_to_treat:
+            avalon_data = pipeline.get_avalon_node(containers_to_treat)
+
+            dynamic_data = {
+                "namespace": avalon_data["namespace"],
+                "asset": avalon_data["asset"],
+                "family": avalon_data["family"],
+            }
+
+            asset_doc = get_asset_by_name(self.project_name, avalon_data["asset"])
+            subset_name = self.get_subset_name(
+                self.variant,
+                self.task_name,
+                asset_doc,
+                self.project_name,
+                instance=None,
+                host_name=None,
+                dynamic_data=dynamic_data,
+                use_variant=self.include_variant_in_name
+            )
+
             logging.info("Adding namespace data to instance")
-            instance_data["namespace"] = data["namespace"]
+            instance_data["namespace"] = avalon_data["namespace"]
 
         # Run parent create method
         collection = super().create(
             subset_name, instance_data, pre_create_data
         )
+        if not collection:
+            return
+
         if pre_create_data.get("use_selection"):
             objects_selected = lib.get_selection()
-            if data:
-                objects_selected = pipeline.get_container_content(container_selected[0])
+            if avalon_data:
+                objects_selected = pipeline.get_container_content(containers_to_treat)
             for obj in objects_selected:
                 collection.objects.link(obj)
 
@@ -49,23 +107,40 @@ class CreateAnimation(plugin.BlenderCreator):
         asset_doc,
         project_name,
         instance=None,
-        host_name=None
+        host_name=None,
+        dynamic_data=None,
+        containers_to_treat=None,
+        use_variant=True
         ):
         """
-        Get the selected avalon_instance loaded to retrieve the corresponding namespace
-        Block the creation if something is not right
+        Generate a subset name based on container.
         """
-        selected = lib.get_selection(include_collections=True)
 
-        if not selected or len(selected) != 1:
-            logging.info("No collection selected !\nOr more than one is selected")
-            raise NamespaceNotSetError
-        data = pipeline.get_avalon_node(selected[0])
-        if not data:
-            logging.info("The selected collection is not a loaded instance")
-            raise NamespaceNotSetError
+        if not use_variant:
+            variant = None
 
-        dynamic_data = {"namespace":data["namespace"]}
+        self.variant = variant
+        self.task_name = task_name
+
+        data = {}
+
+        if not containers_to_treat:
+            containers_to_treat = lib.get_containers_from_selected()
+
+        if not containers_to_treat:
+            logging.info("No loaded container detected, will use selected element instead")
+
+        else:
+            data = pipeline.get_avalon_node(containers_to_treat[0])
+
+        if not dynamic_data and data:
+            dynamic_data = {
+                "namespace": data.get("namespace", None),
+                "asset": data["asset"],
+                "family": data["family"],
+            }
+
+
         return subset_name.get_subset_name(
             self.family,
             variant,
@@ -79,4 +154,49 @@ class CreateAnimation(plugin.BlenderCreator):
 
     def get_instance_attr_defs(self):
         defs = lib.collect_animation_defs(step=False)
+        return defs
+
+    def get_all_loaded_animatable_asset(self):
+        avalon_container = bpy.data.collections.get(pipeline.AVALON_CONTAINERS)
+        if not avalon_container:
+            avalon_container = bpy.data.collections.new(name=pipeline.AVALON_CONTAINERS)
+
+        animatable_container = [col for col in avalon_container.children[:] if pipeline.has_avalon_node(col)
+                                 and pipeline.get_avalon_node(col).get("family") in self.animatable_families]
+
+        return animatable_container
+
+    @staticmethod
+    def get_collection_enum_items(container):
+        items = []
+        collections_data = [pipeline.get_avalon_node(col) for col in container]
+        for data in collections_data:
+            items.append((
+                data["objectName"],
+                f"{data['namespace']}-{data['task']}"
+            ))
+
+        return items
+
+    def get_pre_create_attr_defs(self):
+        defs = super().get_pre_create_attr_defs()
+        items = self.get_collection_enum_items(self.get_all_loaded_animatable_asset())
+
+        defs.extend(
+            [
+                UISeparatorDef(),
+                BoolDef(
+                    "include_variant_in_name",
+                    label="Include Variant in Instance Name",
+                    default=self.include_variant_in_name
+                ),
+                EnumDef(
+                    "animatable_container",
+                    items=items,
+                    default=[i[0] for i in items],
+                    label="Assets to Publish",
+                    multiselection=True
+                )
+            ]
+        )
         return defs

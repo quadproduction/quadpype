@@ -4,6 +4,8 @@ import itertools
 from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Optional
+from qtpy import QtWidgets
+from quadpype.widgets.message_window import Window
 
 import bpy
 import json
@@ -291,6 +293,19 @@ class BlenderCreator(Creator):
         asset_name = instance_data["asset"]
 
         name = prepare_scene_name(asset_name, subset_name)
+        if self._container_exists(name):
+            parents = {
+                widget.objectName(): widget
+                for widget in QtWidgets.QApplication.topLevelWidgets()
+            }
+            Window(title="Container already exists",
+                   parent=parents.get("PublishWindow"),
+                   message=(
+                       f"The Container:\n {name} \n"
+                       f"already exists, skipping..."),
+                   level="ask")
+            return
+
         if self.create_as_asset_group:
             # Create instance as empty
             instance_node = bpy.data.objects.new(name=name, object_data=None)
@@ -314,6 +329,10 @@ class BlenderCreator(Creator):
         imprint(instance_node, instance_data)
 
         return instance_node
+
+    @staticmethod
+    def _container_exists(name):
+        return any(col.name == name for col in bpy.data.collections[:])
 
     def _create_collection_hierarchy(self, data: dict):
         """Generate the collection hierarchy based on the creator context
