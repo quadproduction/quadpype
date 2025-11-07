@@ -746,6 +746,12 @@ class DictMutableKeysWidget(BaseWidget):
         if child_obj is widget.entity:
             return
 
+        # For unknown reason, with specific 'default' required_keys in an MutableDict,
+        # child_obj and widget.entity are not the same, but exactly the same type
+        # Usually, those two are supposed to be identical, but times to times, it doesn't work properly
+        if type(child_obj) == type(widget.entity) and new_key == "default":
+            return
+
         # Just change the key if not exist the same object
         if not child_obj:
             self.entity.change_child_key(widget.entity, new_key)
