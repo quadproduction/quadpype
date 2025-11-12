@@ -41,22 +41,16 @@ class ExtractPsd(pyblish.api.InstancePlugin):
         scene_mark_in = int(instance.context.data["sceneMarkIn"])
         scene_mark_out = int(instance.context.data["sceneMarkOut"])
         output_dir = instance.data.get("stagingDir")
-
         export_indexes = list(range(scene_mark_in, scene_mark_out+1))
 
         export_frames_without_offset = instance.data.get("ExportFramesWithoutOffset", [])
         if export_frames_without_offset:
             export_indexes = export_frames_without_offset
 
-        if output_dir:
-            # Only convert to a Path object if not None or empty
-            output_dir = Path(output_dir)
-
-        if not output_dir or not output_dir.exists():
+        if not output_dir or not os.path.exists(output_dir):
             # Create temp folder if staging dir is not set
-            output_dir = Path(tempfile.mkdtemp(
-                prefix=self.staging_dir_prefix).replace("\\", "/"))
-            instance.data['stagingDir'] = str(output_dir.resolve())
+            output_dir = tempfile.mkdtemp(prefix=self.staging_dir_prefix)
+            instance.data['stagingDir'] = output_dir
 
         new_psd_repres = []
         for repre in repres:
@@ -72,12 +66,12 @@ class ExtractPsd(pyblish.api.InstancePlugin):
             new_filenames = []
             for frame_index, filename in zip(export_indexes, filenames):
                 new_filename = Path(filename).stem
-                dst_filepath = output_dir.joinpath(new_filename)
+                dst_filepath = os.path.join(output_dir, new_filename).replace("\\", "/")
                 new_filenames.append(new_filename + '.psd')
                 # george command to export psd files for each image
                 george_script_lines.append(
                     "tv_clipsavestructure \"{}\" \"PSD\" \"image\" {}".format(
-                        dst_filepath.resolve(),
+                        dst_filepath,
                         frame_index
                     )
                 )
@@ -91,7 +85,7 @@ class ExtractPsd(pyblish.api.InstancePlugin):
                     "name": "psd",
                     "ext": "psd",
                     "files": new_filenames,
-                    "stagingDir": str(output_dir.resolve()),
+                    "stagingDir": output_dir,
                     "tags": "psd"
                 }
             )
