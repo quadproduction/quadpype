@@ -6,12 +6,14 @@ from datetime import datetime, timezone
 import copy
 from qtpy import QtWidgets
 
-from quadpype.client.mongo.entities import get_last_version_by_subset_name
+from quadpype.client.mongo.entities import get_version_by_id
+
+from quadpype.pipeline.publish.lib import get_last_publish_workfile_representation
 
 from quadpype.lib.applications import PreLaunchHook, LaunchTypes
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 
-from quadpype.pipeline.publish.lib import get_publish_workfile_representations_from_session
-from quadpype.pipeline.publish import get_publish_template_name
+from quadpype.modules.sync_server.sync_server import download_last_published_workfile
 from quadpype.pipeline.workfile.path_resolving import get_workdir_from_session
 from quadpype.pipeline.workfile.path_resolving import get_workfile_template_key
 
@@ -61,33 +63,59 @@ class ComparePublishToWorkfile(PreLaunchHook):
             self.log.info("Current context does not have any workfile yet.")
             return
 
+        sync_server = self.modules_manager.get("sync_server")
+        if not sync_server or not sync_server.enabled:
+            self.log.debug("Sync server module is not enabled or available")
+            return
+
+        # Get data
+        project_name = self.data["project_name"]
+        asset_name = self.data["asset_name"]
+        task_name = self.data["task_name"]
+        task_type = self.data["task_type"]
+        host_name = self.application.host_name
+        anatomy = self.data.get("anatomy")
+
         # Get last WorkFile
         last_workfile_path = Path(last_workfile)
         creation_time = last_workfile_path.stat().st_ctime
         workfile_creation = datetime.fromtimestamp(creation_time, tz=timezone.utc)
 
-        # Get last Published WorkFile
-        publish_representations = get_publish_workfile_representations_from_session({
-            "AVALON_PROJECT":self.data["project_name"],
-            "AVALON_TASK": self.data["task_name"],
-            "AVALON_ASSET": self.data["asset_name"]
-        })
+        # Get last Published WorkFile Representation
+        self.log.info("Trying to fetch last published workfile from MongoDB...")
 
-        subset = f"workfile{self.data['task_name']}"
-        if publish_representations:
-            subset = publish_representations[0]["context"]["subset"]
+        context_filters = {
+            "asset": asset_name,
+            "family": "workfile",
+            "task": {"name": task_name, "type": task_type}
+        }
 
-        last_published_repr = get_last_version_by_subset_name(self.data["project_name"],
-                                                              subset,
-                                                              self.data.get("asset_doc").get("_id"),
-                                                              self.data["asset_name"])
+        # Add version filter
+        workfile_version = self.launch_context.data.get("workfile_version", -1)
 
-        if not last_published_repr:
-            self.log.info("No Published Workfile found, continuing.")
+        if workfile_version > 0 and workfile_version not in {None, "last"}:
+            context_filters["version"] = self.launch_context.data[
+                "workfile_version"
+            ]
+
+            # Only one version will be matched
+            version_index = 0
+        else:
+            version_index = workfile_version
+
+        published_workfile_representation = get_last_publish_workfile_representation(project_name,
+                                                                                     context_filters,
+                                                                                     version_index)
+
+        if not published_workfile_representation:
             return
 
-        creation_time = last_published_repr["data"]["time"]
-        publish_version = last_published_repr["name"]
+        # Get the Version representation associated for time comparison
+        published_workfile_version_repre = get_version_by_id(project_name,
+                                                             published_workfile_representation["parent"],
+                                                             ["data"])
+
+        creation_time = published_workfile_version_repre["data"]["time"]
 
         try:
             # Retro-compatibility, for published elements before version 4.0.13
@@ -129,11 +157,11 @@ class ComparePublishToWorkfile(PreLaunchHook):
         version = last_version + 1
 
         wf_template_key = get_workfile_template_key(
-            self.data["task_name"],
+            task_name,
             host_name=self.data["workdir_data"].get("app", None),
-            project_name=self.data["project_name"]
+            project_name=project_name
         )
-        anatomy = self.data.get("anatomy")
+
         template = anatomy.templates[wf_template_key]["file"]
         wf_data = copy.deepcopy(self.data.get("workdir_data"))
         wf_data["version"] = version
@@ -142,8 +170,8 @@ class ComparePublishToWorkfile(PreLaunchHook):
 
         workdir = get_workdir_from_session(
             {
-                "AVALON_PROJECT": self.data["project_name"],
-                "AVALON_TASK": self.data["task_name"],
+                "AVALON_PROJECT": project_name,
+                "AVALON_TASK": task_name,
                 "AVALON_ASSET": self.data["asset_name"]
             }
             , wf_template_key
@@ -153,47 +181,33 @@ class ComparePublishToWorkfile(PreLaunchHook):
         workfile_path = Path(str(workfile_file_path))
 
         # Compute Published WorkFile Path
-        publish_template_key = get_publish_template_name(
-            self.data["project_name"],
-            self.data["workdir_data"].get("app", None),
-            "workfile",
-            task_name=self.data["task_name"],
-            task_type=self.data["task_name"],
-            project_settings=self.data["project_settings"]
+        max_retries = int((sync_server.sync_project_settings[project_name]
+        ["config"]
+        ["retry_cnt"]))
+
+        # Copy file and substitute path
+        last_published_workfile_path = download_last_published_workfile(
+            host_name,
+            project_name,
+            task_name,
+            published_workfile_representation,
+            max_retries,
+            anatomy=anatomy
         )
-
-        publish_template = anatomy.templates[publish_template_key]
-        publish_template_path = os.path.normpath(publish_template["path"])
-
-        publish_data = copy.deepcopy(wf_data)
-        publish_data.update({
-            "version": publish_version,
-            "subset": subset,
-            "family": "workfile",
-            "root": anatomy.roots
-        })
-
-        publish_file_path = Path(StringTemplate.format_template(
-            template=publish_template_path,
-            data=publish_data
-        )
-        )
-
-        if not publish_file_path.exists():
-            msg = (
-                f"The Published WorkFile:\n {str(publish_file_path)} \n does not exists on this computer.\n"
-                f"Please check that you downloaded it or if its upload is finished through the sync queue."
+        if not last_published_workfile_path:
+            self.log.debug(
+                "Couldn't download {}".format(last_published_workfile_path)
             )
-            Window(title="title",
-                   message=msg,
-                   parent=parents.get("LauncherWindow"),
-                   level="warning")
+            return
 
-            raise ValueError(f"Path {str(publish_file_path)} was not found")
+        self.log.info(f"{last_published_workfile_path} correctly downloaded !")
 
         # Copy and open
         self.launch_context.launch_args.remove(last_workfile)
-        shutil.copyfile(str(publish_file_path), str(workfile_path))
+        shutil.copyfile(last_published_workfile_path, str(workfile_path))
+
+        _, ext = os.path.splitext(str(workfile_path))
+        WorkFileCache().add_task_extension(project_name, task_name, asset_name, ext)
 
         self.data["env"]["AVALON_LAST_WORKFILE"] = str(workfile_path)
         self.data["last_workfile_path"] = str(workfile_path)

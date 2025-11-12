@@ -239,6 +239,9 @@ def download_last_published_workfile(
     if not last_published_workfile_path:
         return
 
+    if os.path.exists(last_published_workfile_path):
+        return last_published_workfile_path
+
     # If representation isn't available on remote site, then return.
     if not sync_server.is_representation_on_site(
         project_name,
