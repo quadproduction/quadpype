@@ -458,6 +458,7 @@
             ]
         },
         "Workfiles": {
+            "use_icons": true,
             "workfile_template_profiles": [
                 {
                     "task_types": [],

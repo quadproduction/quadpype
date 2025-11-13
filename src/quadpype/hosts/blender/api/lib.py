@@ -905,3 +905,11 @@ def restore_properties_on_instance(instance_obj, corresponding_instance):
         if not data:
             continue
         set_properties_on_object(obj, data)
+
+def get_viewport_shading():
+    try:
+        window = bpy.data.window_managers[0].windows[0]
+        area = next(iter(area for area in window.screen.areas if area.type == "VIEW_3D"))
+        return area.spaces[0].shading.type
+    except StopIteration:
+        return
