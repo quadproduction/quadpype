@@ -46,24 +46,26 @@ class BlendAnimationLoader(plugin.BlenderLoader):
             data_to.collections = data_from.collections
             data_to.actions = data_from.actions
 
-        instance_container = pipeline.get_container(collections=data_to.collections)
-        snapshot_data = pipeline.get_avalon_node(instance_container, get_property=constants.SNAPSHOT_PROPERTY)
-        if container:
-            instance_container = container
-            if snapshot_data:
-                lib.imprint(
-                    instance_container,
-                    snapshot_data,
-                    erase=True,
-                    set_property=constants.SNAPSHOT_PROPERTY
-                )
+        instance_container = container
+        if not instance_container:
+            instance_container = pipeline.get_container(collections=data_to.collections)
 
         assert instance_container, "No asset group found"
-        loaded_containers = (pipeline.get_container_content(avalon_container)
-                             if avalon_container else []
-                             )
 
-        correspondance = get_avalon_node(instance_container).get("correspondance")
+        snapshot_data = pipeline.get_avalon_node(instance_container, get_property=constants.SNAPSHOT_PROPERTY)
+
+        if snapshot_data:
+            lib.imprint(
+                instance_container,
+                snapshot_data,
+                erase=True,
+                set_property=constants.SNAPSHOT_PROPERTY
+            )
+
+
+        loaded_containers = pipeline.get_container_content(avalon_container) if avalon_container else []
+
+        correspondance = get_avalon_node(instance_container).get("correspondance", {})
         namespace = get_avalon_node(instance_container).get('namespace', namespace)
 
         corresponding_instance = self._corresponding_asset_is_loaded(loaded_containers, namespace)
