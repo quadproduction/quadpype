@@ -779,3 +779,11 @@ def get_containers_from_selected():
                 containers.add(object_parent)
 
     return list(containers)
+
+def get_viewport_shading():
+    try:
+        window = bpy.data.window_managers[0].windows[0]
+        area = next(iter(area for area in window.screen.areas if area.type == "VIEW_3D"))
+        return area.spaces[0].shading.type
+    except StopIteration:
+        return
