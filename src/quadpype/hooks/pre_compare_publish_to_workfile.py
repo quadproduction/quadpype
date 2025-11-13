@@ -103,17 +103,21 @@ class ComparePublishToWorkfile(PreLaunchHook):
         else:
             version_index = workfile_version
 
-        published_workfile_representation = get_last_publish_workfile_representation(project_name,
-                                                                                     context_filters,
-                                                                                     version_index)
+        published_workfile_representation = get_last_publish_workfile_representation(
+            project_name,
+            context_filters,
+            version_index
+        )
 
         if not published_workfile_representation:
             return
 
         # Get the Version representation associated for time comparison
-        published_workfile_version_repre = get_version_by_id(project_name,
-                                                             published_workfile_representation["parent"],
-                                                             ["data"])
+        published_workfile_version_repre = get_version_by_id(
+            project_name,
+            published_workfile_representation["parent"],
+            ["data"]
+        )
 
         creation_time = published_workfile_version_repre["data"]["time"]
 

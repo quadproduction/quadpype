@@ -133,9 +133,12 @@ class CopyLastPublishedWorkfile(PreLaunchHook):
             version_index = workfile_version
 
         # Get workfile version
-        workfile_representation = get_last_publish_workfile_representation(project_name,
-                                                                           context_filters,
-                                                                           version_index)
+        workfile_representation = get_last_publish_workfile_representation(
+            project_name,
+            context_filters,
+            version_index
+        )
+
 
         if not workfile_representation:
             return
@@ -144,15 +147,19 @@ class CopyLastPublishedWorkfile(PreLaunchHook):
             widget.objectName(): widget
             for widget in QtWidgets.QApplication.topLevelWidgets()
         }
-        msg = (f"No workfiles were found for {self.data['asset_name']} on Task {self.data['task_name']}\n\n"
-               f"But a published one was found and will be used as a based to work!\n\n"
-               f"If you are remote:\nThe download will start after clicking on OK\n"
-               f"(Make sure your VPN is active if you are remote)")
+        msg = (
+            f"No workfiles were found for {self.data['asset_name']} on Task {self.data['task_name']}\n\n"
+            f"But a published one was found and will be used as a based to work!\n\n"
+            f"If you are remote:\nThe download will start after clicking on OK\n"
+            f"(Make sure your VPN is active if you are remote)"
+        )
 
-        Window(title="No WF found, but Published WF found !",
-               message=msg,
-               parent=parents.get("LauncherWindow"),
-               level="info")
+        Window(
+            title="No WF found, but Published WF found !",
+            message=msg,
+            parent=parents.get("LauncherWindow"),
+            level="info"
+        )
 
         # Copy file and substitute path
         last_published_workfile_path = download_last_published_workfile(
