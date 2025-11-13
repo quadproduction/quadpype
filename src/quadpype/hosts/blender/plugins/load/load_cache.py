@@ -26,10 +26,10 @@ from quadpype.pipeline import (
 from quadpype.client.mongo.entities import get_assets
 from quadpype.settings import get_project_settings
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
     get_avalon_node,
     add_to_avalon_container
 )
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
 from quadpype.hosts.blender.api import (
     get_top_collection,
     get_corresponding_hierarchies_numbered,

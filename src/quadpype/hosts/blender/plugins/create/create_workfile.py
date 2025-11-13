@@ -3,10 +3,10 @@ from quadpype.hosts.blender.api.plugin import BlenderCreator
 from quadpype.pipeline import CreatedInstance, AutoCreator
 from quadpype.client import get_asset_by_name
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
     get_avalon_node,
     delete_avalon_node
 )
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
 
 
 class CreateWorkfile(BlenderCreator, AutoCreator):

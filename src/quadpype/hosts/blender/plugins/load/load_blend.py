@@ -34,6 +34,7 @@ from quadpype.hosts.blender.api.pipeline import (
     has_avalon_node,
     get_avalon_node
 )
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
 from quadpype.hosts.blender.api.workfile_template_builder import (
     ImportMethod
 )
@@ -523,6 +524,10 @@ class BlendLoader(plugin.BlenderLoader):
             obj for obj in all_objects_from_asset
             if obj.animation_data
         ]
+        objects_with_no_anim = [
+            obj for obj in all_objects_from_asset
+            if not obj.animation_data
+        ]
 
         materials_by_objects = {}
         for obj in all_objects_from_asset:
@@ -537,6 +542,10 @@ class BlendLoader(plugin.BlenderLoader):
                 continue
             if obj.animation_data.action.name not in avalon_data.get("members", []).get("actions", []):
                 actions[obj.name] = obj.animation_data.action.name
+
+        snap_properties = {}
+        for obj in objects_with_no_anim:
+            snap_properties[obj.name] = lib.get_properties_on_object(obj)
 
         asset = representation.get('asset', '')
         subset = representation.get('subset', '')
@@ -582,6 +591,9 @@ class BlendLoader(plugin.BlenderLoader):
                     continue
                 obj.animation_data.action = action
 
+            elif obj.name in snap_properties:
+                lib.set_properties_on_object(obj, snap_properties[obj.name])
+                
             if obj.name in materials_by_objects:
                 for mat in materials_by_objects[obj.name]:
                     if not mat:

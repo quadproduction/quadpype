@@ -9,11 +9,10 @@ from quadpype.pipeline import (
 )
 from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
     has_avalon_node,
     get_avalon_node
 )
-
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
 
 class BlendSceneLoader(plugin.BlenderLoader):
     """Load assets from a .blend file."""

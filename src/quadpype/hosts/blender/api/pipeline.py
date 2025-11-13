@@ -50,7 +50,7 @@ from quadpype.lib import (
     emit_event,
     StringTemplate
 )
-import quadpype.hosts.blender
+
 from quadpype.settings import get_project_settings
 from .workio import (
     open_file,
@@ -61,21 +61,16 @@ from .workio import (
     work_root,
 )
 
+from .constants import (
+    PUBLISH_PATH,
+    LOAD_PATH,
+    CREATE_PATH,
+    ORIGINAL_EXCEPTHOOK,
+    AVALON_CONTAINERS,
+    AVALON_PROPERTY,
+    IS_HEADLESS
+)
 
-HOST_DIR = os.path.dirname(os.path.abspath(quadpype.hosts.blender.__file__))
-PLUGINS_DIR = os.path.join(HOST_DIR, "plugins")
-PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
-LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
-CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
-
-ORIGINAL_EXCEPTHOOK = sys.excepthook
-
-AVALON_INSTANCES = "AVALON_INSTANCES"
-AVALON_CONTAINERS = "AVALON_CONTAINERS"
-AVALON_PROPERTY = 'avalon'
-IS_HEADLESS = bpy.app.background
-
-DEFAULT_VARIANT_NAME = "Main"
 
 log = Logger.get_logger(__name__)
 
@@ -558,7 +553,7 @@ def add_to_avalon_container(container: bpy.types.Collection):
                 child.exclude = True
 
 
-def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool):
+def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool, set_property: str=AVALON_PROPERTY):
     """Imprint the node with metadata.
 
     Existing metadata will be updated.
@@ -569,6 +564,7 @@ def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: b
         node: Long name of node
         data: Dictionary of key/value pairs
         erase: Erase previous value insted of updating / adding data
+        set_property: Name of the property to store data
     """
 
     existing_data = dict() if erase else get_avalon_node(node)
@@ -577,11 +573,11 @@ def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: b
             continue
         existing_data[key] = value
 
-    node[AVALON_PROPERTY] = json.dumps(existing_data)
-    node.property_overridable_library_set(f'["{AVALON_PROPERTY}"]', True)
+    node[set_property] = json.dumps(existing_data)
+    node.property_overridable_library_set(f'["{set_property}"]', True)
 
 
-def get_avalon_node(node):
+def get_avalon_node(node, get_property=AVALON_PROPERTY):
     """ Return avalon node content.
 
     By default we expect a single string (json dump), but we also want to handle
@@ -589,11 +585,12 @@ def get_avalon_node(node):
 
     Arguments:
         node: blender object
+        get_property: property to search
 
     Returns:
         dict: AVALON_PROPERTY custom prop content
     """
-    node_content = node.get(AVALON_PROPERTY, '{}')
+    node_content = node.get(get_property, '{}')
 
     # For IDPropertyGroup (which is not accessible through bpy.types)
     if hasattr(node_content, 'to_dict'):
@@ -825,6 +822,10 @@ def get_container_content(container):
 
     return [obj for obj in bpy.data.objects if obj.parent == container]
 
+def get_non_keyed_property_to_export():
+    project = os.getenv("AVALON_PROJECT")
+    settings = get_project_settings(project).get("blender")
+    return settings["publish"]["ExtractNonKeyedProperties"]["properties"]
 
 def copy_render_settings(src_scene, dst_scene):
 
