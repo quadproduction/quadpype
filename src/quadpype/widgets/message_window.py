@@ -18,6 +18,9 @@ class Window(QtWidgets.QWidget):
 
         self.setWindowTitle(self.title)
         self.setStyleSheet(load_stylesheet())
+        window_flags = QtCore.Qt.Window | QtCore.Qt.WindowStaysOnTopHint
+        self.setWindowFlags(window_flags)
+        self.setWindowState(QtCore.Qt.WindowActive)
         if self.level == "info":
             self._info()
         elif self.level == "warning":
