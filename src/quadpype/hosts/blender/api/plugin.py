@@ -85,6 +85,7 @@ def get_unique_number(
         c.name for c in coll_asset_groups
         if has_avalon_node(c)}
     container_names = obj_group_names.union(coll_group_names)
+
     count = 1
     name = f"{asset}_{count:0>2}_{subset}"
     namespace_template = ""
@@ -345,7 +346,6 @@ class BlenderCreator(Creator):
 
         return format_data(template_data, True, get_current_host_name())
 
-
     def collect_instances(self):
         """Override abstract method from BlenderCreator.
         Collect existing instances related to this creator plugin."""
@@ -493,8 +493,6 @@ class BlenderCreator(Creator):
                 return collection
 
         return None
-
-
 
 
 class BlenderLoader(LoaderPlugin):

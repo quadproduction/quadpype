@@ -31,7 +31,6 @@ from quadpype.hosts.blender.api import (
     create_collection
 )
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
     has_avalon_node,
     get_avalon_node
 )
@@ -204,11 +203,6 @@ class BlendLoader(plugin.BlenderLoader):
     def load_assets_and_create_hierarchy(self, representation, libpath, group_name, unique_number, import_method,
                                          template_data):
 
-        avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
-        if not avalon_container:
-            avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
-            bpy.context.scene.collection.children.link(avalon_container)
-
         data_template = format_data(representation, True, get_current_host_name())
         collection_templates = get_task_hierarchy_templates(
             data_template,
@@ -297,11 +291,7 @@ class BlendLoader(plugin.BlenderLoader):
             [bpy.context.scene.collection.objects.link(member) for member in members if
              isinstance(member, bpy.types.Object)]
 
-        if isinstance(container, bpy.types.Object):
-            avalon_container.objects.link(container)
-        elif isinstance(container, bpy.types.Collection) and container not in list(avalon_container.children):
-            avalon_container.children.link(container)
-
+        pipeline.add_to_avalon_container(container)
         return container, members
 
     def import_blend_objects(self, libpath, group_name, import_method, template_data):
@@ -534,6 +524,10 @@ class BlendLoader(plugin.BlenderLoader):
             if obj.animation_data
         ]
 
+        materials_by_objects = {}
+        for obj in all_objects_from_asset:
+            materials_by_objects[obj.name] = [slot.material for slot in obj.material_slots if slot.material]
+
         actions = {}
         for obj in objects_with_anim:
             # Check if the object has an action and, if so, add it to a dict
@@ -587,6 +581,12 @@ class BlendLoader(plugin.BlenderLoader):
                 if not action:
                     continue
                 obj.animation_data.action = action
+
+            if obj.name in materials_by_objects:
+                for mat in materials_by_objects[obj.name]:
+                    if not mat:
+                        continue
+                    obj.data.materials.append(mat)
 
         # Restore the old data, but reset members, as they don't exist anymore,
         # This avoids a crash, because the memory addresses of those members
