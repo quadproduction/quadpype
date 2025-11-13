@@ -4,6 +4,8 @@ import itertools
 from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Optional
+from qtpy import QtWidgets
+from quadpype.widgets.message_window import Window
 
 import bpy
 import json
@@ -87,6 +89,7 @@ def get_unique_number(
         c.name for c in coll_asset_groups
         if has_avalon_node(c)}
     container_names = obj_group_names.union(coll_group_names)
+
     count = 1
     name = f"{asset}_{count:0>2}_{subset}"
     namespace_template = ""
@@ -293,6 +296,22 @@ class BlenderCreator(Creator):
         asset_name = instance_data["asset"]
 
         name = prepare_scene_name(asset_name, subset_name)
+        if self._container_exists(name):
+            parents = {
+                widget.objectName(): widget
+                for widget in QtWidgets.QApplication.topLevelWidgets()
+            }
+            Window(
+                title="Container already exists",
+                parent=parents.get("PublishWindow"),
+                message=(
+                    f"The Container:\n {name} \n"
+                    f"already exists, skipping..."
+                ),
+                level="ask"
+            )
+            return
+
         if self.create_as_asset_group:
             # Create instance as empty
             instance_node = bpy.data.objects.new(name=name, object_data=None)
@@ -316,6 +335,10 @@ class BlenderCreator(Creator):
         imprint(instance_node, instance_data)
 
         return instance_node
+
+    @staticmethod
+    def _container_exists(name):
+        return any(col.name == name for col in bpy.data.collections[:])
 
     def _create_collection_hierarchy(self, data: dict):
         """Generate the collection hierarchy based on the creator context
@@ -346,7 +369,6 @@ class BlenderCreator(Creator):
         template_data.update(get_asset_template_data(asset_data, get_current_project_name()))
 
         return format_data(template_data, True, get_current_host_name())
-
 
     def collect_instances(self):
         """Override abstract method from BlenderCreator.
@@ -495,8 +517,6 @@ class BlenderCreator(Creator):
                 return collection
 
         return None
-
-
 
 
 class BlenderLoader(LoaderPlugin):
