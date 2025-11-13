@@ -548,13 +548,13 @@ class CacheModelLoader(plugin.BlenderLoader):
 
         json_path = StringTemplate.format_template(templates['path'], template_data)
         if not json_path:
-            self.log.warning("There is no json file to apply for this asset. Abort applying intervals.")
+            self.log.warning("There is no json file to apply for this asset. Abort applying properties.")
             return
 
         json_content = load_content(json_path, self.log)
 
         if not json_content:
-            self.log.error("Can not load content from retrieved json. Abort applying intervals.")
+            self.log.error("Can not load content from retrieved json. Abort applying properties.")
             return
 
         apply_properties(json_content, corresponding_names)
