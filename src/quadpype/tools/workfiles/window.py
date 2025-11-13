@@ -223,6 +223,8 @@ class Window(BaseToolWidget):
         split_widget.addWidget(side_panel)
         split_widget.setSizes([255, 160, 455, 175])
 
+        assets_widget._refresh_btn.clicked.connect(self.refresh)
+
         body_layout.addWidget(split_widget)
 
         # Add top margin for tasks to align it visually with files as
@@ -310,6 +312,7 @@ class Window(BaseToolWidget):
         # Pull window to the front.
         self.raise_()
         self.activateWindow()
+        self.setWindowState(QtCore.Qt.WindowActive)
 
     def showEvent(self, event):
         super(Window, self).showEvent(event)
@@ -419,7 +422,11 @@ class Window(BaseToolWidget):
         return workfile_doc
 
     def refresh(self):
-        # Refresh asset widget
+        # Refresh asset widget and all the tool context
+        self.set_context(context = {
+                "asset": get_current_asset_name(),
+                "task": get_current_task_name()
+            })
         self.assets_widget.refresh()
 
         self._on_task_changed()

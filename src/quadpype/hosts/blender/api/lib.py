@@ -993,3 +993,11 @@ def is_camera(obj):
 
 def is_collection(obj):
     return isinstance(obj, bpy.types.Collection)
+
+def get_viewport_shading():
+    try:
+        window = bpy.data.window_managers[0].windows[0]
+        area = next(iter(area for area in window.screen.areas if area.type == "VIEW_3D"))
+        return area.spaces[0].shading.type
+    except StopIteration:
+        return

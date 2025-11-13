@@ -5,7 +5,7 @@ Playblasting with independent viewport, camera and display options
 import contextlib
 import bpy
 
-from .lib import maintained_time
+from .lib import maintained_time, purge_orphans
 from .plugin import deselect_all, create_blender_context
 
 
@@ -99,7 +99,7 @@ def capture(
         current_viewport = area.spaces[0].region_3d
 
     with _independent_window() as window:
-
+        background_image = None
         if use_viewport:
             area = find_view_area(window)
             if not area:
@@ -108,7 +108,7 @@ def capture(
             apply_viewport(current_viewport, area.spaces[0].region_3d)
 
         else:
-            applied_view(window, camera, isolate, options=display_options)
+            background_image = applied_view(window, camera, isolate, options=display_options)
 
         with contextlib.ExitStack() as stack:
             stack.enter_context(maintain_camera(window, camera))
@@ -124,7 +124,9 @@ def capture(
                 write_still=False,
                 view_context=True
             )
-
+    if background_image:
+        bpy.data.objects.remove(background_image)
+        purge_orphans(True)
     return filename
 
 
@@ -207,7 +209,7 @@ def _apply_options(entity, options):
             setattr(entity, option, value)
 
 
-def applied_view(window, camera, isolate=None, options=None):
+def applied_view(window, camera, isolate=None, options=None, offset=0.2):
     """Apply view options to window."""
     area = window.screen.areas[0]
     space = area.spaces[0]
@@ -216,14 +218,19 @@ def applied_view(window, camera, isolate=None, options=None):
 
     types = {"MESH", "GPENCIL"}
     objects = [obj for obj in window.scene.objects if obj.type in types]
-
+    background_image = None
     if camera == "AUTO":
         space.region_3d.view_perspective = "ORTHO"
         isolate_objects(window, isolate or objects)
     else:
         isolate_objects(window, isolate or objects)
-        space.camera = window.scene.objects.get(camera)
+        scene_camera = window.scene.objects.get(camera)
+        space.camera = scene_camera
         space.region_3d.view_perspective = "CAMERA"
+        background_image = create_background_plane_from_camera(
+            camera = scene_camera,
+            distance = (scene_camera.data.clip_end - offset)
+        )
 
     if isinstance(options, dict):
         _apply_options(space, options)
@@ -233,6 +240,80 @@ def applied_view(window, camera, isolate=None, options=None):
         space.show_gizmo = False
         space.overlay.show_overlays = False
 
+    return background_image
+
+def create_background_plane_from_camera(camera=None, distance=50):
+    """
+    Convert first background image of the camera to a plane image for render
+    """
+    if camera is None:
+        camera = bpy.context.scene.camera
+
+    if not camera or camera.type != 'CAMERA':
+        print("No camera found")
+        return None
+
+    bg_images = camera.data.background_images
+    if not bg_images or not bg_images[0].image:
+        print(f"The camera '{camera.name}' has no background images")
+        return None
+
+    #Convert only first visible background image
+    bg_img = None
+    for bg_pic in bg_images:
+        if bg_pic.show_background_image:
+            bg_img = bg_pic
+            break
+
+    if not bg_img:
+        return None
+
+    img = bg_img.image
+    img_source = img.source
+
+    if not img:
+        print(f"No file assigned to '{camera.name}'.")
+        return None
+
+    empty = bpy.data.objects.new(name=f"{camera.name}_BG_Empty", object_data=None)
+    empty.empty_display_type = "IMAGE"
+    empty.parent = camera
+    empty.data = img
+    empty.data.source = img_source
+    empty.location = (0, 0, -distance)
+    empty.rotation_euler = (0, 0, 0)
+    bpy.context.scene.collection.objects.link(empty)
+
+    if img_source in ["SEQUENCE", "MOVIE"]:
+        empty.image_user.frame_duration = bg_img.image_user.frame_duration
+        empty.image_user.frame_start = bg_img.image_user.frame_start
+        empty.image_user.frame_offset = bg_img.image_user.frame_offset
+        bg_img.image_user.frame_duration
+
+    empty.use_empty_image_alpha = True
+    empty.color[3] = bg_img.alpha
+    empty.empty_image_depth = bg_img.display_depth
+    empty.empty_image_side = "FRONT"
+
+    sensor_width = camera.data.sensor_width
+    sensor_height = camera.data.sensor_height
+    focal_length = camera.data.lens
+
+    scene = bpy.context.scene
+    render = scene.render
+    aspect_ratio = render.resolution_x / render.resolution_y
+
+    x_scale = render.resolution_x / img.size[0]
+    y_scale = (render.resolution_y / img.size[1]) / x_scale
+    if camera.data.sensor_fit == 'VERTICAL':
+        empty_display_size = min(sensor_height, sensor_width) * aspect_ratio
+    else:  # HORIZONTAL or AUTO
+        empty_display_size = max(sensor_height, sensor_width)
+
+    empty.empty_display_size = empty_display_size * (distance / focal_length)
+    empty.scale = (1, y_scale, 1)
+
+    return empty
 
 @contextlib.contextmanager
 def applied_frame_range(window, start, end, step):

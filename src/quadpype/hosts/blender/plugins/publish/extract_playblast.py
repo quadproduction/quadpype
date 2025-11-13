@@ -5,13 +5,13 @@ import bpy
 
 import pyblish.api
 from quadpype.settings import PROJECT_SETTINGS_KEY
-from quadpype.pipeline import publish
+
 from quadpype.hosts.blender.api import capture, plugin
-from quadpype.hosts.blender.api.lib import maintained_time
+from quadpype.hosts.blender.api.lib import maintained_time, get_viewport_shading
 
 
 class ExtractPlayblast(
-    plugin.BlenderExtractor, publish.OptionalPyblishPluginMixin
+    plugin.BlenderExtractor
 ):
     """
     Extract viewport playblast.
@@ -23,12 +23,10 @@ class ExtractPlayblast(
     label = "Extract Playblast"
     hosts = ["blender"]
     families = ["review"]
-    optional = True
+
     order = pyblish.api.ExtractorOrder + 0.01
 
     def process(self, instance):
-        if not self.is_active(instance.data):
-            return
 
         # get scene fps
         fps = instance.data.get("fps")
@@ -49,13 +47,22 @@ class ExtractPlayblast(
         use_viewport = False
         creator_attributes = instance.data.get('creator_attributes', {})
         render_view_type = creator_attributes.get('render_view', None)
+        shader_mode = creator_attributes.get('shader_mode', "MATERIAL")
+        render_overlay = creator_attributes.get('render_overlay', False)
+        render_floor_grid = creator_attributes.get('render_floor_grid', None)
         generate_image_sequence = creator_attributes.get('generate_image_sequence', True)
         transparent_background = creator_attributes.get('use_transparent_background', False)
-        if not render_view_type or render_view_type == "camera":
+        if not render_view_type or render_view_type != "viewport":
             camera = instance.data("review_camera", None)
         else:
             camera = "AUTO"
             use_viewport = True
+
+        if shader_mode == "Viewport":
+            shader_mode = get_viewport_shading()
+            if shader_mode == "RENDERED":
+                self.log.warning("Shading mode set to RENDERED, impossible for playblast, auto switch to MATERIAL")
+                shader_mode = "MATERIAL"
 
         # get isolate objects list
         isolate = instance.data("isolate", None)
@@ -83,6 +90,15 @@ class ExtractPlayblast(
             "use_viewport": use_viewport,
             "transparent_background": transparent_background
         })
+
+        preset["display_options"]["overlay"].update({
+            "show_overlays": render_overlay,
+            "show_floor": render_floor_grid,
+            "show_axis_x": render_floor_grid,
+            "show_axis_y": render_floor_grid
+        })
+        preset["display_options"]["shading"]["type"] = shader_mode
+
         preset.setdefault(
             "image_settings",
             {

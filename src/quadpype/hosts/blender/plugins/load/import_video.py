@@ -5,14 +5,14 @@ from quadpype.hosts.blender.api import plugin, lib
 import bpy
 
 
-def blender_camera_bg_video_importer(video_filepath, replace_last_bg = False):
+def blender_camera_bg_video_importer(video_filepath, context, replace_last_bg = False):
     """
     Will add or reload an image sequence in the camera background
 
     video_filepath: path to the video to load
     replace_last_bg(bool): If False will add an image background, if True, will replace the last imported image background
     """
-    imported_video = bpy.data.movieclips.load(video_filepath)
+    imported_video = bpy.data.images.load(video_filepath)
 
     camera = bpy.context.scene.camera
     if not camera:
@@ -24,8 +24,25 @@ def blender_camera_bg_video_importer(video_filepath, replace_last_bg = False):
     else:
         background = camera.data.background_images.new()
 
-    background.source = 'MOVIE_CLIP'
-    background.clip = imported_video
+    imported_video.source = 'MOVIE'
+    background.source = 'IMAGE'
+    background.image = imported_video
+    background.image_user.frame_duration
+
+    context_data = context.get('version', {}).get('data', {})
+    if not context_data:
+        raise ValueError("Can't access to context data when retrieving frame informations. Abort.")
+
+    frame_start = context_data.get('frameStart')
+    frame_end = context_data.get('frameEnd')
+    if not frame_start or not frame_end:
+        raise ValueError("Can't find frame range informations. Abort.")
+
+    frames = (frame_end - frame_start) + 1
+
+    background.image_user.frame_start = frame_start
+    background.image_user.frame_duration = frames
+    background.image_user.frame_offset = 0
 
     print(f"Video at path {imported_video.filepath} has been correctly loaded in scene as camera background.")
 
@@ -37,7 +54,7 @@ class ImageVideoLoader(plugin.BlenderLoader):
     """
 
     families = ["image", "render", "review"]
-    representations = ["mp4", "avi", "h264_mp4", "h264_png"]
+    representations = ["mp4", "avi", "h264_mp4", "h264_png", "h264_mov"]
 
     label = "Replace Last Video In Camera"
     icon = "refresh"
@@ -56,7 +73,7 @@ class ImageVideoLoader(plugin.BlenderLoader):
             options: Additional settings dictionary
         """
         video_filepath = self.filepath_from_context(context)
-        blender_camera_bg_video_importer(video_filepath, replace_last_bg=True)
+        blender_camera_bg_video_importer(video_filepath, context, replace_last_bg=True)
 
 
 class ImageVideoAdder(plugin.BlenderLoader):
@@ -65,7 +82,7 @@ class ImageVideoAdder(plugin.BlenderLoader):
     Add background movie clip for active camera and assign selected video.
     """
     families = ["image", "render", "review"]
-    representations = ["mp4", "avi", "h264_mp4", "h264_png"]
+    representations = ["mp4", "avi", "h264_mp4", "h264_png", "h264_mov"]
 
     label = "Add Video In Camera"
     icon = "file-video-o"
@@ -84,4 +101,4 @@ class ImageVideoAdder(plugin.BlenderLoader):
             options: Additional settings dictionary
         """
         video_filepath = self.filepath_from_context(context)
-        blender_camera_bg_video_importer(video_filepath, replace_last_bg=False)
+        blender_camera_bg_video_importer(video_filepath, context, replace_last_bg=False)
