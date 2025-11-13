@@ -298,12 +298,15 @@ class BlenderCreator(Creator):
                 widget.objectName(): widget
                 for widget in QtWidgets.QApplication.topLevelWidgets()
             }
-            Window(title="Container already exists",
-                   parent=parents.get("PublishWindow"),
-                   message=(
-                       f"The Container:\n {name} \n"
-                       f"already exists, skipping..."),
-                   level="ask")
+            Window(
+                title="Container already exists",
+                parent=parents.get("PublishWindow"),
+                message=(
+                    f"The Container:\n {name} \n"
+                    f"already exists, skipping..."
+                ),
+                level="ask"
+            )
             return
 
         if self.create_as_asset_group:

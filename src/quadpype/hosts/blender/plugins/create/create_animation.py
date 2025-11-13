@@ -161,8 +161,12 @@ class CreateAnimation(plugin.BlenderCreator):
         if not avalon_container:
             avalon_container = bpy.data.collections.new(name=pipeline.AVALON_CONTAINERS)
 
-        animatable_container = [col for col in avalon_container.children[:] if pipeline.has_avalon_node(col)
-                                 and pipeline.get_avalon_node(col).get("family") in self.animatable_families]
+        animatable_container = [
+            col for col in avalon_container.children[:] if (
+                    pipeline.has_avalon_node(col)and
+                    pipeline.get_avalon_node(col).get("family") in self.animatable_families
+            )
+        ]
 
         return animatable_container
 
