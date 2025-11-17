@@ -36,16 +36,19 @@ class ExtractPlayblast(
 
         self.log.info(f"fps: {fps}")
 
+        use_viewport = False
+        creator_attributes = instance.data.get('creator_attributes', {})
+
         # If start and end frames cannot be determined,
         # get them from Blender timeline.
-        start = instance.data.get("frameStart", bpy.context.scene.frame_start)
-        end = instance.data.get("frameEnd", bpy.context.scene.frame_end)
+        start = creator_attributes.get("frameStart", bpy.context.scene.frame_start)
+        end = creator_attributes.get("frameEnd", bpy.context.scene.frame_end)
+        instance.data["frameStart"] = start
+        instance.data["frameEnd"] = end
 
         self.log.info(f"start: {start}, end: {end}")
         assert end >= start, "Invalid time range!"
 
-        use_viewport = False
-        creator_attributes = instance.data.get('creator_attributes', {})
         render_view_type = creator_attributes.get('render_view', None)
         shader_mode = creator_attributes.get('shader_mode', "MATERIAL")
         render_overlay = creator_attributes.get('render_overlay', False)

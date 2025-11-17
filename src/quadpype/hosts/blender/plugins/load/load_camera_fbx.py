@@ -64,7 +64,6 @@ class FbxCameraLoader(plugin.BlenderLoader):
                 name_data = obj.data.name
                 obj.data.name = f"{group_name}:{name_data}"
 
-            lib.imprint(obj, {"container_name": group_name})
 
         plugin.deselect_all()
 

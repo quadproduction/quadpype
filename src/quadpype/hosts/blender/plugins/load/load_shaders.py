@@ -74,6 +74,7 @@ class ShadersLoader(plugin.BlenderLoader):
         reuse_materials = options.get('reuse_materials', False)
 
         if reuse_materials:
+            self.remove_from_other_look_data(representation, selected_objects)
             success = self.assign_already_loaded_materials(
                 representation, namespace_template, group_name_template, selected_objects
             )
@@ -96,6 +97,8 @@ class ShadersLoader(plugin.BlenderLoader):
         namespace = namespace or get_resolved_name(template_data, namespace_template)
         group_name = get_resolved_name(template_data, group_name_template, namespace=namespace)
         asset_name = get_resolved_name(template_data, asset_name_template)
+
+        self.remove_from_other_look_data(representation, selected_objects)
 
         container, imported_materials = self.import_and_assign_materials(
             libpath, group_name, template_data, selected_objects
@@ -122,6 +125,31 @@ class ShadersLoader(plugin.BlenderLoader):
         self.add_container_to_scene(container, avalon_container)
 
         self.log.info(f"Materials from look '{namespace}' has been successfully imported and assigned.")
+
+    @staticmethod
+    def remove_from_other_look_data(representation, selected_objects):
+        for obj in selected_objects:
+            for i, slot in enumerate(obj.material_slots):
+                if not slot.material:
+                    continue
+                loaded_look_instance = pipeline.is_material_from_loaded_look(slot.material)
+                if not loaded_look_instance:
+                    continue
+
+                avalon_data = get_avalon_node(loaded_look_instance)
+                if avalon_data.get("representation") == str(representation["_id"]):
+                    continue
+
+                already_selected_objects_names = (avalon_data.get("selected_objects_names", []))
+                if not obj.name in already_selected_objects_names:
+                    continue
+
+                already_selected_objects_names.remove(obj.name)
+                avalon_data.update({
+                    "selected_objects_names": already_selected_objects_names
+                })
+                lib.imprint(loaded_look_instance, avalon_data)
+
 
     def assign_already_loaded_materials(
             self, representation, namespace_template, group_name_template, selected_objects
@@ -316,7 +344,7 @@ class ShadersLoader(plugin.BlenderLoader):
                 "representation": str(representation["_id"]),
                 "members": lib.map_to_classes_and_names(imported_materials),
                 "version": get_version_by_id(project_name, str(representation["parent"])).get('name', ''),
-                "selected_objects": selected_objects_names,
+                "selected_objects_names": selected_objects_names,
                 "libpath":  libpath
             }
         )

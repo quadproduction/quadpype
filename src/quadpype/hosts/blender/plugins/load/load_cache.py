@@ -27,7 +27,8 @@ from quadpype.client.mongo.entities import get_assets
 from quadpype.settings import get_project_settings
 from quadpype.hosts.blender.api.pipeline import (
     get_avalon_node,
-    add_to_avalon_container
+    add_to_avalon_container,
+    is_material_from_loaded_look
 )
 from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
 from quadpype.hosts.blender.api import (
@@ -209,6 +210,8 @@ class CacheModelLoader(plugin.BlenderLoader):
         for obj in set(members):
             if obj.type == 'MESH':
                 for material_slot in list(obj.material_slots):
+                    if is_material_from_loaded_look(material_slot.material):
+                        continue
                     bpy.data.materials.remove(material_slot.material)
                 bpy.data.meshes.remove(obj.data)
             elif obj.type == 'EMPTY':
@@ -263,7 +266,6 @@ class CacheModelLoader(plugin.BlenderLoader):
                     name_mat = material_slot.material.name
                     material_slot.material.name = f"{container_name}:{name_mat}"
 
-            lib.imprint(obj, {"container_name": container_name})
 
         plugin.deselect_all()
         file_caches = [file for file in bpy.data.cache_files]
@@ -483,6 +485,7 @@ class CacheModelLoader(plugin.BlenderLoader):
                 "representation": str(context["representation"]["_id"]),
                 "libpath": libpath,
                 "asset_name": asset_name,
+                "task": representation["context"]["task"]["name"],
                 "parent": str(context["representation"]["parent"]),
                 "family": context["representation"]["context"]["family"],
                 "objectName": container_name,

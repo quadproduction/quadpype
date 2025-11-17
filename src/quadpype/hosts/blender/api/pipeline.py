@@ -881,5 +881,5 @@ def is_material_from_loaded_look(material):
     for look_instance in look_instances:
         mats_members = lib.get_objects_from_mapped(get_avalon_node(look_instance)["members"])
         if material in mats_members:
-            return True
-    return False
+            return look_instance
+    return None

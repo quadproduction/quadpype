@@ -14,6 +14,8 @@ from quadpype.pipeline.create import (
     subset_name,
     NamespaceNotSetError
 )
+from quadpype.client import get_representation_by_id
+
 
 class CreateAnimation(plugin.BlenderCreator):
     """Animation output for character rigs."""
@@ -170,14 +172,20 @@ class CreateAnimation(plugin.BlenderCreator):
 
         return animatable_container
 
-    @staticmethod
-    def get_collection_enum_items(container):
+    def get_collection_enum_items(self, container):
         items = []
         collections_data = [pipeline.get_avalon_node(col) for col in container]
         for data in collections_data:
+            representation = get_representation_by_id(
+                self.project_name, data["representation"]
+            )
+            repre_name = ''
+            if representation:
+                repre_name = representation.get('name','')
+
             items.append((
                 data["objectName"],
-                f"{data['namespace']}-{data['task']}"
+                f"{data.get('namespace', '')}-{data.get('task', '')} ({repre_name})"
             ))
 
         return items
@@ -185,6 +193,9 @@ class CreateAnimation(plugin.BlenderCreator):
     def get_pre_create_attr_defs(self):
         defs = super().get_pre_create_attr_defs()
         items = self.get_collection_enum_items(self.get_all_loaded_animatable_asset())
+        items_defaults = [] if not items else [i[0] for i in items]
+        if not items:
+            items = [('', '')]
 
         defs.extend(
             [
@@ -197,7 +208,7 @@ class CreateAnimation(plugin.BlenderCreator):
                 EnumDef(
                     "animatable_container",
                     items=items,
-                    default=[i[0] for i in items],
+                    default=items_defaults,
                     label="Assets to Publish",
                     multiselection=True
                 )

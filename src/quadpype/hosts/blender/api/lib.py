@@ -347,12 +347,12 @@ def get_objects_from_mapped(mapped_objects):
     """
     blender_objects = list()
     for data_type, blender_objects_names in mapped_objects.items():
-        blender_objects.extend(
-            [
-                getattr(bpy.data, data_type)[blender_object_name]
-                for blender_object_name in blender_objects_names
-            ]
-        )
+        data_block = getattr(bpy.data, data_type)
+        for blender_object_name in blender_objects_names:
+            try:
+                blender_objects.append(data_block[blender_object_name])
+            except KeyError:
+                print(f"[WARN] {data_type} '{blender_object_name}' not found, ignored.")
 
     return blender_objects
 

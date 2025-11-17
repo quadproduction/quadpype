@@ -105,7 +105,7 @@ def capture(
             if not area:
                 return
 
-            apply_viewport(current_viewport, area.spaces[0].region_3d)
+            apply_viewport(current_viewport, area.spaces[0].region_3d, space=area.spaces[0], options=display_options)
 
         else:
             background_image = applied_view(window, camera, isolate, options=display_options)
@@ -145,7 +145,7 @@ def find_view_area(window=None):
         return
 
 
-def apply_viewport(old_viewport, new_viewport):
+def apply_viewport(old_viewport, new_viewport, space, options=dict):
     new_viewport.view_matrix = old_viewport.view_matrix
     new_viewport.view_distance = old_viewport.view_distance
     new_viewport.view_location = old_viewport.view_location
@@ -154,6 +154,8 @@ def apply_viewport(old_viewport, new_viewport):
     new_viewport.view_distance = old_viewport.view_distance
     new_viewport.view_camera_offset = old_viewport.view_camera_offset
 
+    if isinstance(options, dict):
+        _apply_options(space, options)
 
 ImageSettings = {
     "file_format": "FFMPEG",
