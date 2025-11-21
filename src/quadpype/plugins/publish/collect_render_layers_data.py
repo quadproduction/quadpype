@@ -14,12 +14,26 @@ class CollectRenderLayersData(pyblish.api.ContextPlugin):
     def _get_all_families(instance):
         return set([instance.data["family"]] + instance.data.get("families", []))
 
+    @staticmethod
+    def has_render_layers_data(instance):
+        return instance.data.get("render_layers", False)
+
+    def is_render_family(self, instance):
+        return "render" in self._get_all_families(instance)
+
     def process(self, context):
         for instance in context:
-            if "render" not in self._get_all_families(instance):
+            instance_name = instance.data['name']
+
+            if not self.is_render_family(instance):
+                self.log.warning(f"Given instance named '{instance_name}' does not have 'render' family.")
                 continue
 
-            instance.data['render_layers'] = [
+            if self.has_render_layers_data(instance):
+                self.log.warning(f"Given instance named '{instance_name}' already has render layers : {instance.data['render_layers']}")
+                continue
+
+            render_layers = [
                 {
                     'name': browsed_instance.data['name'],
                     'version': browsed_instance.data['version']
@@ -30,12 +44,17 @@ class CollectRenderLayersData(pyblish.api.ContextPlugin):
                 )
             ]
 
+            if not render_layers:
+                continue
+
+            instance.data['render_layers'] = render_layers
+
             self.log.debug(
-                f"Render layers added to render instance {instance.data['name']} :\n- " +
+                f"Render layers added to render instance {instance_name} :\n- " +
                 "\n- ".join(
                     [
-                        f"{ins['name']} (v{ins['version']:03d})"
-                        for ins in instance.data['render_layers']
+                        f"{render_layer['name']} (v{render_layer['version']:03d})"
+                        for render_layer in render_layers
                     ]
                 )
             )
