@@ -308,7 +308,7 @@ class BlenderCreator(Creator):
                     f"The Container:\n {name} \n"
                     f"already exists, skipping..."
                 ),
-                level="ask"
+                level="info"
             )
             return
 
