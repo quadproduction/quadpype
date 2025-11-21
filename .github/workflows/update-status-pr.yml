@@ -19,7 +19,7 @@ jobs:
             console.log('PR Body:', prBody);
 
             // Capture sentences like "Ticket: #123, Update status: NouveauStatut"
-            const regex = regex = /Ticket\s*:?\s*#(\d+)\s*,?\s*Update\s+status\s*:?\s*([^\n,]+)/gi;
+            const regex = /Ticket\s*:?\s*#(\d+)\s*,?\s*Update\s+status\s*:?\s*([^\n,]+)/gi;
             const matches = [...prBody.matchAll(regex)];
 
             if (matches.length === 0) {
