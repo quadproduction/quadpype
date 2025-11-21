@@ -108,15 +108,13 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
 
         instance.data["integrate"] = False
         self.create_renderlayer_instance(
-            instance, render_product,
-            aov_file_product, ext, multilayer,
-            frame_start, frame_end, review,
-            layers_to_render)
+            instance, render_product, aov_file_product, ext, multilayer,
+            frame_start, frame_end, layers_to_render
+        )
 
     def create_renderlayer_instance(self, instance, render_product,
                                     aov_file_product, ext, multilayer,
-                                    frame_start, frame_end, review,
-                                    layers_to_render):
+                                    frame_start, frame_end, layers_to_render):
         context = instance.context
         prod_type = "render"
         project_name = instance.context.data["projectName"]
@@ -178,7 +176,7 @@ class CollectBlenderRender(plugin.BlenderInstancePlugin):
                 "families": ["renderlayer"],
                 "fps": context.data["fps"],
                 "byFrameStep": instance.data["creator_attributes"].get("step", 1),
-                "review": review,
+                "review": False,
                 "multipartExr": ext == "exr" and multilayer,
                 "farm": True,
                 "productName": viewlayer_product_name,
