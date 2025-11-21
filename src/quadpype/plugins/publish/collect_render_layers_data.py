@@ -2,13 +2,13 @@ import pyblish.api
 
 
 class CollectRenderLayersData(pyblish.api.ContextPlugin):
-    """Collect Anatomy object into Context.
-
-    Order offset could be changed to '-0.45'.
+    """Collect render layers from Context and add them to render instance.
     """
 
     order = pyblish.api.CollectorOrder + 0.491
     label = "Collect Render Layers data"
+    families = ["render"]
+    hosts = ["blender"]
 
     @staticmethod
     def _get_all_families(instance):
