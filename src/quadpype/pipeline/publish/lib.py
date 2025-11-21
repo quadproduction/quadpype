@@ -1030,3 +1030,24 @@ def get_publish_instance_families(instance):
         families.discard(family)
     output.extend(families)
     return output
+
+def get_last_publish_workfile_representation(project_name, context_filters, version_index):
+    log = Logger.get_logger("published_workfile")
+
+    workfile_representations = list(get_representations(
+        project_name,
+        context_filters=context_filters
+    ))
+
+    if not workfile_representations:
+        log.debug('No published workfile for selected task and selected host.')
+        return None
+
+    filtered_repres = filter(
+        lambda r: r["context"].get("version") is not None,
+        workfile_representations
+    )
+
+    return sorted(
+        filtered_repres, key=lambda r: r["context"]["version"]
+    )[version_index]

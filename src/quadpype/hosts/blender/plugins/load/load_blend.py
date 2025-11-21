@@ -31,10 +31,10 @@ from quadpype.hosts.blender.api import (
     create_collection
 )
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
     has_avalon_node,
     get_avalon_node
 )
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
 from quadpype.hosts.blender.api.workfile_template_builder import (
     ImportMethod
 )
@@ -204,11 +204,6 @@ class BlendLoader(plugin.BlenderLoader):
     def load_assets_and_create_hierarchy(self, representation, libpath, group_name, unique_number, import_method,
                                          template_data):
 
-        avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
-        if not avalon_container:
-            avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
-            bpy.context.scene.collection.children.link(avalon_container)
-
         data_template = format_data(representation, True, get_current_host_name())
         collection_templates = get_task_hierarchy_templates(
             data_template,
@@ -297,11 +292,7 @@ class BlendLoader(plugin.BlenderLoader):
             [bpy.context.scene.collection.objects.link(member) for member in members if
              isinstance(member, bpy.types.Object)]
 
-        if isinstance(container, bpy.types.Object):
-            avalon_container.objects.link(container)
-        elif isinstance(container, bpy.types.Collection) and container not in list(avalon_container.children):
-            avalon_container.children.link(container)
-
+        pipeline.add_to_avalon_container(container)
         return container, members
 
     def import_blend_objects(self, libpath, group_name, import_method, template_data):
@@ -533,6 +524,14 @@ class BlendLoader(plugin.BlenderLoader):
             obj for obj in all_objects_from_asset
             if obj.animation_data
         ]
+        objects_with_no_anim = [
+            obj for obj in all_objects_from_asset
+            if not obj.animation_data
+        ]
+
+        materials_by_objects = {}
+        for obj in all_objects_from_asset:
+            materials_by_objects[obj.name] = [slot.material for slot in obj.material_slots if slot.material]
 
         actions = {}
         for obj in objects_with_anim:
@@ -543,6 +542,10 @@ class BlendLoader(plugin.BlenderLoader):
                 continue
             if obj.animation_data.action.name not in avalon_data.get("members", []).get("actions", []):
                 actions[obj.name] = obj.animation_data.action.name
+
+        snap_properties = {}
+        for obj in objects_with_no_anim:
+            snap_properties[obj.name] = lib.get_properties_on_object(obj)
 
         asset = representation.get('asset', '')
         subset = representation.get('subset', '')
@@ -587,6 +590,15 @@ class BlendLoader(plugin.BlenderLoader):
                 if not action:
                     continue
                 obj.animation_data.action = action
+
+            elif obj.name in snap_properties:
+                lib.set_properties_on_object(obj, snap_properties[obj.name])
+                
+            if obj.name in materials_by_objects:
+                for mat in materials_by_objects[obj.name]:
+                    if not mat:
+                        continue
+                    obj.data.materials.append(mat)
 
         # Restore the old data, but reset members, as they don't exist anymore,
         # This avoids a crash, because the memory addresses of those members

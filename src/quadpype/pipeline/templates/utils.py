@@ -12,7 +12,7 @@ DEFAULT_VARIANT_NAME = "Main"
 DEFAULT_SHOT_NAME = "SHXXX"
 
 
-def format_data(original_data, filter_variant=True, app="", **additional_data):
+def format_data(original_data, filter_variant=True, app="", update_parent_to_prefix=True, **additional_data):
     """Format incoming data for template resolving"""
     data = deepcopy(original_data)
 
@@ -28,7 +28,8 @@ def format_data(original_data, filter_variant=True, app="", **additional_data):
     if additional_data:
         data = dict(data, **additional_data)
 
-    update_parent_data_with_entity_prefix(data)
+    if update_parent_to_prefix:
+        update_parent_data_with_entity_prefix(data)
     if is_origin_asset_shot(data["hierarchy"]):
         data['asset_sequence'], data['asset_shot'] = extract_sequence_and_shot(asset=data["asset"])
     if is_current_asset_shot():

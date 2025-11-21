@@ -81,7 +81,7 @@ class TasksModel(QtGui.QStandardItemModel):
         if asset_id and self._context_is_valid():
             project_name = self._get_current_project()
             asset_doc = get_asset_by_id(
-                project_name, asset_id, fields=["data.tasks"]
+                project_name, asset_id, fields=["data.tasks", "name"]
             )
         self._set_asset(asset_doc)
 
@@ -104,8 +104,10 @@ class TasksModel(QtGui.QStandardItemModel):
 
         asset_tasks = {}
         self._last_asset_id = None
+        asset_name = None
         if asset_doc:
             asset_tasks = asset_doc.get("data", {}).get("tasks") or {}
+            asset_name = asset_doc.get("name", None)
             self._last_asset_id = asset_doc["_id"]
 
         root_item = self.invisibleRootItem()
@@ -117,10 +119,10 @@ class TasksModel(QtGui.QStandardItemModel):
         use_icons = False
         if session["AVALON_PROJECT"]:
             settings = get_project_settings(session["AVALON_PROJECT"])
-            use_icons = settings["global"].get("launcher", False).get("use_icons", False)
-
-        if not hasattr(self, "_launcher_model"):
-            use_icons = False
+            if hasattr(self, "_launcher_model"):
+                use_icons = settings["global"].get("launcher", {}).get("use_icons", False)
+            else:
+                use_icons = settings["global"].get("tools", {}).get("Workfiles", {}).get("use_icons", False)
 
         for task_name, task_info in asset_tasks.items():
             session["AVALON_TASK"] = task_name
@@ -144,7 +146,7 @@ class TasksModel(QtGui.QStandardItemModel):
             item.setData(icon, QtCore.Qt.DecorationRole)
             item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
             if use_icons:
-                set_item_state(session, item, task_name=task_name)
+                set_item_state(session, item, task_name=task_name, asset_name=asset_name)
             items.append(item)
 
         if not items:

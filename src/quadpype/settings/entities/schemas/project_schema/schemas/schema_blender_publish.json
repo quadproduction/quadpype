@@ -229,6 +229,31 @@
         {
             "type": "dict",
             "collapsible": true,
+            "key": "ExtractNonKeyedProperties",
+            "label": "Extract Non Keyed Properties",
+            "checkbox_key": "enabled",
+            "children": [
+                {
+                    "type": "boolean",
+                    "key": "enabled",
+                    "label": "Enabled"
+                },
+                {
+                    "type": "boolean",
+                    "key": "active",
+                    "label": "Active"
+                },
+                {
+                    "key": "properties",
+                    "label": "Properties",
+                    "type": "list",
+                    "object_type": "text"
+                }
+            ]
+        },
+        {
+            "type": "dict",
+            "collapsible": true,
             "key": "ExtractThumbnail",
             "label": "Extract Thumbnail",
             "checkbox_key": "enabled",

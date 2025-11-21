@@ -1,0 +1,55 @@
+from quadpype.hosts.blender.api.pipeline import (
+    get_avalon_node,
+    has_avalon_node
+)
+from quadpype.hosts.blender.api.lib import (
+    get_parent_collections_for_object,
+    get_selected_objects,
+    get_selected_collections,
+    get_all_parents,
+    get_id
+)
+
+
+def ids_from_collections(collections):
+    return set(
+        get_avalon_node(collection).get('representation', None) for collection in collections
+        if has_avalon_node(collection)
+    )
+
+
+def data_from_collections(collections):
+    return [
+        get_avalon_node(collection) for collection in collections
+        if has_avalon_node(collection)
+    ]
+
+
+def assets_ids_from_containers(containers):
+    return set(
+        get_id(container) for container in containers
+    )
+
+
+def containers_data_from_selected():
+    containers = list()
+    all_selected = set(get_selected_objects() + get_selected_collections())
+    for blender_object in all_selected:
+        _add_avalon_node_if_not_retrieved_yet(containers, blender_object)
+
+        all_parents = set(get_all_parents(blender_object)).union(get_parent_collections_for_object(blender_object))
+        for object_parent in all_parents:
+            _add_avalon_node_if_not_retrieved_yet(containers, object_parent)
+
+    return containers
+
+
+def _add_avalon_node_if_not_retrieved_yet(retrieved_containers, browsed_object):
+    avalon_node = get_avalon_node(browsed_object)
+    if not avalon_node:
+        return
+
+    if avalon_node in retrieved_containers:
+        return
+
+    retrieved_containers.append(avalon_node)

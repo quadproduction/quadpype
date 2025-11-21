@@ -12,7 +12,7 @@ class ImageReferenceLoader(plugin.BlenderLoader):
     """
 
     families = ["image", "render", "review"]
-    representations = ["png"]
+    representations = ["png", "exr"]
 
     label = "Load Image as Reference"
     icon = "calendar-plus-o"

@@ -159,3 +159,15 @@ class AttributesWidget(QtWidgets.QWidget):
             self._widgets.append(widget)
 
             row += 1
+
+            # Multiselect default set
+            if attr_def.is_value_def:
+                if not isinstance(attr_def.default, (list, tuple)):
+                    continue
+                values = list(attr_def.default)
+                if len(values) == 1:
+                    value = values[0]
+                    if value is not None:
+                        widget.set_value(values[0])
+                else:
+                    widget.set_value(values)

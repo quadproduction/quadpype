@@ -2,7 +2,8 @@ import os
 import shutil
 import filecmp
 
-from quadpype.client import get_representations
+from qtpy import QtWidgets
+
 from quadpype.lib.applications import PreLaunchHook, LaunchTypes
 from quadpype.lib.profiles_filtering import filter_profiles
 from quadpype.modules.sync_server.sync_server import (
@@ -13,7 +14,9 @@ from quadpype.pipeline.workfile.path_resolving import (
     get_workfile_template_key,
 )
 from quadpype.settings import get_project_settings, PROJECT_SETTINGS_KEY
-
+from quadpype.pipeline.publish.lib import get_last_publish_workfile_representation
+from quadpype.widgets.message_window import Window
+from quadpype.tools.utils.workfile_cache import WorkFileCache
 
 class CopyLastPublishedWorkfile(PreLaunchHook):
     """Copy last published workfile as first workfile.
@@ -129,27 +132,34 @@ class CopyLastPublishedWorkfile(PreLaunchHook):
         else:
             version_index = workfile_version
 
-        workfile_representations = list(get_representations(
+        # Get workfile version
+        workfile_representation = get_last_publish_workfile_representation(
             project_name,
-            context_filters=context_filters
-        ))
+            context_filters,
+            version_index
+        )
 
-        if not workfile_representations:
-            self.log.debug(
-                'No published workfile for task "{}" and host "{}".'.format(
-                    task_name, host_name
-                )
-            )
+
+        if not workfile_representation:
             return
 
-        filtered_repres = filter(
-            lambda r: r["context"].get("version") is not None,
-            workfile_representations
+        parents = {
+            widget.objectName(): widget
+            for widget in QtWidgets.QApplication.topLevelWidgets()
+        }
+        msg = (
+            f"No workfiles were found for {self.data['asset_name']} on Task {self.data['task_name']}\n\n"
+            f"But a published one was found and will be used as a based to work!\n\n"
+            f"If you are remote:\nThe download will start after clicking on OK\n"
+            f"(Make sure your VPN is active if you are remote)"
         )
-        # Get workfile version
-        workfile_representation = sorted(
-            filtered_repres, key=lambda r: r["context"]["version"]
-        )[version_index]
+
+        Window(
+            title="No WF found, but Published WF found !",
+            message=msg,
+            parent=parents.get("LauncherWindow"),
+            level="info"
+        )
 
         # Copy file and substitute path
         last_published_workfile_path = download_last_published_workfile(
@@ -191,6 +201,9 @@ class CopyLastPublishedWorkfile(PreLaunchHook):
             last_published_workfile_path,
             local_workfile_path,
         )
+
+        _, ext = os.path.splitext(local_workfile_path)
+        WorkFileCache().add_task_extension(project_name, task_name, asset_name, ext)
 
         self.data["last_workfile_path"] = local_workfile_path
         # Keep source filepath for further path conformation

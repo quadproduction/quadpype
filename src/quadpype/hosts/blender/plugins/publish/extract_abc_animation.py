@@ -38,8 +38,8 @@ class ExtractAnimationABC(
             instance.data
         )
 
-        apply_subdiv = attribute_values.get("applySubdiv", 1)
-        visible_only = attribute_values.get("visibleOnly", 1)
+        apply_subdiv = attribute_values.get("applySubdiv", False)
+        visible_only = attribute_values.get("visibleOnly", False)
 
         asset_name = instance.data["assetEntity"]["name"]
         subset = instance.data["subset"]
@@ -145,20 +145,6 @@ class ExtractAnimationABC(
     @classmethod
     def get_attribute_defs(cls):
         override_defs = {
-            "attr": {
-                "def": TextDef,
-                "kwargs": {
-                    "label": "Custom Attributes",
-                    "placeholder": "attr1; attr2; ...",
-                }
-            },
-            "attrPrefix": {
-                "def": TextDef,
-                "kwargs": {
-                    "label": "Custom Attributes Prefix",
-                    "placeholder": "prefix1; prefix2; ...",
-                }
-            },
             "applySubdiv": {
                 "def": BoolDef,
                 "kwargs": {
@@ -186,7 +172,4 @@ class ExtractAnimationABC(
             defs.append(
                 value["def"](key, **value["kwargs"])
             )
-        defs.append(
-            UISeparatorDef()
-        )
         return defs

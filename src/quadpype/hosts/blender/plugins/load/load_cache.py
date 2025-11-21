@@ -8,7 +8,9 @@ import bpy
 import os
 
 from quadpype.client import get_version_by_id
-from quadpype.lib.attribute_definitions import BoolDef
+from quadpype.lib import BoolDef, filter_profiles, StringTemplate
+from quadpype.pipeline.publish.lib import get_template_name_profiles
+from quadpype.pipeline.anatomy import Anatomy
 from quadpype.pipeline import (
     get_representation_path,
     AVALON_CONTAINER_ID,
@@ -21,17 +23,21 @@ from quadpype.pipeline import (
     get_current_host_name,
 
 )
-
+from quadpype.client.mongo.entities import get_assets
+from quadpype.settings import get_project_settings
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
-    get_avalon_node
+    get_avalon_node,
+    add_to_avalon_container,
+    is_material_from_loaded_look
 )
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
 from quadpype.hosts.blender.api import (
     get_top_collection,
     get_corresponding_hierarchies_numbered,
     create_collections_from_hierarchy,
     create_collection
 )
+from quadpype.hosts.blender.api.json_loader import load_content, apply_properties
 
 from quadpype.hosts.blender.api import plugin, lib
 
@@ -83,7 +89,7 @@ class CacheModelLoader(plugin.BlenderLoader):
 
         avalon_node = get_avalon_node(asset_group)
         apply_subdiv = avalon_node["apply_subdiv"]
-
+        corresponding_names = avalon_node["corresponding_names"]
         members = lib.get_objects_from_mapped(avalon_node.get('members', []))
 
         previous_file_caches = [file for file in bpy.data.cache_files]
@@ -103,6 +109,7 @@ class CacheModelLoader(plugin.BlenderLoader):
         for obj in removed_objects:
             self.log.info(f"{obj.name} has been removed")
             members.remove(obj)
+            del corresponding_names[obj.name]
             bpy.data.objects.remove(obj)
 
         if new_objects:
@@ -110,12 +117,14 @@ class CacheModelLoader(plugin.BlenderLoader):
             template_data["unique_number"] = avalon_node["unique_number"]
             full_name_template = get_load_naming_template("fullname")
             for obj in new_objects:
+                old_name = obj.name
                 obj.name = get_resolved_name(
                     template_data,
                     full_name_template,
                     name=obj.name,
                     container=asset_group.name
                 )
+                corresponding_names[obj.name] = old_name
                 if obj.type != 'EMPTY':
                     obj.data.name = f"{obj.name}.data"
 
@@ -184,7 +193,7 @@ class CacheModelLoader(plugin.BlenderLoader):
 
         new_file_cache.name = f"{asset_group.name}.cache"
         lib.purge_orphans(is_recursive=True)
-        return libpath
+        return libpath, corresponding_names
 
     def _remove(self, asset_group):
 
@@ -201,6 +210,8 @@ class CacheModelLoader(plugin.BlenderLoader):
         for obj in set(members):
             if obj.type == 'MESH':
                 for material_slot in list(obj.material_slots):
+                    if is_material_from_loaded_look(material_slot.material):
+                        continue
                     bpy.data.materials.remove(material_slot.material)
                 bpy.data.meshes.remove(obj.data)
             elif obj.type == 'EMPTY':
@@ -255,7 +266,6 @@ class CacheModelLoader(plugin.BlenderLoader):
                     name_mat = material_slot.material.name
                     material_slot.material.name = f"{container_name}:{name_mat}"
 
-            lib.imprint(obj, {"container_name": container_name})
 
         plugin.deselect_all()
         file_caches = [file for file in bpy.data.cache_files]
@@ -281,13 +291,16 @@ class CacheModelLoader(plugin.BlenderLoader):
                                 apply_subdiv=apply_subdiv)
 
         full_name_template = get_load_naming_template("fullname")
+        corresponding_names = {}
         for obj in members:
+            old_name = obj.name
             obj.name = get_resolved_name(
                 template_data,
                 full_name_template,
                 name=obj.name,
                 container=container_name
             )
+            corresponding_names[obj.name] = old_name
             if obj.type != 'EMPTY':
                 obj.data.name = f"{obj.name}.data"
 
@@ -303,7 +316,6 @@ class CacheModelLoader(plugin.BlenderLoader):
             if not container:
                 container = bpy.data.objects.new(container_name, object_data=None)
             container.empty_display_type = 'SINGLE_ARROW'
-            avalon_container.objects.link(container)
 
             collection = bpy.context.view_layer.active_layer_collection.collection
             collection.objects.link(container)
@@ -327,8 +339,6 @@ class CacheModelLoader(plugin.BlenderLoader):
             container = bpy.data.collections.get(container_name)
             if not container:
                 container = bpy.data.collections.new(container_name)
-            if container not in list(avalon_container.children):
-                avalon_container.children.link(container)
 
             collection_templates = get_task_hierarchy_templates(
                 template_data,
@@ -408,8 +418,8 @@ class CacheModelLoader(plugin.BlenderLoader):
                     collection.objects.link(blender_object)
                     container.objects.link(blender_object)
 
-
-        return container, members
+        add_to_avalon_container(container)
+        return container, members, corresponding_names
 
     def process_asset(
         self, context: dict, name: str, namespace: Optional[str] = None,
@@ -449,7 +459,7 @@ class CacheModelLoader(plugin.BlenderLoader):
         namespace = namespace or get_resolved_name(template_data, namespace_template)
         container_name = get_resolved_name(template_data, group_name_template, namespace=namespace)
 
-        container, members = self.load_assets_and_create_hierarchy(
+        container, members, corresponding_names = self.load_assets_and_create_hierarchy(
             container_name=container_name,
             template_data=template_data,
             unique_number=unique_number,
@@ -458,31 +468,99 @@ class CacheModelLoader(plugin.BlenderLoader):
             libpath=libpath
         )
 
+        project_name = representation.get('context', {}).get('project', {}).get('name', None)
+        assert project_name, "Can not retrieve project name from context data."
+
+        self.apply_json_properties(representation, corresponding_names)
 
         lib.imprint(
             node=container,
             data={
                 "schema": "quadpype:container-2.0",
                 "id": AVALON_CONTAINER_ID,
+                "asset": self._get_associated_asset(context, project_name),
                 "name": name,
                 "namespace": namespace or '',
                 "loader": str(self.__class__.__name__),
                 "representation": str(context["representation"]["_id"]),
                 "libpath": libpath,
                 "asset_name": asset_name,
+                "task": representation["context"]["task"]["name"],
                 "parent": str(context["representation"]["parent"]),
                 "family": context["representation"]["context"]["family"],
                 "objectName": container_name,
                 "unique_number": unique_number,
+                "version": get_version_by_id(project_name, str(representation["parent"])).get('name', ''),
                 "members": lib.map_to_classes_and_names(members),
                 "create_as_asset_group": create_as_asset_group,
-                "apply_subdiv": apply_subdiv
+                "apply_subdiv": apply_subdiv,
+                "corresponding_names" : corresponding_names
             },
-            erase=True
+            erase=False
         )
 
         self[:] = members
         return members
+
+    @staticmethod
+    def _get_associated_asset(context, project_name):
+        current_project_asset_pointer = get_assets(project_name)
+        project_assets = [a["name"] for a in current_project_asset_pointer if a["data"]["tasks"]]
+        candidates = sorted(project_assets, key=len, reverse=True)
+        subset_name = context["subset"]["name"]
+        correspondence_by_subset = next((c for c in candidates if c in subset_name), None)
+
+        representation = context["representation"]
+        repre_asset = representation["context"]["asset"]
+        correspondence_by_repre_asset = next((c for c in candidates if c in repre_asset), None)
+
+
+        return correspondence_by_subset if correspondence_by_subset else correspondence_by_repre_asset
+
+    def apply_json_properties(self, representation, corresponding_names):
+        template_data = format_data(
+            original_data=representation,
+            filter_variant=False,
+            app=get_current_host_name(),
+            update_parent_to_prefix=False)
+        project_name = representation.get('context', {}).get('project', {}).get('name', None)
+        assert project_name, "Can not retrieve project name from context data."
+
+        repre_task = representation.get('context', {}).get('task', {}).get('name', None)
+        assert repre_task, "Can not retrieve task name from context data."
+
+        repre_family = representation.get('context', {}).get('family', None)
+        assert repre_family, "Can not retrieve family name from context data."
+
+        profiles = get_template_name_profiles(
+            project_name, get_project_settings(project_name), self.log
+        )
+
+        template_data.update(
+            {
+                'families': repre_family,
+                'task_types': repre_task,
+                'ext': 'json'
+            }
+        )
+
+        profile = filter_profiles(profiles, template_data)
+
+        anatomy = Anatomy()
+        templates = anatomy.templates.get(profile['template_name'])
+
+        json_path = StringTemplate.format_template(templates['path'], template_data)
+        if not json_path:
+            self.log.warning("There is no json file to apply for this asset. Abort applying properties.")
+            return
+
+        json_content = load_content(json_path, self.log)
+
+        if not json_content:
+            self.log.error("Can not load content from retrieved json. Abort applying properties.")
+            return
+
+        apply_properties(json_content, corresponding_names)
 
     def exec_update(self, container: Dict, representation: Dict):
         """Update the loaded asset.
@@ -540,6 +618,7 @@ class CacheModelLoader(plugin.BlenderLoader):
 
         template_data = format_data(representation, True, get_current_host_name())
         template_data.update({"unique_number": container.get("unique_number", "00")})
+        corresponding_names = metadata["corresponding_names"]
 
         if any(str(libpath).lower().endswith(ext)
                for ext in [".usd", ".usda", ".usdc"]):
@@ -557,17 +636,20 @@ class CacheModelLoader(plugin.BlenderLoader):
             asset_group.matrix_basis = mat
         else:
             prev_filename = os.path.basename(container["libpath"])
-            libpath = self._update_transform_cache_path(asset_group, libpath, prev_filename, representation)
+            libpath, corresponding_names = self._update_transform_cache_path(asset_group, libpath, prev_filename, representation)
 
         project_name = representation.get('context', {}).get('project', {}).get('name', None)
         assert project_name, "Can not retrieve project name from context data."
+
+        self.apply_json_properties(representation, corresponding_names)
 
         new_data = {
             "libpath": str(libpath),
             "representation": str(representation["_id"]),
             "parent": str(representation["parent"]),
             "version": get_version_by_id(project_name, str(representation["parent"])).get('name', ''),
-            "members": lib.map_to_classes_and_names(lib.get_asset_children(asset_group))
+            "members": lib.map_to_classes_and_names(lib.get_asset_children(asset_group)),
+            "corresponding_names": corresponding_names
         }
         lib.imprint(asset_group, new_data)
 

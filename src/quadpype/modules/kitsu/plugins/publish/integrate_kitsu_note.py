@@ -10,7 +10,7 @@ class IntegrateKitsuNote(pyblish.api.ContextPlugin):
 
     order = pyblish.api.IntegratorOrder
     label = "Kitsu Note and Status"
-    families = ["render", "image", "online", "plate", "kitsu"]
+    families = ["render", "image", "online", "plate", "kitsu", "review"]
 
     # status settings
     set_status_note = False
@@ -68,7 +68,10 @@ class IntegrateKitsuNote(pyblish.api.ContextPlugin):
             # Subset should have a review or a kitsureview tag
             is_review = "review" in families
 
-            if not is_review:
+            creator_attributes = instance.data.get('creator_attributes', {})
+            mark_for_review = creator_attributes.get("mark_for_review", True)
+
+            if not is_review or not mark_for_review:
                 continue
 
             kitsu_task = instance.data.get("kitsu_task")

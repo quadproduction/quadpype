@@ -3,7 +3,7 @@ import os
 import bpy
 
 from quadpype.pipeline import publish
-from quadpype.hosts.blender.api import plugin, pipeline, lib
+from quadpype.hosts.blender.api import plugin, pipeline, lib, constants
 
 class ExtractBlendAnimation(
     plugin.BlenderExtractor,
@@ -11,7 +11,7 @@ class ExtractBlendAnimation(
 ):
     """Extract a blend file."""
 
-    label = "Extract Blend"
+    label = "Extract Blend Animation"
     hosts = ["blender"]
     families = ["animation"]
     optional = True
@@ -40,6 +40,14 @@ class ExtractBlendAnimation(
         data_blocks = set()
         instance_objects = lib.get_objects_in_collection(asset_group)
         correspondance_dict = {}
+
+        snapshot_data = self._generate_snapshop_data(instance_objects)
+        lib.imprint(
+            asset_group,
+            snapshot_data,
+            erase=True,
+            set_property=constants.SNAPSHOT_PROPERTY
+        )
 
         animated_objects = [
             obj for obj in instance_objects if
@@ -74,3 +82,7 @@ class ExtractBlendAnimation(
 
         self.log.info("Extracted instance '%s' to: %s",
                        instance.name, representation)
+
+    @staticmethod
+    def _generate_snapshop_data(instance_objects):
+        return {obj.name:lib.get_properties_on_object(obj) for obj in instance_objects}

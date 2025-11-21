@@ -73,6 +73,7 @@ class HostToolsHelper:
         with qt_app_context():
             workfiles_tool = self.get_workfiles_tool(parent)
             workfiles_tool.ensure_visible(use_context, save, on_top)
+            workfiles_tool.refresh()
 
     def get_loader_tool(self, parent):
         """Create, cache and return loader tool window."""

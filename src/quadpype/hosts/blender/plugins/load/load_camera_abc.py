@@ -13,10 +13,9 @@ from quadpype.pipeline import (
 )
 from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
     get_avalon_node
 )
-
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
 
 class AbcCameraLoader(plugin.BlenderLoader):
     """Load a camera from Alembic file.
@@ -61,7 +60,6 @@ class AbcCameraLoader(plugin.BlenderLoader):
                 name_data = obj.data.name
                 obj.data.name = f"{group_name}:{name_data}"
 
-            lib.imprint(obj, {"container_name": group_name})
 
         plugin.deselect_all()
 

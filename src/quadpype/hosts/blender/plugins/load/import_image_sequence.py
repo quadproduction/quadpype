@@ -56,7 +56,7 @@ class ImageSequenceLoader(plugin.BlenderLoader):
     """
 
     families = ["image", "render"]
-    representations = ["png"]
+    representations = ["png", "exr"]
 
     label = "Replace Last Image Sequence"
     icon = "refresh"
@@ -84,7 +84,7 @@ class ImageSequenceAdder(plugin.BlenderLoader):
     """
 
     families = ["image", "render"]
-    representations = ["png"]
+    representations = ["png", "exr"]
 
     label = "Add Image Sequence"
     icon = "window-restore"

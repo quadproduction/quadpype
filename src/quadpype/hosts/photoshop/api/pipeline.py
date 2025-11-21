@@ -21,8 +21,9 @@ from quadpype.host import (
 from quadpype.pipeline.load import any_outdated_containers
 from quadpype.hosts.photoshop import PHOTOSHOP_HOST_DIR
 from quadpype.tools.utils import get_quadpype_qt_app
-
-from . import lib
+from quadpype.pipeline.anatomy import Anatomy
+from quadpype.client.mongo.entities import get_assets
+from . import lib, launch_logic
 
 log = Logger.get_logger(__name__)
 
@@ -31,7 +32,7 @@ PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
 LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
 CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 INVENTORY_PATH = os.path.join(PLUGINS_DIR, "inventory")
-
+ANATOMY= Anatomy()
 
 class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCache):
     name = "photoshop"
@@ -57,8 +58,9 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCa
         register_event_callback("application.launched", on_application_launch)
 
     def current_file(self):
+        stub = _get_stub()
         try:
-            full_name = lib.stub().get_active_document_full_name()
+            full_name = stub.get_active_document_full_name()
             if full_name and full_name not in ["null", "undefined"]:
                 return os.path.normpath(full_name).replace("\\", "/")
         except Exception:
@@ -70,21 +72,24 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCa
         return os.path.normpath(session["AVALON_WORKDIR"]).replace("\\", "/")
 
     def open_workfile(self, filepath):
-        lib.stub().open(filepath)
+        stub = _get_stub()
+        stub.open(filepath)
 
         return True
 
     def save_workfile(self, filepath=None):
         _, ext = os.path.splitext(filepath)
-        lib.stub().saveAs(filepath, ext[1:].lower(), True)
+        stub = _get_stub()
+        stub.saveAs(filepath, ext[1:].lower(), True)
         self.add_task_extension(extension=ext)
 
     def get_current_workfile(self):
         return self.current_file()
 
     def workfile_has_unsaved_changes(self):
+        stub = _get_stub()
         if self.current_file():
-            return not lib.stub().is_saved()
+            return not stub.is_saved()
 
         return False
 
@@ -96,7 +101,8 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCa
 
     def get_context_data(self):
         """Get stored values for context (validation enable/disable etc)"""
-        meta = _get_stub().get_layers_metadata()
+        stub = _get_stub()
+        meta = stub.get_layers_metadata()
         for item in meta:
             if item.get("id") == "publish_context":
                 item.pop("id")
@@ -104,11 +110,32 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCa
 
         return {}
 
+    def get_current_task_name(self):
+        current_task = os.getenv("AVALON_TASK")
+        current_file = self.current_file()
+
+        project_tasks = [k for k in ANATOMY.get("tasks", {}).keys()]
+
+        found_task = next((f for f in project_tasks if f in current_file), None)
+        return found_task if found_task else current_task
+
+    def get_current_asset_name(self):
+        current_asset = os.getenv("AVALON_ASSET")
+        current_file = self.current_file()
+
+        current_project_asset_pointer = get_assets(self.get_current_project_name())
+        project_assets = [a["name"] for a in current_project_asset_pointer if a["data"]["tasks"]]
+
+        parts = os.path.normpath(current_file).split(os.sep)
+        found_asset = next((f for f in project_assets if f in parts), None)
+        return found_asset if found_asset else current_asset
+
     def update_context_data(self, data, changes):
         """Store value needed for context"""
         item = data
         item["id"] = "publish_context"
-        _get_stub().imprint(item["id"], item)
+        stub = _get_stub()
+        stub.imprint(item["id"], item)
 
     def list_instances(self):
         """List all created instances to publish from current workfile.
@@ -196,7 +223,7 @@ def ls():
     """
     try:
         stub = lib.stub()  # only after Photoshop is up
-    except lib.ConnectionNotEstablishedYet:
+    except launch_logic.ConnectionNotEstablishedYet:
         print("Not connected yet, ignoring")
         return
 
@@ -230,7 +257,7 @@ def _get_stub():
     """
     try:
         stub = lib.stub()  # only after Photoshop is up
-    except lib.ConnectionNotEstablishedYet:
+    except launch_logic.ConnectionNotEstablishedYet:
         print("Not connected yet, ignoring")
         return
 

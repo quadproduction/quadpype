@@ -17,7 +17,12 @@ class CollectReview(plugin.BlenderInstancePlugin):
 
         self.log.debug(f"instance: {instance}")
 
+        creator_attributes = instance.data.get('creator_attributes', {})
+        instance.data["review"] = creator_attributes.get("mark_for_review", True)
+
         datablock = instance.data["transientData"]["instance_node"]
+
+        use_active_camera = creator_attributes.get("render_view", True)
 
         # get cameras
         cameras = [
@@ -25,6 +30,9 @@ class CollectReview(plugin.BlenderInstancePlugin):
             for obj in datablock.all_objects
             if isinstance(obj, bpy.types.Object) and obj.type == "CAMERA"
         ]
+
+        if use_active_camera in ["active camera", "viewport"]:
+            cameras = [bpy.context.scene.camera]
 
         assert len(cameras) == 1, (
             f"Not a single camera found in extraction: {cameras}"

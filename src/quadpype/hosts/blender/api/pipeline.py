@@ -50,7 +50,7 @@ from quadpype.lib import (
     emit_event,
     StringTemplate
 )
-import quadpype.hosts.blender
+
 from quadpype.settings import get_project_settings
 from .workio import (
     open_file,
@@ -61,21 +61,16 @@ from .workio import (
     work_root,
 )
 
+from .constants import (
+    PUBLISH_PATH,
+    LOAD_PATH,
+    CREATE_PATH,
+    ORIGINAL_EXCEPTHOOK,
+    AVALON_CONTAINERS,
+    AVALON_PROPERTY,
+    IS_HEADLESS
+)
 
-HOST_DIR = os.path.dirname(os.path.abspath(quadpype.hosts.blender.__file__))
-PLUGINS_DIR = os.path.join(HOST_DIR, "plugins")
-PUBLISH_PATH = os.path.join(PLUGINS_DIR, "publish")
-LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
-CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
-
-ORIGINAL_EXCEPTHOOK = sys.excepthook
-
-AVALON_INSTANCES = "AVALON_INSTANCES"
-AVALON_CONTAINERS = "AVALON_CONTAINERS"
-AVALON_PROPERTY = 'avalon'
-IS_HEADLESS = bpy.app.background
-
-DEFAULT_VARIANT_NAME = "Main"
 
 log = Logger.get_logger(__name__)
 
@@ -282,6 +277,7 @@ def get_frame_range(asset_entity=None) -> Union[Dict[str, int], None]:
         "frameEndHandle": frame_end_handle,
     }
 
+
 def get_parent_data(data):
     parent = data.get('parent', None)
     if not parent:
@@ -291,6 +287,7 @@ def get_parent_data(data):
 
         return hierarchy.split('/')[-1]
     return parent
+
 
 def set_frame_range(data):
     scene = bpy.context.scene
@@ -359,9 +356,11 @@ def set_unit_scale_from_settings(unit_scale_settings=None):
         unit_scale = unit_scale_settings["base_file_unit_scale"]
         bpy.context.scene.unit_settings.scale_length = unit_scale
 
+
 def _autobuild_first_workfile():
     if not is_last_workfile_exists() and should_build_first_workfile():
         build_workfile_template()
+
 
 def on_new():
     _autobuild_first_workfile()
@@ -414,8 +413,37 @@ def on_open():
                 "Base file unit scale changed to match the project settings.")
 
 
+def apply_ids():
+    for node, new_id in lib.generate_ids(lib.get_objects_concerned_by_ids()):
+        lib.set_id(node, new_id, overwrite=False)
+
+    erased_materials_targets_ids = list()
+    for obj in bpy.data.objects:
+        if not lib.has_materials(obj):
+            continue
+
+        for material_slot in obj.material_slots:
+            material = material_slot.material
+            if not material:
+                continue
+
+            if material not in erased_materials_targets_ids:
+                lib.set_targets_ids(
+                    entity=material,
+                    targets_ids=[],
+                    overwrite=True
+                )
+                erased_materials_targets_ids.append(material)
+
+            lib.add_target_id(
+                concerned_object=material_slot.material,
+                target_id=lib.get_id(obj)
+            )
+
+
 @bpy.app.handlers.persistent
 def _on_save_pre(*args):
+    apply_ids()
     emit_event("before.save")
 
 
@@ -513,7 +541,10 @@ def add_to_avalon_container(container: bpy.types.Collection):
         # unless you set a 'fake user'.
         bpy.context.scene.collection.children.link(avalon_container)
 
-    avalon_container.children.link(container)
+    if isinstance(container, bpy.types.Object):
+        avalon_container.objects.link(container)
+    elif isinstance(container, bpy.types.Collection) and container not in list(avalon_container.children):
+        avalon_container.children.link(container)
 
     # Disable Avalon containers for the view layers.
     for view_layer in bpy.context.scene.view_layers:
@@ -522,7 +553,7 @@ def add_to_avalon_container(container: bpy.types.Collection):
                 child.exclude = True
 
 
-def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool):
+def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool, set_property: str=AVALON_PROPERTY):
     """Imprint the node with metadata.
 
     Existing metadata will be updated.
@@ -533,6 +564,7 @@ def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: b
         node: Long name of node
         data: Dictionary of key/value pairs
         erase: Erase previous value insted of updating / adding data
+        set_property: Name of the property to store data
     """
 
     existing_data = dict() if erase else get_avalon_node(node)
@@ -541,11 +573,11 @@ def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: b
             continue
         existing_data[key] = value
 
-    node[AVALON_PROPERTY] = json.dumps(existing_data)
-    node.property_overridable_library_set(f'["{AVALON_PROPERTY}"]', True)
+    node[set_property] = json.dumps(existing_data)
+    node.property_overridable_library_set(f'["{set_property}"]', True)
 
 
-def get_avalon_node(node):
+def get_avalon_node(node, get_property=AVALON_PROPERTY):
     """ Return avalon node content.
 
     By default we expect a single string (json dump), but we also want to handle
@@ -553,11 +585,12 @@ def get_avalon_node(node):
 
     Arguments:
         node: blender object
+        get_property: property to search
 
     Returns:
         dict: AVALON_PROPERTY custom prop content
     """
-    node_content = node.get(AVALON_PROPERTY, '{}')
+    node_content = node.get(get_property, '{}')
 
     # For IDPropertyGroup (which is not accessible through bpy.types)
     if hasattr(node_content, 'to_dict'):
@@ -789,6 +822,10 @@ def get_container_content(container):
 
     return [obj for obj in bpy.data.objects if obj.parent == container]
 
+def get_non_keyed_property_to_export():
+    project = os.getenv("AVALON_PROJECT")
+    settings = get_project_settings(project).get("blender")
+    return settings["publish"]["ExtractNonKeyedProperties"]["properties"]
 
 def copy_render_settings(src_scene, dst_scene):
 
@@ -834,3 +871,15 @@ def copy_render_settings(src_scene, dst_scene):
             setattr(dst_scene.display.shading, prop.identifier, getattr(src_scene.display.shading, prop.identifier))
         except Exception:
             pass
+
+def is_material_from_loaded_look(material):
+    avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
+    if not avalon_container:
+        return False
+    look_instances = [col for col in avalon_container.children if has_avalon_node(col)
+                      and get_avalon_node(col).get("family") == "look"]
+    for look_instance in look_instances:
+        mats_members = lib.get_objects_from_mapped(get_avalon_node(look_instance)["members"])
+        if material in mats_members:
+            return look_instance
+    return None

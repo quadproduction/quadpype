@@ -692,8 +692,10 @@ class FilesWidget(QtWidgets.QWidget):
             shutil.copyfile(src_path, filepath)
             if isinstance(self.host, IWorkfileHost):
                 self.host.open_workfile(filepath)
+                self.host.save_workfile(filepath)
             else:
                 self.host.open_file(filepath)
+                self.host.save_file(filepath)
 
         # Create extra folders
         create_workdir_extra_folders(
