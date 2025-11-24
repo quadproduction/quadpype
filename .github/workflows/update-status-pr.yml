@@ -1,0 +1,165 @@
+name: Update Ticket Status in GitHub Project
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  update-project-status:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+      pull-requests: read
+      repository-projects: read
+
+    steps:
+      - name: Parse PR and update Project status
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECT_TOKEN || secrets.GITHUB_TOKEN  }}
+          script: |
+            const prBody = context.payload.pull_request.body || '';
+            console.log('PR Body:', prBody);
+
+            // Capture sentences like "Ticket: #123, Update status: NouveauStatut"
+            const regex = /Ticket\s*:?\s*#(\d+)\s*,?\s*Update\s+status\s*:?\s*([^\n,]+)/gi;
+            const matches = [...prBody.matchAll(regex)];
+
+            if (matches.length === 0) {
+              console.log('No ticket found with given syntax.');
+              return;
+            }
+
+            for (const match of matches) {
+              const issueNumber = match[1];
+              const newStatus = match[2].trim();
+
+              console.log(`Treating ticket #${issueNumber} with status : ${newStatus}`);
+
+              try {
+                // Get global ID from issue
+                const issueQuery = `
+                  query($owner: String!, $repo: String!, $number: Int!) {
+                    repository(owner: $owner, name: $repo) {
+                      issue(number: $number) {
+                        id
+                        projectItems(first: 10) {
+                          nodes {
+                            id
+                            project {
+                              id
+                              title
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                `;
+
+                const issueData = await github.graphql(issueQuery, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  number: parseInt(issueNumber)
+                });
+
+                const issue = issueData.repository.issue;
+                const projectItems = issue.projectItems.nodes;
+
+                if (projectItems.length === 0) {
+                  console.log(`⚠️ Ticket number #${issueNumber} is not associated to any project.`);
+                  continue;
+                }
+
+                for (const projectItem of projectItems) {
+                  const projectId = projectItem.project.id;
+                  const projectTitle = projectItem.project.title;
+                  const itemId = projectItem.id;
+
+                  console.log(`Concerned project : ${projectTitle}`);
+
+                  const projectFieldsQuery = `
+                    query($projectId: ID!) {
+                      node(id: $projectId) {
+                        ... on ProjectV2 {
+                          fields(first: 20) {
+                            nodes {
+                              ... on ProjectV2SingleSelectField {
+                                id
+                                name
+                                options {
+                                  id
+                                  name
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  `;
+
+                  const projectData = await github.graphql(projectFieldsQuery, {
+                    projectId: projectId
+                  });
+
+                  const fields = projectData.node.fields.nodes;
+                  const statusField = fields.find(f => f.name === 'Status');
+
+                  if (!statusField) {
+                    console.log(`⚠️ No field named "Status" found in project ${projectTitle}`);
+                    console.log('Available fields are :', fields.map(f => f.name).join(', '));
+                    continue;
+                  }
+
+                  const statusOption = statusField.options.find(
+                    opt => opt.name.toLowerCase() === newStatus.toLowerCase()
+                  );
+
+                  if (!statusOption) {
+                    console.log(`⚠️ Status "${newStatus}" does not exist in project.`);
+                    console.log('Available status are :', statusField.options.map(o => o.name).join(', '));
+                    continue;
+                  }
+
+                  const updateMutation = `
+                    mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                      updateProjectV2ItemFieldValue(
+                        input: {
+                          projectId: $projectId
+                          itemId: $itemId
+                          fieldId: $fieldId
+                          value: { singleSelectOptionId: $optionId }
+                        }
+                      ) {
+                        projectV2Item {
+                          id
+                        }
+                      }
+                    }
+                  `;
+
+                  await github.graphql(updateMutation, {
+                    projectId: projectId,
+                    itemId: itemId,
+                    fieldId: statusField.id,
+                    optionId: statusOption.id
+                  });
+
+                  console.log(`✓ Status has been updated to "${newStatus}" in projet ${projectTitle}`);
+
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                    body: `✅ Statut mis à jour vers **${newStatus}** dans le projet **${projectTitle}** suite au merge de la PR #${context.payload.pull_request.number}`
+                  });
+                }
+
+              } catch (error) {
+                console.error(`✗ An error has occured when updating ticket #${issueNumber}:`, error);
+                console.error('Details:', error.message);
+              }
+            }
