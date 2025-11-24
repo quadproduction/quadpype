@@ -4,7 +4,7 @@ import json
 
 import pyblish.api
 from quadpype.hosts.blender.api import capture, plugin
-from quadpype.hosts.blender.api.lib import maintained_time
+from quadpype.hosts.blender.api.lib import maintained_time, get_viewport_shading
 
 import bpy
 
@@ -39,8 +39,26 @@ class ExtractThumbnail(plugin.BlenderExtractor):
 
         self.log.info(f"Outputting images to {path}")
 
-        camera = instance.data.get("review_camera", "AUTO")
-        start = instance.data.get("frameStart", bpy.context.scene.frame_start)
+        use_viewport = False
+        creator_attributes = instance.data.get('creator_attributes', {})
+        render_view_type = creator_attributes.get('render_view', None)
+        shader_mode = creator_attributes.get('shader_mode', "MATERIAL")
+        render_overlay = creator_attributes.get('render_overlay', False)
+        render_floor_grid = creator_attributes.get('render_floor_grid', None)
+        transparent_background = creator_attributes.get('use_transparent_background', False)
+        if not render_view_type or render_view_type != "viewport":
+            camera = instance.data("review_camera", None)
+        else:
+            camera = "AUTO"
+            use_viewport = True
+
+        if shader_mode == "Viewport":
+            shader_mode = get_viewport_shading()
+            if shader_mode == "RENDERED":
+                self.log.warning("Shading mode set to RENDERED, impossible for playblast, auto switch to MATERIAL")
+                shader_mode = "MATERIAL"
+
+        start = creator_attributes.get("frameStart", bpy.context.scene.frame_start)
         family = instance.data.get("family")
         isolate = instance.data("isolate", None)
 
@@ -59,6 +77,8 @@ class ExtractThumbnail(plugin.BlenderExtractor):
             "filename": path,
             "overwrite": True,
             "isolate": isolate,
+            "use_viewport": use_viewport,
+            "transparent_background": transparent_background
         })
         preset.setdefault(
             "image_settings",
@@ -68,7 +88,14 @@ class ExtractThumbnail(plugin.BlenderExtractor):
                 "quality": 100,
             },
         )
-
+        if preset.get("display_options"):
+            preset["display_options"]["overlay"].update({
+                "show_overlays": render_overlay,
+                "show_floor": render_floor_grid,
+                "show_axis_x": render_floor_grid,
+                "show_axis_y": render_floor_grid
+            })
+            preset["display_options"]["shading"]["type"] = shader_mode
         with maintained_time():
             path = capture(**preset)
 

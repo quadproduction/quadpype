@@ -71,6 +71,11 @@
             "label": "Workfiles",
             "children": [
                 {
+                    "type": "boolean",
+                    "key": "use_icons",
+                    "label": "Use Workfiles Icon in Launcher"
+                },
+                {
                     "type": "list",
                     "key": "workfile_template_profiles",
                     "label": "Workfile template profiles",

@@ -1,18 +1,26 @@
+import json
 import os
 import traceback
-import re
+import functools
+from mathutils import Vector, Euler, Quaternion, Color
 import importlib
 import contextlib
-import json
-from enum import Enum
+import uuid
 from typing import Dict, List, Union, TYPE_CHECKING
 
 import bpy
 import addon_utils
 from quadpype.lib import Logger, NumberDef
 from quadpype.pipeline import get_current_project_name, get_current_asset_name, get_current_context
-from quadpype.pipeline.context_tools import get_current_project_asset
+
 from quadpype.client import get_asset_by_name
+from .constants import (
+    AVALON_PROPERTY,
+    SNAPSHOT_PROPERTY,
+    SNAPSHOT_POSE_BONE,
+    SNAPSHOT_CUSTOM_PROPERTIES
+)
+
 if TYPE_CHECKING:
     from quadpype.pipeline.create import CreateContext  # noqa: F401
 
@@ -166,13 +174,14 @@ def set_app_templates_path():
         os.environ["BLENDER_USER_SCRIPTS"] = app_templates_path
 
 
-def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool=False):
+def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool=False, set_property: str=AVALON_PROPERTY):
     r"""Write `data` to `node` as userDefined attributes
 
     Arguments:
         node: Long name of node
         data: Dictionary of key/value pairs
         erase(optional): Erase previous value insted of updating / adding data
+        set_property(optional): Name of the property to store data
 
     Example:
         >>> import bpy
@@ -205,7 +214,7 @@ def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: bool=Fals
 
         imprint_data[key] = value
 
-    pipeline.metadata_update(node, imprint_data, erase)
+    pipeline.metadata_update(node, imprint_data, erase, set_property)
 
 
 def lsattr(attr: str,
@@ -292,6 +301,7 @@ def get_object_types_correspondance():
                 pass
     return rna_to_bpy_data
 
+
 def map_to_classes_and_names(blender_objects):
     """ Get a list of blender_objects and produce a dictionary composed of all previous objects
     sorted by types (as accessible from `bpy.data`, and not `bpy.types`, to make it easier
@@ -318,10 +328,12 @@ def map_to_classes_and_names(blender_objects):
 
     return mapped_values
 
+
 def get_data_type_name(blender_data):
     """Retrieve the name of the data type base on a data block"""
     data_type_dict = map_to_classes_and_names([blender_data])
     return next((k for k, v in data_type_dict.items() if blender_data.name in v), None)
+
 
 def get_objects_from_mapped(mapped_objects):
     """ Get a list of mapped blender_objects (with objects types as keys and list of objects as values)
@@ -335,13 +347,36 @@ def get_objects_from_mapped(mapped_objects):
     """
     blender_objects = list()
     for data_type, blender_objects_names in mapped_objects.items():
-        blender_objects.extend(
-            [
-                getattr(bpy.data, data_type).get(blender_object_name)
-                for blender_object_name in blender_objects_names
-            ]
-        )
+        data_block = getattr(bpy.data, data_type)
+        for blender_object_name in blender_objects_names:
+            try:
+                blender_objects.append(data_block[blender_object_name])
+            except KeyError:
+                print(f"[WARN] {data_type} '{blender_object_name}' not found, ignored.")
+
     return blender_objects
+
+
+def _outliner_context():
+    window = bpy.context.window or bpy.context.window_manager.windows[0]
+
+    try:
+        area = next(
+            area for area in window.screen.areas
+            if area.type == 'OUTLINER')
+        region = next(
+            region for region in area.regions
+            if region.type == 'WINDOW')
+    except StopIteration as e:
+        raise RuntimeError("Could not find outliner. An outliner space "
+                           "must be in the main Blender window.") from e
+
+    return bpy.context.temp_override(
+            window=window,
+            area=area,
+            region=region,
+            screen=window.screen
+    )
 
 
 def get_selected_collections():
@@ -356,28 +391,27 @@ def get_selected_collections():
         list: A list of `bpy.types.Collection` objects that are currently
         selected in the outliner.
     """
-    window = bpy.context.window or bpy.context.window_manager.windows[0]
-
-    try:
-        area = next(
-            area for area in window.screen.areas
-            if area.type == 'OUTLINER')
-        region = next(
-            region for region in area.regions
-            if region.type == 'WINDOW')
-    except StopIteration as e:
-        raise RuntimeError("Could not find outliner. An outliner space "
-                           "must be in the main Blender window.") from e
-
-    with bpy.context.temp_override(
-        window=window,
-        area=area,
-        region=region,
-        screen=window.screen
-    ):
+    with _outliner_context():
         ids = bpy.context.selected_ids
 
     return [id for id in ids if isinstance(id, bpy.types.Collection)]
+
+
+def get_selected_objects():
+    """
+    Returns a list of the currently selected objects in the outliner.
+
+    Raises:
+        RuntimeError: If the outliner cannot be found in the main Blender
+        window.
+
+    Returns:
+        list: A list of `bpy.types.Object` objects that are currently
+        selected in the outliner.
+    """
+
+    with _outliner_context():
+        return bpy.context.selected_objects
 
 
 def get_selection(include_collections: bool = False) -> List[bpy.types.Object]:
@@ -455,6 +489,9 @@ def get_all_parents(obj):
         List[bpy.types.Object]: All parents of object
 
     """
+    if not isinstance(obj, bpy.types.Object):
+        return []
+
     result = []
     while True:
         obj = obj.parent
@@ -510,6 +547,205 @@ def get_highest_root(objects):
 
     minimum_parent = min(num_parents_to_obj)
     return num_parents_to_obj[minimum_parent]
+
+
+def get_objects_concerned_by_ids():
+    return list(bpy.data.objects) + list(bpy.data.materials) + list(bpy.data.collections)
+
+
+def get_id(entity=None, entity_name=None):
+    """Get the `cbId` attribute of the given entity.
+
+    Args:
+        entity (object): blender object to retrieve the attribute from
+        entity_name (str): the name of the entity to retrieve the attribute from
+    Returns:
+        str: id of asked entity
+
+    """
+    return _get_property("id", entity, entity_name)
+
+
+def get_targets_ids(entity=None, entity_name=None):
+    """Get the `targets_ids` attribute of the given entity.
+
+    Args:
+        entity (object): blender object to retrieve the attribute from
+        entity_name (str): the name of the entity to retrieve the attribute from
+    Returns:
+        list[str]: list of targets ids of asked entity
+
+    """
+    targets_ids_property = _get_property("targets_ids", entity, entity_name)
+    if not targets_ids_property:
+        return []
+
+    return json.loads(targets_ids_property)
+
+
+def _get_property(property_name, entity=None, entity_name=None):
+    """Get the given property attribute of the given entity.
+
+    Args:
+        property_name (str): name of the property to retrieve
+        entity (object): blender object to retrieve the attribute from
+        entity_name (str): the name of the entity to retrieve the attribute from
+    Returns:
+        any: value of asked property from entity
+
+    """
+    if not any([entity, entity_name]):
+        return None
+
+    if not entity:
+        objects = get_objects_concerned_by_ids()
+        try:
+            entity = next(
+                iter(
+                    entity for entity in objects
+                    if entity.name == entity_name
+                )
+            )
+        except StopIteration:
+            return None
+
+    try:
+        return entity.get(property_name, None)
+    except RuntimeError:
+        log.warning("Failed to retrieve id on %s", entity)
+        return None
+
+
+def get_objects_by_ids(ids):
+    """Retrieve objects in scene with given ids.
+
+    Args:
+        ids (str, list[str]): single or list of ids to search for
+
+    Returns:
+        list: A list of blender objects.
+    """
+    return [
+        obj for obj in get_objects_concerned_by_ids()
+        if get_id(obj) in ids
+    ]
+
+
+def generate_ids(objects, asset_id=None):
+    """Returns new unique ids for the given objects.
+
+    Args:
+        objects (list): List of objects.
+        asset_id (str or bson.ObjectId): The database id for the *asset* to
+            generate for. When None provided the current asset in the
+            active session is used.
+
+    Returns:
+        list: A list of (objects, id) tuples.
+
+    """
+
+    if asset_id is None:
+        # Get the asset ID from the database for the asset of current context
+        project_name = get_current_project_name()
+        asset_name = get_current_asset_name()
+        asset_doc = get_asset_by_name(project_name, asset_name, fields=["_id"])
+        assert asset_doc, "No current asset found in Session"
+        asset_id = asset_doc['_id']
+
+    objects_ids = []
+    for entity in objects:
+        _, uid = str(uuid.uuid4()).rsplit("-", 1)
+        unique_id = "{}:{}".format(asset_id, uid)
+        objects_ids.append((entity, unique_id))
+
+    return objects_ids
+
+
+def set_id(entity, unique_id, overwrite=False):
+    """Add cbId to `entity` unless one already exists.
+
+    Args:
+        entity (object): the blender object to add the "cbId" on
+        unique_id (str): The unique node id to assign.
+            This should be generated by `generate_ids`.
+        overwrite (bool, optional): When True overrides the current value even
+            if `entity` already has an id. Defaults to False.
+
+    Returns:
+        None
+
+    """
+    _set_property(
+        entity=entity,
+        property_name="id",
+        property_value=unique_id,
+        overwrite=overwrite
+    )
+
+
+def set_targets_ids(entity, targets_ids, overwrite=False):
+    """Add targets_ids to `entity` unless one already exists.
+
+    Args:
+        entity (object): the blender object to add the "cbId" on
+        targets_ids (list[str]): targets_ids to assign.
+            These should be retrieved from objects and first generated by `generate_ids`.
+        overwrite (bool, optional): When True overrides the current value even
+            if `entity` already has targets ids. Defaults to False.
+
+    Returns:
+        None
+
+    """
+    _set_property(
+        entity=entity,
+        property_name="targets_ids",
+        property_value=json.dumps(targets_ids),
+        overwrite=overwrite
+    )
+
+
+def _set_property(entity, property_name, property_value, overwrite):
+    """set property with given value.
+
+    Args:
+        entity (object): the blender object to add property
+        property_name (str): Name of the property to update
+        property_value (str, list): Value of the property to set
+        overwrite (bool, optional): When True overrides the current value even
+            if `entity` already has given property. Defaults to False.
+
+    Returns:
+        None
+
+    """
+    exists = entity.get(property_name)
+    if not exists or overwrite:
+        entity[property_name] = property_value
+
+
+def add_target_id(concerned_object, target_id):
+    targets_ids = get_targets_ids(concerned_object)
+
+    if target_id in targets_ids:
+        return
+
+    targets_ids.append(target_id)
+    set_targets_ids(
+        entity=concerned_object,
+        targets_ids=targets_ids,
+        overwrite=True
+    )
+
+
+def has_materials(obj):
+    return (
+        obj and
+        not is_collection(obj) and
+        hasattr(obj, 'material_slots') and
+        len(obj.material_slots) > 0
+    )
 
 
 @contextlib.contextmanager
@@ -690,6 +926,7 @@ def get_parent_collections_for_object(obj):
 
     return parent_collections
 
+
 def make_scene_empty(scene=None):
     """Delete all objects, worlds and collections in given scene and clean everything.
         Args:
@@ -726,6 +963,7 @@ def make_scene_empty(scene=None):
     # Clean everything
     bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
 
+
 def purge_orphans(is_recursive):
     data_types = [attr for attr in dir(bpy.data) if
                     isinstance(getattr(bpy.data, attr), bpy.types.bpy_prop_collection)]
@@ -743,6 +981,7 @@ def purge_orphans(is_recursive):
 
     if is_recursive:
         purge_orphans(is_recursive=False)
+
 
 def get_asset_children(asset):
     return list(asset.objects) if isinstance(asset, bpy.types.Collection) else list(asset.children)
@@ -762,5 +1001,160 @@ def get_and_select_camera(objects):
 def is_camera(obj):
     return isinstance(obj, bpy.types.Object) and obj.type == "CAMERA"
 
+
 def is_collection(obj):
     return isinstance(obj, bpy.types.Collection)
+
+def get_value_safe(v):
+    """Convert values to JSON friendly attributes"""
+    if isinstance(v, (Vector, Euler, Quaternion, Color)):
+        return list(v)
+    elif isinstance(v, (int, float, str, bool)):
+        return v
+    elif isinstance(v, (list, tuple)):
+        return [get_value_safe(x) for x in v]
+    return str(v)
+
+def rsetattr(obj, attr, val):
+    pre, _, post = attr.rpartition('.')
+    target = rgetattr(obj, pre) if pre else obj
+    current = getattr(target, post, None)
+
+    if isinstance(current, (Vector, Euler, Quaternion, Color)):
+        if isinstance(val, (list, tuple)):
+            current[:] = val
+        else:
+            raise TypeError(f"Incompatible value for {attr}: expected list/tuple, got {type(val)}")
+    else:
+        setattr(target, post, val)
+
+def rgetattr(obj, attr, *args):
+    def _getattr(obj, attr):
+        return getattr(obj, attr, *args)
+    return functools.reduce(_getattr, [obj] + attr.split('.'))
+
+def rhasattr(obj, attr):
+    def _hasattr(obj, attr):
+        if obj is None or not hasattr(obj, attr):
+            return None
+        return getattr(obj, attr)
+    result = functools.reduce(_hasattr, [obj] + attr.split('.'))
+    return result is not None
+
+def get_properties_on_object(obj, frame=1):
+    """Get the properties value on an object based on list of properties from setting.
+    At a given frame.
+    Arguments:
+        obj: object to get the property value from
+        frame: at which frame get the property
+
+    return: dict"""
+    bpy.context.scene.frame_set(frame)
+
+    data = {}
+
+    properties = pipeline.get_non_keyed_property_to_export()
+    for attr in properties:
+        if not rhasattr(obj, attr):
+            continue
+        data[attr] = get_value_safe(rgetattr(obj, attr))
+
+    # Custom properties
+    custom = {}
+    for key in obj.keys():
+        if key != "_RNA_UI":
+            custom[key] = get_value_safe(obj[key])
+    if custom:
+        data[SNAPSHOT_CUSTOM_PROPERTIES] = custom
+
+    if not obj.type == "ARMATURE":
+        return data
+
+    # If it's an armature, capture all bone pose
+    pose_data = {}
+    for pb in obj.pose.bones:
+        pb_data = {}
+        for attr in properties:
+            if not rhasattr(pb, attr):
+                continue
+            pb_data[attr] = get_value_safe(rgetattr(pb, attr))
+        pb_data[SNAPSHOT_CUSTOM_PROPERTIES] = {k: get_value_safe(v) for k, v in pb.items() if k != "_RNA_UI"}
+        pose_data[pb.name] = pb_data
+    data[SNAPSHOT_POSE_BONE] = pose_data
+
+    return data
+
+
+def set_properties_on_object(obj, data, frame=1):
+    """Set the properties value on an object based on list of properties from data.
+        At a given frame.
+        Arguments:
+            obj: object to set the property value from
+            data: dict {attr_name:value}
+            frame: at which frame get the property
+
+        return: dict"""
+    bpy.context.scene.frame_set(frame)
+
+    properties = pipeline.get_non_keyed_property_to_export()
+
+    for attr in properties:
+        if not attr in data or not rhasattr(obj, attr):
+            continue
+        rsetattr(obj, attr, data[attr])
+
+    # Custom properties
+    for k, v in data.get(SNAPSHOT_CUSTOM_PROPERTIES, {}).items():
+        obj[k] = v
+
+    if not obj.type == "ARMATURE" and SNAPSHOT_POSE_BONE not in data:
+        return
+
+    # If it's an armature, capture all bone pose
+    for bone_name, bone_data in data[SNAPSHOT_POSE_BONE].items():
+        if not bone_name in obj.pose.bones:
+            continue
+        pb = obj.pose.bones[bone_name]
+        for attr in properties:
+            if not attr in bone_data:
+                continue
+            rsetattr(pb, attr, bone_data[attr])
+
+        for k, v in bone_data.get(SNAPSHOT_CUSTOM_PROPERTIES, {}).items():
+            pb[k] = v
+
+
+def restore_properties_on_instance(instance_obj, corresponding_instance):
+    """Set properties of the data _snapshot exported with the blend animation
+    for all objects in the corresponding_instance"""
+    snapshot_data = pipeline.get_avalon_node(instance_obj, get_property=SNAPSHOT_PROPERTY)
+    if not snapshot_data:
+        print(f"No snapshot data found on {instance_obj.name}")
+        return
+    for obj in pipeline.get_container_content(corresponding_instance):
+        data = snapshot_data.get(obj.name, None)
+        if not data:
+            continue
+        set_properties_on_object(obj, data)
+def get_containers_from_selected():
+    containers = set()
+    all_selected = set(get_selection())
+    for blender_object in all_selected:
+        avalon_node = pipeline.get_avalon_node(blender_object)
+        if avalon_node:
+            containers.add(blender_object)
+
+        all_parents = set(get_all_parents(blender_object)).union(get_parent_collections_for_object(blender_object))
+        for object_parent in all_parents:
+            if pipeline.get_avalon_node(object_parent):
+                containers.add(object_parent)
+
+    return list(containers)
+
+def get_viewport_shading():
+    try:
+        window = bpy.data.window_managers[0].windows[0]
+        area = next(iter(area for area in window.screen.areas if area.type == "VIEW_3D"))
+        return area.spaces[0].shading.type
+    except StopIteration:
+        return

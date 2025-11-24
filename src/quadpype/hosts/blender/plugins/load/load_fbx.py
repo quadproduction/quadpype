@@ -12,10 +12,9 @@ from quadpype.pipeline import (
 )
 from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.pipeline import (
-    AVALON_CONTAINERS,
     get_avalon_node
 )
-
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
 
 class FbxModelLoader(plugin.BlenderLoader):
     """Load FBX models.
@@ -109,7 +108,6 @@ class FbxModelLoader(plugin.BlenderLoader):
                     name_action = anim_data.action.name
                     anim_data.action.name = f"{group_name}:{name_action}"
 
-            lib.imprint(obj, {"container_name": group_name})
 
         plugin.deselect_all()
 

@@ -1,3 +1,4 @@
+import copy
 import sqlite3
 from pathlib import Path
 from qtpy import QtCore, QtGui
@@ -104,22 +105,29 @@ class WorkFileCache:
         return [row[0] for row in rows]
 
 
-def set_item_state(session, item, task_name=None, app_action=None):
+def set_item_state(session, item, task_name=None, asset_name=None, app_action=None):
     """
     Will set a different icon on the icon if a WF or PublishedWF exists
     """
+    search_session = copy.deepcopy(session)
 
-    if not session.get("AVALON_TASK", None):
+    if not search_session.get("AVALON_TASK", None):
         return
 
     if not task_name:
-        task_name = session.get("AVALON_TASK")
-    project = session.get("AVALON_PROJECT")
-    asset = session.get("AVALON_ASSET")
+        task_name = search_session.get("AVALON_TASK")
+    project = search_session.get("AVALON_PROJECT")
+    if not asset_name:
+        asset_name = search_session.get("AVALON_ASSET")
 
-    workfile_exts = WorkFileCache().load_task_extensions(project, task_name, asset)
+    search_session.update({
+        "AVALON_TASK":task_name,
+        "AVALON_ASSET":asset_name
+    })
 
-    publish_representations = get_workfile_publish_representations(session)
+    workfile_exts = WorkFileCache().load_task_extensions(project, task_name, asset_name)
+
+    publish_representations = get_workfile_publish_representations(search_session)
 
     ext = KNOWN_EXTS
     if app_action:

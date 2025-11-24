@@ -5,7 +5,7 @@ from quadpype.hosts.blender.api import plugin, lib
 import bpy
 
 
-def blender_camera_bg_image_importer(image_filepath, replace_last_bg  = False):
+def blender_camera_bg_image_importer(image_filepath, context, replace_last_bg  = False):
     """
     Will add or reload an image in the camera background
 
@@ -37,7 +37,7 @@ class ImageCameraLoader(plugin.BlenderLoader):
     """
 
     families = ["image", "render", "review"]
-    representations = ["png"]
+    representations = ["png", "exr"]
 
     label = "Replace Last Image in Camera"
     icon = "refresh"
@@ -56,7 +56,7 @@ class ImageCameraLoader(plugin.BlenderLoader):
             options: Additional settings dictionary
         """
         image_filepath = self.filepath_from_context(context)
-        blender_camera_bg_image_importer(image_filepath, replace_last_bg =True)
+        blender_camera_bg_image_importer(image_filepath, context, replace_last_bg =True)
 
 
 class ImageCameraAdder(plugin.BlenderLoader):
@@ -66,7 +66,7 @@ class ImageCameraAdder(plugin.BlenderLoader):
     """
 
     families = ["image", "render", "review"]
-    representations = ["png"]
+    representations = ["png", "exr"]
 
     label = "Add Image in Camera"
     icon = "file-image-o"
@@ -85,4 +85,4 @@ class ImageCameraAdder(plugin.BlenderLoader):
             options: Additional settings dictionary
         """
         image_filepath = self.filepath_from_context(context)
-        blender_camera_bg_image_importer(image_filepath, replace_last_bg =False)
+        blender_camera_bg_image_importer(image_filepath, context, replace_last_bg =False)

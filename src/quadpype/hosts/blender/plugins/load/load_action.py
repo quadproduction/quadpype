@@ -94,7 +94,6 @@ class BlendActionLoader(plugin.BlenderLoader):
 
                 anim_data.action.make_local()
 
-            lib.imprint(obj, {"container_name": container_name})
             objects_list.append(obj)
 
         delete_avalon_node(animation_container)
@@ -222,7 +221,6 @@ class BlendActionLoader(plugin.BlenderLoader):
                     strip.action = anim_data.action
                     strip.action_frame_end = anim_data.action.frame_range[1]
 
-            lib.imprint(obj, {"container_name": collection.name})
             objects_list.append(obj)
 
         delete_avalon_node(anim_container)
