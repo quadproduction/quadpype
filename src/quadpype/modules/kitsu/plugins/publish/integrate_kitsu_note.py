@@ -34,8 +34,8 @@ class IntegrateKitsuNote(pyblish.api.ContextPlugin):
 
         def replace_missing_key(match):
             """If key is not found in kwargs, set None instead"""
-            key = match.group(1)
-            if key not in instance.data:
+            key = match.group(2)
+            if key not in instance.data or not instance.data[key]:
                 self.log.warning(
                     "Key '{}' was not found in instance.data "
                     "and will be rendered as an empty string "
@@ -43,10 +43,12 @@ class IntegrateKitsuNote(pyblish.api.ContextPlugin):
                 )
                 return ""
             else:
-                return str(instance.data[key])
+                first_part = str(match.group(1)) if match.group(1) else ''
+                last_part = str(match.group(3)) if match.group(3) else ''
+                return first_part + str(instance.data[key]) + last_part
 
         template = self.custom_comment_template["comment_template"]
-        pattern = r"\{([^}]*)\}"
+        pattern = r"(?:<([^{<>]*))?\{([^}]*)\}(?:([^{<>]*)>)?"
         return re.sub(pattern, replace_missing_key, template)
 
     @staticmethod
@@ -56,17 +58,27 @@ class IntegrateKitsuNote(pyblish.api.ContextPlugin):
             if 'sequence' in repr.get("tags", [])
         ]
 
+    @staticmethod
+    def _get_all_families(instance):
+        return set([instance.data["family"]] + instance.data.get("families", []))
+
+    @staticmethod
+    def generate_render_layers_label(instance):
+        render_layers_list = "\n- ".join(
+            [
+                f"{ins['name']} (v{ins['version']:03d})"
+                for ins in instance.data['render_layers']
+            ]
+        )
+        return "Exported render layers :\n- " + render_layers_list
+
     def process(self, context):
         for instance in context:
             # Check if instance is a review by checking its family
             # Allow a match to primary family or any of families
-            families = set(
-                [instance.data["family"]] + instance.data.get("families", [])
-            )
-            #representations = instance.data.get("representations", [])
 
             # Subset should have a review or a kitsureview tag
-            is_review = "review" in families
+            is_review = "review" in self._get_all_families(instance)
 
             creator_attributes = instance.data.get('creator_attributes', {})
             mark_for_review = creator_attributes.get("mark_for_review", True)
@@ -134,6 +146,10 @@ class IntegrateKitsuNote(pyblish.api.ContextPlugin):
             # Get comment text body
             publish_comment = instance.data.get("comment")
             if self.custom_comment_template["enabled"]:
+
+                if instance.data.get("render_layers", None):
+                    instance.data['render_layers_list'] = self.generate_render_layers_label(instance)
+
                 publish_comment = self.format_publish_comment(instance)
 
             if not publish_comment:

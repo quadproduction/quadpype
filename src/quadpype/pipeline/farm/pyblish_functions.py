@@ -233,6 +233,7 @@ def create_skeleton_instance(
         "frameStartHandle": time_data.start - time_data.handle_start,
         "frameEndHandle": time_data.end + time_data.handle_end,
         "comment": data.get("comment"),
+        "render_layers": data.get("render_layers"),
         "fps": time_data.fps,
         "source": source,
         "extendFrames": data.get("extendFrames"),
