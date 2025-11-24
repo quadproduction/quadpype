@@ -25,7 +25,7 @@ jobs:
 
             // Regex to capture a complete line with potentially multiple tickets
             // Example: "Ticket #280 #277 #300 Update to Deployed"
-            const lineRegex = /Ticket\s*:?\s*((?:#\d+\s*)+)\s*Update(?:\s+status)?(?:\s+to)?\s*:?\s*([^\n,\-•]+)/gi;
+            const lineRegex = /Ticket\s*:?\s*((?:#\d+[\s,]*)+)\s*Update(?:\s+status)?(?:\s+to)?\s*:?\s*([^\n\-•]+)/gi;
             const lines = [...prBody.matchAll(lineRegex)];
 
             if (lines.length === 0) {
