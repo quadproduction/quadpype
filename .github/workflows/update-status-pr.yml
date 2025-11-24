@@ -9,49 +9,73 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
-      issues: write
       contents: read
+      issues: write
       pull-requests: read
-      repository-projects: read
 
     steps:
       - name: Parse PR and update Project status
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.PROJECT_TOKEN || secrets.GITHUB_TOKEN  }}
+          # Use PROJECT_TOKEN if available, otherwise fallback to GITHUB_TOKEN
+          github-token: ${{ secrets.PROJECT_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const prBody = context.payload.pull_request.body || '';
             console.log('PR Body:', prBody);
 
-            // Capture sentences like "Ticket: #123, Update status: NouveauStatut"
-            const regex = /Ticket\s*:?\s*#(\d+)\s*,?\s*Update\s+status\s*:?\s*([^\n,]+)/gi;
-            const matches = [...prBody.matchAll(regex)];
+            // Regex to capture a complete line with potentially multiple tickets
+            // Example: "Ticket #280 #277 #300 Update to Deployed"
+            const lineRegex = /Ticket\s*:?\s*((?:#\d+\s*)+)\s*Update(?:\s+status)?(?:\s+to)?\s*:?\s*([^\n,\-•]+)/gi;
+            const lines = [...prBody.matchAll(lineRegex)];
 
-            if (matches.length === 0) {
-              console.log('No ticket found with given syntax.');
+            if (lines.length === 0) {
+              console.log('No tickets found with expected syntax');
               return;
             }
 
-            for (const match of matches) {
-              const issueNumber = match[1];
-              const newStatus = match[2].trim();
+            // For each line found, extract all ticket numbers
+            const ticketUpdates = [];
+            for (const line of lines) {
+              const ticketsString = line[1]; // Ex: "#280 #277 #300 "
+              const newStatus = line[2].trim();
 
-              console.log(`Treating ticket #${issueNumber} with status : ${newStatus}`);
+              // Extract all ticket numbers from this line
+              const ticketNumbers = [...ticketsString.matchAll(/#(\d+)/g)].map(m => m[1]);
+
+              // Add each ticket with its status
+              for (const ticketNumber of ticketNumbers) {
+                ticketUpdates.push({ number: ticketNumber, status: newStatus });
+              }
+            }
+
+            console.log(`📋 ${ticketUpdates.length} ticket(s) to update`);
+
+            for (const { number: issueNumber, status: newStatus } of ticketUpdates) {
+
+              console.log(`Processing ticket #${issueNumber} with status: ${newStatus}`);
 
               try {
-                // Get global ID from issue
+                // 1. Retrieve the global ID of the issue and ALL its projects
                 const issueQuery = `
                   query($owner: String!, $repo: String!, $number: Int!) {
                     repository(owner: $owner, name: $repo) {
                       issue(number: $number) {
                         id
-                        projectItems(first: 10) {
+                        title
+                        projectItems(first: 50) {
                           nodes {
                             id
                             project {
                               id
                               title
+                              number
                             }
+                          }
+                        }
+                        projectsV2(first: 50) {
+                          nodes {
+                            id
+                            title
                           }
                         }
                       }
@@ -66,20 +90,38 @@ jobs:
                 });
 
                 const issue = issueData.repository.issue;
+                console.log(`📋 Ticket #${issueNumber}: "${issue.title}"`);
+                console.log(`🔍 Projects V2 found:`, issue.projectsV2.nodes.length);
+                console.log(`🔍 Project Items found:`, issue.projectItems.nodes.length);
+
+                // Display details for debugging
+                if (issue.projectsV2.nodes.length > 0) {
+                  console.log('Projects V2:', issue.projectsV2.nodes.map(p => p.title).join(', '));
+                }
+                if (issue.projectItems.nodes.length > 0) {
+                  console.log('Project Items:', issue.projectItems.nodes.map(p => p.project.title).join(', '));
+                }
+
                 const projectItems = issue.projectItems.nodes;
 
                 if (projectItems.length === 0) {
-                  console.log(`⚠️ Ticket number #${issueNumber} is not associated to any project.`);
+                  console.log(`⚠️ Ticket #${issueNumber} is not associated with any V2 project`);
+                  console.log(`ℹ️ Please verify that:`);
+                  console.log(`   1. The ticket is in a GitHub Projects (V2/beta)`);
+                  console.log(`   2. The token has "project" permissions (read/write)`);
+                  console.log(`   3. It's not a "Classic Project" (not supported)`);
                   continue;
                 }
 
+                // 2. For each associated project
                 for (const projectItem of projectItems) {
                   const projectId = projectItem.project.id;
                   const projectTitle = projectItem.project.title;
                   const itemId = projectItem.id;
 
-                  console.log(`Concerned project : ${projectTitle}`);
+                  console.log(`Updating in project: ${projectTitle}`);
 
+                  // 3. Retrieve project fields (especially the Status field)
                   const projectFieldsQuery = `
                     query($projectId: ID!) {
                       node(id: $projectId) {
@@ -105,12 +147,13 @@ jobs:
                     projectId: projectId
                   });
 
+                  // 4. Find the "Status" field and the corresponding option
                   const fields = projectData.node.fields.nodes;
                   const statusField = fields.find(f => f.name === 'Status');
 
                   if (!statusField) {
-                    console.log(`⚠️ No field named "Status" found in project ${projectTitle}`);
-                    console.log('Available fields are :', fields.map(f => f.name).join(', '));
+                    console.log(`⚠️ No "Status" field found in project ${projectTitle}`);
+                    console.log('Available fields:', fields.map(f => f.name).join(', '));
                     continue;
                   }
 
@@ -119,11 +162,12 @@ jobs:
                   );
 
                   if (!statusOption) {
-                    console.log(`⚠️ Status "${newStatus}" does not exist in project.`);
-                    console.log('Available status are :', statusField.options.map(o => o.name).join(', '));
+                    console.log(`⚠️ Status "${newStatus}" does not exist in the project`);
+                    console.log('Available statuses:', statusField.options.map(o => o.name).join(', '));
                     continue;
                   }
 
+                  // 5. Update the status
                   const updateMutation = `
                     mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
                       updateProjectV2ItemFieldValue(
@@ -148,18 +192,19 @@ jobs:
                     optionId: statusOption.id
                   });
 
-                  console.log(`✓ Status has been updated to "${newStatus}" in projet ${projectTitle}`);
+                  console.log(`✓ Status updated to "${newStatus}" in project ${projectTitle}`);
 
+                  // 6. Add a comment to the issue
                   await github.rest.issues.createComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     issue_number: issueNumber,
-                    body: `✅ Statut mis à jour vers **${newStatus}** dans le projet **${projectTitle}** suite au merge de la PR #${context.payload.pull_request.number}`
+                    body: `✅ Status mis à jour vers **${newStatus}** suite à la merge de la PR #${context.payload.pull_request.number}`
                   });
                 }
 
               } catch (error) {
-                console.error(`✗ An error has occured when updating ticket #${issueNumber}:`, error);
+                console.error(`✗ Error updating ticket #${issueNumber}:`, error);
                 console.error('Details:', error.message);
               }
             }
