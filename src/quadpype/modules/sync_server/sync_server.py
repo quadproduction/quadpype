@@ -11,6 +11,7 @@ from quadpype.lib import Logger, get_local_site_id
 from quadpype.modules.base import ModulesManager
 from quadpype.pipeline import Anatomy
 from quadpype.pipeline.load.utils import get_representation_path_with_anatomy
+from quadpype.widgets.message_notification import notify_message
 
 from .utils import SyncStatus, ResumableError
 
@@ -442,6 +443,9 @@ class SyncServerThread(threading.Thread):
                     files_created = await asyncio.gather(
                         *task_files_to_process,
                         return_exceptions=True)
+
+                    representations_to_check = set()
+
                     for file_id, info in zip(files_created,
                                              files_processed_info):
                         file, representation, site, project_name = info
@@ -455,6 +459,34 @@ class SyncServerThread(threading.Thread):
                                               representation,
                                               site,
                                               error)
+
+                        representations_to_check.add(
+                            (
+                                representation["_id"],
+                                site,
+                                representation['context'][0]['asset'],
+                                representation['context'][0]['subset'],
+                                representation['context'][0]['ext']
+                            )
+                        )
+
+                    for repre_data in representations_to_check:
+                        repre_id, site, asset, subset, ext = repre_data
+
+                        sync_server = ModulesManager().modules_by_name.get("sync_server")
+                        stream_side = "Download" if site == local_site else "Upload"
+
+                        if sync_server.is_representation_on_site(
+                                project_name,
+                                repre_id,
+                                site
+                        ):
+                            notify_message(
+                                f"{stream_side} Finished",
+                                f" {asset}\n"
+                                f"{subset}\n"
+                                f"{ext}"
+                            )
 
                 duration = time.time() - start_time
                 self.log.debug("Loop took {:.2f}s".format(duration))
