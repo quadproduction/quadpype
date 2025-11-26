@@ -1,11 +1,20 @@
-"""Load an asset in Blender from an Alembic file."""
-
 from typing import Dict, List, Optional
-from quadpype.hosts.blender.api import plugin, lib
+
 import bpy
 
+from quadpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api.pipeline import (
+    ResolutionImport
+)
+from quadpype.lib.attribute_definitions import BoolDef
 
-def blender_camera_bg_image_importer(image_filepath, context, replace_last_bg  = False):
+
+def blender_camera_bg_image_importer(
+        image_filepath,
+        context,
+        replace_last_bg=False,
+        update_scene_resolution=False
+):
     """
     Will add or reload an image in the camera background
 
@@ -27,6 +36,10 @@ def blender_camera_bg_image_importer(image_filepath, context, replace_last_bg  =
     background.source = 'IMAGE'
     background.image = imported_image
 
+    if update_scene_resolution:
+        bpy.context.scene.render.resolution_x, bpy.context.scene.render.resolution_y = background.image.size
+        print(f"Scene resolution has been updated to {background.image.size[0]}x{background.image.size[1]}.")
+
     print(f"Image at path {imported_image.filepath} has been correctly loaded in scene as camera background.")
 
 
@@ -43,6 +56,20 @@ class ImageCameraLoader(plugin.BlenderLoader):
     icon = "refresh"
     color = "orange"
 
+    defaults = {
+        'update_res': True
+    }
+
+    @classmethod
+    def get_options(cls, contexts):
+        return [
+            BoolDef(
+                "update_res",
+                label=ResolutionImport.UPDATE.value,
+                default=cls.defaults['update_res'],
+            )
+        ]
+
     def process_asset(
         self, context: dict, name: str, namespace: Optional[str] = None,
         options: Optional[Dict] = None
@@ -56,7 +83,12 @@ class ImageCameraLoader(plugin.BlenderLoader):
             options: Additional settings dictionary
         """
         image_filepath = self.filepath_from_context(context)
-        blender_camera_bg_image_importer(image_filepath, context, replace_last_bg =True)
+        blender_camera_bg_image_importer(
+            image_filepath,
+            context,
+            replace_last_bg=True,
+            update_scene_resolution=options.get('update_res', self.defaults['update_res'])
+        )
 
 
 class ImageCameraAdder(plugin.BlenderLoader):
@@ -72,6 +104,20 @@ class ImageCameraAdder(plugin.BlenderLoader):
     icon = "file-image-o"
     color = "green"
 
+    defaults = {
+        'update_res': True
+    }
+
+    @classmethod
+    def get_options(cls, contexts):
+        return [
+            BoolDef(
+                "update_res",
+                label=ResolutionImport.UPDATE.value,
+                default=cls.defaults['update_res'],
+            )
+        ]
+
     def process_asset(
         self, context: dict, name: str, namespace: Optional[str] = None,
         options: Optional[Dict] = None
@@ -85,4 +131,9 @@ class ImageCameraAdder(plugin.BlenderLoader):
             options: Additional settings dictionary
         """
         image_filepath = self.filepath_from_context(context)
-        blender_camera_bg_image_importer(image_filepath, context, replace_last_bg =False)
+        blender_camera_bg_image_importer(
+            image_filepath,
+            context,
+            replace_last_bg=False,
+            update_scene_resolution=options.get('update_res', self.defaults['update_res'])
+        )

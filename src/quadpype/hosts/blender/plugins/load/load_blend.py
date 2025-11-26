@@ -1,6 +1,5 @@
 from typing import Dict, List, Optional
 from pathlib import Path
-from copy import copy
 
 import bpy
 import re
@@ -34,7 +33,6 @@ from quadpype.hosts.blender.api.pipeline import (
     has_avalon_node,
     get_avalon_node
 )
-from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
 from quadpype.hosts.blender.api.workfile_template_builder import (
     ImportMethod
 )
@@ -593,7 +591,7 @@ class BlendLoader(plugin.BlenderLoader):
 
             elif obj.name in snap_properties:
                 lib.set_properties_on_object(obj, snap_properties[obj.name])
-                
+
             if obj.name in materials_by_objects:
                 for mat in materials_by_objects[obj.name]:
                     if not mat:

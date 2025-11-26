@@ -13,7 +13,8 @@ from .pipeline import (
     BlenderHost,
     get_avalon_node,
     has_avalon_node,
-    delete_avalon_node
+    delete_avalon_node,
+    ResolutionImport
 )
 
 from .plugin import (
@@ -80,6 +81,7 @@ __all__ = [
     "get_avalon_node",
     "has_avalon_node",
     "delete_avalon_node",
+    "ResolutionImport",
 
     "BlenderCreator",
     "BlenderLoader",
