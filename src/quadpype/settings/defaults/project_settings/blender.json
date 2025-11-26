@@ -6,6 +6,10 @@
     },
     "set_resolution_startup": true,
     "set_frames_startup": true,
+    "CustomFrameStart": {
+        "enabled": true,
+        "frame_start": 101
+    },
     "include_handles": {
         "include_handles_default": false,
         "profiles": []

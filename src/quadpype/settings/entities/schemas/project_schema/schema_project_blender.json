@@ -42,6 +42,27 @@
             "label": "Set Start/End Frames and FPS on Startup"
         },
         {
+            "type": "dict",
+            "collapsible": true,
+            "key": "CustomFrameStart",
+            "label": "Custom Frame Start",
+            "checkbox_key": "enabled",
+            "children": [
+                {
+                    "type": "boolean",
+                    "key": "enabled",
+                    "label": "Enabled"
+                },
+                {
+                    "key": "frame_start",
+                    "type": "number",
+                    "label": "Frame Start",
+                    "minimum": 1,
+                    "maximum": 10001
+                }
+            ]
+        },
+        {
             "key": "imageio",
             "type": "dict",
             "label": "Color Management (OCIO managed)",

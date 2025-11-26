@@ -68,6 +68,7 @@ from .constants import (
     ORIGINAL_EXCEPTHOOK,
     AVALON_CONTAINERS,
     AVALON_PROPERTY,
+    CUSTOM_FRAME_OFFSET,
     IS_HEADLESS
 )
 
@@ -575,6 +576,20 @@ def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict, erase: b
 
     node[set_property] = json.dumps(existing_data)
     node.property_overridable_library_set(f'["{set_property}"]', True)
+
+
+def set_custom_frame_offset(custom_frame_offset):
+    """ Write custom frame offset value as retrieved from settings in scene properties.
+    Populate each scene in file to avoid retrieving incorrect values.
+    """
+    for scene in bpy.data.scenes:
+        scene[CUSTOM_FRAME_OFFSET] = custom_frame_offset
+
+
+def get_custom_frame_offset():
+    """ Get custom frame start from current scene properties.
+    """
+    return bpy.context.scene[CUSTOM_FRAME_OFFSET] - 1
 
 
 def get_avalon_node(node, get_property=AVALON_PROPERTY):

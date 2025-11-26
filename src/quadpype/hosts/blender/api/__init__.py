@@ -11,6 +11,7 @@ from .pipeline import (
     publish,
     containerise,
     BlenderHost,
+    set_custom_frame_offset,
     get_avalon_node,
     has_avalon_node,
     delete_avalon_node
@@ -80,7 +81,7 @@ __all__ = [
     "get_avalon_node",
     "has_avalon_node",
     "delete_avalon_node",
-
+    "set_custom_frame_offset",
     "BlenderCreator",
     "BlenderLoader",
 
