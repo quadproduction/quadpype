@@ -44,8 +44,8 @@
         {
             "type": "dict",
             "collapsible": true,
-            "key": "CustomFrameStart",
-            "label": "Custom Frame Start",
+            "key": "FrameStartOffset",
+            "label": "Frame Start Offset",
             "checkbox_key": "enabled",
             "children": [
                 {
@@ -54,11 +54,11 @@
                     "label": "Enabled"
                 },
                 {
-                    "key": "frame_start",
+                    "key": "frame_start_offset",
                     "type": "number",
-                    "label": "Frame Start",
-                    "minimum": 1,
-                    "maximum": 10001
+                    "label": "Frame Start Offset Value",
+                    "minimum": 0,
+                    "maximum": 10000
                 }
             ]
         },

@@ -11,15 +11,15 @@ if not project_name:
 
 project_settings = get_project_settings(project_name)
 
-frame_offset_settings = project_settings.get('blender', {}).get('CustomFrameStart', None)
+frame_offset_settings = project_settings.get('blender', {}).get('FrameStartOffset', None)
 if not frame_offset_settings:
-    logging.error("Can not retrieve settings for plugin 'CustomFrameStart'.")
+    logging.error("Can not retrieve settings for plugin 'FrameStartOffset'.")
     quit()
 
 if not frame_offset_settings.get('enabled', False):
-    logging.warning("Custom frame start has not been enabled and will not be set for current scene.")
+    logging.warning("rame Start Offset has not been enabled and will not be set for current scene.")
     quit()
 
-custom_frame_offset = frame_offset_settings.get('frame_start', 1)-1
+custom_frame_offset = frame_offset_settings.get('frame_start_offset', 0)
 set_custom_frame_offset(custom_frame_offset)
-logging.info(f"Custom frame offset with a value of {custom_frame_offset} have been applied to scenes properties.")
+logging.info(f"Frame Start Offset with a value of {custom_frame_offset} have been applied to scenes properties.")
