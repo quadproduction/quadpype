@@ -799,6 +799,7 @@ def burnins_from_data(
         burnin.add_text(text, align, frame_start, frame_end)
 
     ffmpeg_args = []
+
     if codec_data:
         # Use codec definition from method arguments
         ffmpeg_args = codec_data
@@ -816,6 +817,7 @@ def burnins_from_data(
             copy_args = (
                 "-metadata",
                 "-metadata:s:v:0",
+                "-q:v"
             )
             args = source_ffmpeg_cmd.split(" ")
             for idx, arg in enumerate(args):
