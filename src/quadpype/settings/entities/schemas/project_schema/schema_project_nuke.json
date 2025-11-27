@@ -188,6 +188,19 @@
                             "default": true
                         },
                         {
+                            "key": "use_backdrop_loader_creator",
+                            "type": "boolean",
+                            "label": "Use New System Backdrop Create",
+                            "default": true
+                        },
+                        {
+                            "type": "number",
+                            "key": "backdrop_padding",
+                            "label": "Backdrop Padding",
+                            "minimum": 20,
+                            "maximum": 500
+                        },
+                        {
                             "key": "prenodes",
                             "label": "Pre write nodes",
                             "type": "dict-modifiable",
@@ -245,6 +258,19 @@
                             "name": "template_nuke_write_attrs"
                         },
                         {
+                            "key": "use_backdrop_loader_creator",
+                            "type": "boolean",
+                            "label": "Use New System Backdrop Create",
+                            "default": true
+                        },
+                        {
+                            "type": "number",
+                            "key": "backdrop_padding",
+                            "label": "Backdrop Padding",
+                            "minimum": 20,
+                            "maximum": 500
+                        },
+                        {
                             "key": "prenodes",
                             "label": "Pre write nodes",
                             "type": "dict-modifiable",
@@ -300,6 +326,19 @@
                         {
                             "type": "schema_template",
                             "name": "template_nuke_write_attrs"
+                        },
+                        {
+                            "key": "use_backdrop_loader_creator",
+                            "type": "boolean",
+                            "label": "Use New System Backdrop Create",
+                            "default": true
+                        },
+                        {
+                            "type": "number",
+                            "key": "backdrop_padding",
+                            "label": "Backdrop Padding",
+                            "minimum": 20,
+                            "maximum": 500
                         },
                         {
                             "key": "prenodes",
