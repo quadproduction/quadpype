@@ -330,6 +330,13 @@ def set_frame_range(data):
     scene.render.fps_base = round(fps) / fps
 
 
+def apply_frame_offset():
+    frame_offset = get_custom_frame_offset()
+    scene = bpy.context.scene
+    scene.frame_end += frame_offset
+    scene.frame_start += frame_offset
+
+
 def set_resolution(data):
     scene = bpy.context.scene
 
@@ -378,6 +385,8 @@ def on_new():
     if set_frames_startup:
         set_frame_range(data)
 
+    apply_frame_offset()
+
     unit_scale_settings = settings.get("unit_scale_settings")
     unit_scale_enabled = unit_scale_settings.get("enabled")
     if unit_scale_enabled:
@@ -398,6 +407,8 @@ def on_open():
         set_resolution(data)
     if set_frames_startup:
         set_frame_range(data)
+
+    apply_frame_offset()
 
     unit_scale_settings = settings.get("unit_scale_settings")
     unit_scale_enabled = unit_scale_settings.get("enabled")
@@ -588,8 +599,37 @@ def set_custom_frame_offset(custom_frame_offset):
 
 def get_custom_frame_offset():
     """ Get custom frame start from current scene properties.
+    If not found in scene properties, get it from project settings
+    and automatically set value to property CUSTOM_FRAME_OFFSET.
     """
-    return bpy.context.scene[CUSTOM_FRAME_OFFSET] - 1
+    custom_frame_offset = bpy.context.scene.get(CUSTOM_FRAME_OFFSET, None)
+    if custom_frame_offset:
+        return custom_frame_offset
+
+    project_name = os.environ.get('AVALON_PROJECT', None)
+    if not project_name:
+        print("Can not retrieve project name from environment variable 'AVALON_PROJECT'.")
+        set_custom_frame_offset(0)
+        return
+
+    project_settings = get_project_settings(project_name)
+
+    frame_offset_settings = project_settings.get('blender', {}).get('FrameStartOffset', None)
+    if not frame_offset_settings:
+        print("Can not retrieve settings for plugin 'FrameStartOffset'.")
+        set_custom_frame_offset(0)
+        return
+
+    if not frame_offset_settings.get('enabled', False):
+        print("rame Start Offset has not been enabled and will not be set for current scene.")
+        set_custom_frame_offset(0)
+        return
+
+    custom_frame_offset = frame_offset_settings.get('frame_start_offset', 0)
+    set_custom_frame_offset(custom_frame_offset)
+    print(f"Frame Start Offset with a value of {custom_frame_offset} have been applied to scenes properties.")
+
+    return custom_frame_offset
 
 
 def get_avalon_node(node, get_property=AVALON_PROPERTY):
@@ -876,6 +916,7 @@ def copy_render_settings(src_scene, dst_scene):
     data = get_asset_data()
     set_resolution(data)
     set_frame_range(data)
+    apply_frame_offset()
 
     if not all([hasattr(src_scene.display, "shading"), hasattr(dst_scene.display, "shading")]):
         return

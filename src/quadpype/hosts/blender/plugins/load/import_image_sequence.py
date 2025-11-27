@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 import bpy
 from quadpype.hosts.blender.api import plugin, lib
 
+
 def blender_camera_bg_sequence_importer(image_filepath, context, replace_last_bg = False):
     """
     Will add or reload an image sequence in the camera background
@@ -41,6 +42,7 @@ def blender_camera_bg_sequence_importer(image_filepath, context, replace_last_bg
         raise ValueError("Can't find frame range informations. Abort.")
 
     frames = (frame_end - frame_start) + 1
+
 
     background.image_user.frame_start = frame_start
     background.image_user.frame_duration = frames

@@ -94,6 +94,7 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
         data = pipeline.get_asset_data()
         pipeline.set_resolution(data)
         pipeline.set_frame_range(data)
+        pipeline.apply_frame_offset()
 
     def get_render_settings_template_preset(self):
 

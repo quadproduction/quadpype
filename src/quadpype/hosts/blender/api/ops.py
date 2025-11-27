@@ -462,6 +462,7 @@ class SetFrameRange(bpy.types.Operator):
     def execute(self, context):
         data = pipeline.get_asset_data()
         pipeline.set_frame_range(data)
+        pipeline.apply_frame_offset()
         return {"FINISHED"}
 
 
