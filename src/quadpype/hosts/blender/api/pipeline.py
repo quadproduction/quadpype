@@ -4,6 +4,7 @@ import re
 import traceback
 import json
 from typing import Callable, Dict, Iterator, List, Optional
+from enum import Enum
 
 import bpy
 
@@ -73,6 +74,10 @@ from .constants import (
 
 
 log = Logger.get_logger(__name__)
+
+
+class ResolutionImport(Enum):
+    UPDATE = "Update res with imported"
 
 
 class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost, WorkFileCache):

@@ -290,6 +290,7 @@ def create_background_plane_from_camera(camera=None, distance=50):
         empty.image_user.frame_duration = bg_img.image_user.frame_duration
         empty.image_user.frame_start = bg_img.image_user.frame_start
         empty.image_user.frame_offset = bg_img.image_user.frame_offset
+        # Necessary to refresh data un blender memory and access image data
         bg_img.image_user.frame_duration
 
     empty.use_empty_image_alpha = True
