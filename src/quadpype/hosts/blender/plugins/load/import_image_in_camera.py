@@ -21,11 +21,12 @@ def blender_camera_bg_image_importer(
     image_filepath: path to the image to load
     replace_last_bg(bool): If False will add an image background, if True, will replace the last imported image background
     """
-    imported_image = bpy.data.images.load(image_filepath)
 
     camera = bpy.context.scene.camera
     if not camera:
         raise ValueError("No camera has been found in scene. Can't import image as camera background.")
+
+    imported_image = bpy.data.images.load(image_filepath)
 
     camera.data.show_background_images = True
     if replace_last_bg and len(camera.data.background_images):

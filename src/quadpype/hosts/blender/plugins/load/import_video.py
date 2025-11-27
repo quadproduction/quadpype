@@ -21,21 +21,10 @@ def blender_camera_bg_video_importer(
     video_filepath: path to the video to load
     replace_last_bg(bool): If False will add an image background, if True, will replace the last imported image background
     """
-    imported_video = bpy.data.images.load(video_filepath)
 
     camera = bpy.context.scene.camera
     if not camera:
         raise ValueError("No camera has been found in scene. Can't import video as camera background.")
-
-    camera.data.show_background_images = True
-    if replace_last_bg and len(camera.data.background_images):
-        background = camera.data.background_images[-1]
-    else:
-        background = camera.data.background_images.new()
-
-    imported_video.source = 'MOVIE'
-    background.source = 'IMAGE'
-    background.image = imported_video
 
     context_data = context.get('version', {}).get('data', {})
     if not context_data:
@@ -47,6 +36,18 @@ def blender_camera_bg_video_importer(
         raise ValueError("Can't find frame range informations. Abort.")
 
     frames = (frame_end - frame_start) + 1
+
+    imported_video = bpy.data.images.load(video_filepath)
+
+    camera.data.show_background_images = True
+    if replace_last_bg and len(camera.data.background_images):
+        background = camera.data.background_images[-1]
+    else:
+        background = camera.data.background_images.new()
+
+    imported_video.source = 'MOVIE'
+    background.source = 'IMAGE'
+    background.image = imported_video
 
     background.image_user.frame_start = frame_start
     background.image_user.frame_duration = frames

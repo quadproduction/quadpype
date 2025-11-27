@@ -25,21 +25,9 @@ def blender_camera_bg_sequence_importer(
     replace_last_bg(bool): If False will add an image background, if True, will replace the last imported image background
     """
 
-    imported_image = bpy.data.images.load(image_filepath)
-
     camera = bpy.context.scene.camera
     if not camera:
         raise ValueError("No camera has been found in scene. Can't import image as camera background.")
-
-    camera.data.show_background_images = True
-    if replace_last_bg and len(camera.data.background_images):
-        background = camera.data.background_images[-1]
-    else:
-        background = camera.data.background_images.new()
-
-    imported_image.source = 'SEQUENCE'
-    background.source = 'IMAGE'
-    background.image = imported_image
 
     context_data = context.get('version', {}).get('data', {})
     if not context_data:
@@ -47,18 +35,34 @@ def blender_camera_bg_sequence_importer(
 
     frame_start = context_data.get('frameStart')
     frame_end = context_data.get('frameEnd')
+
     if not frame_start or not frame_end:
         raise ValueError("Can't find frame range informations. Abort.")
 
     frames = (frame_end - frame_start) + 1
 
-    background.image_user.frame_start = frame_start
-    background.image_user.frame_duration = frames
-    background.image_user.frame_offset = 0
+    imported_image = bpy.data.images.load(image_filepath)
+
+    camera.data.show_background_images = True
+    if replace_last_bg and len(camera.data.background_images):
+        background = camera.data.background_images[-1]
+    else:
+        background = camera.data.background_images.new()
+
+    imported_image.source = 'FILE'
+    background.source = 'IMAGE'
+    background.image = imported_image
 
     if update_scene_resolution:
         bpy.context.scene.render.resolution_x, bpy.context.scene.render.resolution_y = background.image.size
         print(f"Scene resolution has been updated to {background.image.size[0]}x{background.image.size[1]}.")
+
+    imported_image.source = 'SEQUENCE'
+
+    background.image_user.frame_start = frame_start
+    background.image_user.frame_duration = frames
+    background.image_user.frame_offset = 0
+
 
     print(f"Image sequence at path {imported_image.filepath} has been correctly loaded in scene as camera background.")
 
@@ -69,7 +73,7 @@ class ImageSequenceLoader(plugin.BlenderLoader):
     Create background image sequence for active camera and assign selected images.
     """
 
-    families = ["image", "render"]
+    families = ["image", "render", "review"]
     representations = ["png", "exr"]
 
     label = "Replace Last Image Sequence"
@@ -117,7 +121,7 @@ class ImageSequenceAdder(plugin.BlenderLoader):
     Add background image sequence for active camera and assign selected images.
     """
 
-    families = ["image", "render"]
+    families = ["image", "render", "review"]
     representations = ["png", "exr"]
 
     label = "Add Image Sequence"
