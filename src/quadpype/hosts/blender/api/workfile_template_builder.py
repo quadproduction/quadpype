@@ -35,7 +35,7 @@ from quadpype.hosts.blender.api.lib import (
 )
 
 from quadpype.hosts.blender.api import pipeline
-
+from .constants import AVALON_INSTANCES
 from quadpype.lib import (
     attribute_definitions,
     StringTemplate
@@ -444,9 +444,9 @@ class BlenderPlaceholderCreatePlugin(PlaceholderPlugin, PlaceholderCreateMixin):
         placeholder_data["plugin_identifier"] = self.identifier
         placeholder_name = self._create_placeholder_name(placeholder_data)
 
-        instances = bpy.data.collections.get(pipeline.AVALON_INSTANCES)
+        instances = bpy.data.collections.get(AVALON_INSTANCES)
         if not instances:
-            instances = bpy.data.collections.new(name=pipeline.AVALON_INSTANCES)
+            instances = bpy.data.collections.new(name=AVALON_INSTANCES)
             bpy.context.scene.collection.children.link(instances)
 
         placeholder = bpy.data.objects.new(name=placeholder_name, object_data=None)
