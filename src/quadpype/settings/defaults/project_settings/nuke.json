@@ -562,6 +562,9 @@
                 "add_retime": true
             }
         },
+        "renderLayerLoader": {
+            "backdrop_name_template": "{asset_sequence}{asset_shot}_{subset_group}<_{unique_number}>"
+        },
         "entity_type_name_matcher":{
             "profiles": []
         },

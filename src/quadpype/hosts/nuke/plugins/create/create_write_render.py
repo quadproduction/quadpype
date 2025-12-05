@@ -157,7 +157,8 @@ class CreateWriteRender(napi.NukeWriteCreator):
         use_backdrop_general = settings["general"].get("use_backdrop_loader_creator", True)
         use_backdrop = settings["create"]["CreateWriteRender"].get("use_backdrop_loader_creator", True)
         backdrop_padding = settings["create"]["CreateWriteRender"].get("backdrop_padding", 150)
-
+     
+        nodes_in_main_backdrops = []
         if use_backdrop and use_backdrop_general:
             nodes_in_main_backdrops = pre_organize_by_backdrop()
         # pass values from precreate to instance
@@ -195,8 +196,9 @@ class CreateWriteRender(napi.NukeWriteCreator):
             self._add_instance_to_context(instance)
 
             imprint_data = instance.data_to_store()
+            
             if use_backdrop and use_backdrop_general:
-                main_backdrop, storage_backdrop, nodes = organize_by_backdrop(
+                main_backdrop, storage_backdrop, subset_group, nodes = organize_by_backdrop(
                     data=dict(instance.data),
                     node=instance_node,
                     nodes_in_main_backdrops=nodes_in_main_backdrops,

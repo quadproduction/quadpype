@@ -316,10 +316,8 @@ class Window(BaseToolWidget):
 
     def showEvent(self, event):
         super(Window, self).showEvent(event)
-        if self._first_show:
-            self._first_show = False
-            self.refresh()
-            self.setStyleSheet(style.load_stylesheet())
+        self.refresh()
+        self.setStyleSheet(style.load_stylesheet())
 
     def keyPressEvent(self, event):
         """Custom keyPressEvent.

@@ -54,7 +54,7 @@ class CreateReview(plugin.BlenderCreator):
                     "render_overlay",
                     label="Render Overlay",
                     tooltip="Make image in background camera visible in review",
-                    default=True
+                    default=False
                 ),
                 BoolDef(
                     "render_floor_grid",
@@ -71,7 +71,7 @@ class CreateReview(plugin.BlenderCreator):
                 BoolDef(
                     "use_transparent_background",
                     label="Use transparent background",
-                    default=False
+                    default=True
                 ),
             ]
         )
