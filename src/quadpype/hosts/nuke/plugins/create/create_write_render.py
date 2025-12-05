@@ -155,6 +155,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
     def create(self, subset_name, instance_data, pre_create_data):
         settings = get_project_settings(get_current_project_name()).get("nuke")
         use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
+        nodes_in_main_backdrops = []
         if use_backdrop:
             nodes_in_main_backdrops = pre_organize_by_backdrop()
         # pass values from precreate to instance
@@ -193,7 +194,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
 
             imprint_data = instance.data_to_store()
             if use_backdrop:
-                main_backdrop, storage_backdrop, nodes = organize_by_backdrop(
+                main_backdrop, storage_backdrop, subset_group, nodes = organize_by_backdrop(
                     data=dict(instance.data),
                     node=instance_node,
                     nodes_in_main_backdrops=nodes_in_main_backdrops,
