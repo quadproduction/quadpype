@@ -154,12 +154,13 @@ class CopyLastPublishedWorkfile(PreLaunchHook):
             f"(Make sure your VPN is active if you are remote)"
         )
 
-        Window(
-            title="No WF found, but Published WF found !",
-            message=msg,
-            parent=parents.get("LauncherWindow"),
-            level="info"
-        )
+        ask_window = Window(title="No WF found, but Published WF found !",
+                            message=msg,
+                            parent=parents.get("LauncherWindow"),
+                            level="ask")
+
+        if not ask_window.answer:
+            return
 
         # Copy file and substitute path
         last_published_workfile_path = download_last_published_workfile(
