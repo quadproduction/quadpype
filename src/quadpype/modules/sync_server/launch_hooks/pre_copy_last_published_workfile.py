@@ -13,6 +13,7 @@ from quadpype.pipeline.template_data import get_template_data
 from quadpype.pipeline.workfile.path_resolving import (
     get_workfile_template_key,
 )
+from quadpype.pipeline import HOST_WORKFILE_EXTENSIONS
 from quadpype.settings import get_project_settings, PROJECT_SETTINGS_KEY
 from quadpype.pipeline.publish.lib import get_last_publish_workfile_representation
 from quadpype.widgets.message_window import Window
@@ -132,13 +133,19 @@ class CopyLastPublishedWorkfile(PreLaunchHook):
         else:
             version_index = workfile_version
 
-        # Get workfile version
-        workfile_representation = get_last_publish_workfile_representation(
-            project_name,
-            context_filters,
-            version_index
-        )
+        workfile_representation = None
+        extensions = HOST_WORKFILE_EXTENSIONS.get(host_name, [])
 
+        for ext in extensions:
+            context_filters["ext"] = ext.lstrip(".")
+            # Get workfile version
+            workfile_representation = get_last_publish_workfile_representation(
+                project_name,
+                context_filters,
+                version_index
+            )
+            if workfile_representation:
+                break
 
         if not workfile_representation:
             return
