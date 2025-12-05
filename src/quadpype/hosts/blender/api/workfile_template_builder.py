@@ -41,12 +41,15 @@ from quadpype.lib import (
     StringTemplate
 )
 
+
 AVALON_PLACEHOLDER = "AVALON_PLACEHOLDER"
+
 
 class ImportMethod(Enum):
     APPEND = "Append"
     LINK = "Link"
     OVERRIDE = "Link + override"
+
 
 class BlenderTemplateBuilder(AbstractTemplateBuilder):
     """Concrete implementation of AbstractTemplateBuilder for blender"""
