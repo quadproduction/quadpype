@@ -1,13 +1,11 @@
 import json
 import re
 import threading
-import notifypy
 from pathlib import Path
 
 from quadpype.lib import BoolDef, filter_profiles, StringTemplate
 from quadpype.hosts.aftereffects.api.json_loader import load_content, apply_intervals
 
-from quadpype.style import get_app_icon_path
 from quadpype.lib import get_user_settings
 from quadpype.settings import get_project_settings
 from quadpype.pipeline.anatomy import Anatomy
@@ -15,6 +13,8 @@ from quadpype.hosts.aftereffects import api
 from quadpype.hosts.aftereffects.api.lib import get_unique_number
 from quadpype.hosts.aftereffects.api.automate import import_file_dialog_clic
 from quadpype.widgets.message_window import Window
+
+from quadpype.widgets.message_notification import notify_message
 
 from quadpype.hosts.aftereffects.api.folder_hierarchy import (
     create_folders_from_hierarchy,
@@ -125,7 +125,10 @@ class FileLoader(api.AfterEffectsLoader):
                 auto_clic_thread.join()
 
                 if comp and data.get("display_window", True):
-                    self.notify_import_result("Import has ended with success !")
+                    notify_message(
+                        "AE Import File Succeed",
+                        "Import has ended with success !"
+                    )
 
             else:
                 comp = stub.import_file_with_dialog(
@@ -257,14 +260,6 @@ class FileLoader(api.AfterEffectsLoader):
 
         apply_intervals(json_content, comp_id, stub, self.log)
 
-    @staticmethod
-    def notify_import_result(message):
-        notification = notifypy.Notify()
-        notification.title = "Import File"
-        notification.message = message
-        notification.icon = get_app_icon_path()
-        notification.send(block=False)
-
     def trigger_auto_clic_thread(self, attempts_number, display_window=True):
         if display_window:
             Window(
@@ -295,7 +290,10 @@ class FileLoader(api.AfterEffectsLoader):
                 return
 
         self.log.warning(f"Maximum tries value {tries} reached.")
-        self.notify_import_result("Auto clic has failed. You will need to end import file process by yourself.")
+        notify_message(
+            "AE Import File Failed",
+            "Auto clic has failed. You will need to end import file process by yourself."
+        )
 
     def update(self, container, representation):
         """ Switch asset or change version """
