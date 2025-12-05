@@ -508,7 +508,8 @@ def pre_organize_by_backdrop():
     adjust_main_backdrops(nodes_in_main_backdrops=nodes_in_main_backdrops)
     return nodes_in_main_backdrops
 
-def organize_by_backdrop(data, node, nodes_in_main_backdrops, options, unique_number="001"):
+def organize_by_backdrop(data, node, nodes_in_main_backdrops, options,
+                         padding=BACKDROP_INSIDE_PADDING, unique_number="001"):
     """
     Create and organize in backdrop the loaded media or the created write instance node
     Args:
@@ -521,8 +522,10 @@ def organize_by_backdrop(data, node, nodes_in_main_backdrops, options, unique_nu
             - prep_layers: Will decompose the layers
             - create_stamps: trigger the creation of stamps per layers
             - pre_comp: Generate the merge tree
+            - ext: Needed to know how to get the layers from media (psd and exr work differently)
             - ext: Needed to know how to get the layers from media (psd and exr work differently).
             - subset_group: Name of the subsetgroup, aka part of a RenderLayer, if any
+        padding(int): padding to add inside the backdrop
         unique_number(str): a sting of "###" to indicate the unique number
     """
     nodes = [node]

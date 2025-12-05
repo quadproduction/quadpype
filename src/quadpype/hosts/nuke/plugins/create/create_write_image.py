@@ -97,9 +97,12 @@ class CreateWriteImage(napi.NukeWriteCreator):
 
     def create(self, subset_name, instance_data, pre_create_data):
         settings = get_project_settings(get_current_project_name()).get("nuke")
-        use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
+        use_backdrop_general = settings["general"].get("use_backdrop_loader_creator", True)
+        use_backdrop = settings["create"]["CreateWriteImage"].get("use_backdrop_loader_creator", True)
+        backdrop_padding = settings["create"]["CreateWriteImage"].get("backdrop_padding", 150)
+
         nodes_in_main_backdrops = []
-        if use_backdrop:
+        if use_backdrop and use_backdrop_general:
             nodes_in_main_backdrops = pre_organize_by_backdrop()
         subset_name = subset_name.format(**pre_create_data)
 
@@ -137,12 +140,14 @@ class CreateWriteImage(napi.NukeWriteCreator):
             self._add_instance_to_context(instance)
 
             imprint_data = instance.data_to_store()
-            if use_backdrop:
+
+            if use_backdrop and use_backdrop_general:
                 main_backdrop, storage_backdrop, subset_group, nodes = organize_by_backdrop(
                     data=dict(instance.data),
                     node=instance_node,
                     nodes_in_main_backdrops=nodes_in_main_backdrops,
-                    options=dict()
+                    options=dict(),
+                    padding=backdrop_padding
                 )
                 imprint_data["main_backdrop"] = main_backdrop.name()
                 imprint_data["storage_backdrop"] = storage_backdrop.name()
