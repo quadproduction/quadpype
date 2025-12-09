@@ -321,6 +321,8 @@ class BlendLoader(plugin.BlenderLoader):
         full_name_template = get_load_naming_template("fullname")
         for attr in dir(data_to):
             for data in getattr(data_to, attr):
+                if not isinstance(data, bpy.types.ID):
+                    continue
                 data.name = get_resolved_name(
                     template_data,
                     full_name_template,
@@ -648,7 +650,8 @@ class BlendLoader(plugin.BlenderLoader):
 
         collections_parents = [
             collection for collection in bpy.data.collections
-            if set(members).intersection(set(collection.objects)) and collection is not asset_group
+            if set(members).intersection(set(collection.objects))
+            and not pipeline.get_avalon_node(asset_group)
         ]
 
         parent_containers = self.get_all_container_parents(asset_group)

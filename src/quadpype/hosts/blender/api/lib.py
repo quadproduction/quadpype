@@ -321,6 +321,8 @@ def map_to_classes_and_names(blender_objects):
     rna_to_bpy_data = get_object_types_correspondance()
 
     for blender_object in blender_objects:
+        if not isinstance(blender_object, bpy.types.ID):
+            continue
         object_data_name = rna_to_bpy_data[blender_object.bl_rna.identifier]
         if not mapped_values.get(object_data_name):
             mapped_values[object_data_name] = list()
@@ -1081,7 +1083,6 @@ def get_properties_on_object(obj, frame=1):
         pb_data[SNAPSHOT_CUSTOM_PROPERTIES] = {k: get_value_safe(v) for k, v in pb.items() if k != "_RNA_UI"}
         pose_data[pb.name] = pb_data
     data[SNAPSHOT_POSE_BONE] = pose_data
-
     return data
 
 
@@ -1105,8 +1106,10 @@ def set_properties_on_object(obj, data, frame=1):
 
     # Custom properties
     for k, v in data.get(SNAPSHOT_CUSTOM_PROPERTIES, {}).items():
-        obj[k] = v
-
+        try:
+            obj[k] = v
+        except:
+            log.warning(f"Custom property {k} not set, because of type {type(obj[k])}")
     if not obj.type == "ARMATURE" and SNAPSHOT_POSE_BONE not in data:
         return
 
@@ -1158,3 +1161,40 @@ def get_viewport_shading():
         return area.spaces[0].shading.type
     except StopIteration:
         return
+
+def get_node_tree(scene=None):
+    major, minor, patch = bpy.app.version
+    if major<5:
+        if not scene:
+            return bpy.context.scene.node_tree
+        return scene.node_tree
+    if not scene:
+        return bpy.context.scene.compositing_node_group
+    return scene.compositing_node_group
+
+def set_node_tree(scene=None):
+    major, minor, patch = bpy.app.version
+
+    tree = get_node_tree(scene=scene)
+    if not tree:
+        log.info("Creating new tree for Compositor")
+    else:
+        return tree
+
+    if major < 5:
+        if not scene:
+            bpy.context.scene.use_nodes = True
+        else:
+            scene.use_nodes = True
+        return get_node_tree(scene=scene)
+
+    new_comp_name = "Composition"
+    new_tree_name = "CompositorNodeTree"
+
+    tree = bpy.data.node_groups.new(new_comp_name, new_tree_name)
+
+    if not scene:
+        bpy.context.scene.compositing_node_group = tree
+    else:
+        scene.compositing_node_group = tree
+    return tree

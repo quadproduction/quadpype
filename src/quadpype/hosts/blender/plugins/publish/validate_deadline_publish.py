@@ -11,7 +11,7 @@ from quadpype.pipeline.publish import (
 )
 from quadpype.hosts.blender.api import plugin
 from quadpype.hosts.blender.api.render_lib import update_render_product
-
+from  quadpype.hosts.blender.api.lib import get_node_tree
 
 def get_composite_outputs_nodes():
     """Get composite output node for validation
@@ -19,7 +19,7 @@ def get_composite_outputs_nodes():
     Returns:
         node: composite output node
     """
-    tree = bpy.context.scene.node_tree
+    tree = get_node_tree()
     output_type = "CompositorNodeOutputFile"
     outputs_nodes = list()
     # Remove all output nodes that include "QuadPype" in the name.

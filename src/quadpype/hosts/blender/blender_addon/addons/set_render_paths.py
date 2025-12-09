@@ -5,6 +5,7 @@ import bpy
 
 from quadpype.hosts.blender.api.pipeline import get_path_from_template
 from quadpype.lib import open_in_explorer
+from  quadpype.hosts.blender.api.lib import get_node_tree
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -47,13 +48,14 @@ class OBJECT_OT_SET_PATHS(bpy.types.Operator):
                                                        makedirs=True)
         log.info(f"Global output path has been set to '{scene.render.filepath}'")
 
+        node_tree = get_node_tree(scene)
         # Ensure that the scene has a node tree and it's not None
-        if scene.node_tree is None:
+        if node_tree is None:
             log.error("Scene does not have a valid node tree. Make sure compositing nodes are enabled.")
             return {'CANCELLED'}
 
         # Loop through all nodes type 'OUTPUT_FILE'
-        output_nodes = [node for node in scene.node_tree.nodes if node.type == 'OUTPUT_FILE']
+        output_nodes = [node for node in node_tree.nodes if node.type == 'OUTPUT_FILE']
         for output_node in output_nodes:
             # Find the connected render node
             render_node = self._find_render_node(output_node.inputs)

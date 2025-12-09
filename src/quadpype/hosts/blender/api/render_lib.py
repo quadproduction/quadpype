@@ -122,6 +122,9 @@ def get_render_product(output_path, name, aov_sep, view_layers, instance_per_lay
 
 def set_render_format(ext, image_settings, multilayer=None):
     if ext == "exr":
+        major, minor, patch = bpy.app.version
+        if major >= 5:
+            image_settings.media_type = "MULTI_LAYER_IMAGE" if multilayer else "IMAGE"
         image_settings.file_format = (
             "OPEN_EXR_MULTILAYER" if multilayer else "OPEN_EXR")
     elif ext == "bmp":
@@ -264,7 +267,11 @@ def existing_aov_options(renderer, view_layers):
 
 def _create_aov_slot(name, aov_sep, slots, rpass_name, multi_exr, output_path, render_layer):
     filename = f"{render_layer}/{name}_{render_layer}{aov_sep}{rpass_name}.####"
-    slot = slots.new(rpass_name if multi_exr else filename)
+    major, minor, patch = bpy.app.version
+    if major >= 5:
+        slot = slots.new('RGBA', rpass_name if multi_exr else filename)
+    else:
+        slot = slots.new(rpass_name if multi_exr else filename)
     filepath = str(output_path / filename.lstrip("/"))
 
     return slot, filepath
@@ -274,9 +281,8 @@ def set_node_tree(
         output_path, name, aov_sep, ext, multilayer, compositing, view_layers, instance_per_layer,
         render_product, auto_connect_nodes, connect_only_current_layer, use_nodes
 ):
-    bpy.context.scene.use_nodes = True
 
-    tree = bpy.context.scene.node_tree
+    tree = lib.set_node_tree()
 
     comp_layer_type = "CompositorNodeRLayers"
     output_type = "CompositorNodeOutputFile"
@@ -369,7 +375,11 @@ def set_node_tree(
 
         set_render_format(ext, output.format, multilayer)
 
-        slots = output.layer_slots if multi_exr else output.file_slots
+        major, minor, patch = bpy.app.version
+        if major >= 5:
+            slots = output.file_output_items
+        else:
+            slots = output.layer_slots if multi_exr else output.file_slots
 
         layer_render_product = render_product.get(render_layer_node.layer if instance_per_layer else '_', None)
         assert layer_render_product, f"Can not retrieve render product for layer named {render_layer_node.layer}"
@@ -385,12 +395,17 @@ def set_node_tree(
                 f"Can not found beauty filepath in render product for layer named {render_layer_node.layer}"
             )
 
-        output.base_path = Path(
-            output_path.parent,
-            output_path.name,
-            render_layer_node.layer,
-            Path(beauty_filepath).name,
-        ).as_posix()
+        node_output_path = Path(
+                output_path.parent,
+                output_path.name,
+                render_layer_node.layer,
+                Path(beauty_filepath).name,
+            )
+        if major >= 5:
+            output.directory = Path(str(node_output_path.parent)).as_posix()
+            output.file_name = str(node_output_path.name)
+        else:
+            output.base_path = node_output_path.as_posix()
 
         slots.clear()
 
@@ -404,7 +419,11 @@ def set_node_tree(
             # to allow exr to be read by ffprobe later
             slot, _ = _create_aov_slot(
                 name, aov_sep, slots, '', multi_exr, output_path, render_layer_node.layer)
-            tree.links.new(render_layer_node.outputs["Image"], slot)
+            if major >= 5:
+                tree.interface.new_socket(name="Image", in_out="OUTPUT", socket_type="NodeSocketColor")
+                tree.links.new(output.inputs[""], render_layer_node.outputs["Image"])
+            else:
+                tree.links.new(render_layer_node.outputs["Image"], slot)
 
         # Create a new socket for the beauty output
         pass_name = "rgba" if multi_exr else "beauty"
@@ -414,7 +433,11 @@ def set_node_tree(
                 render_layer = render_layer_node.layer
                 slot, _ = _create_aov_slot(
                     name, aov_sep, slots, f"{pass_name}_{render_layer}", multi_exr, output_path, render_layer)
-                tree.links.new(render_layer_node.outputs["Image"], slot)
+                if major >= 5:
+                    tree.interface.new_socket(name="Image", in_out="OUTPUT", socket_type="NodeSocketColor")
+                    tree.links.new(output.inputs[""], render_layer_node.outputs["Image"])
+                else:
+                    tree.links.new(render_layer_node.outputs["Image"], slot)
 
         if compositing:
             # Create a new socket for the composite output

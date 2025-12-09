@@ -7,6 +7,8 @@ import argparse
 from pathlib import Path
 from enum import Enum
 
+from  quadpype.hosts.blender.api.lib import get_node_tree
+
 logging.getLogger().setLevel(logging.INFO)
 
 
@@ -93,11 +95,12 @@ def update_paths(name, objects_to_update, attribute, root_paths, replaced_root, 
 
 
 def get_output_nodes(scene):
-    if not scene.node_tree:
+    node_tree = get_node_tree(scene)
+    if not node_tree:
         logging.error("Scene does not have a valid node tree. Make sure compositing nodes are enabled.")
         return []
 
-    return [node for node in scene.node_tree.nodes if node.type == 'OUTPUT_FILE']
+    return [node for node in node_tree.nodes if node.type == 'OUTPUT_FILE']
 
 
 def _flatten_path(path):
