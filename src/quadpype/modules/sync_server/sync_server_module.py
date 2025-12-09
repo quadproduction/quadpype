@@ -14,6 +14,7 @@ from quadpype.client import (
     get_projects,
     get_representations,
     get_representation_by_id,
+    QuadPypeMongoConnection
 )
 from quadpype.modules import (
     QuadPypeModule,
@@ -1217,6 +1218,9 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
         return enabled_projects
 
+    def projects_last_sync(self):
+        """Returns list of projects last_sync_times from collection 'projects_updates_logs'."""
+
     def is_project_enabled(self, project_name, single=False):
         """Checks if 'project_name' is enabled for syncing.
         'get_sync_project_setting' is potentially expensive operation (pulls
@@ -1284,6 +1288,21 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             self._add_site(project_name,
                            representation, elem,
                            alt_site, file_id=file_id, force=True)
+
+    def get_projects_last_updates(self, projects_names):
+        database = QuadPypeMongoConnection.get_mongo_client()[os.environ["QUADPYPE_DATABASE_NAME"]]
+        query = [
+            {
+                "$match":
+                {
+                    "project_name": {"$in": projects_names}
+                }
+            }
+        ]
+        return {
+            result["project_name"]: result["timestamp"]
+            for result in list(database['projects_updates_logs'].aggregate(query))
+        }
 
     def get_repre_info_for_versions(self, project_name, version_ids,
                                     active_site, remote_site):
@@ -1371,7 +1390,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                 'avail_repre_remote': {'$sum': "$avail_ratio_remote"},
             }},
         ]
-        # docs = list(self.connection.aggregate(query))
+
         return self.connection.aggregate(query)
 
     """ End of Public API """
@@ -1706,87 +1725,103 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         self.connection.Session["AVALON_PROJECT"] = project_name
         # retry_cnt - number of attempts to sync specific file before giving up
         retries_arr = self._get_retries_arr(project_name)
+
+        start = time.time()
         match = {
             "type": "representation",
             "$or": [
                 {"$and": [
-                    {
-                        "files.sites": {
-                            "$elemMatch": {
-                                "name": active_site,
-                                "created_dt": {"$exists": True}
-                            }
-                        }}, {
-                        "files.sites": {
-                            "$elemMatch": {
-                                "name": {"$in": [remote_site]},
-                                "created_dt": {"$exists": False},
-                                "tries": {"$in": retries_arr},
-                                "paused": {"$exists": False}
-                            }
-                        }
-                    }]},
+                    {"files.sites": {
+                        "$elemMatch": {
+                            "name": active_site,
+                            "created_dt": {"$exists": True}
+                        }}},
+                    {"files.sites": {
+                        "$elemMatch": {
+                            "name": {"$in": [remote_site]},
+                            "created_dt": {"$exists": False},
+                            "tries": {"$in": retries_arr},
+                            "paused": {"$exists": False}
+                        }}}
+                ]},
                 {"$and": [
-                    {
-                        "files.sites": {
-                            "$elemMatch": {
-                                "name": active_site,
-                                "created_dt": {"$exists": False},
-                                "tries": {"$in": retries_arr},
-                                "paused": {"$exists": False}
-                            }
-                        }}, {
-                        "files.sites": {
-                            "$elemMatch": {
-                                "name": {"$in": [remote_site]},
-                                "created_dt": {"$exists": True}
-                            }
-                        }
-                    }
+                    {"files.sites": {
+                        "$elemMatch": {
+                            "name": active_site,
+                            "created_dt": {"$exists": False},
+                            "tries": {"$in": retries_arr},
+                            "paused": {"$exists": False}
+                        }}},
+                    {"files.sites": {
+                        "$elemMatch": {
+                            "name": {"$in": [remote_site]},
+                            "created_dt": {"$exists": True}
+                        }}}
                 ]}
             ]
         }
 
         aggr = [
             {"$match": match},
+
+            {"$project": {
+                "context": 1,
+                "data": 1,
+                "files": 1
+            }},
+
             {'$unwind': '$files'},
+
             {'$addFields': {
-                'order_remote': {
-                    '$filter': {'input': '$files.sites', 'as': 'p',
-                                'cond': {'$eq': ['$$p.name', remote_site]}
-                                }},
-                'order_local': {
-                    '$filter': {'input': '$files.sites', 'as': 'p',
-                                'cond': {'$eq': ['$$p.name', active_site]}
-                                }},
+                'file_priority': {
+                    '$let': {
+                        'vars': {
+                            'local': {
+                                '$arrayElemAt': [
+                                    {'$filter': {
+                                        'input': '$files.sites',
+                                        'as': 'site',
+                                        'cond': {'$eq': ['$$site.name', active_site]}
+                                    }},
+                                    0
+                                ]
+                            },
+                            'remote': {
+                                '$arrayElemAt': [
+                                    {'$filter': {
+                                        'input': '$files.sites',
+                                        'as': 'site',
+                                        'cond': {'$eq': ['$$site.name', remote_site]}
+                                    }},
+                                    0
+                                ]
+                            }
+                        },
+                        'in': {
+                            '$ifNull': [
+                                '$$local.priority',
+                                {'$ifNull': ['$$remote.priority', self.DEFAULT_PRIORITY]}
+                            ]
+                        }
+                    }
+                }
             }},
-            {'$addFields': {
-                'priority': {
-                    '$cond': [
-                        {'$size': '$order_local.priority'},
-                        {'$first': '$order_local.priority'},
-                        {'$cond': [
-                            {'$size': '$order_remote.priority'},
-                            {'$first': '$order_remote.priority'},
-                            self.DEFAULT_PRIORITY]}
-                    ]
-                },
-            }},
+
             {'$group': {
                 '_id': '$_id',
-                # pass through context - same for representation
-                'context': {'$addToSet': '$context'},
-                'data': {'$addToSet': '$data'},
-                # pass through files as a list
-                'files': {'$addToSet': '$files'},
-                'priority': {'$max': "$priority"},
+                'context': {'$addToSet': '$context'},  # $first au lieu de $addToSet
+                'data': {'$first': '$data'},
+                'files': {'$push': '$files'},
+                'priority': {'$max': "$file_priority"}
             }},
-            {"$sort": {'priority': -1, '_id': 1}},
+
+            {"$sort": {'priority': -1, '_id': 1}}
         ]
         self.log.debug("active_site:{} - remote_site:{}".format(
             active_site, remote_site
         ))
         self.log.debug("query: {}".format(aggr))
+
         representations = self.connection.aggregate(aggr)
 
         return representations

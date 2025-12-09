@@ -2,7 +2,11 @@
 import os
 import asyncio
 import threading
+import tempfile
+import yaml
+import time
 import concurrent.futures
+from pathlib import Path
 from time import sleep
 
 from .providers import lib
@@ -287,6 +291,9 @@ def download_last_published_workfile(
     return last_published_workfile_path
 
 
+SYNCS_LOGS_FILE = "sync_logs.yaml"
+
+
 class SyncServerThread(threading.Thread):
     """
         Separate thread running synchronization server with asyncio loop.
@@ -301,6 +308,49 @@ class SyncServerThread(threading.Thread):
         self.is_running = False
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
         self.timer = None
+
+    def get_projects_last_sync(self):
+        sync_file_path = Path(tempfile.gettempdir(), SYNCS_LOGS_FILE)
+        if not sync_file_path.exists():
+            return {}
+
+        with open(sync_file_path, 'r', encoding='utf-8') as sync_file:
+            self.log.info(f"Loaded projects synchronisation times files at path : {sync_file_path}")
+            return yaml.safe_load(sync_file)
+
+    def write_project_last_sync(self, projects_last_sync):
+        sync_file_path = Path(tempfile.gettempdir(), SYNCS_LOGS_FILE)
+        with open(sync_file_path, 'w', encoding='utf-8') as sync_file:
+            yaml.dump(projects_last_sync, sync_file)
+
+        self.log.info(f"New synchronization time data written at path : {sync_file_path}")
+
+    @staticmethod
+    def update_project_last_sync(projects_last_sync, project_name):
+        projects_last_sync[project_name] = time.time()
+
+    @staticmethod
+    def sync_doc_needs_update(sync_repres):
+        return len(sync_repres) == 0
+
+    def sync_is_not_needed(self, projects_local_last_sync, projects_last_updates, project_name):
+        project_db_last_sync_timestamp = projects_last_updates.get(project_name, 0)
+        if not project_db_last_sync_timestamp:
+            return False
+
+        project_local_last_sync_timestamp = projects_local_last_sync.get(project_name, 0)
+        if not project_db_last_sync_timestamp:
+            return False
+
+        if project_db_last_sync_timestamp > project_local_last_sync_timestamp:
+            self.log.info(f"New updates found from project {project_name}. Sync will be triggered.")
+            return False
+
+        self.log.info(
+            f"Local sync is more recent than project db update for project {project_name}. "
+            f"Sync will be canceled."
+        )
+        return True
 
     def run(self):
         self.is_running = True
@@ -334,8 +384,8 @@ class SyncServerThread(threading.Thread):
                 - update representations - fills error messages for exceptions
                 - waits X seconds and repeat
         Returns:
-
         """
+        projects_local_last_sync = self.get_projects_last_sync()
         while self.is_running and not self.module.is_paused():
             try:
                 import time
@@ -343,7 +393,11 @@ class SyncServerThread(threading.Thread):
                 self.module.set_sync_project_settings()  # clean cache
                 project_name = None
                 enabled_projects = self.module.get_enabled_projects()
+                projects_last_db_updates = self.module.get_projects_last_updates(enabled_projects)
                 for project_name in enabled_projects:
+                    if self.sync_is_not_needed(projects_local_last_sync, projects_last_db_updates, project_name):
+                        continue
+
                     preset = self.module.sync_project_settings[project_name]
 
                     local_site, remote_site = self._working_sites(project_name,
@@ -356,6 +410,12 @@ class SyncServerThread(threading.Thread):
                         local_site,
                         remote_site
                     )
+
+                    sync_repres = list(sync_repres)
+
+                    if self.sync_doc_needs_update(sync_repres):
+                        self.update_project_last_sync(projects_local_last_sync, project_name)
+                        self.write_project_last_sync(projects_local_last_sync)
 
                     task_files_to_process = []
                     files_processed_info = []
