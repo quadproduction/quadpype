@@ -28,6 +28,8 @@ from . import pipeline
 
 log = Logger.get_logger(__name__)
 
+BLENDER_MAJOR_VERSION = bpy.app.version[0]
+
 
 def load_scripts(paths):
     """Copy of `load_scripts` from Blender's implementation.
@@ -1007,6 +1009,7 @@ def is_camera(obj):
 def is_collection(obj):
     return isinstance(obj, bpy.types.Collection)
 
+
 def get_value_safe(v):
     """Convert values to JSON friendly attributes"""
     if isinstance(v, (Vector, Euler, Quaternion, Color)):
@@ -1016,6 +1019,7 @@ def get_value_safe(v):
     elif isinstance(v, (list, tuple)):
         return [get_value_safe(x) for x in v]
     return str(v)
+
 
 def rsetattr(obj, attr, val):
     pre, _, post = attr.rpartition('.')
@@ -1030,10 +1034,12 @@ def rsetattr(obj, attr, val):
     else:
         setattr(target, post, val)
 
+
 def rgetattr(obj, attr, *args):
     def _getattr(obj, attr):
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
+
 
 def rhasattr(obj, attr):
     def _hasattr(obj, attr):
@@ -1042,6 +1048,7 @@ def rhasattr(obj, attr):
         return getattr(obj, attr)
     result = functools.reduce(_hasattr, [obj] + attr.split('.'))
     return result is not None
+
 
 def get_properties_on_object(obj, frame=1):
     """Get the properties value on an object based on list of properties from setting.
@@ -1139,6 +1146,8 @@ def restore_properties_on_instance(instance_obj, corresponding_instance):
         if not data:
             continue
         set_properties_on_object(obj, data)
+
+
 def get_containers_from_selected():
     containers = set()
     all_selected = set(get_selection())
@@ -1154,6 +1163,7 @@ def get_containers_from_selected():
 
     return list(containers)
 
+
 def get_viewport_shading():
     try:
         window = bpy.data.window_managers[0].windows[0]
@@ -1162,39 +1172,37 @@ def get_viewport_shading():
     except StopIteration:
         return
 
-def get_node_tree(scene=None):
-    major, minor, patch = bpy.app.version
-    if major<5:
-        if not scene:
-            return bpy.context.scene.node_tree
-        return scene.node_tree
-    if not scene:
-        return bpy.context.scene.compositing_node_group
-    return scene.compositing_node_group
 
-def set_node_tree(scene=None):
-    major, minor, patch = bpy.app.version
+def get_node_tree(scene=None):
+    if not scene:
+        scene = bpy.context.scene
+
+    # Support for Blender version >= 5
+    try:
+        return scene.compositing_node_group
+
+    except AttributeError:
+        return scene.node_tree
+
+
+def create_and_get_node_tree(scene=None):
+    if not scene:
+        scene = bpy.context.scene
 
     tree = get_node_tree(scene=scene)
-    if not tree:
-        log.info("Creating new tree for Compositor")
-    else:
+    if tree:
         return tree
 
-    if major < 5:
-        if not scene:
-            bpy.context.scene.use_nodes = True
-        else:
-            scene.use_nodes = True
+    log.info("Creating new tree for Compositor")
+
+    if BLENDER_MAJOR_VERSION < 5:
+        scene.use_nodes = True
         return get_node_tree(scene=scene)
 
-    new_comp_name = "Composition"
+    new_comp_name = "QuadPype Render Node Tree"
     new_tree_name = "CompositorNodeTree"
 
     tree = bpy.data.node_groups.new(new_comp_name, new_tree_name)
+    scene.compositing_node_group = tree
 
-    if not scene:
-        bpy.context.scene.compositing_node_group = tree
-    else:
-        scene.compositing_node_group = tree
     return tree

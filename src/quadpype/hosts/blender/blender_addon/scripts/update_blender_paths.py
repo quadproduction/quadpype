@@ -7,8 +7,6 @@ import argparse
 from pathlib import Path
 from enum import Enum
 
-from  quadpype.hosts.blender.api.lib import get_node_tree
-
 logging.getLogger().setLevel(logging.INFO)
 
 
@@ -22,6 +20,7 @@ class Platform(Enum):
 objects_attr_to_update = [
     ["Output path", "[bpy.context.scene.render]", "filepath"],
     ["Render nodes", "get_output_nodes(bpy.context.scene)", "base_path"],
+    ["Render nodes", "get_output_nodes(bpy.context.scene)", "directory"],
     ["Cache files", "bpy.data.cache_files", "filepath"],
     ["Image Files", "bpy.data.images", "filepath"],
     ["VDB Files", "bpy.data.volumes", "filepath"],
@@ -92,6 +91,18 @@ def update_paths(name, objects_to_update, attribute, root_paths, replaced_root, 
         setattr(single_object, attribute, updated_path)
         replaced_paths.append(updated_path)
         logging.info(f"[{name}] {attribute} has been updated to : {updated_path}.")
+
+
+def get_node_tree(scene):
+    if not scene:
+        scene = bpy.context.scene
+
+    # Support for Blender version >= 5
+    try:
+        return scene.compositing_node_group
+
+    except AttributeError:
+        return scene.node_tree
 
 
 def get_output_nodes(scene):

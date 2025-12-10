@@ -763,6 +763,7 @@ def ls() -> Iterator:
 
             yield parse_container(node)
 
+
 def publish():
     """Shorthand to publish from within host."""
 

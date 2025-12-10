@@ -6,7 +6,8 @@ import bpy
 from quadpype.lib.transcoding import VIDEO_EXTENSIONS
 from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.pipeline import AVALON_CONTAINER_ID
-from  quadpype.hosts.blender.api.lib import get_node_tree, set_node_tree
+from quadpype.hosts.blender.api.lib import create_and_get_node_tree, get_node_tree
+
 
 class LoadImageCompositor(plugin.BlenderLoader):
     """Load media to the compositor."""
@@ -32,7 +33,7 @@ class LoadImageCompositor(plugin.BlenderLoader):
         path = self.filepath_from_context(context)
 
         # Enable nodes to ensure they can be loaded
-        node_tree = set_node_tree()
+        node_tree = create_and_get_node_tree()
 
         # Load the image in data
         image = bpy.data.images.load(path, check_existing=True)
@@ -61,7 +62,8 @@ class LoadImageCompositor(plugin.BlenderLoader):
 
         # Delete the compositor node
         node_tree = get_node_tree()
-        node_tree.nodes.remove(img_comp_node)
+        if node_tree:
+            node_tree.nodes.remove(img_comp_node)
 
         # Delete the image if it remains unused
         self.remove_image_if_unused(image)
