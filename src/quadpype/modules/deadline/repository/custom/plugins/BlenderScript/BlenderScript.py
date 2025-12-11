@@ -40,7 +40,13 @@ class BlenderScriptPlugin(DeadlinePlugin):
         self.AddStdoutHandlerCallback("Failed to read blend file.*").HandleCallback += self.HandleStdoutFailed
 
     def RenderExecutable(self):
-        return self.GetRenderExecutable( "Blender_RenderExecutable", "Blender" )
+        ### Get Version ##
+        blVersion = self.GetPluginInfoEntryWithDefault("Version", "").lower()
+
+        try:
+            return self.GetRenderExecutable("Blender_%s_RenderExecutable" % (blVersion), "Blender")
+        except:
+            return self.GetRenderExecutable("Blender_RenderExecutable", "Blender")
 
     def ScriptsFolder(self):
         return self.GetConfigEntry("Blender_ScriptsFolder")
