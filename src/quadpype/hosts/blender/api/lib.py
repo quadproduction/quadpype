@@ -982,7 +982,6 @@ def purge_orphans(is_recursive):
                 except Exception as e:
                     print(f"Impossible to Delete {item.name} : {e}")
 
-
     if is_recursive:
         purge_orphans(is_recursive=False)
 
@@ -1189,14 +1188,19 @@ def create_and_get_node_tree(scene=None):
     if not scene:
         scene = bpy.context.scene
 
-    tree = get_node_tree(scene=scene)
-    if tree:
-        return tree
-
     log.info("Creating new tree for Compositor")
-
+    print('##############')
+    print('##############')
+    print('##############')
+    print('##############')
+    print('##############')
+    print('##############')
+    print('##############')
+    print(BLENDER_MAJOR_VERSION)
+    print(BLENDER_MAJOR_VERSION < 5)
     if BLENDER_MAJOR_VERSION < 5:
         scene.use_nodes = True
+        print(scene.use_nodes)
         return get_node_tree(scene=scene)
 
     new_comp_name = "QuadPype Render Node Tree"

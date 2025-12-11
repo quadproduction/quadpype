@@ -315,7 +315,7 @@ def _connect_tree_links(tree, render_layer_node, output, slot):
 
 def set_node_tree(
         output_path, name, aov_sep, ext, multilayer, compositing, view_layers, instance_per_layer,
-        render_product, auto_connect_nodes, connect_only_current_layer, use_nodes
+        render_product, auto_connect_nodes, connect_to_all_outputs, use_nodes
 ):
 
     tree = lib.create_and_get_node_tree()
@@ -457,7 +457,7 @@ def set_node_tree(
         # Create a new socket for the beauty output
         pass_name = "rgba" if multi_exr else "beauty"
 
-        if not connect_only_current_layer:
+        if connect_to_all_outputs:
             for render_layer_node in render_aovs_dict.keys():
                 render_layer = render_layer_node.layer
                 slot, _ = _create_aov_slot(
@@ -553,7 +553,7 @@ def create_node_with_new_view_layers(tree, comp_layer_type, view_layers, render_
     return render_layer_nodes
 
 
-def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_layer):
+def prepare_rendering(asset_group, auto_connect_nodes, connect_to_all_outputs):
     name = asset_group.name
 
     node = get_avalon_node(asset_group)
@@ -591,6 +591,8 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
 
     bpy.context.scene.render.engine = renderer
 
+    bpy.context.scene.render.use_compositing = True
+
     view_layers = bpy.context.scene.view_layers
     output_path = Path.joinpath(dirpath, render_folder, file_name)
 
@@ -601,7 +603,7 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
     )
     aov_file_product = set_node_tree(
         output_path, name, aov_sep, ext, multilayer, compositing, view_layers, instance_per_layer,
-        render_product, auto_connect_nodes, connect_only_current_layer, use_nodes
+        render_product, auto_connect_nodes, connect_to_all_outputs, use_nodes
     )
 
     os.makedirs(output_path, exist_ok=True)
