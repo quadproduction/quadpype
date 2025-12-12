@@ -1724,9 +1724,8 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         self.log.debug("Check representations for : {}".format(project_name))
         self.connection.Session["AVALON_PROJECT"] = project_name
         # retry_cnt - number of attempts to sync specific file before giving up
-        retries_arr = self._get_retries_arr(project_name)
+        retries_arr = self._get_retries_arr()
 
-        start = time.time()
         match = {
             "type": "representation",
             "$or": [
@@ -1826,7 +1825,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
         return representations
 
-    def check_status(self, file, local_site, remote_site, config_preset):
+    def check_status(self, file, local_site, remote_site, try_cnt):
         """
             Check synchronization status for single 'file' of single
             'representation' by single 'provider'.
@@ -1848,7 +1847,8 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             file (dictionary):  of file from representation in Mongo
             local_site (string):  - local side of compare (usually 'studio')
             remote_site (string):  - gdrive etc.
-            config_preset (dict): config about active site, retries
+            config_preset (dict): config about active site
+            try_cnt (number): retries
         Returns:
             (string) - one of SyncStatus
         """
@@ -1868,7 +1868,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                 tries = self._get_tries_count_from_rec(remote_rec)
                 # file will be skipped if unsuccessfully tried over threshold
                 # error metadata needs to be purged manually in DB to reset
-                if tries < int(config_preset["retry_cnt"]):
+                if tries < int(try_cnt):
                     return SyncStatus.DO_UPLOAD
             else:
                 _, local_rec = self._get_site_rec(sites, local_site) or {}
@@ -1877,7 +1877,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                     # file will be skipped if unsuccessfully tried over
                     # threshold times, error metadata needs to be purged
                     # manually in DB to reset
-                    if tries < int(config_preset["retry_cnt"]):
+                    if tries < int(try_cnt):
                         return SyncStatus.DO_DOWNLOAD
 
         return SyncStatus.DO_NOTHING
@@ -2295,18 +2295,30 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                 self.log.warning(msg)
                 raise ValueError(msg)
 
-    def get_loop_delay(self, project_name):
+    def get_loop_delay(self):
         """
             Return count of seconds before next synchronization loop starts
             after finish of previous loop.
         Returns:
             (int): in seconds
         """
-        if not project_name:
-            return 60
+        return int(self.sync_global_settings["loop_delay"])
 
-        ld = self.sync_project_settings[project_name]["config"]["loop_delay"]
-        return int(ld)
+    def get_tries_count(self):
+        """
+            Return tries to attempt before rage quitting when downloading file.
+        Returns:
+            (int): number of tries
+        """
+        return int(self.sync_global_settings["retry_cnt"])
+
+    def get_force_sync_loops_number(self):
+        """
+            Return number of loops to pass before forcing classic sync
+        Returns:
+            (int): number of loops
+        """
+        return int(self.sync_global_settings["force_sync_loops"])
 
     def show_widget(self):
         """Show dialog for Sync Queue"""
@@ -2415,7 +2427,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             str_key = "files.$[].sites.$[s].priority"
         return {str_key: int(priority)}
 
-    def _get_retries_arr(self, project_name):
+    def _get_retries_arr(self):
         """
             Returns array with allowed values in 'tries' field. If repre
             contains these values, it means it was tried to be synchronized
@@ -2424,7 +2436,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Returns:
             (list)
         """
-        retry_cnt = self.sync_project_settings[project_name].get("config")["retry_cnt"]
+        retry_cnt = self.sync_global_settings["retry_cnt"]
         arr = [i for i in range(int(retry_cnt))]
         arr.append(None)
 

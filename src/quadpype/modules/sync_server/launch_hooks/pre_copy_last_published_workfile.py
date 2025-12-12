@@ -105,9 +105,8 @@ class CopyLastPublishedWorkfile(PreLaunchHook):
             )
             return
 
-        max_retries = int((sync_server.sync_project_settings[project_name]
-                                                            ["config"]
-                                                            ["retry_cnt"]))
+        retry_cnt = sync_server.sync_global_settings["retry_cnt"]
+        max_retries = int((retry_cnt))
 
         self.log.info("Trying to fetch last published workfile...")
 

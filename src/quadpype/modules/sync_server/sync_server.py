@@ -333,24 +333,41 @@ class SyncServerThread(threading.Thread):
     def sync_doc_needs_update(sync_repres):
         return len(sync_repres) == 0
 
-    def sync_is_not_needed(self, projects_local_last_sync, projects_last_updates, project_name):
+    def sync_is_needed(self, projects_local_last_sync, projects_last_updates, project_name):
         project_db_last_sync_timestamp = projects_last_updates.get(project_name, 0)
         if not project_db_last_sync_timestamp:
-            return False
+            return True
 
         project_local_last_sync_timestamp = projects_local_last_sync.get(project_name, 0)
         if not project_db_last_sync_timestamp:
-            return False
+            return True
 
         if project_db_last_sync_timestamp > project_local_last_sync_timestamp:
             self.log.info(f"New updates found from project {project_name}. Sync will be triggered.")
-            return False
+            return True
 
         self.log.info(
             f"Local sync is more recent than project db update for project {project_name}. "
             f"Sync will be canceled."
         )
-        return True
+        return False
+
+    def force_sync_asked(self, loop_number, force_loops_number):
+        if loop_number >= force_loops_number:
+            self.log.info(f"Loop number has reached force sync limit. Sync will be triggered.")
+            return True
+
+        return False
+
+    def set_providers_batch_limit(self):
+        for site_data in self.module.sync_global_settings['sites'].values():
+            batch_limit = site_data.get('batch_limit')
+            if not batch_limit:
+                continue
+
+            provider = site_data['provider']
+            lib.factory.set_provider_batch_limit(provider, batch_limit)
+            self.log.info(f"New batch limit ({batch_limit}) set for provider {provider}.")
 
     def run(self):
         self.is_running = True
@@ -385,24 +402,37 @@ class SyncServerThread(threading.Thread):
                 - waits X seconds and repeat
         Returns:
         """
+        self.set_providers_batch_limit()
         projects_local_last_sync = self.get_projects_last_sync()
+        try_cnt = self.module.get_tries_count()
+        delay = self.module.get_loop_delay()
+        force_loops_number = self.module.get_force_sync_loops_number()
+        loop_number = 0
+
         while self.is_running and not self.module.is_paused():
             try:
-                import time
                 start_time = time.time()
+                loop_number += 1
                 self.module.set_sync_project_settings()  # clean cache
-                project_name = None
                 enabled_projects = self.module.get_enabled_projects()
                 projects_last_db_updates = self.module.get_projects_last_updates(enabled_projects)
                 for project_name in enabled_projects:
-                    if self.sync_is_not_needed(projects_local_last_sync, projects_last_db_updates, project_name):
-                        continue
 
                     preset = self.module.sync_project_settings[project_name]
 
                     local_site, remote_site = self._working_sites(project_name,
                                                                   preset)
                     if not all([local_site, remote_site]):
+                        continue
+
+                    sync_is_needed = self.sync_is_needed(
+                        projects_local_last_sync, projects_last_db_updates, project_name
+                    )
+                    force_sync_asked = self.force_sync_asked(loop_number, force_loops_number)
+                    if force_sync_asked:
+                        loop_number = 0
+
+                    if not sync_is_needed and not force_sync_asked:
                         continue
 
                     sync_repres = self.module.get_sync_representations(
@@ -435,6 +465,11 @@ class SyncServerThread(threading.Thread):
                                                        presets=site_preset)
                     limit = lib.factory.get_provider_batch_limit(
                         remote_provider)
+                    print('############')
+                    print('############')
+                    print('############')
+                    print('############')
+                    print(limit)
                     # first call to get_provider could be expensive, its
                     # building folder tree structure in memory
                     # call only if needed, eg. DO_UPLOAD or DO_DOWNLOAD
@@ -452,7 +487,8 @@ class SyncServerThread(threading.Thread):
                                     file,
                                     local_site,
                                     remote_site,
-                                    preset.get('config'))
+                                    try_cnt
+                                )
                                 if (status == SyncStatus.DO_UPLOAD and
                                         len(task_files_to_process) < limit):
                                     tree = handler.get_tree()
@@ -518,7 +554,6 @@ class SyncServerThread(threading.Thread):
 
                 duration = time.time() - start_time
                 self.log.debug("Loop took {:.2f}s".format(duration))
-                delay = self.module.get_loop_delay(project_name)
                 self.log.debug(
                     "Waiting {} seconds before running the sync loop".format(delay)
                 )
