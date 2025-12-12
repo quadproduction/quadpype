@@ -1290,6 +1290,13 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                            alt_site, file_id=file_id, force=True)
 
     def get_projects_last_updates(self, projects_names):
+        """ Get last update timestamp for each project from database
+        Args:
+            projects_names (list[str]): list of projects names
+
+        Returns:
+            dict: each project name with his corresponding last update timestamp
+        """
         database = QuadPypeMongoConnection.get_mongo_client()[os.environ["QUADPYPE_DATABASE_NAME"]]
         query = [
             {
@@ -1303,6 +1310,16 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             result["project_name"]: result["timestamp"]
             for result in list(database['projects_updates_logs'].aggregate(query))
         }
+
+    def register_loop_log(self, log_data):
+        """ Register loop log for specific user in specific collection 'loops_logs'.
+        Used to debug mongoDB latency. Need to be activated for each user to monitor.
+
+        Args:
+            log_data (dict): log representation
+        """
+        database = QuadPypeMongoConnection.get_mongo_client()[os.environ["QUADPYPE_DATABASE_NAME"]]
+        database['sync_loops_logs'].insert_one(log_data)
 
     def get_repre_info_for_versions(self, project_name, version_ids,
                                     active_site, remote_site):
