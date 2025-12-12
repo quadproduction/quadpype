@@ -200,9 +200,24 @@ def move_cursor_and_click(coordinates, offset, log, click="center"):
     return True
 
 
+def get_correct_platform():
+    platform_name = platform.system().lower()
+    if platform_name != "windows":
+        return platform_name
+
+    version = platform.version()
+    build = int(version.split('.')[-1])
+
+    # Windows 11 has build number >= 22000
+    if build >= 22000:
+        return Path(platform_name, "11")
+    else:
+        return Path(platform_name, "10")
+
+
 def import_file_dialog_clic(log):
     screen_offset = get_combined_monitors_offset()
-    folder_path = Path(__file__).parent / "resources" / "auto_click" / platform.system().lower()
+    folder_path = Path(__file__).parent / "resources" / "auto_click" / get_correct_platform()
 
     assert folder_path.is_dir(), "Folder containing image ressources used for comparison can not be found."
 
