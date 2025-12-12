@@ -21,6 +21,7 @@ objects_attr_to_update = [
     ["Output path", "[bpy.context.scene.render]", "filepath"],
     ["Render nodes", "get_output_nodes(bpy.context.scene)", "base_path"],
     ["Render nodes", "get_output_nodes(bpy.context.scene)", "directory"],
+    ["Libraries", "bpy.data.libraries", "filepath"],
     ["Cache files", "bpy.data.cache_files", "filepath"],
     ["Image Files", "bpy.data.images", "filepath"],
     ["VDB Files", "bpy.data.volumes", "filepath"],

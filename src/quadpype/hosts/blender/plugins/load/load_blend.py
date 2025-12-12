@@ -505,13 +505,42 @@ class BlendLoader(plugin.BlenderLoader):
         """
         group_name = container["objectName"]
         asset_group = self._retrieve_undefined_asset_group(group_name)
-        libpath = Path(get_representation_path(representation)).as_posix()
+        libpath = Path(get_representation_path(representation))
 
         assert asset_group, (
             f"The asset is not loaded: {container['objectName']}"
         )
 
+        project_name = representation.get('context', {}).get('project', {}).get('name', None)
+        assert project_name, "Can not retrieve project name from context data."
+
         avalon_data = pipeline.get_avalon_node(asset_group)
+
+        import_method = ImportMethod(
+            avalon_data.get(
+                'import_method',
+                self.defaults['import_method']
+            )
+        )
+        if import_method != ImportMethod.APPEND:
+            old_linked_lib = lib.get_library_from_path(avalon_data["libpath"])
+            if old_linked_lib:
+                old_linked_lib.filepath = bpy.path.abspath(libpath.as_posix())
+                old_linked_lib.reload()
+
+            new_linked_lib = lib.get_library_from_path(libpath.as_posix())
+            if not new_linked_lib:
+                return
+            new_linked_lib.reload()
+
+            new_data = {
+                "libpath": libpath.as_posix(),
+                "representation": str(representation["_id"]),
+                "parent": str(representation["parent"]),
+                "version": get_version_by_id(project_name, str(representation["parent"])).get('name', '')
+            }
+            lib.imprint(asset_group, new_data)
+            return
 
         if isinstance(asset_group, bpy.types.Object):
             transform = asset_group.matrix_basis.copy()
@@ -555,7 +584,7 @@ class BlendLoader(plugin.BlenderLoader):
 
         container, members = self.load_assets_and_create_hierarchy(
             representation=representation,
-            libpath=libpath,
+            libpath=libpath.as_posix(),
             group_name=group_name,
             unique_number=avalon_data.get("unique_number", plugin.get_unique_number(asset, subset)),
             import_method=ImportMethod(
@@ -608,11 +637,8 @@ class BlendLoader(plugin.BlenderLoader):
         avalon_data["members"] = []
         lib.imprint(asset_group, avalon_data, erase=True)
 
-        project_name = representation.get('context', {}).get('project', {}).get('name', None)
-        assert project_name, "Can not retrieve project name from context data."
-
         new_data = {
-            "libpath": libpath,
+            "libpath": libpath.as_posix(),
             "representation": str(representation["_id"]),
             "parent": str(representation["parent"]),
             "members": lib.map_to_classes_and_names(members),
@@ -690,6 +716,7 @@ class BlendLoader(plugin.BlenderLoader):
             bpy.data.collections.remove(asset_group)
 
         self._remove_collection_recursively(collections_parents, deleted_collections)
+        lib.purge_library()
 
     def get_unique_members(self, collection_name, current_members, container):
         if container.get('import_method', None) == ImportMethod.APPEND.value:

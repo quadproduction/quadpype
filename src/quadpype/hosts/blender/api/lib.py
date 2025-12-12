@@ -978,6 +978,7 @@ def purge_orphans(is_recursive):
         for item in list(data_collection):
             if item.users == 0:
                 try:
+                    print(f"Deleting {item.name} for data collection {data_type}")
                     bpy.data.batch_remove([item])
                 except Exception as e:
                     print(f"Impossible to Delete {item.name} : {e}")
@@ -985,6 +986,25 @@ def purge_orphans(is_recursive):
     if is_recursive:
         purge_orphans(is_recursive=False)
 
+    purge_library()
+
+def purge_library():
+    data_types = [attr for attr in dir(bpy.data) if
+                  isinstance(getattr(bpy.data, attr), bpy.types.bpy_prop_collection)]
+    for lib in bpy.data.libraries[:]:
+        used = False
+        for data_type in data_types:
+            data_collection = getattr(bpy.data, data_type)
+            for datablock in list(data_collection):
+                if getattr(datablock, "override_library", None):
+                    base = getattr(datablock, "id_original", datablock)
+                else:
+                    base = datablock
+                if base.library == lib:
+                    used = True
+
+        if not used:
+            bpy.data.libraries.remove(lib)
 
 def get_asset_children(asset):
     return list(asset.objects) if isinstance(asset, bpy.types.Collection) else list(asset.children)
@@ -1116,6 +1136,7 @@ def set_properties_on_object(obj, data, frame=1):
             obj[k] = v
         except:
             log.warning(f"Custom property {k} not set, because of type {type(obj[k])}")
+
     if not obj.type == "ARMATURE" and SNAPSHOT_POSE_BONE not in data:
         return
 
@@ -1188,19 +1209,10 @@ def create_and_get_node_tree(scene=None):
     if not scene:
         scene = bpy.context.scene
 
-    log.info("Creating new tree for Compositor")
-    print('##############')
-    print('##############')
-    print('##############')
-    print('##############')
-    print('##############')
-    print('##############')
-    print('##############')
-    print(BLENDER_MAJOR_VERSION)
-    print(BLENDER_MAJOR_VERSION < 5)
+    log.info("Creating or retrieving new tree for Compositor")
+
     if BLENDER_MAJOR_VERSION < 5:
         scene.use_nodes = True
-        print(scene.use_nodes)
         return get_node_tree(scene=scene)
 
     new_comp_name = "QuadPype Render Node Tree"
@@ -1210,3 +1222,13 @@ def create_and_get_node_tree(scene=None):
     scene.compositing_node_group = tree
 
     return tree
+  
+
+def get_library_from_path(path):
+    path_norm = os.path.normpath(path)
+    for lib in bpy.data.libraries:
+        lib_path = os.path.normpath(bpy.path.abspath(lib.filepath))
+
+        if lib_path == path_norm:
+            return lib
+    return None
