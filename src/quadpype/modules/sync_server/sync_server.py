@@ -408,14 +408,22 @@ class SyncServerThread(threading.Thread):
         delay = self.module.get_loop_delay()
         force_loops_number = self.module.get_force_sync_loops_number()
         loop_number = 0
+        enabled_projects = []
 
         while self.is_running and not self.module.is_paused():
             try:
                 start_time = time.time()
                 loop_number += 1
-                self.module.set_sync_project_settings()  # clean cache
+
+                force_sync_asked = self.force_sync_asked(loop_number, force_loops_number)
+                if force_sync_asked:
+                    loop_number = 0
+
                 enabled_projects = self.module.get_enabled_projects()
+
+                self.module.set_sync_project_settings()  # clean cache
                 projects_last_db_updates = self.module.get_projects_last_updates(enabled_projects)
+
                 for project_name in enabled_projects:
 
                     preset = self.module.sync_project_settings[project_name]
@@ -428,10 +436,6 @@ class SyncServerThread(threading.Thread):
                     sync_is_needed = self.sync_is_needed(
                         projects_local_last_sync, projects_last_db_updates, project_name
                     )
-                    force_sync_asked = self.force_sync_asked(loop_number, force_loops_number)
-                    if force_sync_asked:
-                        loop_number = 0
-
                     if not sync_is_needed and not force_sync_asked:
                         continue
 
@@ -465,11 +469,7 @@ class SyncServerThread(threading.Thread):
                                                        presets=site_preset)
                     limit = lib.factory.get_provider_batch_limit(
                         remote_provider)
-                    print('############')
-                    print('############')
-                    print('############')
-                    print('############')
-                    print(limit)
+
                     # first call to get_provider could be expensive, its
                     # building folder tree structure in memory
                     # call only if needed, eg. DO_UPLOAD or DO_DOWNLOAD
