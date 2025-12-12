@@ -147,9 +147,10 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         # Not all hosts can import this module.
         import bpy
 
+        major, minor, _ = bpy.app.version
         plugin_info = BlenderPluginInfo(
             SceneFile=self.scene_path,
-            Version=bpy.app.version_string,
+            Version=f"{major}.{minor}",
             SaveFile=True,
         )
 
