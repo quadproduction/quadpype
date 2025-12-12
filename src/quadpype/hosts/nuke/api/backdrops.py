@@ -522,7 +522,6 @@ def organize_by_backdrop(data, node, nodes_in_main_backdrops, options,
             - prep_layers: Will decompose the layers
             - create_stamps: trigger the creation of stamps per layers
             - pre_comp: Generate the merge tree
-            - ext: Needed to know how to get the layers from media (psd and exr work differently)
             - ext: Needed to know how to get the layers from media (psd and exr work differently).
             - subset_group: Name of the subsetgroup, aka part of a RenderLayer, if any
         padding(int): padding to add inside the backdrop
@@ -634,7 +633,7 @@ def organize_by_backdrop(data, node, nodes_in_main_backdrops, options,
             parent_backdrop = _get_backdrop_by_name(revert_hierarchy[level + 1])
 
             if level == 0:
-                move_nodes_in_backdrop(nodes, backdrop)
+                move_nodes_in_backdrop(nodes, backdrop, padding=padding)
                 main_backdrop = get_first_backdrop_in_first_template(backdrops_hierarchy)
                 adjust_main_backdrops(main_backdrop=main_backdrop,
                                       backdrop=backdrop,
