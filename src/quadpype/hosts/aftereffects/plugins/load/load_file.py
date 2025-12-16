@@ -53,6 +53,7 @@ class FileLoader(api.AfterEffectsLoader):
                 "workfile"]
     representations = ["*", "-json"]
     apply_interval_default = True
+    ae_version = None
 
     @classmethod
     def get_options(cls, contexts):
@@ -113,6 +114,7 @@ class FileLoader(api.AfterEffectsLoader):
             load_settings = get_project_settings(project_name).get(get_current_host_name(), {}).get('load', {})
             auto_clic = load_settings.get('auto_clic_import_dialog')
             if auto_clic and user_override_auto_clic:
+                self.ae_version = stub.get_app_version()
                 auto_clic_thread = self.trigger_auto_clic_thread(
                     load_settings.get('attempts_number', 3),
                     data.get("display_window", True)
@@ -133,17 +135,19 @@ class FileLoader(api.AfterEffectsLoader):
                     stub.LOADED_ICON + comp_name,
                     import_options
                 )
-            stub.set_comp_properties(comp_id=comp.id,
-                                     start=frame_start,
-                                     duration=frame_end,
-                                     frame_rate=import_options['fps'],
-                                     width=None,
-                                     height=None
-                                     )
-            stub.stretch_layers_in_comp(comp_id=comp.id,
-                                        duration=frame_end,
-                                        frame_rate=import_options['fps']
-                                        )
+            stub.set_comp_properties(
+                comp_id=comp.id,
+                start=frame_start,
+                duration=frame_end,
+                frame_rate=import_options['fps'],
+                width=None,
+                height=None
+            )
+            stub.stretch_layers_in_comp(
+                comp_id=comp.id,
+                duration=frame_end,
+                frame_rate=import_options['fps']
+            )
 
         else:
             if frame:
@@ -290,7 +294,7 @@ class FileLoader(api.AfterEffectsLoader):
         import time
         time.sleep(.5)
         for _ in range(tries):
-            success = import_file_dialog_clic(self.log)
+            success = import_file_dialog_clic(self.log, self.ae_version)
             if success:
                 return
 

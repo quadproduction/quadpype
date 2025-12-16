@@ -1,4 +1,5 @@
 import cv2
+import re
 import numpy as np
 import pyautogui
 import time
@@ -201,23 +202,16 @@ def move_cursor_and_click(coordinates, offset, log, click="center"):
 
 
 def get_correct_platform():
-    platform_name = platform.system().lower()
-    if platform_name != "windows":
-        return platform_name
-
-    version = platform.version()
-    build = int(version.split('.')[-1])
-
-    # Windows 11 has build number >= 22000
-    if build >= 22000:
-        return Path(platform_name, "11")
-    else:
-        return Path(platform_name, "10")
+    return platform.system().lower()
 
 
-def import_file_dialog_clic(log):
+def get_ae_version_folder(ae_version):
+    return '2025' if ae_version.startswith("25") else 'default'
+
+
+def import_file_dialog_clic(log, ae_version):
     screen_offset = get_combined_monitors_offset()
-    folder_path = Path(__file__).parent / "resources" / "auto_click" / get_correct_platform()
+    folder_path = Path(__file__).parent / "resources" / "auto_click" / get_correct_platform() / get_ae_version_folder(ae_version)
 
     assert folder_path.is_dir(), "Folder containing image ressources used for comparison can not be found."
 
