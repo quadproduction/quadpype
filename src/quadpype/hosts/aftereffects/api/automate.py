@@ -1,4 +1,3 @@
-import logging
 import time
 import pyautogui
 import re
@@ -12,29 +11,42 @@ LARGE_OFFSET = 50
 IMPORT_AS_COMP_OPTION_INDEX = 2  # Starts from 0
 ONLY_LETTERS_REGEX = r'[^a-zA-Z]'
 TRIES = 5
+DEFAULT_WAITING_TIME = 0.1
 
 IMPORT_FILE = "Importer fichier"
 IMPORT = "Importer sous :"
 
 
 def try_several_times(function):
-    """ Try to execute decorator function a certain number of times (defined by TRIES constant).
+    """ Decorator to try to execute decorator function a certain number of times (defined by TRIES constant).
     Waiting time will gradually increase each loop to avoid large waiting times.
     """
     def wrapper(*args, **kwargs):
-        attempts = 0
-        while attempts < TRIES:
+        attempt = 0
+        while attempt < TRIES:
             result = function(*args, **kwargs)
             if result:
                 return result
 
-            time_to_wait = 0.1 + (attempts / 10)
+            time_to_wait = 0.1 + (attempt / 10)
             time.sleep(time_to_wait)
-            attempts += 1
+            attempt += 1
 
         return False
 
     return wrapper
+
+
+def wait_after(time_to_wait):
+    """ Decorator to wait a certain amount of time after function execution.
+    """
+    def decorator(function):
+        def wrapper(*args, **kwargs):
+            result = function(*args, **kwargs)
+            time.sleep(time_to_wait)
+            return result
+        return wrapper
+    return decorator
 
 
 @try_several_times
@@ -59,10 +71,11 @@ def find_window_by_partial_title(partial_title):
     return result['hwnd']
 
 
+@wait_after(DEFAULT_WAITING_TIME)
 def force_foreground_window(hwnd):
     try:
         if not win32gui.IsWindow(hwnd):
-            logging.error("Given HWND is not valid.")
+            print("Given HWND is not valid.")
             return False
 
         if win32gui.IsIconic(hwnd):
@@ -137,7 +150,7 @@ def get_controls(hwnd_parent, filter_by_class=None, filter_by_text=None, verbose
             })
 
         except Exception as e:
-            logging.error(f"Error with hwnd {hwnd}: {e}")
+            print(f"Error with hwnd {hwnd}: {e}")
         return True
 
     # Callback for recursive items
@@ -187,12 +200,13 @@ def get_file_selection_view(hwnd_parent, verbose=False):
     direct_huiwnd_windows = get_controls(hwnd_parent, filter_by_class="DirectUIHWND", verbose=verbose)
     windows_number = len(direct_huiwnd_windows)
     if not windows_number >= 2:
-        logging.error(f"Correct window should be the second of found windows, but only {windows_number} have been found.")
+        print(f"Correct window should be the second of found windows, but only {windows_number} have been found.")
         return
 
     return direct_huiwnd_windows[1]
 
 
+@wait_after(DEFAULT_WAITING_TIME)
 def click_on_element(hwnd_list, offset=SMALL_OFFSET):
     if isinstance(offset, list) or isinstance(offset, tuple):
         x_offset, y_offset = offset
@@ -220,7 +234,7 @@ def get_combobox(hwnd_parent, text, verbose=False):
     """
     comboboxes = get_controls(hwnd_parent, filter_by_class="ComboBox", verbose=verbose)
     if not comboboxes:
-        logging.error("Can not find any combobox in import window.")
+        print("Can not find any combobox in import window.")
         return
 
     if verbose:
@@ -231,7 +245,7 @@ def get_combobox(hwnd_parent, text, verbose=False):
 
     labels = get_controls(hwnd_parent, filter_by_class="Static", filter_by_text=text, verbose=verbose)
     if not labels:
-        logging.error("Can not find any label in import window.")
+        print("Can not find any label in import window.")
         return
 
     if verbose:
@@ -250,33 +264,23 @@ def get_combobox(hwnd_parent, text, verbose=False):
         cb for cb in comboboxes
         if abs(win32gui.GetWindowRect(cb)[1] - label_y) < 40
     ]
-    print(nearby)
+
     if not nearby:
-        logging.error("Can not find any nearby combobox.")
+        print("Can not find any nearby combobox.")
         return
 
     return nearby[0]
 
 
+@wait_after(DEFAULT_WAITING_TIME)
 def select_item_from_opened_combobox(item_number):
     for _ in range(item_number):
         pyautogui.press('down')
 
 
+@wait_after(DEFAULT_WAITING_TIME)
 def press_enter_key():
     pyautogui.press('enter')
-
-
-def get_button(hwnd_parent, button_label, verbose):
-    buttons = get_controls(hwnd_parent, filter_by_class="Button", filter_by_text=button_label, verbose=verbose)
-    if not buttons:
-        logging.error(f"Can not find any button labelized '{button_label}'.")
-        return
-
-    if len(buttons) > 1:
-        logging.warning(f"More than 1 button find with label '{button_label}'. First one will be used.")
-
-    return buttons[0]
 
 
 def import_file_dialog_clic(file_name, verbose=False):
@@ -299,21 +303,21 @@ def import_file_dialog_clic(file_name, verbose=False):
     Returns:
         bool: True if success, else None
     """
-
+    print("Launching auto clic script.")
     # Get main window and put in foreground
     ae_import_window = find_window_by_title(IMPORT_FILE)
     if not ae_import_window:
-        logging.error("Can not find import window.")
+        print("Can not find import window.")
         return
 
     if not force_foreground_window(ae_import_window):
-        logging.error("Can not force given window to foreground.")
+        print("Can not force given window to foreground.")
         return
 
     # Retrieve files list window and click on first element
     file_selection_window = get_file_selection_view(ae_import_window, verbose=verbose)
     if not file_selection_window:
-        logging.error("Can not find file selection window.")
+        print("Can not find file selection window.")
         return
 
     click_on_element(file_selection_window, offset=LARGE_OFFSET)
@@ -321,7 +325,7 @@ def import_file_dialog_clic(file_name, verbose=False):
     # Get combobox and select third option
     combobox_found = get_combobox(ae_import_window, IMPORT, verbose=verbose)
     if not combobox_found:
-        logging.error(f"Can not find combobox with name '{IMPORT}' in current window.")
+        print(f"Can not find combobox with name '{IMPORT}' in current window.")
         return
 
     click_on_element(combobox_found)
@@ -331,11 +335,17 @@ def import_file_dialog_clic(file_name, verbose=False):
     press_enter_key()  # Validate import
 
     # Wait for new window appearance and finalize import
+    time.sleep(.5)
     new_import_window = find_window_by_partial_title(file_name)
     if not new_import_window:
-        logging.error("Can not find second import window to finalize process.")
+        print("Can not find second import window to finalize process.")
+        return
+
+    if not force_foreground_window(new_import_window):
+        print("Can not force given window to foreground.")
         return
 
     press_enter_key()  # Finalise import
+    print("Import ended with success.")
 
     return True
