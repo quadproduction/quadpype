@@ -28,6 +28,8 @@ from . import pipeline
 
 log = Logger.get_logger(__name__)
 
+BLENDER_MAJOR_VERSION = bpy.app.version[0]
+
 
 def load_scripts(paths):
     """Copy of `load_scripts` from Blender's implementation.
@@ -321,6 +323,8 @@ def map_to_classes_and_names(blender_objects):
     rna_to_bpy_data = get_object_types_correspondance()
 
     for blender_object in blender_objects:
+        if not isinstance(blender_object, bpy.types.ID):
+            continue
         object_data_name = rna_to_bpy_data[blender_object.bl_rna.identifier]
         if not mapped_values.get(object_data_name):
             mapped_values[object_data_name] = list()
@@ -974,14 +978,33 @@ def purge_orphans(is_recursive):
         for item in list(data_collection):
             if item.users == 0:
                 try:
+                    print(f"Deleting {item.name} for data collection {data_type}")
                     bpy.data.batch_remove([item])
                 except Exception as e:
                     print(f"Impossible to Delete {item.name} : {e}")
 
-
     if is_recursive:
         purge_orphans(is_recursive=False)
 
+    purge_library()
+
+def purge_library():
+    data_types = [attr for attr in dir(bpy.data) if
+                  isinstance(getattr(bpy.data, attr), bpy.types.bpy_prop_collection)]
+    for lib in bpy.data.libraries[:]:
+        used = False
+        for data_type in data_types:
+            data_collection = getattr(bpy.data, data_type)
+            for datablock in list(data_collection):
+                if getattr(datablock, "override_library", None):
+                    base = getattr(datablock, "id_original", datablock)
+                else:
+                    base = datablock
+                if base.library == lib:
+                    used = True
+
+        if not used:
+            bpy.data.libraries.remove(lib)
 
 def get_asset_children(asset):
     return list(asset.objects) if isinstance(asset, bpy.types.Collection) else list(asset.children)
@@ -1005,6 +1028,7 @@ def is_camera(obj):
 def is_collection(obj):
     return isinstance(obj, bpy.types.Collection)
 
+
 def get_value_safe(v):
     """Convert values to JSON friendly attributes"""
     if isinstance(v, (Vector, Euler, Quaternion, Color)):
@@ -1014,6 +1038,7 @@ def get_value_safe(v):
     elif isinstance(v, (list, tuple)):
         return [get_value_safe(x) for x in v]
     return str(v)
+
 
 def rsetattr(obj, attr, val):
     pre, _, post = attr.rpartition('.')
@@ -1028,10 +1053,12 @@ def rsetattr(obj, attr, val):
     else:
         setattr(target, post, val)
 
+
 def rgetattr(obj, attr, *args):
     def _getattr(obj, attr):
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
+
 
 def rhasattr(obj, attr):
     def _hasattr(obj, attr):
@@ -1040,6 +1067,7 @@ def rhasattr(obj, attr):
         return getattr(obj, attr)
     result = functools.reduce(_hasattr, [obj] + attr.split('.'))
     return result is not None
+
 
 def get_properties_on_object(obj, frame=1):
     """Get the properties value on an object based on list of properties from setting.
@@ -1081,7 +1109,6 @@ def get_properties_on_object(obj, frame=1):
         pb_data[SNAPSHOT_CUSTOM_PROPERTIES] = {k: get_value_safe(v) for k, v in pb.items() if k != "_RNA_UI"}
         pose_data[pb.name] = pb_data
     data[SNAPSHOT_POSE_BONE] = pose_data
-
     return data
 
 
@@ -1105,7 +1132,10 @@ def set_properties_on_object(obj, data, frame=1):
 
     # Custom properties
     for k, v in data.get(SNAPSHOT_CUSTOM_PROPERTIES, {}).items():
-        obj[k] = v
+        try:
+            obj[k] = v
+        except:
+            log.warning(f"Custom property {k} not set, because of type {type(obj[k])}")
 
     if not obj.type == "ARMATURE" and SNAPSHOT_POSE_BONE not in data:
         return
@@ -1136,6 +1166,8 @@ def restore_properties_on_instance(instance_obj, corresponding_instance):
         if not data:
             continue
         set_properties_on_object(obj, data)
+
+
 def get_containers_from_selected():
     containers = set()
     all_selected = set(get_selection())
@@ -1151,6 +1183,7 @@ def get_containers_from_selected():
 
     return list(containers)
 
+
 def get_viewport_shading():
     try:
         window = bpy.data.window_managers[0].windows[0]
@@ -1158,3 +1191,44 @@ def get_viewport_shading():
         return area.spaces[0].shading.type
     except StopIteration:
         return
+
+
+def get_node_tree(scene=None):
+    if not scene:
+        scene = bpy.context.scene
+
+    # Support for Blender version >= 5
+    try:
+        return scene.compositing_node_group
+
+    except AttributeError:
+        return scene.node_tree
+
+
+def create_and_get_node_tree(scene=None):
+    if not scene:
+        scene = bpy.context.scene
+
+    log.info("Creating or retrieving new tree for Compositor")
+
+    if BLENDER_MAJOR_VERSION < 5:
+        scene.use_nodes = True
+        return get_node_tree(scene=scene)
+
+    new_comp_name = "QuadPype Render Node Tree"
+    new_tree_name = "CompositorNodeTree"
+
+    tree = bpy.data.node_groups.new(new_comp_name, new_tree_name)
+    scene.compositing_node_group = tree
+
+    return tree
+  
+
+def get_library_from_path(path):
+    path_norm = os.path.normpath(path)
+    for lib in bpy.data.libraries:
+        lib_path = os.path.normpath(bpy.path.abspath(lib.filepath))
+
+        if lib_path == path_norm:
+            return lib
+    return None

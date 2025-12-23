@@ -4,6 +4,7 @@ import re
 import traceback
 import json
 from typing import Callable, Dict, Iterator, List, Optional
+from enum import Enum
 
 import bpy
 
@@ -73,6 +74,10 @@ from .constants import (
 
 
 log = Logger.get_logger(__name__)
+
+
+class ResolutionImport(Enum):
+    UPDATE = "Update res with imported"
 
 
 class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost, WorkFileCache):
@@ -750,13 +755,14 @@ def ls() -> Iterator:
         yield parse_container(container)
 
     # Compositor nodes are not in `bpy.data` that `lib.lsattr` looks in.
-    node_tree = bpy.context.scene.node_tree
+    node_tree = lib.get_node_tree()
     if node_tree:
         for node in node_tree.nodes:
             if get_avalon_node(node).get("id", None) not in container_ids:
                 continue
 
             yield parse_container(node)
+
 
 def publish():
     """Shorthand to publish from within host."""

@@ -1,33 +1,30 @@
-"""Load an asset in Blender from an Alembic file."""
-
 from typing import Dict, List, Optional
-from quadpype.hosts.blender.api import plugin, lib
+
 import bpy
 
+from quadpype.hosts.blender.api import plugin, lib
+from quadpype.hosts.blender.api.pipeline import (
+    ResolutionImport
+)
+from quadpype.lib.attribute_definitions import BoolDef
 
-def blender_camera_bg_video_importer(video_filepath, context, replace_last_bg = False):
+
+def blender_camera_bg_video_importer(
+        video_filepath,
+        context,
+        replace_last_bg=False,
+        update_scene_resolution=False
+):
     """
     Will add or reload an image sequence in the camera background
 
     video_filepath: path to the video to load
     replace_last_bg(bool): If False will add an image background, if True, will replace the last imported image background
     """
-    imported_video = bpy.data.images.load(video_filepath)
 
     camera = bpy.context.scene.camera
     if not camera:
         raise ValueError("No camera has been found in scene. Can't import video as camera background.")
-
-    camera.data.show_background_images = True
-    if replace_last_bg and len(camera.data.background_images):
-        background = camera.data.background_images[-1]
-    else:
-        background = camera.data.background_images.new()
-
-    imported_video.source = 'MOVIE'
-    background.source = 'IMAGE'
-    background.image = imported_video
-    background.image_user.frame_duration
 
     context_data = context.get('version', {}).get('data', {})
     if not context_data:
@@ -40,9 +37,25 @@ def blender_camera_bg_video_importer(video_filepath, context, replace_last_bg = 
 
     frames = (frame_end - frame_start) + 1
 
+    imported_video = bpy.data.images.load(video_filepath)
+
+    camera.data.show_background_images = True
+    if replace_last_bg and len(camera.data.background_images):
+        background = camera.data.background_images[-1]
+    else:
+        background = camera.data.background_images.new()
+
+    imported_video.source = 'MOVIE'
+    background.source = 'IMAGE'
+    background.image = imported_video
+
     background.image_user.frame_start = frame_start
     background.image_user.frame_duration = frames
     background.image_user.frame_offset = 0
+
+    if update_scene_resolution:
+        bpy.context.scene.render.resolution_x, bpy.context.scene.render.resolution_y = background.image.size
+        print(f"Scene resolution has been updated to {background.image.size[0]}x{background.image.size[1]}.")
 
     print(f"Video at path {imported_video.filepath} has been correctly loaded in scene as camera background.")
 
@@ -60,6 +73,20 @@ class ImageVideoLoader(plugin.BlenderLoader):
     icon = "refresh"
     color = "orange"
 
+    defaults = {
+        'update_res': True
+    }
+
+    @classmethod
+    def get_options(cls, contexts):
+        return [
+            BoolDef(
+                "update_res",
+                label=ResolutionImport.UPDATE.value,
+                default=cls.defaults['update_res'],
+            )
+        ]
+
     def process_asset(
         self, context: dict, name: str, namespace: Optional[str] = None,
         options: Optional[Dict] = None
@@ -73,7 +100,12 @@ class ImageVideoLoader(plugin.BlenderLoader):
             options: Additional settings dictionary
         """
         video_filepath = self.filepath_from_context(context)
-        blender_camera_bg_video_importer(video_filepath, context, replace_last_bg=True)
+        blender_camera_bg_video_importer(
+            video_filepath,
+            context,
+            replace_last_bg=True,
+            update_scene_resolution=options.get('update_res', self.defaults['update_res'])
+        )
 
 
 class ImageVideoAdder(plugin.BlenderLoader):
@@ -88,6 +120,20 @@ class ImageVideoAdder(plugin.BlenderLoader):
     icon = "file-video-o"
     color = "green"
 
+    defaults = {
+        'update_res': True
+    }
+
+    @classmethod
+    def get_options(cls, contexts):
+        return [
+            BoolDef(
+                "update_res",
+                label=ResolutionImport.UPDATE.value,
+                default=cls.defaults['update_res'],
+            )
+        ]
+
     def process_asset(
         self, context: dict, name: str, namespace: Optional[str] = None,
         options: Optional[Dict] = None
@@ -101,4 +147,9 @@ class ImageVideoAdder(plugin.BlenderLoader):
             options: Additional settings dictionary
         """
         video_filepath = self.filepath_from_context(context)
-        blender_camera_bg_video_importer(video_filepath, context, replace_last_bg=False)
+        blender_camera_bg_video_importer(
+            video_filepath,
+            context,
+            replace_last_bg=False,
+            update_scene_resolution=options.get('update_res', self.defaults['update_res'])
+        )

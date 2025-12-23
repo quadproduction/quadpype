@@ -33,7 +33,12 @@ class BlenderAddon(QuadPypeModule, IHostAddon):
         # If `QUADPYPE_BLENDER_USE_SYSTEM_PATH` is set use `BLENDER_SYSTEM_PATH`
         # to initialize the Blender startup environment, otherwise use the
         # `BLENDER_USER_PATH`.
-        use_system_path = env_value_to_bool("QUADPYPE_BLENDER_USE_SYSTEM_PATH")
+        blender_system_path_key = "QUADPYPE_BLENDER_USE_SYSTEM_PATH"
+        use_system_path = env_value_to_bool(
+            env_key=blender_system_path_key,
+            value=env.get(blender_system_path_key)
+        )
+
         if use_system_path:
             self._configure_blender_system_paths(
                 env, implementation_script_path
