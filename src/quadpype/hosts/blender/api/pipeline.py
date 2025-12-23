@@ -68,7 +68,8 @@ from .constants import (
     ORIGINAL_EXCEPTHOOK,
     AVALON_CONTAINERS,
     AVALON_PROPERTY,
-    IS_HEADLESS
+    IS_HEADLESS,
+    YELLOW
 )
 
 
@@ -541,6 +542,7 @@ def add_to_avalon_container(container: bpy.types.Collection):
         # unless you set a 'fake user'.
         bpy.context.scene.collection.children.link(avalon_container)
 
+    avalon_container.color_tag = YELLOW
     if isinstance(container, bpy.types.Object):
         avalon_container.objects.link(container)
     elif isinstance(container, bpy.types.Collection) and container not in list(avalon_container.children):
