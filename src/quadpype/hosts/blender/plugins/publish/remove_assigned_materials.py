@@ -38,13 +38,14 @@ class RemoveLooksTemporarily(
                 if mat:
                     mats.append(mat)
                     self.log.info(f"{mat.name} on {obj.name} will be temporarily removed.")
-                obj.data.materials.pop(index=i)
+                obj.material_slots[i].material = None
 
             if mats:
                 materials_by_objects[obj.name] = mats
 
             if len(obj.material_slots) == 0:
                 obj.data.materials.append(None)
+                obj.material_slots[-1].link = "OBJECT"
 
         if not materials_by_objects:
             self.log.info(f"No materials from object found, continue...")
