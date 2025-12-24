@@ -80,6 +80,7 @@ JSON_PREFIX = "JSON:::"
 ROOT_DATA_KNOB = "publish_context"
 INSTANCE_DATA_KNOB = "publish_instance"
 AUTORESIZE_LABEL = "AutoResize"
+ALPHA_FILL_LABEL = "AlphaFill"
 
 PREP_LAYER_PSD_EXT = ["psd", "psb"]
 PREP_LAYER_EXR_EXT = ["exr"]
@@ -1784,6 +1785,12 @@ def convert_knob_value_to_correct_type(knob_type, knob_value):
         knob_value = knob_value
     elif knob_type == "color_gui":
         knob_value = color_gui_to_int(knob_value)
+    elif knob_type == "dict":
+        mappings_list = []
+        for k, v in knob_value.items():
+            parts = [v['key_value'], k]
+            mappings_list.append(tuple(parts))
+        knob_value = mappings_list
     elif knob_type in ["2d_vector", "3d_vector", "color", "box"]:
         knob_value = [float(val_) for val_ in knob_value]
 
