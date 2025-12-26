@@ -28,6 +28,7 @@ from quadpype.hosts.nuke.api.lib import (
     get_layers,
     compare_layers,
     get_unique_name_and_number,
+    set_node_knobs_from_settings,
     PREP_LAYER_PSD_EXT,
     PREP_LAYER_EXR_EXT
 )
@@ -158,6 +159,8 @@ class LoadClip(plugin.NukeLoader):
         add_retime = options.get("add_retime", self.defaults["add_retime"])
         ext = context["representation"]["context"]["ext"].lower()
         pre_comp = options.get("pre_comp", self.defaults["pre_comp"])
+
+        self.get_load_settings(ext)
 
         if ext in PREP_LAYER_EXR_EXT:
             pre_comp = False
@@ -311,7 +314,18 @@ class LoadClip(plugin.NukeLoader):
             self.log.info("__ unique_number: `{}`".format(unique_number))
             data_imprint["unique_number"] = unique_number
 
-            container = containerise(
+
+
+            # change color of node
+            if version_doc["_id"] == last_version_doc["_id"]:
+                color_value = COLOR_GREEN
+            else:
+                color_value = COLOR_RED
+            read_node["tile_color"].setValue(int(color_value, 16))
+
+            set_node_knobs_from_settings(read_node, self.knobs)
+
+            return containerise(
                 read_node,
                 name=name,
                 namespace=namespace,
@@ -319,14 +333,6 @@ class LoadClip(plugin.NukeLoader):
                 loader=self.__class__.__name__,
                 data=data_imprint)
 
-        # change color of node
-        if version_doc["_id"] == last_version_doc["_id"]:
-            color_value = COLOR_GREEN
-        else:
-            color_value = COLOR_RED
-        read_node["tile_color"].setValue(int(color_value, 16))
-
-        return container
 
     def switch(self, container, representation):
         self.update(container, representation)
