@@ -182,6 +182,12 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         submit_frame_start = int(instance.data["frameStartHandle"])
         submit_frame_end = int(instance.data["frameEndHandle"])
 
+        frames_to_fix = instance.data.get("frames_to_fix")
+        frames_to_render = [(submit_frame_start, submit_frame_end)]
+
+        if instance.data.get("last_version_published_files") and frames_to_fix:
+            frames_to_render = self._get_frames_to_render(frames_to_fix)
+
         # get output path
         render_path = instance.data['path']
         script_path = context.data["currentFile"]
@@ -195,16 +201,17 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         # only add main rendering job if target is not frames_farm
         r_job_response_json = None
         if instance.data["render_target"] != "frames_farm":
-            r_job_response = self.payload_submit(
-                instance,
-                script_path,
-                render_path,
-                node.name(),
-                submit_frame_start,
-                submit_frame_end
-            )
-            r_job_response_json = r_job_response.json()
-            instance.data["deadlineSubmissionJob"] = r_job_response_json
+            for render_first_frame, render_last_frame in frames_to_render:
+                r_job_response = self.payload_submit(
+                    instance,
+                    script_path,
+                    render_path,
+                    node.name(),
+                    int(render_first_frame),
+                    int(render_last_frame)
+                )
+                r_job_response_json = r_job_response.json()
+                instance.data["deadlineSubmissionJob"] = r_job_response_json
 
             # Store output dir for unified publisher (filesequence)
             instance.data["outputDir"] = os.path.dirname(
@@ -248,6 +255,32 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
             instance.data['family'] = 'write'
             families.insert(0, "prerender")
         instance.data["families"] = families
+
+    def _get_frames_to_render(self, frames_to_fix):
+        """Return list of frame range tuples to render
+
+        Args:
+            frames_to_fix (str): specific or range of frames to be rerendered
+             (1005, 1009-1010)
+        Returns:
+            (list): [(1005, 1005), (1009-1010)]
+        """
+        frames_to_render = []
+
+        for frame_range in frames_to_fix.replace(" ", "").split(","):
+            if frame_range.isdigit():
+                render_first_frame = frame_range
+                render_last_frame = frame_range
+            elif '-' in frame_range:
+                frames = frame_range.split('-')
+                render_first_frame = int(frames[0])
+                render_last_frame = int(frames[1])
+            else:
+                raise ValueError("Wrong format of frames to fix {}"
+                                 .format(frames_to_fix))
+            frames_to_render.append((render_first_frame,
+                                     render_last_frame))
+        return frames_to_render
 
     def _get_published_workfile_path(self, context):
         """This method is temporary while the class is not inherited from

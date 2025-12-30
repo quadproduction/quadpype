@@ -56,10 +56,14 @@ class ValidateRenderedFrames(pyblish.api.InstancePlugin):
 
     def process(self, instance):
         node = instance.data["transientData"]["node"]
-
+        frames_to_fix = instance.data["transientData"].get("frames_to_fix")
         f_data = {
             "node_name": node.name()
         }
+
+        if frames_to_fix:
+            self.log.info(f"Frames to fix found {frames_to_fix}, passing this validator")
+            return
 
         for repre in instance.data["representations"]:
 
