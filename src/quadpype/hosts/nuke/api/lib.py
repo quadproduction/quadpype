@@ -3992,3 +3992,10 @@ def get_unique_number(existing_names, name):
             names[read_name] = 1
     occurrences = names.get(name, 0)
     return "{:0>3d}".format(occurrences + 1)
+
+def create_replacement_placeholder_dot():
+    for n in nuke.selectedNodes():
+        n.setSelected(False)
+    dot_node = nuke.createNode('Dot', inpanel=False)
+    dot_node.setSelected(False)
+    return dot_node
