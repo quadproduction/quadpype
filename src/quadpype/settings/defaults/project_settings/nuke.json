@@ -574,7 +574,8 @@
                     "task_types": [""],
                     "families": [],
                     "templates": ["{parent}-{asset}<-{numbering}>"],
-                    "backdrop_color":[255, 0, 0]
+                    "backdrop_color":[255, 0, 0],
+                    "boolean": true
                 }
             ]
         },
