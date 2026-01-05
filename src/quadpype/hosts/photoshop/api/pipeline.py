@@ -113,7 +113,8 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCa
     def get_current_task_name(self):
         current_task = os.getenv("AVALON_TASK")
         current_file = self.current_file()
-
+        if not current_file:
+            return current_task
         project_tasks = [k for k in ANATOMY.get("tasks", {}).keys()]
 
         found_task = next((f for f in project_tasks if f in current_file), None)
@@ -122,7 +123,8 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCa
     def get_current_asset_name(self):
         current_asset = os.getenv("AVALON_ASSET")
         current_file = self.current_file()
-
+        if not current_file:
+            return current_asset
         current_project_asset_pointer = get_assets(self.get_current_project_name())
         project_assets = [a["name"] for a in current_project_asset_pointer if a["data"]["tasks"]]
 
