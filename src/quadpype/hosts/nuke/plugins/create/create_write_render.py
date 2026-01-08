@@ -22,6 +22,8 @@ from quadpype.hosts.nuke.api.backdrops import (
     organize_by_backdrop
 )
 
+resize_type_list = ["none", "width", "height", "fit", "fill", "distort"]
+
 class CreateWriteRender(napi.NukeWriteCreator):
     identifier = "create_write_render"
     label = "Render (write)"
@@ -39,6 +41,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
         "{work}/renders/nuke/{subset}/{subset}.{frame}.{ext}")
 
     resolution = None
+    resize_type = None
     resolutions = []
     autoresize = False
 
@@ -77,6 +80,15 @@ class CreateWriteRender(napi.NukeWriteCreator):
                     label="Resolution",
                 )
             )
+        attr_defs.append(
+            EnumDef(
+                "resize_type",
+                items=resize_type_list,
+                default=resize_type_list[0],
+                label="Resize operation",
+            )
+        )
+
         return attr_defs
 
     def get_instance_attr_defs(self):
@@ -102,7 +114,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
 
         width, height = self._get_width_and_height()
         if self.autoresize:
-            self.add_autoresize_prenodes(width, height)
+            self.add_autoresize_prenodes(width, height, self.resize_type)
 
         self.log.debug(">>>>>>> : {}".format(self.instance_attributes))
         self.log.debug(">>>>>>> : {}".format(self.get_linked_knobs()))
@@ -138,7 +150,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
 
         return width, height
 
-    def add_autoresize_prenodes(self, width, height):
+    def add_autoresize_prenodes(self, width, height, resize_type="none"):
         custom_res = get_custom_res(width, height)
         self.prenodes[AUTORESIZE_LABEL] = {
             "nodeclass": "Reformat",
@@ -148,6 +160,11 @@ class CreateWriteRender(napi.NukeWriteCreator):
                     "type": "Text",
                     "name": "format",
                     "value": custom_res
+                },
+                {
+                    "type": "Text",
+                    "name": "resize",
+                    "value": resize_type
                 }
             ]
         }
@@ -157,7 +174,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
         use_backdrop_general = settings["general"].get("use_backdrop_loader_creator", True)
         use_backdrop = settings["create"]["CreateWriteRender"].get("use_backdrop_loader_creator", True)
         backdrop_padding = settings["create"]["CreateWriteRender"].get("backdrop_padding", 150)
-     
+
         nodes_in_main_backdrops = []
         if use_backdrop and use_backdrop_general:
             nodes_in_main_backdrops = pre_organize_by_backdrop()
@@ -171,6 +188,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
         )
 
         self.resolution = pre_create_data.get('resolution')
+        self.resize_type = pre_create_data.get('resize_type')
 
         # make sure selected nodes are added
         self.set_selected_nodes(pre_create_data)
@@ -196,7 +214,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
             self._add_instance_to_context(instance)
 
             imprint_data = instance.data_to_store()
-            
+
             if use_backdrop and use_backdrop_general:
                 main_backdrop, storage_backdrop, subset_group, nodes = organize_by_backdrop(
                     data=dict(instance.data),
