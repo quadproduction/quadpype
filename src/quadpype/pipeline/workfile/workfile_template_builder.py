@@ -2008,6 +2008,9 @@ class PlaceholderCreateMixin(object):
                         task_name=create_data["task_name"],
                         pre_create_data=pre_create_data
                     )
+                    self.log.info(
+                        f"Create finished for {asset_name}, {task_name}, of type {creator_name} and variant {create_variant}"
+                    )
 
             except:  # noqa: E722
                 failed = True

@@ -23,7 +23,7 @@ class ImageFromSequenceLoader(photoshop.PhotoshopLoader):
         of 'frame of rendered files' (only rendered sequence), update would be
         difficult.
     """
-
+    label = "Load Image From Seq"
     families = ["render"]
     representations = ["*"]
     options = []

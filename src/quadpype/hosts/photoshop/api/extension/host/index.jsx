@@ -42,6 +42,86 @@ function getLayerTypeWithName(layerName) {
     return type;
 }
 
+function addPlaceholder(name, text_size, r, g ,b){
+    var doc = app.activeDocument;
+    var placeholderLayer = doc.artLayers.add();
+
+    var color = new SolidColor();
+    color.rgb.red = r;
+    color.rgb.green = g;
+    color.rgb.blue = b;
+
+    placeholderLayer.name = name;
+    placeholderLayer.kind = LayerKind.TEXT;
+    placeholderLayer.textItem.contents = name;
+    placeholderLayer.textItem.size = text_size;
+    placeholderLayer.textItem.color = color;
+
+    var layerInfo = {
+        id: placeholderLayer.id.toString(),
+        name: placeholderLayer.name,
+        kind: placeholderLayer.kind.toString()
+    };
+
+    return JSON.stringify(layerInfo);
+}
+
+function printMsg(msg){
+    alert(msg);
+}
+
+function getLayerByID(id) {
+    var doc = app.activeDocument;
+    for (var i = 0; i < doc.layers.length; i++) {
+        if (doc.layers[i].id == id) return doc.layers[i];
+    }
+    return null;
+}
+
+function getLayerCenter(layer) {
+    var b = layer.bounds; // [left, top, right, bottom]
+    var left = b[0].as("px");
+    var top = b[1].as("px");
+    var right = b[2].as("px");
+    var bottom = b[3].as("px");
+
+    var centerX = left + (right - left) / 2;
+    var centerY = top + (bottom - top) / 2;
+
+    return { x: centerX, y: centerY };
+}
+
+function moveLayerToTextPosition(textLayer_id, targetLayer_id) {
+    var textLayer = getLayerByID(textLayer_id);
+    if (textLayer == null) {
+        alert("Layer ID not found");
+        return;
+    }
+    var targetLayer = getLayerByID(targetLayer_id);
+    if (targetLayer == null) {
+        alert("Layer ID not found");
+        return;
+    }
+
+    var textCenter = getLayerCenter(textLayer);
+    var targetCenter = getLayerCenter(targetLayer);
+
+    var dx = textCenter.x - targetCenter.x;
+    var dy = textCenter.y - targetCenter.y;
+
+    targetLayer.translate(dx, dy);
+}
+
+function scaleLayerByID(id, scalePercent) {
+    var layer = getLayerByID(id);
+    if (layer == null) {
+        alert("Layer ID not found");
+        return;
+    }
+
+    layer.resize(scalePercent, scalePercent, AnchorPosition.MIDDLECENTER);
+}
+
 function getLayers() {
     /**
      * Get json representation of list of layers.
@@ -552,6 +632,13 @@ function renameLayer(layer_id, new_name){
 
     doc.activeLayer.name = new_name;
 }
+
+function setLayerText(layer_id, text){
+	doc = app.activeDocument;
+    selectLayers('['+layer_id+']');
+	doc.activeLayer.textItem.contents = text;
+}
+
 
 function renameLayers(layers){
     /***
