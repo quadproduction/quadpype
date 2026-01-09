@@ -109,6 +109,14 @@ function main(websocket_url) {
             });
     });
 
+
+    RPC.addRoute('Photoshop.are_layers_empty_by_ids', function (data) {
+        return runEvalScript("areLayersEmptyByIDs('"+ data.layer_ids + "')")
+            .then(function (result) {
+                return result;
+            });
+    });
+
     RPC.addRoute('Photoshop.get_layers', function (data) {
         log.warn('Server called client route "get_layers":', data);
         return runEvalScript("getLayers()")

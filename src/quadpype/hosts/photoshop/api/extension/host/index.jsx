@@ -42,6 +42,58 @@ function getLayerTypeWithName(layerName) {
     return type;
 }
 
+function getLayerByID(id, parent) {
+    parent = parent || app.activeDocument;
+
+    for (var i = 0; i < parent.layers.length; i++) {
+        var layer = parent.layers[i];
+
+        if (layer.id == id) {
+            return layer;
+        }
+
+        // 🔥 Recherche récursive dans les groupes
+        if (layer.typename === "LayerSet") {
+            var found = getLayerByID(id, layer);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+
+function isEmptyLayer(layer) {
+    if (layer.typename !== "ArtLayer") return false;
+    if (layer.kind !== LayerKind.NORMAL) return false;
+
+    try {
+        var b = layer.bounds;
+        return b[0].as("px") === 0 &&
+               b[1].as("px") === 0 &&
+               b[2].as("px") === 0 &&
+               b[3].as("px") === 0;
+    } catch (e) {
+        return false;
+    }
+}
+
+function areLayersEmptyByIDs(idList) {
+    var results = {};
+    parsed_layers = JSON.parse(idList);
+
+    for (var i = 0; i < parsed_layers.length; i++) {
+        var id = parsed_layers[i];
+        var layer = getLayerByID(id);
+
+        if (layer) {
+            results[id] = isEmptyLayer(layer);
+        } else {
+            results[id] = null; // ID non trouvé
+        }
+    }
+
+    return JSON.stringify(results);
+}
+
 function getLayers() {
     /**
      * Get json representation of list of layers.
