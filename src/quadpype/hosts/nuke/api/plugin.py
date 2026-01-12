@@ -650,6 +650,9 @@ class ExporterReview(object):
         if "#" in self.fhead:
             self.fhead = self.fhead.replace("#", "")[:-1]
 
+        if "%0" in self.fhead and "d" in self.fhead:
+            self.fhead = self.fhead[:self.fhead.find("%0")]
+
     def get_representation_data(
         self, tags=None, range=False,
         custom_tags=None, colorspace=None
