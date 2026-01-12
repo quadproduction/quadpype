@@ -88,13 +88,13 @@ def get_renderlayer_template():
 
     return template
 
-def get_task_hierarchy_color(data, task=None):
-    """Retrieve the color for the backdrop depending on the task type
+def get_task_hierarchy_settings_data(data, task=None):
+    """Retrieve the settings data for the backdrop depending on the task type
     Args:
         data (Dict[str, Any]): Data to fill template_collections_naming.
         task (str): fill to bypass task in data dict
     Return:
-        str: A template that can be solved later
+        dict: A dict of data of the corresponding settings
     """
     # If from create write instance
     if data.get("id") == "pyblish.avalon.instance":
@@ -110,17 +110,21 @@ def get_task_hierarchy_color(data, task=None):
         }
 
     profile = filter_profiles(profiles, profile_key)
+    if not profile:
+        raise TemplateProfileNotFound
 
-    return profile.get("backdrop_color", []) if profiles else []
+    return profile
 
 
 #-----------Creator-----------------
 
-def create_backdrop(bd_name, bd_color, bd_size=None, font_size=BACKDROP_FONT_SIZE, z_order=0, position=None):
+def create_backdrop(bd_name, bd_color, bd_size=None, fill_backdrop=True,
+                    font_size=BACKDROP_FONT_SIZE, z_order=0, position=None):
     """Create a backdrop at the center
     Args:
         bd_name(str): name of the backdrop.
         bd_color(list/tuple): rgba color code, 0-255.
+        fill_backdrop(bool): set the appearance of the backdrop.
         bd_size(str): the width and height.
         font_size(int): title size.
         z_order(int): depth of the backdrop position.
@@ -151,6 +155,8 @@ def create_backdrop(bd_name, bd_color, bd_size=None, font_size=BACKDROP_FONT_SIZ
 
     backdrop["z_order"].setValue(z_order)
     backdrop["note_font_size"].setValue(font_size)
+    if not fill_backdrop:
+        backdrop["appearance"].setValue("Border")
     return backdrop
 
 def create_backdrops_from_hierarchy(backdrops_hierarchy, data):
@@ -180,7 +186,9 @@ def create_backdrops_from_hierarchy(backdrops_hierarchy, data):
             if _backdrop_exists(bd_name):
                 continue
 
-            bd_color = get_task_hierarchy_color(data)
+            bd_settings = get_task_hierarchy_settings_data(data)
+            fill_backdrop =  bd_settings.get("fill_backdrop", True)
+            bd_color = bd_settings.get("backdrop_color", [])
             if not bd_color:
                 bd_color = [150, 150, 150, 0]
 
@@ -200,6 +208,7 @@ def create_backdrops_from_hierarchy(backdrops_hierarchy, data):
             return_backdrop = create_backdrop(
                                     bd_name=bd_name,
                                     bd_color=bd_color,
+                                    fill_backdrop=fill_backdrop,
                                     font_size=DEFAULT_FONT_SIZE,
                                     z_order = z_order,
                                     position=(-10000,-10000)
@@ -219,6 +228,7 @@ def create_main_backdrops_from_list():
             continue
         create_backdrop(bd_name=backdrop_profile["name"],
                         bd_color=backdrop_profile["color"],
+                        fill_backdrop=backdrop_profile["fill_backdrop"],
                         bd_size=backdrop_profile["default_size"],
                         font_size=BACKDROP_FONT_SIZE,
                         z_order=0)
