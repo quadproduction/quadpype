@@ -52,7 +52,6 @@ function getLayerByID(id, parent) {
             return layer;
         }
 
-        // 🔥 Recherche récursive dans les groupes
         if (layer.typename === "LayerSet") {
             var found = getLayerByID(id, layer);
             if (found) return found;
