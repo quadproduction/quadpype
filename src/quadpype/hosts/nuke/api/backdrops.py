@@ -340,7 +340,7 @@ def adjust_main_backdrops(main_backdrop=None, backdrop=None, nodes_in_main_backd
                 node['xpos'].setValue(node.xpos() + offset_x)
                 node['ypos'].setValue(node.ypos() + offset_y)
             except ValueError:
-                        pass
+                pass
 
 #-----------Operations-----------------
 
@@ -501,6 +501,10 @@ def _get_backdrop_by_name(bd_name):
     """Get a backdrop depending on the given name"""
     return nuke.toNode(bd_name) if nuke.toNode(bd_name).Class() == "BackdropNode" else None
 
+def relocation_is_needed(subset_group, new_layers, old_layers):
+    """If there's more new layers than old_layers, the backdrop will have to be resized, so the nodes
+    need to be moved to not interfere with existing"""
+    return not subset_group and len(new_layers) > len(old_layers)
 
 #-----------Nuke Functions-----------------
 
@@ -696,10 +700,9 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
         return
 
     #Move nodes to not interfere with existing
-    if not subset_group:
-        if len(new_layers) > len(old_layers):
-            move_backdrop(storage_backdrop, 200000, 200000)
-            move_nodes_in_backdrop([nuke.toNode(n) for n in node_names_in_backdrop if nuke.toNode(n)], storage_backdrop)
+    if relocation_is_needed(subset_group, new_layers, old_layers):
+        move_backdrop(storage_backdrop, 200000, 200000)
+        move_nodes_in_backdrop([nuke.toNode(n) for n in node_names_in_backdrop if nuke.toNode(n)], storage_backdrop)
 
     reorganize_inside_main_backdrop(container.get("main_backdrop"))
 
@@ -943,11 +946,10 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
     nodes_in_backdrop = {nuke.toNode(n) for n in node_names_in_backdrop if nuke.toNode(n)}
 
     # Adjust backdrop organisation
-    if not subset_group:
-        if len(new_layers) > len(old_layers):
-            resize_backdrop_based_on_nodes(storage_backdrop, list(nodes_in_backdrop), shrink=False)
-            align_backdrops(main_backdrop, storage_backdrop, "inside")
-            move_nodes_in_backdrop(list(nodes_in_backdrop), storage_backdrop)
+    if relocation_is_needed(subset_group, new_layers, old_layers):
+        resize_backdrop_based_on_nodes(storage_backdrop, list(nodes_in_backdrop), shrink=False)
+        align_backdrops(main_backdrop, storage_backdrop, "inside")
+        move_nodes_in_backdrop(list(nodes_in_backdrop), storage_backdrop)
     adjust_main_backdrops(main_backdrop=main_backdrop,
                           backdrop=storage_backdrop,
                           nodes_in_main_backdrops=nodes_in_main_backdrops)
