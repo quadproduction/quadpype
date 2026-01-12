@@ -10,6 +10,13 @@ from quadpype.tools.utils import host_tools
 from quadpype.tools.utils import get_quadpype_qt_app
 from quadpype.tests.lib import is_in_tests
 
+from quadpype.pipeline.workfile.workfile_template_builder import (
+    is_last_workfile_exists,
+    should_build_first_workfile
+)
+
+from quadpype.hosts.photoshop.api.workfile_template_builder import build_workfile_template
+
 from .launch_logic import ProcessLauncher, stub
 
 log = Logger.get_logger(__name__)
@@ -51,6 +58,9 @@ def main(*subprocess_args):
             host_tools.show_workfiles,
             save=env_value_to_bool("WORKFILES_SAVE_AS")
         )
+
+    if not is_last_workfile_exists() and should_build_first_workfile():
+        launcher.execute_in_main_thread(build_workfile_template)
 
     sys.exit(app.exec_())
 

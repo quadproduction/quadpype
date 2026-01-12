@@ -13,7 +13,7 @@ class ReferenceLoader(photoshop.PhotoshopLoader):
     Inheriting from 'load_image' didn't work because of
     "Cannot write to closing transport", possible refactor.
     """
-
+    label = "Load Reference"
     families = ["image", "render"]
     representations = ["*"]
 
