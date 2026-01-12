@@ -25,6 +25,7 @@ from quadpype.hosts.nuke.api.lib import (
     get_layers,
     compare_layers,
     get_unique_name_and_number,
+    set_node_knobs_from_settings,
     PREP_LAYER_PSD_EXT,
     PREP_LAYER_EXR_EXT
 )
@@ -127,6 +128,8 @@ class LoadImage(plugin.NukeLoader):
         frame_number = options.get("frame_number", int(nuke.root()["first_frame"].getValue()))
         ext = context["representation"]["context"]["ext"].lower()
         pre_comp = options.get("pre_comp", self.defaults["pre_comp"])
+
+        self.get_load_settings(ext)
 
         if ext in PREP_LAYER_EXR_EXT:
             pre_comp = False
@@ -276,7 +279,7 @@ class LoadImage(plugin.NukeLoader):
             else:
                 color_value = COLOR_RED
             r["tile_color"].setValue(int(color_value, 16))
-
+            set_node_knobs_from_settings(r, self.knobs)
             return containerise(r,
                                 name=name,
                                 namespace=namespace,
