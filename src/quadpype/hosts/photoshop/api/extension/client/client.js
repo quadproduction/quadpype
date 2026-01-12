@@ -111,7 +111,8 @@ function main(websocket_url) {
 
     RPC.addRoute('Photoshop.add_placeholder', function (data) {
         log.warn('Server called client route "add_placeholder":', data);
-        return runEvalScript("addPlaceholder('"+ data.name + "', " + data.text_size + ", " + data.r +
+        var name = EscapeStringForJSX(data.name);
+        return runEvalScript("addPlaceholder('"+ name + "', " + data.text_size + ", " + data.r +
          ", " + data.g + ", " + data.b + ")")
             .then(function (result) {
                 log.warn("add_placeholder: " + result);
