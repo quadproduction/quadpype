@@ -626,7 +626,7 @@ class SceneInventoryView(QtWidgets.QTreeView):
 
         return list(subitems)
 
-    def _show_version_dialog(self, items):
+    def _show_version_dialog(self, items, options=None):
         """Create a dialog with the available versions for the selected file
 
         Args:
@@ -636,6 +636,8 @@ class SceneInventoryView(QtWidgets.QTreeView):
             None
         """
 
+        if options is None:
+            options = {}
         active = items[-1]
 
         project_name = legacy_io.active_project()
@@ -721,7 +723,7 @@ class SceneInventoryView(QtWidgets.QTreeView):
 
         if label:
             version = versions_by_label[label]
-            self._update_containers(items, version)
+            self._update_containers(items, version, options)
 
     def _show_switch_dialog(self, items):
         """Display Switch dialog"""
@@ -817,7 +819,7 @@ class SceneInventoryView(QtWidgets.QTreeView):
         # Trigger update to latest
         self._update_containers(outdated_items, version=-1)
 
-    def _update_containers(self, items, version):
+    def _update_containers(self, items, version, options=None):
         """Helper to update items to given version (or version per item)
 
         If at least one item is specified this will always try to refresh
@@ -832,6 +834,8 @@ class SceneInventoryView(QtWidgets.QTreeView):
 
         """
 
+        if options is None:
+            options = {}
         if isinstance(version, (list, tuple)):
             # We allow a unique version to be specified per item. In that case
             # the length must match with the items
@@ -848,7 +852,7 @@ class SceneInventoryView(QtWidgets.QTreeView):
         try:
             for item, item_version in zip(items, versions):
                 try:
-                    update_container(item, item_version)
+                    update_container(item, item_version, options)
                 except AssertionError:
                     self._show_version_error_dialog(item_version, [item])
                     log.warning("Update failed", exc_info=True)

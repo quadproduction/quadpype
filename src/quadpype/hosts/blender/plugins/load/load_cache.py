@@ -30,13 +30,12 @@ from quadpype.hosts.blender.api.pipeline import (
     add_to_avalon_container,
     is_material_from_loaded_look
 )
-from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS, YELLOW, ORANGE
-from quadpype.hosts.blender.api import (
-    get_top_collection,
-    get_corresponding_hierarchies_numbered,
-    create_collections_from_hierarchy,
-    create_collection
+from quadpype.hosts.blender.api.collections import (
+    get_collections_numbered_hierarchy_and_correspondence,
+    organize_objects_in_templated_collection
 )
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS, YELLOW, ORANGE
+
 from quadpype.hosts.blender.api.json_loader import load_content, apply_properties
 
 from quadpype.hosts.blender.api import plugin, lib
@@ -341,85 +340,19 @@ class CacheModelLoader(plugin.BlenderLoader):
             if not container:
                 container = bpy.data.collections.new(container_name)
 
-            collection_templates = get_task_hierarchy_templates(
-                template_data,
-                task=get_current_context()['task_name']
+            collections_are_created, corresponding_collections_numbered, collections_numbered_hierarchy = (
+                get_collections_numbered_hierarchy_and_correspondence(template_data, unique_number, color=ORANGE)
             )
-            collections_are_created = None
-
-            corresponding_collections_numbered = dict()
-            collections_numbered_hierarchy = list()
-
-            if collection_templates:
-                collections_hierarchy = [
-                    get_resolved_name(
-                        data=template_data,
-                        template=template
-                    )
-                    for template in collection_templates
-                ]
-                collections_numbered_hierarchy = [
-                    get_resolved_name(
-                        data=template_data,
-                        template=template,
-                        numbering=unique_number
-                    )
-                    for template in collection_templates
-                ]
-
-                corresponding_collections_numbered = get_corresponding_hierarchies_numbered(
-                    collections_hierarchy,
-                    collections_numbered_hierarchy
-                )
-
-                collections_are_created = create_collections_from_hierarchy(
-                    hierarchies=collections_numbered_hierarchy,
-                    parent_collection=bpy.context.scene.collection,
-                    color=ORANGE
-                )
-
+            for blender_object in members:
+                container.objects.link(blender_object)
             if collections_are_created:
-                default_parent_collection_name = split_hierarchy(collections_numbered_hierarchy[0])[-1]
+                organize_objects_in_templated_collection(
+                    members,
+                    collections_numbered_hierarchy,
+                    corresponding_collections_numbered,
+                    unique_number
+                )
 
-                for blender_object in members:
-
-                    # Do not link non-objects or invisible objects from the published scene
-                    if not blender_object.get('visible', True):
-                        continue
-
-                    collection = bpy.data.collections[default_parent_collection_name]
-
-                    object_hierarchies = blender_object.get('original_collection_parent', '')
-                    split_object_hierarchies = object_hierarchies.replace('\\', '/').split('/')
-
-                    for collection_number, hierarchy in enumerate(split_object_hierarchies):
-                        corresponding_collection_name = corresponding_collections_numbered.get(
-                            hierarchy,
-                            f"{hierarchy}-{unique_number}"
-                        )
-
-                        if collection_number == 0:
-                            collection = get_top_collection(
-                                collection_name=corresponding_collection_name,
-                                default_parent_collection_name=default_parent_collection_name
-                            )
-
-                        else:
-                            parent_collection_name = split_object_hierarchies[collection_number - 1]
-                            parent_collection_name_numbered = corresponding_collections_numbered.get(
-                                parent_collection_name,
-                                f"{parent_collection_name}-{unique_number}"
-                            )
-
-                            collection = create_collection(corresponding_collection_name,
-                                                           parent_collection_name_numbered,
-                                                           ORANGE)
-
-                    if blender_object in list(collection.objects):
-                        continue
-
-                    collection.objects.link(blender_object)
-                    container.objects.link(blender_object)
 
         add_to_avalon_container(container)
         return container, members, corresponding_names

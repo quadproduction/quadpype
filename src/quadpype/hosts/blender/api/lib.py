@@ -1192,6 +1192,141 @@ def get_viewport_shading():
     except StopIteration:
         return
 
+def copy_materials(src, dst):
+    if getattr(src, "data", None) is None or getattr(dst, "data", None) is None:
+        return
+    dst.data.materials.clear()
+    for mat in src.data.materials:
+        dst.data.materials.append(mat)
+
+
+def copy_modifiers(src, dst, obj_map):
+    if not hasattr(src, "modifiers") or not hasattr(dst, "modifiers"):
+        return
+    for mod in src.modifiers:
+        new = dst.modifiers.new(mod.name, mod.type)
+        for prop in dir(mod):
+            if prop.startswith("_"):
+                continue
+            try:
+                val = getattr(mod, prop)
+                if isinstance(val, bpy.types.Object) and val in obj_map:
+                    val = obj_map[val]
+                setattr(new, prop, val)
+            except:
+                pass
+
+
+def copy_constraints(src, dst, obj_map):
+    if not hasattr(src, "constraints") or not hasattr(dst, "constraints"):
+        return
+    for con in src.constraints:
+        new = dst.constraints.new(con.type)
+        new.name = con.name
+        for prop in dir(con):
+            if prop.startswith("_"):
+                continue
+            try:
+                val = getattr(con, prop)
+                if isinstance(val, bpy.types.Object) and val in obj_map:
+                    val = obj_map[val]
+                setattr(new, prop, val)
+            except:
+                pass
+
+
+def copy_actions(old_obj, new_obj):
+    if not old_obj.animation_data or not old_obj.animation_data.action:
+        return
+    action = old_obj.animation_data.action
+    if not new_obj.animation_data:
+        new_obj.animation_data_create()
+
+    new_obj.animation_data.action = action
+
+    action_slot = getattr(old_obj.animation_data, "action_slot")
+    if action_slot:
+        new_obj.animation_data.action_slot = action_slot
+
+
+def copy_parents(src, dst):
+    if not hasattr(src, "parent") or not hasattr(dst, "parent"):
+        return
+    dst.parent = src.parent
+    dst.parent_type = src.parent_type
+    dst.matrix_parent_inverse = src.matrix_parent_inverse
+    if not hasattr(src, "parent_bone") or not hasattr(dst, "parent_bone"):
+        return
+    dst.parent_bone = src.parent_bone
+
+
+def copy_shape_key(src_mesh, dst_mesh):
+    if len(src_mesh.vertices) != len(dst_mesh.vertices):
+        print(f"Skipping vertex groups: vertex count mismatch for {src_mesh.name} -> {dst_mesh.name}")
+        return
+
+    if src_mesh.shape_keys:
+        if not dst_mesh.shape_keys:
+            dst_mesh.shape_keys_clear()
+
+        for sk in src_mesh.shape_keys.key_blocks:
+            if sk.name == "Basis":
+                continue
+            new_sk = dst_mesh.shape_keys.key_blocks.get(sk.name)
+            if not new_sk:
+                dst_mesh.shape_keys.key_blocks.new(name=sk.name)
+
+            for i, v in enumerate(sk.data):
+                dst_mesh.shape_keys.key_blocks[sk.name].data[i].co = v.co.copy()
+
+
+def copy_uv_maps(src_mesh, dst_mesh):
+    if len(src_mesh.vertices) != len(dst_mesh.vertices):
+        print(f"Skipping vertex groups: vertex count mismatch for {src_mesh.name} -> {dst_mesh.name}")
+        return
+
+    for uv_layer in src_mesh.uv_layers:
+        if uv_layer.name not in dst_mesh.uv_layers:
+            dst_mesh.uv_layers.new(name=uv_layer.name)
+        dst_layer = dst_mesh.uv_layers[uv_layer.name]
+        for i, uv in enumerate(uv_layer.data):
+            dst_layer.data[i].uv = uv.uv.copy()
+
+
+def copy_vertex_color(src_mesh, dst_mesh):
+    if len(src_mesh.vertices) != len(dst_mesh.vertices):
+        print(f"Skipping vertex groups: vertex count mismatch for {src_mesh.name} -> {dst_mesh.name}")
+        return
+
+    for vcol in src_mesh.color_attributes:
+        if vcol.name not in dst_mesh.color_attributes:
+            dst_mesh.color_attributes.new(name=vcol.name, type=vcol.data_type, domain=vcol.domain)
+        dst_layer = dst_mesh.color_attributes[vcol.name]
+        for i, col in enumerate(vcol.data):
+            dst_layer.data[i].color = col.color.copy()
+
+
+def copy_vertex_groups(old_obj, new_obj):
+    if len(old_obj.data.vertices) != len(new_obj.data.vertices):
+        print(f"Skipping vertex groups: vertex count mismatch for {old_obj.name} -> {new_obj.name}")
+        return
+
+    new_obj.vertex_groups.clear()
+
+    for vg in old_obj.vertex_groups:
+        new_vg = new_obj.vertex_groups.new(name=vg.name)
+        for i, v in enumerate(old_obj.data.vertices):
+            for g in v.groups:
+                if old_obj.vertex_groups[g.group].name == vg.name:
+                    new_vg.add([i], g.weight, 'REPLACE')
+
+
+def remap_blocks(mapping):
+    for old, new in mapping.items():
+        if not  hasattr(old, "user_remap"):
+            continue
+        old.user_remap(new)
+
 
 def get_node_tree(scene=None):
     if not scene:
@@ -1222,7 +1357,7 @@ def create_and_get_node_tree(scene=None):
     scene.compositing_node_group = tree
 
     return tree
-  
+
 
 def get_library_from_path(path):
     path_norm = os.path.normpath(path)

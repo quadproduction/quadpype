@@ -663,9 +663,14 @@ class BlenderLoader(LoaderPlugin):
         """Must be implemented by a sub-class"""
         raise NotImplementedError("Must be implemented by a sub-class")
 
-    def update(self, container: Dict, representation: Dict):
+    def update(self, container: Dict, representation: Dict, options: Optional[Dict] = None):
         """ Run the update on Blender main thread"""
-        mti = MainThreadItem(self.exec_update, container, representation)
+        if options is None:
+            options = {}
+        if options:
+            mti = MainThreadItem(self.exec_update, container, representation, options)
+        else:
+            mti = MainThreadItem(self.exec_update, container, representation)
         execute_in_main_thread(mti)
 
     def exec_remove(self, container: Dict) -> bool:
