@@ -8,7 +8,7 @@ from quadpype.lib import (
     UISeparatorDef
 )
 
-from quadpype.hosts.blender.api import plugin, lib, pipeline
+from quadpype.hosts.blender.api import plugin, lib, pipeline, constants
 from quadpype.client.mongo.entities import get_asset_by_name
 from quadpype.pipeline.create import (
     subset_name,
@@ -159,10 +159,10 @@ class CreateAnimation(plugin.BlenderCreator):
         return defs
 
     def get_all_loaded_animatable_asset(self):
-        avalon_container = bpy.data.collections.get(pipeline.AVALON_CONTAINERS)
+        avalon_container = bpy.data.collections.get(constants.AVALON_CONTAINERS)
         if not avalon_container:
-            avalon_container = bpy.data.collections.new(name=pipeline.AVALON_CONTAINERS)
-
+            avalon_container = bpy.data.collections.new(name=constants.AVALON_CONTAINERS)
+        avalon_container.color_tag = constants.YELLOW
         animatable_container = [
             col for col in avalon_container.children[:] if (
                     pipeline.has_avalon_node(col)and

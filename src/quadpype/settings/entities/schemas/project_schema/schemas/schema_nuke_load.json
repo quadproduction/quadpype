@@ -136,6 +136,11 @@
                                         "key": "backdrop_color",
                                         "label": "Backdrop Color",
                                         "use_alpha": false
+                                    },
+                                    {
+                                        "key": "fill_backdrop",
+                                        "label": "Fill Backdrop Color",
+                                        "type": "boolean"
                                     }
                                 ]
                             }
@@ -166,6 +171,11 @@
                                         "label": "Color",
                                         "type": "color",
                                         "use_alpha": false
+                                    },
+                                    {
+                                        "key": "fill_backdrop",
+                                        "label": "Fill Backdrop Color",
+                                        "type": "boolean"
                                     },
                                     {
                                         "key": "default_size",

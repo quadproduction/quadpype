@@ -30,6 +30,7 @@ from .lib import (
     generate_stamps,
     create_precomp_merge,
     get_downstream_nodes,
+    get_upstream_nodes,
     classify_downstream_nodes_inputs
 )
 
@@ -88,13 +89,13 @@ def get_renderlayer_template():
 
     return template
 
-def get_task_hierarchy_color(data, task=None):
-    """Retrieve the color for the backdrop depending on the task type
+def get_task_hierarchy_settings_data(data, task=None):
+    """Retrieve the settings data for the backdrop depending on the task type
     Args:
         data (Dict[str, Any]): Data to fill template_collections_naming.
         task (str): fill to bypass task in data dict
     Return:
-        str: A template that can be solved later
+        dict: A dict of data of the corresponding settings
     """
     # If from create write instance
     if data.get("id") == "pyblish.avalon.instance":
@@ -110,17 +111,21 @@ def get_task_hierarchy_color(data, task=None):
         }
 
     profile = filter_profiles(profiles, profile_key)
+    if not profile:
+        raise TemplateProfileNotFound
 
-    return profile.get("backdrop_color", []) if profiles else []
+    return profile
 
 
 #-----------Creator-----------------
 
-def create_backdrop(bd_name, bd_color, bd_size=None, font_size=BACKDROP_FONT_SIZE, z_order=0, position=None):
+def create_backdrop(bd_name, bd_color, bd_size=None, fill_backdrop=True,
+                    font_size=BACKDROP_FONT_SIZE, z_order=0, position=None):
     """Create a backdrop at the center
     Args:
         bd_name(str): name of the backdrop.
         bd_color(list/tuple): rgba color code, 0-255.
+        fill_backdrop(bool): set the appearance of the backdrop.
         bd_size(str): the width and height.
         font_size(int): title size.
         z_order(int): depth of the backdrop position.
@@ -151,6 +156,8 @@ def create_backdrop(bd_name, bd_color, bd_size=None, font_size=BACKDROP_FONT_SIZ
 
     backdrop["z_order"].setValue(z_order)
     backdrop["note_font_size"].setValue(font_size)
+    if not fill_backdrop:
+        backdrop["appearance"].setValue("Border")
     return backdrop
 
 def create_backdrops_from_hierarchy(backdrops_hierarchy, data):
@@ -180,7 +187,9 @@ def create_backdrops_from_hierarchy(backdrops_hierarchy, data):
             if _backdrop_exists(bd_name):
                 continue
 
-            bd_color = get_task_hierarchy_color(data)
+            bd_settings = get_task_hierarchy_settings_data(data)
+            fill_backdrop =  bd_settings.get("fill_backdrop", True)
+            bd_color = bd_settings.get("backdrop_color", [])
             if not bd_color:
                 bd_color = [150, 150, 150, 0]
 
@@ -200,6 +209,7 @@ def create_backdrops_from_hierarchy(backdrops_hierarchy, data):
             return_backdrop = create_backdrop(
                                     bd_name=bd_name,
                                     bd_color=bd_color,
+                                    fill_backdrop=fill_backdrop,
                                     font_size=DEFAULT_FONT_SIZE,
                                     z_order = z_order,
                                     position=(-10000,-10000)
@@ -219,6 +229,7 @@ def create_main_backdrops_from_list():
             continue
         create_backdrop(bd_name=backdrop_profile["name"],
                         bd_color=backdrop_profile["color"],
+                        fill_backdrop=backdrop_profile["fill_backdrop"],
                         bd_size=backdrop_profile["default_size"],
                         font_size=BACKDROP_FONT_SIZE,
                         z_order=0)
@@ -336,9 +347,11 @@ def adjust_main_backdrops(main_backdrop=None, backdrop=None, nodes_in_main_backd
         offset_y = new_y-old_y
 
         for node in nodes:
-            node['xpos'].setValue(node.xpos() + offset_x)
-            node['ypos'].setValue(node.ypos() + offset_y)
-
+            try:
+                node['xpos'].setValue(node.xpos() + offset_x)
+                node['ypos'].setValue(node.ypos() + offset_y)
+            except ValueError:
+                pass
 
 #-----------Operations-----------------
 
@@ -499,6 +512,10 @@ def _get_backdrop_by_name(bd_name):
     """Get a backdrop depending on the given name"""
     return nuke.toNode(bd_name) if nuke.toNode(bd_name).Class() == "BackdropNode" else None
 
+def relocation_is_needed(subset_group, new_layers, old_layers):
+    """If there's more new layers than old_layers, the backdrop will have to be resized, so the nodes
+    need to be moved to not interfere with existing"""
+    return not subset_group and len(new_layers) > len(old_layers)
 
 #-----------Nuke Functions-----------------
 
@@ -694,7 +711,7 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
         return
 
     #Move nodes to not interfere with existing
-    if not subset_group:
+    if relocation_is_needed(subset_group, new_layers, old_layers):
         move_backdrop(storage_backdrop, 200000, 200000)
         move_nodes_in_backdrop([nuke.toNode(n) for n in node_names_in_backdrop if nuke.toNode(n)], storage_backdrop)
 
@@ -758,6 +775,18 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                                                             stop_class="Dot",
                                                             include_stop_node=False)
                     sorted_downstream_nodes.extend(list(precomp_extra_nodes))
+
+                sorted_downstream_nodes = set (sorted_downstream_nodes)
+                remove_downstream_node = set()
+                for downstream_node in sorted_downstream_nodes:
+                    inputs = get_upstream_nodes(downstream_node)
+                    if any(n.Class() == "Shuffle" and n.name() != shuffle_nodes[old_layer_data["name"]]["name"]
+                           for n in inputs):
+                        log.info(f"Do not treat {downstream_node.name()}")
+                        remove_downstream_node.add(downstream_node)
+
+                sorted_downstream_nodes.difference_update(remove_downstream_node)
+
                 # Store nodes to delete by names, except Merge, they will be treated later
                 delete_dict[shuffle_node] = [n.name() for n in sorted_downstream_nodes if n.Class() != "Merge2"]
 
@@ -853,6 +882,14 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                                                                 visited=set(),
                                                                 stop_class=stop_class,
                                                                 include_stop_node=False)
+                remove_downstream_node = set()
+                for downstream_node in stamp_downstream_nodes:
+                    inputs = get_upstream_nodes(downstream_node)
+                    if any(n.Class() == "PostageStamp" and n.name() != old_layer_data["name"] for n in inputs):
+                        log.info(f"Do not treat {downstream_node.name()}")
+                        remove_downstream_node.add(downstream_node)
+
+                stamp_downstream_nodes.difference_update(remove_downstream_node)
                 # Store nodes to delete by names, except Merge, they will be treated later
                 delete_dict[old_layer_data["name"]] = [n.name() for n in stamp_downstream_nodes if
                                                        n.Class() != "Merge2"]
@@ -940,8 +977,8 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
     nodes_in_backdrop = {nuke.toNode(n) for n in node_names_in_backdrop if nuke.toNode(n)}
 
     # Adjust backdrop organisation
-    if not subset_group:
-        resize_backdrop_based_on_nodes(storage_backdrop, list(nodes_in_backdrop), shrink=True)
+    if relocation_is_needed(subset_group, new_layers, old_layers):
+        resize_backdrop_based_on_nodes(storage_backdrop, list(nodes_in_backdrop), shrink=False)
         align_backdrops(main_backdrop, storage_backdrop, "inside")
         move_nodes_in_backdrop(list(nodes_in_backdrop), storage_backdrop)
     adjust_main_backdrops(main_backdrop=main_backdrop,
@@ -960,6 +997,7 @@ def reorganize_inside_main_backdrop(main_backdrop_name):
     padding = 15
 
     main_backdrop = _get_backdrop_by_name(main_backdrop_name)
+    main_backdrop_width = main_backdrop['bdwidth'].value()
     backdrops_in_main_backdrop = _get_backdrops_in_backdrops(main_backdrop)
 
     backdrops_in_main_backdrop.sort(key=lambda bd: bd['xpos'].value())
@@ -974,11 +1012,13 @@ def reorganize_inside_main_backdrop(main_backdrop_name):
             backdrops_in_main_backdrop.remove(bd)
         nodes = get_nodes_in_backdrops(backdrop)
         backdrop['xpos'].setValue(current_x)
-        main_backdrop['bdwidth'].setValue(main_backdrop.xpos() + current_x)
+        if main_backdrop_width < main_backdrop.xpos() + current_x:
+            main_backdrop['bdwidth'].setValue(main_backdrop.xpos() + current_x)
         current_x += backdrop['bdwidth'].value() + padding
         move_nodes_in_backdrop(nodes, backdrop)
 
-    main_backdrop['bdwidth'].setValue(main_backdrop.xpos() + current_x)
+    if main_backdrop_width < main_backdrop.xpos() + current_x:
+        main_backdrop['bdwidth'].setValue(main_backdrop.xpos() + current_x)
     pre_organize_by_backdrop()
 
     return
