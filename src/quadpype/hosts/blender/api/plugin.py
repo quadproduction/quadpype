@@ -43,7 +43,8 @@ from .pipeline import (
 )
 from .constants import (
     AVALON_CONTAINERS,
-    AVALON_INSTANCES
+    AVALON_INSTANCES,
+    BLUE
 )
 from .ops import (
     MainThreadItem,
@@ -291,6 +292,7 @@ class BlenderCreator(Creator):
         if not instances:
             instances = bpy.data.collections.new(name=AVALON_INSTANCES)
             bpy.context.scene.collection.children.link(instances)
+        instances.color_tag = BLUE
 
         # Create asset group
         asset_name = instance_data["asset"]
@@ -661,9 +663,14 @@ class BlenderLoader(LoaderPlugin):
         """Must be implemented by a sub-class"""
         raise NotImplementedError("Must be implemented by a sub-class")
 
-    def update(self, container: Dict, representation: Dict):
+    def update(self, container: Dict, representation: Dict, options: Optional[Dict] = None):
         """ Run the update on Blender main thread"""
-        mti = MainThreadItem(self.exec_update, container, representation)
+        if options is None:
+            options = {}
+        if options:
+            mti = MainThreadItem(self.exec_update, container, representation, options)
+        else:
+            mti = MainThreadItem(self.exec_update, container, representation)
         execute_in_main_thread(mti)
 
     def exec_remove(self, container: Dict) -> bool:

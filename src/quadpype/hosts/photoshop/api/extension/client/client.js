@@ -109,13 +109,57 @@ function main(websocket_url) {
             });
     });
 
-
     RPC.addRoute('Photoshop.are_layers_empty_by_ids', function (data) {
         return runEvalScript("areLayersEmptyByIDs('"+ data.layer_ids + "')")
             .then(function (result) {
                 return result;
             });
     });
+
+    RPC.addRoute('Photoshop.add_placeholder', function (data) {
+        log.warn('Server called client route "add_placeholder":', data);
+        var name = EscapeStringForJSX(data.name);
+        return runEvalScript("addPlaceholder('"+ name + "', " + data.text_size + ", " + data.r +
+         ", " + data.g + ", " + data.b + ")")
+            .then(function (result) {
+                log.warn("add_placeholder: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('Photoshop.set_layer_text', function (data) {
+        log.warn('Server called client route "set_layer_text":', data);
+        return runEvalScript("setLayerText("+ data.layer_id + ", '" + data.text + "')")
+            .then(function (result) {
+                log.warn("set_layer_text: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('Photoshop.move_layer_to_text_position', function (data) {
+        log.warn('Server called client route "move_layer_to_text_position":', data);
+        return runEvalScript("moveLayerToTextPosition("+ data.text_layer_id + ", " + data.layer_id + ")")
+            .then(function (result) {
+                log.warn("move_layer_to_text_position: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('Photoshop.scale_layer_by_id', function (data) {
+        log.warn('Server called client route "scale_layer_by_id":', data);
+        return runEvalScript("scaleLayerByID("+ data.layer_id + ", " + data.scale + ")")
+            .then(function (result) {
+                log.warn("scale_layer_by_id: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('Photoshop.print_msg', function (data) {
+        log.warn('Server called client route "print_msg":', data);
+        var escaped_msg = EscapeStringForJSX(data.msg);
+        return runEvalScript("printMsg('" + escaped_msg + "')")
+            .then(function (result) {
+                log.warn("print_msg: " + result);
 
     RPC.addRoute('Photoshop.get_layers', function (data) {
         log.warn('Server called client route "get_layers":', data);

@@ -35,12 +35,12 @@
           <Menu>QuadPype</Menu>
           <Geometry>
             <Size>
-              <Width>300</Width>
-              <Height>140</Height>
+              <Width>250</Width>
+              <Height>200</Height>
             </Size>
             <MaxSize>
               <Width>400</Width>
-              <Height>200</Height>
+              <Height>2000</Height>
             </MaxSize>
           </Geometry>
           <Icons>

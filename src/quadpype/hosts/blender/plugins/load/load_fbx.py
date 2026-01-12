@@ -14,7 +14,7 @@ from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.pipeline import (
     get_avalon_node
 )
-from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS, YELLOW
 
 class FbxModelLoader(plugin.BlenderLoader):
     """Load FBX models.
@@ -137,6 +137,7 @@ class FbxModelLoader(plugin.BlenderLoader):
         if not avalon_container:
             avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
             bpy.context.scene.collection.children.link(avalon_container)
+        avalon_container.color_tag = YELLOW
 
         asset_group = bpy.data.objects.new(group_name, object_data=None)
         avalon_container.objects.link(asset_group)
