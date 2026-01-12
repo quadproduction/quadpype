@@ -34,7 +34,7 @@ from quadpype.hosts.blender.api.collections import (
     get_collections_numbered_hierarchy_and_correspondence,
     organize_objects_in_templated_collection
 )
-from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS, YELLOW, ORANGE
 
 from quadpype.hosts.blender.api.json_loader import load_content, apply_properties
 
@@ -309,6 +309,7 @@ class CacheModelLoader(plugin.BlenderLoader):
         if not avalon_container:
             avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
             bpy.context.scene.collection.children.link(avalon_container)
+        avalon_container.color_tag = YELLOW
 
         if create_as_empty:
             container = bpy.data.objects.get(container_name)
@@ -340,7 +341,7 @@ class CacheModelLoader(plugin.BlenderLoader):
                 container = bpy.data.collections.new(container_name)
 
             collections_are_created, corresponding_collections_numbered, collections_numbered_hierarchy = (
-                get_collections_numbered_hierarchy_and_correspondence(template_data, unique_number)
+                get_collections_numbered_hierarchy_and_correspondence(template_data, unique_number, color=ORANGE)
             )
             for blender_object in members:
                 container.objects.link(blender_object)

@@ -28,6 +28,8 @@ from . import pipeline
 
 log = Logger.get_logger(__name__)
 
+BLENDER_MAJOR_VERSION = bpy.app.version[0]
+
 
 def load_scripts(paths):
     """Copy of `load_scripts` from Blender's implementation.
@@ -321,6 +323,8 @@ def map_to_classes_and_names(blender_objects):
     rna_to_bpy_data = get_object_types_correspondance()
 
     for blender_object in blender_objects:
+        if not isinstance(blender_object, bpy.types.ID):
+            continue
         object_data_name = rna_to_bpy_data[blender_object.bl_rna.identifier]
         if not mapped_values.get(object_data_name):
             mapped_values[object_data_name] = list()
@@ -979,7 +983,6 @@ def purge_orphans(is_recursive):
                 except Exception as e:
                     print(f"Impossible to Delete {item.name} : {e}")
 
-
     if is_recursive:
         purge_orphans(is_recursive=False)
 
@@ -1025,6 +1028,7 @@ def is_camera(obj):
 def is_collection(obj):
     return isinstance(obj, bpy.types.Collection)
 
+
 def get_value_safe(v):
     """Convert values to JSON friendly attributes"""
     if isinstance(v, (Vector, Euler, Quaternion, Color)):
@@ -1034,6 +1038,7 @@ def get_value_safe(v):
     elif isinstance(v, (list, tuple)):
         return [get_value_safe(x) for x in v]
     return str(v)
+
 
 def rsetattr(obj, attr, val):
     pre, _, post = attr.rpartition('.')
@@ -1048,10 +1053,12 @@ def rsetattr(obj, attr, val):
     else:
         setattr(target, post, val)
 
+
 def rgetattr(obj, attr, *args):
     def _getattr(obj, attr):
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
+
 
 def rhasattr(obj, attr):
     def _hasattr(obj, attr):
@@ -1060,6 +1067,7 @@ def rhasattr(obj, attr):
         return getattr(obj, attr)
     result = functools.reduce(_hasattr, [obj] + attr.split('.'))
     return result is not None
+
 
 def get_properties_on_object(obj, frame=1):
     """Get the properties value on an object based on list of properties from setting.
@@ -1101,7 +1109,6 @@ def get_properties_on_object(obj, frame=1):
         pb_data[SNAPSHOT_CUSTOM_PROPERTIES] = {k: get_value_safe(v) for k, v in pb.items() if k != "_RNA_UI"}
         pose_data[pb.name] = pb_data
     data[SNAPSHOT_POSE_BONE] = pose_data
-
     return data
 
 
@@ -1159,6 +1166,8 @@ def restore_properties_on_instance(instance_obj, corresponding_instance):
         if not data:
             continue
         set_properties_on_object(obj, data)
+
+
 def get_containers_from_selected():
     containers = set()
     all_selected = set(get_selection())
@@ -1174,6 +1183,7 @@ def get_containers_from_selected():
 
     return list(containers)
 
+
 def get_viewport_shading():
     try:
         window = bpy.data.window_managers[0].windows[0]
@@ -1182,21 +1192,13 @@ def get_viewport_shading():
     except StopIteration:
         return
 
-def get_library_from_path(path):
-    path_norm = os.path.normpath(path)
-    for lib in bpy.data.libraries:
-        lib_path = os.path.normpath(bpy.path.abspath(lib.filepath))
-
-        if lib_path == path_norm:
-            return lib
-    return None
-
 def copy_materials(src, dst):
     if getattr(src, "data", None) is None or getattr(dst, "data", None) is None:
         return
     dst.data.materials.clear()
     for mat in src.data.materials:
         dst.data.materials.append(mat)
+
 
 def copy_modifiers(src, dst, obj_map):
     if not hasattr(src, "modifiers") or not hasattr(dst, "modifiers"):
@@ -1213,6 +1215,7 @@ def copy_modifiers(src, dst, obj_map):
                 setattr(new, prop, val)
             except:
                 pass
+
 
 def copy_constraints(src, dst, obj_map):
     if not hasattr(src, "constraints") or not hasattr(dst, "constraints"):
@@ -1231,6 +1234,7 @@ def copy_constraints(src, dst, obj_map):
             except:
                 pass
 
+
 def copy_actions(old_obj, new_obj):
     if not old_obj.animation_data or not old_obj.animation_data.action:
         return
@@ -1244,6 +1248,7 @@ def copy_actions(old_obj, new_obj):
     if action_slot:
         new_obj.animation_data.action_slot = action_slot
 
+
 def copy_parents(src, dst):
     if not hasattr(src, "parent") or not hasattr(dst, "parent"):
         return
@@ -1253,6 +1258,7 @@ def copy_parents(src, dst):
     if not hasattr(src, "parent_bone") or not hasattr(dst, "parent_bone"):
         return
     dst.parent_bone = src.parent_bone
+
 
 def copy_shape_key(src_mesh, dst_mesh):
     if len(src_mesh.vertices) != len(dst_mesh.vertices):
@@ -1273,6 +1279,7 @@ def copy_shape_key(src_mesh, dst_mesh):
             for i, v in enumerate(sk.data):
                 dst_mesh.shape_keys.key_blocks[sk.name].data[i].co = v.co.copy()
 
+
 def copy_uv_maps(src_mesh, dst_mesh):
     if len(src_mesh.vertices) != len(dst_mesh.vertices):
         print(f"Skipping vertex groups: vertex count mismatch for {src_mesh.name} -> {dst_mesh.name}")
@@ -1285,6 +1292,7 @@ def copy_uv_maps(src_mesh, dst_mesh):
         for i, uv in enumerate(uv_layer.data):
             dst_layer.data[i].uv = uv.uv.copy()
 
+
 def copy_vertex_color(src_mesh, dst_mesh):
     if len(src_mesh.vertices) != len(dst_mesh.vertices):
         print(f"Skipping vertex groups: vertex count mismatch for {src_mesh.name} -> {dst_mesh.name}")
@@ -1296,6 +1304,7 @@ def copy_vertex_color(src_mesh, dst_mesh):
         dst_layer = dst_mesh.color_attributes[vcol.name]
         for i, col in enumerate(vcol.data):
             dst_layer.data[i].color = col.color.copy()
+
 
 def copy_vertex_groups(old_obj, new_obj):
     if len(old_obj.data.vertices) != len(new_obj.data.vertices):
@@ -1311,8 +1320,50 @@ def copy_vertex_groups(old_obj, new_obj):
                 if old_obj.vertex_groups[g.group].name == vg.name:
                     new_vg.add([i], g.weight, 'REPLACE')
 
+
 def remap_blocks(mapping):
     for old, new in mapping.items():
         if not  hasattr(old, "user_remap"):
             continue
         old.user_remap(new)
+
+
+def get_node_tree(scene=None):
+    if not scene:
+        scene = bpy.context.scene
+
+    # Support for Blender version >= 5
+    try:
+        return scene.compositing_node_group
+
+    except AttributeError:
+        return scene.node_tree
+
+
+def create_and_get_node_tree(scene=None):
+    if not scene:
+        scene = bpy.context.scene
+
+    log.info("Creating or retrieving new tree for Compositor")
+
+    if BLENDER_MAJOR_VERSION < 5:
+        scene.use_nodes = True
+        return get_node_tree(scene=scene)
+
+    new_comp_name = "QuadPype Render Node Tree"
+    new_tree_name = "CompositorNodeTree"
+
+    tree = bpy.data.node_groups.new(new_comp_name, new_tree_name)
+    scene.compositing_node_group = tree
+
+    return tree
+
+
+def get_library_from_path(path):
+    path_norm = os.path.normpath(path)
+    for lib in bpy.data.libraries:
+        lib_path = os.path.normpath(bpy.path.abspath(lib.filepath))
+
+        if lib_path == path_norm:
+            return lib
+    return None

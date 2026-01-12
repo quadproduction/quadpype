@@ -91,7 +91,7 @@ class LoadClip(plugin.NukeLoader):
         "add_retime": True,
         "prep_layers": True,
         "create_stamps": True,
-        "pre_comp": True
+        "pre_comp": False
     }
 
     @classmethod
@@ -171,6 +171,7 @@ class LoadClip(plugin.NukeLoader):
         options["pre_comp"] = pre_comp
         options["is_prep_layer_compatible"] = ext in (set(PREP_LAYER_PSD_EXT) | set(PREP_LAYER_EXR_EXT))
         options["ext"] = ext
+        options["subset_group"] = context["subset"]["data"].get("subsetGroup")
 
         version = context['version']
         version_data = version.get("data", {})
@@ -275,11 +276,13 @@ class LoadClip(plugin.NukeLoader):
             if use_backdrop:
                 try:
                     nodes_before = list(nuke.allNodes())
-                    main_backdrop, storage_backdrop, nodes = organize_by_backdrop(data=context,
-                                                                            node=read_node,
-                                                                            nodes_in_main_backdrops=nodes_in_main_backdrops,
-                                                                            options=options,
-                                                                            unique_number=unique_number)
+                    main_backdrop, storage_backdrop, subset_group, nodes = organize_by_backdrop(
+                        data=context,
+                        node=read_node,
+                        nodes_in_main_backdrops=nodes_in_main_backdrops,
+                        options=options,
+                        unique_number=unique_number
+                    )
                 except TemplateProfileNotFound:
                     for n in nuke.allNodes():
                         if n not in nodes_before:
@@ -290,6 +293,9 @@ class LoadClip(plugin.NukeLoader):
 
             if add_retime and version_data.get("retime", None):
                 self._make_retimes(read_node, version_data)
+
+            if subset_group:
+                data_imprint["subset_group"] = subset_group
 
             if storage_backdrop:
                 data_imprint["storage_backdrop"] = storage_backdrop['name'].value()

@@ -273,6 +273,13 @@ class ShadersLoader(plugin.BlenderLoader):
                 continue
 
             for obj in concerned_objects:
+                if obj.library or obj.override_library:
+                    for i, slot in enumerate(obj.material_slots):
+                        if obj.material_slots[i].material:
+                            continue
+                        obj.material_slots[i].material = material
+                        break
+                    continue
 
                 if override and obj not in cleared_objects:
                     obj.data.materials.clear()

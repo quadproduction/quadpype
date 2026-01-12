@@ -61,6 +61,19 @@
             ]
         },
         {
+            "type": "dict",
+            "collapsible": true,
+            "key": "renderLayerLoader",
+            "label": "RenderLayer Loader",
+            "children": [
+                {
+                    "type": "text",
+                    "key": "backdrop_name_template",
+                    "label": "Backdrop name template"
+                }
+            ]
+        },
+        {
                     "type": "dict",
                     "collapsible": true,
                     "key": "entity_type_name_matcher",

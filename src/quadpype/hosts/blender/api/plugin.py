@@ -43,7 +43,8 @@ from .pipeline import (
 )
 from .constants import (
     AVALON_CONTAINERS,
-    AVALON_INSTANCES
+    AVALON_INSTANCES,
+    BLUE
 )
 from .ops import (
     MainThreadItem,
@@ -291,6 +292,7 @@ class BlenderCreator(Creator):
         if not instances:
             instances = bpy.data.collections.new(name=AVALON_INSTANCES)
             bpy.context.scene.collection.children.link(instances)
+        instances.color_tag = BLUE
 
         # Create asset group
         asset_name = instance_data["asset"]

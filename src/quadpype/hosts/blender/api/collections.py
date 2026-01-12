@@ -5,13 +5,14 @@ from quadpype.pipeline import (
     get_current_context,
     get_resolved_name
 )
+from . import constants
 
-
-def create_collection(collection_name, link_to=None):
+def create_collection(collection_name, link_to=None, color=constants.GREEN):
     """Create a collection based on a name and link it to a given
     Args:
         collection_name (str): the name of the new collection
         link_to (bpy.types.Collection or str): The collection to link the newly created one
+        color: Color to apply on top collection
 
     Returns:
         bpy.types.Collection: the newly created collection
@@ -25,11 +26,11 @@ def create_collection(collection_name, link_to=None):
             link_to = bpy.data.collections.get(link_to)
         if link_to and collection not in list(link_to.children):
             link_to.children.link(collection)
-
+    collection.color_tag = color
     return collection
 
 
-def create_collections_from_hierarchy(hierarchies, parent_collection):
+def create_collections_from_hierarchy(hierarchies, parent_collection, color=constants.GREEN):
     """ Generate all the collection hierarchies based on a string like:
         'CH/CH-wizzardTest/wizzardTest-model'
         or a list of string like:
@@ -42,6 +43,7 @@ def create_collections_from_hierarchy(hierarchies, parent_collection):
     Args:
         hierarchies (list or str): a list of str or a str of one or more hierarchy
         parent_collection: the collection to parent the top collection
+        color: Color to apply on top collection
 
     Return:
         bool: True if success
@@ -61,7 +63,8 @@ def create_collections_from_hierarchy(hierarchies, parent_collection):
 
             create_collection(
                 collection_name=collection_name,
-                link_to=parent
+                link_to=parent,
+                color=color
             )
 
     return True
@@ -91,7 +94,7 @@ def get_top_collection(collection_name, default_parent_collection_name):
 
     return parent_collection if parent_collection else bpy.context.scene.collection
 
-def get_collections_numbered_hierarchy_and_correspondence(data_template, unique_number):
+def get_collections_numbered_hierarchy_and_correspondence(data_template, unique_number, color=constants.GREEN):
     collection_templates = get_task_hierarchy_templates(
         data_template,
         task=get_current_context()['task_name']
@@ -125,7 +128,8 @@ def get_collections_numbered_hierarchy_and_correspondence(data_template, unique_
 
         collections_are_created = create_collections_from_hierarchy(
             hierarchies=collections_numbered_hierarchy,
-            parent_collection=bpy.context.scene.collection
+            parent_collection=bpy.context.scene.collection,
+            color=color
         )
 
     return collections_are_created, corresponding_collections_numbered, collections_numbered_hierarchy
