@@ -8,6 +8,7 @@ from quadpype.pipeline import get_current_project_name
 from quadpype.lib import (
     BoolDef,
     EnumDef,
+    UISeparatorDef
 )
 
 from quadpype.hosts.nuke import api as napi
@@ -15,6 +16,7 @@ from quadpype.pipeline.settings import get_available_resolutions, extract_width_
 from quadpype.hosts.nuke.api.plugin import exposed_write_knobs
 from quadpype.hosts.nuke.api.lib import (
     AUTORESIZE_LABEL,
+    ALPHA_FILL_LABEL,
     get_custom_res
 )
 from quadpype.hosts.nuke.api.backdrops import (
@@ -35,12 +37,18 @@ class CreateWriteRender(napi.NukeWriteCreator):
         "Main",
         "Mask"
     ]
+    alpha_fill_colors = [
+        "white",
+        "black"
+    ]
     temp_rendering_path_template = (
         "{work}/renders/nuke/{subset}/{subset}.{frame}.{ext}")
 
     resolution = None
     resolutions = []
     autoresize = False
+    alpha_fill_prenode = False
+    alpha_fill_color = alpha_fill_colors[0]
 
     def get_pre_create_attr_defs(self):
         attr_defs = [
@@ -77,6 +85,27 @@ class CreateWriteRender(napi.NukeWriteCreator):
                     label="Resolution",
                 )
             )
+        attr_defs.extend(
+            [
+                UISeparatorDef(),
+                BoolDef(
+                    "create_settings_prenode",
+                    default=False,
+                    label="Create Settings Prenodes"
+                ),
+                BoolDef(
+                    "alpha_fill_prenode",
+                    default=True,
+                    label="Add Alpha Fill Shuffle"
+                ),
+                EnumDef(
+                    "alpha_fill_color",
+                    items=self.alpha_fill_colors,
+                    default=self.alpha_fill_colors[0],
+                    label="Alpha Fill Color"
+                )
+            ]
+        )
         return attr_defs
 
     def get_instance_attr_defs(self):
@@ -101,6 +130,8 @@ class CreateWriteRender(napi.NukeWriteCreator):
         write_data.update(instance_data)
 
         width, height = self._get_width_and_height()
+        if self.alpha_fill_prenode:
+            self.add_alpha_fill_shuffle_prenodes(self.alpha_fill_color)
         if self.autoresize:
             self.add_autoresize_prenodes(width, height)
 
@@ -142,12 +173,25 @@ class CreateWriteRender(napi.NukeWriteCreator):
         custom_res = get_custom_res(width, height)
         self.prenodes[AUTORESIZE_LABEL] = {
             "nodeclass": "Reformat",
-            "dependent": list(self.prenodes.keys())[0] if self.prenodes else [],
+            "dependent": list(self.prenodes.keys())[-1] if self.prenodes else [],
             "knobs": [
                 {
-                    "type": "Text",
+                    "type": "text",
                     "name": "format",
                     "value": custom_res
+                }
+            ]
+        }
+
+    def add_alpha_fill_shuffle_prenodes(self, color):
+        self.prenodes[ALPHA_FILL_LABEL] = {
+            "nodeclass": "Shuffle2",
+            "dependent": list(self.prenodes.keys())[-1] if self.prenodes else [],
+            "knobs": [
+                {
+                    "type": "dict",
+                    "name": "mappings",
+                    "value": {'rgba.alpha': {'key_value': color}}
                 }
             ]
         }
@@ -157,7 +201,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
         use_backdrop_general = settings["general"].get("use_backdrop_loader_creator", True)
         use_backdrop = settings["create"]["CreateWriteRender"].get("use_backdrop_loader_creator", True)
         backdrop_padding = settings["create"]["CreateWriteRender"].get("backdrop_padding", 150)
-     
+
         nodes_in_main_backdrops = []
         if use_backdrop and use_backdrop_general:
             nodes_in_main_backdrops = pre_organize_by_backdrop()
@@ -178,6 +222,13 @@ class CreateWriteRender(napi.NukeWriteCreator):
         # make sure subset name is unique
         self.check_existing_subset(subset_name)
 
+        if not pre_create_data.get('create_settings_prenode'):
+            self.prenodes = dict()
+
+        if pre_create_data.get("alpha_fill_prenode"):
+            self.alpha_fill_prenode = pre_create_data.get("alpha_fill_prenode")
+            self.alpha_fill_color = pre_create_data.get("alpha_fill_color")
+
         instance_node = self.create_instance_node(
             subset_name,
             instance_data
@@ -196,7 +247,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
             self._add_instance_to_context(instance)
 
             imprint_data = instance.data_to_store()
-            
+
             if use_backdrop and use_backdrop_general:
                 main_backdrop, storage_backdrop, subset_group, nodes = organize_by_backdrop(
                     data=dict(instance.data),

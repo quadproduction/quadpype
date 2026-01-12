@@ -12,7 +12,7 @@ from quadpype.hosts.blender.api.pipeline import (
     has_avalon_node,
     get_avalon_node
 )
-from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS, YELLOW
 
 class BlendSceneLoader(plugin.BlenderLoader):
     """Load assets from a .blend file."""
@@ -98,6 +98,7 @@ class BlendSceneLoader(plugin.BlenderLoader):
         if not avalon_container:
             avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
             bpy.context.scene.collection.children.link(avalon_container)
+        avalon_container.color_tag = YELLOW
 
         container, members = self._process_data(libpath, group_name, family)
 

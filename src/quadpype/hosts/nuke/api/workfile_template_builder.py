@@ -27,8 +27,9 @@ from .lib import (
     node_tempfile,
     get_main_window,
     WorkfileSettings,
+    create_replacement_placeholder_dot
 )
-from quadpype.lib import attribute_definitions
+from quadpype.lib import attribute_definitions, StringTemplate
 
 PLACEHOLDER_SET = "PLACEHOLDERS_SET"
 
@@ -57,6 +58,7 @@ class NukeTemplateBuilder(AbstractTemplateBuilder):
 
 class NukePlaceholderPlugin(PlaceholderPlugin):
     node_color = 4278190335
+    placeholder_name_template = "PH<_{builder_type}><_{family}><_{representation}><_{subset}><_{create}>"
 
     def _collect_scene_placeholders(self):
         # Cache placeholder data to shared data
@@ -92,9 +94,12 @@ class NukePlaceholderPlugin(PlaceholderPlugin):
 
     def create_placeholder(self, placeholder_data):
         placeholder_data["plugin_identifier"] = self.identifier
-
         placeholder = nuke.nodes.NoOp()
-        placeholder.setName("PLACEHOLDER")
+        placeholder_name = StringTemplate.format_template(
+            template=self.placeholder_name_template,
+            data=placeholder_data,
+        )
+        placeholder.setName(placeholder_name)
         placeholder.knob("tile_color").setValue(self.node_color)
 
         imprint(placeholder, placeholder_data)
@@ -211,7 +216,7 @@ class NukePlaceholderLoadPlugin(NukePlaceholderPlugin, PlaceholderLoadMixin):
             attribute_definitions.BoolDef(
                 "keep_placeholder_connections",
                 label="Keep PlaceHolder Connections",
-                default=False
+                default=True
             ),
             attribute_definitions.UISeparatorDef()
         ])
@@ -225,12 +230,23 @@ class NukePlaceholderLoadPlugin(NukePlaceholderPlugin, PlaceholderLoadMixin):
                 representation.
             failed (bool): Loading of representation failed.
         """
-        if failed:
-            self.log.debug("Something went wrong")
-            nuke.root().begin()
-            return
         # deselect all selected nodes
         placeholder_node = nuke.toNode(placeholder.scene_identifier)
+
+        if failed:
+            self.log.debug(f"Something went wrong")
+            dot_node = create_replacement_placeholder_dot()
+            # positioning of the dot node
+            min_x, min_y, _, _ = get_extreme_positions([dot_node])
+            xpos = (dot_node.xpos() - min_x) + placeholder_node.xpos()
+            ypos = (dot_node.ypos() - min_y) + placeholder_node.ypos()
+            dot_node.setXYpos(xpos, ypos)
+            refresh_nodes([dot_node])
+
+            placeholder.data["last_loaded"] = [dot_node]
+            self._set_loaded_connections(placeholder)
+            nuke.root().begin()
+            return
 
         # getting the latest nodes added
         # TODO get from shared populate data!
@@ -655,7 +671,7 @@ class NukePlaceholderCreatePlugin(
             attribute_definitions.BoolDef(
                 "keep_placeholder_connections",
                 label="Keep PlaceHolder Connections",
-                default=False
+                default=True
             ),
             attribute_definitions.UISeparatorDef()
         ])

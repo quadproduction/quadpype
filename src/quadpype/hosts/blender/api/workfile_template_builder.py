@@ -41,8 +41,7 @@ from quadpype.lib import (
     StringTemplate
 )
 
-
-AVALON_PLACEHOLDER = "AVALON_PLACEHOLDER"
+from .constants import BLUE, BROWN, AVALON_PLACEHOLDER
 
 
 class ImportMethod(Enum):
@@ -256,6 +255,7 @@ class BlenderPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
         if not avalon_placeholder_coll:
             avalon_placeholder_coll = bpy.data.collections.new(name=AVALON_PLACEHOLDER)
             bpy.context.scene.collection.children.link(avalon_placeholder_coll)
+        avalon_placeholder_coll.color_tag = BROWN
 
         placeholder_data["plugin_identifier"] = self.identifier
         placeholder_name = self._create_placeholder_name(placeholder_data)
@@ -357,6 +357,7 @@ class BlenderPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
         if not placeholder_coll:
             placeholder_coll = bpy.data.collections.new(name=AVALON_PLACEHOLDER)
             bpy.context.scene.collection.children.link(placeholder_coll)
+        placeholder_coll.color_tag = BROWN
 
         obj = bpy.data.objects.get(placeholder.scene_identifier)
         if not obj:
@@ -451,6 +452,7 @@ class BlenderPlaceholderCreatePlugin(PlaceholderPlugin, PlaceholderCreateMixin):
         if not instances:
             instances = bpy.data.collections.new(name=AVALON_INSTANCES)
             bpy.context.scene.collection.children.link(instances)
+        instances.color_tag = BLUE
 
         placeholder = bpy.data.objects.new(name=placeholder_name, object_data=None)
         placeholder.empty_display_type = 'SINGLE_ARROW'
@@ -529,6 +531,7 @@ class BlenderPlaceholderCreatePlugin(PlaceholderPlugin, PlaceholderCreateMixin):
         if not placeholder_coll:
             placeholder_coll = bpy.data.collections.new(name=AVALON_PLACEHOLDER)
             bpy.context.scene.collection.children.link(placeholder_coll)
+        placeholder_coll.color_tag = BROWN
 
         obj = bpy.data.objects.get(placeholder.scene_identifier)
         if not obj:
