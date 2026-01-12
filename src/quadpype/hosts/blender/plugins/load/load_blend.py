@@ -33,6 +33,7 @@ from quadpype.hosts.blender.api.pipeline import (
     has_avalon_node,
     get_avalon_node
 )
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS, ORANGE
 from quadpype.hosts.blender.api.workfile_template_builder import (
     ImportMethod
 )
@@ -242,7 +243,8 @@ class BlendLoader(plugin.BlenderLoader):
 
             collections_are_created = create_collections_from_hierarchy(
                 hierarchies=collections_numbered_hierarchy,
-                parent_collection=bpy.context.scene.collection
+                parent_collection=bpy.context.scene.collection,
+                color=ORANGE
             )
 
         if collections_are_created:
@@ -278,7 +280,11 @@ class BlendLoader(plugin.BlenderLoader):
                         parent_collection_name_numbered = corresponding_collections_numbered.get(
                             parent_collection_name, f"{parent_collection_name}-{unique_number}")
 
-                        collection = create_collection(corresponding_collection_name, parent_collection_name_numbered)
+                        collection = create_collection(
+                            corresponding_collection_name,
+                            parent_collection_name_numbered,
+                            ORANGE
+                        )
 
                 if blender_object in list(collection.objects):
                     continue
