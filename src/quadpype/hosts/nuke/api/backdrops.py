@@ -336,9 +336,11 @@ def adjust_main_backdrops(main_backdrop=None, backdrop=None, nodes_in_main_backd
         offset_y = new_y-old_y
 
         for node in nodes:
-            node['xpos'].setValue(node.xpos() + offset_x)
-            node['ypos'].setValue(node.ypos() + offset_y)
-
+            try:
+                node['xpos'].setValue(node.xpos() + offset_x)
+                node['ypos'].setValue(node.ypos() + offset_y)
+            except ValueError:
+                pass
 
 #-----------Operations-----------------
 
@@ -499,6 +501,10 @@ def _get_backdrop_by_name(bd_name):
     """Get a backdrop depending on the given name"""
     return nuke.toNode(bd_name) if nuke.toNode(bd_name).Class() == "BackdropNode" else None
 
+def relocation_is_needed(subset_group, new_layers, old_layers):
+    """If there's more new layers than old_layers, the backdrop will have to be resized, so the nodes
+    need to be moved to not interfere with existing"""
+    return not subset_group and len(new_layers) > len(old_layers)
 
 #-----------Nuke Functions-----------------
 
@@ -694,7 +700,7 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
         return
 
     #Move nodes to not interfere with existing
-    if not subset_group:
+    if relocation_is_needed(subset_group, new_layers, old_layers):
         move_backdrop(storage_backdrop, 200000, 200000)
         move_nodes_in_backdrop([nuke.toNode(n) for n in node_names_in_backdrop if nuke.toNode(n)], storage_backdrop)
 
@@ -940,8 +946,8 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
     nodes_in_backdrop = {nuke.toNode(n) for n in node_names_in_backdrop if nuke.toNode(n)}
 
     # Adjust backdrop organisation
-    if not subset_group:
-        resize_backdrop_based_on_nodes(storage_backdrop, list(nodes_in_backdrop), shrink=True)
+    if relocation_is_needed(subset_group, new_layers, old_layers):
+        resize_backdrop_based_on_nodes(storage_backdrop, list(nodes_in_backdrop), shrink=False)
         align_backdrops(main_backdrop, storage_backdrop, "inside")
         move_nodes_in_backdrop(list(nodes_in_backdrop), storage_backdrop)
     adjust_main_backdrops(main_backdrop=main_backdrop,
@@ -960,6 +966,7 @@ def reorganize_inside_main_backdrop(main_backdrop_name):
     padding = 15
 
     main_backdrop = _get_backdrop_by_name(main_backdrop_name)
+    main_backdrop_width = main_backdrop['bdwidth'].value()
     backdrops_in_main_backdrop = _get_backdrops_in_backdrops(main_backdrop)
 
     backdrops_in_main_backdrop.sort(key=lambda bd: bd['xpos'].value())
@@ -974,11 +981,13 @@ def reorganize_inside_main_backdrop(main_backdrop_name):
             backdrops_in_main_backdrop.remove(bd)
         nodes = get_nodes_in_backdrops(backdrop)
         backdrop['xpos'].setValue(current_x)
-        main_backdrop['bdwidth'].setValue(main_backdrop.xpos() + current_x)
+        if main_backdrop_width < main_backdrop.xpos() + current_x:
+            main_backdrop['bdwidth'].setValue(main_backdrop.xpos() + current_x)
         current_x += backdrop['bdwidth'].value() + padding
         move_nodes_in_backdrop(nodes, backdrop)
 
-    main_backdrop['bdwidth'].setValue(main_backdrop.xpos() + current_x)
+    if main_backdrop_width < main_backdrop.xpos() + current_x:
+        main_backdrop['bdwidth'].setValue(main_backdrop.xpos() + current_x)
     pre_organize_by_backdrop()
 
     return
