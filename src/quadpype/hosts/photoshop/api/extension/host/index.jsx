@@ -42,6 +42,21 @@ function getLayerTypeWithName(layerName) {
     return type;
 }
 
+function getLayerByID(id, parent) {
+    parent = parent || app.activeDocument;
+
+    for (var i = 0; i < parent.layers.length; i++) {
+        var layer = parent.layers[i];
+
+        if (layer.id == id) {
+            return layer;
+        }
+
+        if (layer.typename === "LayerSet") {
+            var found = getLayerByID(id, layer);
+            if (found) return found;
+        }
+
 function addPlaceholder(name, text_size, r, g ,b){
     var doc = app.activeDocument;
     var placeholderLayer = doc.artLayers.add();
@@ -70,13 +85,37 @@ function printMsg(msg){
     alert(msg);
 }
 
-function getLayerByID(id) {
-    var doc = app.activeDocument;
-    for (var i = 0; i < doc.layers.length; i++) {
-        if (doc.layers[i].id == id) return doc.layers[i];
+function isEmptyLayer(layer) {
+    if (layer.typename !== "ArtLayer") return false;
+    if (layer.kind !== LayerKind.NORMAL) return false;
+
+    try {
+        var b = layer.bounds;
+        return b[0].as("px") === 0 &&
+               b[1].as("px") === 0 &&
+               b[2].as("px") === 0 &&
+               b[3].as("px") === 0;
+    } catch (e) {
+        return false;
     }
-    return null;
 }
+
+function areLayersEmptyByIDs(idList) {
+    var results = {};
+    parsed_layers = JSON.parse(idList);
+
+    for (var i = 0; i < parsed_layers.length; i++) {
+        var id = parsed_layers[i];
+        var layer = getLayerByID(id);
+
+        if (layer) {
+            results[id] = isEmptyLayer(layer);
+        } else {
+            results[id] = null; // ID non trouvé
+        }
+    }
+
+    return JSON.stringify(results);
 
 function getLayerCenter(layer) {
     var b = layer.bounds; // [left, top, right, bottom]
@@ -120,6 +159,7 @@ function scaleLayerByID(id, scalePercent) {
     }
 
     layer.resize(scalePercent, scalePercent, AnchorPosition.MIDDLECENTER);
+
 }
 
 function getLayers() {

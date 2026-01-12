@@ -109,6 +109,13 @@ function main(websocket_url) {
             });
     });
 
+    RPC.addRoute('Photoshop.are_layers_empty_by_ids', function (data) {
+        return runEvalScript("areLayersEmptyByIDs('"+ data.layer_ids + "')")
+            .then(function (result) {
+                return result;
+            });
+    });
+
     RPC.addRoute('Photoshop.add_placeholder', function (data) {
         log.warn('Server called client route "add_placeholder":', data);
         var name = EscapeStringForJSX(data.name);
@@ -153,9 +160,6 @@ function main(websocket_url) {
         return runEvalScript("printMsg('" + escaped_msg + "')")
             .then(function (result) {
                 log.warn("print_msg: " + result);
-                return result;
-            });
-    });
 
     RPC.addRoute('Photoshop.get_layers', function (data) {
         log.warn('Server called client route "get_layers":', data);

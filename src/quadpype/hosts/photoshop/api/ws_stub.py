@@ -188,6 +188,16 @@ class PhotoshopServerStub:
             self.client.call('Photoshop.imprint', payload=payload)
         )
 
+    def are_layers_empty_by_ids(self, layer_ids):
+        res = self.websocketserver.call(
+            self.client.call('Photoshop.are_layers_empty_by_ids',
+                             layer_ids=json.dumps(layer_ids)
+                             )
+        )
+        dict_res =  json.loads(res)
+        filtered = {int(k): v for k, v in dict_res.items() if v}
+        return  filtered
+
     def add_placeholder(self, name, text_size, r, g, b):
         """
             Adds new text layer as a placeholder for workfile builder
