@@ -3937,6 +3937,18 @@ def get_downstream_nodes(node, visited=None, stop_class="", include_stop_node=Fa
             get_downstream_nodes(dep, visited, stop_class, include_stop_node)
     return visited
 
+def get_upstream_nodes(node, visited=None):
+    if visited is None:
+        visited = set()
+
+    for i in range(node.inputs()):
+        inp = node.input(i)
+        if inp and inp not in visited:
+            visited.add(inp)
+            get_upstream_nodes(inp, visited)
+
+    return visited
+
 def classify_downstream_nodes_inputs(node_list):
     """
     Create a dict for given nodes, classifying all inputs. On top of that, this will return if it's a dot or not, and

@@ -30,6 +30,7 @@ from .lib import (
     generate_stamps,
     create_precomp_merge,
     get_downstream_nodes,
+    get_upstream_nodes,
     classify_downstream_nodes_inputs
 )
 
@@ -774,6 +775,18 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                                                             stop_class="Dot",
                                                             include_stop_node=False)
                     sorted_downstream_nodes.extend(list(precomp_extra_nodes))
+
+                sorted_downstream_nodes = set (sorted_downstream_nodes)
+                remove_downstream_node = set()
+                for downstream_node in sorted_downstream_nodes:
+                    inputs = get_upstream_nodes(downstream_node)
+                    if any(n.Class() == "Shuffle" and n.name() != shuffle_nodes[old_layer_data["name"]]["name"]
+                           for n in inputs):
+                        log.info(f"Do not treat {downstream_node.name()}")
+                        remove_downstream_node.add(downstream_node)
+
+                sorted_downstream_nodes.difference_update(remove_downstream_node)
+
                 # Store nodes to delete by names, except Merge, they will be treated later
                 delete_dict[shuffle_node] = [n.name() for n in sorted_downstream_nodes if n.Class() != "Merge2"]
 
@@ -869,6 +882,14 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
                                                                 visited=set(),
                                                                 stop_class=stop_class,
                                                                 include_stop_node=False)
+                remove_downstream_node = set()
+                for downstream_node in stamp_downstream_nodes:
+                    inputs = get_upstream_nodes(downstream_node)
+                    if any(n.Class() == "PostageStamp" and n.name() != old_layer_data["name"] for n in inputs):
+                        log.info(f"Do not treat {downstream_node.name()}")
+                        remove_downstream_node.add(downstream_node)
+
+                stamp_downstream_nodes.difference_update(remove_downstream_node)
                 # Store nodes to delete by names, except Merge, they will be treated later
                 delete_dict[old_layer_data["name"]] = [n.name() for n in stamp_downstream_nodes if
                                                        n.Class() != "Merge2"]
