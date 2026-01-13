@@ -160,6 +160,8 @@ function main(websocket_url) {
         return runEvalScript("printMsg('" + escaped_msg + "')")
             .then(function (result) {
                 log.warn("print_msg: " + result);
+            });
+    });
 
     RPC.addRoute('Photoshop.get_layers', function (data) {
         log.warn('Server called client route "get_layers":', data);

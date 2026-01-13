@@ -56,6 +56,8 @@ function getLayerByID(id, parent) {
             var found = getLayerByID(id, layer);
             if (found) return found;
         }
+    }
+}
 
 function addPlaceholder(name, text_size, r, g ,b){
     var doc = app.activeDocument;
@@ -116,9 +118,10 @@ function areLayersEmptyByIDs(idList) {
     }
 
     return JSON.stringify(results);
+}
 
 function getLayerCenter(layer) {
-    var b = layer.bounds; // [left, top, right, bottom]
+    var b = layer.bounds;
     var left = b[0].as("px");
     var top = b[1].as("px");
     var right = b[2].as("px");
