@@ -12,7 +12,7 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{33AE9C5B-027B-478F-BC3E-A840928798FA}
+AppId={{33AE9C5B-027B-478F-BC3E-A840928798FA}}
 AppName={#AppName}
 AppVersion={#AppVer}
 AppVerName={#AppName} version {#AppVer}
@@ -21,7 +21,7 @@ AppPublisher={#AppPublisher}
 AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}
 AppUpdatesURL={#AppURL}
-AppCopyright=2023-CurrYear {#AppPublisher}
+AppCopyright=2023-{#CurrYear} {#AppPublisher}
 DefaultDirName={autopf}\{#AppNameLower}
 UsePreviousAppDir=no
 DisableProgramGroupPage=yes
@@ -33,10 +33,12 @@ ArchitecturesAllowed=x64compatible
 ; meaning it should use the native 64-bit Program Files directory and
 ; the 64-bit view of the registry.
 ArchitecturesInstallIn64BitMode=x64compatible
+
 OutputBaseFilename={#AppNameLower}-{#AppVer}-installer
 AllowCancelDuringInstall=yes
 ; Uncomment the following line to run in non admin install mode (install for current user only.)
 ;PrivilegesRequired=lowest
+;PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
 SetupIconFile=igniter\resources\icons\quadpype.ico
 UninstallDisplayIcon={uninstallexe}
@@ -58,13 +60,13 @@ Type: filesandordirs; Name: "{app}\*"
 [Files]
 Source: "{#Build}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-Source: ".\igniter\resources\icons\ae.bmp"; DestDir: "{tmp}"; Flags: dontcopy
-Source: ".\igniter\resources\icons\photoshop.bmp"; DestDir: "{tmp}"; Flags: dontcopy
-Source: ".\igniter\resources\icons\maya.bmp"; DestDir: "{tmp}"; Flags: dontcopy
-Source: ".\igniter\resources\icons\blender.bmp"; DestDir: "{tmp}"; Flags: dontcopy
-Source: ".\igniter\resources\icons\nuke.bmp"; DestDir: "{tmp}"; Flags: dontcopy
-Source: ".\igniter\resources\icons\houdini.bmp"; DestDir: "{tmp}"; Flags: dontcopy
-Source: ".\igniter\resources\icons\tvpaint.bmp"; DestDir: "{tmp}"; Flags: dontcopy
+Source: ".\igniter\resources\icons\ae.bmp"; DestDir: "{tmp}"; Flags: dontcopy nocompression
+Source: ".\igniter\resources\icons\photoshop.bmp"; DestDir: "{tmp}"; Flags: dontcopy nocompression
+Source: ".\igniter\resources\icons\maya.bmp"; DestDir: "{tmp}"; Flags: dontcopy nocompression
+Source: ".\igniter\resources\icons\blender.bmp"; DestDir: "{tmp}"; Flags: dontcopy nocompression
+Source: ".\igniter\resources\icons\nuke.bmp"; DestDir: "{tmp}"; Flags: dontcopy nocompression
+Source: ".\igniter\resources\icons\houdini.bmp"; DestDir: "{tmp}"; Flags: dontcopy nocompression
+Source: ".\igniter\resources\icons\tvpaint.bmp"; DestDir: "{tmp}"; Flags: dontcopy nocompression
 
 [Icons]
 Name: "{autoprograms}\{#AppName}"; Filename: "{app}\quadpype_gui.exe"
@@ -95,13 +97,13 @@ var
   tvPaintCheckbox: TNewCheckBox;
 
   // Softwares configuration pages
-  AdobeAfterEffectsConfigPage: TInputDirWizardPage;
-  AdobePhotoshopConfigPage: TInputDirWizardPage;
-  MayaConfigPage: TInputDirWizardPage;
-  BlenderConfigPage: TInputDirWizardPage;
-  NukeConfigPage: TInputDirWizardPage;
-  HoudiniConfigPage: TInputDirWizardPage;
-  tvPaintConfigPage: TInputDirWizardPage;
+  AdobeAfterEffectsConfigPage: TInputFileWizardPage;
+  AdobePhotoshopConfigPage: TInputFileWizardPage;
+  MayaConfigPage: TInputFileWizardPage;
+  BlenderConfigPage: TInputFileWizardPage;
+  NukeConfigPage: TInputFileWizardPage;
+  HoudiniConfigPage: TInputFileWizardPage;
+  tvPaintConfigPage: TInputFileWizardPage;
 
   // Paths variables
   AdobeAfterEffectsPath: String;
@@ -150,9 +152,9 @@ var
 
 begin
   IconSize := 16;
-  LabelHeight := 40;
-  LabelOffset := 6;
-  CheckboxLeftMargin := 40;
+  LabelHeight := 28;
+  LabelOffset := 2;
+  CheckboxLeftMargin := 30;
 
   // =====================================
   // ===== PAGE 1 : Select softwares =====
@@ -192,7 +194,7 @@ begin
   AdobeAfterEffectsCheckbox.Left := CheckboxLeftMargin;
   AdobeAfterEffectsCheckbox.Top := LabelDescription.Top + LabelHeight;
   AdobeAfterEffectsCheckbox.Width := SoftwareSelectionPage.SurfaceWidth - CheckboxLeftMargin;
-  AdobeAfterEffectsCheckbox.Height := LabelHeight
+  AdobeAfterEffectsCheckbox.Height := LabelHeight;
   AdobeAfterEffectsCheckbox.Caption := 'Adobe After Effects';
   AdobeAfterEffectsCheckbox.Checked := False;
 
@@ -215,7 +217,7 @@ begin
   AdobePhotoshopCheckbox.Left := CheckboxLeftMargin;
   AdobePhotoshopCheckbox.Top := AdobeAfterEffectsCheckbox.Top + LabelHeight;
   AdobePhotoshopCheckbox.Width := SoftwareSelectionPage.SurfaceWidth - CheckboxLeftMargin;
-  AdobePhotoshopCheckbox.Height := LabelHeight
+  AdobePhotoshopCheckbox.Height := LabelHeight;
   AdobePhotoshopCheckbox.Caption := 'Adobe Photoshop';
   AdobePhotoshopCheckbox.Checked := False;
 
@@ -238,7 +240,7 @@ begin
   MayaCheckbox.Left := CheckboxLeftMargin;
   MayaCheckbox.Top := AdobePhotoshopCheckbox.Top + LabelHeight;
   MayaCheckbox.Width := SoftwareSelectionPage.SurfaceWidth - CheckboxLeftMargin;
-  MayaCheckbox.Height := LabelHeight
+  MayaCheckbox.Height := LabelHeight;
   MayaCheckbox.Caption := 'Autodesk Maya';
   MayaCheckbox.Checked := False;
 
@@ -261,7 +263,7 @@ begin
   BlenderCheckbox.Left := CheckboxLeftMargin;
   BlenderCheckbox.Top := MayaCheckbox.Top + LabelHeight;
   BlenderCheckbox.Width := SoftwareSelectionPage.SurfaceWidth - CheckboxLeftMargin;
-  BlenderCheckbox.Height := LabelHeight
+  BlenderCheckbox.Height := LabelHeight;
   BlenderCheckbox.Caption := 'Blender';
   BlenderCheckbox.Checked := False;
 
@@ -285,7 +287,7 @@ begin
   NukeCheckbox.Left := CheckboxLeftMargin;
   NukeCheckbox.Top := BlenderCheckbox.Top + LabelHeight;
   NukeCheckbox.Width := SoftwareSelectionPage.SurfaceWidth - CheckboxLeftMargin;
-  NukeCheckbox.Height := LabelHeight
+  NukeCheckbox.Height := LabelHeight;
   NukeCheckbox.Caption := 'Foundry Nuke';
   NukeCheckbox.Checked := False;
 
@@ -308,7 +310,7 @@ begin
   HoudiniCheckbox.Left := CheckboxLeftMargin;
   HoudiniCheckbox.Top := NukeCheckbox.Top + LabelHeight;
   HoudiniCheckbox.Width := SoftwareSelectionPage.SurfaceWidth - CheckboxLeftMargin;
-  HoudiniCheckbox.Height := LabelHeight
+  HoudiniCheckbox.Height := LabelHeight;
   HoudiniCheckbox.Caption := 'SideFX Houdini';
   HoudiniCheckbox.Checked := False;
 
@@ -331,7 +333,7 @@ begin
   tvPaintCheckbox.Left := CheckboxLeftMargin;
   tvPaintCheckbox.Top := HoudiniCheckbox.Top + LabelHeight;
   tvPaintCheckbox.Width := SoftwareSelectionPage.SurfaceWidth - CheckboxLeftMargin;
-  tvPaintCheckbox.Height := LabelHeight
+  tvPaintCheckbox.Height := LabelHeight;
   tvPaintCheckbox.Caption := 'tvPaint';
   tvPaintCheckbox.Checked := False;
 
@@ -339,88 +341,101 @@ begin
   // ===== CONFIG PAGES FOR EACH SOFTWARE =====
   // ==========================================
 
-  // After Effects configuration page
-  AdobeAfterEffectsConfigPage := CreateInputDirPage(
+  AdobeAfterEffectsConfigPage := CreateInputFilePage(
     SoftwareSelectionPage.ID,
-    'Adobe After Effects folder directory',
-    'Select program folder for Adobe After Effects',
-    'Select Adobe After Effects directory where executable file is stored.' + #13#10 +
-    'Click next to continue.',
-    False, ''
+    'Adobe After Effects folder executable',
+    'Select executable file for Adobe After Effects',
+    'Click on next to continue.'
   );
-  AdobeAfterEffectsConfigPage.Add('Program folder :');
+  AdobeAfterEffectsConfigPage.Add(
+    'Application executable :',
+    'Executable files|*.exe|All files|*.*',
+    '.exe'
+  );
   AdobeAfterEffectsConfigPage.Values[0] := ExpandConstant('{autopf}\Adobe\Adobe After Effects 2025\Support Files');
 
   // configuration page
-  AdobePhotoshopConfigPage := CreateInputDirPage(
+  AdobePhotoshopConfigPage := CreateInputFilePage(
     AdobeAfterEffectsConfigPage.ID,
-    'Adobe Photoshop folder directory',
-    'Select program folder for Adobe After Photoshop',
-    'Choisissez où stocker les fichiers de traitement de données.' + #13#10 +
-    'Cliquez sur Suivant pour continuer.',
-    False, ''
+    'Adobe Photoshop folder executable',
+    'Select executable file for Adobe Photoshop',
+    'Click on next to continue.'
   );
-  AdobePhotoshopConfigPage.Add('Program folder :');
+  AdobePhotoshopConfigPage.Add(
+    'Application executable :',
+    'Executable files|*.exe|All files|*.*',
+    '.exe'
+  );
   AdobePhotoshopConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielB');
 
   // Maya configuration page
-  MayaConfigPage := CreateInputDirPage(
+  MayaConfigPage := CreateInputFilePage(
     AdobePhotoshopConfigPage.ID,
-    'Autodesk Maya folder directory',
-    'Select program folder for Autodesk Maya',
-    'Choisissez où stocker les fichiers de traitement de données.' + #13#10 +
-    'Cliquez sur Suivant pour continuer.',
-    False, ''
+    'Autodesk Maya folder executable',
+    'Select executable file for Autodesk Maya',
+    'Click on next to continue.'
   );
-  MayaConfigPage.Add('Program folder :');
+  MayaConfigPage.Add(
+    'Application executable :',
+    'Executable files|*.exe|All files|*.*',
+    '.exe'
+  );
   MayaConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielC');
 
   // Blender configuration page
-  BlenderConfigPage := CreateInputDirPage(
+  BlenderConfigPage := CreateInputFilePage(
     MayaConfigPage.ID,
-    'Blender folder directory',
-    'Select program folder for Blender',
-    'Choisissez où stocker les fichiers de traitement de données.' + #13#10 +
-    'Cliquez sur Suivant pour continuer.',
-    False, ''
+    'Blender folder executable',
+    'Select executable file for Blender',
+    'Click on next to continue.'
   );
-  BlenderConfigPage.Add('Program folder :');
+  BlenderConfigPage.Add(
+    'Application executable :',
+    'Executable files|*.exe|All files|*.*',
+    '.exe'
+  );
   BlenderConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielD');
 
   // Nuke configuration page
-  NukeConfigPage := CreateInputDirPage(
+  NukeConfigPage := CreateInputFilePage(
     BlenderConfigPage.ID,
-    'Nuke folder directory',
-    'Select program folder for Nuke',
-    'Choisissez où stocker les fichiers de traitement de données.' + #13#10 +
-    'Cliquez sur Suivant pour continuer.',
-    False, ''
+    'Foundry Nuke folder executable',
+    'Select executable file for Foundry Nuke',
+    'Click on next to continue.'
   );
-  NukeConfigPage.Add('Program folder :');
+  NukeConfigPage.Add(
+    'Application executable :',
+    'Executable files|*.exe|All files|*.*',
+    '.exe'
+  );
   NukeConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielD');
 
   // Houdini configuration page
-  HoudiniConfigPage := CreateInputDirPage(
+  HoudiniConfigPage := CreateInputFilePage(
     NukeConfigPage.ID,
-    'Houdini folder directory',
-    'Select program folder for Houdini',
-    'Choisissez où stocker les fichiers de traitement de données.' + #13#10 +
-    'Cliquez sur Suivant pour continuer.',
-    False, ''
+    'SideFX Houdini folder executable',
+    'Select executable file for SideFX Houdini',
+    'Click on next to continue.'
   );
-  HoudiniConfigPage.Add('Program folder :');
+  HoudiniConfigPage.Add(
+    'Application executable :',
+    'Executable files|*.exe|All files|*.*',
+    '.exe'
+  );
   HoudiniConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielD');
 
   // tvPaint configuration page
-  tvPaintConfigPage := CreateInputDirPage(
+  tvPaintConfigPage := CreateInputFilePage(
     HoudiniConfigPage.ID,
-    'tvPaint folder directory',
-    'Select program folder for tvPaint',
-    'Choisissez où stocker les fichiers de traitement de données.' + #13#10 +
-    'Cliquez sur Suivant pour continuer.',
-    False, ''
+    'tvPaint folder executable',
+    'Select executable file for tvPaint',
+    'Click on next to continue.'
   );
-  tvPaintConfigPage.Add('Program folder :');
+  tvPaintConfigPage.Add(
+    'Application executable :',
+    'Executable files|*.exe|All files|*.*',
+    '.exe'
+  );
   tvPaintConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielD');
 end;
 
@@ -451,11 +466,17 @@ begin
     Result := not tvPaintCheckbox.Checked;
 end;
 
+function IsValidExecutable(const FilePath: string): Boolean;
+begin
+  Result :=
+    (FilePath <> '') and
+    FileExists(FilePath) and
+    (CompareText(ExtractFileExt(FilePath), '.exe') = 0);
+end;
+
+
 // Validation des données saisies
 function NextButtonClick(CurPageID: Integer): Boolean;
-var
-  FindRec: TFindRec;
-
 begin
   Result := True;
 
@@ -479,42 +500,63 @@ begin
   // Validation des chemins (vérifier qu'ils ne sont pas vides)
   if CurPageID = AdobeAfterEffectsConfigPage.ID then
   begin
-    if Trim(AdobeAfterEffectsConfigPage.Values[0]) = '' then
+    if not IsValidExecutable(AdobeAfterEffectsConfigPage.Values[0]) then
     begin
-      MsgBox('Veuillez spécifier un dossier pour le Logiciel A.', mbError, MB_OK);
-      Result := False;
-    end;
-
-    if not FindFirst(AddBackslash(AdobeAfterEffectsConfigPage.Values[0]) + '*.exe', FindRec) then
-    begin
-      MsgBox('Folder should contains at least one executable file.', mbError, MB_OK);
+      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
       Result := False;
     end;
   end;
 
   if CurPageID = AdobePhotoshopConfigPage.ID then
   begin
-    if Trim(AdobePhotoshopConfigPage.Values[0]) = '' then
+    if not IsValidExecutable(AdobePhotoshopConfigPage.Values[0]) then
     begin
-      MsgBox('Veuillez spécifier un dossier pour le Logiciel B.', mbError, MB_OK);
+      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
       Result := False;
     end;
   end;
 
   if CurPageID = MayaConfigPage.ID then
   begin
-    if Trim(MayaConfigPage.Values[0]) = '' then
+    if not IsValidExecutable(MayaConfigPage.Values[0]) then
     begin
-      MsgBox('Veuillez spécifier un dossier pour le Logiciel C.', mbError, MB_OK);
+      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
       Result := False;
     end;
   end;
 
   if CurPageID = BlenderConfigPage.ID then
   begin
-    if Trim(BlenderConfigPage.Values[0]) = '' then
+    if not IsValidExecutable(BlenderConfigPage.Values[0]) then
     begin
-      MsgBox('Veuillez spécifier un dossier pour le Logiciel D.', mbError, MB_OK);
+      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
+      Result := False;
+    end;
+  end;
+
+  if CurPageID = NukeConfigPage.ID then
+  begin
+    if not IsValidExecutable(NukeConfigPage.Values[0]) then
+    begin
+      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
+      Result := False;
+    end;
+  end;
+
+  if CurPageID = HoudiniConfigPage.ID then
+  begin
+    if not IsValidExecutable(HoudiniConfigPage.Values[0]) then
+    begin
+      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
+      Result := False;
+    end;
+  end;
+
+  if CurPageID = tvPaintConfigPage.ID then
+  begin
+    if not IsValidExecutable(tvPaintConfigPage.Values[0]) then
+    begin
+      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
       Result := False;
     end;
   end;
@@ -535,21 +577,71 @@ begin
     ConfigLines[LineCount] := '[Logiciels]';
     LineCount := LineCount + 1;
 
-    // Traiter Logiciel A
+    // Adobe After Effects
     if AdobeAfterEffectsCheckbox.Checked then
     begin
       AdobeAfterEffectsPath := AdobeAfterEffectsConfigPage.Values[0];
-      ConfigLines[LineCount] := 'LogicielA_Enabled=True';
-      LineCount := LineCount + 1;
-      ConfigLines[LineCount] := 'LogicielA_Path=' + AdobeAfterEffectsPath;
+      ConfigLines[LineCount] := 'aftereffects=' + AdobeAfterEffectsPath;
       LineCount := LineCount + 1;
 
-      MsgBox('Logiciel A configuré dans : ' + AdobeAfterEffectsPath, mbInformation, MB_OK);
     end;
 
+    // Adobe Photoshop
+    if AdobePhotoshopCheckbox.Checked then
+    begin
+      AdobePhotoshopPath := AdobePhotoshopConfigPage.Values[0];
+      ConfigLines[LineCount] := 'photoshop=' + AdobePhotoshopPath;
+      LineCount := LineCount + 1;
+
+    end;
+
+    // Maya
+    if MayaCheckbox.Checked then
+    begin
+      MayaPath := MayaConfigPage.Values[0];
+      ConfigLines[LineCount] := 'maya=' +MayaPath;
+      LineCount := LineCount + 1;
+
+    end;
+
+    // Blender
+    if BlenderCheckbox.Checked then
+    begin
+      BlenderPath := BlenderConfigPage.Values[0];
+      ConfigLines[LineCount] := 'blender=' +BlenderPath;
+      LineCount := LineCount + 1;
+
+    end;
+
+    // Nuke
+    if NukeCheckbox.Checked then
+    begin
+      NukePath := NukeConfigPage.Values[0];
+      ConfigLines[LineCount] := 'nuke=' +NukePath;
+      LineCount := LineCount + 1;
+
+    end;
+
+    // Houdini
+    if HoudiniCheckbox.Checked then
+    begin
+      HoudiniPath := HoudiniConfigPage.Values[0];
+      ConfigLines[LineCount] := 'houdini=' +HoudiniPath;
+      LineCount := LineCount + 1;
+
+    end;
+
+    // tvPaint
+    if tvPaintCheckbox.Checked then
+    begin
+      tvPaintPath := tvPaintConfigPage.Values[0];
+      ConfigLines[LineCount] := 'tvpaint=' +tvPaintPath;
+      LineCount := LineCount + 1;
+
+    end;
 
     // Sauvegarder le fichier de configuration
-    ConfigFile := ExpandConstant('{app}\config.ini');
+    ConfigFile := ExpandConstant('{app}\overrided_user_settings.ini');
     SetArrayLength(ConfigLines, LineCount);
     SaveStringsToFile(ConfigFile, ConfigLines, False);
 
