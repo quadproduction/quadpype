@@ -396,8 +396,8 @@ class SyncServerThread(threading.Thread):
             force_sync_asked, repres, downloaded, uploaded
     ):
         user_settings = get_user_settings()
-        register_loops_logs = user_settings.get('general', {}).get('register_loops_logs', None)
-        if not register_loops_logs:
+        register_sync_results = user_settings.get('general', {}).get('register_sync_results', None)
+        if not register_sync_results:
             return
 
         projects_results = dict()
