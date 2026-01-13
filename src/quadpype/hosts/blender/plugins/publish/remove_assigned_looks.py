@@ -31,6 +31,8 @@ class RemoveMaterialsTemporarily(
         objects_in_instance = pipeline.get_container_content(instance_coll)
         materials_by_objects = {}
         for obj in objects_in_instance:
+            if not getattr(obj, "material_slots"):
+                continue
             mats = []
             indices_to_remove = [i for i, slot in enumerate(obj.material_slots) if slot.material]
             for i in reversed(indices_to_remove):

@@ -350,7 +350,8 @@ class CacheModelLoader(plugin.BlenderLoader):
                     members,
                     collections_numbered_hierarchy,
                     corresponding_collections_numbered,
-                    unique_number
+                    unique_number,
+                    ORANGE
                 )
 
 

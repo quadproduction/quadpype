@@ -226,7 +226,8 @@ class BlendLoader(plugin.BlenderLoader):
                 container_objects,
                 collections_numbered_hierarchy,
                 corresponding_collections_numbered,
-                unique_number
+                unique_number,
+                ORANGE
             )
 
         else:
@@ -414,11 +415,13 @@ class BlendLoader(plugin.BlenderLoader):
         members = []
         # Needs to rename in separate block to retrieve blender object after initialisation
         for attr in dir(data_attributes):
-            for data in getattr(data_attributes, attr):
-                if isinstance(data, str):
-                    continue
+            value = getattr(data_attributes, attr)
+            if not hasattr(value, "__iter__"):
+                continue
 
-                members.append(data)
+            for data in value:
+                if isinstance(data, bpy.types.ID):
+                    members.append(data)
 
         return members
 
@@ -447,17 +450,11 @@ class BlendLoader(plugin.BlenderLoader):
             options = {}
         group_name = container["objectName"]
         asset_group = self._retrieve_undefined_asset_group(group_name)
-        libpath = Path(get_representation_path(representation))
-
         assert asset_group, (
             f"The asset is not loaded: {container['objectName']}"
         )
 
-        project_name = representation.get('context', {}).get('project', {}).get('name', None)
-        assert project_name, "Can not retrieve project name from context data."
-
         avalon_data = pipeline.get_avalon_node(asset_group)
-
         import_method = ImportMethod(
             avalon_data.get(
                 'import_method',
@@ -465,130 +462,10 @@ class BlendLoader(plugin.BlenderLoader):
             )
         )
         if import_method != ImportMethod.APPEND:
-            old_linked_lib = lib.get_library_from_path(avalon_data["libpath"])
-            if old_linked_lib:
-                old_linked_lib.filepath = bpy.path.abspath(libpath.as_posix())
-                old_linked_lib.reload()
-
-            new_linked_lib = lib.get_library_from_path(libpath.as_posix())
-            if not new_linked_lib:
-                return
-            new_linked_lib.reload()
-
-            new_data = {
-                "libpath": libpath.as_posix(),
-                "representation": str(representation["_id"]),
-                "parent": str(representation["parent"]),
-                "version": get_version_by_id(project_name, str(representation["parent"])).get('name', '')
-            }
-            lib.imprint(asset_group, new_data)
-            return
-
-        if isinstance(asset_group, bpy.types.Object):
-            transform = asset_group.matrix_basis.copy()
-            asset_group_parent = asset_group.parent
-            all_objects_from_asset = asset_group.children_recursive
-        else:
-            all_objects_from_asset = get_objects_in_collection(asset_group)
-
-        objects_with_anim = [
-            obj for obj in all_objects_from_asset
-            if obj.animation_data
-        ]
-        objects_with_no_anim = [
-            obj for obj in all_objects_from_asset
-            if not obj.animation_data
-        ]
-
-        materials_by_objects = {}
-        for obj in all_objects_from_asset:
-            materials_by_objects[obj.name] = [slot.material for slot in obj.material_slots if slot.material]
-
-        actions = {}
-        for obj in objects_with_anim:
-            # Check if the object has an action and, if so, add it to a dict
-            # so we can restore it later. Save and restore the action only
-            # if it wasn't originally loaded from the current asset.
-            if not obj.animation_data.action:
-                continue
-            if obj.animation_data.action.name not in avalon_data.get("members", []).get("actions", []):
-                actions[obj.name] = obj.animation_data.action.name
-
-        snap_properties = {}
-        for obj in objects_with_no_anim:
-            snap_properties[obj.name] = lib.get_properties_on_object(obj)
-
-        asset = representation.get('asset', '')
-        subset = representation.get('subset', '')
-        template_data = format_data(representation, True, get_current_host_name())
-        template_data.update({"unique_number": container.get("unique_number", "00")})
-        self.exec_remove(container)
-
-        container, members = self.load_assets_and_create_hierarchy(
-            representation=representation,
-            libpath=libpath.as_posix(),
-            group_name=group_name,
-            unique_number=avalon_data.get("unique_number", plugin.get_unique_number(asset, subset)),
-            import_method=ImportMethod(
-                avalon_data.get(
-                    'import_method',
-                    self.defaults['import_method']
-                )
-            ),
-            template_data=template_data
-        )
-        if import_method != ImportMethod.APPEND:
             self.update_link_to_new_instance(representation, asset_group)
 
         else:
             self.copy_data_to_new_instance(container, representation, asset_group, options)
-
-        # Restore the actions
-        for obj in all_objects_from_asset:
-            if obj.name in actions:
-                if not actions.get(obj.name):
-                    continue
-                if not obj.animation_data:
-                    obj.animation_data_create()
-
-                action = bpy.data.actions.get(actions.get(obj.name))
-                if not action:
-                    continue
-                obj.animation_data.action = action
-
-            elif obj.name in snap_properties:
-                lib.set_properties_on_object(obj, snap_properties[obj.name])
-
-            if obj.name in materials_by_objects:
-                for mat in materials_by_objects[obj.name]:
-                    if not mat:
-                        continue
-                    obj.data.materials.append(mat)
-
-        # Restore the old data, but reset members, as they don't exist anymore,
-        # This avoids a crash, because the memory addresses of those members
-        # are not valid anymore
-        # TODO: We lose asset in scene inventory if we comment the following lines.
-        # TODO: It would be great to understand why ? Moving the erase arg after doesn't work.
-        avalon_data["members"] = []
-        lib.imprint(asset_group, avalon_data, erase=True)
-
-        new_data = {
-            "libpath": libpath.as_posix(),
-            "representation": str(representation["_id"]),
-            "parent": str(representation["parent"]),
-            "members": lib.map_to_classes_and_names(members),
-            "version": get_version_by_id(project_name, str(representation["parent"])).get('name', '')
-        }
-        lib.imprint(asset_group, new_data)
-
-        # We need to update all the parent container members
-        parent_containers = self.get_all_container_parents(asset_group)
-
-        for parent_container in parent_containers:
-            parent_avalon_node = pipeline.get_avalon_node(parent_container)
-            parent_members = lib.get_objects_from_mapped(parent_avalon_node["members"])
-            lib.imprint(parent_container, {'members': lib.map_to_classes_and_names(parent_members + members)})
 
     def exec_remove(self, container: Dict):
         """
@@ -817,7 +694,8 @@ class BlendLoader(plugin.BlenderLoader):
                 obj_added_members,
                 collections_numbered_hierarchy,
                 corresponding_collections_numbered,
-                actual_unique_number
+                actual_unique_number,
+                ORANGE
             )
 
         for added_member in added_members:

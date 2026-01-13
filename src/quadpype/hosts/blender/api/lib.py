@@ -1195,9 +1195,10 @@ def get_viewport_shading():
 def copy_materials(src, dst):
     if getattr(src, "data", None) is None or getattr(dst, "data", None) is None:
         return
-    dst.data.materials.clear()
-    for mat in src.data.materials:
-        dst.data.materials.append(mat)
+    for i, slot in enumerate(src.material_slots):
+        if not src.material_slots[i].material:
+            continue
+        dst.material_slots[i].material = src.material_slots[i].material
 
 
 def copy_modifiers(src, dst, obj_map):

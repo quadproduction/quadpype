@@ -138,7 +138,8 @@ def organize_objects_in_templated_collection(
         objects,
         collections_numbered_hierarchy,
         corresponding_collections_numbered,
-        unique_number
+        unique_number,
+        color=constants.ORANGE
 ):
     default_parent_collection_name = get_last_collection_from_first_template(
         collections_numbered_hierarchy
@@ -171,7 +172,10 @@ def organize_objects_in_templated_collection(
                 parent_collection_name_numbered = corresponding_collections_numbered.get(
                     parent_collection_name, f"{parent_collection_name}-{unique_number}")
 
-                collection = create_collection(corresponding_collection_name, parent_collection_name_numbered)
+                collection = create_collection(
+                    corresponding_collection_name,
+                    parent_collection_name_numbered,
+                    color=color)
 
         if blender_object in list(collection.objects):
             continue
