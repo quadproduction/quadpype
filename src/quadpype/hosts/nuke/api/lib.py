@@ -80,6 +80,7 @@ JSON_PREFIX = "JSON:::"
 ROOT_DATA_KNOB = "publish_context"
 INSTANCE_DATA_KNOB = "publish_instance"
 AUTORESIZE_LABEL = "AutoResize"
+ALPHA_FILL_LABEL = "AlphaFill"
 
 PREP_LAYER_PSD_EXT = ["psd", "psb"]
 PREP_LAYER_EXR_EXT = ["exr"]
@@ -1784,6 +1785,12 @@ def convert_knob_value_to_correct_type(knob_type, knob_value):
         knob_value = knob_value
     elif knob_type == "color_gui":
         knob_value = color_gui_to_int(knob_value)
+    elif knob_type == "dict":
+        mappings_list = []
+        for k, v in knob_value.items():
+            parts = [v['key_value'], k]
+            mappings_list.append(tuple(parts))
+        knob_value = mappings_list
     elif knob_type in ["2d_vector", "3d_vector", "color", "box"]:
         knob_value = [float(val_) for val_ in knob_value]
 
@@ -3930,6 +3937,18 @@ def get_downstream_nodes(node, visited=None, stop_class="", include_stop_node=Fa
             get_downstream_nodes(dep, visited, stop_class, include_stop_node)
     return visited
 
+def get_upstream_nodes(node, visited=None):
+    if visited is None:
+        visited = set()
+
+    for i in range(node.inputs()):
+        inp = node.input(i)
+        if inp and inp not in visited:
+            visited.add(inp)
+            get_upstream_nodes(inp, visited)
+
+    return visited
+
 def classify_downstream_nodes_inputs(node_list):
     """
     Create a dict for given nodes, classifying all inputs. On top of that, this will return if it's a dot or not, and
@@ -3992,3 +4011,10 @@ def get_unique_number(existing_names, name):
             names[read_name] = 1
     occurrences = names.get(name, 0)
     return "{:0>3d}".format(occurrences + 1)
+
+def create_replacement_placeholder_dot():
+    for n in nuke.selectedNodes():
+        n.setSelected(False)
+    dot_node = nuke.createNode('Dot', inpanel=False)
+    dot_node.setSelected(False)
+    return dot_node

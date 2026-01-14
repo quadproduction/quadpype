@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<error id="main">
+<title>Names Start With Legal Validator</title>
+<description>
+## Name start with a number
+
+Files names can not begin with a number.
+
+### How to repair?
+
+Rename your sources files please.
+
+Then delete them from your instance, and drop them once again after renaming them.
+</description>
+</error>
+</root>

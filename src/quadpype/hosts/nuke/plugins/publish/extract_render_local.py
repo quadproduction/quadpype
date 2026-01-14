@@ -193,7 +193,7 @@ class NukeRenderLocal(publish.Extractor,
         """
         frames_to_render = []
 
-        for frame_range in frames_to_fix.split(","):
+        for frame_range in frames_to_fix.replace(" ", "").split(","):
             if frame_range.isdigit():
                 render_first_frame = frame_range
                 render_last_frame = frame_range

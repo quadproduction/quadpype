@@ -548,19 +548,30 @@
         }
     },
     "load": {
+
         "LoadImage": {
             "enabled": true,
-            "_representations": [],
-            "node_name_template": "{class_name}_{ext}"
+            "load_settings": [
+                {
+                    "_representations": [],
+                    "node_name_template": "{asset}_{subset}<_{unique_number}>",
+                    "knobs": []
+                }
+            ]
         },
         "LoadClip": {
             "enabled": true,
-            "_representations": [],
-            "node_name_template": "{class_name}_{ext}",
             "options_defaults": {
                 "start_at_workfile": true,
                 "add_retime": true
-            }
+            },
+            "load_settings": [
+                {
+                    "_representations": [],
+                    "node_name_template": "{asset}_{subset}<_{unique_number}>",
+                    "knobs": []
+                }
+            ]
         },
         "renderLayerLoader": {
             "backdrop_name_template": "{asset_sequence}{asset_shot}_{subset_group}<_{unique_number}>"
@@ -574,7 +585,8 @@
                     "task_types": [""],
                     "families": [],
                     "templates": ["{parent}-{asset}<-{numbering}>"],
-                    "backdrop_color":[255, 0, 0]
+                    "backdrop_color":[255, 0, 0],
+                    "boolean": true
                 }
             ]
         },

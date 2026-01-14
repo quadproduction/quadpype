@@ -27,12 +27,12 @@ class ReassignMaterials(
             if obj.type != 'MESH':
                 continue
 
-            for mat in materials:
+            for i, mat in enumerate(reversed(materials)):
                 if not mat:
                     continue
                 if mat in obj.data.materials[:]:
                     continue
-                obj.data.materials.append(mat)
-                self.log.info(f"{mat.name} has been affected to {obj.name}.")
 
+                obj.material_slots[i].material = mat
+                self.log.info(f"{mat.name} has been affected to {obj.name}.")
         return

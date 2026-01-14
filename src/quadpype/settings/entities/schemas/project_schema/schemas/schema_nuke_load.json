@@ -5,12 +5,47 @@
     "label": "Loader plugins",
     "children": [
         {
-            "type": "schema_template",
-            "name": "template_loader_plugin_nuke",
-            "template_data": [
+            "key": "LoadImage",
+            "type": "dict",
+            "label": "Image Loader",
+            "collapsible": true,
+            "checkbox_key": "enabled",
+            "children": [
                 {
-                    "key": "LoadImage",
-                    "label": "Image Loader"
+                    "type": "boolean",
+                    "key": "enabled",
+                    "label": "Enabled"
+                },
+                {
+                    "key": "load_settings",
+                    "type": "list",
+                    "label": "Load Settings",
+                    "object_type": {
+                        "type": "dict",
+                        "children": [
+                            {
+                                "type": "list",
+                                "key": "_representations",
+                                "label": "Representations",
+                                "object_type": "text"
+                            },
+                            {
+                                "type": "text",
+                                "key": "node_name_template",
+                                "label": "Node name template"
+                            },
+                            {
+                                "type": "schema_template",
+                                "name": "template_nuke_knob_inputs",
+                                "template_data": [
+                                    {
+                                        "label": "Knobs",
+                                        "key": "knobs"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
                 }
             ]
         },
@@ -27,15 +62,35 @@
                     "label": "Enabled"
                 },
                 {
+                    "key": "load_settings",
                     "type": "list",
-                    "key": "_representations",
-                    "label": "Representations",
-                    "object_type": "text"
-                },
-                {
-                    "type": "text",
-                    "key": "node_name_template",
-                    "label": "Node name template"
+                    "label": "Load Settings",
+                    "object_type": {
+                        "type": "dict",
+                        "children": [
+                            {
+                                "type": "list",
+                                "key": "_representations",
+                                "label": "Representations",
+                                "object_type": "text"
+                            },
+                            {
+                                "type": "text",
+                                "key": "node_name_template",
+                                "label": "Node name template"
+                            },
+                            {
+                                "type": "schema_template",
+                                "name": "template_nuke_knob_inputs",
+                                "template_data": [
+                                    {
+                                        "label": "Knobs",
+                                        "key": "knobs"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
                 },
                 {
                     "type": "splitter"
@@ -136,6 +191,11 @@
                                         "key": "backdrop_color",
                                         "label": "Backdrop Color",
                                         "use_alpha": false
+                                    },
+                                    {
+                                        "key": "fill_backdrop",
+                                        "label": "Fill Backdrop Color",
+                                        "type": "boolean"
                                     }
                                 ]
                             }
@@ -166,6 +226,11 @@
                                         "label": "Color",
                                         "type": "color",
                                         "use_alpha": false
+                                    },
+                                    {
+                                        "key": "fill_backdrop",
+                                        "label": "Fill Backdrop Color",
+                                        "type": "boolean"
                                     },
                                     {
                                         "key": "default_size",
