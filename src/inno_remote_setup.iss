@@ -28,6 +28,7 @@ DisableProgramGroupPage=yes
 ; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
 ; on anything but x64 and Windows 11 on Arm.
 ArchitecturesAllowed=x64compatible
+
 ; "ArchitecturesInstallIn64BitMode=x64compatible" requests that the
 ; install be done in "64-bit mode" on x64 or Windows 11 on Arm,
 ; meaning it should use the native 64-bit Program Files directory and
@@ -38,8 +39,8 @@ OutputBaseFilename={#AppNameLower}-{#AppVer}-installer
 AllowCancelDuringInstall=yes
 ; Uncomment the following line to run in non admin install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-;PrivilegesRequired=admin
-PrivilegesRequiredOverridesAllowed=dialog
+PrivilegesRequired=admin
+;PrivilegesRequiredOverridesAllowed=dialog
 SetupIconFile=igniter\resources\icons\quadpype.ico
 UninstallDisplayIcon={uninstallexe}
 OutputDir=build\
@@ -97,13 +98,13 @@ var
   tvPaintCheckbox: TNewCheckBox;
 
   // Softwares configuration pages
-  AdobeAfterEffectsConfigPage: TInputFileWizardPage;
-  AdobePhotoshopConfigPage: TInputFileWizardPage;
-  MayaConfigPage: TInputFileWizardPage;
-  BlenderConfigPage: TInputFileWizardPage;
-  NukeConfigPage: TInputFileWizardPage;
-  HoudiniConfigPage: TInputFileWizardPage;
-  tvPaintConfigPage: TInputFileWizardPage;
+  AdobeAfterEffectsConfigPage: TInputDirWizardPage;
+  AdobePhotoshopConfigPage: TInputDirWizardPage;
+  MayaConfigPage: TInputDirWizardPage;
+  BlenderConfigPage: TInputDirWizardPage;
+  NukeConfigPage: TInputDirWizardPage;
+  HoudiniConfigPage: TInputDirWizardPage;
+  tvPaintConfigPage: TInputDirWizardPage;
 
   // Paths variables
   AdobeAfterEffectsPath: String;
@@ -341,102 +342,90 @@ begin
   // ===== CONFIG PAGES FOR EACH SOFTWARE =====
   // ==========================================
 
-  AdobeAfterEffectsConfigPage := CreateInputFilePage(
+  // Adobe After Effects Configuration Page
+  AdobeAfterEffectsConfigPage := CreateInputDirPage(
     SoftwareSelectionPage.ID,
-    'Adobe After Effects folder executable',
-    'Select executable file for Adobe After Effects',
-    'Click on next to continue.'
+    'Adobe After Effects folder directory',
+    'Select program folder for Adobe After Effects',
+    'Select Adobe After Effects directory where executable file is stored.' + #13#10 +
+    'Click next to continue.',
+    False, ''
   );
-  AdobeAfterEffectsConfigPage.Add(
-    'Application executable :',
-    'Executable files|*.exe|All files|*.*',
-    '.exe'
-  );
-  AdobeAfterEffectsConfigPage.Values[0] := ExpandConstant('{autopf}\Adobe\Adobe After Effects 2025\Support Files');
+  AdobeAfterEffectsConfigPage.Add('Program folder :');
+  AdobeAfterEffectsConfigPage.Values[0] := ExpandConstant('{autopf}');
 
-  // configuration page
-  AdobePhotoshopConfigPage := CreateInputFilePage(
+  // Adobe Photoshop Configuration Page
+  AdobePhotoshopConfigPage := CreateInputDirPage(
     AdobeAfterEffectsConfigPage.ID,
-    'Adobe Photoshop folder executable',
-    'Select executable file for Adobe Photoshop',
-    'Click on next to continue.'
+    'Adobe Photoshop folder directory',
+    'Select program folder for Adobe After Photoshop',
+    'Choisissez où stocker les fichiers de traitement de données.' + #13#10 +
+    'Cliquez sur Suivant pour continuer.',
+    False, ''
   );
-  AdobePhotoshopConfigPage.Add(
-    'Application executable :',
-    'Executable files|*.exe|All files|*.*',
-    '.exe'
-  );
-  AdobePhotoshopConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielB');
+  AdobePhotoshopConfigPage.Add('Program folder :');
+  AdobePhotoshopConfigPage.Values[0] := ExpandConstant('{autopf}');
 
   // Maya configuration page
-  MayaConfigPage := CreateInputFilePage(
+  MayaConfigPage := CreateInputDirPage(
     AdobePhotoshopConfigPage.ID,
-    'Autodesk Maya folder executable',
-    'Select executable file for Autodesk Maya',
-    'Click on next to continue.'
+    'Autodesk Maya folder directory',
+    'Select program folder for Autodesk Maya',
+    'Choisissez où stocker les fichiers de traitement de données.' + #13#10 +
+    'Cliquez sur Suivant pour continuer.',
+    False, ''
   );
-  MayaConfigPage.Add(
-    'Application executable :',
-    'Executable files|*.exe|All files|*.*',
-    '.exe'
-  );
-  MayaConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielC');
+  MayaConfigPage.Add('Program folder :');
+  MayaConfigPage.Values[0] := ExpandConstant('{autopf}');
 
   // Blender configuration page
-  BlenderConfigPage := CreateInputFilePage(
+  BlenderConfigPage := CreateInputDirPage(
     MayaConfigPage.ID,
-    'Blender folder executable',
-    'Select executable file for Blender',
-    'Click on next to continue.'
+    'Blender folder directory',
+    'Select program folder for Blender',
+    'Choisissez où stocker les fichiers de traitement de données.' + #13#10 +
+    'Cliquez sur Suivant pour continuer.',
+    False, ''
   );
-  BlenderConfigPage.Add(
-    'Application executable :',
-    'Executable files|*.exe|All files|*.*',
-    '.exe'
-  );
-  BlenderConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielD');
+  BlenderConfigPage.Add('Program folder :');
+  BlenderConfigPage.Values[0] := ExpandConstant('{autopf}');
 
   // Nuke configuration page
-  NukeConfigPage := CreateInputFilePage(
+  NukeConfigPage := CreateInputDirPage(
     BlenderConfigPage.ID,
-    'Foundry Nuke folder executable',
-    'Select executable file for Foundry Nuke',
-    'Click on next to continue.'
+    'Nuke folder directory',
+    'Select program folder for Nuke',
+    'Choisissez où stocker les fichiers de traitement de données.' + #13#10 +
+    'Cliquez sur Suivant pour continuer.',
+    False, ''
   );
-  NukeConfigPage.Add(
-    'Application executable :',
-    'Executable files|*.exe|All files|*.*',
-    '.exe'
-  );
-  NukeConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielD');
+  NukeConfigPage.Add('Program folder :');
+  NukeConfigPage.Values[0] := ExpandConstant('{autopf}');
 
   // Houdini configuration page
-  HoudiniConfigPage := CreateInputFilePage(
+  HoudiniConfigPage := CreateInputDirPage(
     NukeConfigPage.ID,
-    'SideFX Houdini folder executable',
-    'Select executable file for SideFX Houdini',
-    'Click on next to continue.'
+    'Houdini folder directory',
+    'Select program folder for Houdini',
+    'Choisissez où stocker les fichiers de traitement de données.' + #13#10 +
+    'Cliquez sur Suivant pour continuer.',
+    False, ''
   );
-  HoudiniConfigPage.Add(
-    'Application executable :',
-    'Executable files|*.exe|All files|*.*',
-    '.exe'
-  );
-  HoudiniConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielD');
+  HoudiniConfigPage.Add('Program folder :');
+  HoudiniConfigPage.Values[0] := ExpandConstant('{autopf}');
 
   // tvPaint configuration page
-  tvPaintConfigPage := CreateInputFilePage(
+    tvPaintConfigPage := CreateInputDirPage(
     HoudiniConfigPage.ID,
-    'tvPaint folder executable',
-    'Select executable file for tvPaint',
-    'Click on next to continue.'
+    'tvPaint folder directory',
+    'Select program folder for tvPaint',
+    'Choisissez où stocker les fichiers de traitement de données.' + #13#10 +
+    'Cliquez sur Suivant pour continuer.',
+    False, ''
   );
-  tvPaintConfigPage.Add(
-    'Application executable :',
-    'Executable files|*.exe|All files|*.*',
-    '.exe'
-  );
-  tvPaintConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielD');
+  tvPaintConfigPage.Add('Program folder :');
+  tvPaintConfigPage.Values[0] := ExpandConstant('{autopf}');
+
 end;
 
 // Control which page to display dependings of previous selections
@@ -477,6 +466,9 @@ end;
 
 // Validation des données saisies
 function NextButtonClick(CurPageID: Integer): Boolean;
+var
+  FindRec: TFindRec;
+
 begin
   Result := True;
 
@@ -500,65 +492,113 @@ begin
   // Validation des chemins (vérifier qu'ils ne sont pas vides)
   if CurPageID = AdobeAfterEffectsConfigPage.ID then
   begin
-    if not IsValidExecutable(AdobeAfterEffectsConfigPage.Values[0]) then
+    if Trim(AdobeAfterEffectsConfigPage.Values[0]) = '' then
     begin
-      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
+      MsgBox('You need to select a folder containing the correct executable file to continue.', mbError, MB_OK);
+      Result := False;
+    end;
+
+    if not FindFirst(AddBackslash(AdobeAfterEffectsConfigPage.Values[0]) + '*.exe', FindRec) then
+    begin
+      MsgBox('Folder should contains at least one executable file.', mbError, MB_OK);
       Result := False;
     end;
   end;
 
   if CurPageID = AdobePhotoshopConfigPage.ID then
   begin
-    if not IsValidExecutable(AdobePhotoshopConfigPage.Values[0]) then
+    if Trim(AdobePhotoshopConfigPage.Values[0]) = '' then
     begin
-      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
+      MsgBox('You need to select a folder containing the correct executable file to continue.', mbError, MB_OK);
       Result := False;
     end;
+
+    if not FindFirst(AddBackslash(AdobePhotoshopConfigPage.Values[0]) + '*.exe', FindRec) then
+    begin
+      MsgBox('Folder should contains at least one executable file.', mbError, MB_OK);
+      Result := False;
+    end;
+
   end;
 
   if CurPageID = MayaConfigPage.ID then
   begin
-    if not IsValidExecutable(MayaConfigPage.Values[0]) then
+    if Trim(MayaConfigPage.Values[0]) = '' then
     begin
-      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
+      MsgBox('You need to select a folder containing the correct executable file to continue.', mbError, MB_OK);
       Result := False;
     end;
+
+    if not FindFirst(AddBackslash(MayaConfigPage.Values[0]) + '*.exe', FindRec) then
+    begin
+      MsgBox('Folder should contains at least one executable file.', mbError, MB_OK);
+      Result := False;
+    end;
+
   end;
 
   if CurPageID = BlenderConfigPage.ID then
   begin
-    if not IsValidExecutable(BlenderConfigPage.Values[0]) then
+    if Trim(BlenderConfigPage.Values[0]) = '' then
     begin
-      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
+      MsgBox('You need to select a folder containing the correct executable file to continue.', mbError, MB_OK);
       Result := False;
     end;
+
+    if not FindFirst(AddBackslash(BlenderConfigPage.Values[0]) + '*.exe', FindRec) then
+    begin
+      MsgBox('Folder should contains at least one executable file.', mbError, MB_OK);
+      Result := False;
+    end;
+
   end;
 
   if CurPageID = NukeConfigPage.ID then
   begin
-    if not IsValidExecutable(NukeConfigPage.Values[0]) then
+    if Trim(NukeConfigPage.Values[0]) = '' then
     begin
-      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
+      MsgBox('You need to select a folder containing the correct executable file to continue.', mbError, MB_OK);
       Result := False;
     end;
+
+    if not FindFirst(AddBackslash(NukeConfigPage.Values[0]) + '*.exe', FindRec) then
+    begin
+      MsgBox('Folder should contains at least one executable file.', mbError, MB_OK);
+      Result := False;
+    end;
+
   end;
 
   if CurPageID = HoudiniConfigPage.ID then
   begin
-    if not IsValidExecutable(HoudiniConfigPage.Values[0]) then
+    if Trim(HoudiniConfigPage.Values[0]) = '' then
     begin
-      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
+      MsgBox('You need to select a folder containing the correct executable file to continue.', mbError, MB_OK);
       Result := False;
     end;
+
+    if not FindFirst(AddBackslash(HoudiniConfigPage.Values[0]) + '*.exe', FindRec) then
+    begin
+      MsgBox('Folder should contains at least one executable file.', mbError, MB_OK);
+      Result := False;
+    end;
+
   end;
 
   if CurPageID = tvPaintConfigPage.ID then
   begin
-    if not IsValidExecutable(tvPaintConfigPage.Values[0]) then
+    if Trim(tvPaintConfigPage.Values[0]) = '' then
     begin
-      MsgBox('An executable file needs to be selected to continue.', mbError, MB_OK);
+      MsgBox('You need to select a folder containing the correct executable file to continue.', mbError, MB_OK);
       Result := False;
     end;
+
+    if not FindFirst(AddBackslash(tvPaintConfigPage.Values[0]) + '*.exe', FindRec) then
+    begin
+      MsgBox('Folder should contains at least one executable file.', mbError, MB_OK);
+      Result := False;
+    end;
+
   end;
 end;
 
@@ -574,7 +614,7 @@ begin
     LineCount := 0;
     SetArrayLength(ConfigLines, 10);
 
-    ConfigLines[LineCount] := '[Logiciels]';
+    ConfigLines[LineCount] := '[applications]';
     LineCount := LineCount + 1;
 
     // Adobe After Effects
@@ -639,6 +679,10 @@ begin
       LineCount := LineCount + 1;
 
     end;
+
+    ConfigLines[LineCount] := '[addons]';
+    LineCount := LineCount + 1;
+    ConfigLines[LineCount] := 'enabled=false';
 
     // Sauvegarder le fichier de configuration
     ConfigFile := ExpandConstant('{app}\overrided_user_settings.ini');
