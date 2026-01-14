@@ -24,6 +24,22 @@ CategoryOrder=0
 Default=C:\Program Files\Blender Foundation\Blender\blender.exe;C:\Program Files (x86)\Blender Foundation\Blender\blender.exe;/Applications/Blender/blender.app/Contents/MacOS/blender;/usr/local/Blender/blender
 Description=The path to the Blender executable file used for rendering. Enter alternative paths on separate lines.
 
+[Blender_5.0_RenderExecutable]
+Type=multilinemultifilename
+Label=Blender 5.0 Executable
+Category=Render Executables
+CategoryOrder=0
+Default=C:\Program Files\Blender Foundation\Blender 5.0\blender.exe;C:\Program Files (x86)\Blender Foundation\Blender 5.0\blender.exe;/Applications/Blender 5.0/blender.app/Contents/MacOS/blender;/usr/local/Blender 5.0/blender
+Description=The path to the Blender executable file used for rendering. Enter alternative paths on separate lines.
+
+[Blender_4.0_RenderExecutable]
+Type=multilinemultifilename
+Label=Blender 4.0 Executable
+Category=Render Executables
+CategoryOrder=0
+Default=C:\Program Files\Blender Foundation\Blender 4.0\blender.exe;C:\Program Files (x86)\Blender Foundation\Blender 4.0\blender.exe;/Applications/Blender 4.0/blender.app/Contents/MacOS/blender;/usr/local/Blender 4.0/blender
+Description=The path to the Blender executable file used for rendering. Enter alternative paths on separate lines.
+
 [Blender_ScriptsFolder]
 Type=folder
 Label=Blender Scripts Folder

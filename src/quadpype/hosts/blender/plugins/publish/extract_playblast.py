@@ -5,9 +5,18 @@ import bpy
 
 import pyblish.api
 from quadpype.settings import PROJECT_SETTINGS_KEY
+from quadpype.pipeline.settings import RES_SEPARATOR
 
 from quadpype.hosts.blender.api import capture, plugin
 from quadpype.hosts.blender.api.lib import maintained_time, get_viewport_shading
+
+
+def parse_resolution(resolution):
+    try:
+        width, height = resolution.split("x")
+        return int(width), int(height)
+    except (ValueError, AttributeError):
+        return None, None
 
 
 class ExtractPlayblast(
@@ -49,6 +58,9 @@ class ExtractPlayblast(
         self.log.info(f"start: {start}, end: {end}")
         assert end >= start, "Invalid time range!"
 
+        resolution = creator_attributes.get('resolution', None)
+        width, height = parse_resolution(resolution)
+
         render_view_type = creator_attributes.get('render_view', None)
         shader_mode = creator_attributes.get('shader_mode', "MATERIAL")
         render_overlay = creator_attributes.get('render_overlay', False)
@@ -85,6 +97,8 @@ class ExtractPlayblast(
         preset = presets.get("default")
         preset.update({
             "camera": camera,
+            "width": width,
+            "height": height,
             "start_frame": start,
             "end_frame": end,
             "filename": path,

@@ -25,6 +25,7 @@ from quadpype.hosts.nuke.api.lib import (
     get_layers,
     compare_layers,
     get_unique_name_and_number,
+    set_node_knobs_from_settings,
     PREP_LAYER_PSD_EXT,
     PREP_LAYER_EXR_EXT
 )
@@ -79,7 +80,7 @@ class LoadImage(plugin.NukeLoader):
     defaults = {
         "prep_layers": True,
         "create_stamps": True,
-        "pre_comp": True,
+        "pre_comp": False,
         "frame_number":{
             "minimum":0,
             "maximum":99999,
@@ -128,6 +129,8 @@ class LoadImage(plugin.NukeLoader):
         ext = context["representation"]["context"]["ext"].lower()
         pre_comp = options.get("pre_comp", self.defaults["pre_comp"])
 
+        self.get_load_settings(ext)
+
         if ext in PREP_LAYER_EXR_EXT:
             pre_comp = False
         if not options:
@@ -139,6 +142,7 @@ class LoadImage(plugin.NukeLoader):
         options["pre_comp"] = pre_comp
         options["is_prep_layer_compatible"] = ext in (set(PREP_LAYER_PSD_EXT) | set(PREP_LAYER_EXR_EXT))
         options["ext"] = ext
+        options["subset_group"] = context["subset"]["data"].get("subsetGroup", False)
 
         version = context['version']
         version_data = version.get("data", {})
@@ -236,11 +240,13 @@ class LoadImage(plugin.NukeLoader):
             if use_backdrop:
                 try:
                     nodes_before = list(nuke.allNodes())
-                    main_backdrop, storage_backdrop, nodes = organize_by_backdrop(data=context,
-                                                                           node=r,
-                                                                           nodes_in_main_backdrops=nodes_in_main_backdrops,
-                                                                           options=options,
-                                                                           unique_number=unique_number)
+                    main_backdrop, storage_backdrop, subset_group, nodes = organize_by_backdrop(
+                        data=context,
+                        node=r,
+                        nodes_in_main_backdrops=nodes_in_main_backdrops,
+                        options=options,
+                        unique_number=unique_number
+                    )
 
                 except TemplateProfileNotFound:
                     for n in nuke.allNodes():
@@ -249,6 +255,9 @@ class LoadImage(plugin.NukeLoader):
                     nuke.delete(r)
                     raise Exception(f"No template found in loader for "
                                     f"{context['representation']['context']['task']['name']}")
+
+            if subset_group:
+                data_imprint["subset_group"] = subset_group
 
             if storage_backdrop:
                 data_imprint["storage_backdrop"] = storage_backdrop['name'].value()
@@ -270,7 +279,7 @@ class LoadImage(plugin.NukeLoader):
             else:
                 color_value = COLOR_RED
             r["tile_color"].setValue(int(color_value, 16))
-
+            set_node_knobs_from_settings(r, self.knobs)
             return containerise(r,
                                 name=name,
                                 namespace=namespace,

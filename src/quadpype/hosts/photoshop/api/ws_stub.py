@@ -48,7 +48,7 @@ class PhotoshopServerStub:
         is opened).
         'self.websocketserver.call' is used as async wrapper
     """
-    PUBLISH_ICON = '\u2117 '
+    PUBLISH_ICON = '\u2117_'
     LOADED_ICON = '\u25bc'
 
     def __init__(self):
@@ -187,6 +187,68 @@ class PhotoshopServerStub:
         self.websocketserver.call(
             self.client.call('Photoshop.imprint', payload=payload)
         )
+
+    def are_layers_empty_by_ids(self, layer_ids):
+        res = self.websocketserver.call(
+            self.client.call('Photoshop.are_layers_empty_by_ids',
+                             layer_ids=json.dumps(layer_ids)
+                             )
+        )
+        dict_res =  json.loads(res)
+        filtered = {int(k): v for k, v in dict_res.items() if v}
+        return  filtered
+
+    def add_placeholder(self, name, text_size, r, g, b):
+        """
+            Adds new text layer as a placeholder for workfile builder
+            Args:
+                name (str)
+                text_size (int)
+                r (int)
+                g (int)
+                b (int)
+
+        """
+        res = self.websocketserver.call(self.client.call
+                                  ('Photoshop.add_placeholder',
+                                   name=name,
+                                   text_size=text_size,
+                                   r=r,
+                                   g=g,
+                                   b=b
+                                   )
+                                  )
+        return self._to_records(res)[0]
+
+    def set_layer_text(self, layer_id, text):
+        self.websocketserver.call(self.client.call
+                                  ('Photoshop.set_layer_text',
+                                   layer_id=layer_id,
+                                   text=text
+                                   )
+                                  )
+
+    def move_layer_to_text_position(self, text_layer_id, layer_id):
+        self.websocketserver.call(self.client.call
+                                  ('Photoshop.move_layer_to_text_position',
+                                   text_layer_id=text_layer_id,
+                                   layer_id=layer_id
+                                   )
+                                  )
+
+    def scale_layer_by_id(self, layer_id, scale):
+        self.websocketserver.call(self.client.call
+                                  ('Photoshop.scale_layer_by_id',
+                                   layer_id=layer_id,
+                                   scale=scale
+                                   )
+                                  )
+
+    def print_msg(self, msg):
+        """Triggers Javascript alert dialog."""
+        self.websocketserver.call(self.client.call
+                                  ('Photoshop.print_msg',
+                                   msg=msg))
 
     def get_layers(self):
         """Returns JSON document with all(?) layers in active document.

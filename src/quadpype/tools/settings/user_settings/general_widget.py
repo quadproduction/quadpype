@@ -33,7 +33,7 @@ class LocalGeneralWidgets(QtWidgets.QWidget):
 
         username = ""
         windows_can_stay_on_top = True
-        enable_auto_clic_scripts = False
+        enable_auto_clic_scripts = True
         register_sync_results = False
 
         if value:

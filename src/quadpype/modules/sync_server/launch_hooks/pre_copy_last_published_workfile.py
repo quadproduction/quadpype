@@ -13,6 +13,7 @@ from quadpype.pipeline.template_data import get_template_data
 from quadpype.pipeline.workfile.path_resolving import (
     get_workfile_template_key,
 )
+from quadpype.pipeline import HOST_WORKFILE_EXTENSIONS
 from quadpype.settings import get_project_settings, PROJECT_SETTINGS_KEY
 from quadpype.pipeline.publish.lib import get_last_publish_workfile_representation
 from quadpype.widgets.message_window import Window
@@ -131,13 +132,19 @@ class CopyLastPublishedWorkfile(PreLaunchHook):
         else:
             version_index = workfile_version
 
-        # Get workfile version
-        workfile_representation = get_last_publish_workfile_representation(
-            project_name,
-            context_filters,
-            version_index
-        )
+        workfile_representation = None
+        extensions = HOST_WORKFILE_EXTENSIONS.get(host_name, [])
 
+        for ext in extensions:
+            context_filters["ext"] = ext.lstrip(".")
+            # Get workfile version
+            workfile_representation = get_last_publish_workfile_representation(
+                project_name,
+                context_filters,
+                version_index
+            )
+            if workfile_representation:
+                break
 
         if not workfile_representation:
             return
@@ -149,16 +156,17 @@ class CopyLastPublishedWorkfile(PreLaunchHook):
         msg = (
             f"No workfiles were found for {self.data['asset_name']} on Task {self.data['task_name']}\n\n"
             f"But a published one was found and will be used as a based to work!\n\n"
-            f"If you are remote:\nThe download will start after clicking on OK\n"
+            f"If you are remote:\nThe download will start after clicking on Yes\n"
             f"(Make sure your VPN is active if you are remote)"
         )
 
-        Window(
-            title="No WF found, but Published WF found !",
-            message=msg,
-            parent=parents.get("LauncherWindow"),
-            level="info"
-        )
+        ask_window = Window(title="No WF found, but Published WF found !",
+                            message=msg,
+                            parent=parents.get("LauncherWindow"),
+                            level="ask")
+
+        if not ask_window.answer:
+            return
 
         # Copy file and substitute path
         last_published_workfile_path = download_last_published_workfile(

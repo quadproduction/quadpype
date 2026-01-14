@@ -28,6 +28,7 @@ from quadpype.hosts.nuke.api.lib import (
     get_layers,
     compare_layers,
     get_unique_name_and_number,
+    set_node_knobs_from_settings,
     PREP_LAYER_PSD_EXT,
     PREP_LAYER_EXR_EXT
 )
@@ -91,7 +92,7 @@ class LoadClip(plugin.NukeLoader):
         "add_retime": True,
         "prep_layers": True,
         "create_stamps": True,
-        "pre_comp": True
+        "pre_comp": False
     }
 
     @classmethod
@@ -159,6 +160,8 @@ class LoadClip(plugin.NukeLoader):
         ext = context["representation"]["context"]["ext"].lower()
         pre_comp = options.get("pre_comp", self.defaults["pre_comp"])
 
+        self.get_load_settings(ext)
+
         if ext in PREP_LAYER_EXR_EXT:
             pre_comp = False
         if not options:
@@ -171,6 +174,7 @@ class LoadClip(plugin.NukeLoader):
         options["pre_comp"] = pre_comp
         options["is_prep_layer_compatible"] = ext in (set(PREP_LAYER_PSD_EXT) | set(PREP_LAYER_EXR_EXT))
         options["ext"] = ext
+        options["subset_group"] = context["subset"]["data"].get("subsetGroup")
 
         version = context['version']
         version_data = version.get("data", {})
@@ -275,11 +279,13 @@ class LoadClip(plugin.NukeLoader):
             if use_backdrop:
                 try:
                     nodes_before = list(nuke.allNodes())
-                    main_backdrop, storage_backdrop, nodes = organize_by_backdrop(data=context,
-                                                                            node=read_node,
-                                                                            nodes_in_main_backdrops=nodes_in_main_backdrops,
-                                                                            options=options,
-                                                                            unique_number=unique_number)
+                    main_backdrop, storage_backdrop, subset_group, nodes = organize_by_backdrop(
+                        data=context,
+                        node=read_node,
+                        nodes_in_main_backdrops=nodes_in_main_backdrops,
+                        options=options,
+                        unique_number=unique_number
+                    )
                 except TemplateProfileNotFound:
                     for n in nuke.allNodes():
                         if n not in nodes_before:
@@ -290,6 +296,9 @@ class LoadClip(plugin.NukeLoader):
 
             if add_retime and version_data.get("retime", None):
                 self._make_retimes(read_node, version_data)
+
+            if subset_group:
+                data_imprint["subset_group"] = subset_group
 
             if storage_backdrop:
                 data_imprint["storage_backdrop"] = storage_backdrop['name'].value()
@@ -305,7 +314,18 @@ class LoadClip(plugin.NukeLoader):
             self.log.info("__ unique_number: `{}`".format(unique_number))
             data_imprint["unique_number"] = unique_number
 
-            container = containerise(
+
+
+            # change color of node
+            if version_doc["_id"] == last_version_doc["_id"]:
+                color_value = COLOR_GREEN
+            else:
+                color_value = COLOR_RED
+            read_node["tile_color"].setValue(int(color_value, 16))
+
+            set_node_knobs_from_settings(read_node, self.knobs)
+
+            return containerise(
                 read_node,
                 name=name,
                 namespace=namespace,
@@ -313,14 +333,6 @@ class LoadClip(plugin.NukeLoader):
                 loader=self.__class__.__name__,
                 data=data_imprint)
 
-        # change color of node
-        if version_doc["_id"] == last_version_doc["_id"]:
-            color_value = COLOR_GREEN
-        else:
-            color_value = COLOR_RED
-        read_node["tile_color"].setValue(int(color_value, 16))
-
-        return container
 
     def switch(self, container, representation):
         self.update(container, representation)

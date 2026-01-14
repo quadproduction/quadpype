@@ -28,6 +28,8 @@ from . import pipeline
 
 log = Logger.get_logger(__name__)
 
+BLENDER_MAJOR_VERSION = bpy.app.version[0]
+
 
 def load_scripts(paths):
     """Copy of `load_scripts` from Blender's implementation.
@@ -321,6 +323,8 @@ def map_to_classes_and_names(blender_objects):
     rna_to_bpy_data = get_object_types_correspondance()
 
     for blender_object in blender_objects:
+        if not isinstance(blender_object, bpy.types.ID):
+            continue
         object_data_name = rna_to_bpy_data[blender_object.bl_rna.identifier]
         if not mapped_values.get(object_data_name):
             mapped_values[object_data_name] = list()
@@ -974,14 +978,33 @@ def purge_orphans(is_recursive):
         for item in list(data_collection):
             if item.users == 0:
                 try:
+                    print(f"Deleting {item.name} for data collection {data_type}")
                     bpy.data.batch_remove([item])
                 except Exception as e:
                     print(f"Impossible to Delete {item.name} : {e}")
 
-
     if is_recursive:
         purge_orphans(is_recursive=False)
 
+    purge_library()
+
+def purge_library():
+    data_types = [attr for attr in dir(bpy.data) if
+                  isinstance(getattr(bpy.data, attr), bpy.types.bpy_prop_collection)]
+    for lib in bpy.data.libraries[:]:
+        used = False
+        for data_type in data_types:
+            data_collection = getattr(bpy.data, data_type)
+            for datablock in list(data_collection):
+                if getattr(datablock, "override_library", None):
+                    base = getattr(datablock, "id_original", datablock)
+                else:
+                    base = datablock
+                if base.library == lib:
+                    used = True
+
+        if not used:
+            bpy.data.libraries.remove(lib)
 
 def get_asset_children(asset):
     return list(asset.objects) if isinstance(asset, bpy.types.Collection) else list(asset.children)
@@ -1005,6 +1028,7 @@ def is_camera(obj):
 def is_collection(obj):
     return isinstance(obj, bpy.types.Collection)
 
+
 def get_value_safe(v):
     """Convert values to JSON friendly attributes"""
     if isinstance(v, (Vector, Euler, Quaternion, Color)):
@@ -1014,6 +1038,7 @@ def get_value_safe(v):
     elif isinstance(v, (list, tuple)):
         return [get_value_safe(x) for x in v]
     return str(v)
+
 
 def rsetattr(obj, attr, val):
     pre, _, post = attr.rpartition('.')
@@ -1028,10 +1053,12 @@ def rsetattr(obj, attr, val):
     else:
         setattr(target, post, val)
 
+
 def rgetattr(obj, attr, *args):
     def _getattr(obj, attr):
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
+
 
 def rhasattr(obj, attr):
     def _hasattr(obj, attr):
@@ -1040,6 +1067,7 @@ def rhasattr(obj, attr):
         return getattr(obj, attr)
     result = functools.reduce(_hasattr, [obj] + attr.split('.'))
     return result is not None
+
 
 def get_properties_on_object(obj, frame=1):
     """Get the properties value on an object based on list of properties from setting.
@@ -1081,7 +1109,6 @@ def get_properties_on_object(obj, frame=1):
         pb_data[SNAPSHOT_CUSTOM_PROPERTIES] = {k: get_value_safe(v) for k, v in pb.items() if k != "_RNA_UI"}
         pose_data[pb.name] = pb_data
     data[SNAPSHOT_POSE_BONE] = pose_data
-
     return data
 
 
@@ -1105,7 +1132,10 @@ def set_properties_on_object(obj, data, frame=1):
 
     # Custom properties
     for k, v in data.get(SNAPSHOT_CUSTOM_PROPERTIES, {}).items():
-        obj[k] = v
+        try:
+            obj[k] = v
+        except:
+            log.warning(f"Custom property {k} not set, because of type {type(obj[k])}")
 
     if not obj.type == "ARMATURE" and SNAPSHOT_POSE_BONE not in data:
         return
@@ -1136,6 +1166,8 @@ def restore_properties_on_instance(instance_obj, corresponding_instance):
         if not data:
             continue
         set_properties_on_object(obj, data)
+
+
 def get_containers_from_selected():
     containers = set()
     all_selected = set(get_selection())
@@ -1151,6 +1183,7 @@ def get_containers_from_selected():
 
     return list(containers)
 
+
 def get_viewport_shading():
     try:
         window = bpy.data.window_managers[0].windows[0]
@@ -1158,3 +1191,180 @@ def get_viewport_shading():
         return area.spaces[0].shading.type
     except StopIteration:
         return
+
+def copy_materials(src, dst):
+    if getattr(src, "data", None) is None or getattr(dst, "data", None) is None:
+        return
+    for i, slot in enumerate(src.material_slots):
+        if not src.material_slots[i].material:
+            continue
+        dst.material_slots[i].material = src.material_slots[i].material
+
+
+def copy_modifiers(src, dst, obj_map):
+    if not hasattr(src, "modifiers") or not hasattr(dst, "modifiers"):
+        return
+    for mod in src.modifiers:
+        new = dst.modifiers.new(mod.name, mod.type)
+        for prop in dir(mod):
+            if prop.startswith("_"):
+                continue
+            try:
+                val = getattr(mod, prop)
+                if isinstance(val, bpy.types.Object) and val in obj_map:
+                    val = obj_map[val]
+                setattr(new, prop, val)
+            except:
+                pass
+
+
+def copy_constraints(src, dst, obj_map):
+    if not hasattr(src, "constraints") or not hasattr(dst, "constraints"):
+        return
+    for con in src.constraints:
+        new = dst.constraints.new(con.type)
+        new.name = con.name
+        for prop in dir(con):
+            if prop.startswith("_"):
+                continue
+            try:
+                val = getattr(con, prop)
+                if isinstance(val, bpy.types.Object) and val in obj_map:
+                    val = obj_map[val]
+                setattr(new, prop, val)
+            except:
+                pass
+
+
+def copy_actions(old_obj, new_obj):
+    if not old_obj.animation_data or not old_obj.animation_data.action:
+        return
+    action = old_obj.animation_data.action
+    if not new_obj.animation_data:
+        new_obj.animation_data_create()
+
+    new_obj.animation_data.action = action
+
+    action_slot = getattr(old_obj.animation_data, "action_slot")
+    if action_slot:
+        new_obj.animation_data.action_slot = action_slot
+
+
+def copy_parents(src, dst):
+    if not hasattr(src, "parent") or not hasattr(dst, "parent"):
+        return
+    dst.parent = src.parent
+    dst.parent_type = src.parent_type
+    dst.matrix_parent_inverse = src.matrix_parent_inverse
+    if not hasattr(src, "parent_bone") or not hasattr(dst, "parent_bone"):
+        return
+    dst.parent_bone = src.parent_bone
+
+
+def copy_shape_key(src_mesh, dst_mesh):
+    if len(src_mesh.vertices) != len(dst_mesh.vertices):
+        print(f"Skipping vertex groups: vertex count mismatch for {src_mesh.name} -> {dst_mesh.name}")
+        return
+
+    if src_mesh.shape_keys:
+        if not dst_mesh.shape_keys:
+            dst_mesh.shape_keys_clear()
+
+        for sk in src_mesh.shape_keys.key_blocks:
+            if sk.name == "Basis":
+                continue
+            new_sk = dst_mesh.shape_keys.key_blocks.get(sk.name)
+            if not new_sk:
+                dst_mesh.shape_keys.key_blocks.new(name=sk.name)
+
+            for i, v in enumerate(sk.data):
+                dst_mesh.shape_keys.key_blocks[sk.name].data[i].co = v.co.copy()
+
+
+def copy_uv_maps(src_mesh, dst_mesh):
+    if len(src_mesh.vertices) != len(dst_mesh.vertices):
+        print(f"Skipping vertex groups: vertex count mismatch for {src_mesh.name} -> {dst_mesh.name}")
+        return
+
+    for uv_layer in src_mesh.uv_layers:
+        if uv_layer.name not in dst_mesh.uv_layers:
+            dst_mesh.uv_layers.new(name=uv_layer.name)
+        dst_layer = dst_mesh.uv_layers[uv_layer.name]
+        for i, uv in enumerate(uv_layer.data):
+            dst_layer.data[i].uv = uv.uv.copy()
+
+
+def copy_vertex_color(src_mesh, dst_mesh):
+    if len(src_mesh.vertices) != len(dst_mesh.vertices):
+        print(f"Skipping vertex groups: vertex count mismatch for {src_mesh.name} -> {dst_mesh.name}")
+        return
+
+    for vcol in src_mesh.color_attributes:
+        if vcol.name not in dst_mesh.color_attributes:
+            dst_mesh.color_attributes.new(name=vcol.name, type=vcol.data_type, domain=vcol.domain)
+        dst_layer = dst_mesh.color_attributes[vcol.name]
+        for i, col in enumerate(vcol.data):
+            dst_layer.data[i].color = col.color.copy()
+
+
+def copy_vertex_groups(old_obj, new_obj):
+    if len(old_obj.data.vertices) != len(new_obj.data.vertices):
+        print(f"Skipping vertex groups: vertex count mismatch for {old_obj.name} -> {new_obj.name}")
+        return
+
+    new_obj.vertex_groups.clear()
+
+    for vg in old_obj.vertex_groups:
+        new_vg = new_obj.vertex_groups.new(name=vg.name)
+        for i, v in enumerate(old_obj.data.vertices):
+            for g in v.groups:
+                if old_obj.vertex_groups[g.group].name == vg.name:
+                    new_vg.add([i], g.weight, 'REPLACE')
+
+
+def remap_blocks(mapping):
+    for old, new in mapping.items():
+        if not  hasattr(old, "user_remap"):
+            continue
+        old.user_remap(new)
+
+
+def get_node_tree(scene=None):
+    if not scene:
+        scene = bpy.context.scene
+
+    # Support for Blender version >= 5
+    try:
+        return scene.compositing_node_group
+
+    except AttributeError:
+        return scene.node_tree
+
+
+def create_and_get_node_tree(scene=None):
+    if not scene:
+        scene = bpy.context.scene
+
+    log.info("Creating or retrieving new tree for Compositor")
+
+    if BLENDER_MAJOR_VERSION < 5:
+        scene.use_nodes = True
+        return get_node_tree(scene=scene)
+
+    new_comp_name = "QuadPype Render Node Tree"
+    new_tree_name = "CompositorNodeTree"
+
+    tree = bpy.data.node_groups.new(new_comp_name, new_tree_name)
+    scene.compositing_node_group = tree
+
+    return tree
+
+
+def get_library_from_path(path):
+    path_norm = os.path.normpath(path)
+    for lib in bpy.data.libraries:
+        lib_path = os.path.normpath(bpy.path.abspath(lib.filepath))
+
+        if lib_path == path_norm:
+            return lib
+    return None

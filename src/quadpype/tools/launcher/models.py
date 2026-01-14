@@ -694,19 +694,6 @@ class LauncherModel(QtCore.QObject):
         workfile_db = WorkFileCache()
         if not workfile_db.workfilde_db_exists(project_name=self._last_project_name):
             workfile_db.init_workfile_db(project_name=self._last_project_name)
-            for doc in asset_docs:
-                for task in doc.get("data").get("tasks").keys():
-                    workfile_dir = get_workdir_from_session({
-                        "AVALON_PROJECT":self._last_project_name,
-                        "AVALON_TASK": task,
-                        "AVALON_ASSET": doc.get("name")
-                    })
-                    workfile_db.add_task_folder(
-                        self._last_project_name,
-                        task,
-                        doc.get("name"),
-                        workfile_dir
-                    )
             print("Workfile cache created")
 
         if not self._refreshing_assets:
