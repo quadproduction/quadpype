@@ -229,6 +229,21 @@
                     {
                         "type": "sync-server-providers"
                     }
+                },
+                {
+                    "type": "text",
+                    "key": "retry_cnt",
+                    "label": "Retry Count"
+                },
+                {
+                    "type": "text",
+                    "key": "loop_delay",
+                    "label": "Loop Delay"
+                },
+                {
+                    "type": "number",
+                    "key": "force_sync_loops",
+                    "label": "Force sync loops number"
                 }
             ]
         },
