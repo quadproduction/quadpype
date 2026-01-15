@@ -67,6 +67,11 @@ class ProviderFactory:
         info = self._get_creator_info(provider)
         return info[1]
 
+    def set_provider_batch_limit(self, provider, batch_limit, creator=None):
+        if not creator:
+            creator = self.providers[provider][0]
+        self.register_provider(provider, creator, batch_limit)
+
     def get_provider_configurable_items(self, provider):
         """
             Returns dict of modifiable properties for 'provider'.

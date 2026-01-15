@@ -14,6 +14,7 @@ from quadpype.client import (
     get_projects,
     get_representations,
     get_representation_by_id,
+    QuadPypeMongoConnection
 )
 from quadpype.modules import (
     QuadPypeModule,
@@ -1217,6 +1218,9 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
         return enabled_projects
 
+    def projects_last_sync(self):
+        """Returns list of projects last_sync_times from collection 'projects_updates_logs'."""
+
     def is_project_enabled(self, project_name, single=False):
         """Checks if 'project_name' is enabled for syncing.
         'get_sync_project_setting' is potentially expensive operation (pulls
@@ -1284,6 +1288,38 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             self._add_site(project_name,
                            representation, elem,
                            alt_site, file_id=file_id, force=True)
+
+    def get_projects_last_updates(self, projects_names):
+        """ Get last update timestamp for each project from database
+        Args:
+            projects_names (list[str]): list of projects names
+
+        Returns:
+            dict: each project name with his corresponding last update timestamp
+        """
+        database = QuadPypeMongoConnection.get_mongo_client()[os.environ["QUADPYPE_DATABASE_NAME"]]
+        query = [
+            {
+                "$match":
+                {
+                    "project_name": {"$in": projects_names}
+                }
+            }
+        ]
+        return {
+            result["project_name"]: result["timestamp"]
+            for result in list(database['projects_updates_logs'].aggregate(query))
+        }
+
+    def register_loop_log(self, log_data):
+        """ Register loop log for specific user in specific collection 'loops_logs'.
+        Used to debug mongoDB latency. Need to be activated for each user to monitor.
+
+        Args:
+            log_data (dict): log representation
+        """
+        database = QuadPypeMongoConnection.get_mongo_client()[os.environ["QUADPYPE_DATABASE_NAME"]]
+        database['sync_loops_logs'].insert_one(log_data)
 
     def get_repre_info_for_versions(self, project_name, version_ids,
                                     active_site, remote_site):
@@ -1371,7 +1407,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                 'avail_repre_remote': {'$sum': "$avail_ratio_remote"},
             }},
         ]
-        # docs = list(self.connection.aggregate(query))
+
         return self.connection.aggregate(query)
 
     """ End of Public API """
@@ -1705,93 +1741,108 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         self.log.debug("Check representations for : {}".format(project_name))
         self.connection.Session["AVALON_PROJECT"] = project_name
         # retry_cnt - number of attempts to sync specific file before giving up
-        retries_arr = self._get_retries_arr(project_name)
+        retries_arr = self._get_retries_arr()
+
         match = {
             "type": "representation",
             "$or": [
                 {"$and": [
-                    {
-                        "files.sites": {
-                            "$elemMatch": {
-                                "name": active_site,
-                                "created_dt": {"$exists": True}
-                            }
-                        }}, {
-                        "files.sites": {
-                            "$elemMatch": {
-                                "name": {"$in": [remote_site]},
-                                "created_dt": {"$exists": False},
-                                "tries": {"$in": retries_arr},
-                                "paused": {"$exists": False}
-                            }
-                        }
-                    }]},
+                    {"files.sites": {
+                        "$elemMatch": {
+                            "name": active_site,
+                            "created_dt": {"$exists": True}
+                        }}},
+                    {"files.sites": {
+                        "$elemMatch": {
+                            "name": {"$in": [remote_site]},
+                            "created_dt": {"$exists": False},
+                            "tries": {"$in": retries_arr},
+                            "paused": {"$exists": False}
+                        }}}
+                ]},
                 {"$and": [
-                    {
-                        "files.sites": {
-                            "$elemMatch": {
-                                "name": active_site,
-                                "created_dt": {"$exists": False},
-                                "tries": {"$in": retries_arr},
-                                "paused": {"$exists": False}
-                            }
-                        }}, {
-                        "files.sites": {
-                            "$elemMatch": {
-                                "name": {"$in": [remote_site]},
-                                "created_dt": {"$exists": True}
-                            }
-                        }
-                    }
+                    {"files.sites": {
+                        "$elemMatch": {
+                            "name": active_site,
+                            "created_dt": {"$exists": False},
+                            "tries": {"$in": retries_arr},
+                            "paused": {"$exists": False}
+                        }}},
+                    {"files.sites": {
+                        "$elemMatch": {
+                            "name": {"$in": [remote_site]},
+                            "created_dt": {"$exists": True}
+                        }}}
                 ]}
             ]
         }
 
         aggr = [
             {"$match": match},
+
+            {"$project": {
+                "context": 1,
+                "data": 1,
+                "files": 1
+            }},
+
             {'$unwind': '$files'},
+
             {'$addFields': {
-                'order_remote': {
-                    '$filter': {'input': '$files.sites', 'as': 'p',
-                                'cond': {'$eq': ['$$p.name', remote_site]}
-                                }},
-                'order_local': {
-                    '$filter': {'input': '$files.sites', 'as': 'p',
-                                'cond': {'$eq': ['$$p.name', active_site]}
-                                }},
+                'file_priority': {
+                    '$let': {
+                        'vars': {
+                            'local': {
+                                '$arrayElemAt': [
+                                    {'$filter': {
+                                        'input': '$files.sites',
+                                        'as': 'site',
+                                        'cond': {'$eq': ['$$site.name', active_site]}
+                                    }},
+                                    0
+                                ]
+                            },
+                            'remote': {
+                                '$arrayElemAt': [
+                                    {'$filter': {
+                                        'input': '$files.sites',
+                                        'as': 'site',
+                                        'cond': {'$eq': ['$$site.name', remote_site]}
+                                    }},
+                                    0
+                                ]
+                            }
+                        },
+                        'in': {
+                            '$ifNull': [
+                                '$$local.priority',
+                                {'$ifNull': ['$$remote.priority', self.DEFAULT_PRIORITY]}
+                            ]
+                        }
+                    }
+                }
             }},
-            {'$addFields': {
-                'priority': {
-                    '$cond': [
-                        {'$size': '$order_local.priority'},
-                        {'$first': '$order_local.priority'},
-                        {'$cond': [
-                            {'$size': '$order_remote.priority'},
-                            {'$first': '$order_remote.priority'},
-                            self.DEFAULT_PRIORITY]}
-                    ]
-                },
-            }},
+
             {'$group': {
                 '_id': '$_id',
-                # pass through context - same for representation
-                'context': {'$addToSet': '$context'},
-                'data': {'$addToSet': '$data'},
-                # pass through files as a list
-                'files': {'$addToSet': '$files'},
-                'priority': {'$max': "$priority"},
+                'context': {'$addToSet': '$context'},  # $first au lieu de $addToSet
+                'data': {'$first': '$data'},
+                'files': {'$push': '$files'},
+                'priority': {'$max': "$file_priority"}
             }},
-            {"$sort": {'priority': -1, '_id': 1}},
+
+            {"$sort": {'priority': -1, '_id': 1}}
         ]
         self.log.debug("active_site:{} - remote_site:{}".format(
             active_site, remote_site
         ))
         self.log.debug("query: {}".format(aggr))
+
         representations = self.connection.aggregate(aggr)
 
         return representations
 
-    def check_status(self, file, local_site, remote_site, config_preset):
+    def check_status(self, file, local_site, remote_site, try_cnt):
         """
             Check synchronization status for single 'file' of single
             'representation' by single 'provider'.
@@ -1813,7 +1864,8 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             file (dictionary):  of file from representation in Mongo
             local_site (string):  - local side of compare (usually 'studio')
             remote_site (string):  - gdrive etc.
-            config_preset (dict): config about active site, retries
+            config_preset (dict): config about active site
+            try_cnt (number): retries
         Returns:
             (string) - one of SyncStatus
         """
@@ -1833,7 +1885,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                 tries = self._get_tries_count_from_rec(remote_rec)
                 # file will be skipped if unsuccessfully tried over threshold
                 # error metadata needs to be purged manually in DB to reset
-                if tries < int(config_preset["retry_cnt"]):
+                if tries < int(try_cnt):
                     return SyncStatus.DO_UPLOAD
             else:
                 _, local_rec = self._get_site_rec(sites, local_site) or {}
@@ -1842,7 +1894,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                     # file will be skipped if unsuccessfully tried over
                     # threshold times, error metadata needs to be purged
                     # manually in DB to reset
-                    if tries < int(config_preset["retry_cnt"]):
+                    if tries < int(try_cnt):
                         return SyncStatus.DO_DOWNLOAD
 
         return SyncStatus.DO_NOTHING
@@ -2260,18 +2312,30 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                 self.log.warning(msg)
                 raise ValueError(msg)
 
-    def get_loop_delay(self, project_name):
+    def get_loop_delay(self):
         """
             Return count of seconds before next synchronization loop starts
             after finish of previous loop.
         Returns:
             (int): in seconds
         """
-        if not project_name:
-            return 60
+        return int(self.sync_global_settings["loop_delay"])
 
-        ld = self.sync_project_settings[project_name]["config"]["loop_delay"]
-        return int(ld)
+    def get_tries_count(self):
+        """
+            Return tries to attempt before rage quitting when downloading file.
+        Returns:
+            (int): number of tries
+        """
+        return int(self.sync_global_settings["retry_cnt"])
+
+    def get_force_sync_loops_number(self):
+        """
+            Return number of loops to pass before forcing classic sync
+        Returns:
+            (int): number of loops
+        """
+        return int(self.sync_global_settings["force_sync_loops"])
 
     def show_widget(self):
         """Show dialog for Sync Queue"""
@@ -2380,7 +2444,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
             str_key = "files.$[].sites.$[s].priority"
         return {str_key: int(priority)}
 
-    def _get_retries_arr(self, project_name):
+    def _get_retries_arr(self):
         """
             Returns array with allowed values in 'tries' field. If repre
             contains these values, it means it was tried to be synchronized
@@ -2389,7 +2453,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Returns:
             (list)
         """
-        retry_cnt = self.sync_project_settings[project_name].get("config")["retry_cnt"]
+        retry_cnt = self.sync_global_settings["retry_cnt"]
         arr = [i for i in range(int(retry_cnt))]
         arr.append(None)
 
