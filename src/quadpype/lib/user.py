@@ -6,12 +6,16 @@ import getpass
 import functools
 import platform
 import socket
+import configparser
 
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
+from pathlib import Path
+from collections import defaultdict
 
 from .registry import get_app_registry
 from .cache import CacheValues
+from quadpype.settings import get_global_settings
 from quadpype.client.mongo import QuadPypeMongoConnection
 
 
@@ -153,12 +157,43 @@ class MongoUserHandler(UserHandler):
             user_profile["workstation_profiles"].append(workstation_info)
             user_profile["last_workstation_profile_index"] = len(user_profile["workstation_profiles"]) - 1
 
+        self.override_settings_from_file(user_profile)
+
         self.collection.replace_one(
             {"user_id": self.user_id},
             user_profile, upsert=True
         )
 
         return user_profile
+
+    def override_settings_from_file(self, user_profile):
+        startup_directory = Path().parent.resolve()
+        configuration_file_path = Path(startup_directory, "overrided_user_settings.ini")
+        if not configuration_file_path.is_file():
+            return
+
+        print('A configuration file has been found in quadpype program folder and will be applied for current user.')
+
+        applications_versions = {
+            application_name: list(application_data['variants'].keys()) for
+            application_name, application_data in get_global_settings()['applications'].items()
+            if application_data.get('variants')
+
+        }
+
+        configuration_content = configparser.ConfigParser()
+        configuration_content.read(configuration_file_path)
+
+        applications_from_settings = configuration_content['applications']
+        user_settings = user_profile['settings']
+        user_settings['applications'] = defaultdict(dict)
+        for application_name, application_path in applications_from_settings.items():
+            for application_version in applications_versions[application_name]:
+                user_settings['applications'][application_name][application_version] = {'executable': application_path}
+                print(f'New path set for {application_name} {application_version}: {application_path}')
+
+        configuration_file_path.unlink()
+
 
     def set_tracker_login_to_user_profile(self, tracker_name, login_value):
         user_profile = self.get_user_profile()
