@@ -126,7 +126,7 @@ var
   CheckboxLeftMargin: Integer;
 
 begin
-  LabelHeight := 28;
+  LabelHeight := 24;
   CheckboxLeftMargin := 5;
 
   // =====================================
@@ -234,7 +234,7 @@ begin
     'Executable files|*.exe|All files|*.*',
     '.exe'
   );
-  AdobeAfterEffectsConfigPage.Values[0] := ExpandConstant('{autopf}\Adobe\Adobe After Effects 2025\Support Files');
+  AdobeAfterEffectsConfigPage.Values[0] := ExpandConstant('{commonpf}\Adobe\.');
 
   // configuration page
   AdobePhotoshopConfigPage := CreateInputFilePage(
@@ -248,7 +248,7 @@ begin
     'Executable files|*.exe|All files|*.*',
     '.exe'
   );
-  AdobePhotoshopConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielB');
+  AdobePhotoshopConfigPage.Values[0] := ExpandConstant('{commonpf}\Adobe\.');
 
   // Maya configuration page
   MayaConfigPage := CreateInputFilePage(
@@ -262,7 +262,7 @@ begin
     'Executable files|*.exe|All files|*.*',
     '.exe'
   );
-  MayaConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielC');
+  MayaConfigPage.Values[0] := ExpandConstant('{commonpf}\Autodesk\.');
 
   // Blender configuration page
   BlenderConfigPage := CreateInputFilePage(
@@ -276,7 +276,7 @@ begin
     'Executable files|*.exe|All files|*.*',
     '.exe'
   );
-  BlenderConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielD');
+  BlenderConfigPage.Values[0] := ExpandConstant('{commonpf}\Blender Foundation\.');
 
   // Nuke configuration page
   NukeConfigPage := CreateInputFilePage(
@@ -290,7 +290,7 @@ begin
     'Executable files|*.exe|All files|*.*',
     '.exe'
   );
-  NukeConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielD');
+  NukeConfigPage.Values[0] := ExpandConstant('{commonpf}\.');
 
   // Houdini configuration page
   HoudiniConfigPage := CreateInputFilePage(
@@ -304,7 +304,7 @@ begin
     'Executable files|*.exe|All files|*.*',
     '.exe'
   );
-  HoudiniConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielD');
+  HoudiniConfigPage.Values[0] := ExpandConstant('{commonpf}\Side Effects Software\.');
 
   // tvPaint configuration page
   tvPaintConfigPage := CreateInputFilePage(
@@ -318,7 +318,7 @@ begin
     'Executable files|*.exe|All files|*.*',
     '.exe'
   );
-  tvPaintConfigPage.Values[0] := ExpandConstant('{userappdata}\MonApp\LogicielD');
+  tvPaintConfigPage.Values[0] := ExpandConstant('{commonpf}\TVPaint Developpement\.');
 end;
 
 // Control which page to display dependings of previous selections
@@ -450,6 +450,8 @@ var
   ConfigFile: String;
   ConfigLines: TArrayOfString;
   LineCount: Integer;
+  ConfigResult: Boolean;
+
 begin
   if CurStep = ssPostInstall then
   begin
@@ -524,13 +526,22 @@ begin
 
     ConfigLines[LineCount] := '[addons]';
     LineCount := LineCount + 1;
-    ConfigLines[LineCount] := 'enabled=false';
+    ConfigLines[LineCount] := 'deadline/enabled=false';
+    LineCount := LineCount + 1;
 
     // Sauvegarder le fichier de configuration
-    ConfigFile := ExpandConstant('{app}\overrided_user_settings.ini');
+    ConfigFile := GetEnv('TEMP') + '\overrided_user_settings.ini';
     SetArrayLength(ConfigLines, LineCount);
-    SaveStringsToFile(ConfigFile, ConfigLines, False);
+    ConfigResult := SaveStringsToFile(ConfigFile, ConfigLines, False);
 
-    MsgBox('Configuration sauvegardée dans : ' + ConfigFile, mbInformation, MB_OK);
+    if not ConfigResult then
+    begin
+      MsgBox('Error saving user configuration to : ' + ConfigFile, mbError, MB_OK);
+    end
+    else
+    begin
+      MsgBox('User configuration has been saved to : ' + ConfigFile, mbInformation, MB_OK);
+    end;
+
   end;
 end;

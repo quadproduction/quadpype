@@ -11,6 +11,11 @@
 PS> .\build_win_installer.ps1
 
 #>
+
+Param(
+    [switch]$remote
+)
+
 $PATH_ORIGINAL_LOCATION = Get-Location
 
 $SCRIPT_DIR=Split-Path -Path $MyInvocation.MyCommand.Definition -Parent -Resolve
@@ -37,6 +42,9 @@ function Exit-WithCode($exitcode) {
    exit $exitcode
 }
 
+
+# Determine which Inno Setup script to use
+$INNO_SCRIPT = if ($remote) { "inno_remote_setup.iss" } else { "inno_setup.iss" }
 
 # Set the current location to the QuadPype source directory
 Set-Location -Path "$($PATH_QUADPYPE_ROOT)"
@@ -76,7 +84,8 @@ if (-not (Get-Command iscc -errorAction SilentlyContinue -ErrorVariable ProcessE
     Exit-WithCode 1
 }
 
-& iscc /Qp "$PATH_QUADPYPE_ROOT\inno_setup.iss"
+Write-Color -Text ">>> ", "Building executable with ${INNO_SCRIPT} script ... " -Color Green, White
+& iscc /Qp "$PATH_QUADPYPE_ROOT\$INNO_SCRIPT"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Color -Text "!!! ", "Creating installer failed." -Color Red, Yellow
