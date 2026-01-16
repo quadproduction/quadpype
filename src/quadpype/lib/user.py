@@ -166,7 +166,8 @@ class MongoUserHandler(UserHandler):
 
         return user_profile
 
-    def override_settings_from_file(self, user_profile):
+    @staticmethod
+    def override_settings_from_file(user_profile):
         startup_directory = Path().parent.resolve()
         configuration_file_path = Path(startup_directory, "overrided_user_settings.ini")
         if not configuration_file_path.is_file():
@@ -190,10 +191,31 @@ class MongoUserHandler(UserHandler):
         for application_name, application_path in applications_from_settings.items():
             for application_version in applications_versions[application_name]:
                 user_settings['applications'][application_name][application_version] = {'executable': application_path}
-                print(f'New path set for {application_name} {application_version}: {application_path}')
+                print(f"New path set for '{application_name} {application_version}' : '{application_path}'")
+
+        configuration_content.pop('applications')
+
+        for section in configuration_content.sections():
+            if section in configuration_content.defaults():
+                continue
+
+            if not user_settings.get(section):
+                user_settings[section] = {}
+
+            for inner_section, value in configuration_content[section].items():
+                splitted_section = inner_section.split('/')
+
+                current_dict = user_settings[section]
+                for inner_key in splitted_section[:-1]:
+                    if not current_dict.get(inner_key):
+                        current_dict[inner_key] = {}
+                    current_dict = current_dict[inner_key]
+
+                current_dict[splitted_section[-1]] = value
+
+                print(f"New value set for '{inner_section}' : '{value}'")
 
         configuration_file_path.unlink()
-
 
     def set_tracker_login_to_user_profile(self, tracker_name, login_value):
         user_profile = self.get_user_profile()
