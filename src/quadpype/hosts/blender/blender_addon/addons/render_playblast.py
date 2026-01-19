@@ -131,10 +131,10 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
             result = subprocess.run(args, capture_output=True, text=True)
 
             if result.returncode == 0:
-                print(f"MP4 success : {mp4_output}")
+                logging.info(f"MP4 success : {mp4_output}")
             else:
-                print("Error FFmpeg :")
-                print(result.stderr)
+                logging.info("Error FFmpeg :")
+                logging.info(result.stderr)
 
         # Restore the original settings
         scene.render.filepath = render_filepath
