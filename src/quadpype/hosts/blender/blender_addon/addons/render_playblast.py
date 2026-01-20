@@ -23,10 +23,16 @@ bl_info = {
 }
 
 RENDER_TYPES = {
-    "PNG": {
+    "IMAGE": {
         "type": "IMAGE",
         "image_format": "PNG",
         "extension": "####.png"
+    },
+    "VIDEO":{
+        "type": "VIDEO",
+        "extension": "mp4",
+        "codec": "H264",
+        "container": "MPEG4"
     }
 }
 
@@ -40,6 +46,11 @@ class PlayblastSettings(bpy.types.PropertyGroup):
     use_transparent_bg: bpy.props.BoolProperty(
         name="Use Transparent Background",
         description="Render playblast with transparent background",
+        default=False
+    )
+    render_only_mp4: bpy.props.BoolProperty(
+        name="Export Only MP4",
+        description="Render playblast only as mp4",
         default=False
     )
 
@@ -59,6 +70,7 @@ class VIEW3D_PT_RENDER_PLAYBLAST(bpy.types.Panel):
         col = layout.column()
         col.prop(playblast_settings, "use_camera_view")  # Access property from PlayblastSettings
         col.prop(playblast_settings, "use_transparent_bg")  # Access property from PlayblastSettings
+        col.prop(playblast_settings, "render_only_mp4")  # Access property from PlayblastSettings
         col.operator("playblast.render", text="Render Playblast")
         col.operator("playblast.open", text="Open Last Playblast Folder")
 
@@ -74,6 +86,8 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
         # Store the original settings to restore them later
         render_filepath = scene.render.filepath
         file_format = scene.render.image_settings.file_format
+        container_format = scene.render.ffmpeg.format
+        codec_format = scene.render.ffmpeg.codec
         media_type = scene.render.image_settings.media_type
         file_extension_use = scene.render.use_file_extension
         engine = scene.render.engine
@@ -90,18 +104,17 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
 
         # Render playblast for each file format
         version_to_bump = True
-        for render_type, options in RENDER_TYPES.items():
+
+        if scene.playblast_settings.render_only_mp4:
+            options = RENDER_TYPES["VIDEO"]
             scene.render.filepath = get_path_from_template('playblast',
                                                            'path',
                                                            {'ext': options['extension']},
                                                            bump_version=version_to_bump,
                                                            makedirs=True)
-
-            version_to_bump = False
-            if options["type"] == "IMAGE":
-                scene.render.image_settings.media_type = options["type"]
-                scene.render.image_settings.file_format = options["image_format"]
-                scene.render.use_file_extension = False
+            scene.render.image_settings.media_type = options["type"]
+            scene.render.ffmpeg.format = options["container"]
+            scene.render.ffmpeg.codec = options["codec"]
 
             logging.info(
                 f"{'Camera view' if scene.playblast_settings.use_camera_view else 'Viewport'} "
@@ -110,8 +123,41 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
 
             result = bpy.ops.render.opengl(animation=True)
             if result != {"FINISHED"}:
-                logging.error(f"Error rendering {render_type}")
-                break
+                logging.error(f"Error rendering {options['type']}")
+                return {"ERROR"}
+
+        else:
+            options = RENDER_TYPES["IMAGE"]
+            scene.render.filepath = get_path_from_template('playblast',
+                                                           'path',
+                                                           {'ext': options['extension']},
+                                                           bump_version=version_to_bump,
+                                                           makedirs=True)
+
+            scene.render.image_settings.media_type = options["type"]
+            scene.render.image_settings.file_format = options["image_format"]
+            scene.render.use_file_extension = False
+
+            logging.info(
+                f"{'Camera view' if scene.playblast_settings.use_camera_view else 'Viewport'} "
+                f"rendering at: {scene.render.filepath}"
+            )
+
+            # Check if the current format supports RGBA (transparency)
+            if scene.playblast_settings.use_transparent_bg:
+                # Set PNG specific settings for transparency
+                scene.render.image_settings.color_mode = "RGBA"
+                scene.render.film_transparent = True
+
+            else:
+                # set color mode to RGB (no transparency support)
+                scene.render.image_settings.color_mode = "RGB"
+                scene.render.film_transparent = False
+
+            result = bpy.ops.render.opengl(animation=True)
+            if result != {"FINISHED"}:
+                logging.error(f"Error rendering {options['type']}")
+                return {"ERROR"}
 
             ffmpeg_input = scene.render.filepath.replace("####", "%04d")
             mp4_output = scene.render.filepath.replace(".####.png", ".mp4")
@@ -139,6 +185,8 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
         # Restore the original settings
         scene.render.filepath = render_filepath
         scene.render.image_settings.media_type = media_type
+        scene.render.ffmpeg.format = container_format
+        scene.render.ffmpeg.codec = codec_format
         scene.render.image_settings.file_format = file_format
         scene.render.use_file_extension = file_extension_use
 
