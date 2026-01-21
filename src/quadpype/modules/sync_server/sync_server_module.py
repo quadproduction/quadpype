@@ -14,7 +14,7 @@ from quadpype.client import (
     get_projects,
     get_representations,
     get_representation_by_id,
-    QuadPypeMongoConnection
+    get_quadpype_collection
 )
 from quadpype.modules import (
     QuadPypeModule,
@@ -1218,9 +1218,6 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
 
         return enabled_projects
 
-    def projects_last_sync(self):
-        """Returns list of projects last_sync_times from collection 'projects_updates_logs'."""
-
     def is_project_enabled(self, project_name, single=False):
         """Checks if 'project_name' is enabled for syncing.
         'get_sync_project_setting' is potentially expensive operation (pulls
@@ -1297,7 +1294,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Returns:
             dict: each project name with his corresponding last update timestamp
         """
-        database = QuadPypeMongoConnection.get_mongo_client()[os.environ["QUADPYPE_DATABASE_NAME"]]
+        collection = get_quadpype_collection("projects_updates_logs")
         query = [
             {
                 "$match":
@@ -1308,7 +1305,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         ]
         return {
             result["project_name"]: result["timestamp"]
-            for result in list(database['projects_updates_logs'].aggregate(query))
+            for result in list(collection.aggregate(query))
         }
 
     def register_loop_log(self, log_data):
@@ -1318,8 +1315,8 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Args:
             log_data (dict): log representation
         """
-        database = QuadPypeMongoConnection.get_mongo_client()[os.environ["QUADPYPE_DATABASE_NAME"]]
-        database['sync_loops_logs'].insert_one(log_data)
+        collection = get_quadpype_collection("sync_loops_logs")
+        collection.insert_one(log_data)
 
     def get_repre_info_for_versions(self, project_name, version_ids,
                                     active_site, remote_site):

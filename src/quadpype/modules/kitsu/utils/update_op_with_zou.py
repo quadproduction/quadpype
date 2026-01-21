@@ -1,6 +1,6 @@
 """Functions to update QuadPype data using Kitsu DB (a.k.a Zou)."""
-from copy import deepcopy
 import re
+from copy import deepcopy
 from typing import Dict, List, Tuple
 
 from gazu.exception import RouteNotFoundException
@@ -13,8 +13,9 @@ from quadpype.client import (
     get_asset_by_id,
     get_asset_by_name,
     create_project,
+    get_quadpype_collection,
 )
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import AvalonMongoDB, save_project_timestamp
 from quadpype.modules.kitsu.utils.credentials import validate_credentials
 
 from quadpype.lib import Logger
@@ -386,6 +387,7 @@ def sync_all_projects(
     password: str,
     ignore_projects: set = None,
     include_projects: set = None,
+    sync_quick_active_projects: bool = False,
 ):
     """Update all QuadPype projects in DB with Zou data.
 
@@ -431,13 +433,20 @@ def sync_all_projects(
 
     # Iterate over MongoDB projects and if it's not present in Kitsu project, deactivate it on MongoDB
     for project in dbcon.projects():
-        if project['name'] in all_kitsu_projects:
+        project_name = project['name']
+        if project_name in all_kitsu_projects:
             # Project exists on Kitsu, skip
             continue
+
         update_project_state_in_db(dbcon, project, active=False)
 
+        # Remove from active projects collection
+        if sync_quick_active_projects and project_exists_in_actives(project_name):
+            remove_project_from_actives(project_name)
+            log.info(f"Removed '{project_name}' from active projects collection.")
+
     for project in project_to_sync:
-        sync_project_from_kitsu(dbcon, project)
+        sync_project_from_kitsu(dbcon, project, sync_quick_active_projects)
 
 
 def update_project_state_in_db(dbcon: AvalonMongoDB, project: dict, active: bool):
@@ -457,7 +466,64 @@ def update_project_state_in_db(dbcon: AvalonMongoDB, project: dict, active: bool
     dbcon.bulk_write(bulk_writes)
 
 
-def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict):
+def remove_project_from_actives(project_name: str) -> bool:
+    """Remove project from active projects in database.
+
+    Args:
+        project_name (str): Name of the project to remove from active projects
+    """
+    collection = get_quadpype_collection("active_projects")
+    if not collection:
+        log.info("Can not find active projects collection from quadpype database.")
+        return
+
+    result = collection.delete_many({"project_name": project_name})
+    if not result.deleted_count:
+        log.info(f"No active project entry found for '{project_name}'")
+        return False
+
+    return True
+
+
+def add_project_to_actives(project_name: str) -> bool:
+    """Add project to active projects in database.
+
+    Args:
+        project_name (str): Name of the project to add to active projects
+    """
+    collection = get_quadpype_collection("active_projects")
+    if not collection:
+        log.info("Can not find active projects collection from quadpype database.")
+        return
+
+    result = collection.insert_one({"project_name": project_name})
+    if not result.inserted_id:
+        log.info(f"Failed to add '{project_name}' to active projects")
+        return False
+
+    return True
+
+
+def project_exists_in_actives(project_name: str) -> bool:
+    """
+    Check if a project exists in the QuadPype database.
+
+    Args:
+        project_name (str): Name of the project to check.
+
+    Returns:
+        bool: True if the project exists, False otherwise.
+    """
+    collection = get_quadpype_collection("active_projects")
+    if not collection:
+        log.info("Can not find active projects collection from quadpype database.")
+        return
+
+    project = collection.find_one({"project_name": project_name})
+    return project is not None
+
+
+def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict, sync_quick_active_projects: bool = False):
     """Update QuadPype project in DB with Zou data.
 
     `root_of` is meant to sort entities by type for a better readability in
@@ -489,6 +555,12 @@ def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict):
 
     # Early exit condition if the project is deactivated (closed) on Kitsu
     if not project_active_state_kitsu:
+
+        # Remove from active projects collection
+        if sync_quick_active_projects and project_exists_in_actives(project_name):
+            remove_project_from_actives(project_name)
+            log.info(f"Removed '{project_name}' from active projects collection.")
+
         if not project_dict:
             # The project doesn't exist on QuadPype DB, skip
             return
@@ -610,3 +682,9 @@ def sync_project_from_kitsu(dbcon: AvalonMongoDB, project: dict):
     # Write into DB
     if bulk_writes:
         dbcon.bulk_write(bulk_writes)
+        save_project_timestamp(project['name'])
+
+    # Add to active projects collection if not already present
+    if sync_quick_active_projects and not project_exists_in_actives(project_name):
+        add_project_to_actives(project_name)
+        log.info(f"Added '{project_name}' to active projects collection.")

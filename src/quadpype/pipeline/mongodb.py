@@ -106,29 +106,37 @@ def session_data_from_environment(context_keys=False):
     return session_data
 
 
+def save_project_timestamp(project_name):
+    try:
+        database = QuadPypeMongoConnection.get_mongo_client()[str(os.environ["QUADPYPE_DATABASE_NAME"])]
+        result = database['projects_updates_logs'].replace_one(
+            {"project_name": project_name},
+            {
+                "project_name": project_name,
+                'timestamp': time.time()
+            },
+            upsert=True
+        )
+        if not result:
+            logging.error(f"An error has occured when trying to register project update : {e}")
+            return
+
+        logging.info(f"Timestamp updated for project {project_name}.")
+
+    except Exception as e:
+        logging.error(f"An error has occured when trying to register project update : {e}")
+
+
 def register_project_update(project_name):
     """Decorator to register update timestamp to specific collection"""
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
-
-            try:
-                database = QuadPypeMongoConnection.get_mongo_client()[str(os.environ["QUADPYPE_DATABASE_NAME"])]
-                result = database['projects_updates_logs'].replace_one(
-                    {"project_name": project_name},
-                    {
-                        "project_name": project_name,
-                        'timestamp': time.time()
-                    },
-                    upsert=True
-                )
-                logging.info(f"Timestamp updated for project {project_name}.")
-
-            except Exception as e:
-                logging.error(f"An error has occured when trying to register project update : {e}")
+            save_project_timestamp(project_name)
 
             return result
+
         return wrapper
     return decorator
 
@@ -153,7 +161,7 @@ class AvalonCollectionWrapper:
 
 
 class AvalonDatabaseWrapper:
-    def __init__(self, database, log_collection=None):
+    def __init__(self, database):
         self.database = database
 
     def __getattr__(self, name: str):

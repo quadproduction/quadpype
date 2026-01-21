@@ -16,7 +16,7 @@ import threading
 import gazu
 
 from quadpype.client import get_project, get_assets, get_asset_by_name
-from quadpype.pipeline import AvalonMongoDB
+from quadpype.pipeline import AvalonMongoDB, save_project_timestamp
 from quadpype.lib import Logger
 from .credentials import validate_credentials
 from .update_op_with_zou import (
@@ -25,6 +25,9 @@ from .update_op_with_zou import (
     get_kitsu_project_name,
     write_project_to_op,
     update_op_assets,
+    project_exists_in_actives,
+    add_project_to_actives,
+    remove_project_from_actives
 )
 
 log = Logger.get_logger(__name__)
@@ -33,7 +36,7 @@ log = Logger.get_logger(__name__)
 class Listener:
     """Host Kitsu listener."""
 
-    def __init__(self, login, password):
+    def __init__(self, login, password, sync_quick_active_projects=False):
         """Create client and add listeners to events without starting it.
 
             Run `listener.start()` to actually start the service.
@@ -45,6 +48,8 @@ class Listener:
         Raises:
             AuthFailedException: Wrong user login and/or password
         """
+        self.sync_quick_active_projects = sync_quick_active_projects
+
         self.dbcon = AvalonMongoDB()
         self.dbcon.install()
 
@@ -149,6 +154,13 @@ class Listener:
         # Use update process to avoid duplicating code
         self._update_project(data, new_project=True)
 
+        project = gazu.project.get_project(data["project_id"])
+
+        # Add to active projects collection if not already present
+        if self.sync_quick_active_projects and not project_exists_in_actives(project['name']):
+            add_project_to_actives(project['name'])
+            log.info(f"Added '{project['name']}' to active projects collection.")
+
     def _update_project(self, data, new_project=False):
         """Update project into QuadPype DB."""
         # Get project entity
@@ -162,6 +174,7 @@ class Listener:
                 data["project_id"]
             )
             self.dbcon.bulk_write([update_project])
+            save_project_timestamp(project['name'])
 
             if new_project:
                 log.info("Project created: {}".format(project["name"]))
@@ -180,6 +193,12 @@ class Listener:
 
                 # Print message
                 log.info("Project deleted: {}".format(project["name"]))
+
+                # Add to active projects collection if not already present
+                if self.sync_quick_active_projects and project_exists_in_actives(project['name']):
+                    remove_project_from_actives(project['name'])
+                    log.info(f"Removed '{project['name']}' from active projects collection.")
+
                 return
 
     # == Asset ==
@@ -701,7 +720,7 @@ class Listener:
                     return
 
 
-def start_listeners(login: str, password: str):
+def start_listeners(login: str, password: str, sync_quick_active_projects: bool = False):
     """Start listeners to keep QuadPype up-to-date with Kitsu.
 
     Args:
@@ -718,5 +737,5 @@ def start_listeners(login: str, password: str):
     refresh_token_every_week()
 
     # Connect to server
-    listener = Listener(login, password)
+    listener = Listener(login, password, sync_quick_active_projects)
     listener.start()

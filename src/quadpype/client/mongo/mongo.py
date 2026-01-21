@@ -422,6 +422,33 @@ def get_project_database(database_name=None):
     return QuadPypeMongoConnection.get_mongo_client()[database_name]
 
 
+def get_quadpype_database():
+    """Database object where quadpype collections are.
+
+    Returns:
+        pymongo.database.Database: Collection related to passed project.
+    """
+    quadpype_db_name = os.getenv("QUADPYPE_DATABASE_NAME") or "quadpype"
+    return QuadPypeMongoConnection.get_mongo_client()[quadpype_db_name]
+
+
+def get_quadpype_collection(collection_name):
+    """Collection object from quadpype database.
+
+    Args:
+        collection_name (str): Collection name from database
+
+    Returns:
+        pymongo.collection.Collection: Collection related to passed project.
+    """
+    quadpype_database = get_quadpype_database()
+    try:
+        return quadpype_database[collection_name]
+
+    except KeyError:
+        return None
+
+
 def get_project_connection(project_name, database_name=None):
     """Direct access to mongo collection.
 
