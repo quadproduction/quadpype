@@ -148,6 +148,16 @@
                     "key": "protect_anatomy_attributes",
                     "label": "Protect Anatomy Attributes",
                     "require_restart": true
+                },
+                {
+                    "type": "label",
+                    "label": "Load active projects from dedicated collection name 'active_projects'. This special collection needs to be populated and updated at each project update from tracker."
+                },
+                {
+                    "type": "boolean",
+                    "key": "use_active_projects_collection",
+                    "label": "Use specific 'active_projects' collection",
+                    "require_restart": true
                 }
             ]
         },

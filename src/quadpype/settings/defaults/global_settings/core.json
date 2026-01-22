@@ -11,7 +11,8 @@
         "darwin": []
     },
     "projects": {
-        "protect_anatomy_attributes": false
+        "protect_anatomy_attributes": false,
+        "use_active_projects_collection": false
     },
     "local_env_white_list": [],
     "remote_sources": {

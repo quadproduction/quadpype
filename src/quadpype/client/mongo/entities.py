@@ -7,6 +7,7 @@ that has project name as a context (e.g. on 'ProjectEntity'?).
 """
 
 import re
+import os
 import collections
 from bson.objectid import ObjectId
 from .mongo import get_project_database, get_project_connection, get_quadpype_collection
@@ -89,7 +90,7 @@ def _active_project_quick_access_is_enabled():
     Returns:
         bool: True if property is enabled, False otherwise.
     """
-    return True
+    return os.environ.get("QUADPYPE_USE_ACTIVE_PROJECTS_COLLECTION", None)
 
 
 def get_projects(active=True, inactive=False, fields=None, summarized_retrieval=False):
