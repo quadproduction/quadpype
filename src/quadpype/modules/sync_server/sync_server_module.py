@@ -1211,7 +1211,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         enabled_projects = []
 
         if self.enabled:
-            for project in get_projects(fields=["name"]):
+            for project in get_projects(fields=["name"], summarized_retrieval=True):
                 project_name = project["name"]
                 if self.is_project_enabled(project_name):
                     enabled_projects.append(project_name)
@@ -1554,15 +1554,14 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                 exclude_locals (bool): ignore overrides from User Settings
             For performance
         """
-        sync_project_settings = self._prepare_sync_project_settings(
-            exclude_locals)
+        sync_project_settings = self._prepare_sync_project_settings(exclude_locals)
 
         self._sync_project_settings = sync_project_settings
 
     def _prepare_sync_project_settings(self, exclude_locals):
         sync_project_settings = {}
         system_sites = self.get_all_site_configs()
-        project_docs = get_projects(fields=["name"])
+        project_docs = get_projects(fields=["name"], summarized_retrieval=True)
         for project_doc in project_docs:
             project_name = project_doc["name"]
             sites = copy.deepcopy(system_sites)  # get all configured sites

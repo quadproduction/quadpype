@@ -8,10 +8,9 @@ that has project name as a context (e.g. on 'ProjectEntity'?).
 
 import re
 import collections
-
 from bson.objectid import ObjectId
+from .mongo import get_project_database, get_project_connection, get_quadpype_collection
 
-from .mongo import get_project_database, get_project_connection
 
 PatternType = type(re.compile(""))
 
@@ -67,7 +66,33 @@ def convert_ids(in_ids):
     return list(_output)
 
 
-def get_projects(active=True, inactive=False, fields=None):
+def get_simplified_active_projects(fields=None):
+    """Yield summarized project entity documents from special 'active_projects' collection.
+    Use it to retrieve active projects quickly.
+    Be warned that only project name and specific data properties (active, code, library) will be returned.
+
+    Yields:
+        dict: Project entity data with only 'name' and specific 'data' (active, code, library) fields.
+    """
+    collection = get_quadpype_collection('active_projects')
+    if not collection:
+        return
+
+    for doc in collection.find({}, _prepare_fields(fields)):
+        yield doc
+    return
+
+
+def _active_project_quick_access_is_enabled():
+    """Check if 'use_active_projects_collection' is enabled in settings
+
+    Returns:
+        bool: True if property is enabled, False otherwise.
+    """
+    return True
+
+
+def get_projects(active=True, inactive=False, fields=None, summarized_retrieval=False):
     """Yield all project entity documents.
 
     Args:
@@ -76,11 +101,17 @@ def get_projects(active=True, inactive=False, fields=None):
             Defaults to False.
         fields (Optional[Iterable[str]]): Fields that should be returned. All
             fields are returned if 'None' is passed.
+        summarized_retrieval (Optional[bool]): Retrieve projects for 'active projects'
+            collection for quick access. Only 'name' and specific 'data' fields.
 
     Yields:
         dict: Project entity data which can be reduced to specified 'fields'.
             None is returned if project with specified filters was not found.
     """
+    if summarized_retrieval and _active_project_quick_access_is_enabled():
+        yield from get_simplified_active_projects(fields)
+        return
+
     mongodb = get_project_database()
     for project_name in mongodb.collection_names():
         if project_name in ("system.indexes",):

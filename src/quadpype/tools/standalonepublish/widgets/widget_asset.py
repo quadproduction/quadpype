@@ -295,7 +295,7 @@ class AssetWidget(QtWidgets.QWidget):
     def _set_projects(self):
         project_names = list()
 
-        for doc in get_projects(fields=["name"]):
+        for doc in get_projects(fields=["name"], summarized_retrieval=True):
             project_name = doc.get("name")
             if project_name:
                 project_names.append(project_name)
@@ -322,7 +322,7 @@ class AssetWidget(QtWidgets.QWidget):
     def on_project_change(self):
         projects = list()
 
-        for project in get_projects(fields=["name"]):
+        for project in get_projects(fields=["name"], summarized_retrieval=True):
             projects.append(project['name'])
         project_name = self.combo_projects.currentText()
         if project_name in projects:

@@ -71,7 +71,7 @@ class ValidateNodeIdsInDatabase(pyblish.api.InstancePlugin):
     def get_library_project_names():
         libraries = list()
 
-        for project in get_projects(fields=["name", "data.library_project"]):
+        for project in get_projects(fields=["name", "data.library_project"], summarized_retrieval=True):
             if project.get("data", {}).get("library_project", False):
                 libraries.append(project["name"])
 

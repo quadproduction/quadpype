@@ -477,7 +477,7 @@ def remove_project_from_actives(project_name: str) -> bool:
         log.info("Can not find active projects collection from quadpype database.")
         return
 
-    result = collection.delete_many({"project_name": project_name})
+    result = collection.delete_many({"name": project_name})
     if not result.deleted_count:
         log.info(f"No active project entry found for '{project_name}'")
         return False
@@ -496,7 +496,23 @@ def add_project_to_actives(project_name: str) -> bool:
         log.info("Can not find active projects collection from quadpype database.")
         return
 
-    result = collection.insert_one({"project_name": project_name})
+    project_dict = get_project(project_name)
+    if not project_dict:
+        log.info(f"Can not retrieve project '{project_name}' from quadpype projects database.")
+        return False
+
+    result = collection.insert_one(
+        {
+            "id": project_dict["_id"],
+            "name": project_name,
+            "data": {
+                "code": project_dict["data"]["code"],
+                "library_project": project_dict["data"]["library_project"],
+                "active": True
+            }
+
+        }
+    )
     if not result.inserted_id:
         log.info(f"Failed to add '{project_name}' to active projects")
         return False
@@ -519,7 +535,7 @@ def project_exists_in_actives(project_name: str) -> bool:
         log.info("Can not find active projects collection from quadpype database.")
         return
 
-    project = collection.find_one({"project_name": project_name})
+    project = collection.find_one({"name": project_name})
     return project is not None
 
 

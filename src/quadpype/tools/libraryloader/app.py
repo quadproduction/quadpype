@@ -241,7 +241,7 @@ class LibraryLoaderWindow(BaseToolDialog):
 
     def get_filtered_projects(self):
         projects = list()
-        for project in get_projects(fields=["name", "data.library_project"]):
+        for project in get_projects(fields=["name", "data.library_project"], summarized_retrieval=True):
             is_library = project.get("data", {}).get("library_project", False)
             if (
                 (is_library and self.show_libraries) or
