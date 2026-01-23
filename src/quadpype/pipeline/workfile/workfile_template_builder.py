@@ -1572,7 +1572,8 @@ class PlaceholderLoadMixin(object):
                         casted_asset_names.append(asset_name)
 
                 if not casted_asset_names:
-                    return casted_asset_docs
+                    return_dict[current_name] = []
+                    continue
 
                 context_filters = {
                     "asset": casted_asset_names,
@@ -1597,7 +1598,7 @@ class PlaceholderLoadMixin(object):
 
                 if not linked_asset_names:
                     return_dict[current_name] = []
-                    return return_dict
+                    continue
 
                 context_filters = {
                     "asset": linked_asset_names,

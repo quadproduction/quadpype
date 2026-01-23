@@ -91,7 +91,6 @@ src/quadpype/premiere/ppro/js/debug.log
 
 # VS Code
 #########
-.vscode/
 dump.sql
 test_localsystem.txt
 

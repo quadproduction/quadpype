@@ -1,0 +1,79 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "custom_pre",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/tools/_lib/run/pre_run.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": false,
+            "env": {
+                "PYTHONUNBUFFERED": "1",
+                "_INSIDE_QUADPYPE_TOOL": "1"
+            },
+            "args": ["-m", "mongodb+srv://username:password@your-cluster-url.com/"]
+        },
+        {
+            "name": "custom",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/start.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src",
+            "justMyCode": false,
+            "args": ["tray", "--debug", "--additional-env-file", "${workspaceFolder}/src/tools/.env"]
+        },
+        {
+            "name": "dev_pre",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/tools/_lib/run/pre_run.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": false,
+            "env": {
+                "PYTHONUNBUFFERED": "1",
+                "_INSIDE_QUADPYPE_TOOL": "1"
+            },
+            "args": ["-d"]
+        },
+        {
+            "name": "dev",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/start.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src",
+            "justMyCode": false,
+            "args": ["tray", "--debug", "--additional-env-file", "${workspaceFolder}/src/tools/.env"],
+            "preLaunchTask": "dev_pre"
+        },
+        {
+            "name": "prod_pre",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/tools/_lib/run/pre_run.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": false,
+            "env": {
+                "PYTHONUNBUFFERED": "1",
+                "_INSIDE_QUADPYPE_TOOL": "1"
+            },
+            "args": ["-p"]
+        },
+        {
+            "name": "prod",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/start.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src",
+            "justMyCode": false,
+            "args": ["tray", "--debug", "--additional-env-file", "${workspaceFolder}/src/tools/.env"],
+            "preLaunchTask": "prod_pre"
+        }
+    ]
+}
