@@ -606,10 +606,8 @@ class SyncServerThread(threading.Thread):
                         for repre_data in representations_to_check:
                             repre_id, site, asset, subset, ext = repre_data
 
-                            sync_server = ModulesManager().modules_by_name.get("sync_server")
                             stream_side = "Download" if site == local_site else "Upload"
-
-                            if sync_server.is_representation_on_site(
+                            if self.module.is_representation_on_site(
                                     project_name,
                                     repre_id,
                                     site

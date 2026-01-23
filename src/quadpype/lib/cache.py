@@ -126,7 +126,7 @@ def get_projects_last_updates(projects_names):
         }
 
 
-def sync_is_needed(self, projects_local_last_sync, projects_last_updates, project_name):
+def sync_is_needed(projects_local_last_sync, projects_last_updates, project_name):
         project_db_last_sync_timestamp = projects_last_updates.get(project_name, 0)
         if not project_db_last_sync_timestamp:
             return True
@@ -136,10 +136,10 @@ def sync_is_needed(self, projects_local_last_sync, projects_last_updates, projec
             return True
 
         if project_db_last_sync_timestamp > project_local_last_sync_timestamp:
-            self.log.info(f"New updates found from project {project_name}. Sync should be triggered.")
+            logging.info(f"New updates found from project {project_name}. Sync should be triggered.")
             return True
 
-        self.log.info(
+        logging.info(
             f"Local sync is more recent than project db update for project {project_name}. "
             f"Sync will be canceled."
         )

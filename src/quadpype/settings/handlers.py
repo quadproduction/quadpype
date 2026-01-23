@@ -568,7 +568,7 @@ class MongoSettingsHandler(SettingsHandler):
 
         self.core_settings_cache = CacheValues()
         self.global_settings_cache = CacheValues()
-        self.project_settings_cache = collections.defaultdict(lambda: ProjectCacheValues())
+        self.project_settings_cache = collections.defaultdict(CacheValues)
         self.project_anatomy_cache = collections.defaultdict(CacheValues)
 
     def _prepare_project_settings_keys(self):
