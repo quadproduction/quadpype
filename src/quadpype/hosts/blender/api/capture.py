@@ -88,7 +88,6 @@ def capture(
     if _transparent_background_asked(transparent_background, file_format):
         image_settings["color_mode"] = "RGBA"
         render_options["film_transparent"] = True
-        render_options["engine"] = "CYCLES"
 
     current_viewport = None
     if use_viewport:
@@ -97,6 +96,8 @@ def capture(
             return
 
         current_viewport = area.spaces[0].region_3d
+
+    exit_fullscreen_simple()
 
     with _independent_window() as window:
         background_image = None
@@ -173,6 +174,7 @@ ImageSettings = {
 
 def isolate_objects(window, objects):
     """Isolate selection"""
+    #ToDo Adapt deselect_all() if blender has multiple windows
     deselect_all()
 
     for obj in objects:
@@ -214,9 +216,9 @@ def _apply_options(entity, options):
 def applied_view(window, camera, isolate=None, options=None, offset=0.2):
     """Apply view options to window."""
     area = window.screen.areas[0]
-    space = area.spaces[0]
-
     area.ui_type = "VIEW_3D"
+    area.type = "VIEW_3D"
+    space = area.spaces[0]
 
     types = {"MESH", "GPENCIL"}
     objects = [obj for obj in window.scene.objects if obj.type in types]
@@ -413,6 +415,22 @@ def maintain_camera(window, camera):
         yield
     finally:
         window.scene.camera = current_camera
+
+
+def exit_fullscreen_simple():
+    """Turn off the full screen if any is found"""
+
+    for window in bpy.context.window_manager.windows:
+        if len(window.screen.areas) == 1:
+            area = window.screen.areas[0]
+            try:
+                with bpy.context.temp_override(window=window, area=area):
+                    bpy.ops.screen.screen_full_area()
+                    print(f"Full screen turned off for {area.type}")
+                    return True
+            except:
+                continue
+    return False
 
 
 @contextlib.contextmanager

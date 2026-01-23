@@ -1,4 +1,5 @@
 import os
+import copy
 import clique
 
 import bpy
@@ -36,6 +37,8 @@ class ExtractPlayblast(
     order = pyblish.api.ExtractorOrder + 0.01
 
     def process(self, instance):
+
+        instance.data.setdefault("representations", [])
 
         # get scene fps
         fps = instance.data.get("fps")
@@ -94,7 +97,7 @@ class ExtractPlayblast(
 
         project_settings = instance.context.data[PROJECT_SETTINGS_KEY]["blender"]
         presets = project_settings["publish"]["ExtractPlayblast"]["presets"]
-        preset = presets.get("default")
+        preset = copy.deepcopy(presets.get("default"))
         preset.update({
             "camera": camera,
             "width": width,
@@ -119,6 +122,7 @@ class ExtractPlayblast(
         preset.setdefault(
             "image_settings",
             {
+                "media_type": "IMAGE",
                 "file_format": "PNG",
                 "color_mode": "RGB",
                 "color_depth": "8",
@@ -126,43 +130,79 @@ class ExtractPlayblast(
             },
         )
 
+        # Generate the PNG sequence
+        if generate_image_sequence:
+            with maintained_time():
+                path = capture(**preset)
+
+            self.log.info(f"playblast path {path}")
+
+            collected_files = os.listdir(stagingdir)
+            collections, remainder = clique.assemble(
+                collected_files,
+                patterns=[f"{filename}\\.{clique.DIGITS_PATTERN}\\.png$"],
+                minimum_items=1
+            )
+
+            if len(collections) > 1:
+                raise RuntimeError(
+                    f"More than one collection found in stagingdir: {stagingdir}"
+                )
+            elif len(collections) == 0:
+                raise RuntimeError(
+                    f"No collection found in stagingdir: {stagingdir}"
+                )
+
+            frame_collection = collections[0]
+
+            self.log.info(f"We found collection of interest {frame_collection}")
+
+            # `instance.data["files"]` must be `str` if single frame
+            files = list(frame_collection)
+            if len(files) == 1:
+                files = files[0]
+
+            tags = []
+            if not instance.data.get("keepImages") and not generate_image_sequence:
+                tags.append("delete")
+
+            representation = {
+                "name": "png",
+                "ext": "png",
+                "files": files,
+                "stagingDir": stagingdir,
+                "frameStart": start,
+                "frameEnd": end,
+                "fps": fps,
+                "tags": tags,
+                "camera_name": camera
+            }
+            instance.data.get("representations", []).append(representation)
+
+        # Generate the MP4 file
+        preset["image_settings"] = {
+                "media_type": "VIDEO",
+                "color_mode": "RGB",
+                "ffmpeg": {
+                    "format": "MPEG4",
+                    "codec": "H264"
+                }
+            }
+
         with maintained_time():
             path = capture(**preset)
 
         self.log.info(f"playblast path {path}")
 
         collected_files = os.listdir(stagingdir)
-        collections, remainder = clique.assemble(
-            collected_files,
-            patterns=[f"{filename}\\.{clique.DIGITS_PATTERN}\\.png$"],
-            minimum_items=1
-        )
-
-        if len(collections) > 1:
-            raise RuntimeError(
-                f"More than one collection found in stagingdir: {stagingdir}"
-            )
-        elif len(collections) == 0:
-            raise RuntimeError(
-                f"No collection found in stagingdir: {stagingdir}"
-            )
-
-        frame_collection = collections[0]
-
-        self.log.info(f"We found collection of interest {frame_collection}")
-
-        # `instance.data["files"]` must be `str` if single frame
-        files = list(frame_collection)
+        files = [filename for filename in collected_files if filename.lower().endswith(".mp4")]
         if len(files) == 1:
             files = files[0]
-
         tags = ["review"]
-        if not instance.data.get("keepImages") and not generate_image_sequence:
-            tags.append("delete")
 
         representation = {
-            "name": "png",
-            "ext": "png",
+            "name": "mp4",
+            "ext": "mp4",
             "files": files,
             "stagingDir": stagingdir,
             "frameStart": start,
@@ -171,4 +211,4 @@ class ExtractPlayblast(
             "tags": tags,
             "camera_name": camera
         }
-        instance.data.setdefault("representations", []).append(representation)
+        instance.data.get("representations", []).append(representation)
