@@ -2,18 +2,26 @@
 import os
 import asyncio
 import threading
-import tempfile
-import yaml
 import time
 import concurrent.futures
-from pathlib import Path
 from time import sleep
 from datetime import datetime, timezone
 from collections import defaultdict
 
 from .providers import lib
 from quadpype.client import get_linked_representation_id
-from quadpype.lib import Logger, get_local_site_id, get_quadpype_username, get_user_settings
+from quadpype.lib import (
+    Logger,
+    get_local_site_id,
+    get_quadpype_username,
+    get_user_settings,
+    get_projects_last_sync,
+    write_project_last_sync,
+    update_project_last_sync,
+    get_projects_last_updates,
+    sync_is_needed
+)
+
 from quadpype.modules.base import ModulesManager
 from quadpype.pipeline import Anatomy
 from quadpype.pipeline.load.utils import get_representation_path_with_anatomy
@@ -294,9 +302,6 @@ def download_last_published_workfile(
     return last_published_workfile_path
 
 
-SYNCS_LOGS_FILE = "sync_logs.yaml"
-
-
 class SyncServerThread(threading.Thread):
     """
         Separate thread running synchronization server with asyncio loop.
@@ -312,48 +317,12 @@ class SyncServerThread(threading.Thread):
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
         self.timer = None
 
-    def get_projects_last_sync(self):
-        sync_file_path = Path(tempfile.gettempdir(), SYNCS_LOGS_FILE)
-        if not sync_file_path.exists():
-            return {}
 
-        with open(sync_file_path, 'r', encoding='utf-8') as sync_file:
-            self.log.info(f"Loaded projects synchronisation times files at path : {sync_file_path}")
-            return yaml.safe_load(sync_file)
-
-    def write_project_last_sync(self, projects_last_sync):
-        sync_file_path = Path(tempfile.gettempdir(), SYNCS_LOGS_FILE)
-        with open(sync_file_path, 'w', encoding='utf-8') as sync_file:
-            yaml.dump(projects_last_sync, sync_file)
-
-        self.log.info(f"New synchronization time data written at path : {sync_file_path}")
-
-    @staticmethod
-    def update_project_last_sync(projects_last_sync, project_name):
-        projects_last_sync[project_name] = time.time()
 
     @staticmethod
     def sync_doc_needs_update(sync_repres):
         return len(sync_repres) == 0
 
-    def sync_is_needed(self, projects_local_last_sync, projects_last_updates, project_name):
-        project_db_last_sync_timestamp = projects_last_updates.get(project_name, 0)
-        if not project_db_last_sync_timestamp:
-            return True
-
-        project_local_last_sync_timestamp = projects_local_last_sync.get(project_name, 0)
-        if not project_db_last_sync_timestamp:
-            return True
-
-        if project_db_last_sync_timestamp > project_local_last_sync_timestamp:
-            self.log.info(f"New updates found from project {project_name}. Sync should be triggered.")
-            return True
-
-        self.log.info(
-            f"Local sync is more recent than project db update for project {project_name}. "
-            f"Sync will be canceled."
-        )
-        return False
 
     def force_sync_asked(self, loop_number, force_loops_number):
         if loop_number >= force_loops_number:
@@ -436,7 +405,7 @@ class SyncServerThread(threading.Thread):
         Returns:
         """
         self.set_providers_batch_limit()
-        projects_local_last_sync = self.get_projects_last_sync()
+        projects_local_last_sync = get_projects_last_sync()
         try_cnt = self.module.get_tries_count()
         delay = self.module.get_loop_delay()
         force_loops_number = self.module.get_force_sync_loops_number()
@@ -458,7 +427,7 @@ class SyncServerThread(threading.Thread):
                 enabled_projects = self.module.get_enabled_projects()
                 projects_settings = get_user_settings().get('projects', {})
 
-                projects_last_db_updates = self.module.get_projects_last_updates(enabled_projects)
+                projects_last_db_updates = get_projects_last_updates(enabled_projects)
                 enabled_synced_projects = {
                     project_name: project_data for project_name, project_data
                     in projects_settings.items()
@@ -469,10 +438,10 @@ class SyncServerThread(threading.Thread):
                 #  - use dummy checks for valid and not local site from user settings
                 #  - only sync projects that have new updates since last sync
                 for project_name, project_data in enabled_synced_projects.items():
-                    sync_is_needed = self.sync_is_needed(
+                    last_sync_outdated = sync_is_needed(
                         projects_local_last_sync, projects_last_db_updates, project_name
                     )
-                    if not sync_is_needed and not force_sync_asked:
+                    if not last_sync_outdated and not force_sync_asked:
                         continue
 
                     active_site = project_data.get('active_site', None)
@@ -512,8 +481,8 @@ class SyncServerThread(threading.Thread):
                             representations_retrieved[project_name] = sync_repres
 
                         if self.sync_doc_needs_update(sync_repres):
-                            self.update_project_last_sync(projects_local_last_sync, project_name)
-                            self.write_project_last_sync(projects_local_last_sync)
+                            update_project_last_sync(projects_local_last_sync, project_name)
+                            write_project_last_sync(projects_local_last_sync)
 
                         task_files_to_process = []
                         files_processed_info = []

@@ -1286,28 +1286,6 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                            representation, elem,
                            alt_site, file_id=file_id, force=True)
 
-    def get_projects_last_updates(self, projects_names):
-        """ Get last update timestamp for each project from database
-        Args:
-            projects_names (list[str]): list of projects names
-
-        Returns:
-            dict: each project name with his corresponding last update timestamp
-        """
-        collection = get_quadpype_collection("projects_updates_logs")
-        query = [
-            {
-                "$match":
-                {
-                    "project_name": {"$in": projects_names}
-                }
-            }
-        ]
-        return {
-            result["project_name"]: result["timestamp"]
-            for result in list(collection.aggregate(query))
-        }
-
     def register_loop_log(self, log_data):
         """ Register loop log for specific user in specific collection 'loops_logs'.
         Used to debug mongoDB latency. Need to be activated for each user to monitor.

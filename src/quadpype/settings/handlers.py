@@ -12,7 +12,7 @@ from quadpype.client.mongo import (
     get_project_connection,
 )
 from quadpype.client import get_project
-from quadpype.lib import get_user_workstation_info, get_user_id, CacheValues
+from quadpype.lib import get_user_workstation_info, get_user_id, CacheValues, ProjectCacheValues
 from quadpype.lib.version import PackageVersion, get_package
 from .constants import (
     CORE_KEYS,
@@ -568,7 +568,7 @@ class MongoSettingsHandler(SettingsHandler):
 
         self.core_settings_cache = CacheValues()
         self.global_settings_cache = CacheValues()
-        self.project_settings_cache = collections.defaultdict(CacheValues)
+        self.project_settings_cache = collections.defaultdict(lambda: ProjectCacheValues())
         self.project_anatomy_cache = collections.defaultdict(CacheValues)
 
     def _prepare_project_settings_keys(self):
