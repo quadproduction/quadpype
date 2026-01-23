@@ -38,7 +38,7 @@ class CreateReview(plugin.BlenderCreator):
         return collection
 
     def get_pre_create_attr_defs(self):
-        output = []
+        defs = super().get_pre_create_attr_defs()
 
         project_name = get_current_project_name()
         project_settings = get_project_settings(project_name)
@@ -57,16 +57,19 @@ class CreateReview(plugin.BlenderCreator):
 
         if resolutions:
             self.resolutions = resolutions
-            output.append(
-                EnumDef(
+            defs.extend(
+                [
+                    UISeparatorDef(),
+                    EnumDef(
                     "resolution",
                     items=self.resolutions,
                     default=scene_resolution,
                     label="Resolution",
-                )
+                    )
+                ]
             )
 
-        return output
+        return defs
 
     def get_instance_attr_defs(self):
         defs = lib.collect_animation_defs()
