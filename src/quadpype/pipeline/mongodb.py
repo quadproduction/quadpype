@@ -6,7 +6,7 @@ import pymongo
 from uuid import uuid4
 from functools import wraps
 
-from quadpype.client import QuadPypeMongoConnection
+from quadpype.client import QuadPypeMongoConnection, save_project_timestamp
 
 from . import schema
 
@@ -104,27 +104,6 @@ def session_data_from_environment(context_keys=False):
             session_data[key] = value
 
     return session_data
-
-
-def save_project_timestamp(project_name):
-    try:
-        database = QuadPypeMongoConnection.get_mongo_client()[str(os.environ["QUADPYPE_DATABASE_NAME"])]
-        result = database['projects_updates_logs'].replace_one(
-            {"project_name": project_name},
-            {
-                "project_name": project_name,
-                'timestamp': time.time()
-            },
-            upsert=True
-        )
-        if not result:
-            logging.error(f"An error has occured when trying to register project update : {e}")
-            return
-
-        logging.info(f"Timestamp updated for project {project_name}.")
-
-    except Exception as e:
-        logging.error(f"An error has occured when trying to register project update : {e}")
 
 
 def register_project_update(project_name):

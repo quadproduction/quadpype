@@ -4,8 +4,7 @@ from .constants import (
 )
 
 from .mongodb import (
-    AvalonMongoDB,
-    save_project_timestamp
+    AvalonMongoDB
 )
 from .anatomy import Anatomy
 
@@ -142,8 +141,7 @@ __all__ = (
     "HOST_WORKFILE_EXTENSIONS",
 
     # --- MongoDB ---
-    "AvalonMongoDB",
-    "save_project_timestamp",
+    "AvalonMongoDB"
 
     # --- Anatomy ---
     "Anatomy",

@@ -11,8 +11,15 @@ from quadpype.client.mongo import (
     QuadPypeMongoConnection,
     get_project_connection,
 )
-from quadpype.client import get_project
-from quadpype.lib import get_user_workstation_info, get_user_id, CacheValues, ProjectCacheValues
+from quadpype.client import get_project, save_project_timestamp
+from quadpype.lib import (
+    get_user_workstation_info,
+    get_user_id,
+    CoreSettingsCacheValues,
+    GlobalSettingsCacheValues,
+    ProjectSettingsCacheValues,
+    ProjectAnatomyCacheValues
+)
 from quadpype.lib.version import PackageVersion, get_package
 from .constants import (
     CORE_KEYS,
@@ -566,10 +573,10 @@ class MongoSettingsHandler(SettingsHandler):
 
         self.collection = self.mongo_client[database_name][collection_name]
 
-        self.core_settings_cache = CacheValues()
-        self.global_settings_cache = CacheValues()
-        self.project_settings_cache = collections.defaultdict(CacheValues)
-        self.project_anatomy_cache = collections.defaultdict(CacheValues)
+        self.core_settings_cache = CoreSettingsCacheValues()
+        self.global_settings_cache = GlobalSettingsCacheValues()
+        self.project_settings_cache = collections.defaultdict(ProjectSettingsCacheValues)
+        self.project_anatomy_cache = collections.defaultdict(ProjectAnatomyCacheValues)
 
     def _prepare_project_settings_keys(self):
         from .entities import ProjectSettingsEntity
@@ -705,6 +712,11 @@ class MongoSettingsHandler(SettingsHandler):
                 {"$set": new_global_settings_doc}
             )
 
+        save_project_timestamp(
+            project_name='global',
+            updated_entity='settings'
+        )
+
         # Add or update the core settings in the database
         self.collection.replace_one(
             {
@@ -715,6 +727,11 @@ class MongoSettingsHandler(SettingsHandler):
                 "data": core_settings
             },
             upsert=True
+        )
+
+        save_project_timestamp(
+            project_name='core',
+            updated_entity='settings'
         )
 
     def save_project_settings(self, project_name, overrides):
@@ -751,6 +768,11 @@ class MongoSettingsHandler(SettingsHandler):
             last_saved_info
         )
 
+        save_project_timestamp(
+            project_name=project_name if project_name else 'default_project',
+            updated_entity='settings'
+        )
+
     def save_project_anatomy(self, project_name, anatomy_data):
         """Save studio overrides of project anatomy data.
 
@@ -777,6 +799,11 @@ class MongoSettingsHandler(SettingsHandler):
                 data_cache,
                 last_saved_info
             )
+
+        save_project_timestamp(
+            project_name=project_name if project_name else 'default_project',
+            updated_entity='settings'
+        )
 
     @classmethod
     def prepare_mongo_update_dict(cls, in_data):

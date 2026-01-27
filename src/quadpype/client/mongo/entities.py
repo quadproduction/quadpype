@@ -79,9 +79,13 @@ def get_simplified_active_projects(fields=None):
     if not collection:
         return
 
-    for doc in collection.find({}, _prepare_fields(fields)):
-        yield doc
-    return
+    allowed_fields = {"name", "data.active", "data.code", "data.library"}
+    if fields is not None:
+        for field in fields:
+            if field not in allowed_fields:
+                return []
+
+    return list(collection.find({}, _prepare_fields(fields)))
 
 
 def _active_project_quick_access_is_enabled():
@@ -110,8 +114,9 @@ def get_projects(active=True, inactive=False, fields=None, summarized_retrieval=
             None is returned if project with specified filters was not found.
     """
     if summarized_retrieval and _active_project_quick_access_is_enabled():
-        yield from get_simplified_active_projects(fields)
-        return
+        active_projects = get_simplified_active_projects(fields)
+        if active_projects:
+            return active_projects
 
     mongodb = get_project_database()
     for project_name in mongodb.collection_names():
@@ -262,7 +267,6 @@ def _get_assets(
         Cursor: Query cursor as iterable which returns asset documents matching
             passed filters.
     """
-
     asset_types = []
     if standard:
         asset_types.append("asset")

@@ -115,7 +115,11 @@ from .transcoding import (
 
 from .cache import (
     CacheValues,
-    ProjectCacheValues,
+    CoreSettingsCacheValues,
+    GlobalSettingsCacheValues,
+    UserSettingsCacheValues,
+    ProjectSettingsCacheValues,
+    ProjectAnatomyCacheValues,
     get_projects_last_sync,
     write_project_last_sync,
     update_project_last_sync,
@@ -265,7 +269,11 @@ __all__ = [
     "get_rescaled_command_arguments",
 
     "CacheValues",
-    "ProjectCacheValues",
+    "CoreSettingsCacheValues",
+    "GlobalSettingsCacheValues",
+    "UserSettingsCacheValues",
+    "ProjectSettingsCacheValues",
+    "ProjectAnatomyCacheValues",
     "get_projects_last_sync",
     "write_project_last_sync",
     "update_project_last_sync",

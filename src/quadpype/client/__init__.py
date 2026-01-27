@@ -2,6 +2,7 @@ from .mongo import (
     QuadPypeMongoConnection,
     get_quadpype_database,
     get_quadpype_collection,
+    save_project_timestamp
 )
 
 from .mongo.entities import (
@@ -64,6 +65,7 @@ __all__ = (
     "QuadPypeMongoConnection",
     "get_quadpype_database",
     "get_quadpype_collection",
+    "save_project_timestamp",
 
     "get_projects",
     "get_project",
