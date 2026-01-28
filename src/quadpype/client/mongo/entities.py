@@ -1,3 +1,148 @@
+import time
+
+class ProjectAssetsCache:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(ProjectAssetsCache, cls).__new__(cls)
+            cls._instance._cache = {}
+            cls._instance.created_at = {}
+            cls._instance.ttl = 30
+
+        return cls._instance
+
+    def is_outdated(self, project_name):
+        if not self.created_at[project_name]:
+            return True
+
+        return (time.time() - self.created_at[project_name]) > self.ttl
+
+    def get(self, project_name):
+        return self._cache.get(project_name)
+
+    def set(self, project_name, assets):
+        self._cache[project_name] = assets
+        self.created_at[project_name] = time.time()
+
+    def clear(self, project_name=None):
+        if project_name:
+            self._cache.pop(project_name, None)
+            self.created_at.pop(project_name, None)
+        else:
+            self._cache.clear()
+            self.created_at.clear()
+
+def _filter_assets(assets, asset_ids=None, asset_names=None, parent_ids=None, standard=True, archived=False):
+    asset_types = []
+    if standard:
+        asset_types.append("asset")
+    if archived:
+        asset_types.append("archived_asset")
+    if not asset_types:
+        return []
+
+    def match(asset):
+        if asset.get("type") not in asset_types:
+            return False
+        if asset_ids is not None:
+            if asset.get("_id") not in set(convert_ids(asset_ids)):
+                return False
+        if asset_names is not None:
+            if asset.get("name") not in set(asset_names):
+                return False
+        if parent_ids is not None:
+            if asset.get("data", {}).get("visualParent") not in set(convert_ids(parent_ids)):
+                return False
+        return True
+
+    return [a for a in assets if match(a)]
+
+
+def extract_fields_from_doc(doc, fields):
+    """
+    Extrait les champs spécifiés (y compris imbriqués) d'un dictionnaire.
+
+    Args:
+        doc (dict): Le dictionnaire source.
+        fields (list[str]): Liste des chemins de champs, ex: ["name", "data.fps"]
+
+    Returns:
+        dict: Un dictionnaire ne contenant que les champs demandés.
+    """
+    def get_nested(d, key_path):
+        keys = key_path.split(".")
+        current = d
+        for k in keys:
+            if isinstance(current, dict) and k in current:
+                current = current[k]
+            else:
+                return None
+        return current
+
+    def set_nested(d, key_path, value):
+        keys = key_path.split(".")
+        current = d
+        for k in keys[:-1]:
+            if k not in current or not isinstance(current[k], dict):
+                current[k] = {}
+            current = current[k]
+        current[keys[-1]] = value
+
+    filtered_doc = []
+    for single_element in doc:
+        out = {}
+        for f in fields:
+            val = get_nested(single_element, f)
+            if val is not None:
+                set_nested(out, f, val)
+
+        if "_id" in single_element:
+            out["_id"] = single_element["_id"]
+
+        filtered_doc.append(out)
+
+    return filtered_doc
+
+
+# Decorator for asset cache
+def asset_cache_decorator(func):
+    def wrapper(
+        project_name,
+        asset_ids=None,
+        asset_names=None,
+        parent_ids=None,
+        standard=True,
+        archived=False,
+        fields=None
+    ):
+        cache = ProjectAssetsCache()
+        cached_assets = cache.get(project_name)
+
+        if cached_assets is None or cache.is_outdated(project_name):
+            conn = get_project_connection(project_name)
+            cache.set(
+                project_name=project_name,
+                assets=list(conn.find({}))
+            )
+            cached_assets = cache.get(project_name)
+
+        filtered = _filter_assets(
+            cached_assets,
+            asset_ids,
+            asset_names,
+            parent_ids,
+            standard,
+            archived
+        )
+
+        if fields:
+            filtered = extract_fields_from_doc(filtered, fields)
+
+        return filtered
+
+    return wrapper
+
 """Unclear if these will have public functions like these.
 
 Goal is that most of functions here are called on (or with) an object
@@ -236,6 +381,7 @@ def get_asset_by_name(project_name, asset_name, fields=None):
 # NOTE this could be just public function?
 # - any better variable name instead of 'standard'?
 # - same approach can be used for rest of types
+@asset_cache_decorator
 def _get_assets(
     project_name,
     asset_ids=None,
@@ -267,6 +413,8 @@ def _get_assets(
         Cursor: Query cursor as iterable which returns asset documents matching
             passed filters.
     """
+    print('in final get assets')
+
     asset_types = []
     if standard:
         asset_types.append("asset")
@@ -299,7 +447,8 @@ def _get_assets(
         query_filter["data.visualParent"] = {"$in": parent_ids}
 
     conn = get_project_connection(project_name)
-
+    print(query_filter)
+    print(fields)
     return conn.find(query_filter, _prepare_fields(fields))
 
 
@@ -332,7 +481,7 @@ def get_assets(
         Cursor: Query cursor as iterable which returns asset documents matching
             passed filters.
     """
-
+    print('in get assets')
     return _get_assets(
         project_name,
         asset_ids,
