@@ -1,11 +1,40 @@
 import time
 
-class ProjectAssetsCache:
+class CursorLikeEntityList(list):
+    """Simple class that mimics pymongo cursor but holds all data in memory.
+
+    Args:
+        data (Iterable[Dict]): List of documents that should be held in memory.
+    """
+
+    def __init__(self, data=[]):
+        if data is None:
+            data = []
+        super().__init__(data)
+        self._index = 0
+
+    def __iter__(self):
+        self._index = 0
+        return super().__iter__()
+
+    def __next__(self):
+        if self._index < len(self):
+            result = self[self._index]
+            self._index += 1
+            return result
+        else:
+            raise StopIteration
+
+    def count(self):
+        return len(self)
+
+
+class ProjectEntitiesCache:
     _instance = None
 
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(ProjectAssetsCache, cls).__new__(cls)
+            cls._instance = super(ProjectEntitiesCache, cls).__new__(cls)
             cls._instance._cache = {}
             cls._instance.created_at = {}
             cls._instance.ttl = 30
@@ -33,7 +62,19 @@ class ProjectAssetsCache:
             self._cache.clear()
             self.created_at.clear()
 
-def _filter_assets(assets, asset_ids=None, asset_names=None, parent_ids=None, standard=True, archived=False):
+def _filter_assets(
+        assets,
+        asset_ids=None,
+        asset_names=None,
+        parent_ids=None,
+        representation_ids=None,
+        representation_names=None,
+        version_ids=None,
+        context_filters=None,
+        names_by_version_ids=None,
+        standard=True,
+        archived=False
+    ):
     asset_types = []
     if standard:
         asset_types.append("asset")
@@ -45,15 +86,53 @@ def _filter_assets(assets, asset_ids=None, asset_names=None, parent_ids=None, st
     def match(asset):
         if asset.get("type") not in asset_types:
             return False
+
         if asset_ids is not None:
             if asset.get("_id") not in set(convert_ids(asset_ids)):
                 return False
+
         if asset_names is not None:
             if asset.get("name") not in set(asset_names):
                 return False
+
         if parent_ids is not None:
             if asset.get("data", {}).get("visualParent") not in set(convert_ids(parent_ids)):
                 return False
+
+        if representation_ids is not None:
+            rep_ids = set(convert_ids(representation_ids))
+            asset_rep_ids = set(asset.get("representation_ids", []))
+            if not rep_ids.intersection(asset_rep_ids):
+                return False
+
+        if representation_names is not None:
+            rep_names = set(representation_names)
+            asset_rep_names = set(asset.get("representation_names", []))
+            if not rep_names.intersection(asset_rep_names):
+                return False
+
+        if version_ids is not None:
+            ver_ids = set(convert_ids(version_ids))
+            asset_ver_ids = set(asset.get("version_ids", []))
+            if not ver_ids.intersection(asset_ver_ids):
+                return False
+
+        if context_filters is not None:
+            for key, values in context_filters.items():
+                asset_value = asset.get("context", {}).get(key)
+                if asset_value is None or asset_value not in values:
+                    return False
+
+        if names_by_version_ids is not None:
+            found = False
+            for ver_id, names in names_by_version_ids.items():
+                if ver_id in asset.get("version_ids", []) and asset.get("name") in names:
+                    found = True
+                    break
+
+            if not found and names_by_version_ids:
+                return False
+
         return True
 
     return [a for a in assets if match(a)]
@@ -89,7 +168,7 @@ def extract_fields_from_doc(doc, fields):
             current = current[k]
         current[keys[-1]] = value
 
-    filtered_doc = []
+    filtered_doc = CursorLikeEntityList()
     for single_element in doc:
         out = {}
         for f in fields:
@@ -106,24 +185,29 @@ def extract_fields_from_doc(doc, fields):
 
 
 # Decorator for asset cache
-def asset_cache_decorator(func):
+def entities_cache_decorator(func):
     def wrapper(
         project_name,
         asset_ids=None,
         asset_names=None,
         parent_ids=None,
+        representation_ids=None,
+        representation_names=None,
+        version_ids=None,
+        context_filters=None,
+        names_by_version_ids=None,
         standard=True,
         archived=False,
         fields=None
     ):
-        cache = ProjectAssetsCache()
+        cache = ProjectEntitiesCache()
         cached_assets = cache.get(project_name)
 
         if cached_assets is None or cache.is_outdated(project_name):
             conn = get_project_connection(project_name)
             cache.set(
                 project_name=project_name,
-                assets=list(conn.find({}))
+                assets=CursorLikeEntityList(conn.find({}))
             )
             cached_assets = cache.get(project_name)
 
@@ -132,6 +216,11 @@ def asset_cache_decorator(func):
             asset_ids,
             asset_names,
             parent_ids,
+            representation_ids,
+            representation_names,
+            version_ids,
+            context_filters,
+            names_by_version_ids,
             standard,
             archived
         )
@@ -381,7 +470,7 @@ def get_asset_by_name(project_name, asset_name, fields=None):
 # NOTE this could be just public function?
 # - any better variable name instead of 'standard'?
 # - same approach can be used for rest of types
-@asset_cache_decorator
+@entities_cache_decorator
 def _get_assets(
     project_name,
     asset_ids=None,
@@ -413,7 +502,6 @@ def _get_assets(
         Cursor: Query cursor as iterable which returns asset documents matching
             passed filters.
     """
-    print('in final get assets')
 
     asset_types = []
     if standard:
@@ -447,8 +535,7 @@ def _get_assets(
         query_filter["data.visualParent"] = {"$in": parent_ids}
 
     conn = get_project_connection(project_name)
-    print(query_filter)
-    print(fields)
+
     return conn.find(query_filter, _prepare_fields(fields))
 
 
@@ -483,13 +570,13 @@ def get_assets(
     """
     print('in get assets')
     return _get_assets(
-        project_name,
-        asset_ids,
-        asset_names,
-        parent_ids,
-        True,
-        archived,
-        fields
+        project_name=project_name,
+        asset_ids=asset_ids,
+        asset_names=asset_names,
+        parent_ids=parent_ids,
+        standard=True,
+        archived=archived,
+        fields=fields
     )
 
 
@@ -1313,7 +1400,7 @@ def _regex_filters(filters):
 
     return output
 
-
+@entities_cache_decorator
 def _get_representations(
     project_name,
     representation_ids,
@@ -1399,7 +1486,6 @@ def _get_representations(
         query_filter["$and"] = and_query
 
     conn = get_project_connection(project_name)
-
     return conn.find(query_filter, _prepare_fields(fields))
 
 
