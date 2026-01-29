@@ -206,7 +206,7 @@ class MongoUserHandler(UserHandler):
         )
 
         save_project_timestamp(
-            project_name=f"user:{self.user_id}",
+            project_name=self.user_id,
             updated_entity='settings'
         )
 

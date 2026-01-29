@@ -1,4 +1,6 @@
 import time
+import threading
+
 
 class CursorLikeEntityList(list):
     """Simple class that mimics pymongo cursor but holds all data in memory.
@@ -31,6 +33,7 @@ class CursorLikeEntityList(list):
 
 class ProjectEntitiesCache:
     _instance = None
+    _lock = threading.Lock()
 
     def __new__(cls):
         if cls._instance is None:
@@ -317,9 +320,9 @@ def get_simplified_active_projects(fields=None):
     if fields is not None:
         for field in fields:
             if field not in allowed_fields:
-                return []
+                return None
 
-    return list(collection.find({}, _prepare_fields(fields)))
+    return collection.find({}, _prepare_fields(fields))
 
 
 def _active_project_quick_access_is_enabled():
@@ -349,8 +352,10 @@ def get_projects(active=True, inactive=False, fields=None, summarized_retrieval=
     """
     if summarized_retrieval and _active_project_quick_access_is_enabled():
         active_projects = get_simplified_active_projects(fields)
+
         if active_projects:
-            return active_projects
+            yield from active_projects
+            return
 
     mongodb = get_project_database()
     for project_name in mongodb.collection_names():
@@ -568,7 +573,7 @@ def get_assets(
         Cursor: Query cursor as iterable which returns asset documents matching
             passed filters.
     """
-    print('in get assets')
+
     return _get_assets(
         project_name=project_name,
         asset_ids=asset_ids,

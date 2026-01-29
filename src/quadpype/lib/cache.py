@@ -5,6 +5,9 @@ import copy
 import tempfile
 import time
 import logging
+import threading
+import sqlite3
+
 
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,6 +19,109 @@ from quadpype.client import get_quadpype_collection
 SYNCS_LOGS_FILE = "sync_logs.yaml"
 
 
+# Singleton for in-memory SQLite DB
+class  CacheMemoryDatabase:
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls):
+        if not cls._instance:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = super().__new__(cls)
+                    cls._instance._init_db()
+        return cls._instance
+
+    def _init_db(self):
+        self.conn = sqlite3.connect(":memory:", check_same_thread=False)
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS sync_times (
+                name TEXT,
+                updated_entity TEXT,
+                timestamp REAL,
+                PRIMARY KEY (name, updated_entity)
+            )
+        """)
+        self.conn.commit()
+
+    def get_all(self):
+        cur = self.conn.execute("SELECT name, updated_entity, timestamp FROM sync_times")
+        return [
+            {
+                "name": row[0],
+                "updated_entity": row[1],
+                "timestamp": row[2]
+            } for row in cur.fetchall()
+        ]
+
+    def get(self, name, entity):
+        cur = self.conn.execute(
+            "SELECT timestamp FROM sync_times WHERE name = ? AND updated_entity = ?",
+            (name, entity)
+        )
+        row = cur.fetchone()
+        return row[0] if row else None
+
+    def get_specific(self, names=None, entities=None):
+        query = "SELECT name, updated_entity, timestamp FROM sync_times WHERE 1=1"
+        params = []
+
+        if names:
+            query += f" AND name IN ({','.join(['?']*len(names))})"
+            params.extend(names)
+
+        if entities:
+            query += f" AND updated_entity IN ({','.join(['?']*len(entities))})"
+            params.extend(entities)
+
+        cur = self.conn.execute(query, params)
+        return [
+            {
+                "name": row[0],
+                "updated_entity": row[1],
+                "timestamp": row[2]
+            } for row in cur.fetchall()
+        ]
+
+    def create(self, name, entity, timestamp):
+        self.conn.execute(
+            "INSERT INTO sync_times (name, updated_entity, timestamp) VALUES (?, ?, ?)",
+            (name, entity, timestamp)
+        )
+        self.conn.commit()
+
+    def update(self, name, entity, timestamp):
+        cur = self.conn.execute(
+            "UPDATE sync_times SET timestamp = ? WHERE name = ? AND updated_entity = ?",
+            (timestamp, name, entity)
+        )
+        self.conn.commit()
+
+        # If no row was updated, insert a new one
+        if cur.rowcount == 0:
+            self.create(name, entity, timestamp)
+
+
+def get_entity_last_sync(name, entity):
+    return CacheMemoryDatabase().get(name, entity)
+
+
+def get_specific_entities_last_sync(names=None, entities=None):
+    return CacheMemoryDatabase().get_specific(names, entities)
+
+
+def get_all_entities_last_sync():
+    return CacheMemoryDatabase().get_all()
+
+
+def update_entity_last_sync(name, entity, timestamp):
+    CacheMemoryDatabase().update(
+        name=name,
+        entity=entity,
+        timestamp=timestamp
+    )
+
+
 class CacheValues:
     cache_lifetime = 10
 
@@ -25,9 +131,6 @@ class CacheValues:
         self.version = None
         self.last_saved_info = None
         self.project_last_sync = None
-
-        self.name = "undefined"
-        self.entity = "undefined"
 
     def data_copy(self):
         if not self.data:
@@ -66,7 +169,6 @@ class CacheValues:
         return self.creation_time is not None
 
     def _cache_is_expired(self):
-
         if self.creation_time is None:
             return True
 
@@ -77,6 +179,14 @@ class CacheValues:
         return not self.project_last_sync or \
             project_last_update > self.project_last_sync
 
+    def update_entity_last_sync(self):
+        self.project_last_sync = time.time()
+        update_entity_last_sync(
+            name=self.name,
+            entity=self.entity,
+            timestamp=self.project_last_sync
+        )
+
     @property
     def is_outdated(self):
         # If no data is cached, we consider it outdated as it needs to be filled
@@ -85,30 +195,27 @@ class CacheValues:
 
         # If cache is not expired, we stop verification immediately
         if not self._cache_is_expired():
+            self.update_creation_time()
             return False
 
-        # We immediatly update creation time to let next calls wait for cache expiry
-        self.update_creation_time()
-
         # First we retrieve projects last updates from database (and consider outdated if nothing is found)
-        project_last_update = get_project_last_update(project_name=self.name, entity=self.entity)
+        project_last_update = get_project_last_update(name=self.name, entity=self.entity)
         if not project_last_update:
             return True
 
         # We compare local sync time to database last sync to determine if sync is needed
         # Then we retrieve project local last sync
         if not self.project_last_sync:
-            self.projects_last_sync = get_projects_last_sync()
-            self.project_last_sync = self.projects_last_sync.get(self.name)
+            self.project_last_sync = get_entity_last_sync(name=self.name, entity=self.entity)
 
         # Ultimately we determine if sync is needed by checking :
         # - If local sync time exists (we sync if not)
         # - If db sync time is more recent than local sync time (we sync if so)
         if self._sync_is_needed(project_last_update):
-            update_project_last_sync(self.projects_last_sync, self.name)
-            write_project_last_sync(self.projects_last_sync)
+            self.update_entity_last_sync()
             return True
 
+        self.update_creation_time()
         return False
 
     def set_outdated(self):
@@ -117,132 +224,107 @@ class CacheValues:
 
 class CoreSettingsCacheValues(CacheValues):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self.name = "core"
         self.entity = "settings"
+        super().__init__(*args, **kwargs)
 
 
 class GlobalSettingsCacheValues(CacheValues):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self.name = "global"
         self.entity = "settings"
+        super().__init__(*args, **kwargs)
 
 
 class UserSettingsCacheValues(CacheValues):
     def __init__(self, name=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user_id = name
-        self.name = f"user:{self.user_id}"
+        self.name = name
         self.entity = "settings"
+        super().__init__(*args, **kwargs)
 
 
 class ProjectSettingsCacheValues(CacheValues):
     def __init__(self, project_name=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self.name = project_name if project_name else "project_default"
         self.entity = "settings"
+        super().__init__(*args, **kwargs)
 
 
 class ProjectAnatomyCacheValues(CacheValues):
     def __init__(self, project_name=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self.name = project_name if project_name else "project_default"
         self.entity = "anatomy"
+        super().__init__(*args, **kwargs)
 
 
-def get_projects_last_sync():
-    sync_file_path = Path(tempfile.gettempdir(), SYNCS_LOGS_FILE)
-    if not sync_file_path.exists():
-        return {}
+def get_projects_last_updates(names, entity):
+    """ Get last update timestamp for each project from database
+    Args:
+        names (list[str]): list of entities names
+        entity (str): Updated entity type name
 
-    with open(sync_file_path, 'r', encoding='utf-8') as sync_file:
-        logging.info(f"Loaded projects synchronisation times files at path : {sync_file_path}")
-        return yaml.safe_load(sync_file)
-
-
-def write_project_last_sync(projects_last_sync):
-    sync_file_path = Path(tempfile.gettempdir(), SYNCS_LOGS_FILE)
-    with open(sync_file_path, 'w', encoding='utf-8') as sync_file:
-        yaml.dump(projects_last_sync, sync_file)
-
-    logging.info(f"New synchronization time data written at path : {sync_file_path}")
-
-
-def update_project_last_sync(projects_last_sync, project_name):
-    projects_last_sync[project_name] = time.time()
-
-
-def get_projects_last_updates(projects_names):
-        """ Get last update timestamp for each project from database
-        Args:
-            projects_names (list[str]): list of projects names
-
-        Returns:
-            dict: each project name with his corresponding last update timestamp
-        """
-        collection = get_quadpype_collection("projects_updates_logs")
-        query = [
+    Returns:
+        dict: each project name with his corresponding last update timestamp
+    """
+    collection = get_quadpype_collection("projects_updates_logs")
+    query = [
+        {
+            "$match":
             {
-                "$match":
-                {
-                    "name": {"$in": projects_names}
-                }
+                "name": {"$in": names},
+                "updated_entity": entity
             }
-        ]
-        return {
-            result["name"]: result["timestamp"]
-            for result in list(collection.aggregate(query))
         }
+    ]
+    return {
+        result["name"]: result["timestamp"]
+        for result in list(collection.aggregate(query))
+    }
 
 
-def get_project_last_update(project_name=None, entity=None):
-        """ Get last update timestamp for specific project / entity from database
-        Args:
-            projects_names (list[str]): list of projects names
+def get_project_last_update(name=None, entity=None):
+    """ Get last update timestamp for specific project / entity from database
+    Args:
+        name (str): list of projects names
+        entity (str): Updated entity type name
 
-        Returns:
-            dict: each project name with his corresponding last update timestamp
-        """
-        if not project_name and not entity:
-            logging.warning("Needs at least project_name or entity to get last update timestamp.")
-            return None
+    Returns:
+        dict: each project name with his corresponding last update timestamp
+    """
+    if not name and not entity:
+        logging.warning("Needs at least name or entity to get last update timestamp.")
+        return None
 
-        collection = get_quadpype_collection("projects_updates_logs")
+    collection = get_quadpype_collection("projects_updates_logs")
+    matches = {}
+    if name:
+        matches['name'] = name
 
-        matches = {}
-        if project_name:
-            matches['name'] = project_name
+    if entity:
+        matches['updated_entity'] = entity
 
-        if entity:
-            matches['entity'] = entity
-
-        query = [
-            {
-                "$match": matches
-            }
-        ]
-        return {
-            result["name"]: result["timestamp"]
-            for result in list(collection.aggregate(query))
+    query = [
+        {
+            "$match": matches
         }
+    ]
+    return next(iter(collection.aggregate(query)), {}).get("timestamp", None)
 
 
-def sync_is_needed(projects_local_last_sync, projects_last_updates, name):
-        project_db_last_sync_timestamp = projects_last_updates.get(name, 0)
-        if not project_db_last_sync_timestamp:
-            return True
+def sync_is_needed(entities_local_last_sync, entities_last_updates, name):
+    if entities_local_last_sync is None:
+        return True
 
-        project_local_last_sync_timestamp = projects_local_last_sync.get(name, 0)
-        if not project_db_last_sync_timestamp:
-            return True
+    entity_db_last_sync_timestamp = entities_last_updates.get(name, 0)
+    if not entity_db_last_sync_timestamp:
+        return True
 
-        if project_db_last_sync_timestamp > project_local_last_sync_timestamp:
-            logging.info(f"New updates found from entity {name}. Sync should be triggered.")
-            return True
+    if entity_db_last_sync_timestamp > entities_local_last_sync:
+        logging.info(f"New updates found from entity {name}. Sync should be triggered.")
+        return True
 
-        logging.info(
-            f"Local sync is more recent than project db update for entity {name}. "
-            f"Sync will be canceled."
-        )
-        return False
+    logging.info(
+        f"Local sync is more recent than entity db update for entity {name}. "
+        f"Sync will be canceled."
+    )
+    return False

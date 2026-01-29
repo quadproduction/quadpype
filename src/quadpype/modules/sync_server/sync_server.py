@@ -9,17 +9,18 @@ from datetime import datetime, timezone
 from collections import defaultdict
 
 from .providers import lib
-from quadpype.client import get_linked_representation_id
+from quadpype.client import get_linked_representation_id, get_projects
 from quadpype.lib import (
     Logger,
+    get_entity_last_sync,
     get_local_site_id,
     get_quadpype_username,
     get_user_settings,
-    get_projects_last_sync,
-    write_project_last_sync,
-    update_project_last_sync,
+    get_specific_entities_last_sync,
     get_projects_last_updates,
-    sync_is_needed
+    sync_is_needed,
+    update_entity_last_sync,
+
 )
 
 from quadpype.modules.base import ModulesManager
@@ -405,7 +406,7 @@ class SyncServerThread(threading.Thread):
         Returns:
         """
         self.set_providers_batch_limit()
-        projects_local_last_sync = get_projects_last_sync()
+
         try_cnt = self.module.get_tries_count()
         delay = self.module.get_loop_delay()
         force_loops_number = self.module.get_force_sync_loops_number()
@@ -427,7 +428,7 @@ class SyncServerThread(threading.Thread):
                 enabled_projects = self.module.get_enabled_projects()
                 projects_settings = get_user_settings().get('projects', {})
 
-                projects_last_db_updates = get_projects_last_updates(enabled_projects)
+                projects_last_db_updates = get_projects_last_updates(enabled_projects, entity="global")
                 enabled_synced_projects = {
                     project_name: project_data for project_name, project_data
                     in projects_settings.items()
@@ -439,7 +440,9 @@ class SyncServerThread(threading.Thread):
                 #  - only sync projects that have new updates since last sync
                 for project_name, project_data in enabled_synced_projects.items():
                     last_sync_outdated = sync_is_needed(
-                        projects_local_last_sync, projects_last_db_updates, project_name
+                        get_entity_last_sync(name=project_name, entity="sync"),
+                        projects_last_db_updates,
+                        name=project_name
                     )
                     if not last_sync_outdated and not force_sync_asked:
                         continue
@@ -455,7 +458,6 @@ class SyncServerThread(threading.Thread):
                         continue
 
                     browsed_projects.append(project_name)
-
 
                 if browsed_projects:
                     self.module.set_sync_project_settings()
@@ -481,8 +483,11 @@ class SyncServerThread(threading.Thread):
                             representations_retrieved[project_name] = sync_repres
 
                         if self.sync_doc_needs_update(sync_repres):
-                            update_project_last_sync(projects_local_last_sync, project_name)
-                            write_project_last_sync(projects_local_last_sync)
+                            update_entity_last_sync(
+                                name=project_name,
+                                entity="sync",
+                                timestamp=time.time()
+                            )
 
                         task_files_to_process = []
                         files_processed_info = []
