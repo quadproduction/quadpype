@@ -181,11 +181,6 @@ class CacheValues:
 
     def update_entity_last_sync(self):
         self.project_last_sync = time.time()
-        update_entity_last_sync(
-            name=self.name,
-            entity=self.entity,
-            timestamp=self.project_last_sync
-        )
 
     @property
     def is_outdated(self):

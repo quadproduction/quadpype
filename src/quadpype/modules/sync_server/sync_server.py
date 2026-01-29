@@ -411,6 +411,7 @@ class SyncServerThread(threading.Thread):
         delay = self.module.get_loop_delay()
         force_loops_number = self.module.get_force_sync_loops_number()
         loop_number = 0
+        projects_last_sync = defaultdict(dict)
 
         while self.is_running and not self.module.is_paused():
             try:
@@ -440,7 +441,7 @@ class SyncServerThread(threading.Thread):
                 #  - only sync projects that have new updates since last sync
                 for project_name, project_data in enabled_synced_projects.items():
                     last_sync_outdated = sync_is_needed(
-                        get_entity_last_sync(name=project_name, entity="sync"),
+                        projects_last_sync.get(project_name, None),
                         projects_last_db_updates,
                         name=project_name
                     )
@@ -483,11 +484,7 @@ class SyncServerThread(threading.Thread):
                             representations_retrieved[project_name] = sync_repres
 
                         if self.sync_doc_needs_update(sync_repres):
-                            update_entity_last_sync(
-                                name=project_name,
-                                entity="sync",
-                                timestamp=time.time()
-                            )
+                            projects_last_sync[project_name] = time.time()
 
                         task_files_to_process = []
                         files_processed_info = []
