@@ -1,6 +1,9 @@
+import collections
 import copy
 import sqlite3
+import threading
 from pathlib import Path
+import time
 from qtpy import QtCore, QtGui
 
 from quadpype.lib import StringTemplate
@@ -25,10 +28,41 @@ APP_OVERLAY_ICON_SIZE = 32
 APP_ICON_SIZE = 64
 
 class WorkFileCache:
-    def workfilde_db_exists(self, project_name=None, settings=None):
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls):
+        if not cls._instance:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = super().__new__(cls)
+                    cls._ttl = 60
+                    cls._updates_times = collections.defaultdict(float)
+                    cls._workfile_db_paths = collections.defaultdict(str)
+                    cls._enabled = None
+        return cls._instance
+
+    def is_enabled(self, project_name):
+        if self._enabled is None:
+            settings = get_project_settings(project_name)
+            self._enabled = settings["global"].get("launcher", False).get("use_icons", False)
+
+        return self._enabled
+
+    def is_outdated(self, project_name=None):
+        if not self._workfile_db_paths[project_name] or \
+            not self._updates_times[project_name]:
+            return True
+
+        return time.time() - self._updates_times[project_name] > self._ttl
+
+    def workfile_db_exists(self, project_name=None, settings=None):
         return self.get_workfile_db_path(project_name, settings).exists()
 
     def get_workfile_db_path(self,project_name=None, settings=None):
+        if not self.is_outdated(project_name):
+            return self._workfile_db_paths[project_name]
+
         if not settings:
             settings = get_project_settings(project_name)
         db_path_template = settings["global"]["launcher"]["workfile_cache_file_path"]
@@ -42,15 +76,16 @@ class WorkFileCache:
         db_path = Path(StringTemplate.format_template(db_path_template, template_data))
         db_path.mkdir(parents=True, exist_ok=True)
 
-        return db_path / DB_NAME
+        self._workfile_db_paths[project_name] = db_path / DB_NAME
 
-    def init_workfile_db(self,project_name):
-        settings = get_project_settings(project_name)
-        use_icons = settings["global"].get("launcher", False).get("use_icons", False)
-        if not use_icons:
-            return
+        self._updates_times[project_name] = time.time()
+        return self._workfile_db_paths[project_name]
 
-        conn = sqlite3.connect(self.get_workfile_db_path(project_name=project_name, settings=settings))
+    def init_workfile_db(self, project_name):
+        if not self.is_enabled(project_name):
+            return None
+
+        conn = sqlite3.connect(self.get_workfile_db_path(project_name=project_name))
 
         c = conn.cursor()
         c.execute('''
@@ -65,6 +100,9 @@ class WorkFileCache:
         conn.close()
 
     def add_task_folder(self,project_name=None, task_name=None, asset_name=None, folder=None):
+        if not self.is_enabled(project_name):
+            return None
+
         if isinstance(folder, str):
             folder =Path(folder)
         conn = sqlite3.connect(self.get_workfile_db_path(project_name=project_name))
@@ -80,6 +118,9 @@ class WorkFileCache:
         conn.close()
 
     def add_task_extension(self,project_name=None, task_name=None, asset_name=None, extension=None):
+        if not self.is_enabled(project_name):
+            return None
+
         if not project_name:
             project_name = get_current_project_name()
         if not task_name:
@@ -96,6 +137,9 @@ class WorkFileCache:
         conn.close()
 
     def load_task_extensions(self,project_name, task_name, asset_name):
+        if not self.is_enabled(project_name):
+            return []
+
         conn = sqlite3.connect(self.get_workfile_db_path(project_name=project_name))
         c = conn.cursor()
         c.execute('SELECT ext FROM task_files WHERE task_name = ? AND asset_name = ?',

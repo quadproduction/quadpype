@@ -685,16 +685,21 @@ class LauncherModel(QtCore.QObject):
                 time.sleep(0.01)
             self._asset_refresh_thread = None
 
+    def _create_workfile_cache_if_needed(self):
+        # Populate and create WF cache
+        workfile_db = WorkFileCache()
+        is_enabled = workfile_db.is_enabled(project_name=self._last_project_name)
+        not_exists = not workfile_db.workfile_db_exists(project_name=self._last_project_name)
+        if is_enabled and not_exists:
+            workfile_db.init_workfile_db(project_name=self._last_project_name)
+            print("Workfile cache created")
+
     def _refresh_assets(self):
         asset_docs = list(get_assets(
             self._last_project_name, fields=self._asset_projection.keys()
         ))
 
-        # Populate and create WF cache
-        workfile_db = WorkFileCache()
-        if not workfile_db.workfilde_db_exists(project_name=self._last_project_name):
-            workfile_db.init_workfile_db(project_name=self._last_project_name)
-            print("Workfile cache created")
+        self._create_workfile_cache_if_needed()
 
         if not self._refreshing_assets:
             return
