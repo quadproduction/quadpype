@@ -3,6 +3,8 @@ import threading
 import enum
 import pickle
 
+from collections.abc import KeysView, ValuesView, ItemsView
+
 
 class EntityType(enum.Enum):
     ASSET = "asset"
@@ -368,25 +370,32 @@ def extract_fields_from_doc(doc, fields):
     return filtered_doc
 
 
+def _convert_kwargs_for_hash(**kwargs):
+    """
+    Convert any dict_keys, dict_values, dict_items in kwargs to list before pickling
+    """
+    return {
+        k: list(v) if isinstance(v, (KeysView, ValuesView, ItemsView)) else v
+        for k, v in kwargs.items()
+    }
+
+
 def entities_cache_decorator(entity_type):
+    """
+    Cache decorator for entity retrieval functions.
+    Works for assets, representations and versions.
+    Also store each query with a hash key for faster retrieval, with a ttl of 10 minutes.
+    """
     def function_decorator(func):
         def wrapper(
-            project_name,
-            asset_ids=None,
-            asset_names=None,
-            parent_ids=None,
-            representation_ids=None,
-            representation_names=None,
-            subset_ids=None,
-            version_ids=None,
-            versions=None,
-            context_filters=None,
-            names_by_version_ids=None,
-            standard=True,
-            archived=False,
-            hero=False,
-            fields=None
+            **kwargs
         ):
+
+            if not _cache_database_is_activated():
+                return func(**kwargs)
+
+            project_name = kwargs.get("project_name")
+
             cache = ProjectEntitiesCache()
             cached_assets = cache.get(project_name)
 
@@ -399,27 +408,14 @@ def entities_cache_decorator(entity_type):
                 )
                 cached_assets = cache.get(project_name)
 
-            data = pickle.dumps(
-                (
-                    entity_type,
-                    asset_ids,
-                    asset_names,
-                    parent_ids,
-                    representation_ids,
-                    representation_names,
-                    subset_ids,
-                    version_ids,
-                    versions,
-                    context_filters,
-                    names_by_version_ids,
-                    standard,
-                    archived,
-                    hero
-                )
-            )
+
+            data = pickle.dumps(_convert_kwargs_for_hash(**kwargs))
 
             args_hash = hash(data)
             hash_content = cache.get_with_hash(args_hash)
+
+            kwargs.pop('project_name', None)
+            fields = kwargs.pop('fields', None)
             if hash_content:
                 filtered = hash_content
 
@@ -427,19 +423,7 @@ def entities_cache_decorator(entity_type):
                 filtered = _filter_assets(
                     cached_assets,
                     entity_type,
-                    asset_ids,
-                    asset_names,
-                    parent_ids,
-                    representation_ids,
-                    representation_names,
-                    subset_ids,
-                    version_ids,
-                    versions,
-                    context_filters,
-                    names_by_version_ids,
-                    standard,
-                    archived,
-                    hero
+                    **kwargs
                 )
                 cache.set_with_hash(args_hash, filtered)
 
@@ -539,6 +523,16 @@ def get_simplified_active_projects(fields=None):
                 return None
 
     return collection.find({}, _prepare_fields(fields))
+
+
+def _cache_database_is_activated():
+    """Check if 'cache_database' is enabled in settings.
+    If so, database entities will be cached in RAM to avoid multiple queries.
+
+    Returns:
+        bool: True if property is enabled, False otherwise.
+    """
+    return os.environ.get("QUADPYPE_CACHE_DATABASE", None)
 
 
 def _active_project_quick_access_is_enabled():

@@ -3,6 +3,7 @@
     "studio_code": "cool_std",
     "administrators": [],
     "windows_can_stay_on_top": true,
+    "cache_database": false,
     "environment": {},
     "log_to_server": true,
     "disk_mapping": {
