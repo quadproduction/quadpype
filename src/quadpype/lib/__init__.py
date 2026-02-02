@@ -114,20 +114,14 @@ from .transcoding import (
 )
 
 from .cache import (
-    CacheMemoryDatabase,
     CacheValues,
     CoreSettingsCacheValues,
     GlobalSettingsCacheValues,
     UserSettingsCacheValues,
     ProjectSettingsCacheValues,
     ProjectAnatomyCacheValues,
-    get_entity_last_sync,
-    get_specific_entities_last_sync,
-    get_all_entities_last_sync,
-    update_entity_last_sync,
     get_projects_last_updates,
     get_project_last_update,
-    sync_is_needed
 )
 
 from .registry import (
@@ -271,20 +265,14 @@ __all__ = [
     "convert_ffprobe_fps_to_float",
     "get_rescaled_command_arguments",
 
-    "CacheMemoryDatabase",
     "CacheValues",
     "CoreSettingsCacheValues",
     "GlobalSettingsCacheValues",
     "UserSettingsCacheValues",
     "ProjectSettingsCacheValues",
     "ProjectAnatomyCacheValues",
-    "get_entity_last_sync",
-    "get_specific_entities_last_sync",
-    "get_all_entities_last_sync",
-    "update_entity_last_sync",
     "get_projects_last_updates",
-    "get_project_last_updates",
-    "sync_is_needed",
+    "get_project_last_update",
 
     "IniSettingRegistry",
     "JSONSettingRegistry",

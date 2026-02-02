@@ -2,124 +2,14 @@
 """Module storing class for caching values, used for settings."""
 import json
 import copy
-import tempfile
 import time
 import logging
-import threading
-import sqlite3
-
 
 from datetime import datetime, timezone
-from pathlib import Path
-import yaml
 
 from quadpype.client import get_quadpype_collection
 
 
-SYNCS_LOGS_FILE = "sync_logs.yaml"
-
-
-# Singleton for in-memory SQLite DB
-class  CacheMemoryDatabase:
-    _instance = None
-    _lock = threading.Lock()
-
-    def __new__(cls):
-        if not cls._instance:
-            with cls._lock:
-                if not cls._instance:
-                    cls._instance = super().__new__(cls)
-                    cls._instance._init_db()
-        return cls._instance
-
-    def _init_db(self):
-        self.conn = sqlite3.connect(":memory:", check_same_thread=False)
-        self.conn.execute("""
-            CREATE TABLE IF NOT EXISTS sync_times (
-                name TEXT,
-                updated_entity TEXT,
-                timestamp REAL,
-                PRIMARY KEY (name, updated_entity)
-            )
-        """)
-        self.conn.commit()
-
-    def get_all(self):
-        cur = self.conn.execute("SELECT name, updated_entity, timestamp FROM sync_times")
-        return [
-            {
-                "name": row[0],
-                "updated_entity": row[1],
-                "timestamp": row[2]
-            } for row in cur.fetchall()
-        ]
-
-    def get(self, name, entity):
-        cur = self.conn.execute(
-            "SELECT timestamp FROM sync_times WHERE name = ? AND updated_entity = ?",
-            (name, entity)
-        )
-        row = cur.fetchone()
-        return row[0] if row else None
-
-    def get_specific(self, names=None, entities=None):
-        query = "SELECT name, updated_entity, timestamp FROM sync_times WHERE 1=1"
-        params = []
-
-        if names:
-            query += f" AND name IN ({','.join(['?']*len(names))})"
-            params.extend(names)
-
-        if entities:
-            query += f" AND updated_entity IN ({','.join(['?']*len(entities))})"
-            params.extend(entities)
-
-        cur = self.conn.execute(query, params)
-        return [
-            {
-                "name": row[0],
-                "updated_entity": row[1],
-                "timestamp": row[2]
-            } for row in cur.fetchall()
-        ]
-
-    def create(self, name, entity, timestamp):
-        self.conn.execute(
-            "INSERT INTO sync_times (name, updated_entity, timestamp) VALUES (?, ?, ?)",
-            (name, entity, timestamp)
-        )
-        self.conn.commit()
-
-    def update(self, name, entity, timestamp):
-        cur = self.conn.execute(
-            "UPDATE sync_times SET timestamp = ? WHERE name = ? AND updated_entity = ?",
-            (timestamp, name, entity)
-        )
-        self.conn.commit()
-
-        # If no row was updated, insert a new one
-        if cur.rowcount == 0:
-            self.create(name, entity, timestamp)
-
-
-def get_entity_last_sync(name, entity):
-    return CacheMemoryDatabase().get(name, entity)
-
-
-def get_specific_entities_last_sync(names=None, entities=None):
-    return CacheMemoryDatabase().get_specific(names, entities)
-
-
-def get_all_entities_last_sync():
-    return CacheMemoryDatabase().get_all()
-
-
-def update_entity_last_sync(name, entity, timestamp):
-    CacheMemoryDatabase().update(
-        name=name,
-        entity=entity,
-        timestamp=timestamp
-    )
 
 
 class CacheValues:
@@ -198,12 +88,7 @@ class CacheValues:
         if not project_last_update:
             return True
 
-        # We compare local sync time to database last sync to determine if sync is needed
-        # Then we retrieve project local last sync
-        if not self.project_last_sync:
-            self.project_last_sync = get_entity_last_sync(name=self.name, entity=self.entity)
-
-        # Ultimately we determine if sync is needed by checking :
+        # Then we determine if sync is needed by checking :
         # - If local sync time exists (we sync if not)
         # - If db sync time is more recent than local sync time (we sync if so)
         if self._sync_is_needed(project_last_update):
@@ -304,22 +189,3 @@ def get_project_last_update(name=None, entity=None):
         }
     ]
     return next(iter(collection.aggregate(query)), {}).get("timestamp", None)
-
-
-def sync_is_needed(entities_local_last_sync, entities_last_updates, name):
-    if entities_local_last_sync is None:
-        return True
-
-    entity_db_last_sync_timestamp = entities_last_updates.get(name, 0)
-    if not entity_db_last_sync_timestamp:
-        return True
-
-    if entity_db_last_sync_timestamp > entities_local_last_sync:
-        logging.info(f"New updates found from entity {name}. Sync should be triggered.")
-        return True
-
-    logging.info(
-        f"Local sync is more recent than entity db update for entity {name}. "
-        f"Sync will be canceled."
-    )
-    return False

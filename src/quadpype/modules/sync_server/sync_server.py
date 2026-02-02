@@ -12,15 +12,10 @@ from .providers import lib
 from quadpype.client import get_linked_representation_id, get_projects
 from quadpype.lib import (
     Logger,
-    get_entity_last_sync,
     get_local_site_id,
     get_quadpype_username,
     get_user_settings,
-    get_specific_entities_last_sync,
-    get_projects_last_updates,
-    sync_is_needed,
-    update_entity_last_sync,
-
+    get_projects_last_updates
 )
 
 from quadpype.modules.base import ModulesManager
@@ -440,7 +435,7 @@ class SyncServerThread(threading.Thread):
                 #  - use dummy checks for valid and not local site from user settings
                 #  - only sync projects that have new updates since last sync
                 for project_name, project_data in enabled_synced_projects.items():
-                    last_sync_outdated = sync_is_needed(
+                    last_sync_outdated = self.module.sync_is_needed(
                         projects_last_sync.get(project_name, None),
                         projects_last_db_updates,
                         name=project_name

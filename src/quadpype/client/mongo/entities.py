@@ -434,6 +434,88 @@ def entities_cache_decorator(entity_type):
         return wrapper
     return function_decorator
 
+# def entities_cache_decorator(entity_type):
+#     def function_decorator(func):
+#         def wrapper(
+#             project_name,
+#             asset_ids=None,
+#             asset_names=None,
+#             parent_ids=None,
+#             representation_ids=None,
+#             representation_names=None,
+#             subset_ids=None,
+#             version_ids=None,
+#             versions=None,
+#             context_filters=None,
+#             names_by_version_ids=None,
+#             standard=True,
+#             archived=False,
+#             hero=False,
+#             fields=None
+#         ):
+#             cache = ProjectEntitiesCache()
+#             cached_assets = cache.get(project_name)
+
+#             if cached_assets is None or cache.is_outdated(project_name):
+#                 cache.clear_hash_cache
+#                 conn = get_project_connection(project_name)
+#                 cache.set(
+#                     project_name=project_name,
+#                     assets=CursorLikeEntityList(conn.find({}))
+#                 )
+#                 cached_assets = cache.get(project_name)
+
+#             data = pickle.dumps(
+#                 (
+#                     entity_type,
+#                     asset_ids,
+#                     asset_names,
+#                     parent_ids,
+#                     representation_ids,
+#                     representation_names,
+#                     subset_ids,
+#                     version_ids,
+#                     versions,
+#                     context_filters,
+#                     names_by_version_ids,
+#                     standard,
+#                     archived,
+#                     hero
+#                 )
+#             )
+
+#             args_hash = hash(data)
+#             hash_content = cache.get_with_hash(args_hash)
+#             if hash_content:
+#                 filtered = hash_content
+
+#             else:
+#                 filtered = _filter_assets(
+#                     cached_assets,
+#                     entity_type,
+#                     asset_ids,
+#                     asset_names,
+#                     parent_ids,
+#                     representation_ids,
+#                     representation_names,
+#                     subset_ids,
+#                     version_ids,
+#                     versions,
+#                     context_filters,
+#                     names_by_version_ids,
+#                     standard,
+#                     archived,
+#                     hero
+#                 )
+#                 cache.set_with_hash(args_hash, filtered)
+
+#             if fields:
+#                 filtered = extract_fields_from_doc(filtered, fields)
+
+#             return filtered
+#         return wrapper
+#     return function_decorator
+
 
 """Unclear if these will have public functions like these.
 
