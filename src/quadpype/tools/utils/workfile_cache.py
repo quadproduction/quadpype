@@ -30,16 +30,17 @@ APP_ICON_SIZE = 64
 class WorkFileCache:
     _instance = None
     _lock = threading.Lock()
+    _cache = {}
+    _ttl = 60
+    _updates_times = collections.defaultdict(float)
+    _workfile_db_paths = collections.defaultdict(str)
+    _enabled = None
 
     def __new__(cls):
         if not cls._instance:
             with cls._lock:
                 if not cls._instance:
                     cls._instance = super().__new__(cls)
-                    cls._ttl = 60
-                    cls._updates_times = collections.defaultdict(float)
-                    cls._workfile_db_paths = collections.defaultdict(str)
-                    cls._enabled = None
         return cls._instance
 
     def is_enabled(self, project_name):
@@ -140,13 +141,22 @@ class WorkFileCache:
         if not self.is_enabled(project_name):
             return []
 
+        if not self.is_outdated(project_name):
+            entity_cache = self._cache.get((project_name, task_name, asset_name))
+            if entity_cache:
+                return entity_cache
+
         conn = sqlite3.connect(self.get_workfile_db_path(project_name=project_name))
         c = conn.cursor()
         c.execute('SELECT ext FROM task_files WHERE task_name = ? AND asset_name = ?',
                   (task_name, asset_name))
         rows = c.fetchall()
         conn.close()
-        return [row[0] for row in rows]
+        results = [row[0] for row in rows]
+
+        self._cache[(project_name, task_name, asset_name)] = results
+        return results
+
 
 
 def set_item_state(session, item, task_name=None, asset_name=None, app_action=None):

@@ -182,6 +182,8 @@ class ActionModel(QtGui.QStandardItemModel):
                 single_actions.append(action)
 
         items_by_order = collections.defaultdict(list)
+
+        entities_icons = dict()
         for label, actions in tuple(varianted_actions.items()):
             if len(actions) == 1:
                 varianted_actions.pop(label)
@@ -207,8 +209,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(actions, ACTION_ROLE)
             item.setData(True, VARIANT_GROUP_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
-            if self.is_application_action(actions[0]) and use_icons:
-                set_item_state(session, item, app_action=actions[0])
+            entities_icons[actions[0]] = item
             items_by_order[order].append(item)
 
         for action in single_actions:
@@ -218,8 +219,7 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(label, QtCore.Qt.ToolTipRole)
             item.setData(action, ACTION_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
-            if self.is_application_action(action) and use_icons:
-                set_item_state(session, item, app_action=action)
+            entities_icons[action] = item
             items_by_order[action.order].append(item)
 
         for group_name, actions in grouped_actions.items():
@@ -262,6 +262,10 @@ class ActionModel(QtGui.QStandardItemModel):
         self.invisibleRootItem().appendRows(items)
 
         self.endResetModel()
+
+        for action, item in entities_icons.items():
+            if self.is_application_action(action) and use_icons:
+                set_item_state(session, item, app_action=action)
 
     def filter_compatible_actions(self, actions):
         """Collect all actions which are compatible with the environment

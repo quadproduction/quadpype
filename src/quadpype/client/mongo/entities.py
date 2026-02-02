@@ -1,5 +1,13 @@
 import time
 import threading
+import enum
+import pickle
+
+
+class EntityType(enum.Enum):
+    ASSET = "asset"
+    VERSION = "version"
+    REPRESENTATION = "representation"
 
 
 class CursorLikeEntityList(list):
@@ -34,107 +42,280 @@ class CursorLikeEntityList(list):
 class ProjectEntitiesCache:
     _instance = None
     _lock = threading.Lock()
+    _cache = {}
+    _created_at = {}
+    _ttl = 30
+    _hash_cache = {}
+    _hash_timers = {}
+    _hash_ttl = 60*10
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(ProjectEntitiesCache, cls).__new__(cls)
-            cls._instance._cache = {}
-            cls._instance.created_at = {}
-            cls._instance.ttl = 30
 
         return cls._instance
 
+    def _expire(self, _hash_cache, _hash_timers, hash_key):
+        _hash_cache.pop(hash_key, None)
+        _hash_timers.pop(hash_key, None)
+
+    def set_with_hash(self, hash_key, data):
+        """
+        Register data with a hash key and start/reset a 10-minute timer.
+        """
+
+        self._hash_cache[hash_key] = data
+        timer = self._hash_timers.get(hash_key)
+        if timer:
+            timer.cancel()
+
+        def call_expire():
+            self._expire(self._hash_cache, self._hash_timers, hash_key)
+
+        t = threading.Timer(self._hash_ttl, call_expire)
+
+        t.daemon = True
+        t.start()
+        self._hash_timers[hash_key] = t
+
+    def get_with_hash(self, hash_key):
+        """
+        Access data by hash key and reset the 10-minute timer if present.
+        """
+        data = self._hash_cache.get(hash_key)
+        if data is None:
+            return None
+
+        # Reset timer
+        timer = self._hash_timers.get(hash_key)
+        if timer:
+            timer.cancel()
+
+        def call_expire():
+            self._expire(self._hash_cache, self._hash_timers, hash_key)
+
+        t = threading.Timer(self._hash_ttl, call_expire)
+        t.daemon = True
+        t.start()
+        self._hash_timers[hash_key] = t
+
+        return data
+
+    def clear_hash_cache(self):
+        """
+        Clear all hash-based cache and timers.
+        """
+        for timer in self._hash_timers.values():
+            timer.cancel()
+        self._hash_cache.clear()
+        self._hash_timers.clear()
+
     def is_outdated(self, project_name):
-        if not self.created_at[project_name]:
+        if not self._created_at[project_name]:
             return True
 
-        return (time.time() - self.created_at[project_name]) > self.ttl
+        return (time.time() - self._created_at[project_name]) > self._ttl
 
     def get(self, project_name):
+        """
+        Get cache data for specified project name.
+        """
         return self._cache.get(project_name)
 
     def set(self, project_name, assets):
+        """
+        Set cache data for specified project name.
+        """
         self._cache[project_name] = assets
-        self.created_at[project_name] = time.time()
+        self._created_at[project_name] = time.time()
 
     def clear(self, project_name=None):
+        """
+        Clear cache data for specified project name or all if None.
+        """
         if project_name:
             self._cache.pop(project_name, None)
-            self.created_at.pop(project_name, None)
+            self._created_at.pop(project_name, None)
         else:
             self._cache.clear()
-            self.created_at.clear()
+            self._created_at.clear()
+
+
+def _get_entity_type(entity_type, standard, archived, hero):
+    """
+    Get entity type based on given entity enum given.
+    """
+    is_asset = entity_type == EntityType.ASSET
+    is_representation = entity_type == EntityType.REPRESENTATION
+    is_version = entity_type == EntityType.VERSION
+
+    if is_asset:
+        entity_types = []
+        if standard:
+            entity_types.append("asset")
+        if archived:
+            entity_types.append("archived_asset")
+
+    elif is_representation:
+        entity_types = []
+        if standard:
+            entity_types.append("representation")
+        if archived:
+            entity_types.append("archived_representation")
+
+    elif is_version:
+        entity_types = []
+        if standard:
+            entity_types.append("version")
+        if hero:
+            entity_types.append("hero_version")
+
+    else:
+        print("Entity type not passed correctly.")
+        return []
+
+    return entity_types
+
+
+def _recursive_check(doc, keys, value):
+    """Recursively check if nested keys exist and match the value."""
+    if not keys:
+        return doc == value
+    key = keys[0]
+    if isinstance(doc, dict) and key in doc:
+        return _recursive_check(doc[key], keys[1:], value)
+    return False
+
 
 def _filter_assets(
         assets,
+        entity_type,
         asset_ids=None,
         asset_names=None,
         parent_ids=None,
         representation_ids=None,
         representation_names=None,
         version_ids=None,
+        versions=None,
+        subset_ids=None,
         context_filters=None,
         names_by_version_ids=None,
         standard=True,
-        archived=False
+        archived=False,
+        hero=False
     ):
-    asset_types = []
-    if standard:
-        asset_types.append("asset")
-    if archived:
-        asset_types.append("archived_asset")
-    if not asset_types:
-        return []
+
+    entity_types = _get_entity_type(
+        entity_type,
+        standard,
+        archived,
+        hero
+    )
+
+    is_asset = entity_type == EntityType.ASSET
+    is_representation = entity_type == EntityType.REPRESENTATION
+    is_version = entity_type == EntityType.VERSION
 
     def match(asset):
-        if asset.get("type") not in asset_types:
-            return False
 
-        if asset_ids is not None:
-            if asset.get("_id") not in set(convert_ids(asset_ids)):
-                return False
-
-        if asset_names is not None:
-            if asset.get("name") not in set(asset_names):
-                return False
-
-        if parent_ids is not None:
-            if asset.get("data", {}).get("visualParent") not in set(convert_ids(parent_ids)):
-                return False
-
-        if representation_ids is not None:
-            rep_ids = set(convert_ids(representation_ids))
-            asset_rep_ids = set(asset.get("representation_ids", []))
-            if not rep_ids.intersection(asset_rep_ids):
-                return False
-
-        if representation_names is not None:
-            rep_names = set(representation_names)
-            asset_rep_names = set(asset.get("representation_names", []))
-            if not rep_names.intersection(asset_rep_names):
-                return False
-
-        if version_ids is not None:
-            ver_ids = set(convert_ids(version_ids))
-            asset_ver_ids = set(asset.get("version_ids", []))
-            if not ver_ids.intersection(asset_ver_ids):
-                return False
-
-        if context_filters is not None:
-            for key, values in context_filters.items():
-                asset_value = asset.get("context", {}).get(key)
-                if asset_value is None or asset_value not in values:
+        def _check_for_asset():
+            if asset_ids is not None:
+                if asset.get("_id") not in set(convert_ids(asset_ids)):
                     return False
 
-        if names_by_version_ids is not None:
-            found = False
-            for ver_id, names in names_by_version_ids.items():
-                if ver_id in asset.get("version_ids", []) and asset.get("name") in names:
-                    found = True
-                    break
+            if asset_names is not None:
+                if asset.get("name") not in set(asset_names):
+                    return False
 
-            if not found and names_by_version_ids:
-                return False
+            if parent_ids is not None:
+                if asset.get("data", {}).get("visualParent") not in set(convert_ids(parent_ids)):
+                    return False
+
+            return True
+
+        def _check_for_representation():
+            if representation_ids is not None:
+                rep_ids = set(convert_ids(representation_ids))
+                asset_rep_ids = set(asset.get("representation_ids", []))
+                if not rep_ids.intersection(asset_rep_ids):
+                    return False
+
+            if representation_names is not None:
+                rep_names = set(representation_names)
+                asset_rep_names = set(asset.get("representation_names", []))
+                if not rep_names.intersection(asset_rep_names):
+                    return False
+
+            if context_filters is not None:
+                if not context_filters:
+                    return False
+
+                asset_context = asset.get("context", {})
+                for key, expected in context_filters.items():
+                    # Support nested keys with dot notation or dicts
+                    if isinstance(expected, dict):
+                        # If expected is a dict, check recursively for each subkey
+                        for subkey, subval in expected.items():
+                            keys = [key, subkey]
+                            if not _recursive_check(asset_context, keys, subval):
+                                return False
+                    else:
+                        if not asset_context.get(key) == expected:
+                            return False
+
+            if names_by_version_ids is not None:
+                found = False
+                for ver_id, names in names_by_version_ids.items():
+                    if ver_id in asset.get("version_ids", []) and asset.get("name") in names:
+                        found = True
+                        break
+
+                if not found and names_by_version_ids:
+                    return False
+
+            return True
+
+        def _check_for_version():
+            if subset_ids is not None:
+                subset_ids_set = set(convert_ids(subset_ids))
+                asset_subset_ids = set(asset.get("subset_ids", []))
+                if not subset_ids_set.intersection(asset_subset_ids):
+                    return False
+
+            if versions is not None:
+                versions = set(versions)
+                if not versions:
+                    return []
+
+                if asset.get("name") not in set(asset_names):
+                    return False
+
+            if hero:
+                if not asset.get("hero", False):
+                    return False
+
+            return True
+
+
+        if asset.get("type") not in entity_types:
+            return False
+
+        if is_asset:
+            return _check_for_asset()
+
+        else:
+
+            if version_ids is not None:
+                ver_ids = set(convert_ids(version_ids))
+                asset_ver_ids = set(asset.get("version_ids", []))
+                if not ver_ids.intersection(asset_ver_ids):
+                    return False
+
+            if is_representation:
+                return _check_for_representation()
+
+            elif is_version:
+                return _check_for_version()
 
         return True
 
@@ -187,53 +368,88 @@ def extract_fields_from_doc(doc, fields):
     return filtered_doc
 
 
-# Decorator for asset cache
-def entities_cache_decorator(func):
-    def wrapper(
-        project_name,
-        asset_ids=None,
-        asset_names=None,
-        parent_ids=None,
-        representation_ids=None,
-        representation_names=None,
-        version_ids=None,
-        context_filters=None,
-        names_by_version_ids=None,
-        standard=True,
-        archived=False,
-        fields=None
-    ):
-        cache = ProjectEntitiesCache()
-        cached_assets = cache.get(project_name)
-
-        if cached_assets is None or cache.is_outdated(project_name):
-            conn = get_project_connection(project_name)
-            cache.set(
-                project_name=project_name,
-                assets=CursorLikeEntityList(conn.find({}))
-            )
+def entities_cache_decorator(entity_type):
+    def function_decorator(func):
+        def wrapper(
+            project_name,
+            asset_ids=None,
+            asset_names=None,
+            parent_ids=None,
+            representation_ids=None,
+            representation_names=None,
+            subset_ids=None,
+            version_ids=None,
+            versions=None,
+            context_filters=None,
+            names_by_version_ids=None,
+            standard=True,
+            archived=False,
+            hero=False,
+            fields=None
+        ):
+            cache = ProjectEntitiesCache()
             cached_assets = cache.get(project_name)
 
-        filtered = _filter_assets(
-            cached_assets,
-            asset_ids,
-            asset_names,
-            parent_ids,
-            representation_ids,
-            representation_names,
-            version_ids,
-            context_filters,
-            names_by_version_ids,
-            standard,
-            archived
-        )
+            if cached_assets is None or cache.is_outdated(project_name):
+                cache.clear_hash_cache
+                conn = get_project_connection(project_name)
+                cache.set(
+                    project_name=project_name,
+                    assets=CursorLikeEntityList(conn.find({}))
+                )
+                cached_assets = cache.get(project_name)
 
-        if fields:
-            filtered = extract_fields_from_doc(filtered, fields)
+            data = pickle.dumps(
+                (
+                    entity_type,
+                    asset_ids,
+                    asset_names,
+                    parent_ids,
+                    representation_ids,
+                    representation_names,
+                    subset_ids,
+                    version_ids,
+                    versions,
+                    context_filters,
+                    names_by_version_ids,
+                    standard,
+                    archived,
+                    hero
+                )
+            )
 
-        return filtered
+            args_hash = hash(data)
+            hash_content = cache.get_with_hash(args_hash)
+            if hash_content:
+                filtered = hash_content
 
-    return wrapper
+            else:
+                filtered = _filter_assets(
+                    cached_assets,
+                    entity_type,
+                    asset_ids,
+                    asset_names,
+                    parent_ids,
+                    representation_ids,
+                    representation_names,
+                    subset_ids,
+                    version_ids,
+                    versions,
+                    context_filters,
+                    names_by_version_ids,
+                    standard,
+                    archived,
+                    hero
+                )
+                cache.set_with_hash(args_hash, filtered)
+
+            if fields:
+                filtered = extract_fields_from_doc(filtered, fields)
+
+            return filtered
+        return wrapper
+    return function_decorator
+
 
 """Unclear if these will have public functions like these.
 
@@ -475,7 +691,7 @@ def get_asset_by_name(project_name, asset_name, fields=None):
 # NOTE this could be just public function?
 # - any better variable name instead of 'standard'?
 # - same approach can be used for rest of types
-@entities_cache_decorator
+@entities_cache_decorator(entity_type=EntityType.ASSET)
 def _get_assets(
     project_name,
     asset_ids=None,
@@ -916,6 +1132,7 @@ def version_is_latest(project_name, version_id):
     return last_version["_id"] == version_id
 
 
+@entities_cache_decorator(entity_type=EntityType.VERSION)
 def _get_versions(
     project_name,
     subset_ids=None,
@@ -1405,7 +1622,7 @@ def _regex_filters(filters):
 
     return output
 
-@entities_cache_decorator
+@entities_cache_decorator(entity_type=EntityType.REPRESENTATION)
 def _get_representations(
     project_name,
     representation_ids,
