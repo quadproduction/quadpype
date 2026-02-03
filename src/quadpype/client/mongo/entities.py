@@ -2,8 +2,18 @@ import time
 import threading
 import enum
 import pickle
+import re
+import logging
+import os
+import collections
+from bson.objectid import ObjectId
+from .mongo import get_project_database, get_project_connection, get_quadpype_collection
+
+
+PatternType = type(re.compile(""))
 
 from collections.abc import KeysView, ValuesView, ItemsView
+from collections import defaultdict
 
 
 class EntityType(enum.Enum):
@@ -47,9 +57,10 @@ class ProjectEntitiesCache:
     _cache = {}
     _created_at = {}
     _ttl = 30
-    _hash_cache = {}
-    _hash_timers = {}
+    _hash_cache = defaultdict(lambda: defaultdict(dict))
+    _hash_timers = defaultdict(lambda: defaultdict(dict))
     _hash_ttl = 60*10
+    _last_sync = {}
 
     def __new__(cls):
         if cls._instance is None:
@@ -57,66 +68,96 @@ class ProjectEntitiesCache:
 
         return cls._instance
 
-    def _expire(self, _hash_cache, _hash_timers, hash_key):
-        _hash_cache.pop(hash_key, None)
-        _hash_timers.pop(hash_key, None)
+    def _expire(self, _hash_cache, _hash_timers, project_name, hash_key):
+        _hash_cache[project_name].pop(hash_key, None)
+        _hash_timers[project_name].pop(hash_key, None)
 
-    def set_with_hash(self, hash_key, data):
+    def _get_hash_timer(self, project_name, hash_key):
+        try:
+            return self._hash_timers[project_name][hash_key]
+        except KeyError:
+            return {}
+
+    def _get_hash_cache(self, project_name, hash_key):
+        try:
+            return self._hash_cache[project_name][hash_key]
+        except KeyError:
+            return {}
+
+    def set_with_hash(self, project_name, hash_key, data):
         """
         Register data with a hash key and start/reset a 10-minute timer.
         """
 
-        self._hash_cache[hash_key] = data
-        timer = self._hash_timers.get(hash_key)
+        self._hash_cache[project_name][hash_key] = data
+        timer = self._get_hash_timer(project_name, hash_key)
         if timer:
             timer.cancel()
 
         def call_expire():
-            self._expire(self._hash_cache, self._hash_timers, hash_key)
+            self._expire(self._hash_cache, self._hash_timers, project_name, hash_key)
 
         t = threading.Timer(self._hash_ttl, call_expire)
 
         t.daemon = True
         t.start()
-        self._hash_timers[hash_key] = t
+        self._hash_timers[project_name][hash_key] = t
 
-    def get_with_hash(self, hash_key):
+    def get_with_hash(self, project_name, hash_key):
         """
         Access data by hash key and reset the 10-minute timer if present.
         """
-        data = self._hash_cache.get(hash_key)
+        data = self._get_hash_cache(project_name, hash_key=hash_key)
         if data is None:
             return None
 
         # Reset timer
-        timer = self._hash_timers.get(hash_key)
+        timer = self._get_hash_timer(project_name, hash_key)
         if timer:
             timer.cancel()
 
         def call_expire():
-            self._expire(self._hash_cache, self._hash_timers, hash_key)
+            self._expire(self._hash_cache, self._hash_timers, project_name, hash_key)
 
         t = threading.Timer(self._hash_ttl, call_expire)
         t.daemon = True
         t.start()
-        self._hash_timers[hash_key] = t
+        self._hash_timers[project_name][hash_key] = t
 
         return data
 
-    def clear_hash_cache(self):
+    def clear_hash_cache(self, project_name):
         """
         Clear all hash-based cache and timers.
         """
-        for timer in self._hash_timers.values():
+        for _, timer in self._hash_timers.get(project_name, {}).items():
             timer.cancel()
-        self._hash_cache.clear()
-        self._hash_timers.clear()
+
+        try:
+            del self._hash_timers[project_name]
+            del self._hash_cache[project_name]
+        except KeyError:
+            pass
 
     def is_outdated(self, project_name):
         if not self._created_at[project_name]:
             return True
 
-        return (time.time() - self._created_at[project_name]) > self._ttl
+        if not (time.time() - self._created_at[project_name]) > self._ttl:
+            return False
+
+        self._created_at[project_name] = time.time()
+
+        project_last_sync = self._last_sync.get(project_name)
+        if not project_last_sync:
+            return True
+
+        project_last_update = get_project_last_update(name=project_name, entity="global")
+        if not project_last_update:
+            return True
+
+        return project_last_update > project_last_sync
+
 
     def get(self, project_name):
         """
@@ -130,6 +171,8 @@ class ProjectEntitiesCache:
         """
         self._cache[project_name] = assets
         self._created_at[project_name] = time.time()
+        self._last_sync[project_name] = time.time()
+        self.clear_hash_cache(project_name)
 
     def clear(self, project_name=None):
         """
@@ -138,9 +181,11 @@ class ProjectEntitiesCache:
         if project_name:
             self._cache.pop(project_name, None)
             self._created_at.pop(project_name, None)
+            self._last_sync.pop(project_name, None)
         else:
             self._cache.clear()
             self._created_at.clear()
+            self._last_sync.clear()
 
 
 def _get_entity_type(entity_type, standard, archived, hero):
@@ -400,7 +445,7 @@ def entities_cache_decorator(entity_type):
             cached_assets = cache.get(project_name)
 
             if cached_assets is None or cache.is_outdated(project_name):
-                cache.clear_hash_cache
+                cache.clear_hash_cache(project_name)
                 conn = get_project_connection(project_name)
                 cache.set(
                     project_name=project_name,
@@ -412,7 +457,7 @@ def entities_cache_decorator(entity_type):
             data = pickle.dumps(_convert_kwargs_for_hash(**kwargs))
 
             args_hash = hash(data)
-            hash_content = cache.get_with_hash(args_hash)
+            hash_content = cache.get_with_hash(project_name, args_hash)
 
             kwargs.pop('project_name', None)
             fields = kwargs.pop('fields', None)
@@ -425,7 +470,7 @@ def entities_cache_decorator(entity_type):
                     entity_type,
                     **kwargs
                 )
-                cache.set_with_hash(args_hash, filtered)
+                cache.set_with_hash(project_name, args_hash, filtered)
 
             if fields:
                 filtered = extract_fields_from_doc(filtered, fields)
@@ -434,105 +479,60 @@ def entities_cache_decorator(entity_type):
         return wrapper
     return function_decorator
 
-# def entities_cache_decorator(entity_type):
-#     def function_decorator(func):
-#         def wrapper(
-#             project_name,
-#             asset_ids=None,
-#             asset_names=None,
-#             parent_ids=None,
-#             representation_ids=None,
-#             representation_names=None,
-#             subset_ids=None,
-#             version_ids=None,
-#             versions=None,
-#             context_filters=None,
-#             names_by_version_ids=None,
-#             standard=True,
-#             archived=False,
-#             hero=False,
-#             fields=None
-#         ):
-#             cache = ProjectEntitiesCache()
-#             cached_assets = cache.get(project_name)
-
-#             if cached_assets is None or cache.is_outdated(project_name):
-#                 cache.clear_hash_cache
-#                 conn = get_project_connection(project_name)
-#                 cache.set(
-#                     project_name=project_name,
-#                     assets=CursorLikeEntityList(conn.find({}))
-#                 )
-#                 cached_assets = cache.get(project_name)
-
-#             data = pickle.dumps(
-#                 (
-#                     entity_type,
-#                     asset_ids,
-#                     asset_names,
-#                     parent_ids,
-#                     representation_ids,
-#                     representation_names,
-#                     subset_ids,
-#                     version_ids,
-#                     versions,
-#                     context_filters,
-#                     names_by_version_ids,
-#                     standard,
-#                     archived,
-#                     hero
-#                 )
-#             )
-
-#             args_hash = hash(data)
-#             hash_content = cache.get_with_hash(args_hash)
-#             if hash_content:
-#                 filtered = hash_content
-
-#             else:
-#                 filtered = _filter_assets(
-#                     cached_assets,
-#                     entity_type,
-#                     asset_ids,
-#                     asset_names,
-#                     parent_ids,
-#                     representation_ids,
-#                     representation_names,
-#                     subset_ids,
-#                     version_ids,
-#                     versions,
-#                     context_filters,
-#                     names_by_version_ids,
-#                     standard,
-#                     archived,
-#                     hero
-#                 )
-#                 cache.set_with_hash(args_hash, filtered)
-
-#             if fields:
-#                 filtered = extract_fields_from_doc(filtered, fields)
-
-#             return filtered
-#         return wrapper
-#     return function_decorator
 
 
-"""Unclear if these will have public functions like these.
+def get_projects_last_updates(names, entity):
+    """ Get last update timestamp for each project from database
+    Args:
+        names (list[str]): list of entities names
+        entity (str): Updated entity type name
 
-Goal is that most of functions here are called on (or with) an object
-that has project name as a context (e.g. on 'ProjectEntity'?).
+    Returns:
+        dict: each project name with his corresponding last update timestamp
+    """
+    collection = get_quadpype_collection("projects_updates_logs")
+    query = [
+        {
+            "$match":
+            {
+                "name": {"$in": names},
+                "updated_entity": entity
+            }
+        }
+    ]
+    return {
+        result["name"]: result["timestamp"]
+        for result in list(collection.aggregate(query))
+    }
 
-+ We will need more specific functions doing very specific queries really fast.
-"""
 
-import re
-import os
-import collections
-from bson.objectid import ObjectId
-from .mongo import get_project_database, get_project_connection, get_quadpype_collection
+def get_project_last_update(name=None, entity=None):
+    """ Get last update timestamp for specific project / entity from database
+    Args:
+        name (str): list of projects names
+        entity (str): Updated entity type name
 
+    Returns:
+        dict: each project name with his corresponding last update timestamp
+    """
+    if not name and not entity:
+        logging.warning("Needs at least name or entity to get last update timestamp.")
+        return None
 
-PatternType = type(re.compile(""))
+    collection = get_quadpype_collection("projects_updates_logs")
+    matches = {}
+    if name:
+        matches['name'] = name
+
+    if entity:
+        matches['updated_entity'] = entity
+
+    query = [
+        {
+            "$match": matches
+        }
+    ]
+    return next(iter(collection.aggregate(query)), {}).get("timestamp", None)
 
 
 def _prepare_fields(fields, required_fields=None):

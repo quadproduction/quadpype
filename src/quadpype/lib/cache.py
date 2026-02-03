@@ -3,13 +3,10 @@
 import json
 import copy
 import time
-import logging
 
 from datetime import datetime, timezone
 
-from quadpype.client import get_quadpype_collection
-
-
+from quadpype.client import get_project_last_update
 
 
 class CacheValues:
@@ -135,57 +132,3 @@ class ProjectAnatomyCacheValues(CacheValues):
         self.name = project_name if project_name else "project_default"
         self.entity = "anatomy"
         super().__init__(*args, **kwargs)
-
-
-def get_projects_last_updates(names, entity):
-    """ Get last update timestamp for each project from database
-    Args:
-        names (list[str]): list of entities names
-        entity (str): Updated entity type name
-
-    Returns:
-        dict: each project name with his corresponding last update timestamp
-    """
-    collection = get_quadpype_collection("projects_updates_logs")
-    query = [
-        {
-            "$match":
-            {
-                "name": {"$in": names},
-                "updated_entity": entity
-            }
-        }
-    ]
-    return {
-        result["name"]: result["timestamp"]
-        for result in list(collection.aggregate(query))
-    }
-
-
-def get_project_last_update(name=None, entity=None):
-    """ Get last update timestamp for specific project / entity from database
-    Args:
-        name (str): list of projects names
-        entity (str): Updated entity type name
-
-    Returns:
-        dict: each project name with his corresponding last update timestamp
-    """
-    if not name and not entity:
-        logging.warning("Needs at least name or entity to get last update timestamp.")
-        return None
-
-    collection = get_quadpype_collection("projects_updates_logs")
-    matches = {}
-    if name:
-        matches['name'] = name
-
-    if entity:
-        matches['updated_entity'] = entity
-
-    query = [
-        {
-            "$match": matches
-        }
-    ]
-    return next(iter(collection.aggregate(query)), {}).get("timestamp", None)

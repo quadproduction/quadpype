@@ -119,9 +119,7 @@ from .cache import (
     GlobalSettingsCacheValues,
     UserSettingsCacheValues,
     ProjectSettingsCacheValues,
-    ProjectAnatomyCacheValues,
-    get_projects_last_updates,
-    get_project_last_update,
+    ProjectAnatomyCacheValues
 )
 
 from .registry import (
@@ -271,9 +269,6 @@ __all__ = [
     "UserSettingsCacheValues",
     "ProjectSettingsCacheValues",
     "ProjectAnatomyCacheValues",
-    "get_projects_last_updates",
-    "get_project_last_update",
-
     "IniSettingRegistry",
     "JSONSettingRegistry",
     "QuadPypeSecureRegistry",

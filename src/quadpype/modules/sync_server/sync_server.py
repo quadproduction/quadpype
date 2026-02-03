@@ -9,13 +9,12 @@ from datetime import datetime, timezone
 from collections import defaultdict
 
 from .providers import lib
-from quadpype.client import get_linked_representation_id, get_projects
+from quadpype.client import get_linked_representation_id, get_projects_last_updates
 from quadpype.lib import (
     Logger,
     get_local_site_id,
     get_quadpype_username,
     get_user_settings,
-    get_projects_last_updates
 )
 
 from quadpype.modules.base import ModulesManager
