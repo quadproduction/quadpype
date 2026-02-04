@@ -29,7 +29,7 @@ from quadpype.tools.utils.lib import (
     DynamicQThread,
     get_project_icon
 )
-from quadpype.tools.utils.workfile_cache import WorkFileCache, set_item_state
+from quadpype.tools.utils.workfile_cache import WorkFileCache, get_item_state
 from quadpype.pipeline.workfile import get_workdir_from_session
 from quadpype.tools.utils.assets_widget import (
     AssetModel,
@@ -41,6 +41,9 @@ from quadpype.tools.utils.tasks_widget import (
     TASK_TYPE_ROLE,
     TASK_ASSIGNEE_ROLE
 )
+
+from quadpype.tools.utils.workfile_cache import launch_threaded_icon_worker
+
 
 from . import lib
 from .constants import (
@@ -76,6 +79,12 @@ class ActionModel(QtGui.QStandardItemModel):
             _ = self.launcher_registry.get_item("force_not_open_workfile")
         except ValueError:
             self.launcher_registry.set_item("force_not_open_workfile", [])
+
+        self.item_state_thread = None
+        self.item_state_worker = None
+
+    def set_icon(self, item, icon):
+        item.setIcon(icon)
 
     def discover(self):
         """Set up Actions cache. Run this for each new project."""
@@ -183,7 +192,7 @@ class ActionModel(QtGui.QStandardItemModel):
 
         items_by_order = collections.defaultdict(list)
 
-        entities_icons = dict()
+        entities_data = list()
         for label, actions in tuple(varianted_actions.items()):
             if len(actions) == 1:
                 varianted_actions.pop(label)
@@ -209,7 +218,14 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(actions, ACTION_ROLE)
             item.setData(True, VARIANT_GROUP_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
-            entities_icons[actions[0]] = item
+            if self.is_application_action(actions[0]) and use_icons:
+                entities_data.append(
+                    {
+                        'item': item,
+                        'session': session,
+                        'app_action': actions[0],
+                    }
+                )
             items_by_order[order].append(item)
 
         for action in single_actions:
@@ -219,7 +235,14 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(label, QtCore.Qt.ToolTipRole)
             item.setData(action, ACTION_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
-            entities_icons[action] = item
+            if self.is_application_action(action) and use_icons:
+                entities_data.append(
+                    {
+                        'item': item,
+                        'session': session,
+                        'app_action': action,
+                    }
+                )
             items_by_order[action.order].append(item)
 
         for group_name, actions in grouped_actions.items():
@@ -263,9 +286,16 @@ class ActionModel(QtGui.QStandardItemModel):
 
         self.endResetModel()
 
-        for action, item in entities_icons.items():
-            if self.is_application_action(action) and use_icons:
-                set_item_state(session, item, app_action=action)
+        if self.item_state_thread is not None:
+            self.item_state_thread.quit()
+            self.item_state_thread.wait()
+
+        self.item_state_thread = QtCore.QThread()
+        launch_threaded_icon_worker(
+            cls=self,
+            entities_data=entities_data,
+            callback=self.set_icon
+        )
 
     def filter_compatible_actions(self, actions):
         """Collect all actions which are compatible with the environment

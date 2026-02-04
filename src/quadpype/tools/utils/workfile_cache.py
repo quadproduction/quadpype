@@ -159,25 +159,30 @@ class WorkFileCache:
 
 
 
-def set_item_state(session, item, task_name=None, asset_name=None, app_action=None):
+def get_item_state(session, item, task_name=None, asset_name=None, app_action=None):
     """
     Will set a different icon on the icon if a WF or PublishedWF exists
     """
     search_session = copy.deepcopy(session)
 
-    if not search_session.get("AVALON_TASK", None):
-        return
-
     if not task_name:
-        task_name = search_session.get("AVALON_TASK")
-    project = search_session.get("AVALON_PROJECT")
+        task_name = search_session.get("AVALON_TASK", None)
+
+        if not task_name:
+            return
+
     if not asset_name:
-        asset_name = search_session.get("AVALON_ASSET")
+        asset_name = search_session.get("AVALON_ASSET", None)
+
+        if not asset_name:
+            return
 
     search_session.update({
         "AVALON_TASK":task_name,
         "AVALON_ASSET":asset_name
     })
+
+    project = search_session.get("AVALON_PROJECT")
 
     workfile_exts = WorkFileCache().load_task_extensions(project, task_name, asset_name)
 
@@ -217,7 +222,8 @@ def set_item_state(session, item, task_name=None, asset_name=None, app_action=No
         icon_large = QtGui.QIcon(pixmap_resized)
         icon = add_overlay_icon(item.icon(), icon_large, APP_ICON_SIZE, APP_OVERLAY_ICON_SIZE)
 
-    item.setIcon(icon)
+    return icon
+
 
 def merge_icons_diagonal(icon1, icon2, size):
     """Create a new icon based on 2 icons split in half diagonally"""
@@ -283,3 +289,41 @@ def get_workfile_publish_representations(session):
     if not publish_representations:
         return []
     return publish_representations
+
+
+class IconWorker(QtCore.QObject):
+    finished = QtCore.Signal()
+    callback = QtCore.Signal(QtGui.QStandardItem, QtGui.QIcon)  # Signal to send icon path or data
+    entities_data = []
+
+    def run(self):
+        for data in self.entities_data:
+
+            item = data['item']
+            session = data['session']
+            app_action = data.get('app_action')
+            task_name = data.get('task_name')
+            asset_name = data.get('asset_name')
+            icon = get_item_state(
+                session=session,
+                item=item,
+                app_action=app_action,
+                task_name=task_name,
+                asset_name=asset_name
+            )
+            if not icon:
+                continue
+
+            self.callback.emit(item, icon)
+
+        self.finished.emit()
+
+
+def launch_threaded_icon_worker(cls, entities_data, callback):
+    cls.item_state_worker = IconWorker()
+    cls.item_state_worker.entities_data = entities_data
+    cls.item_state_worker.moveToThread(cls.item_state_thread)
+    cls.item_state_thread.started.connect(cls.item_state_worker.run)
+    cls.item_state_worker.callback.connect(callback)
+    cls.item_state_worker.finished.connect(cls.item_state_thread.quit)
+    cls.item_state_thread.start()
