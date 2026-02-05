@@ -50,8 +50,8 @@ class AfterEffectsServerStub():
 
     'self.websocketserver.call' is used as async wrapper
     """
-    PUBLISH_ICON = '\u2117 '
-    LOADED_ICON = '\u25bc'
+    PUBLISH_ICON = 'P_'
+    LOADED_ICON = 'L_'
 
     def __init__(self):
         self.websocketserver = WebServerTool.get_instance()

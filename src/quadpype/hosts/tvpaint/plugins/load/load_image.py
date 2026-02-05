@@ -1,6 +1,7 @@
 from quadpype.lib.attribute_definitions import BoolDef
 from quadpype.hosts.tvpaint.api import plugin
 from quadpype.hosts.tvpaint.api.lib import execute_george_through_file
+from quadpype.hosts.tvpaint.api.pipeline import LOADED_ICON
 
 
 class ImportImage(plugin.Loader):
@@ -22,7 +23,7 @@ class ImportImage(plugin.Loader):
     )
 
     defaults = {
-        "stretch": True,
+        "stretch": False,
         "timestretch": True,
         "preload": True
     }
@@ -70,7 +71,8 @@ class ImportImage(plugin.Loader):
         # Prepare layer name
         asset_name = context["asset"]["name"]
         version_name = context["version"]["name"]
-        layer_name = "{}_{}_v{:0>3}".format(
+        layer_name = "{}{}_{}_v{:0>3}".format(
+            LOADED_ICON,
             asset_name,
             name,
             version_name

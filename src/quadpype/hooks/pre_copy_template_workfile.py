@@ -35,6 +35,9 @@ class CopyTemplateWorkfile(PreLaunchHook):
         Returns:
             None: This is a void method.
         """
+        if not self.data.get("start_last_workfile"):
+            self.log.info("It is set to not start last workfile on start.")
+            return
 
         last_workfile = self.data.get("last_workfile_path")
         if not last_workfile:

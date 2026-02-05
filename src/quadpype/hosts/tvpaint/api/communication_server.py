@@ -12,6 +12,7 @@ import filecmp
 import tempfile
 import threading
 import shutil
+import functools
 
 from pathlib import Path
 from contextlib import closing
@@ -25,8 +26,11 @@ from aiohttp_json_rpc.protocol import (
 )
 from aiohttp_json_rpc.exceptions import RpcError
 
+from quadpype.pipeline.workfile.workfile_template_builder import should_build_first_workfile
+
 from quadpype.lib import emit_event
 from quadpype.hosts.tvpaint.tvpaint_plugin import get_plugin_files_path
+from quadpype.hosts.tvpaint.api import lib
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -333,14 +337,52 @@ class QtTVPaintRpc(BaseTVPaintRpc):
 
         # Register methods
         self.add_methods(
-            (route_name, self.workfiles_tool),
-            (route_name, self.loader_tool),
-            (route_name, self.create_tool),
-            (route_name, self.publish_tool),
-            (route_name, self.scene_inventory_tool),
-            (route_name, self.library_loader_tool),
-            (route_name, self.experimental_tools)
+            (route_name, self.with_exposure_recompute(self.workfiles_tool)),
+            (route_name, self.with_exposure_recompute(self.loader_tool)),
+            (route_name, self.with_exposure_recompute(self.create_tool)),
+            (route_name, self.with_exposure_recompute(self.publish_tool)),
+            (route_name, self.with_exposure_recompute(self.scene_inventory_tool)),
+            (route_name, self.with_exposure_recompute(self.library_loader_tool)),
+            (route_name, self.with_exposure_recompute(self.experimental_tools)),
+            (route_name, self.with_exposure_recompute(self._noop)),
+            (route_name, self.with_exposure_recompute(self.create_placeholder_route)),
+            (route_name, self.with_exposure_recompute(self.update_placeholder_route)),
+            (route_name, self.with_exposure_recompute(self.build_workfile_template_route))
         )
+
+
+    def with_exposure_recompute(self, callback_func):
+        """
+        A decorator that automatically adds exposure recalculation
+        after a tool callback is executed.
+        """
+
+        @functools.wraps(callback_func)
+        async def wrapper(*args, **kwargs):
+            result = await callback_func(*args, **kwargs)
+            self.recompute_exposure_around_cursor()
+            return result
+
+        return wrapper
+
+    def recompute_exposure_around_cursor(self):
+        george_script = f"""
+            tv_LayerCurrentId
+            current_id = result
+
+            tv_LayerGetImage
+            cursor_position = result
+
+            start_frame = cursor_position - 1
+            IF CMP(start_frame, -1) == 1
+                start_frame = 0
+            END
+            end_frame = cursor_position + 1
+
+            tv_LayerRecomputeExposure current_id start_frame end_frame 0
+            """
+        item = MainThreadItem(lib.execute_george_through_file, george_script)
+        self._execute_in_main_thread(item, wait=False)
 
     # Panel routes for tools
     async def workfiles_tool(self):
@@ -392,6 +434,39 @@ class QtTVPaintRpc(BaseTVPaintRpc):
         log.info("Triggering Library loader tool")
         item = MainThreadItem(self.tools_helper.show_experimental_tools_dialog)
         self._execute_in_main_thread(item, wait=False)
+        return
+
+    async def _noop(self):
+        pass
+
+    async def create_placeholder_route(self):
+        from quadpype.hosts.tvpaint.api.workfile_template_builder import \
+            create_placeholder
+        log.info("Triggering Create PlaceHolder tool")
+        partial_method = functools.partial(create_placeholder)
+        item = MainThreadItem(partial_method)
+        self._execute_in_main_thread(item, wait=False)
+        return
+
+    async def update_placeholder_route(self):
+        from quadpype.hosts.tvpaint.api.workfile_template_builder import \
+            update_placeholder
+        log.info("Triggering Update PlaceHolder tool")
+        partial_method = functools.partial(update_placeholder)
+        item = MainThreadItem(partial_method)
+        self._execute_in_main_thread(item, wait=False)
+
+        return
+
+    async def build_workfile_template_route(self):
+        from quadpype.hosts.tvpaint.api.workfile_template_builder import \
+            build_workfile_template
+        log.info("Triggering Build From Template")
+        partial_method = functools.partial(build_workfile_template)
+        #partial_method = functools.partial(build_workfile_template, create_first_version=False)
+        item = MainThreadItem(partial_method)
+        self._execute_in_main_thread(item, wait=False)
+
         return
 
     async def _async_execute_in_main_thread(self, item, **kwargs):
@@ -847,6 +922,13 @@ class BaseCommunicator:
 
         emit_event("application.launched")
 
+        if should_build_first_workfile():
+            from quadpype.hosts.tvpaint.api.workfile_template_builder import \
+                build_workfile_template
+            partial_method = functools.partial(build_workfile_template)
+            item = MainThreadItem(partial_method)
+            self.websocket_rpc._execute_in_main_thread(item, wait=False)
+
     def _on_client_connect(self):
         self._initial_textfile_write()
 
@@ -953,7 +1035,7 @@ class QtCommunicator(BaseCommunicator):
                 "help": "Open loader tool"
             }, {
                 "callback": "scene_inventory_tool",
-                "label": "Scene inventory",
+                "label": "Manage",
                 "help": "Open scene inventory tool"
             }, {
                 "callback": "create_tool",
@@ -971,6 +1053,22 @@ class QtCommunicator(BaseCommunicator):
                 "callback": "experimental_tools",
                 "label": "Experimental tools",
                 "help": "Open experimental tools dialog"
+            }, {
+                "callback": "_noop",
+                "label": "------Template Build------",
+                "help": ""
+            }, {
+                "callback": "create_placeholder_route",
+                "label": "Create PlaceHolders",
+                "help": "Open create placeholder tools dialog"
+            }, {
+                "callback": "update_placeholder_route",
+                "label": "Update PlaceHolders",
+                "help": "Open update placeholder tools dialog"
+            }, {
+                "callback": "build_workfile_template_route",
+                "label": "Build From Template",
+                "help": "Build file from template"
             }
         ]
     }
