@@ -529,15 +529,24 @@ class AbstractTemplateBuilder(ABC):
         if template_path is None:
             template_path = template_preset["path"]
 
+        if self.compare_current_workfile_and_template(template_path, None):
+            self.log.info("Current workfile is the template or already build, aborting build.")
+            return
+
         if keep_placeholders is None:
             keep_placeholders = template_preset["keep_placeholder"]
         if create_first_version is None:
             create_first_version = template_preset["create_first_version"]
 
+        autobuild_first_version = template_preset.get("autobuild_first_version", False)
         # check if first version is created
         created_version_workfile = False
         if create_first_version:
-            created_version_workfile = self.create_first_workfile_version()
+            created_version_workfile = self.create_first_workfile_version(template_path)
+
+        if created_version_workfile and not autobuild_first_version:
+            self.log.info("Auto build not activated, stopping the template build")
+            return
 
         # if first version is created, import template
         # and populate placeholders
@@ -561,6 +570,7 @@ class AbstractTemplateBuilder(ABC):
         self.import_template(template_path)
         self.populate_scene_placeholders(
             level_limit, keep_placeholders)
+        return True
 
     def rebuild_template(self):
         """Go through existing placeholders in scene and update them.
@@ -608,7 +618,17 @@ class AbstractTemplateBuilder(ABC):
 
         pass
 
-    def create_first_workfile_version(self):
+    def compare_current_workfile_and_template(self, template_path=None, workfile_path=None):
+        """
+        Will compare if the current workfile in the soft is the template path
+        If not, will compare if current workfile is exactly the same as the template
+
+        This is to avoid launching template build when opening the template in some soft like tvpp
+        """
+
+        return False
+
+    def create_first_workfile_version(self, template_path=None):
         """
         Create first version of workfile.
 
@@ -837,6 +857,8 @@ class AbstractTemplateBuilder(ABC):
         # switch to remove placeholders after they are used
         keep_placeholder = profile.get("keep_placeholder")
         create_first_version = profile.get("create_first_version")
+        autobuild_first_version = profile.get("autobuild_first_version", False)
+        apply_settings_on_build = profile.get("apply_settings_on_build", False)
 
         # backward compatibility, since default is True
         if keep_placeholder is None:
@@ -874,7 +896,9 @@ class AbstractTemplateBuilder(ABC):
             return {
                 "path": path,
                 "keep_placeholder": keep_placeholder,
-                "create_first_version": create_first_version
+                "create_first_version": create_first_version,
+                "autobuild_first_version": autobuild_first_version,
+                "apply_settings_on_build": apply_settings_on_build,
             }
 
         solved_path = None
@@ -904,7 +928,9 @@ class AbstractTemplateBuilder(ABC):
         return {
             "path": solved_path,
             "keep_placeholder": keep_placeholder,
-            "create_first_version": create_first_version
+            "create_first_version": create_first_version,
+            "autobuild_first_version": autobuild_first_version,
+            "apply_settings_on_build": apply_settings_on_build,
         }
 
 

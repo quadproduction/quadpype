@@ -598,4 +598,6 @@ def update_placeholder(*args):
     window = WorkfileBuildPlaceholderDialog(host, builder,
                                             parent=get_main_window())
     window.set_update_mode(placeholder_item)
-    window.exec_()
+    window.show()
+    window.raise_()
+    window.activateWindow()

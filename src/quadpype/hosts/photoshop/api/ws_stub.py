@@ -48,8 +48,8 @@ class PhotoshopServerStub:
         is opened).
         'self.websocketserver.call' is used as async wrapper
     """
-    PUBLISH_ICON = '\u2117_'
-    LOADED_ICON = '\u25bc'
+    PUBLISH_ICON = 'P_'
+    LOADED_ICON = 'L_'
 
     def __init__(self):
         self.websocketserver = WebServerTool.get_instance()
