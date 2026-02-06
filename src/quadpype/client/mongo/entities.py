@@ -1210,7 +1210,7 @@ def version_is_latest(project_name, version_id):
 
 @entities_cache_decorator(entity_type=EntityType.VERSION)
 def _get_versions(
-    project_name,
+    project_name=None,
     subset_ids=None,
     version_ids=None,
     versions=None,
@@ -1288,10 +1288,10 @@ def get_versions(
     """
 
     return _get_versions(
-        project_name,
-        subset_ids,
-        version_ids,
-        versions,
+        project_name=project_name,
+        subset_ids=subset_ids,
+        version_ids=version_ids,
+        versions=versions,
         standard=True,
         hero=hero,
         fields=fields
@@ -1319,7 +1319,7 @@ def get_hero_version_by_subset_id(project_name, subset_id, fields=None):
         return None
 
     versions = list(_get_versions(
-        project_name,
+        project_name=project_name,
         subset_ids=[subset_id],
         standard=False,
         hero=True,
@@ -1350,7 +1350,7 @@ def get_hero_version_by_id(project_name, version_id, fields=None):
         return None
 
     versions = list(_get_versions(
-        project_name,
+        project_name=project_name,
         version_ids=[version_id],
         standard=False,
         hero=True,
@@ -1383,9 +1383,9 @@ def get_hero_versions(
     """
 
     return _get_versions(
-        project_name,
-        subset_ids,
-        version_ids,
+        project_name=project_name,
+        subset_ids=subset_ids,
+        version_ids=version_ids,
         standard=False,
         hero=True,
         fields=fields

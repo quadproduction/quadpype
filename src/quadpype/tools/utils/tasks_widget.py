@@ -50,6 +50,8 @@ class TasksModel(QtGui.QStandardItemModel):
         return False
 
     def set_icon(self, item, icon):
+        if not item:
+            return
         item.setIcon(icon)
 
     def refresh(self):
