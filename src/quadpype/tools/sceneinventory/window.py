@@ -214,7 +214,7 @@ def show(root=None, debug=False, parent=None, items=None):
 
         if not os.getenv("AVALON_PROJECT"):
             any_project = next(
-                project for project in get_projects()
+                project for project in get_projects(summarized_retrieval=True)
             )
 
             project_name = any_project["name"]

@@ -1,5 +1,7 @@
 from .mongo import (
     QuadPypeMongoConnection,
+    get_quadpype_database,
+    get_quadpype_collection,
 )
 
 from .mongo.entities import (
@@ -60,6 +62,8 @@ from .operations import (
 
 __all__ = (
     "QuadPypeMongoConnection",
+    "get_quadpype_database",
+    "get_quadpype_collection",
 
     "get_projects",
     "get_project",

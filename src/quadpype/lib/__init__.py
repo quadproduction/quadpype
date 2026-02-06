@@ -113,7 +113,15 @@ from .transcoding import (
     get_rescaled_command_arguments
 )
 
-from .cache import CacheValues
+from .cache import (
+    CacheValues,
+    ProjectCacheValues,
+    get_projects_last_sync,
+    write_project_last_sync,
+    update_project_last_sync,
+    get_projects_last_updates,
+    sync_is_needed
+)
 
 from .registry import (
     IniSettingRegistry,
@@ -257,6 +265,12 @@ __all__ = [
     "get_rescaled_command_arguments",
 
     "CacheValues",
+    "ProjectCacheValues",
+    "get_projects_last_sync",
+    "write_project_last_sync",
+    "update_project_last_sync",
+    "get_projects_last_updates",
+    "sync_is_needed",
 
     "IniSettingRegistry",
     "JSONSettingRegistry",
