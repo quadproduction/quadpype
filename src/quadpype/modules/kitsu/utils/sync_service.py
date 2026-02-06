@@ -16,7 +16,8 @@ import threading
 import gazu
 
 from quadpype.client import get_project, get_assets, get_asset_by_name
-from quadpype.pipeline import AvalonMongoDB, save_project_timestamp
+from quadpype.pipeline import AvalonMongoDB
+from quadpype.client import save_project_timestamp
 from quadpype.lib import Logger
 from .credentials import validate_credentials
 from .update_op_with_zou import (

@@ -2,12 +2,16 @@ from .mongo import (
     QuadPypeMongoConnection,
     get_quadpype_database,
     get_quadpype_collection,
+    save_project_timestamp
 )
 
 from .mongo.entities import (
     get_projects,
     get_project,
     get_whole_project,
+
+    get_projects_last_updates,
+    get_project_last_update,
 
     get_asset_by_id,
     get_asset_by_name,
@@ -64,10 +68,14 @@ __all__ = (
     "QuadPypeMongoConnection",
     "get_quadpype_database",
     "get_quadpype_collection",
+    "save_project_timestamp",
 
     "get_projects",
     "get_project",
     "get_whole_project",
+
+    "get_projects_last_updates",
+    "get_project_last_update",
 
     "get_asset_by_id",
     "get_asset_by_name",

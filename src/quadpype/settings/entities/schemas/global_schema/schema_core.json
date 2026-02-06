@@ -46,6 +46,12 @@
             "label": "Allow Windows to Stay on Top"
         },
         {
+            "type": "boolean",
+            "key": "cache_database",
+            "label": "Cache database entities in RAM",
+            "require_restart": true
+        },
+        {
             "type": "splitter"
         },
         {

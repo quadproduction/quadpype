@@ -11,6 +11,7 @@ from .mongo import (
     load_json_file,
     replace_project_documents,
     store_project_documents,
+    save_project_timestamp
 )
 
 
@@ -27,4 +28,5 @@ __all__ = (
     "load_json_file",
     "replace_project_documents",
     "store_project_documents",
+    "save_project_timestamp"
 )

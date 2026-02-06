@@ -15,7 +15,8 @@ from quadpype.client import (
     create_project,
     get_quadpype_collection,
 )
-from quadpype.pipeline import AvalonMongoDB, save_project_timestamp
+from quadpype.pipeline import AvalonMongoDB
+from quadpype.client import save_project_timestamp
 from quadpype.modules.kitsu.utils.credentials import validate_credentials
 
 from quadpype.lib import Logger

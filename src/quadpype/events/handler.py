@@ -24,8 +24,6 @@ from quadpype.client.mongo import QuadPypeMongoConnection
 
 _EVENT_HANDLER = None
 
-DEFAULT_RESPONSES_WAITING_TIME_SECS = 3
-
 
 class EventHandlerWorker(QtCore.QThread):
 

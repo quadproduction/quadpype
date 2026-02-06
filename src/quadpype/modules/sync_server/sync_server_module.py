@@ -2335,6 +2335,37 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         self.enabled = no_errors
         self.widget.show()
 
+    def sync_is_needed(self, entities_local_last_sync, entities_last_updates, name):
+        """
+            Check if sync is needed based on last sync timestamps
+            and last update timestamp retrieved from DB.
+
+            Args:
+                entities_local_last_sync (int): timestamp of last local sync
+                entities_last_updates (dict): last updates timestamps retrieved from database
+                name (str): entity name
+
+            Returns:
+                True if newer element exists and sync is needed, False otherwise
+        """
+        if entities_local_last_sync is None:
+            return True
+
+        entity_db_last_sync_timestamp = entities_last_updates.get(name, 0)
+        if not entity_db_last_sync_timestamp:
+            return True
+
+        if entity_db_last_sync_timestamp > entities_local_last_sync:
+            self.log.info(f"New updates found from entity {name}. Sync should be triggered.")
+            return True
+
+        self.log.info(
+            f"Local sync is more recent than entity db update for entity {name}. "
+            f"Sync will be canceled."
+        )
+        return False
+
+
     def _get_success_dict(self, new_file_id):
         """
             Provide success metadata ("id", "created_dt") to be stored in Db.

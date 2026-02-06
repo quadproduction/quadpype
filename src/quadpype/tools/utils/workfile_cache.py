@@ -1,6 +1,9 @@
+import collections
 import copy
 import sqlite3
+import threading
 from pathlib import Path
+import time
 from qtpy import QtCore, QtGui
 
 from quadpype.lib import StringTemplate
@@ -25,10 +28,42 @@ APP_OVERLAY_ICON_SIZE = 32
 APP_ICON_SIZE = 64
 
 class WorkFileCache:
-    def workfilde_db_exists(self, project_name=None, settings=None):
+    _instance = None
+    _lock = threading.Lock()
+    _cache = {}
+    _ttl = 60
+    _updates_times = collections.defaultdict(float)
+    _workfile_db_paths = collections.defaultdict(str)
+    _enabled = None
+
+    def __new__(cls):
+        if not cls._instance:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def is_enabled(self, project_name):
+        if self._enabled is None:
+            settings = get_project_settings(project_name)
+            self._enabled = settings["global"].get("launcher", False).get("use_icons", False)
+
+        return self._enabled
+
+    def is_outdated(self, project_name=None):
+        if not self._workfile_db_paths[project_name] or \
+            not self._updates_times[project_name]:
+            return True
+
+        return time.time() - self._updates_times[project_name] > self._ttl
+
+    def workfile_db_exists(self, project_name=None, settings=None):
         return self.get_workfile_db_path(project_name, settings).exists()
 
     def get_workfile_db_path(self,project_name=None, settings=None):
+        if not self.is_outdated(project_name):
+            return self._workfile_db_paths[project_name]
+
         if not settings:
             settings = get_project_settings(project_name)
         db_path_template = settings["global"]["launcher"]["workfile_cache_file_path"]
@@ -42,15 +77,16 @@ class WorkFileCache:
         db_path = Path(StringTemplate.format_template(db_path_template, template_data))
         db_path.mkdir(parents=True, exist_ok=True)
 
-        return db_path / DB_NAME
+        self._workfile_db_paths[project_name] = db_path / DB_NAME
 
-    def init_workfile_db(self,project_name):
-        settings = get_project_settings(project_name)
-        use_icons = settings["global"].get("launcher", False).get("use_icons", False)
-        if not use_icons:
-            return
+        self._updates_times[project_name] = time.time()
+        return self._workfile_db_paths[project_name]
 
-        conn = sqlite3.connect(self.get_workfile_db_path(project_name=project_name, settings=settings))
+    def init_workfile_db(self, project_name):
+        if not self.is_enabled(project_name):
+            return None
+
+        conn = sqlite3.connect(self.get_workfile_db_path(project_name=project_name))
 
         c = conn.cursor()
         c.execute('''
@@ -65,6 +101,9 @@ class WorkFileCache:
         conn.close()
 
     def add_task_folder(self,project_name=None, task_name=None, asset_name=None, folder=None):
+        if not self.is_enabled(project_name):
+            return None
+
         if isinstance(folder, str):
             folder =Path(folder)
         conn = sqlite3.connect(self.get_workfile_db_path(project_name=project_name))
@@ -80,6 +119,9 @@ class WorkFileCache:
         conn.close()
 
     def add_task_extension(self,project_name=None, task_name=None, asset_name=None, extension=None):
+        if not self.is_enabled(project_name):
+            return None
+
         if not project_name:
             project_name = get_current_project_name()
         if not task_name:
@@ -96,34 +138,51 @@ class WorkFileCache:
         conn.close()
 
     def load_task_extensions(self,project_name, task_name, asset_name):
+        if not self.is_enabled(project_name):
+            return []
+
+        if not self.is_outdated(project_name):
+            entity_cache = self._cache.get((project_name, task_name, asset_name))
+            if entity_cache:
+                return entity_cache
+
         conn = sqlite3.connect(self.get_workfile_db_path(project_name=project_name))
         c = conn.cursor()
         c.execute('SELECT ext FROM task_files WHERE task_name = ? AND asset_name = ?',
                   (task_name, asset_name))
         rows = c.fetchall()
         conn.close()
-        return [row[0] for row in rows]
+        results = [row[0] for row in rows]
+
+        self._cache[(project_name, task_name, asset_name)] = results
+        return results
 
 
-def set_item_state(session, item, task_name=None, asset_name=None, app_action=None):
+
+def get_item_state(session, item, task_name=None, asset_name=None, app_action=None):
     """
     Will set a different icon on the icon if a WF or PublishedWF exists
     """
     search_session = copy.deepcopy(session)
 
-    if not search_session.get("AVALON_TASK", None):
-        return
-
     if not task_name:
-        task_name = search_session.get("AVALON_TASK")
-    project = search_session.get("AVALON_PROJECT")
+        task_name = search_session.get("AVALON_TASK", None)
+
+        if not task_name:
+            return
+
     if not asset_name:
-        asset_name = search_session.get("AVALON_ASSET")
+        asset_name = search_session.get("AVALON_ASSET", None)
+
+        if not asset_name:
+            return
 
     search_session.update({
         "AVALON_TASK":task_name,
         "AVALON_ASSET":asset_name
     })
+
+    project = search_session.get("AVALON_PROJECT")
 
     workfile_exts = WorkFileCache().load_task_extensions(project, task_name, asset_name)
 
@@ -163,7 +222,8 @@ def set_item_state(session, item, task_name=None, asset_name=None, app_action=No
         icon_large = QtGui.QIcon(pixmap_resized)
         icon = add_overlay_icon(item.icon(), icon_large, APP_ICON_SIZE, APP_OVERLAY_ICON_SIZE)
 
-    item.setIcon(icon)
+    return icon
+
 
 def merge_icons_diagonal(icon1, icon2, size):
     """Create a new icon based on 2 icons split in half diagonally"""
@@ -229,3 +289,41 @@ def get_workfile_publish_representations(session):
     if not publish_representations:
         return []
     return publish_representations
+
+
+class IconWorker(QtCore.QObject):
+    finished = QtCore.Signal()
+    callback = QtCore.Signal(QtGui.QStandardItem, QtGui.QIcon)  # Signal to send icon path or data
+    entities_data = []
+
+    def run(self):
+        for data in self.entities_data:
+
+            item = data['item']
+            session = data['session']
+            app_action = data.get('app_action')
+            task_name = data.get('task_name')
+            asset_name = data.get('asset_name')
+            icon = get_item_state(
+                session=session,
+                item=item,
+                app_action=app_action,
+                task_name=task_name,
+                asset_name=asset_name
+            )
+            if not icon:
+                continue
+
+            self.callback.emit(item, icon)
+
+        self.finished.emit()
+
+
+def launch_threaded_icon_worker(cls, entities_data, callback):
+    cls.item_state_worker = IconWorker()
+    cls.item_state_worker.entities_data = entities_data
+    cls.item_state_worker.moveToThread(cls.item_state_thread)
+    cls.item_state_thread.started.connect(cls.item_state_worker.run)
+    cls.item_state_worker.callback.connect(callback)
+    cls.item_state_worker.finished.connect(cls.item_state_thread.quit)
+    cls.item_state_thread.start()

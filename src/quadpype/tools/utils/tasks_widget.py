@@ -8,7 +8,7 @@ from quadpype.client import (
 )
 from quadpype.style import get_disabled_entity_icon_color
 from quadpype.tools.utils.lib import get_task_icon
-from quadpype.tools.utils.workfile_cache import set_item_state
+from quadpype.tools.utils.workfile_cache import launch_threaded_icon_worker, get_item_state
 from quadpype.settings import get_project_settings
 from .views import DeselectableTreeView
 
@@ -41,10 +41,16 @@ class TasksModel(QtGui.QStandardItemModel):
         self._last_asset_id = None
         self._loaded_project_name = None
 
+        self.item_state_thread = None
+        self.item_state_worker = None
+
     def _context_is_valid(self):
         if self._get_current_project():
             return True
         return False
+
+    def set_icon(self, item, icon):
+        item.setIcon(icon)
 
     def refresh(self):
         self._refresh_project_doc()
@@ -124,6 +130,7 @@ class TasksModel(QtGui.QStandardItemModel):
             else:
                 use_icons = settings["global"].get("tools", {}).get("Workfiles", {}).get("use_icons", False)
 
+        entities_data = list()
         for task_name, task_info in asset_tasks.items():
             session["AVALON_TASK"] = task_name
             task_type = task_info.get("type")
@@ -146,7 +153,14 @@ class TasksModel(QtGui.QStandardItemModel):
             item.setData(icon, QtCore.Qt.DecorationRole)
             item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
             if use_icons:
-                set_item_state(session, item, task_name=task_name, asset_name=asset_name)
+                entities_data.append(
+                    {
+                        'item': item,
+                        'session': session,
+                        'task_name': task_name,
+                        'asset_name': asset_name,
+                    }
+                )
             items.append(item)
 
         if not items:
@@ -156,6 +170,17 @@ class TasksModel(QtGui.QStandardItemModel):
             items.append(item)
 
         root_item.appendRows(items)
+
+        if self.item_state_thread is not None:
+            self.item_state_thread.quit()
+            self.item_state_thread.wait()
+
+        self.item_state_thread = QtCore.QThread()
+        launch_threaded_icon_worker(
+            cls=self,
+            entities_data=entities_data,
+            callback=self.set_icon
+        )
 
 
 class TasksProxyModel(QtCore.QSortFilterProxyModel):
