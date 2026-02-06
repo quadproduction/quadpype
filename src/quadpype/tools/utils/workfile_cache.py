@@ -119,11 +119,11 @@ class WorkFileCache:
         conn.close()
 
     def add_task_extension(self,project_name=None, task_name=None, asset_name=None, extension=None):
-        if not self.is_enabled(project_name):
-            return None
 
         if not project_name:
             project_name = get_current_project_name()
+        if not self.is_enabled(project_name):
+            return None
         if not task_name:
             task_name = get_current_task_name()
         if not asset_name:
