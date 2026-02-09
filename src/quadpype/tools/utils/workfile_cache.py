@@ -159,7 +159,7 @@ class WorkFileCache:
 
 
 
-def get_item_state(session, item, task_name=None, asset_name=None, app_action=None):
+def get_item_state(session, base_icon, task_name=None, asset_name=None, app_action=None):
     """
     Will set a different icon on the icon if a WF or PublishedWF exists
     """
@@ -220,7 +220,7 @@ def get_item_state(session, item, task_name=None, asset_name=None, app_action=No
         pixmap_resized = pixmap_small.scaled(APP_OVERLAY_ICON_SIZE, APP_OVERLAY_ICON_SIZE,
                                              QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         icon_large = QtGui.QIcon(pixmap_resized)
-        icon = add_overlay_icon(item.icon(), icon_large, APP_ICON_SIZE, APP_OVERLAY_ICON_SIZE)
+        icon = add_overlay_icon(base_icon, icon_large, APP_ICON_SIZE, APP_OVERLAY_ICON_SIZE)
 
     return icon
 
@@ -293,20 +293,25 @@ def get_workfile_publish_representations(session):
 
 class IconWorker(QtCore.QObject):
     finished = QtCore.Signal()
-    callback = QtCore.Signal(QtGui.QStandardItem, QtGui.QIcon)  # Signal to send icon path or data
+    callback = QtCore.Signal(int, object) # Signal to send item index and icon to use
+    #callback = QtCore.Signal(QtGui.QStandardItem, QtGui.QIcon)
     entities_data = []
 
-    def run(self):
-        for data in self.entities_data:
+    def __init__(self):
+        super(IconWorker, self).__init__()
+        self.entities_data = []
 
-            item = data['item']
+    def run(self):
+        for idx, data in enumerate(self.entities_data):
+
             session = data['session']
             app_action = data.get('app_action')
             task_name = data.get('task_name')
             asset_name = data.get('asset_name')
+            base_icon = data.get('icon')
             icon = get_item_state(
                 session=session,
-                item=item,
+                base_icon=base_icon,
                 app_action=app_action,
                 task_name=task_name,
                 asset_name=asset_name
@@ -314,7 +319,7 @@ class IconWorker(QtCore.QObject):
             if not icon:
                 continue
 
-            self.callback.emit(item, icon)
+            self.callback.emit(idx, icon)
 
         self.finished.emit()
 

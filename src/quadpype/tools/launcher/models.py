@@ -83,8 +83,15 @@ class ActionModel(QtGui.QStandardItemModel):
         self.item_state_thread = None
         self.item_state_worker = None
 
-    def set_icon(self, item, icon):
-        item.setIcon(icon)
+    def set_icon(self, row_index, icon):
+        if not hasattr(self, '_current_items'):
+            return
+
+        if row_index < 0 or row_index >= len(self._current_items):
+            return
+
+        item = self._current_items[row_index]
+        item.setData(icon, QtCore.Qt.DecorationRole)
 
     def discover(self):
         """Set up Actions cache. Run this for each new project."""
@@ -221,7 +228,7 @@ class ActionModel(QtGui.QStandardItemModel):
             if self.is_application_action(actions[0]) and use_icons:
                 entities_data.append(
                     {
-                        'item': item,
+                        'icon': icon,
                         'session': session,
                         'app_action': actions[0],
                     }
@@ -238,7 +245,7 @@ class ActionModel(QtGui.QStandardItemModel):
             if self.is_application_action(action) and use_icons:
                 entities_data.append(
                     {
-                        'item': item,
+                        'icon': icon,
                         'session': session,
                         'app_action': action,
                     }
@@ -281,6 +288,8 @@ class ActionModel(QtGui.QStandardItemModel):
 
                 self.items_by_id[item_id] = item
                 items.append(item)
+
+        self._current_items = items
 
         self.invisibleRootItem().appendRows(items)
 

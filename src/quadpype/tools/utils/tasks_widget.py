@@ -49,10 +49,15 @@ class TasksModel(QtGui.QStandardItemModel):
             return True
         return False
 
-    def set_icon(self, item, icon):
-        if not item:
+    def set_icon(self, row_index, icon):
+        if not hasattr(self, '_current_items'):
             return
-        item.setIcon(icon)
+
+        if row_index < 0 or row_index >= len(self._current_items):
+            return
+
+        item = self._current_items[row_index]
+        item.setData(icon, QtCore.Qt.DecorationRole)
 
     def refresh(self):
         self._refresh_project_doc()
@@ -157,10 +162,10 @@ class TasksModel(QtGui.QStandardItemModel):
             if use_icons:
                 entities_data.append(
                     {
-                        'item': item,
                         'session': session,
                         'task_name': task_name,
                         'asset_name': asset_name,
+                        'icon': icon
                     }
                 )
             items.append(item)
@@ -170,6 +175,8 @@ class TasksModel(QtGui.QStandardItemModel):
             item.setData(self._no_tasks_icon, QtCore.Qt.DecorationRole)
             item.setFlags(QtCore.Qt.NoItemFlags)
             items.append(item)
+
+        self._current_items = items
 
         root_item.appendRows(items)
 

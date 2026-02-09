@@ -349,6 +349,7 @@ class Window(BaseToolWidget):
 
     def on_workfile_create(self, filepath):
         self._create_workfile_doc(filepath)
+        self.refresh()
 
     def _on_file_opened(self):
         self.close()
