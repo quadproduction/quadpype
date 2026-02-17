@@ -961,7 +961,8 @@ class FileDef(AbstractAttrDef):
         "extensions",
         "allow_sequences",
         "extensions_label",
-        "allow_reviews"
+        "allow_reviews",
+        "show_colors_tip"
     ]
 
     def __init__(
@@ -973,6 +974,7 @@ class FileDef(AbstractAttrDef):
         allow_sequences: Optional[bool] = True,
         extensions_label: Optional[str] = None,
         allow_reviews: Optional[bool] = True,
+        show_colors_tip: Optional[bool] = True,
         default: Optional[Union[FileDefItemDict, List[str]]] = None,
         **kwargs
     ):
@@ -1015,6 +1017,7 @@ class FileDef(AbstractAttrDef):
         self.extensions: Set[str] = set(extensions)
         self.allow_sequences: bool = allow_sequences
         self.extensions_label: Optional[str] = extensions_label
+        self.show_colors_tip: bool = show_colors_tip
         self.allow_reviews: bool = allow_reviews
         super().__init__(key, default=default, **kwargs)
 

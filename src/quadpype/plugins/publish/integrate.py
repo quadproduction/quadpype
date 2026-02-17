@@ -124,7 +124,6 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
                 "action",
                 "harmony.template",
                 "harmony.palette",
-                "editorial",
                 "background",
                 "camerarig",
                 "redshiftproxy",
