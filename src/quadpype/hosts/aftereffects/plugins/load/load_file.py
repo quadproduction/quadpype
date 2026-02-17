@@ -34,6 +34,8 @@ from quadpype.pipeline import (
     split_hierarchy
 )
 
+from quadpype.client.mongo.entities import get_project
+
 
 class FileLoader(api.AfterEffectsLoader):
     """Load images
@@ -70,12 +72,17 @@ class FileLoader(api.AfterEffectsLoader):
 
         stub = self.get_stub()
         project_name = context['project']['name']
+        project_doc = get_project(
+            project_name,
+            fields=["data.fps", "data.frameStart", "data.frameEnd"]
+        )
+
         repr_cont = context["representation"]["context"]
         repre_task_name = repr_cont.get('task', {}).get('name', None)
         frame = repr_cont.get("frame", None)
         version_data = context["version"]["data"]
-        frame_start = version_data.get("frameStart", None)
-        frame_end = version_data.get("frameEnd", None)
+        frame_start = version_data.get("frameStart", project_doc['data']['frameStart'])
+        frame_end = version_data.get("frameEnd", project_doc['data']['frameEnd'])
 
         # Determine if the imported file is a PSD file (Special case)
         path = Path(path)
@@ -92,7 +99,7 @@ class FileLoader(api.AfterEffectsLoader):
 
         import_options = {}
         try:
-            import_options['fps'] = context['asset']['data']['fps']
+            import_options['fps'] = project_doc['data']['fps']
         except KeyError:
             self.log.warning(f"Can't retrieve fps information for asset {name}. Will try to load data from project.")
             try:
