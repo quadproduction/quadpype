@@ -169,9 +169,6 @@ class MongoUserHandler(UserHandler):
 
     @staticmethod
     def override_settings_from_file(user_profile):
-        print('*' * 20)
-        print('*' * 20)
-        print('*' * 20)
         configuration_file_path = Path(tempfile.gettempdir(), "overrided_user_settings.ini")
         print(configuration_file_path)
         if not configuration_file_path.is_file():
@@ -219,7 +216,6 @@ class MongoUserHandler(UserHandler):
 
                 print(f"New value set for '{inner_section}' : '{value}'")
 
-        print('*' * 20)
         configuration_file_path.unlink()
 
     def set_tracker_login_to_user_profile(self, tracker_name, login_value):
