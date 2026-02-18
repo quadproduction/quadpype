@@ -2293,7 +2293,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Returns:
             (int): in seconds
         """
-        return int(self.sync_global_settings["loop_delay"])
+        return int(self.sync_global_settings.get("loop_delay", 10))
 
     def get_tries_count(self):
         """
@@ -2301,7 +2301,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Returns:
             (int): number of tries
         """
-        return int(self.sync_global_settings["retry_cnt"])
+        return int(self.sync_global_settings.get("retry_cnt", 3))
 
     def get_force_sync_loops_number(self):
         """
@@ -2309,7 +2309,15 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Returns:
             (int): number of loops
         """
-        return int(self.sync_global_settings["force_sync_loops"])
+        return int(self.sync_global_settings.get("force_sync_loops", 4))
+
+    def idle_threshold(self):
+        """
+            Return number of seconds to wait before considering the system idle.
+        Returns:
+            (int): in seconds
+        """
+        return int(self.sync_global_settings.get("idle_threshold", 0))
 
     def show_widget(self):
         """Show dialog for Sync Queue"""

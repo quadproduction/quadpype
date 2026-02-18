@@ -4,6 +4,7 @@ import asyncio
 import threading
 import time
 import concurrent.futures
+import pyautogui
 from time import sleep
 from datetime import datetime, timezone
 from collections import defaultdict
@@ -405,150 +406,151 @@ class SyncServerThread(threading.Thread):
         delay = self.module.get_loop_delay()
         force_loops_number = self.module.get_force_sync_loops_number()
         loop_number = 0
+        idle_threshold = self.module.idle_threshold()
+        user_is_idle = False
+        current_idle_time = 0
         projects_last_sync = defaultdict(dict)
+        mouse_position = None
 
         while self.is_running and not self.module.is_paused():
             try:
                 start_time = time.time()
                 loop_number += 1
-                browsed_projects = list()
-                representations_retrieved = dict()
-                downloaded_files = defaultdict(list)
-                uploaded_files = defaultdict(list)
 
-                force_sync_asked = self.force_sync_asked(loop_number, force_loops_number)
-                if force_sync_asked:
-                    loop_number = 0
+                if idle_threshold:
+                    new_mouse_position = pyautogui.position()
+                    if new_mouse_position == mouse_position:
+                        current_idle_time += 10
 
-                enabled_projects = self.module.get_enabled_projects()
-                projects_settings = get_user_settings().get('projects', {})
+                    else:
+                        current_idle_time = 0
 
-                projects_last_db_updates = get_projects_last_updates(enabled_projects, entity="global")
-                enabled_synced_projects = {
-                    project_name: project_data for project_name, project_data
-                    in projects_settings.items()
-                    if project_name in enabled_projects
-                }
+                    mouse_position = new_mouse_position
+                    user_is_idle = current_idle_time >= idle_threshold
 
-                # Two optimizations here :
-                #  - use dummy checks for valid and not local site from user settings
-                #  - only sync projects that have new updates since last sync
-                for project_name, project_data in enabled_synced_projects.items():
-                    last_sync_outdated = self.module.sync_is_needed(
-                        projects_last_sync.get(project_name, None),
-                        projects_last_db_updates,
-                        name=project_name
+                if idle_threshold and user_is_idle:
+                    self.log.info(
+                        f"User is idle since {current_idle_time} seconds "
+                        f"(limit is {idle_threshold}), skipping sync."
                     )
-                    if not last_sync_outdated and not force_sync_asked:
-                        continue
 
-                    active_site = project_data.get('active_site', None)
-                    remote_site = project_data.get('remote_site', None)
-                    if not all([active_site, remote_site]):
-                        self.log.info("Active or remote site not set for project {}. Skipping.".format(project_name))
-                        continue
+                else:
+                    enabled_projects = self.module.get_enabled_projects()
 
-                    if (active_site == "studio" and remote_site == "studio"):
-                        self.log.info("Active and remote site both set to 'studio' for project {}. Skipping.".format(project_name))
-                        continue
+                    browsed_projects = list()
+                    representations_retrieved = dict()
+                    downloaded_files = defaultdict(list)
+                    uploaded_files = defaultdict(list)
 
-                    browsed_projects.append(project_name)
+                    force_sync_asked = self.force_sync_asked(loop_number, force_loops_number)
+                    if force_sync_asked:
+                        loop_number = 0
 
-                if browsed_projects:
-                    self.module.set_sync_project_settings()
+                    projects_settings = get_user_settings().get('projects', {})
 
-                    for project_name in browsed_projects:
+                    projects_last_db_updates = get_projects_last_updates(enabled_projects, entity="global")
+                    enabled_synced_projects = {
+                        project_name: project_data for project_name, project_data
+                        in projects_settings.items()
+                        if project_name in enabled_projects
+                    }
 
-                        preset = self.module.sync_project_settings[project_name]
-                        local_site, remote_site = self._working_sites(project_name,
-                                                                    preset)
-
-                        if not all([local_site, remote_site]):
+                    # Two optimizations here :
+                    #  - use dummy checks for valid and not local site from user settings
+                    #  - only sync projects that have new updates since last sync
+                    for project_name, project_data in enabled_synced_projects.items():
+                        last_sync_outdated = self.module.sync_is_needed(
+                            projects_last_sync.get(project_name, None),
+                            projects_last_db_updates,
+                            name=project_name
+                        )
+                        if not last_sync_outdated and not force_sync_asked:
                             continue
 
-                        sync_repres = self.module.get_sync_representations(
-                            project_name,
-                            local_site,
-                            remote_site
-                        )
+                        active_site = project_data.get('active_site', None)
+                        remote_site = project_data.get('remote_site', None)
+                        if not all([active_site, remote_site]):
+                            self.log.info("Active or remote site not set for project {}. Skipping.".format(project_name))
+                            continue
 
-                        sync_repres = list(sync_repres)
+                        if (active_site == "studio" and remote_site == "studio"):
+                            self.log.info("Active and remote site both set to 'studio' for project {}. Skipping.".format(project_name))
+                            continue
 
-                        if sync_repres:
-                            representations_retrieved[project_name] = sync_repres
+                        browsed_projects.append(project_name)
 
-                        if self.sync_doc_needs_update(sync_repres):
-                            projects_last_sync[project_name] = time.time()
+                    if browsed_projects:
+                        self.module.set_sync_project_settings()
 
-                        task_files_to_process = []
-                        files_processed_info = []
-                        # process only unique file paths in one batch
-                        # multiple representation could have same file path
-                        # (textures),
-                        # upload process can find already uploaded file and
-                        # reuse same id
-                        processed_file_path = set()
+                        for project_name in browsed_projects:
 
-                        site_preset = preset.get('sites')[remote_site]
-                        remote_provider = self.module.get_provider_for_site(site=remote_site)
-                        handler = lib.factory.get_provider(
-                            remote_provider,
-                            project_name,
-                            remote_site,
-                            presets=site_preset
-                        )
-                        limit = lib.factory.get_provider_batch_limit(remote_provider)
+                            preset = self.module.sync_project_settings[project_name]
+                            local_site, remote_site = self._working_sites(project_name,
+                                                                        preset)
 
-                        # first call to get_provider could be expensive, its
-                        # building folder tree structure in memory
-                        # call only if needed, eg. DO_UPLOAD or DO_DOWNLOAD
-                        for sync in sync_repres:
-                            if limit <= 0:
-                                continue
-                            files = sync.get("files") or []
-                            if not files:
+                            if not all([local_site, remote_site]):
                                 continue
 
-                            for file in files:
-                                # skip already processed files
-                                file_path = file.get('path', '')
-                                if file_path in processed_file_path:
+                            sync_repres = self.module.get_sync_representations(
+                                project_name,
+                                local_site,
+                                remote_site
+                            )
+
+                            sync_repres = list(sync_repres)
+
+                            if sync_repres:
+                                representations_retrieved[project_name] = sync_repres
+
+                            if self.sync_doc_needs_update(sync_repres):
+                                projects_last_sync[project_name] = time.time()
+
+                            task_files_to_process = []
+                            files_processed_info = []
+                            # process only unique file paths in one batch
+                            # multiple representation could have same file path
+                            # (textures),
+                            # upload process can find already uploaded file and
+                            # reuse same id
+                            processed_file_path = set()
+
+                            site_preset = preset.get('sites')[remote_site]
+                            remote_provider = self.module.get_provider_for_site(site=remote_site)
+                            handler = lib.factory.get_provider(
+                                remote_provider,
+                                project_name,
+                                remote_site,
+                                presets=site_preset
+                            )
+                            limit = lib.factory.get_provider_batch_limit(remote_provider)
+
+                            # first call to get_provider could be expensive, its
+                            # building folder tree structure in memory
+                            # call only if needed, eg. DO_UPLOAD or DO_DOWNLOAD
+                            for sync in sync_repres:
+                                if limit <= 0:
                                     continue
-                                status = self.module.check_status(
-                                    file,
-                                    local_site,
-                                    remote_site,
-                                    try_cnt
-                                )
-                                if (status == SyncStatus.DO_UPLOAD and
-                                        len(task_files_to_process) < limit):
-                                    tree = handler.get_tree()
-                                    limit -= 1
-                                    task = asyncio.create_task(
-                                        upload(self.module,
-                                            project_name,
-                                            file,
-                                            sync,
-                                            remote_provider,
-                                            remote_site,
-                                            tree,
-                                            site_preset))
-                                    task_files_to_process.append(task)
-                                    # store info for exception handlingy
-                                    files_processed_info.append((file,
-                                                                sync,
-                                                                remote_site,
-                                                                project_name
-                                                                ))
-                                    processed_file_path.add(file_path)
-                                    uploaded_files[project_name].append(file)
+                                files = sync.get("files") or []
+                                if not files:
+                                    continue
 
-                                if (status == SyncStatus.DO_DOWNLOAD and
-                                        len(task_files_to_process) < limit):
-                                    tree = handler.get_tree()
-                                    limit -= 1
-                                    task = asyncio.create_task(
-                                        download(self.module,
+                                for file in files:
+                                    # skip already processed files
+                                    file_path = file.get('path', '')
+                                    if file_path in processed_file_path:
+                                        continue
+                                    status = self.module.check_status(
+                                        file,
+                                        local_site,
+                                        remote_site,
+                                        try_cnt
+                                    )
+                                    if (status == SyncStatus.DO_UPLOAD and
+                                            len(task_files_to_process) < limit):
+                                        tree = handler.get_tree()
+                                        limit -= 1
+                                        task = asyncio.create_task(
+                                            upload(self.module,
                                                 project_name,
                                                 file,
                                                 sync,
@@ -556,80 +558,104 @@ class SyncServerThread(threading.Thread):
                                                 remote_site,
                                                 tree,
                                                 site_preset))
-                                    task_files_to_process.append(task)
+                                        task_files_to_process.append(task)
+                                        # store info for exception handlingy
+                                        files_processed_info.append((file,
+                                                                    sync,
+                                                                    remote_site,
+                                                                    project_name
+                                                                    ))
+                                        processed_file_path.add(file_path)
+                                        uploaded_files[project_name].append(file)
 
-                                    files_processed_info.append((file,
-                                                                sync,
-                                                                local_site,
-                                                                project_name
-                                                                ))
-                                    processed_file_path.add(file_path)
-                                    downloaded_files[project_name].append(file)
+                                    if (status == SyncStatus.DO_DOWNLOAD and
+                                            len(task_files_to_process) < limit):
+                                        tree = handler.get_tree()
+                                        limit -= 1
+                                        task = asyncio.create_task(
+                                            download(self.module,
+                                                    project_name,
+                                                    file,
+                                                    sync,
+                                                    remote_provider,
+                                                    remote_site,
+                                                    tree,
+                                                    site_preset))
+                                        task_files_to_process.append(task)
 
-                        self.log.debug("Sync tasks count {}".format(
-                            len(task_files_to_process)
-                        ))
-                        files_created = await asyncio.gather(
-                            *task_files_to_process,
-                            return_exceptions=True)
+                                        files_processed_info.append((file,
+                                                                    sync,
+                                                                    local_site,
+                                                                    project_name
+                                                                    ))
+                                        processed_file_path.add(file_path)
+                                        downloaded_files[project_name].append(file)
 
-                        representations_to_check = set()
+                            self.log.debug("Sync tasks count {}".format(
+                                len(task_files_to_process)
+                            ))
+                            files_created = await asyncio.gather(
+                                *task_files_to_process,
+                                return_exceptions=True)
 
-                        for file_id, info in zip(files_created,
-                                                files_processed_info):
-                            file, representation, site, project_name = info
-                            error = None
-                            if isinstance(file_id, BaseException):
-                                error = str(file_id)
-                                file_id = None
-                            self.module.update_db(project_name,
-                                                file_id,
-                                                file,
-                                                representation,
-                                                site,
-                                                error)
+                            representations_to_check = set()
 
-                            representations_to_check.add(
-                                (
-                                    representation["_id"],
-                                    site,
-                                    representation['context'][0]['asset'],
-                                    representation['context'][0]['subset'],
-                                    representation['context'][0]['ext']
+                            for file_id, info in zip(files_created,
+                                                    files_processed_info):
+                                file, representation, site, project_name = info
+                                error = None
+                                if isinstance(file_id, BaseException):
+                                    error = str(file_id)
+                                    file_id = None
+                                self.module.update_db(project_name,
+                                                    file_id,
+                                                    file,
+                                                    representation,
+                                                    site,
+                                                    error)
+
+                                representations_to_check.add(
+                                    (
+                                        representation["_id"],
+                                        site,
+                                        representation['context'][0]['asset'],
+                                        representation['context'][0]['subset'],
+                                        representation['context'][0]['ext']
+                                    )
                                 )
-                            )
 
-                        for repre_data in representations_to_check:
-                            repre_id, site, asset, subset, ext = repre_data
+                            for repre_data in representations_to_check:
+                                repre_id, site, asset, subset, ext = repre_data
 
-                            stream_side = "Download" if site == local_site else "Upload"
-                            if self.module.is_representation_on_site(
-                                    project_name,
-                                    repre_id,
-                                    site
-                            ):
-                                notify_message(
-                                    f"{stream_side} Finished",
-                                    f" {asset}\n"
-                                    f"{subset}\n"
-                                    f"{ext}"
-                                )
+                                stream_side = "Download" if site == local_site else "Upload"
+                                if self.module.is_representation_on_site(
+                                        project_name,
+                                        repre_id,
+                                        site
+                                ):
+                                    notify_message(
+                                        f"{stream_side} Finished",
+                                        f" {asset}\n"
+                                        f"{subset}\n"
+                                        f"{ext}"
+                                    )
 
-                duration = time.time() - start_time
-                self.log.debug("Loop took {:.2f}s".format(duration))
-                self.log.debug(
-                    "Waiting {} seconds before running the sync loop".format(delay)
-                )
+                if not user_is_idle:
+                    duration = time.time() - start_time
+                    self.log.debug("Loop took {:.2f}s".format(duration))
+                    self.log.debug(
+                        "Waiting {} seconds before running the sync loop".format(delay)
+                    )
 
-                self.register_loop_log(
-                    duration,
-                    enabled_projects,
-                    browsed_projects,
-                    force_sync_asked,
-                    representations_retrieved,
-                    downloaded_files,
-                    uploaded_files
-                )
+                    self.register_loop_log(
+                        duration,
+                        enabled_projects,
+                        browsed_projects,
+                        force_sync_asked,
+                        representations_retrieved,
+                        downloaded_files,
+                        uploaded_files
+                    )
 
                 self.timer = asyncio.create_task(self.run_timer(delay))
                 await asyncio.gather(self.timer)

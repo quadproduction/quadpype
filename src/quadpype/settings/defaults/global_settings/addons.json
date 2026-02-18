@@ -155,7 +155,8 @@
         "sites": {},
         "retry_cnt": "3",
         "loop_delay": "30",
-        "force_sync_loops": 4
+        "force_sync_loops": 4,
+        "idle_threshold": 0
     },
     "deadline": {
         "enabled": true,
