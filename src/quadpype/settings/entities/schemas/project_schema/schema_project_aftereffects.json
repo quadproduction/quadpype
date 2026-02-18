@@ -89,7 +89,7 @@
                     "children": [
                         {
                             "type": "label",
-                            "label": "Where the created Comp will be stored"
+                            "label": "Where the created Comp will be stored.\nKeys allowed: asset (asset name), task, family, variant"
                         },
                         {
                             "type": "text",
