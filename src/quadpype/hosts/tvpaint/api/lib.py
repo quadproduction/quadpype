@@ -41,9 +41,7 @@ def parse_layers_data(data, only_names=False):
         if not layer_raw:
             continue
         if only_names:
-            (
-                name, layer_id
-            ) = layer_raw.split("|")
+            (name, layer_id) = layer_raw.split("|")
             layer = {
                 "name": name,
                 "layer_id": int(layer_id)

@@ -133,6 +133,7 @@ class TVPTemplateBuilder(AbstractTemplateBuilder):
                         " Can't add it to launch arguments or determine if should"
                         " copy template."
                     ))
+                    raise ValueError
 
         if not os.path.exists(workfile_path):
             return False

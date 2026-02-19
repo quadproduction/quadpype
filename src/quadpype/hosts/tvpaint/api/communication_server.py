@@ -463,7 +463,6 @@ class QtTVPaintRpc(BaseTVPaintRpc):
             build_workfile_template
         log.info("Triggering Build From Template")
         partial_method = functools.partial(build_workfile_template)
-        #partial_method = functools.partial(build_workfile_template, create_first_version=False)
         item = MainThreadItem(partial_method)
         self._execute_in_main_thread(item, wait=False)
 
