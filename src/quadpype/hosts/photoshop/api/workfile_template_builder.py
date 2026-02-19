@@ -68,7 +68,7 @@ class PSTemplateBuilder(AbstractTemplateBuilder):
 
         shutil.copy2(path, workfile_path)
         stub.open(workfile_path)
-
+        stub.refresh_imprints()
         return True
 
 
@@ -103,6 +103,11 @@ class PSPlaceholderPlugin(PlaceholderPlugin):
 
         return output
 
+    def collect_placeholders_metadata(self, stub=None):
+        if stub is None:
+            stub = get_stub()
+        return [item for item in stub.get_layers_metadata() if item.get("is_placeholder")]
+
     def update_placeholder(self, placeholder_item, placeholder_data):
         """Resave changed properties for placeholders"""
         item_id, metadata_item = self._get_item(placeholder_item)
@@ -111,6 +116,7 @@ class PSPlaceholderPlugin(PlaceholderPlugin):
             data=placeholder_data,
         )
         stub = get_stub()
+        stub.refresh_imprints()
         if not item_id:
             stub.print_msg("Cannot find item for "
                            f"{placeholder_item.scene_identifier}")
@@ -233,7 +239,7 @@ class PSPlaceholderCreatePlugin(PSPlaceholderPlugin, PlaceholderCreateMixin):
                     TextColor.YELLOW.label,
                     TextColor.ORANGE.label,
                 ],
-                default=TextColor.RED.label,
+                default=options.get("text_color", TextColor.RED.label),
                 label="PlaceHolder Text Color",
             ),
             attribute_definitions.NumberDef(
@@ -241,7 +247,7 @@ class PSPlaceholderCreatePlugin(PSPlaceholderPlugin, PlaceholderCreateMixin):
                 label="PlaceHolder Text Size",
                 minimum=24,
                 maximum=500,
-                default=50
+                default=options.get("text_size", 50)
             ),
             attribute_definitions.UISeparatorDef(),
         ])
@@ -265,6 +271,13 @@ class PSPlaceholderLoadPlugin(PSPlaceholderPlugin, PlaceholderLoadMixin):
         )
         stub = get_stub()
         name = placeholder_name
+
+        stub.refresh_imprints()
+
+        current_placeholders = self.collect_placeholders_metadata(stub)
+        if any(item.get('data') == placeholder_data for item in current_placeholders):
+            stub.print_msg("PlaceHolder already exists with those options !")
+            return
 
         placeholder_layer = stub.add_placeholder(name, text_size, r, g, b)
 
@@ -290,6 +303,8 @@ class PSPlaceholderLoadPlugin(PSPlaceholderPlugin, PlaceholderLoadMixin):
             stub.remove_instance(placeholder.scene_identifier)
 
     def get_placeholder_options(self, options=None):
+        if not options:
+            options = {}
         attr_defs =  self.get_load_plugin_options(options)
         attr_defs.extend([
             attribute_definitions.UISeparatorDef(),
@@ -303,7 +318,7 @@ class PSPlaceholderLoadPlugin(PSPlaceholderPlugin, PlaceholderLoadMixin):
                     TextColor.YELLOW.label,
                     TextColor.ORANGE.label,
                 ],
-                default=TextColor.ORANGE.label,
+                default=options.get("text_color", TextColor.ORANGE.label),
                 label="PlaceHolder Text Color",
             ),
             attribute_definitions.NumberDef(
@@ -311,20 +326,20 @@ class PSPlaceholderLoadPlugin(PSPlaceholderPlugin, PlaceholderLoadMixin):
                 label="PlaceHolder Text Size",
                 minimum=24,
                 maximum=500,
-                default=50
+                default=options.get("text_size", 50)
             ),
             attribute_definitions.UISeparatorDef(),
             attribute_definitions.BoolDef(
                 "move_loaded",
                 label="Move loaded to PlaceHolder",
-                default=True
+                default=options.get("move_loaded", True)
             ),
             attribute_definitions.NumberDef(
                 "scale_loaded",
                 label="Scale loaded in %",
                 minimum=0,
                 maximum=500,
-                default=100
+                default=options.get("text_size", 100)
             ),
             attribute_definitions.UISeparatorDef()
         ])

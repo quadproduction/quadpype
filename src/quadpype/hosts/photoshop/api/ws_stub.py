@@ -188,6 +188,24 @@ class PhotoshopServerStub:
             self.client.call('Photoshop.imprint', payload=payload)
         )
 
+    def refresh_imprints(self):
+        """Delete all layers metadata if the layer no longer exists"""
+        items_meta = self.get_layers_metadata()
+        all_layers = self.get_layers()
+        layer_ids = [layer.id for layer in all_layers]
+        cleaned_data = []
+        for item in items_meta:
+            if item.get("members"):
+                if int(item["members"][0]) not in layer_ids:
+                    continue
+
+            cleaned_data.append(item)
+
+        payload = json.dumps(cleaned_data, indent=4)
+        self.websocketserver.call(
+            self.client.call('Photoshop.imprint', payload=payload)
+        )
+
     def are_layers_empty_by_ids(self, layer_ids):
         res = self.websocketserver.call(
             self.client.call('Photoshop.are_layers_empty_by_ids',
