@@ -112,7 +112,20 @@ class AttributesWidget(QtWidgets.QWidget):
         if global_data:
             output.insert(0, global_data)
 
-        return output
+        # Merge for Editorial Simple
+        merged = {}
+        reviewable_items = []
+        for item in output:
+            for key, value in item.items():
+                if key == 'reviewable':
+                    reviewable_items.extend(value)
+                else:
+                    merged[key] = value
+
+        if reviewable_items:
+            merged['reviewable'] = reviewable_items
+
+        return [merged]
 
     def clear_attr_defs(self):
         while self._layout.count():

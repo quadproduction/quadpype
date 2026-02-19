@@ -87,7 +87,7 @@ class ShotMetadataSolver:
         search_text = parent_name + clip_name
 
         for token_key, pattern in self.clip_name_tokenizer.items():
-            p = re.compile(pattern)
+            p = re.compile(pattern, re.IGNORECASE)
             match = p.findall(search_text)
             if not match:
                 raise CreatorError((
@@ -101,7 +101,7 @@ class ShotMetadataSolver:
                 ))
 
             #  QUESTION:how to refactor `match[-1]` to some better way?
-            output_data[token_key] = match[-1]
+            output_data[token_key] = match[-1].upper()
 
         return output_data
 
@@ -242,7 +242,7 @@ class ShotMetadataSolver:
         # add current selection context hierarchy
         return [
             {
-                "entity_type": entity["data"]["entityType"],
+                "entity_type": entity["type"],
                 "entity_name": entity["name"]
             }
             for entity in reversed(visual_hierarchy)

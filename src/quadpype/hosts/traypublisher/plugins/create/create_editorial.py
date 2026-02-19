@@ -46,6 +46,16 @@ CLIP_ATTR_DEFS = [
         label="Workfile start frame"
     ),
     NumberDef(
+        "clipIn",
+        default=0,
+        label="Clip In"
+    ),
+    NumberDef(
+        "clipOut",
+        default=0,
+        label="Clip Out"
+    ),
+    NumberDef(
         "handle_start",
         default=0,
         label="Handle start"
@@ -101,13 +111,16 @@ class EditorialShotInstanceCreator(EditorialClipInstanceCreatorBase):
     label = "Editorial Shot"
 
     def get_instance_attr_defs(self):
-        instance_attributes = []
-        instance_attributes.append(
-            TextDef(
-                "shotName",
-                label="Shot name"
-            )
+        instance_attributes = [
+            BoolDef(
+            "add_review_family",
+            default=True,
+            label="Review"
+        ), TextDef(
+            "shotName",
+            label="Shot name"
         )
+        ]
         instance_attributes.extend(CLIP_ATTR_DEFS)
         return instance_attributes
 
@@ -218,6 +231,9 @@ or updating already created. Publishing will create OTIO file.
         # a switch to add the info that we'll delete or not the clip after review creation
         self.keep_clip = self._creator_settings["keep_clip"]
 
+        self.project_doc = get_project(self.project_name, active=True, inactive=False)
+        self.media_path_data = None
+
     def create(self, subset_name, instance_data, pre_create_data):
         allowed_family_presets = self._get_allowed_family_presets(
             pre_create_data)
@@ -230,26 +246,26 @@ or updating already created. Publishing will create OTIO file.
             ]
         }
         asset_name = instance_data["asset"]
-
-        asset_doc = get_asset_by_name(self.project_name, asset_name)
+        assigned_task = pre_create_data["assigned_task"]
 
         if pre_create_data["fps"] == "from_selection":
             # get asset doc data attributes
-            fps = asset_doc["data"]["fps"]
+            fps = self.project_doc["data"]["fps"]
         else:
             fps = float(pre_create_data["fps"])
 
-        instance_data.update({
-            "fps": fps
-        })
-
         # get path of sequence
         sequence_path_data = pre_create_data["sequence_filepath_data"]
-        media_path_data = pre_create_data["media_filepaths_data"]
+        self.media_path_data = pre_create_data["media_filepaths_data"]
 
         sequence_paths = self._get_path_from_file_data(
             sequence_path_data, multi=True)
-        media_path = self._get_path_from_file_data(media_path_data)
+        media_path = self._get_path_from_file_data(self.media_path_data)
+
+        instance_data.update({
+            "fps": fps,
+            "creator_attributes": {"representation_files":self.media_path_data}
+        })
 
         first_otio_timeline = None
         for seq_path in sequence_paths:
@@ -271,7 +287,9 @@ or updating already created. Publishing will create OTIO file.
                 clip_instance_properties,
                 allowed_family_presets,
                 os.path.basename(seq_path),
-                first_otio_timeline
+                first_otio_timeline,
+                self.project_doc,
+                assigned_task
             )
 
             if not first_otio_timeline:
@@ -352,10 +370,9 @@ or updating already created. Publishing will create OTIO file.
         return_path_list = []
 
 
-        if isinstance(file_path_data, list):
+        if isinstance(file_path_data, dict):
             return_path_list = [
-                os.path.join(f["directory"], f["filenames"][0])
-                for f in file_path_data
+                os.path.join(file_path_data["directory"], file_path_data["filenames"][0])
             ]
 
         if not return_path_list:
@@ -371,7 +388,9 @@ or updating already created. Publishing will create OTIO file.
         instance_data,
         family_presets,
         sequence_file_name,
-        first_otio_timeline=None
+        first_otio_timeline=None,
+        project_doc=None,
+        assigned_task=None
     ):
         """Helping function for creating clip instance
 
@@ -381,10 +400,12 @@ or updating already created. Publishing will create OTIO file.
             instance_data (dict): clip instance data
             family_presets (list): list of dict settings subset presets
         """
+        if project_doc is None:
+            project_doc = get_project(self.project_name, active=True, inactive=False)
         self.asset_name_check = []
 
         tracks = [
-            track for track in otio_timeline.each_child(
+            track for track in otio_timeline.find_children(
                 descended_from_type=otio.schema.Track)
             if track.kind == "Video"
         ]
@@ -404,7 +425,7 @@ or updating already created. Publishing will create OTIO file.
             except AttributeError:
                 track_start_frame = 0
 
-            for otio_clip in track.each_child():
+            for otio_clip in track:
                 if not self._validate_clip_for_processing(otio_clip):
                     continue
 
@@ -418,7 +439,9 @@ or updating already created. Publishing will create OTIO file.
                 base_instance_data = self._get_base_instance_data(
                     otio_clip,
                     instance_data,
-                    track_start_frame
+                    track_start_frame,
+                    project_doc,
+                    assigned_task
                 )
 
                 parenting_data = {
@@ -588,7 +611,8 @@ or updating already created. Publishing will create OTIO file.
                 "creator_attributes": {
                     "parent_instance": parenting_data["instance_label"],
                     "add_review_family": preset.get("review"),
-                    "keep_clip": self.keep_clip
+                    "keep_clip": self.keep_clip,
+                    "representation_files":self.media_path_data
                 }
             })
 
@@ -617,16 +641,17 @@ or updating already created. Publishing will create OTIO file.
         asset_name = instance_data["creator_attributes"]["shotName"]
 
         variant_name = instance_data["variant"]
+        task_name = instance_data["task"]
         family = preset["family"]
 
         # get variant name from preset or from inheritance
         _variant_name = preset.get("variant") or variant_name
 
         # subset name
-        subset_name = "{}{}".format(
-            family, _variant_name.capitalize()
+        subset_name = "{}{}{}".format(
+            family, task_name, _variant_name.capitalize()
         )
-        label = "{} {}".format(
+        label = "{}_{}".format(
             asset_name,
             subset_name
         )
@@ -645,6 +670,8 @@ or updating already created. Publishing will create OTIO file.
         otio_clip,
         instance_data,
         track_start_frame,
+        project_doc,
+        assigned_task
     ):
         """ Factoring basic set of instance data.
 
@@ -667,11 +694,8 @@ or updating already created. Publishing will create OTIO file.
 
         # basic unique asset name
         clip_name = os.path.splitext(otio_clip.name)[0]
-        project_doc = get_project(self.project_name)
 
-        shot_name, shot_metadata = self._shot_metadata_solver.generate_data(
-            clip_name,
-            {
+        source_data = {
                 "anatomy_data": {
                     "project": {
                         "name": self.project_name,
@@ -684,12 +708,11 @@ or updating already created. Publishing will create OTIO file.
                     self.project_name, parent_asset_name),
                 "project_doc": project_doc
             }
-        )
 
-        # get the task for asset type
-        task =""
-        if shot_metadata.get('tasks'):
-            task = self._get_task_by_asset_type(parent_asset_name, shot_metadata["tasks"])
+        shot_name, shot_metadata = self._shot_metadata_solver.generate_data(
+            clip_name,
+            source_data
+        )
 
         self._validate_name_uniqueness(shot_name)
 
@@ -719,7 +742,7 @@ or updating already created. Publishing will create OTIO file.
             # HACK: just for temporal bug workaround
             # TODO: should loockup shot name for update
             "asset": shot_name if self.auto_asset_assign else parent_asset_name,
-            "task": task,
+            "task": assigned_task,
 
             "newAssetPublishing": True,
             "trackStartFrame": track_start_frame,
@@ -732,28 +755,16 @@ or updating already created. Publishing will create OTIO file.
         # and also update creator attributes with context data
         creator_attributes.update({
             "shotName": shot_name,
-            "Parent hierarchy path": shot_metadata["hierarchy"]
+            "Parent hierarchy path": shot_metadata["hierarchy"],
+            "representation_files": self.media_path_data
         })
 
-        base_instance_data["asset"] = parent_asset_name
         # add creator attributes to shared instance data
         base_instance_data["creator_attributes"] = creator_attributes
         # add hierarchy shot metadata
         base_instance_data.update(shot_metadata)
 
         return base_instance_data
-
-    def _get_task_by_asset_type(self, asset, task_dict):
-        """Return the task assign to the asset type (Shots) to publish the review in
-
-        Args:
-            asset (str): Name of the asset type of the instance.
-            task_dict (dict): dict from the settings to match a task to an asset type.
-
-        Returns:
-            str: task to review
-        """
-        return task_dict[asset]["type"] if asset in task_dict.keys() else ""
 
     def _get_timing_data(
         self,
@@ -886,6 +897,8 @@ or updating already created. Publishing will create OTIO file.
                 allow_sequences=False,
                 single_item=False,
                 label="Sequence file",
+                allow_reviews=False,
+                show_colors_tip=False
             ),
             FileDef(
                 "media_filepaths_data",
@@ -898,6 +911,8 @@ or updating already created. Publishing will create OTIO file.
                 allow_sequences=False,
                 single_item=False,
                 label="Media files",
+                allow_reviews=False,
+                show_colors_tip=False
             ),
             # TODO: perhaps better would be timecode and fps input
             NumberDef(
@@ -911,8 +926,17 @@ or updating already created. Publishing will create OTIO file.
         ]
         # add variants swithers
         attr_defs.extend(
-            BoolDef(_var["family"], label=_var["family"])
+            BoolDef(_var["family"], label=_var["family"], default=True)
             for _var in self._creator_settings["family_presets"]
+        )
+        attr_defs.append(UISeparatorDef())
+        attr_defs.append(
+            EnumDef(
+                "assigned_task",
+                items=[task for task in self.project_doc["config"]["tasks"]],
+                label="Assign to task",
+                default="Animatic"
+            )
         )
         attr_defs.append(UISeparatorDef())
 

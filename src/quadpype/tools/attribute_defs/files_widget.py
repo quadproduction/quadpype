@@ -715,7 +715,7 @@ class FilesView(QtWidgets.QTreeView):
 class FilesWidget(QtWidgets.QFrame):
     value_changed = QtCore.Signal()
 
-    def __init__(self, single_item, allow_sequences, extensions_label, allow_reviews, parent):
+    def __init__(self, single_item, allow_sequences, extensions_label, allow_reviews, show_colors_tip, parent):
         super().__init__(parent)
         self.setAcceptDrops(True)
 
@@ -774,10 +774,11 @@ class FilesWidget(QtWidgets.QFrame):
             allowed_files_review_layout.addWidget(self.allowed_reviews_label, 1)
             main_layout.addLayout(allowed_files_review_layout)
 
-        color_legend_label = QtWidgets.QLabel()
-        color_legend_label.setPixmap(self._create_legend_pixmap())
-        color_legend_layout.addWidget(color_legend_label)
-        main_layout.addLayout(color_legend_layout)
+        if show_colors_tip:
+            color_legend_label = QtWidgets.QLabel()
+            color_legend_label.setPixmap(self._create_legend_pixmap())
+            color_legend_layout.addWidget(color_legend_label)
+            main_layout.addLayout(color_legend_layout)
 
         self._in_set_value = False
         self._single_item = single_item

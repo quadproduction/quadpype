@@ -40,6 +40,7 @@ class CollectShotInstance(pyblish.api.InstancePlugin):
         # get otio clip object
         otio_clip = self._get_otio_clip(instance)
         instance.data["otioClip"] = otio_clip
+        instance.data["families"].append("clip")
 
         # first solve the inputs from creator attr
         data = self._solve_inputs_to_data(instance)
@@ -74,7 +75,7 @@ class CollectShotInstance(pyblish.api.InstancePlugin):
         otio_timeline = context.data["otioTimeline"]
 
         clips = [
-            clip for clip in otio_timeline.each_child(
+            clip for clip in otio_timeline.find_children(
                 descended_from_type=otio.schema.Clip)
             if clip.name == otio_clip.name
             if clip.parent().kind == "Video"

@@ -19,6 +19,8 @@ class ValidateNamesStartWithLegal(pyblish.api.InstancePlugin):
 
     def process(self, instance):
         filepaths_with_errors = []
+        if not instance.data.get("sourceFilepaths"):
+            return
 
         for filepath in instance.data["sourceFilepaths"]:
             filename = Path(filepath).name
