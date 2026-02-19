@@ -20,6 +20,8 @@ class Platform(Enum):
 objects_attr_to_update = [
     ["Output path", "[bpy.context.scene.render]", "filepath"],
     ["Render nodes", "get_output_nodes(bpy.context.scene)", "base_path"],
+    ["Render nodes", "get_output_nodes(bpy.context.scene)", "directory"],
+    ["Libraries", "bpy.data.libraries", "filepath"],
     ["Cache files", "bpy.data.cache_files", "filepath"],
     ["Image Files", "bpy.data.images", "filepath"],
     ["VDB Files", "bpy.data.volumes", "filepath"],
@@ -92,12 +94,25 @@ def update_paths(name, objects_to_update, attribute, root_paths, replaced_root, 
         logging.info(f"[{name}] {attribute} has been updated to : {updated_path}.")
 
 
+def get_node_tree(scene):
+    if not scene:
+        scene = bpy.context.scene
+
+    # Support for Blender version >= 5
+    try:
+        return scene.compositing_node_group
+
+    except AttributeError:
+        return scene.node_tree
+
+
 def get_output_nodes(scene):
-    if not scene.node_tree:
+    node_tree = get_node_tree(scene)
+    if not node_tree:
         logging.error("Scene does not have a valid node tree. Make sure compositing nodes are enabled.")
         return []
 
-    return [node for node in scene.node_tree.nodes if node.type == 'OUTPUT_FILE']
+    return [node for node in node_tree.nodes if node.type == 'OUTPUT_FILE']
 
 
 def _flatten_path(path):

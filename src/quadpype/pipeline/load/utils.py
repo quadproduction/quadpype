@@ -456,10 +456,12 @@ def remove_container(container):
     return Loader().remove(container)
 
 
-def update_container(container, version=-1):
+def update_container(container, version=-1, options=None):
     """Update a container"""
 
     # Compute the different version from 'representation'
+    if options is None:
+        options = {}
     project_name = legacy_io.active_project()
     current_representation = get_representation_by_id(
         project_name, container["representation"]
@@ -503,6 +505,8 @@ def update_container(container, version=-1):
             .format(container.get("loader"))
         )
 
+    if options:
+        return Loader().update(container, new_representation, options)
     return Loader().update(container, new_representation)
 
 

@@ -18,7 +18,7 @@ class CreateRenderlayer(plugin.BlenderCreator):
     icon = "eye"
 
     auto_connect_nodes_default = False
-    only_current_layer = True
+    connect_to_all_outputs = False
 
     def create(
         self, subset_name: str, instance_data: dict, pre_create_data: dict
@@ -31,7 +31,7 @@ class CreateRenderlayer(plugin.BlenderCreator):
             prepare_rendering(
                 asset_group=collection,
                 auto_connect_nodes=pre_create_data.get('auto_connect_nodes', self.auto_connect_nodes_default),
-                connect_only_current_layer=pre_create_data.get('only_current_layer', self.only_current_layer)
+                connect_to_all_outputs=pre_create_data.get('connect_to_all_outputs', self.connect_to_all_outputs)
             )
         except Exception:
             # Remove the instance if there was an error
@@ -127,9 +127,9 @@ class CreateRenderlayer(plugin.BlenderCreator):
                     default=self.auto_connect_nodes_default
                 ),
                 BoolDef(
-                    "only_current_layer",
-                    label="Only connect current layer",
-                    default=self.only_current_layer
+                    "connect_to_all_outputs",
+                    label="Connect to individual layers in each output",
+                    default=self.connect_to_all_outputs
                 ),
             ]
         )

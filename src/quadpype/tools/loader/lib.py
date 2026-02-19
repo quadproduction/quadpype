@@ -20,7 +20,7 @@ def change_visibility(model, view, column_name, visible):
     view.setColumnHidden(index, not visible)
 
 
-def get_options(action, loader, parent, repre_contexts):
+def get_options(action, loader, parent, repre_contexts, loader_options=None):
     """Provides dialog to select value from loader provided options.
 
         Loader can provide static or dynamically created options based on
@@ -36,10 +36,12 @@ def get_options(action, loader, parent, repre_contexts):
             None when dialog was closed or cancelled, in all other cases {}
               if no options
     """
-
+    if loader_options is None:
+        loader_options = []
     # Pop option dialog
     options = {}
-    loader_options = loader.get_options(repre_contexts)
+    if not loader_options:
+        loader_options = loader.get_options(repre_contexts)
     if not getattr(action, "optioned", False) or not loader_options:
         return options
 

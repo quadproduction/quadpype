@@ -422,8 +422,8 @@ class UpdatePlaceholder(LaunchQtApp):
     bl_label = "Update Placeholder"
     _tool_name = "update_placeholder"
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, context):
+        super().__init__(context)
         self.item = None
 
     def execute(self, context):

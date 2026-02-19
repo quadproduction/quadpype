@@ -36,7 +36,7 @@ SCHEMA_KEY_PROJECT_SETTINGS = "project_schema"
 
 DEFAULT_PROJECT_KEY = "__default_project__"
 
-KEY_ALLOWED_SYMBOLS = "a-zA-Z0-9-_ "
+KEY_ALLOWED_SYMBOLS = "a-zA-Z0-9-_ ."
 KEY_REGEX = re.compile(r"^[{}]+$".format(KEY_ALLOWED_SYMBOLS))
 
 # Database settings documents related constants

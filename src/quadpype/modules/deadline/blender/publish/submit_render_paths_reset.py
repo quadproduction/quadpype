@@ -76,9 +76,10 @@ class BlenderRenderPathsResetDeadline(abstract_submit_deadline.AbstractSubmitDea
         assert root_paths, "Can't find root paths to update render paths."
 
         root_paths_args = _escape_and_remove_chars(json.dumps(root_paths))
+        major, minor, _ = bpy.app.version
         plugin_info = BlenderScriptPluginInfo(
             SceneFile=self.scene_path,
-            Version=bpy.app.version_string,
+            Version=f"{major}.{minor}",
             SaveFile=True,
             ScriptName=common_job.ScriptsNames.UpdateBlenderPaths.value,
             ScriptArguments=f"-r  \"{root_paths_args}\" -c \"{sys.platform}\""

@@ -10,6 +10,7 @@ class ImageLoader(photoshop.PhotoshopLoader):
 
     Stores the imported asset in a container named after the asset.
     """
+    label = "Load Image"
 
     families = ["image", "render", "workfile"]
     representations = ["*"]

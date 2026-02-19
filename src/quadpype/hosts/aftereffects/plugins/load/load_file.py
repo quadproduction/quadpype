@@ -1,14 +1,12 @@
 import json
 import re
 import threading
-import notifypy
 import time
 from pathlib import Path
 
 from quadpype.lib import BoolDef, filter_profiles, StringTemplate
 from quadpype.hosts.aftereffects.api.json_loader import load_content, apply_intervals
 
-from quadpype.style import get_app_icon_path
 from quadpype.lib import get_user_settings
 from quadpype.settings import get_project_settings
 from quadpype.pipeline.anatomy import Anatomy
@@ -16,6 +14,8 @@ from quadpype.hosts.aftereffects import api
 from quadpype.hosts.aftereffects.api.lib import get_unique_number
 from quadpype.hosts.aftereffects.api.automate import import_file_dialog_clic
 from quadpype.widgets.message_window import Window
+
+from quadpype.widgets.message_notification import notify_message
 
 from quadpype.hosts.aftereffects.api.folder_hierarchy import (
     create_folders_from_hierarchy,
@@ -34,6 +34,8 @@ from quadpype.pipeline import (
     format_data,
     split_hierarchy
 )
+
+from quadpype.client.mongo.entities import get_project
 
 
 class FileLoader(api.AfterEffectsLoader):
@@ -71,12 +73,17 @@ class FileLoader(api.AfterEffectsLoader):
 
         stub = self.get_stub()
         project_name = context['project']['name']
+        project_doc = get_project(
+            project_name,
+            fields=["data.fps", "data.frameStart", "data.frameEnd"]
+        )
+
         repr_cont = context["representation"]["context"]
         repre_task_name = repr_cont.get('task', {}).get('name', None)
         frame = repr_cont.get("frame", None)
         version_data = context["version"]["data"]
-        frame_start = version_data.get("frameStart", None)
-        frame_end = version_data.get("frameEnd", None)
+        frame_start = version_data.get("frameStart", project_doc['data']['frameStart'])
+        frame_end = version_data.get("frameEnd", project_doc['data']['frameEnd'])
 
         # Determine if the imported file is a PSD file (Special case)
         path = Path(path)
@@ -94,7 +101,7 @@ class FileLoader(api.AfterEffectsLoader):
 
         import_options = {}
         try:
-            import_options['fps'] = context['asset']['data']['fps']
+            import_options['fps'] = project_doc['data']['fps']
         except KeyError:
             self.log.warning(f"Can't retrieve fps information for asset {name}. Will try to load data from project.")
             try:
@@ -129,7 +136,10 @@ class FileLoader(api.AfterEffectsLoader):
                 auto_clic_thread.join()
 
                 if comp and data.get("display_window", True):
-                    self.notify_import_result("Import has ended with success !")
+                    notify_message(
+                        "AE Import File Succeed",
+                        "Import has ended with success !"
+                    )
 
             else:
                 comp = stub.import_file_with_dialog(
@@ -261,14 +271,6 @@ class FileLoader(api.AfterEffectsLoader):
 
         apply_intervals(json_content, comp_id, stub, self.log)
 
-    @staticmethod
-    def notify_import_result(message):
-        notification = notifypy.Notify()
-        notification.title = "Import File"
-        notification.message = message
-        notification.icon = get_app_icon_path()
-        notification.send(block=False)
-
     def trigger_auto_clic_thread(self, attempts_number, file_name, display_window=True):
         if display_window:
             Window(
@@ -298,7 +300,10 @@ class FileLoader(api.AfterEffectsLoader):
                 return
 
         self.log.warning(f"Maximum tries value {tries} reached.")
-        self.notify_import_result("Auto clic has failed. You will need to end import file process by yourself.")
+        notify_message(
+            "AE Import File Failed",
+            "Auto clic has failed. You will need to end import file process by yourself."
+        )
 
     def update(self, container, representation):
         """ Switch asset or change version """

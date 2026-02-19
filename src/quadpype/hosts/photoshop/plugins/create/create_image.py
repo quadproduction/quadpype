@@ -38,9 +38,7 @@ class ImageCreator(Creator):
         top_level_selected_items = stub.get_selected_layers()
         if pre_create_data.get("use_selection"):
             only_single_item_selected = len(top_level_selected_items) == 1
-            if (
-                    only_single_item_selected or
-                    pre_create_data.get("create_multiple")):
+            if only_single_item_selected or pre_create_data.get("create_multiple"):
                 for selected_item in top_level_selected_items:
                     if selected_item.group:
                         groups_to_create.append(selected_item)
@@ -120,6 +118,8 @@ class ImageCreator(Creator):
             self._add_instance_to_context(new_instance)
             # reusing existing group, need to rename afterwards
             if not create_empty_group:
+                if pre_create_data.get("rename_layer"):
+                    created_group_name = subset_name_from_ui
                 stub.rename_layer(group.id,
                                   stub.PUBLISH_ICON + created_group_name)
 
@@ -160,6 +160,9 @@ class ImageCreator(Creator):
             BoolDef("use_layer_name",
                     default=False,
                     label="Use layer name in subset"),
+            BoolDef("rename_layer",
+                    default=False,
+                    label="Rename Group or Layer with subset name"),
             BoolDef(
                 "mark_for_review",
                 label="Create separate review",

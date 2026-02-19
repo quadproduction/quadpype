@@ -4,6 +4,7 @@ import functools
 import logging
 import pymongo
 from uuid import uuid4
+from functools import wraps
 
 from quadpype.client import QuadPypeMongoConnection
 
@@ -105,6 +106,65 @@ def session_data_from_environment(context_keys=False):
     return session_data
 
 
+def register_project_update(project_name):
+    """Decorator to register update timestamp to specific collection"""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+
+            try:
+                database = QuadPypeMongoConnection.get_mongo_client()[str(os.environ["QUADPYPE_DATABASE_NAME"])]
+                result = database['projects_updates_logs'].replace_one(
+                    {"project_name": project_name},
+                    {
+                        "project_name": project_name,
+                        'timestamp': time.time()
+                    },
+                    upsert=True
+                )
+                logging.info(f"Timestamp updated for project {project_name}.")
+
+            except Exception as e:
+                logging.error(f"An error has occured when trying to register project update : {e}")
+
+            return result
+        return wrapper
+    return decorator
+
+
+class AvalonCollectionWrapper:
+    def __init__(self, collection):
+        self.collection = collection
+        self.project_name = collection.name
+
+    def __getattr__(self, method_name: str):
+        attr = getattr(self.collection, method_name)
+
+        intercepted_methods = [
+            'update_one', 'update_many', 'replace_one',
+            'delete_one', 'delete_many', 'insert_one', 'insert_many'
+        ]
+
+        if method_name in intercepted_methods and callable(attr):
+            return register_project_update(self.project_name)(attr)
+
+        return attr
+
+
+class AvalonDatabaseWrapper:
+    def __init__(self, database, log_collection=None):
+        self.database = database
+
+    def __getattr__(self, name: str):
+        attr = getattr(self.database, name)
+        return attr
+
+    def __getitem__(self, project_name: str):
+        """Intercept access to collections via database['collection']"""
+        return AvalonCollectionWrapper(self.database[project_name])
+
+
 class AvalonMongoDB:
     def __init__(self, session=None, auto_install=True):
         self._id = uuid4()
@@ -184,7 +244,7 @@ class AvalonMongoDB:
             return
 
         self._installed = True
-        self._database = self.mongo_client[str(os.environ["AVALON_DB"])]
+        self._database = AvalonDatabaseWrapper(self.mongo_client[str(os.environ["AVALON_DB"])])
 
     def uninstall(self):
         """Close any connection to the database"""

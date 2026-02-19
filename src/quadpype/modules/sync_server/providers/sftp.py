@@ -81,7 +81,13 @@ class SFTPHandler(AbstractProvider):
             Returns:
                 (list) of dict
         """
-        return []
+        return [
+            {
+                "type": "number",
+                "key": "batch_limit",
+                "label": "Batch limit"
+            }
+        ]
 
     @classmethod
     def get_project_settings_schema(cls):

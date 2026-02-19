@@ -29,6 +29,32 @@
                         ]
                     },
                     {
+                        "key": "dict",
+                        "label": "Key: Value",
+                        "children": [
+                            {
+                                "type": "text",
+                                "key": "name",
+                                "label": "Name"
+                            },
+                            {
+                                "type": "dict-modifiable",
+                                "key": "value",
+                                "label": "Value",
+                                "object_type": {
+                                    "type": "dict",
+                                    "children": [
+                                        {
+                                            "type": "text",
+                                            "key": "key_value",
+                                            "label": "KeyValue"
+                                        }
+                        ]
+                    }
+                            }
+                        ]
+                    },
+                    {
                         "key": "expression",
                         "label": "Expression",
                         "children": [

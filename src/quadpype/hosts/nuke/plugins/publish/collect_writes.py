@@ -4,6 +4,7 @@ import pyblish.api
 from quadpype.hosts.nuke import api as napi
 from quadpype.pipeline import publish
 
+FRAME_FIX_PLUGIN = "CollectFramesFixDef"
 
 class CollectNukeWrites(pyblish.api.InstancePlugin,
                         publish.ColormanagedPyblishPluginMixin):
@@ -24,7 +25,7 @@ class CollectNukeWrites(pyblish.api.InstancePlugin,
         render_target = instance.data["render_target"]
 
         write_node = self._write_node_helper(instance)
-
+        frame_fix_attributes = instance.data["publish_attributes"].get(FRAME_FIX_PLUGIN, {})
         if write_node is None:
             self.log.warning(
                 "Created node '{}' is missing write node!".format(
@@ -48,6 +49,8 @@ class CollectNukeWrites(pyblish.api.InstancePlugin,
             self._add_farm_instance_data(instance)
 
         elif render_target == "farm":
+            if frame_fix_attributes.get("auto_fix"):
+                self._set_existing_files_data(instance, colorspace)
             self._add_farm_instance_data(instance)
 
         # set additional instance data

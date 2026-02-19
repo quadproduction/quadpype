@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<ExtensionManifest ExtensionBundleId="io.quad.PS.panel" ExtensionBundleVersion="1.0.6" Version="7.0">
+<ExtensionManifest ExtensionBundleId="io.quad.PS.panel" ExtensionBundleVersion="1.0.8" Version="7.0">
   <ExtensionList>
     <Extension Id="io.quad.PS.panel" Version="1.0.0" />
   </ExtensionList>
@@ -35,12 +35,12 @@
           <Menu>QuadPype</Menu>
           <Geometry>
             <Size>
-              <Width>300</Width>
-              <Height>140</Height>
+              <Width>250</Width>
+              <Height>200</Height>
             </Size>
             <MaxSize>
               <Width>400</Width>
-              <Height>200</Height>
+              <Height>2000</Height>
             </MaxSize>
           </Geometry>
           <Icons>

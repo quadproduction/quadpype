@@ -123,9 +123,9 @@ class ValidateEditorialAssetName(pyblish.api.ContextPlugin):
                 continue
 
             parents = instance.data["parents"]
-
+            # Always put the first character upper for correspondence
             return_dict[asset] = [
-                str(p["entity_name"]) for p in parents
+                f"{str(p['entity_name'])[0].upper()}{str(p['entity_name'])[1:]}" for p in parents
                 if p["entity_type"].lower() != "project"
             ]
         return return_dict

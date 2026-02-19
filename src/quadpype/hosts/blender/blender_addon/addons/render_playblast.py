@@ -1,10 +1,11 @@
 import logging
+import subprocess
 import os
 
 import bpy
 
 from quadpype.hosts.blender.api.pipeline import get_path_from_template
-from quadpype.lib import open_in_explorer
+from quadpype.lib import open_in_explorer, get_ffmpeg_tool_args
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -22,10 +23,18 @@ bl_info = {
 }
 
 RENDER_TYPES = {
-    "PNG": {"extension": "####.png"},
-    "FFMPEG": {"extension": "mp4", "container": "MPEG4"}
+    "IMAGE": {
+        "type": "IMAGE",
+        "image_format": "PNG",
+        "extension": "####.png"
+    },
+    "VIDEO":{
+        "type": "VIDEO",
+        "extension": "mp4",
+        "codec": "H264",
+        "container": "MPEG4"
+    }
 }
-
 
 # Define the Playblast Settings
 class PlayblastSettings(bpy.types.PropertyGroup):
@@ -37,6 +46,11 @@ class PlayblastSettings(bpy.types.PropertyGroup):
     use_transparent_bg: bpy.props.BoolProperty(
         name="Use Transparent Background",
         description="Render playblast with transparent background",
+        default=False
+    )
+    render_only_mp4: bpy.props.BoolProperty(
+        name="Export Only MP4",
+        description="Render playblast only as mp4",
         default=False
     )
 
@@ -56,6 +70,7 @@ class VIEW3D_PT_RENDER_PLAYBLAST(bpy.types.Panel):
         col = layout.column()
         col.prop(playblast_settings, "use_camera_view")  # Access property from PlayblastSettings
         col.prop(playblast_settings, "use_transparent_bg")  # Access property from PlayblastSettings
+        col.prop(playblast_settings, "render_only_mp4")  # Access property from PlayblastSettings
         col.operator("playblast.render", text="Render Playblast")
         col.operator("playblast.open", text="Open Last Playblast Folder")
 
@@ -71,6 +86,9 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
         # Store the original settings to restore them later
         render_filepath = scene.render.filepath
         file_format = scene.render.image_settings.file_format
+        container_format = scene.render.ffmpeg.format
+        codec_format = scene.render.ffmpeg.codec
+        media_type = scene.render.image_settings.media_type
         file_extension_use = scene.render.use_file_extension
         engine = scene.render.engine
         film_transparent = scene.render.film_transparent
@@ -86,39 +104,89 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
 
         # Render playblast for each file format
         version_to_bump = True
-        for file_format, options in RENDER_TYPES.items():
-            scene.render.image_settings.file_format = file_format
+
+        if scene.playblast_settings.render_only_mp4:
+            options = RENDER_TYPES["VIDEO"]
             scene.render.filepath = get_path_from_template('playblast',
                                                            'path',
                                                            {'ext': options['extension']},
                                                            bump_version=version_to_bump,
                                                            makedirs=True)
-            version_to_bump = False
+            scene.render.image_settings.media_type = options["type"]
+            scene.render.ffmpeg.format = options["container"]
+            scene.render.ffmpeg.codec = options["codec"]
+
+            logging.info(
+                f"{'Camera view' if scene.playblast_settings.use_camera_view else 'Viewport'} "
+                f"rendering at: {scene.render.filepath}"
+            )
+
+            result = bpy.ops.render.opengl(animation=True)
+            if result != {"FINISHED"}:
+                logging.error(f"Error rendering {options['type']}")
+                return {"ERROR"}
+
+        else:
+            options = RENDER_TYPES["IMAGE"]
+            scene.render.filepath = get_path_from_template('playblast',
+                                                           'path',
+                                                           {'ext': options['extension']},
+                                                           bump_version=version_to_bump,
+                                                           makedirs=True)
+
+            scene.render.image_settings.media_type = options["type"]
+            scene.render.image_settings.file_format = options["image_format"]
+            scene.render.use_file_extension = False
+
+            logging.info(
+                f"{'Camera view' if scene.playblast_settings.use_camera_view else 'Viewport'} "
+                f"rendering at: {scene.render.filepath}"
+            )
 
             # Check if the current format supports RGBA (transparency)
-            if file_format == "PNG" and scene.playblast_settings.use_transparent_bg:
+            if scene.playblast_settings.use_transparent_bg:
                 # Set PNG specific settings for transparency
                 scene.render.image_settings.color_mode = "RGBA"
                 scene.render.film_transparent = True
-                scene.render.engine = "CYCLES"
+
             else:
                 # set color mode to RGB (no transparency support)
                 scene.render.image_settings.color_mode = "RGB"
                 scene.render.film_transparent = False
 
-            # Apply container settings for ffmpeg if needed
-            container = options.get('container')
-            if container:
-                scene.render.ffmpeg.format = container
-
-            logging.info(f"{'Camera view' if scene.playblast_settings.use_camera_view else 'Viewport'} rendering at: {scene.render.filepath}")
             result = bpy.ops.render.opengl(animation=True)
             if result != {"FINISHED"}:
-                logging.error(f"Error rendering with file_format {file_format} using OpenGL")
-                break
+                logging.error(f"Error rendering {options['type']}")
+                return {"ERROR"}
+
+            ffmpeg_input = scene.render.filepath.replace("####", "%04d")
+            mp4_output = scene.render.filepath.replace(".####.png", ".mp4")
+            framerate = scene.render.fps / scene.render.fps_base
+
+            args = get_ffmpeg_tool_args(
+                "ffmpeg",
+                "-y",
+                "-framerate", str(framerate),
+                "-i", ffmpeg_input,
+                "-c:v", "libx264",
+                "-crf", "18",
+                "-preset", "slow",
+                "-pix_fmt", "yuv420p",
+                mp4_output
+            )
+            result = subprocess.run(args, capture_output=True, text=True)
+
+            if result.returncode == 0:
+                logging.info(f"MP4 success : {mp4_output}")
+            else:
+                logging.info("Error FFmpeg :")
+                logging.info(result.stderr)
 
         # Restore the original settings
         scene.render.filepath = render_filepath
+        scene.render.image_settings.media_type = media_type
+        scene.render.ffmpeg.format = container_format
+        scene.render.ffmpeg.codec = codec_format
         scene.render.image_settings.file_format = file_format
         scene.render.use_file_extension = file_extension_use
 

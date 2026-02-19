@@ -6,6 +6,7 @@ import bpy
 from quadpype.lib.transcoding import VIDEO_EXTENSIONS
 from quadpype.hosts.blender.api import plugin, lib
 from quadpype.hosts.blender.api.pipeline import AVALON_CONTAINER_ID
+from quadpype.hosts.blender.api.lib import create_and_get_node_tree, get_node_tree
 
 
 class LoadImageCompositor(plugin.BlenderLoader):
@@ -32,15 +33,10 @@ class LoadImageCompositor(plugin.BlenderLoader):
         path = self.filepath_from_context(context)
 
         # Enable nodes to ensure they can be loaded
-        if not bpy.context.scene.use_nodes:
-            self.log.info("Enabling 'use nodes' for Compositor")
-            bpy.context.scene.use_nodes = True
+        node_tree = create_and_get_node_tree()
 
         # Load the image in data
         image = bpy.data.images.load(path, check_existing=True)
-
-        # Get the current scene's compositor node tree
-        node_tree = bpy.context.scene.node_tree
 
         # Create a new image node
         img_comp_node = node_tree.nodes.new(type='CompositorNodeImage')
@@ -65,7 +61,9 @@ class LoadImageCompositor(plugin.BlenderLoader):
         image: Optional[bpy.types.Image] = img_comp_node.image
 
         # Delete the compositor node
-        bpy.context.scene.node_tree.nodes.remove(img_comp_node)
+        node_tree = get_node_tree()
+        if node_tree:
+            node_tree.nodes.remove(img_comp_node)
 
         # Delete the image if it remains unused
         self.remove_image_if_unused(image)

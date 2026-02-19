@@ -7,6 +7,7 @@ from quadpype.pipeline import (
     schema,
     legacy_io,
 )
+from quadpype.lib import filter_profiles
 from quadpype.pipeline.plugin_discover import (
     discover,
     register_plugin,
@@ -30,6 +31,8 @@ class LoaderPlugin(list):
 
     families = []
     representations = []
+    load_settings = []
+    knobs = []
     extensions = {"*"}
     order = 0
     is_multiple_contexts_compatible = False
@@ -71,12 +74,12 @@ class LoaderPlugin(list):
         if not plugin_settings:
             return
 
-        print(">>> We have preset for {}".format(plugin_name))
+        cls.log.info(">>> We have preset for {}".format(plugin_name))
         for option, value in plugin_settings.items():
             if option == "enabled" and value is False:
-                print("  - is disabled by preset")
+                cls.log.info("  - is disabled by preset")
             else:
-                print("  - setting `{}`: `{}`".format(option, value))
+                cls.log.info("  - setting `{}`: `{}`".format(option, value))
             setattr(cls, option, value)
 
     @classmethod
@@ -191,6 +194,18 @@ class LoaderPlugin(list):
     @classmethod
     def filepath_from_context(cls, context):
         return get_representation_path_from_context(context)
+
+    @classmethod
+    def get_load_settings(cls, ext):
+        filter_criteria = {
+            "_representations": ext
+        }
+        profile = filter_profiles(cls.load_settings, filter_criteria, logger=cls.log)
+        if not profile:
+            raise ValueError(f"No profile set for {ext}")
+        cls._representations = profile["_representations"]
+        cls.node_name_template = profile["node_name_template"]
+        cls.knobs = profile["knobs"]
 
     def load(self, context, name=None, namespace=None, options=None):
         """Load asset via database

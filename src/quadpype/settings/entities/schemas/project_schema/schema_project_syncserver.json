@@ -17,16 +17,6 @@
             "collapsible": true,
             "children": [
                 {
-                    "type": "text",
-                    "key": "retry_cnt",
-                    "label": "Retry Count"
-                },
-                {
-                    "type": "text",
-                    "key": "loop_delay",
-                    "label": "Loop Delay"
-                },
-                {
                     "type": "list",
                     "key": "always_accessible_on",
                     "label": "Always accessible on sites",

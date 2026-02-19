@@ -1053,6 +1053,7 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
         self.keep_frame_index = True
         self.exports_types = ['scene', 'camera']
         self.apply_background = ['No Operation', 'Color From Settings', 'Transparent']
+        self.apply_background_default = self.apply_background[0]
         self.review_types = [el.name for el in TVPaintReviewType]
 
         # A global value to ignore transparency for the subsets exists, this option here adds the ability
@@ -1088,7 +1089,7 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
             "variant": self.default_variant,
             "creator_attributes": {
                 "render_pass_name": self.default_pass_name,
-                "apply_background": self.apply_background,
+                "apply_background": self.apply_background_default,
                 "mark_for_review": True,
                 "extract_psd": self.extract_psd,
                 "extract_json": self.extract_json,
@@ -1211,7 +1212,7 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
                 "apply_background",
                 self.apply_background,
                 label="Apply BG",
-                default=self.apply_background[0]
+                default=self.apply_background_default
             ),
             TextDef("export_frames_selection",
                     label="Frames to Export",

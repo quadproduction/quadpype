@@ -590,10 +590,13 @@ class UnknownAttrWidget(_BaseAttrDefWidget):
 
     def set_value(self, value, multivalue=False):
         if multivalue:
-            set_value = set(value)
-            if len(set_value) == 1:
-                value = tuple(set_value)[0]
-            else:
+            try:
+                set_value = set(value)
+                if len(set_value) == 1:
+                    value = tuple(set_value)[0]
+                else:
+                    value = "< Multiselection >"
+            except:
                 value = "< Multiselection >"
 
         str_value = str(value)
@@ -632,6 +635,7 @@ class FileAttrWidget(_BaseAttrDefWidget):
             self.attr_def.allow_sequences,
             self.attr_def.extensions_label,
             self.attr_def.allow_reviews,
+            self.attr_def.show_colors_tip,
             self
         )
 

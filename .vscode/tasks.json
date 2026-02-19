@@ -1,0 +1,39 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "dev_pre",
+            "type": "shell",
+            "command": "${workspaceFolder}/src/.venv/Scripts/python.exe",
+            "args": [
+                "${workspaceFolder}/src/tools/_lib/run/pre_run.py",
+                "-d"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "env": {
+                "PYTHONUNBUFFERED": "1",
+                "_INSIDE_QUADPYPE_TOOL": "1"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "prod_pre",
+            "type": "shell",
+            "command": "${workspaceFolder}/src/.venv/Scripts/python.exe",
+            "args": [
+                "${workspaceFolder}/src/tools/_lib/run/pre_run.py",
+                "-p"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "env": {
+                "PYTHONUNBUFFERED": "1",
+                "_INSIDE_QUADPYPE_TOOL": "1"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

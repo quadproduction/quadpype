@@ -20,9 +20,15 @@ from quadpype.pipeline import (
 from quadpype.pipeline.context_tools import get_global_context
 from quadpype.tools.utils.workfile_cache import WorkFileCache
 
+from quadpype.hosts.tvpaint.api.workfile_template_builder import (
+    TVPPlaceholderLoadPlugin,
+    TVPPlaceholderCreatePlugin
+)
+
 from .lib import (
     execute_george,
-    execute_george_through_file
+    execute_george_through_file,
+    get_layers_data
 )
 
 log = logging.getLogger(__name__)
@@ -33,6 +39,11 @@ SECTION_NAME_CONTEXT = "context"
 SECTION_NAME_CREATE_CONTEXT = "create_context"
 SECTION_NAME_INSTANCES = "instances"
 SECTION_NAME_CONTAINERS = "containers"
+SECTION_NAME_PLACEHOLDERS = "placeholders"
+
+PUBLISH_ICON = 'P_'
+LOADED_ICON = 'L_'
+
 # Maximum length of metadata chunk string
 # TODO find out the max (500 is safe enough)
 TVPAINT_CHUNK_LENGTH = 500
@@ -90,6 +101,12 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCach
 
         register_event_callback("application.launched", self.initial_launch)
         register_event_callback("application.exit", self.application_exit)
+
+    def get_workfile_build_placeholder_plugins(self):
+        return [
+            TVPPlaceholderLoadPlugin,
+            TVPPlaceholderCreatePlugin
+        ]
 
     def get_current_project_name(self):
         """
@@ -154,6 +171,9 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCach
     def save_workfile(self, filepath=None):
         if not filepath:
             filepath = self.get_current_workfile()
+        if not filepath:
+            print("No current WF found, abort...")
+            return
         context = get_global_context()
         save_current_workfile_context(context)
 
@@ -175,7 +195,7 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCach
         # in QuadPype's core code.
         # So we check the returned value and send None if this
         # character is retrieved.
-        current_workfile = execute_george_through_file("tv_GetProjectName")
+        current_workfile = execute_george("tv_GetProjectName")
         if current_workfile == '\\':
             current_workfile = None
         return current_workfile
@@ -229,7 +249,7 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCach
 
 
 def containerise(
-    name, namespace, members, context, loader, current_containers=None
+    name, namespace, members, context, loader, current_containers=None, members_ids=None
 ):
     """Add new container to metadata.
 
@@ -240,6 +260,8 @@ def containerise(
             to the container (layer names).
         current_containers (list): Preloaded containers. Should be used only
             on update/switch when containers were modified during the process.
+        members_ids (list): List of members ids that were loaded and belongs
+            to the container (layer names).
 
     Returns:
         dict: Container data stored to workfile metadata.
@@ -254,6 +276,9 @@ def containerise(
         "loader": str(loader),
         "representation": str(context["representation"]["_id"])
     }
+    if members_ids:
+        container_data["members_ids"] = members_ids
+
     if current_containers is None:
         current_containers = get_containers()
 
@@ -473,35 +498,28 @@ def write_instances(data):
 
 
 def get_containers():
+    containers = []
     output = get_workfile_metadata(SECTION_NAME_CONTAINERS)
+    layers_data = get_layers_data(only_names=True)
+    layers_names = [layer_data["name"] for layer_data in layers_data]
     if output:
         for item in output:
+            if item["namespace"] not in layers_names:
+                continue
             if "objectName" not in item and "members" in item:
                 members = item["members"]
                 if isinstance(members, list):
                     members = "|".join([str(member) for member in members])
                 item["objectName"] = members
-    return output
+            containers.append(item)
 
+    return containers
 
-def set_context_settings(project_name, asset_doc):
+def set_context_settings(project_name, asset_doc, only_frame_range=False):
     """Set workfile settings by asset document data.
 
     Change fps, resolution and frame start/end.
     """
-
-    width_key = "resolutionWidth"
-    height_key = "resolutionHeight"
-
-    width = asset_doc["data"].get(width_key)
-    height = asset_doc["data"].get(height_key)
-    if width is None or height is None:
-        print("Resolution was not found!")
-    else:
-        execute_george(
-            "tv_resizepage {} {} 0".format(width, height)
-        )
-
     framerate = asset_doc["data"].get("fps")
 
     if framerate is not None:
@@ -527,3 +545,18 @@ def set_context_settings(project_name, asset_doc):
 
     execute_george("tv_markin {} set".format(mark_in))
     execute_george("tv_markout {} set".format(mark_out))
+
+    if only_frame_range:
+        return
+
+    width_key = "resolutionWidth"
+    height_key = "resolutionHeight"
+
+    width = asset_doc["data"].get(width_key)
+    height = asset_doc["data"].get(height_key)
+    if width is None or height is None:
+        print("Resolution was not found!")
+    else:
+        execute_george(
+            "tv_resizepage {} {} 0".format(width, height)
+        )

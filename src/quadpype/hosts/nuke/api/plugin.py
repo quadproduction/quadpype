@@ -471,7 +471,14 @@ def _create_render_group_attr_expression(write_node_name, auto_reformat_node_nam
         lines.append(line)
     lines.append('if "file" in node.knobs() and knob.name() == "file":\n    ext = node["file"].value().rsplit(".", 1)[-1]')
     lines.append('    if ext:\n        node["file_type"].setValue(ext)\n        node["file_type"].setValue(ext)')
-    lines.append('\n        nuke.toNode("{write_node_name}")["file_type"].setValue(ext)')
+    lines.append(f'\n        nuke.toNode("{write_node_name}")["file_type"].setValue(ext)')
+
+    lines.append(
+        'if "file_type" in node.knobs() and knob.name() == "file_type":\n    ext = node["file_type"].value()')
+    lines.append('    if ext:\n        actual_path = node[ "file"].value()')
+    lines.append('\n        actual_ext = actual_path.rsplit(".", 1)[-1]\n        old_ext = f".{actual_ext}"')
+    lines.append('\n        new_ext = f".{ext}"\n        new_path = actual_path.replace(old_ext, new_ext)')
+    lines.append(f'\n        nuke.toNode("{write_node_name}")["file"].setValue(new_path)')
     if not auto_reformat_node_name:
         return "\n".join(lines)
 
@@ -642,6 +649,9 @@ class ExporterReview(object):
 
         if "#" in self.fhead:
             self.fhead = self.fhead.replace("#", "")[:-1]
+
+        if "%0" in self.fhead and "d" in self.fhead:
+            self.fhead = self.fhead[:self.fhead.find("%0")]
 
     def get_representation_data(
         self, tags=None, range=False,

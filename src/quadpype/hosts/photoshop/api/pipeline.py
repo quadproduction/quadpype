@@ -18,6 +18,11 @@ from quadpype.host import (
     IPublishHost
 )
 
+from quadpype.hosts.photoshop.api.workfile_template_builder import (
+    PSPlaceholderLoadPlugin,
+    PSPlaceholderCreatePlugin
+)
+
 from quadpype.pipeline.load import any_outdated_containers
 from quadpype.hosts.photoshop import PHOTOSHOP_HOST_DIR
 from quadpype.tools.utils import get_quadpype_qt_app
@@ -99,6 +104,12 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCa
     def get_containers(self):
         return ls()
 
+    def get_workfile_build_placeholder_plugins(self):
+        return [
+            PSPlaceholderLoadPlugin,
+            PSPlaceholderCreatePlugin
+        ]
+
     def get_context_data(self):
         """Get stored values for context (validation enable/disable etc)"""
         stub = _get_stub()
@@ -113,6 +124,8 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCa
     def get_current_task_name(self):
         current_task = os.getenv("AVALON_TASK")
         current_file = self.current_file()
+        if not current_file:
+            return current_task
 
         project_tasks = [k for k in ANATOMY.get("tasks", {}).keys()]
 
@@ -122,6 +135,8 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCa
     def get_current_asset_name(self):
         current_asset = os.getenv("AVALON_ASSET")
         current_file = self.current_file()
+        if not current_file:
+            return current_asset
 
         current_project_asset_pointer = get_assets(self.get_current_project_name())
         project_assets = [a["name"] for a in current_project_asset_pointer if a["data"]["tasks"]]

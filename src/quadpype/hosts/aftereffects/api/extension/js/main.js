@@ -153,6 +153,17 @@ function main(websocket_url) {
             });
     });
 
+    RPC.addRoute('AfterEffects.duplicate_item_and_rename', function (data) {
+        log.warn('Server called client route "add_item":', data);
+        var escapedName = EscapeStringForJSX(data.name);
+        return runEvalScript("duplicateItemAndRename(" + data.item_id + ", " +
+            "'" + escapedName + "')")
+            .then(function (result) {
+                log.warn("duplicate_item: " + result);
+                return result;
+            });
+    });
+
     RPC.addRoute('AfterEffects.select_items', function (data) {
         log.warn('Server called client route "select_items":', data);
         return runEvalScript("selectItems(" + JSON.stringify(data.items) + ")")
@@ -432,6 +443,16 @@ function main(websocket_url) {
             data.item_id + ")")
             .then(function (result) {
                 log.warn("add_item_instead_placeholder: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.add_item_instead_placeholder_in_comp', function (data) {
+        log.warn('Server called client route "add_item_instead_placeholder_in_comp":', data);
+        return runEvalScript("addItemInsteadInSpecificComp(" + data.placeholder_item_id + ", " +
+            data.item_id + ", " + data.comp_id + ")")
+            .then(function (result) {
+                log.warn("add_item_instead_placeholder_in_comp: " + result);
                 return result;
             });
     });

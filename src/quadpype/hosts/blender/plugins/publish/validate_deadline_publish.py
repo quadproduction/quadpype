@@ -11,6 +11,8 @@ from quadpype.pipeline.publish import (
 )
 from quadpype.hosts.blender.api import plugin
 from quadpype.hosts.blender.api.render_lib import update_render_product
+from quadpype.hosts.blender.api.lib import get_node_tree
+from quadpype.hosts.blender.api.render_lib import get_output_paths, set_output_paths
 
 
 def get_composite_outputs_nodes():
@@ -19,7 +21,7 @@ def get_composite_outputs_nodes():
     Returns:
         node: composite output node
     """
-    tree = bpy.context.scene.node_tree
+    tree = get_node_tree()
     output_type = "CompositorNodeOutputFile"
     outputs_nodes = list()
     # Remove all output nodes that include "QuadPype" in the name.
@@ -77,9 +79,10 @@ class ValidateDeadlinePublish(
         file_name = f"{asset_name}_{task}"
 
         for output_node in outputs_nodes:
-            if file_name not in output_node.base_path:
+            output_path = get_output_paths(output_node)
+            if file_name not in output_path:
                 msg = (
-                    f"Render output folder with path {output_node.base_path} doesn't match the blender scene name! "
+                    f"Render output folder with path {output_path} doesn't match the blender scene name! "
                     f"Use Repair action to fix the folder file path."
                 )
                 invalid.append(msg)
@@ -116,12 +119,12 @@ class ValidateDeadlinePublish(
         output_path = Path(dirpath, render_folder, filename).as_posix()
 
         for output_node in outputs_nodes:
-            orig_output_path = output_node.base_path
+            orig_output_path = get_output_paths(output_node)
 
             orig_output_dir = os.path.dirname(orig_output_path)
             new_output_dir = orig_output_path.replace(orig_output_dir, output_path)
 
-            output_node.base_path = new_output_dir
+            set_output_paths(output_node, new_output_dir)
 
         new_output_dir = (
             Path(output_path).parent

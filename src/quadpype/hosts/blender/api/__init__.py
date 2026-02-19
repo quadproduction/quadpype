@@ -13,7 +13,8 @@ from .pipeline import (
     BlenderHost,
     get_avalon_node,
     has_avalon_node,
-    delete_avalon_node
+    delete_avalon_node,
+    ResolutionImport
 )
 
 from .plugin import (
@@ -31,6 +32,7 @@ from .workio import (
 )
 
 from .lib import (
+    BLENDER_MAJOR_VERSION,
     lsattr,
     lsattrs,
     read,
@@ -55,12 +57,16 @@ from .lib import (
     get_and_select_camera,
     is_camera,
     is_collection,
-    get_objects_in_collection
+    get_objects_in_collection,
 )
 
 from .capture import capture
 
-from .render_lib import prepare_rendering
+from .render_lib import (
+    prepare_rendering,
+    set_output_paths,
+    get_output_paths
+)
 
 from .collections import (
     get_corresponding_hierarchies_numbered,
@@ -80,9 +86,12 @@ __all__ = [
     "get_avalon_node",
     "has_avalon_node",
     "delete_avalon_node",
+    "ResolutionImport",
 
     "BlenderCreator",
     "BlenderLoader",
+
+    "BLENDER_MAJOR_VERSION",
 
     # Workfiles API
     "open_file",
@@ -114,6 +123,8 @@ __all__ = [
     "capture",
     # "unique_name",
     "prepare_rendering",
+    "set_output_paths",
+    "get_output_paths",
 
     # Collections getters
     "get_parents_for_collection",

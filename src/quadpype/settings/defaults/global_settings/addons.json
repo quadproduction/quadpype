@@ -152,7 +152,10 @@
     },
     "sync_server": {
         "enabled": false,
-        "sites": {}
+        "sites": {},
+        "retry_cnt": "3",
+        "loop_delay": "30",
+        "force_sync_loops": 4
     },
     "deadline": {
         "enabled": true,

@@ -50,8 +50,8 @@ class AfterEffectsServerStub():
 
     'self.websocketserver.call' is used as async wrapper
     """
-    PUBLISH_ICON = '\u2117 '
-    LOADED_ICON = '\u25bc'
+    PUBLISH_ICON = 'P_'
+    LOADED_ICON = 'L_'
 
     def __init__(self):
         self.websocketserver = WebServerTool.get_instance()
@@ -326,6 +326,21 @@ class AfterEffectsServerStub():
                 return item
 
         return None
+
+    def duplicate_item_and_rename(self, item_id, name):
+        """
+            Adds either composition or folder to project item list.
+
+            Args:
+                item_id (int): id to duplicate
+                name (str)
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.duplicate_item_and_rename',
+                                         item_id=item_id,
+                                         name=name))
+
+        return self._handle_return(res)
 
     def get_active_comp_with_inner_layers(self, depth=-1):
         """
@@ -736,6 +751,25 @@ class AfterEffectsServerStub():
                                         ('AfterEffects.add_item_instead_placeholder',  # noqa
                                          placeholder_item_id=placeholder_item_id,  # noqa
                                          item_id=item_id))
+
+        return self._handle_return(res)
+
+    def add_item_instead_placeholder_in_comp(self, placeholder_item_id, item_id, comp_id):
+        """
+            Adds item_id to layers where plaeholder_item_id is present.
+
+            1 placeholder could result in multiple loaded containers (eg items)
+
+            Args:
+                placeholder_item_id (int): id of placeholder item
+                item_id (int): loaded FootageItem id
+                comp_id (int): comp id where to find
+        """
+        res = self.websocketserver.call(self.client.call
+                                        ('AfterEffects.add_item_instead_placeholder_in_comp',  # noqa
+                                         placeholder_item_id=placeholder_item_id,  # noqa
+                                         item_id=item_id,
+                                         comp_id=comp_id))
 
         return self._handle_return(res)
 

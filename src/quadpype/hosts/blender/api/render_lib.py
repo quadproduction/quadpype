@@ -6,8 +6,10 @@ import bpy
 from quadpype.settings import get_project_settings
 from quadpype.pipeline import get_current_project_name
 from quadpype.hosts.blender.api.pipeline import get_avalon_node
-
 from quadpype.hosts.blender.api import lib
+
+
+SOCKET_NAME = "Quadpype Group"
 
 
 def get_default_render_folder(settings):
@@ -122,8 +124,12 @@ def get_render_product(output_path, name, aov_sep, view_layers, instance_per_lay
 
 def set_render_format(ext, image_settings, multilayer=None):
     if ext == "exr":
+        if lib.BLENDER_MAJOR_VERSION >= 5:
+            image_settings.media_type = "MULTI_LAYER_IMAGE" if multilayer else "IMAGE"
+
         image_settings.file_format = (
             "OPEN_EXR_MULTILAYER" if multilayer else "OPEN_EXR")
+
     elif ext == "bmp":
         image_settings.file_format = "BMP"
     elif ext == "rgb":
@@ -264,19 +270,55 @@ def existing_aov_options(renderer, view_layers):
 
 def _create_aov_slot(name, aov_sep, slots, rpass_name, multi_exr, output_path, render_layer):
     filename = f"{render_layer}/{name}_{render_layer}{aov_sep}{rpass_name}.####"
-    slot = slots.new(rpass_name if multi_exr else filename)
+    major, minor, patch = bpy.app.version
+    if major >= 5:
+        slot = slots.new('RGBA', rpass_name if multi_exr else filename)
+    else:
+        slot = slots.new(rpass_name if multi_exr else filename)
     filepath = str(output_path / filename.lstrip("/"))
 
     return slot, filepath
 
 
+def _get_outputs_slots(output, multi_exr):
+    # Support for Blender version >= 5
+    try:
+        return output.file_output_items
+
+    except AttributeError:
+        return output.layer_slots if multi_exr else output.file_slots
+
+
+def set_output_paths(output, node_output_path):
+    if lib.BLENDER_MAJOR_VERSION >= 5:
+        output.directory = Path(str(node_output_path.parent)).as_posix()
+        output.file_name = str(node_output_path.name)
+        return
+
+    output.base_path = node_output_path.as_posix()
+
+
+def get_output_paths(output):
+    if lib.BLENDER_MAJOR_VERSION >= 5:
+        return Path(output.directory, output.file_name).as_posix()
+
+    return output.base_path
+
+
+def _connect_tree_links(tree, render_layer_node, output, slot):
+    if lib.BLENDER_MAJOR_VERSION >= 5:
+        tree.links.new(output.inputs[slot.name], render_layer_node.outputs["Image"])
+        return
+
+    tree.links.new(render_layer_node.outputs["Image"], slot)
+
+
 def set_node_tree(
         output_path, name, aov_sep, ext, multilayer, compositing, view_layers, instance_per_layer,
-        render_product, auto_connect_nodes, connect_only_current_layer, use_nodes
+        render_product, auto_connect_nodes, connect_to_all_outputs, use_nodes
 ):
-    bpy.context.scene.use_nodes = True
 
-    tree = bpy.context.scene.node_tree
+    tree = lib.create_and_get_node_tree()
 
     comp_layer_type = "CompositorNodeRLayers"
     output_type = "CompositorNodeOutputFile"
@@ -363,13 +405,16 @@ def set_node_tree(
 
     aov_file_products = {}
 
+    if not tree.interface.items_tree.get(SOCKET_NAME):
+        tree.interface.new_socket(name=SOCKET_NAME, in_out="OUTPUT", socket_type="NodeSocketColor")
+
     for render_layer_node in render_layer_nodes_without_output:
         output = tree.nodes.new(output_type)
         output.location = (render_layer_node.location.x + 900, render_layer_node.location.y)
 
         set_render_format(ext, output.format, multilayer)
 
-        slots = output.layer_slots if multi_exr else output.file_slots
+        slots = _get_outputs_slots(output, multi_exr)
 
         layer_render_product = render_product.get(render_layer_node.layer if instance_per_layer else '_', None)
         assert layer_render_product, f"Can not retrieve render product for layer named {render_layer_node.layer}"
@@ -385,12 +430,14 @@ def set_node_tree(
                 f"Can not found beauty filepath in render product for layer named {render_layer_node.layer}"
             )
 
-        output.base_path = Path(
-            output_path.parent,
-            output_path.name,
-            render_layer_node.layer,
-            Path(beauty_filepath).name,
-        ).as_posix()
+        node_output_path = Path(
+                output_path.parent,
+                output_path.name,
+                render_layer_node.layer,
+                Path(beauty_filepath).name,
+            )
+
+        set_output_paths(output, node_output_path)
 
         slots.clear()
 
@@ -404,17 +451,18 @@ def set_node_tree(
             # to allow exr to be read by ffprobe later
             slot, _ = _create_aov_slot(
                 name, aov_sep, slots, '', multi_exr, output_path, render_layer_node.layer)
-            tree.links.new(render_layer_node.outputs["Image"], slot)
+
+            _connect_tree_links(tree, render_layer_node, output, slot)
 
         # Create a new socket for the beauty output
         pass_name = "rgba" if multi_exr else "beauty"
 
-        if not connect_only_current_layer:
+        if connect_to_all_outputs:
             for render_layer_node in render_aovs_dict.keys():
                 render_layer = render_layer_node.layer
                 slot, _ = _create_aov_slot(
                     name, aov_sep, slots, f"{pass_name}_{render_layer}", multi_exr, output_path, render_layer)
-                tree.links.new(render_layer_node.outputs["Image"], slot)
+                _connect_tree_links(tree, render_layer_node, output, slot)
 
         if compositing:
             # Create a new socket for the composite output
@@ -505,7 +553,7 @@ def create_node_with_new_view_layers(tree, comp_layer_type, view_layers, render_
     return render_layer_nodes
 
 
-def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_layer):
+def prepare_rendering(asset_group, auto_connect_nodes, connect_to_all_outputs):
     name = asset_group.name
 
     node = get_avalon_node(asset_group)
@@ -543,6 +591,8 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
 
     bpy.context.scene.render.engine = renderer
 
+    bpy.context.scene.render.use_compositing = True
+
     view_layers = bpy.context.scene.view_layers
     output_path = Path.joinpath(dirpath, render_folder, file_name)
 
@@ -553,7 +603,7 @@ def prepare_rendering(asset_group, auto_connect_nodes, connect_only_current_laye
     )
     aov_file_product = set_node_tree(
         output_path, name, aov_sep, ext, multilayer, compositing, view_layers, instance_per_layer,
-        render_product, auto_connect_nodes, connect_only_current_layer, use_nodes
+        render_product, auto_connect_nodes, connect_to_all_outputs, use_nodes
     )
 
     os.makedirs(output_path, exist_ok=True)

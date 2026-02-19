@@ -6,7 +6,7 @@ from quadpype.hosts.blender.api.pipeline import (
     get_avalon_node,
     delete_avalon_node
 )
-from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS
+from quadpype.hosts.blender.api.constants import AVALON_CONTAINERS, YELLOW
 
 
 class CreateWorkfile(BlenderCreator, AutoCreator):
@@ -85,6 +85,7 @@ class CreateWorkfile(BlenderCreator, AutoCreator):
         instance_node = bpy.data.collections.get(AVALON_CONTAINERS)
         if not instance_node:
             instance_node = bpy.data.collections.new(name=AVALON_CONTAINERS)
+        instance_node.color_tag = YELLOW
         workfile_instance.transient_data["instance_node"] = instance_node
 
     def collect_instances(self):

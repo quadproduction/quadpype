@@ -46,7 +46,7 @@ class CollectReview(plugin.BlenderInstancePlugin):
         types = {"MESH", "GPENCIL"}
         isolate_objects = [
             obj
-            for obj in instance
+            for obj in datablock.all_objects
             if isinstance(obj, bpy.types.Object) and obj.type in types
         ]
 

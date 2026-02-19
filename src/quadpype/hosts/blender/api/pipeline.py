@@ -4,6 +4,7 @@ import re
 import traceback
 import json
 from typing import Callable, Dict, Iterator, List, Optional
+from enum import Enum
 
 import bpy
 
@@ -27,6 +28,8 @@ from quadpype.pipeline import (
     register_creator_plugin_path,
     deregister_loader_plugin_path,
     deregister_creator_plugin_path,
+    register_inventory_action_path,
+    deregister_inventory_action_path,
     AVALON_CONTAINER_ID,
     Anatomy,
     get_current_project_name,
@@ -65,14 +68,20 @@ from .constants import (
     PUBLISH_PATH,
     LOAD_PATH,
     CREATE_PATH,
+    INVENTORY_PATH,
     ORIGINAL_EXCEPTHOOK,
     AVALON_CONTAINERS,
     AVALON_PROPERTY,
-    IS_HEADLESS
+    IS_HEADLESS,
+    YELLOW
 )
 
 
 log = Logger.get_logger(__name__)
+
+
+class ResolutionImport(Enum):
+    UPDATE = "Update res with imported"
 
 
 class BlenderHost(HostBase, IWorkfileHost, IPublishHost, ILoadHost, WorkFileCache):
@@ -188,6 +197,7 @@ def install():
 
     register_loader_plugin_path(str(LOAD_PATH))
     register_creator_plugin_path(str(CREATE_PATH))
+    register_inventory_action_path(str(INVENTORY_PATH))
 
     lib.append_user_scripts()
     lib.set_app_templates_path()
@@ -211,6 +221,7 @@ def uninstall():
 
     deregister_loader_plugin_path(str(LOAD_PATH))
     deregister_creator_plugin_path(str(CREATE_PATH))
+    deregister_inventory_action_path(str(INVENTORY_PATH))
 
     if not IS_HEADLESS:
         ops.unregister()
@@ -541,6 +552,7 @@ def add_to_avalon_container(container: bpy.types.Collection):
         # unless you set a 'fake user'.
         bpy.context.scene.collection.children.link(avalon_container)
 
+    avalon_container.color_tag = YELLOW
     if isinstance(container, bpy.types.Object):
         avalon_container.objects.link(container)
     elif isinstance(container, bpy.types.Collection) and container not in list(avalon_container.children):
@@ -750,13 +762,14 @@ def ls() -> Iterator:
         yield parse_container(container)
 
     # Compositor nodes are not in `bpy.data` that `lib.lsattr` looks in.
-    node_tree = bpy.context.scene.node_tree
+    node_tree = lib.get_node_tree()
     if node_tree:
         for node in node_tree.nodes:
             if get_avalon_node(node).get("id", None) not in container_ids:
                 continue
 
             yield parse_container(node)
+
 
 def publish():
     """Shorthand to publish from within host."""

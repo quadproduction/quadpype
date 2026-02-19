@@ -185,9 +185,8 @@ class ComparePublishToWorkfile(PreLaunchHook):
         workfile_path = Path(str(workfile_file_path))
 
         # Compute Published WorkFile Path
-        max_retries = int((sync_server.sync_project_settings[project_name]
-        ["config"]
-        ["retry_cnt"]))
+        retry_cnt = sync_server.sync_global_settings["retry_cnt"]
+        max_retries = int((retry_cnt))
 
         # Copy file and substitute path
         last_published_workfile_path = download_last_published_workfile(
