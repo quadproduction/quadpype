@@ -22,6 +22,9 @@
         },
         "ShotInSeqRenderCreator": {
             "shot_task_in_seq_wf_build": ""
+        },
+        "create_hierarchy_template": {
+                    "template": "COMP/{asset}"
         }
 
     },

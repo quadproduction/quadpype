@@ -8,7 +8,12 @@ from quadpype.pipeline import (
     CreatedInstance,
     CreatorError,
     get_current_project_name,
-    get_current_asset_name
+    get_resolved_name,
+    split_hierarchy
+)
+from quadpype.hosts.aftereffects.api.folder_hierarchy import (
+    create_folders_from_hierarchy,
+    find_folder
 )
 from quadpype.settings import get_project_settings
 from quadpype.hosts.aftereffects.api.pipeline import cache_and_get_instances
@@ -116,6 +121,10 @@ class RenderCreator(Creator):
 
             stub.rename_item(comp.id, subset_name)
             stub.add_comp_to_render_queue(comp.id)
+
+            folders_hierarchy = self.get_folder_hierarchy(data)
+
+            self.create_folders(stub, folders_hierarchy, comp)
 
             width, height = extract_width_and_height(self.resolution)
             set_settings(
@@ -316,3 +325,21 @@ class RenderCreator(Creator):
             self, variant, task_name, asset_doc, project_name, host_name, instance
         ):
         return {"shot": asset_doc["name"]}
+
+    @staticmethod
+    def get_task_hierarchy_templates():
+        settings = get_project_settings(get_current_project_name())
+        return settings.get('aftereffects', {}).get('create', {}).get('create_hierarchy_template', {}).get(
+            'template', "")
+
+    def get_folder_hierarchy(self, data):
+        return get_resolved_name(
+            data=data,
+            template=self.get_task_hierarchy_templates()
+        )
+
+    @staticmethod
+    def create_folders(stub, folders_hierarchy, comp):
+        create_folders_from_hierarchy(folders_hierarchy)
+        last_folder = find_folder(split_hierarchy(folders_hierarchy)[-1])
+        stub.parent_items(comp.id, last_folder.id)
