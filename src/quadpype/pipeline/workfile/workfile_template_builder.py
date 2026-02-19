@@ -1756,6 +1756,7 @@ class PlaceholderLoadMixin(object):
             for repre_load_context in repre_load_contexts.values():
                 representation = repre_load_context["representation"]
                 repre_context = representation["context"]
+                self.asset_name = asset_name
                 self._before_repre_load(
                     placeholder, representation
                 )

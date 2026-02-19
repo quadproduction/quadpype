@@ -244,6 +244,20 @@ function getItems(comps, folders, footages){
 
 }
 
+function duplicateItemAndRename(item_id, name) {
+    var item = app.project.itemByID(item_id);
+
+    if (!item) {
+        alert("Item non trouvé avec l'ID : " + item_id);
+        return null;
+    }
+
+    var duplicatedItem = item.duplicate();
+    duplicatedItem.name = name;
+
+    return _prepareSingleValue(duplicatedItem.id);
+}
+
 function getCompsWithLayers(){
     /**
      * Returns JSON representation of compositions and
@@ -1742,6 +1756,58 @@ function addItemInstead(placeholder_item_id, item_id){
             }
             n = n + 1;
         }
+    }
+    app.endUndoGroup();
+}
+
+function addItemInsteadInSpecificComp(placeholder_item_id, item_id, comp_id){
+    /** Add new loaded item in place of load placeholder.
+     *
+     * This goes through a specific composition and
+     * places loaded item under placeholder.
+     * Placeholder item gets deleted later separately according
+     * to configuration in Settings.
+     *
+     * Args:
+     *      placeholder_item_id (int)
+     *      item_id (int)
+     *      comp_id (int)
+    */
+    var item = app.project.itemByID(item_id);
+    var comp = app.project.itemByID(comp_id);
+
+    if (!item){
+        return _prepareError("There is no item with "+ item_id);
+    }
+    if (!comp){
+        return _prepareError("There is no comp with "+ comp_id);
+    }
+    if (!(comp instanceof CompItem)){
+        return _prepareError("Item " + comp_id + " is not a composition");
+    }
+
+    app.beginUndoGroup('Add loaded items');
+
+    var n = 1;
+    while (n <= comp.numLayers) {
+        var layer = comp.layer(n);
+        var layer_source = layer.source;
+
+        if (layer_source && layer_source.id == placeholder_item_id){
+            var new_layer = comp.layers.add(item);
+            new_layer.moveAfter(layer);
+
+            var oldTransform = layer.property("ADBE Transform Group");
+            var newTransform = new_layer.property("ADBE Transform Group");
+
+            newTransform.property("ADBE Position").setValue(oldTransform.property("ADBE Position").value);
+            newTransform.property("ADBE Scale").setValue(oldTransform.property("ADBE Scale").value);
+            newTransform.property("ADBE Rotate Z").setValue(oldTransform.property("ADBE Rotate Z").value);
+            newTransform.property("ADBE Opacity").setValue(oldTransform.property("ADBE Opacity").value);
+            newTransform.property("ADBE Anchor Point").setValue(oldTransform.property("ADBE Anchor Point").value);
+        }
+
+        n = n + 1;
     }
     app.endUndoGroup();
 }

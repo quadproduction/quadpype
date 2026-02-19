@@ -60,8 +60,11 @@ class RenderCreator(Creator):
                 comps=True, folders=False, footages=False
             )
         elif pre_create_data.get("create_new_comp"):
-            new_comp = stub.add_item("new_create_render_comp", "COMP")
-            comps = [stub.get_item(new_comp)]
+            duplicate_comp_id = stub.duplicate_item_and_rename(
+                pre_create_data.get("placeholder_id"),
+                "new_create_render_comp"
+            )
+            comps = [stub.get_item(duplicate_comp_id)]
         else:
             raise CreatorError(
                 "Options error in Create Options \nPlease make sure "
