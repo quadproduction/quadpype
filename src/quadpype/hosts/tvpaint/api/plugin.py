@@ -163,7 +163,7 @@ class Loader(LoaderPlugin):
             ]
         return container["members"]
 
-    def get_unique_layer_name(self, asset_name, name):
+    def get_unique_layer_name(self, asset_name, name, prefix=None):
         """Layer name with counter as suffix.
 
         Find higher 3 digit suffix from all layer names in scene matching regex
@@ -174,16 +174,19 @@ class Loader(LoaderPlugin):
         Args:
             asset_name (str): Name of subset's parent asset document.
             name (str): Name of loaded subset.
+            prefix (str): Prefixe to add at the start of the name.
 
         Returns:
             (str): `{asset_name}_{name}_{higher suffix + 1}`
         """
         layer_name_base = "{}_{}".format(asset_name, name)
+        if prefix:
+            layer_name_base = "{}{}".format(prefix, layer_name_base)
 
         counter_regex = re.compile(r"_(\d{3})$")
 
         higher_counter = 0
-        for layer in get_layers_data():
+        for layer in get_layers_data(only_names=True):
             layer_name = layer["name"]
             if not layer_name.startswith(layer_name_base):
                 continue

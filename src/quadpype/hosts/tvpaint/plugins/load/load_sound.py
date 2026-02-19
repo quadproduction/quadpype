@@ -23,7 +23,7 @@ class ImportSound(plugin.Loader):
     """
 
     families = ["audio", "review", "plate"]
-    representations = ["*"]
+    representations = ["mp3, wav, aac, mp4"]
 
     label = "Import Sound"
     order = 1

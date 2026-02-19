@@ -378,7 +378,9 @@ def create_placeholder(*args):
     host = registered_host()
     builder = PSTemplateBuilder(host)
     window = WorkfileBuildPlaceholderDialog(host, builder)
-    window.exec_()
+    window.show()
+    window.raise_()
+    window.activateWindow()
 
 
 def update_placeholder(*args):
@@ -416,4 +418,6 @@ def update_placeholder(*args):
 
     window = WorkfileBuildPlaceholderDialog(host, builder)
     window.set_update_mode(placeholder_item)
-    window.exec_()
+    window.show()
+    window.raise_()
+    window.activateWindow()
