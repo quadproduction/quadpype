@@ -14,7 +14,7 @@ from quadpype.client import (
     get_projects,
     get_representations,
     get_representation_by_id,
-    QuadPypeMongoConnection
+    get_quadpype_collection
 )
 from quadpype.modules import (
     QuadPypeModule,
@@ -1211,15 +1211,12 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         enabled_projects = []
 
         if self.enabled:
-            for project in get_projects(fields=["name"]):
+            for project in get_projects(fields=["name"], summarized_retrieval=True):
                 project_name = project["name"]
                 if self.is_project_enabled(project_name):
                     enabled_projects.append(project_name)
 
         return enabled_projects
-
-    def projects_last_sync(self):
-        """Returns list of projects last_sync_times from collection 'projects_updates_logs'."""
 
     def is_project_enabled(self, project_name, single=False):
         """Checks if 'project_name' is enabled for syncing.
@@ -1289,28 +1286,6 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                            representation, elem,
                            alt_site, file_id=file_id, force=True)
 
-    def get_projects_last_updates(self, projects_names):
-        """ Get last update timestamp for each project from database
-        Args:
-            projects_names (list[str]): list of projects names
-
-        Returns:
-            dict: each project name with his corresponding last update timestamp
-        """
-        database = QuadPypeMongoConnection.get_mongo_client()[os.environ["QUADPYPE_DATABASE_NAME"]]
-        query = [
-            {
-                "$match":
-                {
-                    "project_name": {"$in": projects_names}
-                }
-            }
-        ]
-        return {
-            result["project_name"]: result["timestamp"]
-            for result in list(database['projects_updates_logs'].aggregate(query))
-        }
-
     def register_loop_log(self, log_data):
         """ Register loop log for specific user in specific collection 'loops_logs'.
         Used to debug mongoDB latency. Need to be activated for each user to monitor.
@@ -1318,8 +1293,8 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Args:
             log_data (dict): log representation
         """
-        database = QuadPypeMongoConnection.get_mongo_client()[os.environ["QUADPYPE_DATABASE_NAME"]]
-        database['sync_loops_logs'].insert_one(log_data)
+        collection = get_quadpype_collection("sync_loops_logs")
+        collection.insert_one(log_data)
 
     def get_repre_info_for_versions(self, project_name, version_ids,
                                     active_site, remote_site):
@@ -1557,15 +1532,14 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                 exclude_locals (bool): ignore overrides from User Settings
             For performance
         """
-        sync_project_settings = self._prepare_sync_project_settings(
-            exclude_locals)
+        sync_project_settings = self._prepare_sync_project_settings(exclude_locals)
 
         self._sync_project_settings = sync_project_settings
 
     def _prepare_sync_project_settings(self, exclude_locals):
         sync_project_settings = {}
         system_sites = self.get_all_site_configs()
-        project_docs = get_projects(fields=["name"])
+        project_docs = get_projects(fields=["name"], summarized_retrieval=True)
         for project_doc in project_docs:
             project_name = project_doc["name"]
             sites = copy.deepcopy(system_sites)  # get all configured sites
@@ -2319,7 +2293,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Returns:
             (int): in seconds
         """
-        return int(self.sync_global_settings["loop_delay"])
+        return int(self.sync_global_settings.get("loop_delay", 10))
 
     def get_tries_count(self):
         """
@@ -2327,7 +2301,7 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Returns:
             (int): number of tries
         """
-        return int(self.sync_global_settings["retry_cnt"])
+        return int(self.sync_global_settings.get("retry_cnt", 3))
 
     def get_force_sync_loops_number(self):
         """
@@ -2335,7 +2309,15 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
         Returns:
             (int): number of loops
         """
-        return int(self.sync_global_settings["force_sync_loops"])
+        return int(self.sync_global_settings.get("force_sync_loops", 4))
+
+    def idle_threshold(self):
+        """
+            Return number of seconds to wait before considering the system idle.
+        Returns:
+            (int): in seconds
+        """
+        return int(self.sync_global_settings.get("idle_threshold", 0))
 
     def show_widget(self):
         """Show dialog for Sync Queue"""
@@ -2360,6 +2342,37 @@ class SyncServerModule(QuadPypeModule, ITrayAction, IPluginPaths):
                 exc_info=True)
         self.enabled = no_errors
         self.widget.show()
+
+    def sync_is_needed(self, entities_local_last_sync, entities_last_updates, name):
+        """
+            Check if sync is needed based on last sync timestamps
+            and last update timestamp retrieved from DB.
+
+            Args:
+                entities_local_last_sync (int): timestamp of last local sync
+                entities_last_updates (dict): last updates timestamps retrieved from database
+                name (str): entity name
+
+            Returns:
+                True if newer element exists and sync is needed, False otherwise
+        """
+        if entities_local_last_sync is None:
+            return True
+
+        entity_db_last_sync_timestamp = entities_last_updates.get(name, 0)
+        if not entity_db_last_sync_timestamp:
+            return True
+
+        if entity_db_last_sync_timestamp > entities_local_last_sync:
+            self.log.info(f"New updates found from entity {name}. Sync should be triggered.")
+            return True
+
+        self.log.info(
+            f"Local sync is more recent than entity db update for entity {name}. "
+            f"Sync will be canceled."
+        )
+        return False
+
 
     def _get_success_dict(self, new_file_id):
         """

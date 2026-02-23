@@ -4,7 +4,7 @@ from .constants import (
 )
 
 from .mongodb import (
-    AvalonMongoDB,
+    AvalonMongoDB
 )
 from .anatomy import Anatomy
 
@@ -141,7 +141,7 @@ __all__ = (
     "HOST_WORKFILE_EXTENSIONS",
 
     # --- MongoDB ---
-    "AvalonMongoDB",
+    "AvalonMongoDB"
 
     # --- Anatomy ---
     "Anatomy",

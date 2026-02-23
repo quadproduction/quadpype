@@ -15,9 +15,10 @@ from pathlib import Path
 from collections import defaultdict
 
 from .registry import get_app_registry
-from .cache import CacheValues
+from .cache import UserSettingsCacheValues
 from quadpype.settings import get_global_settings
 from quadpype.client.mongo import QuadPypeMongoConnection
+from quadpype.client import save_project_timestamp
 
 
 # Handler for users
@@ -108,7 +109,7 @@ class MongoUserHandler(UserHandler):
             # Create the user profile in the database
             self.create_user_profile(user_role=user_role)
 
-        self.user_settings_cache = CacheValues()
+        self.user_settings_cache = UserSettingsCacheValues(name=self.user_id)
 
     def create_user_profile(self, user_role="user"):
         user_profile = copy.deepcopy(self.user_profile_template)
@@ -163,6 +164,11 @@ class MongoUserHandler(UserHandler):
         self.collection.replace_one(
             {"user_id": self.user_id},
             user_profile, upsert=True
+        )
+
+        save_project_timestamp(
+            project_name=f"user:{self.user_id}",
+            updated_entity='settings'
         )
 
         return user_profile
@@ -255,6 +261,11 @@ class MongoUserHandler(UserHandler):
         self.collection.replace_one(
             { "user_id": self.user_id },
             user_profile
+        )
+
+        save_project_timestamp(
+            project_name=self.user_id,
+            updated_entity='settings'
         )
 
     def get_user_settings(self):

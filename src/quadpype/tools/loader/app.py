@@ -592,7 +592,7 @@ def show(debug=False, parent=None, use_context=False):
         legacy_io.install()
 
         any_project = next(
-            project for project in get_projects(fields=["name"])
+            project for project in get_projects(fields=["name"], summarized_retrieval=True)
         )
 
         legacy_io.Session["AVALON_PROJECT"] = any_project["name"]

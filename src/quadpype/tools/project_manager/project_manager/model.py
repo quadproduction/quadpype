@@ -54,7 +54,7 @@ class ProjectModel(QtGui.QStandardItemModel):
             new_project_items.append(none_project)
 
         project_names = set()
-        for project_doc in get_projects(fields=["name"]):
+        for project_doc in get_projects(fields=["name"], summarized_retrieval=True):
             project_name = project_doc.get("name")
             if not project_name:
                 continue
