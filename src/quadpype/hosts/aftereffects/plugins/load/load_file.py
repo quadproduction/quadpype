@@ -1,6 +1,7 @@
 import json
 import re
 import threading
+import time
 from pathlib import Path
 
 from quadpype.lib import BoolDef, filter_profiles, StringTemplate
@@ -33,6 +34,8 @@ from quadpype.pipeline import (
     format_data,
     split_hierarchy
 )
+
+from quadpype.client.mongo.entities import get_project
 
 
 class FileLoader(api.AfterEffectsLoader):
@@ -70,16 +73,22 @@ class FileLoader(api.AfterEffectsLoader):
 
         stub = self.get_stub()
         project_name = context['project']['name']
+        project_doc = get_project(
+            project_name,
+            fields=["data.fps", "data.frameStart", "data.frameEnd"]
+        )
+
         repr_cont = context["representation"]["context"]
         repre_task_name = repr_cont.get('task', {}).get('name', None)
         frame = repr_cont.get("frame", None)
         version_data = context["version"]["data"]
-        frame_start = version_data.get("frameStart", None)
-        frame_end = version_data.get("frameEnd", None)
+        frame_start = version_data.get("frameStart", project_doc['data']['frameStart'])
+        frame_end = version_data.get("frameEnd", project_doc['data']['frameEnd'])
 
         # Determine if the imported file is a PSD file (Special case)
         path = Path(path)
         is_psd = path.suffix == '.psd'
+        file_name_without_frame = re.sub(rf'\.({frame})', '', path.stem)
         path = str(path.resolve())
 
         layers = stub.get_items(comps=True, folders=True, footages=True)
@@ -92,7 +101,7 @@ class FileLoader(api.AfterEffectsLoader):
 
         import_options = {}
         try:
-            import_options['fps'] = context['asset']['data']['fps']
+            import_options['fps'] = project_doc['data']['fps']
         except KeyError:
             self.log.warning(f"Can't retrieve fps information for asset {name}. Will try to load data from project.")
             try:
@@ -112,9 +121,11 @@ class FileLoader(api.AfterEffectsLoader):
             user_override_auto_clic = get_user_settings().get('general', {}).get('enable_auto_clic_scripts', True)
             load_settings = get_project_settings(project_name).get(get_current_host_name(), {}).get('load', {})
             auto_clic = load_settings.get('auto_clic_import_dialog')
+
             if auto_clic and user_override_auto_clic:
                 auto_clic_thread = self.trigger_auto_clic_thread(
                     load_settings.get('attempts_number', 3),
+                    file_name_without_frame,
                     data.get("display_window", True)
                 )
                 comp = stub.import_file_with_dialog(
@@ -260,7 +271,7 @@ class FileLoader(api.AfterEffectsLoader):
 
         apply_intervals(json_content, comp_id, stub, self.log)
 
-    def trigger_auto_clic_thread(self, attempts_number, display_window=True):
+    def trigger_auto_clic_thread(self, attempts_number, file_name, display_window=True):
         if display_window:
             Window(
                 parent=None,
@@ -276,16 +287,15 @@ class FileLoader(api.AfterEffectsLoader):
 
         auto_clic_thread = threading.Thread(
             target=self.launch_auto_click,
-            args=(attempts_number,)
+            args=(attempts_number, file_name)
         )
         auto_clic_thread.start()
         return auto_clic_thread
 
-    def launch_auto_click(self, tries):
-        import time
+    def launch_auto_click(self, tries, file_name):
         time.sleep(.5)
         for _ in range(tries):
-            success = import_file_dialog_clic(self.log)
+            success = import_file_dialog_clic(file_name)
             if success:
                 return
 
@@ -322,9 +332,11 @@ class FileLoader(api.AfterEffectsLoader):
         path = get_representation_path(representation)
         # with aftereffects.maintained_selection():  # TODO
 
+        frame = representation["context"].get("frame", None)
         # Convert into a Path object
         path = Path(path)
         is_psd = path.suffix == '.psd'
+        file_name_without_frame = re.sub(rf'\.({frame})', '', path.stem)
         path = str(path.resolve())
         parent_folder = stub.get_item_parent(layer.id)
 
@@ -333,7 +345,11 @@ class FileLoader(api.AfterEffectsLoader):
             auto_clic = load_settings.get('auto_clic_import_dialog')
 
             if auto_clic:
-                auto_clic_thread = self.trigger_auto_clic_thread(load_settings.get('attempts_number', 3))
+                auto_clic_thread = self.trigger_auto_clic_thread(
+                    load_settings.get('attempts_number', 3),
+                    file_name_without_frame,
+                    True
+                )
 
                 result = stub.replace_item(layer.id, path, stub.LOADED_ICON + layer_name)
 

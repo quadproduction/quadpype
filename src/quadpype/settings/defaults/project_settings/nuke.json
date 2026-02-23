@@ -586,7 +586,7 @@
                     "families": [],
                     "templates": ["{parent}-{asset}<-{numbering}>"],
                     "backdrop_color":[255, 0, 0],
-                    "boolean": true
+                    "fill_backdrop": true
                 }
             ]
         },

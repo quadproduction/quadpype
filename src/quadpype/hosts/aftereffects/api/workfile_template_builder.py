@@ -15,11 +15,9 @@ from quadpype.pipeline.workfile.workfile_template_builder import (
     PlaceholderCreateMixin
 )
 from quadpype.hosts.aftereffects.api import get_stub
-from quadpype.hosts.aftereffects.api.lib import set_settings
 
 PLACEHOLDER_SET = "PLACEHOLDERS_SET"
 PLACEHOLDER_ID = "quadpype.placeholder"
-
 
 class AETemplateBuilder(AbstractTemplateBuilder):
     """Concrete implementation of AbstractTemplateBuilder for AE"""
@@ -161,12 +159,13 @@ class AEPlaceholderCreatePlugin(AEPlaceholderPlugin, PlaceholderCreateMixin):
         pre_create_data = {"use_selection": self.use_selection}
         stub = get_stub()
         shots_in_seq_asset_docs = self.builder.shots_in_seq_asset_docs
+        item_id, item = self._get_item(placeholder)
         if shots_in_seq_asset_docs:
             pre_create_data["create_new_comp"] = True
             pre_create_data["use_selection"] = False
+            pre_create_data["placeholder_id"] = item_id
             self.use_selection = False
         else:
-            item_id, item = self._get_item(placeholder)
             stub.select_items([item_id])
         self.populate_create_placeholder(placeholder, pre_create_data)
 
@@ -224,12 +223,29 @@ class AEPlaceholderLoadPlugin(AEPlaceholderPlugin, PlaceholderLoadMixin):
             stub.remove_instance(placeholder.scene_identifier, metadata)
 
     def get_placeholder_options(self, options=None):
+        if options is None:
+            # Load must be done after create instance, to permit to re-organise the scene
+            options = {"order":1}
         return self.get_load_plugin_options(options)
 
     def load_succeed(self, placeholder, container):
+        all_instances = registered_host().list_instances()
+
+        instance_id = None
+        for instance in all_instances:
+            if not instance.get("members"):
+                continue
+
+            if instance["asset"] == self.asset_name:
+                instance_id = instance.get("members")[0]
+                break
+
+        if not instance_id:
+            return
+
         placeholder_item_id, _ = self._get_item(placeholder)
         item_id = container.id
-        get_stub().add_item_instead_placeholder(placeholder_item_id, item_id)
+        get_stub().add_item_instead_placeholder_in_comp(placeholder_item_id, item_id, instance_id)
 
 
 def build_workfile_template(*args, **kwargs):
@@ -248,7 +264,9 @@ def create_placeholder(*args):
     host = registered_host()
     builder = AETemplateBuilder(host)
     window = WorkfileBuildPlaceholderDialog(host, builder)
-    window.exec_()
+    window.show()
+    window.raise_()
+    window.activateWindow()
 
 
 def update_placeholder(*args):
@@ -285,4 +303,6 @@ def update_placeholder(*args):
 
     window = WorkfileBuildPlaceholderDialog(host, builder)
     window.set_update_mode(placeholder_item)
-    window.exec_()
+    window.show()
+    window.raise_()
+    window.activateWindow()
