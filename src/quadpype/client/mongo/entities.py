@@ -404,8 +404,7 @@ def extract_fields_from_doc(doc, fields):
         out = {}
         for f in fields:
             val = get_nested(single_element, f)
-            if val is not None:
-                set_nested(out, f, val)
+            set_nested(out, f, val)
 
         if "_id" in single_element:
             out["_id"] = single_element["_id"]
