@@ -27,6 +27,7 @@ from quadpype_modules.deadline.blender.publish import common_job
 class BlenderPluginInfo:
     SceneFile: str = field(default=None)  # Input
     Version: str = field(default=None)  # Mandatory for Deadline
+    ScriptName: str = field(default=None)
     SaveFile: bool = field(default=True)
 
 
@@ -148,9 +149,11 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         import bpy
 
         major, minor, _ = bpy.app.version
+        render_device = self._instance.data.get('creator_attributes', {}).get('device', '')
         plugin_info = BlenderPluginInfo(
             SceneFile=self.scene_path,
             Version=f"{major}.{minor}",
+            ScriptName=common_job.ScriptsNames.ForceGPU.value if render_device == "GPU" else '',
             SaveFile=True,
         )
 
