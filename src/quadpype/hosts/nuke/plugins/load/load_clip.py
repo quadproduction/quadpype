@@ -429,6 +429,7 @@ class LoadClip(plugin.NukeLoader):
         prep_layers = options.get("prep_layers", False)
         is_prep_layer_compatible = options.get("is_prep_layer_compatible", False)
         ext = options.get("ext", None)
+        self.get_load_settings(ext)
         old_layers = dict()
         new_layers = dict()
         if is_prep_layer_compatible:
@@ -448,7 +449,18 @@ class LoadClip(plugin.NukeLoader):
                                                               unique_number=unique_number,
                                                               node_type="Read",
                                                               class_name = self.__class__.__name__)
-        read_node["name"].setValue(read_name)
+        if nuke.toNode(read_name) is None:
+            read_node["name"].setValue(read_name)
+        else:
+            unique_number_padding = len(unique_number)
+            unique_number = str(int(unique_number) + 1).zfill(unique_number_padding)
+            read_name, unique_number = get_unique_name_and_number(representation=representation,
+                                                                  template=self.node_name_template,
+                                                                  unique_number=unique_number,
+                                                                  node_type="Read",
+                                                                  class_name=self.__class__.__name__)
+            read_node["name"].setValue(read_name)
+
         read_node["file"].setValue(filepath)
 
         # to avoid multiple undo steps for rest of process
