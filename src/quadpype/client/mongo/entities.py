@@ -283,14 +283,12 @@ def _filter_assets(
         def _check_for_representation():
             if representation_ids is not None:
                 rep_ids = set(convert_ids(representation_ids))
-                asset_rep_ids = set(asset.get("representation_ids", []))
-                if not rep_ids.intersection(asset_rep_ids):
+                if not asset['_id'] in rep_ids:
                     return False
 
             if representation_names is not None:
                 rep_names = set(representation_names)
-                asset_rep_names = set(asset.get("representation_names", []))
-                if not rep_names.intersection(asset_rep_names):
+                if not asset['_id'] in rep_names:
                     return False
 
             if context_filters is not None:
@@ -313,7 +311,7 @@ def _filter_assets(
             if names_by_version_ids is not None:
                 found = False
                 for ver_id, names in names_by_version_ids.items():
-                    if ver_id in asset.get("version_ids", []) and asset.get("name") in names:
+                    if ver_id in asset['_id'] and asset.get("name") in names:
                         found = True
                         break
 
@@ -325,16 +323,15 @@ def _filter_assets(
         def _check_for_version():
             if subset_ids is not None:
                 subset_ids_set = set(convert_ids(subset_ids))
-                asset_subset_ids = set(asset.get("subset_ids", []))
-                if not subset_ids_set.intersection(asset_subset_ids):
+                if not asset['_id'] in subset_ids_set:
                     return False
 
             if versions is not None:
-                versions = set(versions)
-                if not versions:
+                versions_set = set(versions)
+                if not versions_set:
                     return []
 
-                if asset.get("name") not in set(asset_names):
+                if asset.get("name") not in versions_set:
                     return False
 
             if hero:
@@ -354,8 +351,7 @@ def _filter_assets(
 
             if version_ids is not None:
                 ver_ids = set(convert_ids(version_ids))
-                asset_ver_ids = set(asset.get("version_ids", []))
-                if not ver_ids.intersection(asset_ver_ids):
+                if not asset['_id'] in ver_ids:
                     return False
 
             if is_representation:
