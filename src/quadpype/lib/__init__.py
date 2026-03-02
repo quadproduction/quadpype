@@ -113,7 +113,14 @@ from .transcoding import (
     get_rescaled_command_arguments
 )
 
-from .cache import CacheValues
+from .cache import (
+    CacheValues,
+    CoreSettingsCacheValues,
+    GlobalSettingsCacheValues,
+    UserSettingsCacheValues,
+    ProjectSettingsCacheValues,
+    ProjectAnatomyCacheValues
+)
 
 from .registry import (
     IniSettingRegistry,
@@ -257,7 +264,11 @@ __all__ = [
     "get_rescaled_command_arguments",
 
     "CacheValues",
-
+    "CoreSettingsCacheValues",
+    "GlobalSettingsCacheValues",
+    "UserSettingsCacheValues",
+    "ProjectSettingsCacheValues",
+    "ProjectAnatomyCacheValues",
     "IniSettingRegistry",
     "JSONSettingRegistry",
     "QuadPypeSecureRegistry",

@@ -32,14 +32,14 @@ class CollectEditorialInstance(pyblish.api.InstancePlugin):
 
         self.log.info(fpath)
 
-        instance.data["stagingDir"] = os.path.dirname(fpath)
+        instance.data["stagingDir"] = instance.data.get("stagingDir", os.path.dirname(fpath))
 
         _, ext = os.path.splitext(fpath)
 
         instance.data["representations"].append({
             "ext": ext[1:].lower(),
             "name": ext[1:].lower(),
-            "stagingDir": instance.data["stagingDir"],
+            "stagingDir": os.path.dirname(fpath),
             "files": os.path.basename(fpath)
         })
 

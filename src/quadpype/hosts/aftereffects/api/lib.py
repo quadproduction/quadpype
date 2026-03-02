@@ -170,5 +170,9 @@ def set_settings(frames, resolution, comp_ids=None, print_msg=True, override_wid
         log.debug(msg)
         stub.set_comp_properties(comp_id, frame_start, frames_duration,
                                  fps, width, height)
+        item_settings = stub.get_comp_properties(comp_id)
+        if (item_settings.frameStart - 1) != frame_start:
+            stub.set_comp_properties(comp_id, frame_start, frames_duration,
+                                     fps, width, height)
         if print_msg:
             stub.print_msg(msg)

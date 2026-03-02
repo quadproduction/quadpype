@@ -155,7 +155,15 @@ def push_to_zou(login, password):
     default=False,
     help="Listen to events only without any syncing",
 )
-def sync_service(login, password, exclude_projects, include_projects, listen_only):
+@click_wrap.option(
+    "-act",
+    "--sync-quick-active-projects",
+    "sync_quick_active_projects",
+    is_flag=True,
+    default=False,
+    help="Sync projects with specific active projects collection for quick access",
+)
+def sync_service(login, password, exclude_projects, include_projects, listen_only, sync_quick_active_projects):
     """Synchronize QuadPype database from Zou sever database.
 
     Args:
@@ -172,6 +180,6 @@ def sync_service(login, password, exclude_projects, include_projects, listen_onl
     include_projects = set(include_projects)
 
     if not listen_only:
-        sync_all_projects(login, password, exclude_projects, include_projects)
+        sync_all_projects(login, password, exclude_projects, include_projects, sync_quick_active_projects)
 
-    start_listeners(login, password)
+    start_listeners(login, password, sync_quick_active_projects)

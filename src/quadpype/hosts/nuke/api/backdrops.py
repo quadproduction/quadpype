@@ -981,6 +981,10 @@ def update_by_backdrop(container, old_layers, new_layers, ask_proceed=True):
         resize_backdrop_based_on_nodes(storage_backdrop, list(nodes_in_backdrop), shrink=False)
         align_backdrops(main_backdrop, storage_backdrop, "inside")
         move_nodes_in_backdrop(list(nodes_in_backdrop), storage_backdrop)
+
+    if subset_group and len(new_layers) > len(old_layers):
+        resize_backdrop_based_on_nodes(storage_backdrop, list(nodes_in_backdrop), shrink=True)
+
     adjust_main_backdrops(main_backdrop=main_backdrop,
                           backdrop=storage_backdrop,
                           nodes_in_main_backdrops=nodes_in_main_backdrops)

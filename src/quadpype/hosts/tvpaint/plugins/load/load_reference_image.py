@@ -3,7 +3,7 @@ import collections
 from quadpype.lib.attribute_definitions import BoolDef
 from quadpype.pipeline import (
     get_representation_context,
-    register_host,
+    registered_host,
 )
 from quadpype.hosts.tvpaint.api import plugin
 from quadpype.hosts.tvpaint.api.lib import (
@@ -14,6 +14,7 @@ from quadpype.hosts.tvpaint.api.pipeline import (
     write_workfile_metadata,
     SECTION_NAME_CONTAINERS,
     containerise,
+    LOADED_ICON
 )
 
 
@@ -36,7 +37,7 @@ class LoadImage(plugin.Loader):
     )
 
     defaults = {
-        "stretch": True,
+        "stretch": False,
         "timestretch": True,
         "preload": True
     }
@@ -84,7 +85,7 @@ class LoadImage(plugin.Loader):
         # Prepare layer name
         asset_name = context["asset"]["name"]
         subset_name = context["subset"]["name"]
-        layer_name = self.get_unique_layer_name(asset_name, subset_name)
+        layer_name = self.get_unique_layer_name(asset_name, subset_name, LOADED_ICON)
 
         path = self.filepath_from_context(context).replace("\\", "/")
 
@@ -99,7 +100,11 @@ class LoadImage(plugin.Loader):
         execute_george_through_file(george_script)
 
         loaded_layer = None
-        layers = get_layers_data()
+        layers = get_layers_data(
+            layer_ids=None,
+            communicator=None,
+            only_names=True
+        )
         for layer in layers:
             if layer["name"] == layer_name:
                 loaded_layer = layer
@@ -117,7 +122,8 @@ class LoadImage(plugin.Loader):
             namespace=namespace,
             members=layer_names,
             context=context,
-            loader=self.__class__.__name__
+            loader=self.__class__.__name__,
+            members_ids=[loaded_layer["layer_id"]]
         )
 
     def _remove_layers(self, layer_names=None, layer_ids=None, layers=None):
@@ -126,7 +132,7 @@ class LoadImage(plugin.Loader):
             return
 
         if layers is None:
-            layers = get_layers_data()
+            layers = get_layers_data(only_names=True)
 
         available_ids = set(layer["layer_id"] for layer in layers)
 
@@ -176,7 +182,7 @@ class LoadImage(plugin.Loader):
             return
         representation = container["representation"]
         members = self.get_members_from_container(container)
-        host = register_host()
+        host = registered_host()
         current_containers = host.get_containers()
         pop_idx = None
         for idx, cur_con in enumerate(current_containers):

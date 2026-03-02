@@ -9,6 +9,7 @@ from quadpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
 
 class ScriptsNames(Enum):
     UpdateBlenderPaths = "update_blender_paths"
+    ForceGPU = "force_gpu"
 
 
 def generate(job_instance, instance, plugin_name, src_filepath, job_suffix):

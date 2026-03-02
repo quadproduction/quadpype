@@ -41,7 +41,7 @@ class ExtractTrimVideoAudio(publish.Extractor):
         # Generate mov file.
         fps = instance.data["fps"]
         video_file_path = instance.data["editorialSourcePath"]
-        extensions = instance.data.get("extensions", ["mov"])
+        extensions = instance.data.get("extensions", ["mp4"])
         output_file_type = instance.data.get("outputFileType")
         reviewable = "review" in instance.data["families"]
 
@@ -119,8 +119,9 @@ class ExtractTrimVideoAudio(publish.Extractor):
             if ext in [".mov", ".mp4"] and reviewable:
                 repre.update({
                     "thumbnail": True,
-                    "tags": ["review", "ftrackreview", "delete"]})
+                    "tags": ["review"]})
 
+            instance.data["representations"] = []
             instance.data["representations"].append(repre)
 
             self.log.debug(f"Instance data: {pformat(instance.data)}")

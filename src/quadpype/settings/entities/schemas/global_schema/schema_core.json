@@ -46,6 +46,12 @@
             "label": "Allow Windows to Stay on Top"
         },
         {
+            "type": "boolean",
+            "key": "cache_database",
+            "label": "Cache database entities in RAM",
+            "require_restart": true
+        },
+        {
             "type": "splitter"
         },
         {
@@ -147,6 +153,16 @@
                     "type": "boolean",
                     "key": "protect_anatomy_attributes",
                     "label": "Protect Anatomy Attributes",
+                    "require_restart": true
+                },
+                {
+                    "type": "label",
+                    "label": "Load active projects from dedicated collection name 'active_projects'. This special collection needs to be populated and updated at each project update from tracker."
+                },
+                {
+                    "type": "boolean",
+                    "key": "use_active_projects_collection",
+                    "label": "Use specific 'active_projects' collection",
                     "require_restart": true
                 }
             ]

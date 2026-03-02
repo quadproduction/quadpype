@@ -53,6 +53,9 @@ class BlenderPlugin(DeadlinePlugin):
         self.AddStdoutHandlerCallback("Failed to read blend file.*").HandleCallback += self.HandleStdoutFailed
         self.AddStdoutHandlerCallback(".*Unable to create directory.*").HandleCallback += self.HandleStdoutFailed
 
+    def ScriptsFolder(self):
+        return self.GetConfigEntry("Blender_ScriptsFolder")
+
     def RenderExecutable(self):
         ### Get Version ##
         blVersion = self.GetPluginInfoEntryWithDefault( "Version", "" ).lower()
@@ -87,7 +90,27 @@ class BlenderPlugin(DeadlinePlugin):
         renderArgument += StringUtils.BlankIfEitherIsBlank( " -x 1 -o \"", StringUtils.BlankIfEitherIsBlank( outputFile, "\"" ) )
         renderArgument += " -s " + str(self.GetStartFrame()) + " -e " + str(self.GetEndFrame()) + " -a "
 
+        scriptName = self.GetPluginInfoEntryWithDefault( "ScriptName", None )
+        if scriptName:
+            scriptPath = f"{scriptName}.py" if not scriptName.endswith('.py') else scriptName
+            scriptsFolder = self.ScriptsFolder()
+            if not scriptsFolder:
+                self.FailRender(
+                    "scriptsFolder is empty. Python script can not be added to job. "
+                    "Please fill Scripts Folder data from corresponding Plugin Info."
+                )
+            scriptsFolder = self.ConvertPathsForSystem(
+                self.AddSlashesIfMissing(scriptsFolder)
+            )
+            renderArgument += f" -P {scriptsFolder}{scriptPath}"
+
         return renderArgument
+
+    def AddSlashesIfMissing(self, path):
+        return path if (path.endswith('/') or path.endswith('\\')) else f"{path}/"
+
+    def ConvertPathsForSystem(self, path):
+        return path.replace('/', '\\') if SystemUtils.IsRunningOnWindows() else path.replace('\\', '/')
 
     def PreRenderTasks(self):
         self.LogInfo( "Blender job starting..." )

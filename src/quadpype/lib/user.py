@@ -6,13 +6,19 @@ import getpass
 import functools
 import platform
 import socket
+import configparser
+import tempfile
 
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
+from pathlib import Path
+from collections import defaultdict
 
 from .registry import get_app_registry
-from .cache import CacheValues
+from .cache import UserSettingsCacheValues
+from quadpype.settings import get_global_settings
 from quadpype.client.mongo import QuadPypeMongoConnection
+from quadpype.client import save_project_timestamp
 
 
 # Handler for users
@@ -103,7 +109,7 @@ class MongoUserHandler(UserHandler):
             # Create the user profile in the database
             self.create_user_profile(user_role=user_role)
 
-        self.user_settings_cache = CacheValues()
+        self.user_settings_cache = UserSettingsCacheValues(name=self.user_id)
 
     def create_user_profile(self, user_role="user"):
         user_profile = copy.deepcopy(self.user_profile_template)
@@ -153,12 +159,70 @@ class MongoUserHandler(UserHandler):
             user_profile["workstation_profiles"].append(workstation_info)
             user_profile["last_workstation_profile_index"] = len(user_profile["workstation_profiles"]) - 1
 
+        self.override_settings_from_file(user_profile)
+
         self.collection.replace_one(
             {"user_id": self.user_id},
             user_profile, upsert=True
         )
 
+        save_project_timestamp(
+            project_name=f"user:{self.user_id}",
+            updated_entity='settings'
+        )
+
         return user_profile
+
+    @staticmethod
+    def override_settings_from_file(user_profile):
+        configuration_file_path = Path(tempfile.gettempdir(), "overrided_user_settings.ini")
+        print(configuration_file_path)
+        if not configuration_file_path.is_file():
+            return
+
+        print('A configuration file has been found in quadpype program folder and will be applied for current user.')
+
+        applications_versions = {
+            application_name: list(application_data['variants'].keys()) for
+            application_name, application_data in get_global_settings()['applications'].items()
+            if application_data.get('variants')
+
+        }
+
+        configuration_content = configparser.ConfigParser()
+        configuration_content.read(configuration_file_path)
+
+        applications_from_settings = configuration_content['applications']
+        user_settings = user_profile['settings']
+        user_settings['applications'] = defaultdict(dict)
+        for application_name, application_path in applications_from_settings.items():
+            for application_version in applications_versions[application_name]:
+                user_settings['applications'][application_name][application_version] = {'executable': application_path}
+                print(f"New path set for '{application_name} {application_version}' : '{application_path}'")
+
+        configuration_content.pop('applications')
+
+        for section in configuration_content.sections():
+            if section in configuration_content.defaults():
+                continue
+
+            if not user_settings.get(section):
+                user_settings[section] = {}
+
+            for inner_section, value in configuration_content[section].items():
+                splitted_section = inner_section.split('/')
+
+                current_dict = user_settings[section]
+                for inner_key in splitted_section[:-1]:
+                    if not current_dict.get(inner_key):
+                        current_dict[inner_key] = {}
+                    current_dict = current_dict[inner_key]
+
+                current_dict[splitted_section[-1]] = value
+
+                print(f"New value set for '{inner_section}' : '{value}'")
+
+        configuration_file_path.unlink()
 
     def set_tracker_login_to_user_profile(self, tracker_name, login_value):
         user_profile = self.get_user_profile()
@@ -197,6 +261,11 @@ class MongoUserHandler(UserHandler):
         self.collection.replace_one(
             { "user_id": self.user_id },
             user_profile
+        )
+
+        save_project_timestamp(
+            project_name=self.user_id,
+            updated_entity='settings'
         )
 
     def get_user_settings(self):

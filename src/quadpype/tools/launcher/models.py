@@ -29,7 +29,7 @@ from quadpype.tools.utils.lib import (
     DynamicQThread,
     get_project_icon
 )
-from quadpype.tools.utils.workfile_cache import WorkFileCache, set_item_state
+from quadpype.tools.utils.workfile_cache import WorkFileCache, get_item_state
 from quadpype.pipeline.workfile import get_workdir_from_session
 from quadpype.tools.utils.assets_widget import (
     AssetModel,
@@ -41,6 +41,9 @@ from quadpype.tools.utils.tasks_widget import (
     TASK_TYPE_ROLE,
     TASK_ASSIGNEE_ROLE
 )
+
+from quadpype.tools.utils.workfile_cache import launch_threaded_icon_worker
+
 
 from . import lib
 from .constants import (
@@ -76,6 +79,19 @@ class ActionModel(QtGui.QStandardItemModel):
             _ = self.launcher_registry.get_item("force_not_open_workfile")
         except ValueError:
             self.launcher_registry.set_item("force_not_open_workfile", [])
+
+        self.item_state_thread = None
+        self.item_state_worker = None
+
+    def set_icon(self, row_index, icon):
+        if not hasattr(self, '_current_items'):
+            return
+
+        if row_index < 0 or row_index >= len(self._current_items):
+            return
+
+        item = self._current_items[row_index]
+        item.setData(icon, QtCore.Qt.DecorationRole)
 
     def discover(self):
         """Set up Actions cache. Run this for each new project."""
@@ -182,6 +198,8 @@ class ActionModel(QtGui.QStandardItemModel):
                 single_actions.append(action)
 
         items_by_order = collections.defaultdict(list)
+
+        entities_data = list()
         for label, actions in tuple(varianted_actions.items()):
             if len(actions) == 1:
                 varianted_actions.pop(label)
@@ -208,7 +226,13 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(True, VARIANT_GROUP_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
             if self.is_application_action(actions[0]) and use_icons:
-                set_item_state(session, item, app_action=actions[0])
+                entities_data.append(
+                    {
+                        'icon': icon,
+                        'session': session,
+                        'app_action': actions[0],
+                    }
+                )
             items_by_order[order].append(item)
 
         for action in single_actions:
@@ -219,7 +243,13 @@ class ActionModel(QtGui.QStandardItemModel):
             item.setData(action, ACTION_ROLE)
             item.setSizeHint(QtCore.QSize(90, 96))
             if self.is_application_action(action) and use_icons:
-                set_item_state(session, item, app_action=action)
+                entities_data.append(
+                    {
+                        'icon': icon,
+                        'session': session,
+                        'app_action': action,
+                    }
+                )
             items_by_order[action.order].append(item)
 
         for group_name, actions in grouped_actions.items():
@@ -259,9 +289,22 @@ class ActionModel(QtGui.QStandardItemModel):
                 self.items_by_id[item_id] = item
                 items.append(item)
 
+        self._current_items = items
+
         self.invisibleRootItem().appendRows(items)
 
         self.endResetModel()
+
+        if self.item_state_thread is not None:
+            self.item_state_thread.quit()
+            self.item_state_thread.wait()
+
+        self.item_state_thread = QtCore.QThread()
+        launch_threaded_icon_worker(
+            cls=self,
+            entities_data=entities_data,
+            callback=self.set_icon
+        )
 
     def filter_compatible_actions(self, actions):
         """Collect all actions which are compatible with the environment
@@ -685,16 +728,21 @@ class LauncherModel(QtCore.QObject):
                 time.sleep(0.01)
             self._asset_refresh_thread = None
 
+    def _create_workfile_cache_if_needed(self):
+        # Populate and create WF cache
+        workfile_db = WorkFileCache()
+        is_enabled = workfile_db.is_enabled(project_name=self._last_project_name)
+        not_exists = not workfile_db.workfile_db_exists(project_name=self._last_project_name)
+        if is_enabled and not_exists:
+            workfile_db.init_workfile_db(project_name=self._last_project_name)
+            print("Workfile cache created")
+
     def _refresh_assets(self):
         asset_docs = list(get_assets(
             self._last_project_name, fields=self._asset_projection.keys()
         ))
 
-        # Populate and create WF cache
-        workfile_db = WorkFileCache()
-        if not workfile_db.workfilde_db_exists(project_name=self._last_project_name):
-            workfile_db.init_workfile_db(project_name=self._last_project_name)
-            print("Workfile cache created")
+        self._create_workfile_cache_if_needed()
 
         if not self._refreshing_assets:
             return

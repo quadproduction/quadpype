@@ -87,7 +87,7 @@ class ProjectsEndpoint(ResourceRestApiEndpoint):
     """Returns list of dict with project info (id, name)."""
     async def get(self) -> Response:
         output = []
-        for project_doc in get_projects():
+        for project_doc in get_projects(summarized_retrieval=True):
             ret_val = {
                 "id": project_doc["_id"],
                 "name": project_doc["name"]

@@ -34,8 +34,6 @@ class CollectSettingsSimpleInstances(pyblish.api.InstancePlugin):
     hosts = ["traypublisher"]
 
     def process(self, instance):
-        if not instance.data.get("settings_creator"):
-            return
 
         instance_label = instance.data["name"]
         # Create instance's staging dir in temp

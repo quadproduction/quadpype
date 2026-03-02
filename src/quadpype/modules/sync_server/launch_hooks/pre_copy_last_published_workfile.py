@@ -47,6 +47,10 @@ class CopyLastPublishedWorkfile(PreLaunchHook):
         Returns:
             None: This is a void method.
         """
+        if not self.data.get("start_last_workfile"):
+            self.log.info("It is set to not start last workfile on start.")
+            return
+
         sync_server = self.modules_manager.get("sync_server")
         if not sync_server or not sync_server.enabled:
             self.log.debug("Sync server module is not enabled or available")

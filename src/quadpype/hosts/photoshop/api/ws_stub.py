@@ -48,8 +48,8 @@ class PhotoshopServerStub:
         is opened).
         'self.websocketserver.call' is used as async wrapper
     """
-    PUBLISH_ICON = '\u2117_'
-    LOADED_ICON = '\u25bc'
+    PUBLISH_ICON = 'P_'
+    LOADED_ICON = 'L_'
 
     def __init__(self):
         self.websocketserver = WebServerTool.get_instance()
@@ -177,6 +177,24 @@ class PhotoshopServerStub:
         cleaned_data = []
 
         for item in result_meta:
+            if item.get("members"):
+                if int(item["members"][0]) not in layer_ids:
+                    continue
+
+            cleaned_data.append(item)
+
+        payload = json.dumps(cleaned_data, indent=4)
+        self.websocketserver.call(
+            self.client.call('Photoshop.imprint', payload=payload)
+        )
+
+    def refresh_imprints(self):
+        """Delete all layers metadata if the layer no longer exists"""
+        items_meta = self.get_layers_metadata()
+        all_layers = self.get_layers()
+        layer_ids = [layer.id for layer in all_layers]
+        cleaned_data = []
+        for item in items_meta:
             if item.get("members"):
                 if int(item["members"][0]) not in layer_ids:
                     continue

@@ -244,6 +244,16 @@
                     "type": "number",
                     "key": "force_sync_loops",
                     "label": "Force sync loops number"
+                },
+
+                {
+                    "type": "label",
+                    "label": "In seconds. Will bypass sync loop if no user activity is detected for this amount of time. Set to 0 to disable."
+                },
+                {
+                    "type": "number",
+                    "key": "idle_threshold",
+                    "label": "Time before considering user idle."
                 }
             ]
         },
