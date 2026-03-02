@@ -899,9 +899,14 @@ def get_archived_assets(
         Cursor: Query cursor as iterable which returns asset documents matching
             passed filters.
     """
-
     return _get_assets(
-        project_name, asset_ids, asset_names, parent_ids, False, True, fields
+        project_name=project_name,
+        asset_ids=asset_ids,
+        asset_names=asset_names,
+        parent_ids=parent_ids,
+        standard=False,
+        archived=True,
+        fields=fields
     )
 
 
