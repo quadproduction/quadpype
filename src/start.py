@@ -894,12 +894,6 @@ def boot():
         os.environ["QUADPYPE_PATH"] = str(package_manager["quadpype"].get_accessible_remote_source())
 
     core_settings = global_settings.get('core', {})
-    cache_database = core_settings.get('cache_database', False)
-    if cache_database:
-        os.environ["QUADPYPE_CACHE_DATABASE"] = "1"
-    else:
-        os.environ.pop("QUADPYPE_CACHE_DATABASE", None)
-
     projects_settings = core_settings.get('projects', {})
     use_active_projects_collection = projects_settings.get('use_active_projects_collection', False)
     if use_active_projects_collection:
