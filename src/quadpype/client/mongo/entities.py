@@ -135,16 +135,6 @@ def get_simplified_active_projects(fields=None):
     return collection.find({}, _prepare_fields(fields))
 
 
-def _cache_database_is_activated():
-    """Check if 'cache_database' is enabled in settings.
-    If so, database entities will be cached in RAM to avoid multiple queries.
-
-    Returns:
-        bool: True if property is enabled, False otherwise.
-    """
-    return os.environ.get("QUADPYPE_CACHE_DATABASE", None)
-
-
 def _active_project_quick_access_is_enabled():
     """Check if 'use_active_projects_collection' is enabled in settings
 
