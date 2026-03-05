@@ -452,14 +452,7 @@ class LoadClip(plugin.NukeLoader):
         if nuke.toNode(read_name) is None:
             read_node["name"].setValue(read_name)
         else:
-            unique_number_padding = len(unique_number)
-            unique_number = str(int(unique_number) + 1).zfill(unique_number_padding)
-            read_name, unique_number = get_unique_name_and_number(representation=representation,
-                                                                  template=self.node_name_template,
-                                                                  unique_number=unique_number,
-                                                                  node_type="Read",
-                                                                  class_name=self.__class__.__name__)
-            read_node["name"].setValue(read_name)
+            self.log.warning("Already there, no renaming")
 
         read_node["file"].setValue(filepath)
 
@@ -495,6 +488,14 @@ class LoadClip(plugin.NukeLoader):
             else:
                 color_value = COLOR_RED
             read_node["tile_color"].setValue(int(color_value, 16))
+
+            #clean_knobs
+            knob = read_node.knob('avalon:objectName')
+            if knob:
+                read_node.removeKnob(knob)
+            knob = read_node.knob('avalon:node')
+            if knob:
+                read_node.removeKnob(knob)
 
             # Update the imprinted representation
             update_container(

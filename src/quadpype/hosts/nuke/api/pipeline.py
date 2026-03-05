@@ -510,14 +510,14 @@ def containerise(node,
     return node
 
 
-def parse_container(node):
+def parse_container(node, update=False):
     """Returns containerised data of a node
 
     Reads the imprinted data from `containerise`.
 
     Arguments:
         node (nuke.Node): Nuke's node object to read imprinted data
-
+        update (Bool): If we update a container, it is not necessary to add extra data
     Returns:
         dict: The container schema data for this container node.
 
@@ -529,6 +529,9 @@ def parse_container(node):
                 "namespace", "loader", "representation"]
     if not all(key in data for key in required):
         return
+
+    if update:
+        return data
 
     # Store the node's name
     data.update({
@@ -555,7 +558,7 @@ def update_container(node, keys=None):
     """
     keys = keys or dict()
 
-    container = parse_container(node)
+    container = parse_container(node, update=True)
     if not container:
         raise TypeError("Not a valid container node.")
 
