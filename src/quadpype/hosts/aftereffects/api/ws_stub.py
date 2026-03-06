@@ -395,6 +395,74 @@ class AfterEffectsServerStub():
         if records:
             return records.pop()
 
+    def get_original_comp_time(self, comp_id):
+        """
+            Get where is the time slider in a comp
+        Args:
+            comp_id (int): comp to get
+        """
+        res = self.websocketserver.call(
+            self.client.call('AfterEffects.get_original_comp_time',
+                             comp_id=comp_id)
+        )
+        return self._handle_return(res)
+
+    def save_comp_image_as_with_dialog(self, comp_id, frame):
+        """
+            Save a specific frame as a psd file in a given comp
+        Args:
+            comp_id (int): comp to get
+            frame (int): frame to set
+        """
+        res = self.websocketserver.call(
+            self.client.call('AfterEffects.save_comp_image_as_with_dialog',
+                             comp_id=comp_id,
+                             frame=frame)
+        )
+        return self._handle_return(res)
+
+    def set_comp_time(self, comp_id, frame):
+        """
+            Set time slider on a specific comp
+        Args:
+            comp_id (int): comp to get
+            frame (int): frame to set
+        """
+        res = self.websocketserver.call(
+            self.client.call('AfterEffects.set_comp_time',
+                             comp_id=comp_id,
+                             frame=frame)
+        )
+        return self._handle_return(res)
+
+    def set_viewer_mode_wire(self):
+        """
+            Set current viewer mode to wireframe
+        """
+        self.websocketserver.call(
+            self.client.call('AfterEffects.set_viewer_mode_wire')
+        )
+
+    def set_viewer_mode_adaptive(self):
+        """
+            Set current viewer mode to adaptive
+        """
+        self.websocketserver.call(
+            self.client.call('AfterEffects.set_viewer_mode_adaptive')
+        )
+
+    def comp_as_layers(self, comp_id):
+        """
+            Return true or false
+        Args:
+            comp_id (int): comp to get
+        """
+        res = self.websocketserver.call(
+            self.client.call('AfterEffects.comp_as_layers',
+                             comp_id=comp_id)
+        )
+        return self._handle_return(res)
+
     def replace_item(self, item_id, path, item_name):
         """ Replace FootageItem with new file
 
