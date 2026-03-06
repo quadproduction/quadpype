@@ -141,6 +141,7 @@ include_files = [
 if IS_WINDOWS:
     install_requires.extend([
         # `pywin32` packages
+        "win32",
         "win32ctypes",
         "win32comext",
         "pythoncom"

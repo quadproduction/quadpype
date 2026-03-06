@@ -584,6 +584,61 @@ function openImportFileWithDialog(path){
     return importedCompArray[0]
 }
 
+function getOriginalCompTime(comp_id){
+    var item = app.project.itemByID(comp_id);
+    var originalTime = item.time;
+    return _prepareSingleValue(originalTime);
+}
+
+function saveCompImageAsWithDialog(comp_id, frame){
+
+    var item = app.project.itemByID(comp_id);
+    var cmdID = app.findMenuCommandId("Calques Photoshop...");
+    if (!cmdID || cmdID === 0) cmdID = app.findMenuCommandId("Photoshop Layers...");
+    if (!cmdID || cmdID === 0) cmdID = 5002;
+
+    var frameDur = item.frameDuration;
+    setCompTime(comp_id, frame * frameDur);
+    app.executeCommand(cmdID);
+}
+
+function setCompTime(comp_id, time){
+    var item = app.project.itemByID(comp_id);
+    item.time = time;
+}
+
+function setViewerModeWire(){
+    var viewer = app.activeViewer;
+    if (viewer && viewer.views && viewer.views.length > 0) {
+        try {
+            viewer.views[0].options.fastPreview = FastPreviewType.FP_WIREFRAME;
+        } catch (e) {
+            return;
+        }
+    }
+}
+
+function setViewerModeAdaptive(){
+    var viewer = app.activeViewer;
+    if (viewer && viewer.views && viewer.views.length > 0) {
+        try {
+            viewer.views[0].options.fastPreview = FastPreviewType.FP_ADAPTIVE_RESOLUTION;
+        } catch (e) {
+            return;
+        }
+    }
+}
+
+function compHasLayers(compId) {
+    for (var i = 1; i <= app.project.numItems; i++) {
+        var item = app.project.items[i];
+        if (item instanceof CompItem && item.id === compId) {
+            return _prepareSingleValue(item.numLayers > 0);
+        }
+    }
+    return _prepareSingleValue(false);
+}
+
 function checkImportedCompProperties(comp, path){
     if (comp.layers === undefined){
         undoLastActions();
@@ -620,7 +675,7 @@ function setImportedCompProperties(comp, item_name, import_options){
         renameFolderItems(compFolder);
 
         if (import_options.hasOwnProperty("fps") && import_options.hasOwnProperty("sequence")){
-            fps = import_options['fps']
+            fps = import_options['fps'];
             comp.frameRate = fps;
             setFolderItemsFPS(compFolder, fps);
         }
@@ -721,8 +776,24 @@ function renameFolderItems(folder){
 
 function setFolderItemsFPS(folder, fps){
     for (var index = 1; index <= folder.items.length; index++) {
-        folderItem = folder.items[index]
-        folderItem.mainSource.conformFrameRate = fps
+        var item = folder.items[index];
+
+        if (item instanceof FolderItem) {
+            setFolderItemsFPS(item, fps);
+
+        } else if (item instanceof CompItem) {
+            item.frameRate = fps;
+
+        } else if (item instanceof FootageItem) {
+            var source = item.mainSource;
+
+            if (source instanceof FileSource) {
+                if (item.duration > 0 && item.frameDuration > 0) {
+                    source.conformFrameRate = fps;
+                } else {
+                }
+            }
+        }
     }
 }
 
@@ -1299,7 +1370,7 @@ function duplicateAndDeleteRQItem(oldRQItem) {
 
     var newRQItem = oldRQItem.duplicate();
 
-    for (var i = 1; i <= render_item.outputModules.length; i++) {
+    for (var i = 1; i <= oldRQItem.outputModules.length; i++) {
         var oldOM = oldRQItem.outputModules[i];
         var newOM = newRQItem.outputModules[i];
         try {
@@ -1309,7 +1380,7 @@ function duplicateAndDeleteRQItem(oldRQItem) {
         }
     }
 
-    render_item.remove();
+    oldRQItem.remove();
 
     return newRQItem;
 }
@@ -1818,6 +1889,7 @@ function openCompById(comp_id) {
         if (item instanceof CompItem && item.id === comp_id) {
             var viewer = item.openInViewer();
             viewer.setActive();
+            return;
         }
     }
     return _prepareError("No comp found with ID " + comp_id);
