@@ -224,7 +224,7 @@ class MongoUserHandler(UserHandler):
 
         configuration_file_path.unlink()
 
-    def set_tracker_login_to_user_profile(self, tracker_name, login_value):
+    def set_tracker_login_to_user_profile(self, tracker_name, login_value, user_id=None):
         user_profile = self.get_user_profile()
 
         if "tracker_logins" not in user_profile:
@@ -232,6 +232,7 @@ class MongoUserHandler(UserHandler):
             user_profile["tracker_logins"] = {}
 
         user_profile["tracker_logins"][tracker_name] = login_value
+        user_profile["tracker_logins"][f"{tracker_name}_id"] = user_id
 
         self.collection.replace_one(
             {"user_id": self.user_id},
@@ -322,8 +323,8 @@ def update_user_profile_on_startup():
 
 
 @require_user_handler
-def set_tracker_login_to_user_profile(tracker_name, login_value):
-    return _USER_HANDLER.set_tracker_login_to_user_profile(tracker_name, login_value)
+def set_tracker_login_to_user_profile(tracker_name, login_value, user_id=None):
+    return _USER_HANDLER.set_tracker_login_to_user_profile(tracker_name, login_value, user_id)
 
 
 def _create_user_id(registry=None):
@@ -389,6 +390,13 @@ def get_quadpype_username():
             username = getpass.getuser()
     return username
 
+def get_tracker_user_id():
+    """Tracker username id.
+    May be different from machine's username.
+    """
+
+    user_settings = get_user_profile()
+    return user_settings.get("tracker_logins", {}).get("kitsu_id", None)
 
 def get_user_workstation_info():
     """Basic information about workstation."""

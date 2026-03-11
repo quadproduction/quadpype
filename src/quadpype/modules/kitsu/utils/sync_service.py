@@ -663,6 +663,67 @@ class Listener:
 
     def _update_task(self, data):
         """Update task into QuadPype DB."""
+        # Get project entity
+        set_op_project(self.dbcon, data["project_id"])
+        project_name = self.dbcon.active_project()
+
+        # Get gazu entity
+        task = gazu.task.get_task(data["task_id"])
+
+        parent_name = None
+        asset_name = None
+        ent_type = None
+
+        if task["task_type"]["for_entity"] == "Asset":
+            parent_name = task["entity"]["name"]
+            asset_name = task["entity"]["name"]
+            ent_type = task["entity_type"]["name"]
+
+        elif task["task_type"]["for_entity"] == "Sequence":
+            parent_name = "{sequence_name}".format(
+                sequence_name=task["entity"]["name"],
+            )
+            asset_name = "{sequence_name}".format(
+                sequence_name=task["entity"]["name"]
+            )
+            ent_type = task["entity_type"]["name"]
+
+        elif task["task_type"]["for_entity"] == "Shot":
+            parent_name = "{sequence_name} - {shot_name}".format(
+                sequence_name=task["sequence"]["name"],
+                shot_name=task["entity"]["name"],
+            )
+            asset_name = "{sequence_name}_{shot_name}".format(
+                sequence_name=task["sequence"]["name"],
+                shot_name=task["entity"]["name"],
+            )
+
+        # Update asset tasks with new one
+        asset_doc = get_asset_by_name(project_name, asset_name)
+        if asset_doc:
+            asset_tasks = asset_doc["data"].get("tasks")
+            task_type_name = task["task_type"]["name"]
+            asset_tasks[task_type_name] = {
+                "type": task_type_name,
+                "zou": task
+            }
+            self.dbcon.update_one(
+                {"_id": asset_doc["_id"]},
+                {"$set": {"data.tasks": asset_tasks}},
+            )
+
+            # Print message
+            msg = (
+                "Task updated: {proj} - {ent_type}{parent}"
+                " - {task}".format(
+                    proj=task["project"]["name"],
+                    ent_type=ent_type + " - " if ent_type is not None else "",
+                    parent=parent_name,
+                    task=task["task_type"]["name"],
+                )
+            )
+            log.info(msg)
+
         # TODO is it necessary?
 
     def _delete_task(self, data):

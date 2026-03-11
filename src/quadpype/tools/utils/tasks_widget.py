@@ -7,11 +7,11 @@ from quadpype.client import (
     get_asset_by_id,
 )
 from quadpype.style import get_disabled_entity_icon_color
-from quadpype.tools.utils.lib import get_task_icon
+from quadpype.tools.utils.lib import get_task_icon, checkstate_int_to_enum
 from quadpype.tools.utils.workfile_cache import launch_threaded_icon_worker, get_item_state
 from quadpype.settings import get_project_settings
 from .views import DeselectableTreeView
-
+from quadpype.widgets.nice_checkbox import NiceCheckbox
 
 TASK_NAME_ROLE = QtCore.Qt.UserRole + 1
 TASK_TYPE_ROLE = QtCore.Qt.UserRole + 2
@@ -146,8 +146,13 @@ class TasksModel(QtGui.QStandardItemModel):
 
             task_assignees = set()
             assignees_data = task_info.get("assignees") or []
+            if not assignees_data:
+                assignees_data = task_info.get("zou", {}).get("assignees") or []
             for assignee in assignees_data:
-                username = assignee.get("username")
+                if isinstance(assignee, dict):
+                    username = assignee.get("username")
+                else:
+                    username = assignee
                 if username:
                     task_assignees.add(username)
 
@@ -227,6 +232,7 @@ class TasksWidget(QtWidgets.QWidget):
         self._dbcon = dbcon
 
         super().__init__(parent)
+        self.parent = parent
 
         tasks_view = DeselectableTreeView(self)
         tasks_view.setIndentation(0)
@@ -242,14 +248,36 @@ class TasksWidget(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
+        my_tasks_tooltip = (
+            "Filter folders and task to only those you are assigned to."
+        )
+        my_tasks_label = QtWidgets.QLabel("My tasks")
+        my_tasks_label.setToolTip(my_tasks_tooltip)
+
+        my_tasks_checkbox = NiceCheckbox()
+        my_tasks_checkbox.setChecked(False)
+        my_tasks_checkbox.setToolTip(my_tasks_tooltip)
+
+        filters_layout = QtWidgets.QHBoxLayout()
+        filters_layout.setContentsMargins(0, 0, 0, 0)
+        filters_layout.addWidget(my_tasks_label, 0)
+        filters_layout.addWidget(my_tasks_checkbox, 0)
+        filters_layout.addStretch(1)
+
+        if hasattr(self, "_launcher_model"):
+            layout.addLayout(filters_layout)
         layout.addWidget(tasks_view)
 
         selection_model = tasks_view.selectionModel()
         selection_model.selectionChanged.connect(self._on_task_change)
+        my_tasks_checkbox.stateChanged.connect(
+            self._on_my_tasks_checkbox_state_changed
+        )
 
         self._tasks_model = tasks_model
         self._tasks_proxy = tasks_proxy
         self._tasks_view = tasks_view
+        self._my_tasks_checkbox = my_tasks_checkbox
 
         self._last_selected_task_name = None
 
@@ -268,6 +296,9 @@ class TasksWidget(QtWidgets.QWidget):
 
     def refresh(self):
         self._tasks_model.refresh()
+
+    def _on_my_tasks_checkbox_state_changed(self, state):
+        pass
 
     def set_asset_id(self, asset_id):
         # Try and preserve the last selected task and reselect it

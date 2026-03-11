@@ -1,5 +1,6 @@
 import copy
 import time
+import os
 import collections
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
@@ -9,6 +10,9 @@ from quadpype.pipeline import ApplicationAction
 from quadpype.tools.flickcharm import FlickCharm
 from quadpype.tools.utils.assets_widget import SingleSelectAssetsWidget
 from quadpype.tools.utils.tasks_widget import TasksWidget
+from quadpype.tools.utils.lib import checkstate_int_to_enum
+from quadpype.lib.user import get_tracker_user_id, set_tracker_login_to_user_profile
+from quadpype.modules.kitsu.utils.credentials import get_kitsu_user_id
 
 from .delegates import ActionDelegate
 from . import lib
@@ -106,6 +110,18 @@ class LauncherTaskWidget(TasksWidget):
         proxy = LauncherTasksProxyModel(self._launcher_model)
         proxy.setSourceModel(source_model)
         return proxy
+
+    def _on_my_tasks_checkbox_state_changed(self, state):
+        state = checkstate_int_to_enum(state)
+        self._launcher_model.set_assignee_filter(set())
+        if state == QtCore.Qt.Checked:
+            tracker_id = get_tracker_user_id()
+            if not tracker_id:
+                set_tracker_login_to_user_profile("kitsu", os.getenv("KITSU_LOGIN"), get_kitsu_user_id())
+                tracker_id = get_tracker_user_id()
+            self._launcher_model.set_assignee_filter({tracker_id})
+        self.parent.assets_widget.refresh()
+        self.refresh()
 
 
 class LauncherAssetsWidget(SingleSelectAssetsWidget):
