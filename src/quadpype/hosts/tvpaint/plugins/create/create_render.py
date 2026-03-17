@@ -1179,6 +1179,11 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
                 label="Review Publish on Tracker",
                 default=self.mark_for_review
             ),
+            BoolDef(
+                "sound_for_review",
+                label="Add Sound to Review",
+                default=False
+            ),
             EnumDef(
                 "review_media_type",
                 self.review_types,
