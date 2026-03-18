@@ -13,6 +13,9 @@ class ExtractLocalRender(publish.Extractor):
     families = ["renderLocal", "render.local"]
 
     def process(self, instance):
+        if instance.data["creator_attributes"].get("bypass_classic_render", False):
+            return
+
         stub = get_stub()
         staging_dir = instance.data["stagingDir"]
         self.log.debug("staging_dir::{}".format(staging_dir))
