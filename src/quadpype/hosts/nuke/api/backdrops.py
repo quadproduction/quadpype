@@ -47,6 +47,8 @@ DEFAULT_WIDTH = 50
 NODE_SPACING = 110
 DOT_PADDING = 34
 
+QP_LOAD_KNOB = "Loaded by QP"
+
 class EnumPosition(Enum):
     notSpec = None
     left = "to_left"
@@ -158,6 +160,8 @@ def create_backdrop(bd_name, bd_color, bd_size=None, fill_backdrop=True,
     backdrop["note_font_size"].setValue(font_size)
     if not fill_backdrop:
         backdrop["appearance"].setValue("Border")
+    load_knob = nuke.String_Knob(QP_LOAD_KNOB, QP_LOAD_KNOB)
+    backdrop.addKnob(load_knob)
     return backdrop
 
 def create_backdrops_from_hierarchy(backdrops_hierarchy, data):
@@ -472,7 +476,7 @@ def _backdrop_exists(backdrop_name):
     return backdrop_name in [node["name"].value() for node in nuke.allNodes("BackdropNode")]
 
 def _get_backdrops_in_backdrops(backdrop):
-    return [n for n in backdrop.getNodes() if n.Class() == "BackdropNode"]
+    return [n for n in backdrop.getNodes() if n.Class() == "BackdropNode" and n.knob(QP_LOAD_KNOB) is not None]
 
 def get_nodes_in_backdrops(backdrop):
     return [n for n in backdrop.getNodes()]
