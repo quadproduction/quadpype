@@ -72,7 +72,7 @@ class UserHandler(ABC):
         pass
 
     @abstractmethod
-    def set_tracker_login_to_user_profile(self, tracker_name, login_value):
+    def set_tracker_login_to_user_profile(self):
         """Set the user login for a specific tracker in his profile."""
         pass
 
@@ -224,15 +224,40 @@ class MongoUserHandler(UserHandler):
 
         configuration_file_path.unlink()
 
-    def set_tracker_login_to_user_profile(self, tracker_name, login_value, user_id=None):
+    @staticmethod
+    def get_trackers_data():
+        # Import id getter from each tracker
+        from quadpype.modules.kitsu.utils.credentials import get_kitsu_user_id
+        from quadpype.modules.ftrack.lib.credentials import get_ftrack_user_id
+        from quadpype.modules.shotgrid.lib.credentials import get_shotgrid_user_id
+
+        trackers = {
+            "kitsu": {"login_value":os.getenv("KITSU_LOGIN"),
+                      "password_value":os.getenv("KITSU_PWD"),
+                      "id_value":get_kitsu_user_id()},
+            "shotgrid": {"login_value": os.getenv("QUADPYPE_SG_USER"),
+                         "password_value": os.getenv("QUADPYPE_SG_PSD"),
+                         "id_value": get_shotgrid_user_id()},
+            "ftrack": {"login_value": os.getenv("FTRACK_API_USER"),
+                       "password_value": os.getenv("FTRACK_API_KEY"),
+                       "id_value": get_ftrack_user_id()}
+        }
+        return trackers
+
+    def set_tracker_login_to_user_profile(self):
         user_profile = self.get_user_profile()
+        trackers_data = self.get_trackers_data()
 
         if "tracker_logins" not in user_profile:
             # Ensure the dict exists in the user profile
             user_profile["tracker_logins"] = {}
+        if "tracker_ids" not in user_profile:
+            # Ensure the dict exists in the user profile
+            user_profile["tracker_ids"] = {}
 
-        user_profile["tracker_logins"][tracker_name] = login_value
-        user_profile["tracker_logins"][f"{tracker_name}_id"] = user_id
+        for tracker_name, tracker_data in trackers_data.items():
+            user_profile["tracker_logins"][tracker_name] = tracker_data["login_value"]
+            user_profile["tracker_ids"][tracker_name] = tracker_data.get("id_value", None)
 
         self.collection.replace_one(
             {"user_id": self.user_id},
@@ -323,8 +348,8 @@ def update_user_profile_on_startup():
 
 
 @require_user_handler
-def set_tracker_login_to_user_profile(tracker_name, login_value, user_id=None):
-    return _USER_HANDLER.set_tracker_login_to_user_profile(tracker_name, login_value, user_id)
+def set_tracker_login_to_user_profile():
+    return _USER_HANDLER.set_tracker_login_to_user_profile()
 
 
 def _create_user_id(registry=None):
@@ -390,13 +415,10 @@ def get_quadpype_username():
             username = getpass.getuser()
     return username
 
-def get_tracker_user_id():
-    """Tracker username id.
-    May be different from machine's username.
-    """
-
+def get_trackers_user_id():
+    """Tracker user id."""
     user_settings = get_user_profile()
-    return user_settings.get("tracker_logins", {}).get("kitsu_id", None)
+    return user_settings.get("tracker_ids", {}).values()
 
 def get_user_workstation_info():
     """Basic information about workstation."""

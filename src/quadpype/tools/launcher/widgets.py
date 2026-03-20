@@ -11,8 +11,7 @@ from quadpype.tools.flickcharm import FlickCharm
 from quadpype.tools.utils.assets_widget import SingleSelectAssetsWidget
 from quadpype.tools.utils.tasks_widget import TasksWidget
 from quadpype.tools.utils.lib import checkstate_int_to_enum
-from quadpype.lib.user import get_tracker_user_id, set_tracker_login_to_user_profile
-from quadpype.modules.kitsu.utils.credentials import get_kitsu_user_id
+from quadpype.lib.user import get_trackers_user_id, set_tracker_login_to_user_profile
 
 from .delegates import ActionDelegate
 from . import lib
@@ -115,11 +114,11 @@ class LauncherTaskWidget(TasksWidget):
         state = checkstate_int_to_enum(state)
         self._launcher_model.set_assignee_filter(set())
         if state == QtCore.Qt.Checked:
-            tracker_id = get_tracker_user_id()
-            if not tracker_id:
-                set_tracker_login_to_user_profile("kitsu", os.getenv("KITSU_LOGIN"), get_kitsu_user_id())
-                tracker_id = get_tracker_user_id()
-            self._launcher_model.set_assignee_filter({tracker_id})
+            trackers_id = get_trackers_user_id()
+            if not trackers_id:
+                set_tracker_login_to_user_profile()
+                trackers_id = get_trackers_user_id()
+            self._launcher_model.set_assignee_filter(set(trackers_id))
         self.parent.assets_widget.refresh()
         self.refresh()
 

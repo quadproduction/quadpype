@@ -172,7 +172,7 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         if remember:
             save_credentials(login_value, pwd_value)
             user_id = get_kitsu_user_id(login_value, pwd_value)
-            set_tracker_login_to_user_profile("kitsu", login_value, user_id=user_id)
+            set_tracker_login_to_user_profile()
 
         else:
             # Clear user settings
