@@ -523,6 +523,16 @@ def relocation_is_needed(subset_group, new_layers, old_layers):
 
 #-----------Nuke Functions-----------------
 
+def generate_qp_knobs_for_legacy(node):
+    backdrops = [n for n in nuke.allNodes("BackdropNode") if nuke.getNodeByName(n.name()) and
+                 n["xpos"].value() < node["xpos"].value() < n["xpos"].value() + n["bdwidth"].value() and
+                 n["ypos"].value() < node["ypos"].value() < n["ypos"].value() + n["bdheight"].value()]
+
+    for bd in backdrops:
+        if bd.knob(QP_LOAD_KNOB) is None:
+            load_knob = nuke.String_Knob(QP_LOAD_KNOB, QP_LOAD_KNOB)
+            bd.addKnob(load_knob)
+
 def pre_organize_by_backdrop():
     create_main_backdrops_from_list()
     nodes_in_main_backdrops = get_nodes_in_mains_backdrops()

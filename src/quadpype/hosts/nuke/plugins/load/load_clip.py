@@ -37,7 +37,8 @@ from quadpype.hosts.nuke.api.backdrops import (
     organize_by_backdrop,
     reorganize_inside_main_backdrop,
     update_by_backdrop,
-    get_nodes_in_backdrops
+    get_nodes_in_backdrops,
+    generate_qp_knobs_for_legacy
 )
 from quadpype.hosts.nuke.api.constants import (
     COLOR_GREEN,
@@ -380,6 +381,7 @@ class LoadClip(plugin.NukeLoader):
         is_sequence = len(representation["files"]) > 1
 
         read_node = container["node"]
+        generate_qp_knobs_for_legacy(read_node)
         old_file = read_node["file"].value()
 
         if is_sequence:
