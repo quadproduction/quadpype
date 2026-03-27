@@ -152,7 +152,10 @@ class CollectWorkfileData(pyblish.api.ContextPlugin):
 
         # Project frame start - not used
         workfile_info_parts.pop(-1)
-        field_order = workfile_info_parts.pop(-1)
+        field_order = 'none'
+        # Changes made in tvpp 12
+        if len(workfile_info_parts) >= 6:
+            field_order = workfile_info_parts.pop(-1)
         frame_rate = float(workfile_info_parts.pop(-1))
         pixel_apsect = float(workfile_info_parts.pop(-1))
         height = int(workfile_info_parts.pop(-1))
