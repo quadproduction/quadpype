@@ -43,7 +43,8 @@ from quadpype.hosts.nuke.api.backdrops import (
     organize_by_backdrop,
     reorganize_inside_main_backdrop,
     update_by_backdrop,
-    get_nodes_in_backdrops
+    get_nodes_in_backdrops,
+    generate_qp_knobs_for_legacy
 )
 from quadpype.lib.transcoding import (
     IMAGE_EXTENSIONS
@@ -299,6 +300,7 @@ class LoadImage(plugin.NukeLoader):
 
         """
         node = container["node"]
+        generate_qp_knobs_for_legacy(node)
         frame_number = node["first"].value()
 
         assert node.Class() == "Read", "Must be Read"
