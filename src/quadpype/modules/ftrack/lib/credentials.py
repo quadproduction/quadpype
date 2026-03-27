@@ -107,3 +107,7 @@ def check_credentials(username, api_key, ftrack_server=None):
     except Exception:
         pass
     return user_exists
+
+def get_ftrack_user_id():
+    #ToDo
+    return None

@@ -7,6 +7,7 @@ from quadpype.modules.kitsu.utils.credentials import (
     save_credentials,
     set_credentials_envs,
     validate_credentials,
+    get_kitsu_user_id
 )
 from quadpype.resources import get_resource
 from quadpype.settings import (
@@ -170,7 +171,9 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         # Remember password cases
         if remember:
             save_credentials(login_value, pwd_value)
-            set_tracker_login_to_user_profile("kitsu", login_value)
+            user_id = get_kitsu_user_id(login_value, pwd_value)
+            set_tracker_login_to_user_profile()
+
         else:
             # Clear user settings
             clear_credentials()
