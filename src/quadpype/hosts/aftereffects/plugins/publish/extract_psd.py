@@ -47,8 +47,7 @@ class ExtractCompAsPsd(publish.Extractor):
             frame_str = str(i).zfill(4)
             self.base_name = f"{file_name}_{frame_str}"
             auto_clic_thread = self.trigger_auto_clic_thread(
-                3,
-                False
+                3
             )
             stub.save_comp_image_as_with_dialog(comp_id, i)
             auto_clic_thread.join()
