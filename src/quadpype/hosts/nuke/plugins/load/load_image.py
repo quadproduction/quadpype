@@ -29,6 +29,11 @@ from quadpype.hosts.nuke.api.lib import (
     PREP_LAYER_PSD_EXT,
     PREP_LAYER_EXR_EXT
 )
+from quadpype.hosts.nuke.api.backdrop_organizer import(
+    delete,
+    organize,
+    update
+)
 from quadpype.hosts.nuke.api.constants import (
     COLOR_GREEN,
     COLOR_RED
@@ -127,7 +132,10 @@ class LoadImage(plugin.NukeLoader):
         self.log.info("__ options: `{}`".format(options))
         frame_number = options.get("frame_number", int(nuke.root()["first_frame"].getValue()))
         ext = context["representation"]["context"]["ext"].lower()
+        prep_layers = options.get("prep_layers", self.defaults["prep_layers"])
+        create_stamps = options.get("create_stamps", self.defaults["create_stamps"])
         pre_comp = options.get("pre_comp", self.defaults["pre_comp"])
+        subset_group = context["subset"]["data"].get("subsetGroup", False)
 
         self.get_load_settings(ext)
 
@@ -137,12 +145,12 @@ class LoadImage(plugin.NukeLoader):
             options = {}
 
         options["frame_number"] = frame_number
-        options["prep_layers"] = options.get("prep_layers", self.defaults["prep_layers"])
-        options["create_stamps"] = options.get("create_stamps", self.defaults["create_stamps"])
+        options["prep_layers"] = prep_layers
+        options["create_stamps"] = create_stamps
         options["pre_comp"] = pre_comp
         options["is_prep_layer_compatible"] = ext in (set(PREP_LAYER_PSD_EXT) | set(PREP_LAYER_EXR_EXT))
         options["ext"] = ext
-        options["subset_group"] = context["subset"]["data"].get("subsetGroup", False)
+        options["subset_group"] = subset_group
 
         version = context['version']
         version_data = version.get("data", {})
@@ -188,38 +196,42 @@ class LoadImage(plugin.NukeLoader):
                                                               unique_number=None,
                                                               node_type="Read",
                                                               class_name = self.__class__.__name__)
+        context["unique_number"] = unique_number
 
         settings = get_project_settings(get_current_project_name()).get("nuke")
         use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
+        use_legacy_backdrop = settings["general"].get("use_legacy_backdrop", True)
 
         # Create the Loader with the filename path set
         with viewer_update_and_undo_stop():
-            if use_backdrop:
+            if use_backdrop and use_legacy_backdrop:
                 nodes_in_main_backdrops = pre_organize_by_backdrop()
 
-            r = nuke.createNode(
+            read_node = nuke.createNode(
                 "Read",
                 "name {}".format(read_name),
                 inpanel=False
             )
-            r["file"].setValue(file)
-            if use_backdrop:
-                r["xpos"].setValue(-100000)
-                r["ypos"].setValue(-100000)
+            read_node["file"].setValue(file)
+
+            if use_backdrop and use_legacy_backdrop:
+                read_node["xpos"].setValue(-100000)
+                read_node["ypos"].setValue(-100000)
+
             # Set colorspace defined in version data
             colorspace = context["version"]["data"].get("colorspace")
             if colorspace:
-                r["colorspace"].setValue(str(colorspace))
+                read_node["colorspace"].setValue(str(colorspace))
 
             preset_clrsp = get_imageio_input_colorspace(file)
 
             if preset_clrsp is not None:
-                r["colorspace"].setValue(preset_clrsp)
+                read_node["colorspace"].setValue(preset_clrsp)
 
-            r["origfirst"].setValue(first)
-            r["first"].setValue(first)
-            r["origlast"].setValue(last)
-            r["last"].setValue(last)
+            read_node["origfirst"].setValue(first)
+            read_node["first"].setValue(first)
+            read_node["origlast"].setValue(last)
+            read_node["last"].setValue(last)
 
             # add additional metadata from the version to imprint Avalon knob
             add_keys = ["source", "colorspace", "author", "fps", "version"]
@@ -235,14 +247,14 @@ class LoadImage(plugin.NukeLoader):
                     data_imprint.update(
                         {k: context["version"]['data'].get(k, str(None))})
 
-            r["tile_color"].setValue(int(COLOR_GREEN, 16))
+            read_node["tile_color"].setValue(int(COLOR_GREEN, 16))
             storage_backdrop = None
-            if use_backdrop:
+            if use_backdrop and use_legacy_backdrop:
                 try:
                     nodes_before = list(nuke.allNodes())
                     main_backdrop, storage_backdrop, subset_group, nodes = organize_by_backdrop(
                         data=context,
-                        node=r,
+                        node=read_node,
                         nodes_in_main_backdrops=nodes_in_main_backdrops,
                         options=options,
                         unique_number=unique_number
@@ -252,9 +264,14 @@ class LoadImage(plugin.NukeLoader):
                     for n in nuke.allNodes():
                         if n not in nodes_before:
                             nuke.delete(n)
-                    nuke.delete(r)
+                    nuke.delete(read_node)
                     raise Exception(f"No template found in loader for "
                                     f"{context['representation']['context']['task']['name']}")
+            if use_backdrop and not use_legacy_backdrop:
+                if not subset_group:
+                    organize.representation_with_except(read_node, options, context)
+                else:
+                    organize.renderlayer_representation_with_except(read_node, options, context)
 
             if subset_group:
                 data_imprint["subset_group"] = subset_group
@@ -266,7 +283,7 @@ class LoadImage(plugin.NukeLoader):
                 for n in nodes:
                     self.set_as_member(n)
             else:
-                self.set_as_member(r)
+                self.set_as_member(read_node)
 
             self.log.info("__ options: `{}`".format(options))
             data_imprint["options"] = options
@@ -278,9 +295,9 @@ class LoadImage(plugin.NukeLoader):
                 color_value = COLOR_GREEN
             else:
                 color_value = COLOR_RED
-            r["tile_color"].setValue(int(color_value, 16))
-            set_node_knobs_from_settings(r, self.knobs)
-            return containerise(r,
+            read_node["tile_color"].setValue(int(color_value, 16))
+            set_node_knobs_from_settings(read_node, self.knobs)
+            return containerise(read_node,
                                 name=name,
                                 namespace=namespace,
                                 context=context,
@@ -305,6 +322,7 @@ class LoadImage(plugin.NukeLoader):
 
         settings = get_project_settings(get_current_project_name()).get("nuke")
         use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
+        use_legacy_backdrop = settings["general"].get("use_legacy_backdrop", True)
 
         repr_cont = representation["context"]
         old_file = node["file"].value()
@@ -339,19 +357,20 @@ class LoadImage(plugin.NukeLoader):
         options = ast.literal_eval(container.get("options"))
         prep_layers = options.get("prep_layers", False)
         is_prep_layer_compatible = options.get("is_prep_layer_compatible", False)
+        subset_group = options.get("subset_group", None)
         ext = options.get("ext", None)
         self.get_load_settings(ext)
         old_layers = dict()
         new_layers = dict()
-        if is_prep_layer_compatible:
-            old_layers = get_layers(node, ext)
-            node["file"].setValue(file)
-            new_layers = get_layers(node, ext)
-
-            if prep_layers:
-                if not compare_layers(old_layers, new_layers, ask_proceed=ask_proceed):
-                    node["file"].setValue(old_file)
-                    return
+        if use_backdrop and use_legacy_backdrop:
+            if is_prep_layer_compatible:
+                old_layers = get_layers(node, ext)
+                node["file"].setValue(file)
+                new_layers = get_layers(node, ext)
+                if prep_layers:
+                    if not compare_layers(old_layers, new_layers, ask_proceed=ask_proceed):
+                        node["file"].setValue(old_file)
+                        return
 
         # Get unique name and number
         unique_number = container.get("unique_number", None)
@@ -366,14 +385,26 @@ class LoadImage(plugin.NukeLoader):
         else:
             self.log.warning("Already there, no renaming")
 
-        node["file"].setValue(file)
         node["origfirst"].setValue(first)
         node["first"].setValue(first)
         node["origlast"].setValue(last)
         node["last"].setValue(last)
 
-        if use_backdrop:
+        if use_backdrop and use_legacy_backdrop:
+            node["file"].setValue(file)
             update_by_backdrop(container, old_layers, new_layers, ask_proceed=False)
+
+        elif use_backdrop and not use_legacy_backdrop:
+            if not subset_group:
+                succeed = update.representation(node, options, file)
+            else:
+                succeed = update.renderlayer_representation(node, options, file)
+
+            if not succeed:
+                self.log.info("Update aborted.")
+                return
+        else:
+            node["file"].setValue(file)
 
         updated_dict = {}
         updated_dict.update({
@@ -412,12 +443,24 @@ class LoadImage(plugin.NukeLoader):
     def remove(self, container):
         settings = get_project_settings(get_current_project_name()).get("nuke")
         use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
-        node = container["node"]
-        assert node.Class() == "Read", "Must be Read"
+        use_legacy_backdrop = settings["general"].get("use_legacy_backdrop", True)
+
+        read_node = container["node"]
+        subset_group = container.get("subset_group", None)
+
+        assert read_node.Class() == "Read", "Must be Read"
         with viewer_update_and_undo_stop():
             if not use_backdrop:
-                nuke.delete(node)
+                nuke.delete(read_node)
                 return
+
+            if use_backdrop and not use_legacy_backdrop:
+                if not subset_group:
+                    delete.representation(read_node)
+                else:
+                    delete.renderlayer_representation(read_node)
+                return
+
             storage_backdrop = nuke.toNode(container["storage_backdrop"])
             main_backdrop = container["main_backdrop"]
 
