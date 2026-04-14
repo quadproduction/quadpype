@@ -1,7 +1,6 @@
 from . import sort, get, set, filter, transform, check, align, calculate, constants
 from ..entities import Node, Backdrop
 
-from quadpype.hosts.nuke.nuke_addon.stamps.stamps_autoClickedOk import getDefaultTitle
 
 """
 update.py
@@ -17,12 +16,12 @@ and vertical/horizontal realignment of shuffle nodes and their downstream chains
 def backdrop_size(backdrop: Backdrop, height: int, width: int):
     if not check.is_height_enough(backdrop, height):
         transform.backdrop_size(backdrop,
-                                h=height,
+                                height=height,
                                 padding_h=constants.BACKDROP_INSIDE_H_PADDING)
 
     if not check.is_width_enough(backdrop, width):
         transform.backdrop_size(backdrop,
-                                w=width,
+                                width=width,
                                 padding_w=constants.BACKDROP_W_PADDING)
 
 def representation_backdrops_size_based_on_nodes(backdrops: list[Backdrop], nodes: list[Node]):
