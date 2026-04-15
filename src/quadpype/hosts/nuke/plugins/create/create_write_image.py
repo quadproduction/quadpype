@@ -160,7 +160,7 @@ class CreateWriteImage(napi.NukeWriteCreator):
             )
 
             if use_backdrop and use_backdrop_general and not use_legacy_backdrop:
-                organize.publish_with_except(instance_node, dict(instance.data))
+                organize.publish(instance_node, dict(instance.data))
 
             exposed_write_knobs(
                 self.project_settings, self.__class__.__name__, instance_node

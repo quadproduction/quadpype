@@ -4,7 +4,7 @@ from typing import Union
 from quadpype.pipeline import split_hierarchy
 from quadpype.lib import Logger
 
-from . import sort, get, update, filter, transform, check, calculate, constants
+from . import sort, set, get, update, filter, check, calculate, constants
 from ..entities import Node, Backdrop
 
 """
@@ -23,14 +23,13 @@ Main responsibilities:
 """
 log = Logger.get_logger(__name__)
 
-class EnumPosition(Enum):
+class Position(Enum):
     notSpec = None
     left = "to_left"
     right = "to_right"
     top = "on_top"
     bottom = "under"
 
-#----------Main Backdrops----------
 def main_backdrops(nodes_in_main_backdrops: dict[str, list[Node]] = None):
     """Will align and re-arrange all the main backdrops, depending on given position rule in the settings.
     Includes all their nodes inside."""
@@ -46,7 +45,7 @@ def main_backdrops(nodes_in_main_backdrops: dict[str, list[Node]] = None):
 
     #Move backdrops
     for backdrop_profile in get.main_backdrops_profiles():
-        position = EnumPosition[backdrop_profile["position"]].value
+        position = Position[backdrop_profile["position"]].value
         if not position:
             continue
 
@@ -68,7 +67,7 @@ def main_backdrops(nodes_in_main_backdrops: dict[str, list[Node]] = None):
         for node in nodes:
             try:
                 x, y, *_ = calculate.bounds(node)
-                transform.move(node, (x + offset_x), (y + offset_y))
+                set.position(node, (x + offset_x), (y + offset_y))
             except ValueError:
                 log.info("Node not found, must have been deleted.")
                 pass
@@ -82,21 +81,21 @@ def move_backdrop_based_on_ref(
     x1, y1, w1, h1 = calculate.bounds(backdrop_ref)
     x2, y2, w2, h2 = calculate.bounds(backdrop_to_move)
 
-    if alignment == EnumPosition.left.value:
-        new_x = x1 - w2 - padding
-        transform.move(backdrop_to_move, int(new_x), y1)
+    if alignment == Position.left.value:
+        new_x = int(x1 - w2 - padding)
+        set.position(backdrop_to_move, new_x, y1)
 
-    elif alignment == EnumPosition.right.value:
-        new_x = x1 + w1 + padding
-        transform.move(backdrop_to_move, int(new_x), y1)
+    elif alignment == Position.right.value:
+        new_x = int(x1 + w1 + padding)
+        set.position(backdrop_to_move, new_x, y1)
 
-    elif alignment == EnumPosition.top.value:
-        new_y = y1 - h2 - padding
-        transform.move(backdrop_to_move, x1, int(new_y))
+    elif alignment == Position.top.value:
+        new_y = int(y1 - h2 - padding)
+        set.position(backdrop_to_move, x1, new_y)
 
-    elif alignment == EnumPosition.bottom.value:
-        new_y = y1 + h1 + padding
-        transform.move(backdrop_to_move, x1, int(new_y))
+    elif alignment == Position.bottom.value:
+        new_y = int(y1 + h1 + padding)
+        set.position(backdrop_to_move, x1, new_y)
 
 #----------Load Representation Backdrops----------
 def representation_backdrops(data: dict):
@@ -116,13 +115,13 @@ def representation_backdrops(data: dict):
                 child_backdrop = backdrop
                 continue
 
-            transform.backdrop_size_based_on_nodes(backdrop, child_backdrop)
+            set.backdrop_size_based_on_nodes(backdrop, child_backdrop)
             bd_x, bd_y = child_backdrop.position
 
             new_x = bd_x + constants.BACKDROP_INSIDE_X_PADDING
             new_y = bd_y + constants.BACKDROP_INSIDE_Y_PADDING
 
-            transform.move_backdrop_with_nodes_within(child_backdrop, new_x, new_y)
+            set.backdrop_position_with_nodes_within(child_backdrop, new_x, new_y)
             child_backdrop = backdrop
 
 def representation_backdrops_in_main(data: dict):
@@ -159,7 +158,7 @@ def representation_backdrops_in_main(data: dict):
             )
 
         update.backdrop_size(main_backdrop, final_h, final_w)
-        transform.move_backdrop_with_nodes_within(lower_level_backdrop, final_x, final_y)
+        set.backdrop_position_with_nodes_within(lower_level_backdrop, final_x, final_y)
 
 #----------Load RenderLayer Representation Backdrops----------
 def representation_renderlayergroup_backdrops(data: dict, options: dict):
@@ -198,7 +197,7 @@ def representation_renderlayergroup_backdrops(data: dict, options: dict):
             )
 
         update.backdrop_size(renderlayergroup_backdrop, final_h, final_w)
-        transform.move_backdrop_with_nodes_within(renderlayer_backdrop, final_x, final_y)
+        set.backdrop_position_with_nodes_within(renderlayer_backdrop, final_x, final_y)
 
 def representation_renderlayergroup_backdrops_in_main(data: dict, options: dict):
     """Will align the renderlayergroup backdrops and their nodes, to the right, in the corresponding Main Backdrop"""
@@ -233,7 +232,7 @@ def representation_renderlayergroup_backdrops_in_main(data: dict, options: dict)
             )
 
         update.backdrop_size(main_backdrop, final_h, final_w)
-        transform.move_backdrop_with_nodes_within(lower_level_backdrop, final_x, final_y)
+        set.backdrop_position_with_nodes_within(lower_level_backdrop, final_x, final_y)
 
 
 #----------Publish Backdrops----------
@@ -254,13 +253,13 @@ def publish_backdrops(data: dict):
                 child_backdrop = backdrop
                 continue
 
-            transform.backdrop_size_based_on_nodes(backdrop, child_backdrop)
+            set.backdrop_size_based_on_nodes(backdrop, child_backdrop)
             bd_x, bd_y = child_backdrop.position
 
             new_x = bd_x + constants.BACKDROP_INSIDE_X_PADDING
             new_y = bd_y + constants.BACKDROP_INSIDE_Y_PADDING
 
-            transform.move_backdrop_with_nodes_within(child_backdrop, new_x, new_y)
+            set.backdrop_position_with_nodes_within(child_backdrop, new_x, new_y)
             child_backdrop = backdrop
 
 def publish_backdrops_in_main(data: dict):
@@ -297,7 +296,7 @@ def publish_backdrops_in_main(data: dict):
             )
 
         update.backdrop_size(main_backdrop, final_h, final_w)
-        transform.move_backdrop_with_nodes_within(lower_level_backdrop, final_x, final_y)
+        set.backdrop_position_with_nodes_within(lower_level_backdrop, final_x, final_y)
 
 #----------Nodes----------
 def nodes_in_backdrop(
@@ -321,21 +320,21 @@ def nodes_in_backdrop(
     if not check.is_list(nodes):
         nodes = [nodes]
     if not check.is_space_in_backdrop_enough(backdrop, nodes):
-        transform.backdrop_size_based_on_nodes(backdrop, nodes, padding_w, padding_h)
+        set.backdrop_size_based_on_nodes(backdrop, nodes, padding_w, padding_h)
 
     bd_x, bd_y = backdrop.position
 
     new_x = bd_x + padding_x
     new_y = bd_y + padding_y
 
-    transform.move_nodes(nodes, new_x, new_y)
+    set.nodes_position(nodes, new_x, new_y)
 
 def nodes_horizontally(nodes: list[Node], padding: int):
     """Will align horizontally the given nodes with a given spacing padding"""
     ref_x, ref_y = nodes[0].position
     for index, node in enumerate(nodes[1:]):
         new_x = ref_x + (padding * (index+1))
-        transform.move(node, new_x, ref_y)
+        set.position(node, new_x, ref_y)
 
 def nodes_vertically(nodes: list[Node], padding: int):
     """Will align horizontally the given nodes with a given spacing padding"""
@@ -346,4 +345,4 @@ def nodes_vertically(nodes: list[Node], padding: int):
 
     for index, node in enumerate(nodes[1:]):
         new_y = ref_y + (padding * (index+1))
-        transform.move(node, ref_x, new_y)
+        set.position(node, ref_x, new_y)

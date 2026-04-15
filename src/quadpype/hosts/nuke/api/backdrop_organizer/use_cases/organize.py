@@ -1,10 +1,10 @@
 import nuke
-import logging
+import functools
 
 from quadpype.lib import Logger
 log = Logger.get_logger(__name__)
 
-from ..actions import get, set, filter, transform, generate, check, convert, align, constants, update
+from ..actions import get, set, filter, generate, check, convert, align, constants, update
 from ..entities import Node
 
 from quadpype.pipeline.workfile.workfile_template_builder import TemplateProfileNotFound
@@ -12,7 +12,7 @@ from quadpype.pipeline.workfile.workfile_template_builder import TemplateProfile
 """
 organize.py
 -----------
-Provides orchestration pipelines for loading and publishing representations in Nuke.
+Provides orchestration pipelines for loading and organizing representations in Nuke.
 
 Coordinates the full sequence of main backdrop generation, node tree creation
 (shuffle/anchor/stamp), backdrop hierarchy setup, alignment, and identifier tagging
@@ -20,13 +20,30 @@ for standard representations, render layer representations, and publish instance
 Exposes safe public wrappers that roll back all created nodes on template errors.
 """
 
+#
+def handle_nuke_nodes(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        nodes_before = list(nuke.allNodes())
+        try:
+            return func(*args, **kwargs)
+        except TemplateProfileNotFound:
+            for n in nuke.allNodes():
+                if n not in nodes_before:
+                    nuke.delete(n)
+            main_node = next(a for a in args if isinstance(a, nuke.Node))
+            main_node_name = main_node.name()
+            nuke.delete(main_node)
+            raise Exception(f"No template found in loader for {main_node_name}")
+    return wrapper
+
 #-----------Load Representation-----------
 def _organize_representation(read_node: nuke.Node, options: dict, context: dict):
     generate.main_backdrops()
     nodes_in_main_backdrops = get.nodes_in_mains_backdrops()
 
     read_node = convert.node(read_node)
-    transform.move(read_node, -100000, -100000)
+    set.position(read_node, -100000, -100000)
 
     new_nodes_created = _create_shuffle_and_stamp_tree(read_node, options)
 
@@ -45,7 +62,11 @@ def _organize_representation(read_node: nuke.Node, options: dict, context: dict)
     align.representation_backdrops_in_main(context)
     align.main_backdrops(nodes_in_main_backdrops)
 
-def representation_with_except(read_node: nuke.Node, options: dict, context: dict):
+@handle_nuke_nodes
+def representation(read_node: nuke.Node, options: dict, context: dict):
+    _organize_representation(read_node, options, context)
+
+"""def representation(read_node: nuke.Node, options: dict, context: dict):
     nodes_before = list(nuke.allNodes())
     try:
         _organize_representation(read_node, options, context)
@@ -56,7 +77,7 @@ def representation_with_except(read_node: nuke.Node, options: dict, context: dic
                 nuke.delete(n)
         nuke.delete(read_node)
         raise Exception(f"No template found in loader for "
-                        f"{context['representation']['context']['task']['name']}")
+                        f"{context['representation']['context']['task']['name']}")"""
 
 
 #-----------Load RenderLayer Representation-----------
@@ -79,7 +100,7 @@ def _organize_renderlayer_representation(read_node: nuke.Node, options: dict, co
         renderlayergroup_nodes.extend(new_nodes_created)
         renderlayergroup_nodes.append(renderlayer_backdrop)
 
-        original_w, _ = renderlayergroup_backdrop.size
+        original_w = renderlayergroup_backdrop.width
 
         nodes_to_the_right = get.pipe_nodes_to_the_right(renderlayergroup_backdrop)
 
@@ -106,7 +127,11 @@ def _organize_renderlayer_representation(read_node: nuke.Node, options: dict, co
 
     align.main_backdrops(nodes_in_main_backdrops)
 
-def renderlayer_representation_with_except(read_node: nuke.Node, options: dict, context: dict):
+@handle_nuke_nodes
+def renderlayer_representation(read_node: nuke.Node, options: dict, context: dict):
+    _organize_renderlayer_representation(read_node, options, context)
+
+"""def renderlayer_representation(read_node: nuke.Node, options: dict, context: dict):
     nodes_before = list(nuke.allNodes())
     try:
         _organize_renderlayer_representation(read_node, options, context)
@@ -118,7 +143,7 @@ def renderlayer_representation_with_except(read_node: nuke.Node, options: dict, 
         nuke.delete(read_node)
         raise Exception(f"No template found in loader for "
                         f"{context['representation']['context']['task']['name']}")
-
+"""
 
 #-----------Create Publish Representation-----------
 def _organize_publish(instance_node: nuke.Node, instance_data: dict):
@@ -126,7 +151,7 @@ def _organize_publish(instance_node: nuke.Node, instance_data: dict):
     nodes_in_main_backdrops = get.nodes_in_mains_backdrops()
 
     instance_node = convert.node(instance_node)
-    transform.move(instance_node, -100000, -100000)
+    set.position(instance_node, -100000, -100000)
 
     publish_backdrop = generate.publish_backdrops(instance_data)
     align.nodes_in_backdrop(
@@ -144,7 +169,11 @@ def _organize_publish(instance_node: nuke.Node, instance_data: dict):
     align.publish_backdrops_in_main(instance_data)
     align.main_backdrops(nodes_in_main_backdrops)
 
-def publish_with_except(instance_node: nuke.Node, instance_data: dict):
+@handle_nuke_nodes
+def publish(instance_node: nuke.Node, instance_data: dict):
+    _organize_publish(instance_node, instance_data)
+
+"""def publish(instance_node: nuke.Node, instance_data: dict):
     nodes_before = list(nuke.allNodes())
     try:
         _organize_publish(instance_node, instance_data)
@@ -155,7 +184,7 @@ def publish_with_except(instance_node: nuke.Node, instance_data: dict):
                 nuke.delete(n)
         nuke.delete(instance_node)
         raise Exception(f"No template found in loader for "
-                        f"{instance_data['task']}")
+                        f"{instance_data['task']}")"""
 
 
 #-----------Private Functions-----------
@@ -169,15 +198,17 @@ def _create_shuffle_and_stamp_tree(read_node: Node, options: dict) -> list[Node]
     new_nodes = generate.shuffles_for_all_layers(read_node, layers_data)
     new_nodes_created.extend(new_nodes)
 
-    if create_stamps:
-        if check.is_decompose_layer_compatible(ext) and prep_layers:
-            nodes_for_anchor = filter.dot_nodes(new_nodes)
-        else:
-            nodes_for_anchor = read_node
-        anchor_nodes = generate.anchors(nodes_for_anchor)
-        stamps_nodes = generate.stamps(anchor_nodes)
+    if not create_stamps:
+        return new_nodes_created
 
-        new_nodes_created.extend(anchor_nodes)
-        new_nodes_created.extend(stamps_nodes)
+    if check.is_decompose_layer_compatible(ext) and prep_layers:
+        nodes_for_anchor = filter.dot_nodes(new_nodes)
+    else:
+        nodes_for_anchor = read_node
+    anchor_nodes = generate.anchors(nodes_for_anchor)
+    stamps_nodes = generate.stamps(anchor_nodes)
+
+    new_nodes_created.extend(anchor_nodes)
+    new_nodes_created.extend(stamps_nodes)
 
     return new_nodes_created

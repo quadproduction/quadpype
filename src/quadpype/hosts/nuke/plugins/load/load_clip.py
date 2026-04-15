@@ -306,9 +306,9 @@ class LoadClip(plugin.NukeLoader):
 
             if use_backdrop and not use_legacy_backdrop:
                 if not subset_group:
-                    organize.representation_with_except(read_node, options, context)
+                    organize.representation(read_node, options, context)
                 else:
-                    organize.renderlayer_representation_with_except(read_node, options, context)
+                    organize.renderlayer_representation(read_node, options, context)
 
             if add_retime and version_data.get("retime", None):
                 self._make_retimes(read_node, version_data)

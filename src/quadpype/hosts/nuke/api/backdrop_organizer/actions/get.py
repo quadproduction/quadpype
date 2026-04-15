@@ -380,7 +380,7 @@ def _pipe_backdrops_to_the_right(backdrop: Backdrop) -> list[Backdrop]:
     pipe_backdrops_in_main = filter.backdrops_just_before_main(pipe_backdrops_in_main)
 
     for pipe_backdrop in pipe_backdrops_in_main:
-        bd_in_main_x, _ = pipe_backdrop.position
+        bd_in_main_x = pipe_backdrop.x
         if ref_x < bd_in_main_x:
             return_backdrops.append(pipe_backdrop)
 
@@ -414,7 +414,7 @@ def pipe_nodes_to_the_right_in_renderlayergroup(
 
     nodes_to_the_right = []
     for node in nodes:
-        node_x, _ = node.position
+        node_x = node.x
         if ref_x < node_x:
             nodes_to_the_right.append(node)
     return nodes_to_the_right

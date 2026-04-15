@@ -4,7 +4,7 @@ from quadpype.lib import Logger
 
 from quadpype.pipeline.settings import extract_width_and_height
 
-from . import get, set, transform, check, convert, constants
+from . import get, set, check, convert, constants
 from ..entities import Node, Backdrop
 from quadpype.hosts.nuke.nuke_addon.stamps import stamps_autoClickedOk
 
@@ -47,8 +47,8 @@ def backdrop(bd_name: str,
 
     new_backdrop = convert.node(nuke.createNode("BackdropNode"))
 
-    transform.move(new_backdrop, xpos, ypos)
-    transform.backdrop_size(new_backdrop, int(width), int(height))
+    set.position(new_backdrop, xpos, ypos)
+    set.backdrop_size(new_backdrop, int(width), int(height))
     set.color_backdrop(new_backdrop, bd_color)
 
     set.knob_value(new_backdrop, "label", bd_name)

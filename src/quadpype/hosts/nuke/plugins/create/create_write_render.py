@@ -281,7 +281,7 @@ class CreateWriteRender(napi.NukeWriteCreator):
                 imprint_data["storage_backdrop"] = storage_backdrop.name()
 
             if use_backdrop and use_backdrop_general and not use_legacy_backdrop:
-                organize.publish_with_except(instance_node, dict(instance.data))
+                organize.publish(instance_node, dict(instance.data))
 
             napi.set_node_data(
                 instance_node,

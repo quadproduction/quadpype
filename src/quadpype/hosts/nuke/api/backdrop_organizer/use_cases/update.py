@@ -9,7 +9,6 @@ from ..actions import (
     ask,
     set,
     filter,
-    transform,
     generate,
     check,
     convert,
@@ -60,7 +59,7 @@ def representation(read_node: nuke.Node, options: dict, new_file: str) -> bool:
 
         representation_upper_level_backdrop = filter.highest_z_order(representation_backdrops)
 
-        original_w, _ = lower_level_backdrop.size
+        original_w = lower_level_backdrop.width
         nodes_to_the_right = get.pipe_nodes_to_the_right(lower_level_backdrop)
 
         delete.shuffles_and_downstream_from_layers_data(read_node, layers_to_delete)
@@ -70,15 +69,17 @@ def representation(read_node: nuke.Node, options: dict, new_file: str) -> bool:
             new_nodes_created = _create_layers_to_add_shuffle_and_stamp_tree(read_node, layers_to_add, create_stamps)
             update.shuffle_and_downstream_horizontal_align(read_node, ext, layers_to_add)
 
-            if has_more_layers:
-                representation_nodes.extend(new_nodes_created)
+            if not has_more_layers:
+                update.read_file(read_node, new_file)
+                return True
+            representation_nodes.extend(new_nodes_created)
 
-                update.representation_backdrops_size_based_on_nodes(representation_backdrops, representation_nodes)
-                if check.need_move_to_the_right(lower_level_backdrop, nodes_to_the_right):
-                    update.nodes_to_the_right_position(original_w, lower_level_backdrop, nodes_to_the_right)
+            update.representation_backdrops_size_based_on_nodes(representation_backdrops, representation_nodes)
+            if check.need_move_to_the_right(lower_level_backdrop, nodes_to_the_right):
+                update.nodes_to_the_right_position(original_w, lower_level_backdrop, nodes_to_the_right)
 
-                final_nodes = representation_nodes + nodes_to_the_right
-                update.backdrop_size_after_update(main_backdrop, final_nodes, original_w, lower_level_backdrop)
+            final_nodes = representation_nodes + nodes_to_the_right
+            update.backdrop_size_after_update(main_backdrop, final_nodes, original_w, lower_level_backdrop)
 
         else:
             update.shuffle_and_downstream_horizontal_align(read_node, ext, layers_to_add)
@@ -114,10 +115,9 @@ def renderlayer_representation(read_node: nuke.Node, options: dict, new_file: st
             return False
 
 
-        original_group_w, _ = renderlayergroup_backdrop.size
-        original_layer_w, _ = renderlayer_backdrop.size
+        original_group_w = renderlayergroup_backdrop.width
+        original_layer_w = renderlayer_backdrop.width
 
-        #Get nodes to the right
         nodes_to_the_right_in_main = get.pipe_nodes_to_the_right(renderlayergroup_backdrop)
         nodes_to_the_right_in_renderlayergroup_backdrop = get.pipe_nodes_to_the_right_in_renderlayergroup(
             renderlayer_backdrop,
@@ -134,36 +134,39 @@ def renderlayer_representation(read_node: nuke.Node, options: dict, new_file: st
 
             update.shuffle_and_downstream_horizontal_align(read_node, ext, layers_to_add)
 
-            if has_more_layers:
-                renderlayer_nodes.extend(new_nodes_created)
-                renderlayergroup_nodes.extend(new_nodes_created)
+            if not has_more_layers:
+                update.read_file(read_node, new_file)
+                return True
 
-                # Adapt renderLayer backdrop
-                transform.backdrop_size_based_on_nodes(renderlayer_backdrop, renderlayer_nodes)
-                if check.need_move_to_the_right(renderlayer_backdrop, nodes_to_the_right_in_renderlayergroup_backdrop):
-                    update.nodes_to_the_right_position(
-                        original_layer_w,
-                        renderlayer_backdrop,
-                        nodes_to_the_right_in_renderlayergroup_backdrop
-                    )
+            renderlayer_nodes.extend(new_nodes_created)
+            renderlayergroup_nodes.extend(new_nodes_created)
 
-                # Adapt renderLayerGroup backdrop
-                update.backdrop_size_after_update(
-                    renderlayergroup_backdrop,
-                    renderlayergroup_nodes,
+            # Adapt renderLayer backdrop
+            set.backdrop_size_based_on_nodes(renderlayer_backdrop, renderlayer_nodes)
+            if check.need_move_to_the_right(renderlayer_backdrop, nodes_to_the_right_in_renderlayergroup_backdrop):
+                update.nodes_to_the_right_position(
                     original_layer_w,
-                    renderlayer_backdrop
+                    renderlayer_backdrop,
+                    nodes_to_the_right_in_renderlayergroup_backdrop
                 )
 
-                if check.need_move_to_the_right(renderlayergroup_backdrop, nodes_to_the_right_in_main):
-                    update.nodes_to_the_right_position(
-                        original_group_w,
-                        renderlayergroup_backdrop,
-                        nodes_to_the_right_in_main
-                    )
+            # Adapt renderLayerGroup backdrop
+            update.backdrop_size_after_update(
+                renderlayergroup_backdrop,
+                renderlayergroup_nodes,
+                original_layer_w,
+                renderlayer_backdrop
+            )
 
-                final_nodes = renderlayergroup_nodes + nodes_to_the_right_in_main
-                update.backdrop_size_after_update(main_backdrop, final_nodes, original_group_w, renderlayergroup_backdrop)
+            if check.need_move_to_the_right(renderlayergroup_backdrop, nodes_to_the_right_in_main):
+                update.nodes_to_the_right_position(
+                    original_group_w,
+                    renderlayergroup_backdrop,
+                    nodes_to_the_right_in_main
+                )
+
+            final_nodes = renderlayergroup_nodes + nodes_to_the_right_in_main
+            update.backdrop_size_after_update(main_backdrop, final_nodes, original_group_w, renderlayergroup_backdrop)
 
         else:
             update.shuffle_and_downstream_horizontal_align(read_node, ext, layers_to_add)

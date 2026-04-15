@@ -269,9 +269,9 @@ class LoadImage(plugin.NukeLoader):
                                     f"{context['representation']['context']['task']['name']}")
             if use_backdrop and not use_legacy_backdrop:
                 if not subset_group:
-                    organize.representation_with_except(read_node, options, context)
+                    organize.representation(read_node, options, context)
                 else:
-                    organize.renderlayer_representation_with_except(read_node, options, context)
+                    organize.renderlayer_representation(read_node, options, context)
 
             if subset_group:
                 data_imprint["subset_group"] = subset_group

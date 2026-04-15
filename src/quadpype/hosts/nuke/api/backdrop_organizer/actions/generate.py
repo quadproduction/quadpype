@@ -2,7 +2,7 @@ from typing import Union
 
 from quadpype.pipeline import split_hierarchy
 
-from . import get, create, set, transform, check, align, calculate, constants
+from . import get, create, set, check, align, calculate, constants
 from ..entities import Node, Backdrop
 
 from quadpype.lib import Logger
@@ -64,10 +64,10 @@ def shuffles_for_all_layers(input_node: Node, layers_data: dict = None) -> list[
 
     align.nodes_vertically([input_node, shuffle_nodes[0]], constants.SHUFFLE_Y_PADDING)
     align.nodes_horizontally(shuffle_nodes, constants.SHUFFLE_X_PADDING)
-    transform.offset_nodes(shuffle_nodes, 0, constants.SHUFFLE_Y_PADDING)
-    transform.offset_nodes(remove_nodes, 0, constants.REMOVE_Y_PADDING)
-    transform.offset_nodes(premult_nodes, 0, constants.PREMULT_Y_PADDING)
-    transform.offset_nodes(dot_nodes, 0, constants.DOT_Y_PADDING)
+    set.nodes_position_with_offset(shuffle_nodes, 0, constants.SHUFFLE_Y_PADDING)
+    set.nodes_position_with_offset(remove_nodes, 0, constants.REMOVE_Y_PADDING)
+    set.nodes_position_with_offset(premult_nodes, 0, constants.PREMULT_Y_PADDING)
+    set.nodes_position_with_offset(dot_nodes, 0, constants.DOT_Y_PADDING)
 
     return shuffle_nodes + remove_nodes + premult_nodes + dot_nodes
 
@@ -86,7 +86,7 @@ def anchors(input_nodes: Union[list[Node], Node]) -> list[Node]:
         anchor_nodes.append(anchor)
 
     align.nodes_vertically([input_nodes[0], anchor_nodes[0]], constants.ANCHOR_Y_ALIGN_OFFSET)
-    transform.offset_nodes(anchor_nodes[1:], 0, constants.ANCHOR_Y_PADDING)
+    set.nodes_position_with_offset(anchor_nodes[1:], 0, constants.ANCHOR_Y_PADDING)
 
     return anchor_nodes
 
@@ -101,7 +101,7 @@ def stamps(input_anchors: Union[list[Node], Node]) -> list[Node]:
         stamp = create.stamp_node(node)
         stamps_nodes.append(stamp)
 
-    transform.offset_nodes(stamps_nodes, 0, constants.STAMP_Y_PADDING)
+    set.nodes_position_with_offset(stamps_nodes, 0, constants.STAMP_Y_PADDING)
 
     return stamps_nodes
 
@@ -126,10 +126,10 @@ def shuffle_for_given_layer(input_node: Node, layer_name: str ) -> list[Node]:
     dot_nodes.append(dot)
     set.knob_value(dot, 'label', f"{layer_name}")
 
-    transform.offset_nodes(shuffle_nodes, 0, constants.SHUFFLE_Y_PADDING)
-    transform.offset_nodes(remove_nodes, 0, constants.REMOVE_Y_PADDING)
-    transform.offset_nodes(premult_nodes, 0, constants.PREMULT_Y_PADDING)
-    transform.offset_nodes(dot_nodes, 0, constants.DOT_Y_PADDING)
+    set.nodes_position_with_offset(shuffle_nodes, 0, constants.SHUFFLE_Y_PADDING)
+    set.nodes_position_with_offset(remove_nodes, 0, constants.REMOVE_Y_PADDING)
+    set.nodes_position_with_offset(premult_nodes, 0, constants.PREMULT_Y_PADDING)
+    set.nodes_position_with_offset(dot_nodes, 0, constants.DOT_Y_PADDING)
 
     return shuffle_nodes + remove_nodes + premult_nodes + dot_nodes
 

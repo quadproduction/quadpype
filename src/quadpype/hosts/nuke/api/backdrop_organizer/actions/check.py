@@ -152,8 +152,8 @@ def need_move_to_the_right(
 ) -> bool:
     if not nodes_to_the_right:
         return False
-    updated_w, _ = updated_representation_backdrop.size
-    updated_x, _ = updated_representation_backdrop.position
+    updated_w = updated_representation_backdrop.width
+    updated_x = updated_representation_backdrop.x
     new_x = updated_w + updated_x + constants.BACKDROP_INSIDE_X_PADDING
 
     nodes_x, nodes_y, _, _ = calculate.bounds(nodes_to_the_right)
