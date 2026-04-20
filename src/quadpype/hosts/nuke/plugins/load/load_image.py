@@ -317,7 +317,6 @@ class LoadImage(plugin.NukeLoader):
 
         """
         node = container["node"]
-        generate_qp_knobs_for_legacy(node)
         frame_number = node["first"].value()
 
         assert node.Class() == "Read", "Must be Read"
@@ -325,6 +324,9 @@ class LoadImage(plugin.NukeLoader):
         settings = get_project_settings(get_current_project_name()).get("nuke")
         use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
         use_legacy_backdrop = settings["general"].get("use_legacy_backdrop", True)
+
+        if use_legacy_backdrop:
+            generate_qp_knobs_for_legacy(node)
 
         repr_cont = representation["context"]
         old_file = node["file"].value()

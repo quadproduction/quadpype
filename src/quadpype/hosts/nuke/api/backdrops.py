@@ -524,7 +524,7 @@ def relocation_is_needed(subset_group, new_layers, old_layers):
 #-----------Nuke Functions-----------------
 
 def generate_qp_knobs_for_legacy(node):
-    backdrops = [n for n in nuke.allNodes("BackdropNode") if nuke.getNodeByName(n.name()) and
+    backdrops = [n for n in nuke.allNodes("BackdropNode") if nuke.toNode(n.name()) and
                  n["xpos"].value() < node["xpos"].value() < n["xpos"].value() + n["bdwidth"].value() and
                  n["ypos"].value() < node["ypos"].value() < n["ypos"].value() + n["bdheight"].value()]
 
