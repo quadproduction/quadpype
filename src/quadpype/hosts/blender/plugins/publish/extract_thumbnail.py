@@ -4,7 +4,7 @@ import json
 
 import pyblish.api
 from quadpype.hosts.blender.api import capture, plugin
-from quadpype.hosts.blender.api.lib import maintained_time, get_viewport_shading
+from quadpype.hosts.blender.api.lib import maintained_time, get_viewport_shading, get_scene_engine
 
 import bpy
 
@@ -52,11 +52,20 @@ class ExtractThumbnail(plugin.BlenderExtractor):
             camera = "AUTO"
             use_viewport = True
 
+        render_mode = get_scene_engine()
+        viewport_data = {}
         if shader_mode == "Viewport":
-            shader_mode = get_viewport_shading()
+            viewport_data = get_viewport_shading()
             if shader_mode == "RENDERED":
                 self.log.warning("Shading mode set to RENDERED, impossible for playblast, auto switch to MATERIAL")
-                shader_mode = "MATERIAL"
+                viewport_data["type"] = "MATERIAL"
+
+        if render_mode == "BLENDER_WORKBENCH" and (shader_mode == "MATERIAL" or viewport_data.get("type") == "MATERIAL"):
+            viewport_data = {"type":"SOLID",
+                             "light":"FLAT",
+                             "color_type": "TEXTURE"}
+        else:
+            viewport_data = {"type":shader_mode}
 
         start = creator_attributes.get("frameStart", bpy.context.scene.frame_start)
         family = instance.data.get("family")
@@ -95,7 +104,7 @@ class ExtractThumbnail(plugin.BlenderExtractor):
                 "show_axis_x": render_floor_grid,
                 "show_axis_y": render_floor_grid
             })
-            preset["display_options"]["shading"]["type"] = shader_mode
+            preset["display_options"]["shading"] = viewport_data
         with maintained_time():
             path = capture(**preset)
 

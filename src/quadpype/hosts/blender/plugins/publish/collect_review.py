@@ -43,7 +43,7 @@ class CollectReview(plugin.BlenderInstancePlugin):
         focal_length = cameras[0].data.lens
 
         # get isolate objects list from meshes instance members.
-        types = {"MESH", "GPENCIL"}
+        types = {"MESH", "GREASEPENCIL", "GPENCIL"}
         isolate_objects = [
             obj
             for obj in datablock.all_objects
