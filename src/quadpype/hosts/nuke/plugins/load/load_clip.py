@@ -40,6 +40,11 @@ from quadpype.hosts.nuke.api.backdrops import (
     get_nodes_in_backdrops,
     generate_qp_knobs_for_legacy
 )
+from quadpype.hosts.nuke.api.backdrop_organizer import(
+    delete,
+    organize,
+    update
+)
 from quadpype.hosts.nuke.api.constants import (
     COLOR_GREEN,
     COLOR_RED
@@ -140,6 +145,7 @@ class LoadClip(plugin.NukeLoader):
         """
         settings = get_project_settings(get_current_project_name()).get("nuke")
         use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
+        use_legacy_backdrop = settings["general"].get("use_legacy_backdrop", True)
 
         representation = context["representation"]
         # reset container id so it is always unique for each instance
@@ -160,7 +166,9 @@ class LoadClip(plugin.NukeLoader):
         add_retime = options.get("add_retime", self.defaults["add_retime"])
         ext = context["representation"]["context"]["ext"].lower()
         pre_comp = options.get("pre_comp", self.defaults["pre_comp"])
-
+        create_stamps = options.get("create_stamps", self.defaults["create_stamps"])
+        prep_layers = options.get("prep_layers", self.defaults["prep_layers"])
+        subset_group = context["subset"]["data"].get("subsetGroup", False)
         self.get_load_settings(ext)
 
         if ext in PREP_LAYER_EXR_EXT:
@@ -170,12 +178,12 @@ class LoadClip(plugin.NukeLoader):
 
         options["start_at_workfile"] = start_at_workfile
         options["add_retime"] = add_retime
-        options["prep_layers"] = options.get("prep_layers", self.defaults["prep_layers"])
-        options["create_stamps"] = options.get("create_stamps", self.defaults["create_stamps"])
+        options["prep_layers"] = prep_layers
+        options["create_stamps"] = create_stamps
         options["pre_comp"] = pre_comp
         options["is_prep_layer_compatible"] = ext in (set(PREP_LAYER_PSD_EXT) | set(PREP_LAYER_EXR_EXT))
         options["ext"] = ext
-        options["subset_group"] = context["subset"]["data"].get("subsetGroup")
+        options["subset_group"] = subset_group
 
         version = context['version']
         version_data = version.get("data", {})
@@ -220,6 +228,8 @@ class LoadClip(plugin.NukeLoader):
                                                               node_type="Read",
                                                               class_name = self.__class__.__name__)
 
+        context["unique_number"] = unique_number
+
         # Create the Loader with the filename path set
         read_node = nuke.createNode(
             "Read",
@@ -230,12 +240,12 @@ class LoadClip(plugin.NukeLoader):
         # to avoid multiple undo steps for rest of process
         # we will switch off undo-ing
         with viewer_update_and_undo_stop():
-            if use_backdrop:
+            if use_backdrop and use_legacy_backdrop:
                 nodes_in_main_backdrops = pre_organize_by_backdrop()
 
             read_node["file"].setValue(filepath)
 
-            if use_backdrop:
+            if use_backdrop and use_legacy_backdrop:
                 read_node["xpos"].setValue(-100000)
                 read_node["ypos"].setValue(-100000)
 
@@ -277,7 +287,7 @@ class LoadClip(plugin.NukeLoader):
 
             read_node["tile_color"].setValue(int(COLOR_GREEN, 16))
             storage_backdrop = None
-            if use_backdrop:
+            if use_backdrop and use_legacy_backdrop:
                 try:
                     nodes_before = list(nuke.allNodes())
                     main_backdrop, storage_backdrop, subset_group, nodes = organize_by_backdrop(
@@ -294,6 +304,12 @@ class LoadClip(plugin.NukeLoader):
                     nuke.delete(read_node)
                     raise Exception(f"No template found in loader for "
                                     f"{context['representation']['context']['task']['name']}")
+
+            if use_backdrop and not use_legacy_backdrop:
+                if not subset_group:
+                    organize.representation(read_node, options, context)
+                else:
+                    organize.renderlayer_representation(read_node, options, context)
 
             if add_retime and version_data.get("retime", None):
                 self._make_retimes(read_node, version_data)
@@ -377,6 +393,7 @@ class LoadClip(plugin.NukeLoader):
         """
         settings = get_project_settings(get_current_project_name()).get("nuke")
         use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
+        use_legacy_backdrop = settings["general"].get("use_legacy_backdrop", True)
 
         is_sequence = len(representation["files"]) > 1
 
@@ -430,19 +447,20 @@ class LoadClip(plugin.NukeLoader):
         options = ast.literal_eval(container.get("options"))
         prep_layers = options.get("prep_layers", False)
         is_prep_layer_compatible = options.get("is_prep_layer_compatible", False)
+        subset_group = options.get("subset_group", None)
         ext = options.get("ext", None)
         self.get_load_settings(ext)
         old_layers = dict()
         new_layers = dict()
-        if is_prep_layer_compatible:
-            old_layers = get_layers(read_node, ext)
-            read_node["file"].setValue(filepath)
-            new_layers = get_layers(read_node, ext)
-
-            if prep_layers:
-                if not compare_layers(old_layers, new_layers, ask_proceed=ask_proceed):
-                    read_node["file"].setValue(old_file)
-                    return
+        if use_backdrop and use_legacy_backdrop:
+            if is_prep_layer_compatible:
+                old_layers = get_layers(read_node, ext)
+                read_node["file"].setValue(filepath)
+                new_layers = get_layers(read_node, ext)
+                if prep_layers:
+                    if not compare_layers(old_layers, new_layers, ask_proceed=ask_proceed):
+                        read_node["file"].setValue(old_file)
+                        return
 
         # Get unique name and number
         unique_number = container.get("unique_number", None)
@@ -456,13 +474,26 @@ class LoadClip(plugin.NukeLoader):
         else:
             self.log.warning("Already there, no renaming")
 
-        read_node["file"].setValue(filepath)
-
         # to avoid multiple undo steps for rest of process
         # we will switch off undo-ing
         with viewer_update_and_undo_stop():
-            if use_backdrop:
+            if use_backdrop and use_legacy_backdrop:
+                read_node["file"].setValue(filepath)
                 update_by_backdrop(container, old_layers, new_layers, ask_proceed=False)
+
+            elif use_backdrop and not use_legacy_backdrop:
+                if not subset_group:
+                    succeed = update.representation(read_node, options, filepath)
+                else:
+                    succeed = update.renderlayer_representation(read_node, options, filepath)
+
+                if not succeed:
+                    self.log.info("Update aborted.")
+                    return
+
+            else:
+                read_node["file"].setValue(filepath)
+
             self.set_colorspace_to_node(
                 read_node, filepath, version_doc, representation)
 
@@ -543,21 +574,32 @@ class LoadClip(plugin.NukeLoader):
 
     def remove(self, container):
         read_node = container["node"]
+        subset_group = container.get("subset_group", None)
         assert read_node.Class() == "Read", "Must be Read"
 
         settings = get_project_settings(get_current_project_name()).get("nuke")
         use_backdrop = settings["general"].get("use_backdrop_loader_creator", True)
+        use_legacy_backdrop = settings["general"].get("use_legacy_backdrop", True)
 
-        main_backdrop = None
         with viewer_update_and_undo_stop():
-            if use_backdrop:
-                storage_backdrop = nuke.toNode(container["storage_backdrop"])
-                main_backdrop = container["main_backdrop"]
-                members = get_nodes_in_backdrops(storage_backdrop)
-                nuke.delete(storage_backdrop)
-            else:
+            if not use_backdrop:
                 members = self.get_members(read_node)
                 nuke.delete(read_node)
+                for member in members:
+                    nuke.delete(member)
+                return
+
+            if use_backdrop and not use_legacy_backdrop:
+                if not subset_group:
+                    delete.representation(read_node)
+                else:
+                    delete.renderlayer_representation(read_node)
+                return
+
+            storage_backdrop = nuke.toNode(container["storage_backdrop"])
+            main_backdrop = container.get("main_backdrop", None)
+            members = get_nodes_in_backdrops(storage_backdrop)
+            nuke.delete(storage_backdrop)
             for member in members:
                 nuke.delete(member)
             if main_backdrop:
