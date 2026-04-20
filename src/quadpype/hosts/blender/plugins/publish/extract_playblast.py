@@ -84,13 +84,16 @@ class ExtractPlayblast(
                 self.log.warning("Shading mode set to RENDERED, impossible for playblast, auto switch to MATERIAL")
                 viewport_data["type"] = "MATERIAL"
 
+        else:
+            viewport_data = {"type":shader_mode}
+
         if render_mode == "BLENDER_WORKBENCH" and (shader_mode == "MATERIAL" or viewport_data.get("type") == "MATERIAL"):
             viewport_data = {"type":"SOLID",
                              "light":"FLAT",
                              "color_type": "TEXTURE"}
 
-        else:
-            viewport_data = {"type":shader_mode}
+        self.log.warning(viewport_data)
+        self.log.warning(shader_mode)
 
         # get isolate objects list
         isolate = instance.data("isolate", None)

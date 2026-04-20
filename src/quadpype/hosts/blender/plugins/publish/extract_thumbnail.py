@@ -60,12 +60,13 @@ class ExtractThumbnail(plugin.BlenderExtractor):
                 self.log.warning("Shading mode set to RENDERED, impossible for playblast, auto switch to MATERIAL")
                 viewport_data["type"] = "MATERIAL"
 
+        else:
+            viewport_data = {"type":shader_mode}
+
         if render_mode == "BLENDER_WORKBENCH" and (shader_mode == "MATERIAL" or viewport_data.get("type") == "MATERIAL"):
             viewport_data = {"type":"SOLID",
                              "light":"FLAT",
                              "color_type": "TEXTURE"}
-        else:
-            viewport_data = {"type":shader_mode}
 
         start = creator_attributes.get("frameStart", bpy.context.scene.frame_start)
         family = instance.data.get("family")
