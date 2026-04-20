@@ -398,7 +398,8 @@ class LoadClip(plugin.NukeLoader):
         is_sequence = len(representation["files"]) > 1
 
         read_node = container["node"]
-        generate_qp_knobs_for_legacy(read_node)
+        if use_legacy_backdrop:
+            generate_qp_knobs_for_legacy(read_node)
         old_file = read_node["file"].value()
 
         if is_sequence:
