@@ -92,9 +92,6 @@ class ExtractPlayblast(
                              "light":"FLAT",
                              "color_type": "TEXTURE"}
 
-        self.log.warning(viewport_data)
-        self.log.warning(shader_mode)
-
         # get isolate objects list
         isolate = instance.data("isolate", None)
 
