@@ -139,7 +139,9 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCa
             return current_asset
 
         current_project_asset_pointer = get_assets(self.get_current_project_name())
-        project_assets = [a["name"] for a in current_project_asset_pointer if a["data"]["tasks"]]
+        current_task = self.get_current_task_name()
+
+        project_assets = [a["name"] for a in current_project_asset_pointer if a["data"]["tasks"].get(current_task)]
 
         parts = os.path.normpath(current_file).split(os.sep)
         found_asset = next((f for f in project_assets if f in parts), None)
