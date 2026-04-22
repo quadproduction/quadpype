@@ -12,7 +12,6 @@ from quadpype.settings import get_project_settings
 from quadpype.pipeline.anatomy import Anatomy
 from quadpype.hosts.aftereffects import api
 from quadpype.hosts.aftereffects.api.lib import get_unique_number
-from quadpype.hosts.aftereffects.api.automate import import_file_dialog_clic
 from quadpype.widgets.message_window import Window
 
 from quadpype.widgets.message_notification import notify_message
@@ -293,6 +292,8 @@ class FileLoader(api.AfterEffectsLoader):
         return auto_clic_thread
 
     def launch_auto_click(self, tries, file_name):
+        # Separated import to avoid errors if asked libraries are missing with autoclic deactivated
+        from quadpype.hosts.aftereffects.api.automate import import_file_dialog_clic
         time.sleep(.5)
         for _ in range(tries):
             success = import_file_dialog_clic(file_name)

@@ -6,14 +6,15 @@ from quadpype.pipeline import (
 from quadpype.lib import (
     BoolDef
 )
-from quadpype.pipeline import get_current_project_name
-from quadpype.settings import get_project_settings
+
+from quadpype.settings import get_project_settings, get_current_project_settings
 from quadpype.hosts.nuke import api as napi
 from quadpype.hosts.nuke.api.plugin import exposed_write_knobs
 from quadpype.hosts.nuke.api.backdrops import (
     pre_organize_by_backdrop,
     organize_by_backdrop
 )
+from quadpype.hosts.nuke.api.backdrop_organizer import organize
 
 class CreateWritePrerender(napi.NukeWriteCreator):
     identifier = "create_write_prerender"
@@ -85,15 +86,17 @@ class CreateWritePrerender(napi.NukeWriteCreator):
         return created_node
 
     def create(self, subset_name, instance_data, pre_create_data):
-        settings = get_project_settings(get_current_project_name()).get("nuke")
+        settings = get_current_project_settings().get("nuke")
         use_backdrop_general = settings["general"].get("use_backdrop_loader_creator", True)
         use_backdrop = settings["create"]["CreateWritePrerender"].get("use_backdrop_loader_creator", True)
+        use_legacy_backdrop = settings["general"].get("use_legacy_backdrop", True)
+
         backdrop_padding = settings["create"]["CreateWritePrerender"].get("backdrop_padding", 150)
 
         nodes_in_main_backdrops = []
-        if use_backdrop and use_backdrop_general:
+        if use_backdrop and use_backdrop_general and use_legacy_backdrop:
             nodes_in_main_backdrops = pre_organize_by_backdrop()
-            
+
         # pass values from precreate to instance
         self.pass_pre_attributes_to_instance(
             instance_data,
@@ -127,8 +130,8 @@ class CreateWritePrerender(napi.NukeWriteCreator):
             self._add_instance_to_context(instance)
 
             imprint_data = instance.data_to_store()
-            
-            if use_backdrop and use_backdrop_general:
+
+            if use_backdrop and use_backdrop_general and use_legacy_backdrop:
                 main_backdrop, storage_backdrop, subset_group, nodes = organize_by_backdrop(
                     data=dict(instance.data),
                     node=instance_node,
@@ -138,6 +141,9 @@ class CreateWritePrerender(napi.NukeWriteCreator):
                 )
                 imprint_data["main_backdrop"] = main_backdrop.name()
                 imprint_data["storage_backdrop"] = storage_backdrop.name()
+
+            if use_backdrop and use_backdrop_general and not use_legacy_backdrop:
+                organize.publish(instance_node, dict(instance.data))
 
             napi.set_node_data(
                 instance_node,

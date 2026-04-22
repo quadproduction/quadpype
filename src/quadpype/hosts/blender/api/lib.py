@@ -1183,14 +1183,33 @@ def get_containers_from_selected():
 
     return list(containers)
 
+def get_scene_engine():
+    scene = bpy.context.scene
+    return scene.render.engine
 
 def get_viewport_shading():
     try:
         window = bpy.data.window_managers[0].windows[0]
-        area = next(iter(area for area in window.screen.areas if area.type == "VIEW_3D"))
-        return area.spaces[0].shading.type
+        area = next(area for area in window.screen.areas if area.type == "VIEW_3D")
+        shading = area.spaces[0].shading
+
+        result = {}
+        for attr in dir(shading):
+            if attr.startswith("_") or callable(getattr(shading, attr)):
+                continue
+            try:
+                value = getattr(shading, attr)
+                if value is None:
+                    continue
+                setattr(shading, attr, value)  # test write
+                result[attr] = value
+            except AttributeError:
+                continue
+
+        return result
+
     except StopIteration:
-        return
+        return None
 
 def copy_materials(src, dst):
     if getattr(src, "data", None) is None or getattr(dst, "data", None) is None:

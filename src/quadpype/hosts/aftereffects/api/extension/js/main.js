@@ -229,6 +229,52 @@ function main(websocket_url) {
             });
     });
 
+    RPC.addRoute('AfterEffects.get_original_comp_time', function (data) {
+        log.warn('Server called client route "getOriginalCompTime":', data);
+        return runEvalScript("getOriginalCompTime(" + data.comp_id + ")")
+            .then(function (result) {
+                log.warn("getOriginalCompTime: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.save_comp_image_as_with_dialog', function (data) {
+        log.warn('Server called client route "saveCompImageAsWithDialog":', data);
+        return runEvalScript("saveCompImageAsWithDialog(" + data.comp_id + ", "+ data.frame +")")
+            .then(function (result) {
+                log.warn("saveCompImageAsWithDialog: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.set_comp_time', function (data) {
+        log.warn('Server called client route "setCompTime":', data);
+        return runEvalScript("setCompTime(" + data.comp_id + ", "+ data.frame +")")
+            .then(function (result) {
+                log.warn("setCompTime: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.set_viewer_mode_wire', function (data) {
+        log.warn('Server called client route "setViewerModeWire":', data);
+        return runEvalScript("setViewerModeWire()")
+    });
+
+    RPC.addRoute('AfterEffects.set_viewer_mode_adaptive', function (data) {
+        log.warn('Server called client route "setViewerModeAdaptive":', data);
+        return runEvalScript("setViewerModeAdaptive()")
+    });
+
+    RPC.addRoute('AfterEffects.comp_as_layers', function (data) {
+        log.warn('Server called client route "compHasLayers":', data);
+        return runEvalScript("compHasLayers(" + data.comp_id + ")")
+            .then(function (result) {
+                log.warn("compHasLayers: " + result);
+                return result;
+            });
+    });
+
     RPC.addRoute('AfterEffects.replace_item', function (data) {
         log.warn('Server called client route "replace_item":', data);
         var escapedPath = EscapeStringForJSX(data.path);

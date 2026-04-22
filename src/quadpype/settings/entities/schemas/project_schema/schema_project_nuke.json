@@ -18,6 +18,12 @@
                     "default": true
                 },
                 {
+                    "key": "use_legacy_backdrop",
+                    "type": "boolean",
+                    "label": "Use Legacy Backdrop System",
+                    "default": true
+                },
+                {
                     "type": "boolean",
                     "key": "create_all_project_resolution",
                     "label": "Create All Available Resolution On Startup",

@@ -44,6 +44,7 @@ from .pipeline import (
     list_instances,
     remove_instance
 )
+from quadpype.hosts.nuke.api.backdrop_organizer import delete
 
 class WriteKnobType(Enum):
     FILE_TYPE = {"name":"file_type", "knob":"Enumeration_Knob", "init":True}
@@ -244,8 +245,17 @@ class NukeCreator(Creator):
             )
 
     def remove_instances(self, instances):
+        settings = get_current_project_settings().get("nuke")
+        use_backdrop_general = settings["general"].get("use_backdrop_loader_creator", True)
+        use_backdrop = settings["create"]["CreateWriteImage"].get("use_backdrop_loader_creator", True)
+        use_legacy_backdrop = settings["general"].get("use_legacy_backdrop", True)
+
         for instance in instances:
-            remove_instance(instance)
+            if use_backdrop and use_backdrop_general and not use_legacy_backdrop:
+                instance_node = instance.transient_data["node"]
+                delete.publish(instance_node)
+            else :
+                remove_instance(instance)
             self._remove_instance_from_context(instance)
 
     def get_pre_create_attr_defs(self):

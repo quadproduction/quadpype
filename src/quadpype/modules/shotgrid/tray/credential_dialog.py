@@ -156,6 +156,7 @@ class CredentialsDialog(QtWidgets.QDialog):
             login=login
         )
         os.environ['QUADPYPE_SG_USER'] = login
+        os.environ['QUADPYPE_SG_PSD'] = password
         self._on_login()
 
         self.set_error("CANT LOGIN")

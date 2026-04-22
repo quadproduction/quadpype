@@ -38,6 +38,7 @@ class RenderCreator(Creator):
 
     # Settings
     mark_for_review = True
+    extract_psd = False
     set_frames_create = True
     set_resolution_create = True
 
@@ -202,6 +203,20 @@ class RenderCreator(Creator):
                     label="Resolution",
                 )
             )
+
+        output.extend([
+            UISeparatorDef(),
+            BoolDef(
+                "extract_psd",
+                label="Extract PSD",
+                default=False
+            ),
+            BoolDef(
+                "bypass_classic_render",
+                label="ByPass Classic Render",
+                default=False
+            )
+        ])
 
         return output
 

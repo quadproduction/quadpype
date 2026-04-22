@@ -106,6 +106,29 @@ def load_credentials() -> Tuple[str, str]:
         user_registry.get_item("password", None)
     )
 
+def get_kitsu_user_id(login=None, password=None, kitsu_url=None):
+    if kitsu_url is None:
+        kitsu_url = os.getenv("KITSU_SERVER")
+        if not kitsu_url:
+            raise ValueError(f"No Kitsu URL Found, instead: {kitsu_url}")
+    if login is None:
+        login = os.getenv("KITSU_LOGIN")
+        if not login:
+            raise ValueError(f"No Kitsu Login Found, instead:{login}")
+    if password is None:
+        password = os.getenv("KITSU_PWD")
+        if not password:
+            raise ValueError(f"No Kitsu Password Found, instead:{password}")
+
+    validate_host(kitsu_url)
+    # Authenticate
+    try:
+        gazu.log_in(login, password)
+    except gazu.exception.AuthFailedException:
+        return False
+    user = gazu.person.get_person_by_email(os.environ["KITSU_LOGIN"])
+    gazu.log_out()
+    return user["id"]
 
 def set_credentials_envs(login: str, password: str):
     """Set environment variables with Kitsu login and password.

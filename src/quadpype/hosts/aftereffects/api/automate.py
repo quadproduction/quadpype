@@ -13,8 +13,12 @@ ONLY_LETTERS_REGEX = r'[^a-zA-Z]'
 TRIES = 5
 DEFAULT_WAITING_TIME = 0.1
 
-IMPORT_FILE = "Importer fichier"
-IMPORT = "Importer sous :"
+IMPORT_FILE = ["Importer fichier", "Import File"]
+IMPORT = ["Importer sous :", "Import As:"]
+
+EXPORT_FILE = ["Enregistrer sous", "Save as"]
+ADDRESS_BAR_CLASS = "ToolbarWindow32"
+ADDRESS_BAR_PREFIX = "Adresse :"
 
 
 def try_several_times(function):
@@ -50,9 +54,16 @@ def wait_after(time_to_wait):
 
 
 @try_several_times
-def find_window_by_title(window_name):
-    return win32gui.FindWindow(None, window_name)
+def find_window_by_title(window_names):
+    if isinstance(window_names, str):
+        window_names = [window_names]
 
+    for name in window_names:
+        hwnd = win32gui.FindWindow(None, name)
+        if hwnd:
+            return hwnd
+
+    return None
 
 @try_several_times
 def find_window_by_partial_title(partial_title):
@@ -71,7 +82,7 @@ def find_window_by_partial_title(partial_title):
     return result['hwnd']
 
 
-@wait_after(DEFAULT_WAITING_TIME)
+@wait_after(DEFAULT_WAITING_TIME*2)
 def force_foreground_window(hwnd):
     try:
         if not win32gui.IsWindow(hwnd):
@@ -95,13 +106,18 @@ def _pass_filter(hwnd, class_name, text):
     """ Filter retrieved windows handle with class name and text.
     We only keep letters from texts as specific characters (like special whitespaces) may be used in ui.
     """
-    given_text = re.sub(ONLY_LETTERS_REGEX, '', text) if text else None
-    element_text = re.sub(ONLY_LETTERS_REGEX, '', win32gui.GetWindowText(hwnd)) if text else None
+    if isinstance(class_name, str):
+        class_name = [class_name]
+    if isinstance(text, str):
+        text = [text]
 
-    return (
-        (not class_name or win32gui.GetClassName(hwnd) == class_name) and
-        (not text or given_text == element_text)
-    )
+    element_class = win32gui.GetClassName(hwnd)
+    element_text = re.sub(ONLY_LETTERS_REGEX, '', win32gui.GetWindowText(hwnd))
+
+    class_ok = (not class_name or any(element_class == c for c in class_name))
+    text_ok = (not text or any(re.sub(ONLY_LETTERS_REGEX, '', t) == element_text for t in text))
+
+    return class_ok and text_ok
 
 
 def get_controls(hwnd_parent, filter_by_class=None, filter_by_text=None, verbose=False):
@@ -118,6 +134,10 @@ def get_controls(hwnd_parent, filter_by_class=None, filter_by_text=None, verbose
     """
     controls = []
     controls_logs = []
+    if isinstance(filter_by_text, str):
+        filter_by_text = [filter_by_text]
+    if isinstance(filter_by_class, str):
+        filter_by_class = [filter_by_class]
 
     def callback(hwnd, _):
         try:
@@ -220,7 +240,7 @@ def click_on_element(hwnd_list, offset=SMALL_OFFSET):
 
     return True
 
-
+@wait_after(DEFAULT_WAITING_TIME)
 def get_combobox(hwnd_parent, text, verbose=False):
     """ Retrieve combobox in given window based on given text
 
@@ -245,7 +265,7 @@ def get_combobox(hwnd_parent, text, verbose=False):
 
     labels = get_controls(hwnd_parent, filter_by_class="Static", filter_by_text=text, verbose=verbose)
     if not labels:
-        print("Can not find any label in import window.")
+        print(f"Can not find any label {text} in import window.")
         return
 
     if verbose:
@@ -273,10 +293,12 @@ def get_combobox(hwnd_parent, text, verbose=False):
 
 
 @wait_after(DEFAULT_WAITING_TIME)
-def select_item_from_opened_combobox(item_number):
-    for _ in range(item_number):
-        pyautogui.press('down')
-
+def set_combobox_index(combobox_hwnd, index):
+    win32gui.SendMessage(combobox_hwnd, win32con.CB_SETCURSEL, index, 0)
+    parent = win32gui.GetParent(combobox_hwnd)
+    win32gui.SendMessage(parent, win32con.WM_COMMAND,
+                         win32con.CBN_SELCHANGE << 16 | win32gui.GetDlgCtrlID(combobox_hwnd),
+                         combobox_hwnd)
 
 @wait_after(DEFAULT_WAITING_TIME)
 def press_enter_key():
@@ -328,10 +350,8 @@ def import_file_dialog_clic(file_name, verbose=False):
         print(f"Can not find combobox with name '{IMPORT}' in current window.")
         return
 
-    click_on_element(combobox_found)
-    select_item_from_opened_combobox(IMPORT_AS_COMP_OPTION_INDEX)
+    set_combobox_index(combobox_found, IMPORT_AS_COMP_OPTION_INDEX)
 
-    press_enter_key()  # Validate combobox option
     press_enter_key()  # Validate import
 
     # Wait for new window appearance and finalize import
@@ -349,3 +369,144 @@ def import_file_dialog_clic(file_name, verbose=False):
     print("Import ended with success.")
 
     return True
+
+def save_frame_dialog_clic(output_folder: str, file_name: str, verbose: bool = False, init_path: bool = False) -> bool:
+    """
+    Populates the After Effects "Save As" dialog box.
+
+    Args:
+        output_folder: Absolute path to the destination folder
+        file_name: File name without extension
+        verbose: Displays details of found controls
+        init_path: Initializes the export path only once
+    """
+    print(f"save_frame_dialog_clic | folder: {output_folder} | file: {file_name}")
+
+    ae_export_window = find_window_by_title(EXPORT_FILE)
+    if not ae_export_window:
+        print(f"Unable to find the window {EXPORT_FILE}.")
+        return False
+
+    if not force_foreground_window(ae_export_window):
+        print("It is impossible to bring the window to the foreground.")
+        return False
+
+    if init_path:
+        if not set_address_bar_text(ae_export_window, str(output_folder)):
+            print("Address bar not found.")
+            return False
+
+    filename_edit = _get_filename_edit(ae_export_window, verbose=verbose)
+    if not filename_edit:
+        print("Field 'File name' not found.")
+        return False
+
+    set_filename_and_validate(filename_edit, file_name)
+
+    press_enter_key()
+    return True
+
+@wait_after(DEFAULT_WAITING_TIME)
+def set_address_bar_text(parent_hwnd, path):
+    address_bar = _find_address_bar(parent_hwnd)
+    edit_hwnd = _find_edit_from_address_bar(address_bar)
+    if not edit_hwnd:
+        print("Edit not found")
+        return False
+
+    win32gui.SendMessage(edit_hwnd, win32con.WM_SETTEXT, 0, path)
+    win32gui.SendMessage(edit_hwnd, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)
+    win32gui.SendMessage(edit_hwnd, win32con.WM_KEYUP, win32con.VK_RETURN, 0)
+    parent = win32gui.GetParent(edit_hwnd)
+    win32gui.SendMessage(parent, win32con.WM_COMMAND,
+                         win32con.CBN_SELCHANGE << 16 | win32gui.GetDlgCtrlID(edit_hwnd),
+                         edit_hwnd)
+    return True
+
+def _find_edit_from_address_bar(address_bar_hwnd):
+    """
+    Hierarchy:
+    [0x15151c] Address Band Root
+        [0x2615ca] Breadcrumb Parent
+            [0x851818] ToolbarWindow32  ← address_bar_hwnd
+            [0x1f12bc] ToolbarWindow32  ← Address band
+        [0xad11fa] ComboBoxEx32
+            [0xee13e4] ComboBox
+                [0xdf1cf4] Edit         ← target
+    """
+    address_band_root = win32gui.GetParent(address_bar_hwnd)
+    address_band_root = win32gui.GetParent(address_band_root)
+
+    result = []
+
+    def callback(hwnd, _):
+        if win32gui.GetClassName(hwnd) == "Edit":
+            result.append(hwnd)
+            return False
+        return True
+
+    try:
+        win32gui.EnumChildWindows(address_band_root, callback, None)
+    except win32gui.error:
+        pass
+
+    return result[0] if result else None
+
+def _find_address_bar(parent_hwnd):
+    result = []
+    def callback(hwnd, _):
+        if win32gui.GetClassName(hwnd) == ADDRESS_BAR_CLASS:
+            title = win32gui.GetWindowText(hwnd)
+            normalized = title.replace("\xa0", " ")
+            if normalized.startswith(ADDRESS_BAR_PREFIX):
+                result.append(hwnd)
+                return False
+        return True
+
+    try:
+        win32gui.EnumChildWindows(parent_hwnd, callback, None)
+    except win32gui.error:
+        pass
+
+    return result[0] if result else None
+
+def _get_filename_edit(hwnd_parent, verbose=False):
+    """
+    Returns the largest visible and enabled Edit window.
+    """
+    edits = []
+
+    def callback(hwnd, _):
+        if win32gui.GetClassName(hwnd) != "Edit":
+            return True
+        if not win32gui.IsWindowVisible(hwnd):
+            return True
+        if not win32gui.IsWindowEnabled(hwnd):
+            return True
+        rect  = win32gui.GetWindowRect(hwnd)
+        width = rect[2] - rect[0]
+        edits.append((hwnd, width))
+        return True
+
+    win32gui.EnumChildWindows(hwnd_parent, callback, None)
+
+    if not edits:
+        return None
+
+    edits.sort(key=lambda e: e[1], reverse=True)
+
+    if verbose:
+        for h, w in edits:
+            print(f"Edit : width={w} | rect={win32gui.GetWindowRect(h)}")
+
+    return edits[0][0]
+
+@wait_after(DEFAULT_WAITING_TIME)
+def set_filename_and_validate(edit_hwnd, filename):
+    win32gui.SendMessage(edit_hwnd, win32con.WM_SETTEXT, 0, filename)
+    parent = win32gui.GetParent(edit_hwnd)
+    ctrl_id = win32gui.GetDlgCtrlID(edit_hwnd)
+    win32gui.SendMessage(parent, win32con.WM_COMMAND,
+                         win32con.EN_CHANGE << 16 | ctrl_id,
+                         edit_hwnd)
+    press_enter_key()

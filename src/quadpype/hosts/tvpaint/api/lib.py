@@ -54,9 +54,17 @@ def parse_layers_data(data, only_names=False):
                 frame_start, frame_end, prelighttable, postlighttable,
                 selected, editable, sencil_state, is_current
             ) = layer_raw.split("|")
+
+            # Changes made in tvpp 12
+            group_info = [int(x) for x in group_id.split()]
+            group_id_int = group_info[0]
+            group_id_color = []
+            if len(group_info) > 0:
+                group_id_color = group_info[1:]
+
             layer = {
                 "layer_id": int(layer_id),
-                "group_id": int(group_id),
+                "group_id": int(group_id_int),
                 "visible": visible == "ON",
                 "position": int(position),
                 "opacity": get_layer_opacity(layer_id),

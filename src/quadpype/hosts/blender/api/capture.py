@@ -194,7 +194,7 @@ def restore_global_view(window):
     Blender currently does not exit localview when closing windows.
     """
 
-    types = {"MESH", "GPENCIL"}
+    types = {"MESH", "GREASEPENCIL", "GPENCIL"}
     objects = [obj for obj in window.scene.objects if obj.type in types]
 
     context = create_blender_context(selected=objects, window=window)
@@ -220,7 +220,7 @@ def applied_view(window, camera, isolate=None, options=None, offset=0.2):
     area.type = "VIEW_3D"
     space = area.spaces[0]
 
-    types = {"MESH", "GPENCIL"}
+    types = {"MESH", "GREASEPENCIL", "GPENCIL"}
     objects = [obj for obj in window.scene.objects if obj.type in types]
     background_image = None
     if camera == "AUTO":

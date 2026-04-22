@@ -648,9 +648,13 @@ class LauncherModel(QtCore.QObject):
             for task_data in asset_tasks.values():
                 task_assignees = set()
                 _task_assignees = task_data.get("assignees")
+                _task_assignees = task_data.get("zou", {}).get("assignees")
                 if _task_assignees:
                     for assignee in _task_assignees:
-                        task_assignees.add(assignee["username"])
+                        if isinstance(assignee, dict):
+                            task_assignees.add(assignee.get("username", ""))
+                        else:
+                            task_assignees.add(assignee)
 
                 task_type = task_data.get("type")
                 if task_assignees:
@@ -787,6 +791,8 @@ class LauncherTasksProxyModel(TasksProxyModel):
 
         if self._assignee_filter:
             assignee = model.data(source_index, TASK_ASSIGNEE_ROLE)
+            if not assignee:
+                return False
             if not self._assignee_filter.intersection(assignee):
                 return False
         return True

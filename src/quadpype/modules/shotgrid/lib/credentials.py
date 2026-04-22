@@ -123,3 +123,7 @@ def check_credentials(
     except AuthenticationFault:
         return False
     return True
+
+def get_shotgrid_user_id():
+    #ToDo
+    return None
