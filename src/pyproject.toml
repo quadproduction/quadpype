@@ -123,6 +123,7 @@ enlighten = "*"  # cool terminal progress bars
 toml = "^0.10.2" # for parsing pyproject.toml
 pre-commit = "*"
 virtualenv = "^20.24.6"
+paramiko = "3.5.1"
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/quad/quadpype/issues"
