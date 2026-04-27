@@ -34,6 +34,23 @@
                 "_INSIDE_QUADPYPE_TOOL": "1"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "custom_pre",
+            "type": "shell",
+            "command": "${workspaceFolder}/src/.venv/Scripts/python.exe",
+            "args": [
+                "${workspaceFolder}/src/tools/_lib/run/pre_run.py",
+                "-m", "mongodb+srv://username:password@your-cluster-url.com/"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "env": {
+                "PYTHONUNBUFFERED": "1",
+                "_INSIDE_QUADPYPE_TOOL": "1"
+            },
+            "problemMatcher": []
         }
     ]
 }
