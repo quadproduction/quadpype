@@ -23,7 +23,8 @@
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/src",
             "justMyCode": false,
-            "args": ["tray", "--debug", "--additional-env-file", "${workspaceFolder}/src/tools/.env"]
+            "args": ["tray", "--debug", "--additional-env-file", "${workspaceFolder}/src/tools/.env"],
+            "preLaunchTask": "custom_pre"
         },
         {
             "name": "dev_pre",
