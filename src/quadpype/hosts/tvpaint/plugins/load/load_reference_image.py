@@ -1,4 +1,5 @@
 import collections
+import math
 
 from quadpype.lib.attribute_definitions import BoolDef
 from quadpype.pipeline import (
@@ -9,6 +10,8 @@ from quadpype.hosts.tvpaint.api import plugin
 from quadpype.hosts.tvpaint.api.lib import (
     get_layers_data,
     execute_george_through_file,
+    correct_pixel_ratio_after_stretch_load,
+    is_image_larger_than_project
 )
 from quadpype.hosts.tvpaint.api.pipeline import (
     write_workfile_metadata,
@@ -69,9 +72,10 @@ class LoadImage(plugin.Loader):
         stretch = options.get("stretch", self.defaults["stretch"])
         timestretch = options.get("timestretch", self.defaults["timestretch"])
         preload = options.get("preload", self.defaults["preload"])
+        path = self.filepath_from_context(context).replace("\\", "/")
 
         load_options = []
-        if stretch:
+        if stretch or is_image_larger_than_project(path):
             load_options.append("\"STRETCH\"")
         if timestretch:
             load_options.append("\"TIMESTRETCH\"")
@@ -87,7 +91,6 @@ class LoadImage(plugin.Loader):
         subset_name = context["subset"]["name"]
         layer_name = self.get_unique_layer_name(asset_name, subset_name, LOADED_ICON)
 
-        path = self.filepath_from_context(context).replace("\\", "/")
 
         # Fill import script with filename and layer name
         # - filename mus not contain backwards slashes
@@ -114,6 +117,9 @@ class LoadImage(plugin.Loader):
             raise AssertionError(
                 "Loading probably failed during execution of george script."
             )
+
+        if stretch or is_image_larger_than_project(path):
+            correct_pixel_ratio_after_stretch_load(loaded_layer["layer_id"], path)
 
         layer_names = [loaded_layer["name"]]
         namespace = namespace or layer_name
