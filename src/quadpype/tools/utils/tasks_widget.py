@@ -130,12 +130,17 @@ class TasksModel(QtGui.QStandardItemModel):
         session = copy.deepcopy(self.dbcon.Session)
 
         use_icons = False
+        display_short_name_tasks = None
         if session["AVALON_PROJECT"]:
             settings = get_project_settings(session["AVALON_PROJECT"])
+            global_settings = settings.get("global", {})
+
             if hasattr(self, "_launcher_model"):
-                use_icons = settings["global"].get("launcher", {}).get("use_icons", False)
+                use_icons = global_settings.get("launcher", {}).get("use_icons", False)
             else:
-                use_icons = settings["global"].get("tools", {}).get("Workfiles", {}).get("use_icons", False)
+                use_icons = global_settings.get("tools", {}).get("Workfiles", {}).get("use_icons", False)
+
+            display_short_name_tasks = global_settings.get('launcher', {}).get('display_short_name_tasks', True)
 
         entities_data = list()
         for task_name, task_info in asset_tasks.items():
@@ -156,7 +161,12 @@ class TasksModel(QtGui.QStandardItemModel):
                 if username:
                     task_assignees.add(username)
 
-            label = "{} ({})".format(task_name, task_type or "type N/A")
+            label = f"{task_name}"
+            if display_short_name_tasks:
+                label += " ({})".format(
+                    task_type or "type N/A"
+                )
+
             item = QtGui.QStandardItem(label)
             item.setData(task_name, TASK_NAME_ROLE)
             item.setData(task_type, TASK_TYPE_ROLE)
