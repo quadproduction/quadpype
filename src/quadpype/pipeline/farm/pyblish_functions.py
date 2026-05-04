@@ -252,6 +252,9 @@ def create_skeleton_instance(
     if data.get("renderlayer"):
         instance_skeleton_data["renderlayer"] = data["renderlayer"]
 
+    if data["kitsu_status_shortname"]:
+        instance_skeleton_data["kitsu_status_shortname"] = data["kitsu_status_shortname"]
+
     # skip locking version if we are creating v01
     instance_version = data.get("version")  # take this if exists
     if instance_version != 1:
