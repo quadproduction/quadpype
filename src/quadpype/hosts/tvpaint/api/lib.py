@@ -2,6 +2,8 @@ import os
 import logging
 import tempfile
 from pathlib import Path
+import math
+from PIL import Image
 
 from quadpype.hosts.tvpaint.api import communication_server
 
@@ -746,3 +748,32 @@ def transform_layer(layer_id, scale_x, scale_y, pos_x, pos_y):
 
 def show_warning(msg):
     execute_george_through_file(f"tv_warn \"{msg}\"")
+
+def correct_pixel_ratio_after_stretch_load(layer_id, path):
+    """Since the correct pixel ratio is not available through george script,
+    we must calculate and emulate it by resize"""
+
+    project_width, project_height = get_project_size()
+    position_x = math.ceil(project_width / 2)
+    position_y = math.ceil(project_height / 2)
+
+    img = Image.open(path)
+    width, height = img.size
+
+    ration_img = width / height
+
+    if project_width >= project_height:
+        final_width = ration_img * project_height
+        resize_percent = 100 * final_width / project_width
+        transform_layer(layer_id, resize_percent, 100, position_x, position_y)
+
+    else:
+        final_height = project_width / ration_img
+        resize_percent = 100 * final_height / project_height
+        transform_layer(layer_id, 100, resize_percent, position_x, position_y)
+
+def is_image_larger_than_project(path):
+    project_width, project_height = get_project_size()
+    img = Image.open(path)
+    width, height = img.size
+    return width > project_width or height > project_height
