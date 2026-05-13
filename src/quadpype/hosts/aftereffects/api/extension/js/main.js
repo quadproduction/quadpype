@@ -203,6 +203,34 @@ function main(websocket_url) {
             });
     });
 
+    RPC.addRoute('AfterEffects.get_comp_with_inner_layers', function (data) {
+        log.warn('Server called client route "get_comp_with_inner_layers":', data);
+        return runEvalScript("getCompWithInnerLayers(" + data.comp_id + ", " + data.depth + ")")
+            .then(function (result) {
+                log.warn("get_comp_with_inner_layers: " + result);
+                return result;
+            });
+    });
+
+    RPC.addRoute('AfterEffects.select_layers', function (data) {
+    log.warn('Server called client route "select_layers":', data);
+    return runEvalScript("selectLayers(" + JSON.stringify(data.layer_ids) + ", " + data.comp_id + ")")
+        .then(function (result) {
+            log.warn("select_layers: " + result);
+            return result;
+        });
+    });
+
+    RPC.addRoute('AfterEffects.rename_layer', function (data) {
+    log.warn('Server called client route "rename_layer":', data);
+    return runEvalScript("renameLayer(" + data.layer_id + ", " + data.comp_id + ", \"" + data.new_name + "\")")
+        .then(function (result) {
+            log.warn("rename_layer: " + result);
+            return result;
+        });
+    });
+
+
     RPC.addRoute('AfterEffects.import_file', function (data) {
         log.warn('Server called client route "import_file":', data);
         var escapedPath = EscapeStringForJSX(data.path);

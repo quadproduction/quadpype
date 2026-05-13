@@ -235,6 +235,35 @@ class AfterEffectsServerStub():
         self.websocketserver.call(
             self.client.call('AfterEffects.select_items', items=items))
 
+    def select_layers(self, layer_ids, comp_id):
+        """
+            Select layers in a composition by their ids.
+        Args:
+            layer_ids (list): list of layer ids to select
+            comp_id (int): id of the composition
+        """
+        self.websocketserver.call(
+            self.client.call('AfterEffects.select_layers',
+                         layer_ids=layer_ids,
+                         comp_id=comp_id))
+
+
+    def rename_layer(self, layer_id, comp_id, new_name):
+        """
+            Rename a layer in a composition.
+
+        Args:
+            layer_id (int): id of the layer
+            comp_id (int): id of the composition
+            new_name (str): new name for the layer
+        """
+        res = self.websocketserver.call(
+            self.client.call('AfterEffects.rename_layer',
+                         layer_id=layer_id,
+                         comp_id=comp_id,
+                         new_name=new_name))
+        return self._handle_return(res)
+
 
     def get_selected_items(self, comps, folders=False, footages=False):
         """
@@ -344,7 +373,7 @@ class AfterEffectsServerStub():
 
     def get_active_comp_with_inner_layers(self, depth=-1):
         """
-            Get all comps in scene with inner layers.
+            Get active comps in scene with inner layers.
         Args:
             depth (int): Depth of comps to browse. Default value -1 means that we don't put any limit.
         """
@@ -352,6 +381,19 @@ class AfterEffectsServerStub():
             self.client.call('AfterEffects.get_active_comp_with_inner_layers', depth=depth)
         )
         return self._handle_return(res)
+
+    def get_comp_with_inner_layers(self, comp_id, depth=1):
+        """
+            Get comps in scene with inner layers.
+        Args:
+            depth (int): Depth of comps to browse. Default value -1 means that we don't put any limit.
+        """
+
+        res = self.websocketserver.call(
+            self.client.call('AfterEffects.get_comp_with_inner_layers', comp_id=comp_id, depth=depth)
+        )
+        return self._handle_return(res)
+
 
     def import_file(self, path, item_name, import_options=None):
         """

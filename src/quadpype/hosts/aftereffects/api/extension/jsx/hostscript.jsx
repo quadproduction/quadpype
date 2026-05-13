@@ -419,6 +419,50 @@ function getActiveCompWithInnerLayers(depth){
     return JSON.stringify(retrieved_comps);
 }
 
+function getCompWithInnerLayers(comp_id, depth){
+    retrieved_comps = [];
+
+    item = app.project.itemByID(comp_id)
+    if (item instanceof FootageItem || item instanceof FolderItem){ return;  }
+
+    comp = {
+        "name": item.name,
+        "id": item.id,
+        "markers": item.markerProperty.numKeys > 0,
+        "type": "comp",
+        "layers": []
+    };
+
+    retrieved_comps.push(comp);
+    _getInnerLayers(comp, item, depth, 0);
+
+    return JSON.stringify(retrieved_comps);
+}
+
+function selectLayers(layer_ids, comp_id){
+    var comp = app.project.itemByID(comp_id);
+    if (!comp){ return _prepareError("No comp found with id " + comp_id); }
+
+    for (var i = 1; i <= comp.numLayers; i++){
+        var layer = comp.layer(i);
+        layer.selected = (layer_ids.indexOf(layer.id) > -1);
+    }
+}
+
+function renameLayer(layer_id, comp_id, new_name){
+    var comp = app.project.itemByID(comp_id);
+    if (!comp){ return _prepareError("No comp found with id " + comp_id); }
+
+    for (var i = 1; i <= comp.numLayers; i++){
+        var layer = comp.layer(i);
+        if (layer.id === layer_id){
+            layer.name = new_name;
+            return _prepareSingleValue(true);
+        }
+    }
+    return _prepareError("No layer found with id " + layer_id);
+}
+
 function _getInnerLayers(previousComp, item, depth, recursive_level){
     if (depth >= 0 && recursive_level >= depth){ return; }
     recursive_level++;
@@ -1922,7 +1966,6 @@ function assembleShotsInSeqComp(seq_comp_id, shots_data) {
         }
     }
 }
-
 
 function _prepareSingleValue(value){
     return JSON.stringify({"result": value})
