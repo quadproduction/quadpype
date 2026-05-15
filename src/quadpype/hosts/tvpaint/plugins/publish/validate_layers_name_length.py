@@ -52,6 +52,12 @@ class ValidateLayersNameLength(
 
     def process(self, instance):
 
+        project_settings = instance.context.data.get("project_settings", {})
+        active = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("active", True)
+
+        if not active:
+            return
+
         layers_by_name = instance.context.data.get("layersByName", [])
 
         return_dict = {layer_name: layer_data[0]["layer_id"] for layer_name, layer_data in layers_by_name.items() if len(layer_name) > 31}
@@ -68,4 +74,5 @@ class ValidateLayersNameLength(
         if not instance.context.data.get('transientData'):
             instance.context.data['transientData'] = dict()
         instance.context.data['transientData'][self.__class__.__name__] = return_dict
-        raise PublishXmlValidationError(self, msg)
+        detail_lines = [f"- {layer_name}" for layer_name in return_dict.keys()]
+        raise PublishXmlValidationError(self, msg, formatting_data={"layer_names": "<br/>".join(detail_lines)})
