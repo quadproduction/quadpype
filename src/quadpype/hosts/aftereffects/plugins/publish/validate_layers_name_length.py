@@ -70,15 +70,16 @@ class ValidateLayersNameLength(pyblish.api.InstancePlugin):
         return invalid
 
     def process(self, instance):
-        #if not self.is_active(instance.data):
-            #return
+        project_settings = instance.context.data.get("project_settings", {})
+        active = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("active", True)
+
+        if not active:
+            return
 
         stub = get_stub()
         result = stub.get_comp_with_inner_layers(instance.data["comp_id"])
-        self.log.warning(f"Result: {result}")
 
         invalid_layers = self.collect_invalid_layers(result[0]['layers'])
-        self.log.warning(f"Invalid layers: {invalid_layers}")
 
         msg = "\n\nThe layers name are too long:"
 
