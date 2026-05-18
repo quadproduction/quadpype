@@ -1,5 +1,6 @@
 {
     "launcher": {
+        "display_short_name_tasks": false,
         "use_icons": false,
         "workfile_cache_file_path": ""
     },
