@@ -102,13 +102,32 @@ function isEmptyLayer(layer) {
     }
 }
 
+
+function buildLayerIndex(parent, index) {
+    parent = parent || app.activeDocument;
+    index = index || {};
+
+    for (var i = 0; i < parent.layers.length; i++) {
+        var layer = parent.layers[i];
+        index[layer.id] = layer;
+
+        if (layer.typename === "LayerSet") {
+            buildLayerIndex(layer, index);
+        }
+    }
+
+    return index;
+}
+
+
 function areLayersEmptyByIDs(idList) {
     var results = {};
     parsed_layers = JSON.parse(idList);
+    var layerIndex = buildLayerIndex();
 
     for (var i = 0; i < parsed_layers.length; i++) {
         var id = parsed_layers[i];
-        var layer = getLayerByID(id);
+        var layer = layerIndex[id];
 
         if (layer) {
             results[id] = isEmptyLayer(layer);
