@@ -11,12 +11,14 @@ from quadpype.lib import (
     BoolDef,
     NumberDef,
     TextDef,
+    EnumDef,
 )
 from quadpype.settings import PROJECT_SETTINGS_KEY
 
 from quadpype.pipeline import legacy_io, OptionalPyblishPluginMixin
 from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
 from quadpype.pipeline.farm.tools import iter_expected_files
+from quadpype.pipeline.context_tools import _get_modules_manager
 
 from quadpype_modules.deadline import abstract_submit_deadline
 from quadpype_modules.deadline.utils import get_deadline_job_profile, DeadlineDefaultJobAttrs
@@ -197,7 +199,23 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
     @classmethod
     def get_attribute_defs(cls):
         defs = super(BlenderSubmitDeadline, cls).get_attribute_defs()
+
+        # Get deadline pools from Deadline server
+        manager = _get_modules_manager()
+        deadline_module = manager.modules_by_name["deadline"]
+        deadline_url = deadline_module.deadline_urls["default"]
+        pools = deadline_module.get_deadline_pools(deadline_url, cls.log)
+
         defs.extend([
+            EnumDef("pool",
+                    label="Primary Pool",
+                    items=pools,
+                    default=cls.get_job_attr("pool")),
+            EnumDef("pool_secondary",
+                    label="Secondary Pool",
+                    items=pools,
+                    default=cls.get_job_attr("pool_secondary")),
+
             BoolDef("use_published",
                     default=cls.use_published,
                     label="Use Published Scene"),

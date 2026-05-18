@@ -19,8 +19,6 @@ def generate(job_instance, instance, plugin_name, src_filepath, job_suffix):
     job_info.update(job_instance.jobInfo)
 
     job_info.Priority = job_instance.get_job_attr("priority")
-    job_info.Pool = job_instance.get_job_attr("pool")
-    job_info.SecondaryPool = job_instance.get_job_attr("pool_secondary")
     job_info.MachineLimit = job_instance.get_job_attr("limit_machine")
 
     # Always use the original work file name for the Job name even when
@@ -42,6 +40,8 @@ def generate(job_instance, instance, plugin_name, src_filepath, job_suffix):
 
     attr_values = job_instance.get_attr_values_from_data(instance.data)
     job_info.Priority = attr_values.get("priority", job_instance.priority)
+    job_info.Pool = attr_values.get("pool", job_instance.get_job_attr("pool"))
+    job_info.SecondaryPool = attr_values.get("pool_secondary", job_instance.get_job_attr("pool_secondary"))
     job_info.ScheduledType = "Once"
     job_info.JobDelay = attr_values.get("job_delay", job_instance.job_delay)
 
