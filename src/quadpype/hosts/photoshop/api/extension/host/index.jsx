@@ -120,8 +120,6 @@ function areLayersEmptyByIDs(idList) {
     return JSON.stringify(results);
 }
 
-areLayersEmptyByIDs()
-
 function getLayerCenter(layer) {
     var b = layer.bounds;
     var left = b[0].as("px");
