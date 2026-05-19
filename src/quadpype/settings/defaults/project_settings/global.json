@@ -74,8 +74,8 @@
         },
         "ValidateLayersNameLength": {
             "enabled": true,
-            "optional": false,
-            "active": true
+            "active": true,
+            "max_number_characters": 31
         },
 
         "ExtractThumbnail": {

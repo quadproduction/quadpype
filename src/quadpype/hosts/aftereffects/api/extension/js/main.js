@@ -223,7 +223,8 @@ function main(websocket_url) {
 
     RPC.addRoute('AfterEffects.rename_layer', function (data) {
     log.warn('Server called client route "rename_layer":', data);
-    return runEvalScript("renameLayer(" + data.layer_id + ", " + data.comp_id + ", \"" + data.new_name + "\")")
+    var escapedName= EscapeStringForJSX(data.new_name);
+    return runEvalScript("renameLayer(" + data.layer_id + ", " + data.comp_id + ", \"" + escapedName + "\")")
         .then(function (result) {
             log.warn("rename_layer: " + result);
             return result;

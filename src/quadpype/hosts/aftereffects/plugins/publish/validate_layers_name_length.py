@@ -10,7 +10,7 @@ from quadpype.hosts.aftereffects.api import get_stub
 
 class ValidateLayersNameLengthSelect(pyblish.api.Action):
 
-    """Select the layers that have more than 31 characters"""
+    """Select the layers that have more than configured characters numbers allowed"""
 
     label = "Select Layers"
     icon = "mouse-pointer"
@@ -20,10 +20,8 @@ class ValidateLayersNameLengthSelect(pyblish.api.Action):
         data = context.data['transientData'][plugin.__name__]
         invalid_layers = data["layers"]
         comp_id = data["comp_id"]
-        self.log.warning("Action triggered")
         stub = get_stub()
         stub.select_layers([layer['id'] for layer in invalid_layers], comp_id)
-        self.log.warning("select_items called !")
 
         return True
 
@@ -36,6 +34,9 @@ class ValidateLayersNameLengthCutName(pyblish.api.Action):
     on = "failed"
 
     def process(self, context, plugin):
+        project_settings = context.data.get("project_settings", {})
+        max_number_characters = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
+
         data = context.data['transientData'][plugin.__name__]
         invalid_layers = data["layers"]
         comp_id = data["comp_id"]
@@ -43,7 +44,7 @@ class ValidateLayersNameLengthCutName(pyblish.api.Action):
         stub = get_stub()
 
         for layer in invalid_layers:
-            new_name = layer['name'][:31]
+            new_name = layer['name'][:max_number_characters]
             layer_id = layer['id']
             stub.rename_layer(layer_id, comp_id, new_name)
 
@@ -59,14 +60,17 @@ class ValidateLayersNameLength(pyblish.api.InstancePlugin):
     optional = True
     active = True
 
-    def collect_invalid_layers(self, layers):
+    def collect_invalid_layers(self, layers, instance):
+        project_settings = instance.context.data.get("project_settings", {})
+        max_number_characters = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
+
         invalid = []
 
         for layer in layers:
-            if len(layer['name']) > 31:
+            if len(layer['name']) > max_number_characters:
                 invalid.append(layer)
             if layer.get('layers'):
-                invalid += self.collect_invalid_layers(layer['layers'])
+                invalid += self.collect_invalid_layers(layer['layers'], instance)
         return invalid
 
     def process(self, instance):
@@ -79,7 +83,7 @@ class ValidateLayersNameLength(pyblish.api.InstancePlugin):
         stub = get_stub()
         result = stub.get_comp_with_inner_layers(instance.data["comp_id"])
 
-        invalid_layers = self.collect_invalid_layers(result[0]['layers'])
+        invalid_layers = self.collect_invalid_layers(result[0]['layers'], instance)
 
         msg = "\n\nThe layers name are too long:"
 

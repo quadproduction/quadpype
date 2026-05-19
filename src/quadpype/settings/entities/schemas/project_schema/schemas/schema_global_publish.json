@@ -137,12 +137,28 @@
             ]
         },
         {
-            "type": "schema_template",
-            "name": "template_publish_plugin",
-            "template_data": [
+            "type": "dict",
+            "label": "Validate Layers Name Length",
+            "key": "ValidateLayersNameLength",
+            "is_group": true,
+            "checkbox_key": "enabled",
+            "children": [
                 {
-                    "key": "ValidateLayersNameLength",
-                    "label": "Validate Layers Name Length"
+                    "type": "boolean",
+                    "key": "enabled",
+                    "label": "Enabled"
+                },
+                {
+                    "type": "boolean",
+                    "key": "active",
+                    "label": "Active"
+                },
+                {
+                    "key": "max_number_characters",
+                    "label": "Maximum number of characters",
+                    "type": "number",
+                    "minimum": 3,
+                    "maximum": 100
                 }
             ]
         },
