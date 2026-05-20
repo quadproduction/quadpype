@@ -235,7 +235,7 @@ class AfterEffectsServerStub():
         self.websocketserver.call(
             self.client.call('AfterEffects.select_items', items=items))
 
-    def select_layers(self, layer_ids, comp_id):
+    def select_layers_from_comp_id(self, layer_ids, comp_id):
         """
             Select layers in a composition by their ids.
         Args:
@@ -243,7 +243,7 @@ class AfterEffectsServerStub():
             comp_id (int): id of the composition
         """
         self.websocketserver.call(
-            self.client.call('AfterEffects.select_layers',
+            self.client.call('AfterEffects.select_layers_from_comp_id',
                          layer_ids=layer_ids,
                          comp_id=comp_id))
 
@@ -382,7 +382,7 @@ class AfterEffectsServerStub():
         )
         return self._handle_return(res)
 
-    def get_comp_with_inner_layers(self, comp_id, depth=1):
+    def get_comp_with_inner_layers(self, comp_id, depth=-1):
         """
             Get comps in scene with inner layers.
         Args:

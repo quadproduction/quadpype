@@ -439,12 +439,19 @@ function getCompWithInnerLayers(comp_id, depth){
     return JSON.stringify(retrieved_comps);
 }
 
-function selectLayers(layer_ids, comp_id){
+function selectLayersFromCompId(layer_ids, comp_id){
     var comp = app.project.itemByID(comp_id);
     if (!comp){ return _prepareError("No comp found with id " + comp_id); }
+    alert(comp)
+    selectLayersFromComp(layer_ids, comp)
+}
 
+function selectLayersFromComp(layer_ids, comp){
     for (var i = 1; i <= comp.numLayers; i++){
         var layer = comp.layer(i);
+        if (layer.source instanceof CompItem){
+            selectLayersFromComp(layer_ids, layer.source)
+        }
         layer.selected = (layer_ids.indexOf(layer.id) > -1);
     }
 }
