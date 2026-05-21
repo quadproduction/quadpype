@@ -21,11 +21,20 @@ class CollectKitsuStatus(
 
     order = pyblish.api.CollectorOrder + 0.4991
     label = "Kitsu Status"
-    families = ["render", "image", "online", "plate", "kitsu", "review", "shot"]
+    families = ["render", "image", "online", "plate", "kitsu", "review", "shot", "render.farm", "render.frames_farm",
+                "prerender.farm", "prerender.frames_farm",
+                "renderlayer", "imagesequence",
+                "vrayscene", "maxrender",
+                "arnold_rop", "mantra_rop",
+                "karma_rop", "vray_rop",
+                "redshift_rop"]
 
     def process(self, instance):
+        settings = get_project_settings(get_current_project_name())
+        default_status = settings["kitsu"]["publish"]["IntegrateKitsuNote"]["note_status_shortname"]
+
         attribute_values = self.get_attr_values_from_data(instance.data)
-        kitsu_status = attribute_values.get("kitsu_status")
+        kitsu_status = attribute_values.get("kitsu_status", instance.data.get("kitsu_status_shortname", default_status))
 
         instance.data["kitsu_status_shortname"] = kitsu_status
 
