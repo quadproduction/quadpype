@@ -21,7 +21,7 @@ class ValidateLayersNameLengthSelect(pyblish.api.Action):
         invalid_layers = data["layers"]
         self.log.warning(f"invalid_layers: {invalid_layers}")
         stub = get_stub()
-        stub.select_layers_from_comp_id([layer['id'] for layer in invalid_layers], data['comp_id'])
+        stub.select_layers([layer['id'] for layer in invalid_layers])
 
         return True
 
@@ -44,11 +44,10 @@ class ValidateLayersNameLengthCutName(pyblish.api.Action):
 
         for layer in invalid_layers:
             new_name = layer['name'][:max_number_characters]
-            stub.rename_layer(layer['id'], layer['parent_comp_id'], new_name)
+            stub.rename_layer(layer['id'], new_name)
 
 
 class ValidateLayersNameLength(pyblish.api.InstancePlugin):
-
 
     order = pyblish.api.ValidatorOrder
     label = "Validate Layers Name Length"

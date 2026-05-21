@@ -439,35 +439,23 @@ function getCompWithInnerLayers(comp_id, depth){
     return JSON.stringify(retrieved_comps);
 }
 
-function selectLayersFromCompId(layer_ids, comp_id){
-    var comp = app.project.itemByID(comp_id);
-    if (!comp){ return _prepareError("No comp found with id " + comp_id); }
-    alert(comp)
-    selectLayersFromComp(layer_ids, comp)
-}
+function selectLayers(layer_ids){
 
-function selectLayersFromComp(layer_ids, comp){
-    for (var i = 1; i <= comp.numLayers; i++){
-        var layer = comp.layer(i);
-        if (layer.source instanceof CompItem){
-            selectLayersFromComp(layer_ids, layer.source)
-        }
-        layer.selected = (layer_ids.indexOf(layer.id) > -1);
+    for (var i = 0; i <= layer_ids.length; i++){
+        var layer_id = layer_ids[i];
+        var layer = app.project.layerByID(layer_id);
+        layer.selected = true ;
     }
 }
 
-function renameLayer(layer_id, comp_id, new_name){
-    var comp = app.project.itemByID(comp_id);
-    if (!comp){ return _prepareError("No comp found with id " + comp_id); }
+function renameLayer(layer_id, new_name){
 
-    for (var i = 1; i <= comp.numLayers; i++){
-        var layer = comp.layer(i);
-        if (layer.id === layer_id){
-            layer.name = new_name;
-            return _prepareSingleValue(true);
-        }
-    }
-    return _prepareError("No layer found with id " + layer_id);
+    var layer = app.project.layerByID(layer_id);
+    if (layer){
+        layer.name = new_name;
+        return _prepareSingleValue(true);
+    };
+    return _prepareError("There is no layer with "+ layer_id);
 }
 
 function _getInnerLayers(previousComp, item, depth, recursive_level){

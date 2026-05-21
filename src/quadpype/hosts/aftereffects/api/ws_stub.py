@@ -235,7 +235,7 @@ class AfterEffectsServerStub():
         self.websocketserver.call(
             self.client.call('AfterEffects.select_items', items=items))
 
-    def select_layers_from_comp_id(self, layer_ids, comp_id):
+    def select_layers(self, layer_ids):
         """
             Select layers in a composition by their ids.
         Args:
@@ -243,12 +243,11 @@ class AfterEffectsServerStub():
             comp_id (int): id of the composition
         """
         self.websocketserver.call(
-            self.client.call('AfterEffects.select_layers_from_comp_id',
-                         layer_ids=layer_ids,
-                         comp_id=comp_id))
+            self.client.call('AfterEffects.select_layers',
+                         layer_ids=layer_ids))
 
 
-    def rename_layer(self, layer_id, comp_id, new_name):
+    def rename_layer(self, layer_id, new_name):
         """
             Rename a layer in a composition.
 
@@ -260,7 +259,6 @@ class AfterEffectsServerStub():
         res = self.websocketserver.call(
             self.client.call('AfterEffects.rename_layer',
                          layer_id=layer_id,
-                         comp_id=comp_id,
                          new_name=new_name))
         return self._handle_return(res)
 

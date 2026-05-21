@@ -212,11 +212,11 @@ function main(websocket_url) {
             });
     });
 
-    RPC.addRoute('AfterEffects.select_layers_from_comp_id', function (data) {
-        log.warn('Server called client route "select_layers_from_comp_id":', data);
-        return runEvalScript("selectLayersFromCompId(" + JSON.stringify(data.layer_ids) + ", " + data.comp_id + ")")
+    RPC.addRoute('AfterEffects.select_layers', function (data) {
+        log.warn('Server called client route "select_layers":', data);
+        return runEvalScript("selectLayers(" + JSON.stringify(data.layer_ids) + ")")
             .then(function (result) {
-                log.warn("select_layers_from_comp_id: " + result);
+                log.warn("select_layers: " + result);
                 return result;
             });
     });
@@ -224,7 +224,7 @@ function main(websocket_url) {
     RPC.addRoute('AfterEffects.rename_layer', function (data) {
         log.warn('Server called client route "rename_layer":', data);
         var escapedName= EscapeStringForJSX(data.new_name);
-        return runEvalScript("renameLayer(" + data.layer_id + ", " + data.comp_id + ", \"" + escapedName + "\")")
+        return runEvalScript("renameLayer(" + data.layer_id + ", \"" + escapedName + "\")")
             .then(function (result) {
                 log.warn("rename_layer: " + result);
                 return result;
