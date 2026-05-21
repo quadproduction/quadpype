@@ -240,7 +240,6 @@ class AfterEffectsServerStub():
             Select layers in a composition by their ids.
         Args:
             layer_ids (list): list of layer ids to select
-            comp_id (int): id of the composition
         """
         self.websocketserver.call(
             self.client.call('AfterEffects.select_layers',
@@ -253,7 +252,6 @@ class AfterEffectsServerStub():
 
         Args:
             layer_id (int): id of the layer
-            comp_id (int): id of the composition
             new_name (str): new name for the layer
         """
         res = self.websocketserver.call(
@@ -384,6 +382,7 @@ class AfterEffectsServerStub():
         """
             Get comps in scene with inner layers.
         Args:
+            comp_id (int): comp to get
             depth (int): Depth of comps to browse. Default value -1 means that we don't put any limit.
         """
 
