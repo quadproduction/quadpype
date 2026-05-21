@@ -5,7 +5,7 @@
 <description>
 ## Layer name too long detected
 
-Layers names can not include more than 31 characters.
+Layers names can not include more than configured characters numbers allowed.
 
 ### How to repair?
 
