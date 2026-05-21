@@ -56,6 +56,7 @@ class ValidateLayersNameLength(pyblish.api.InstancePlugin):
     actions = [ValidateLayersNameLengthSelect, ValidateLayersNameLengthCutName]
     optional = True
     active = True
+    extract_psd = True
 
     def collect_invalid_layers(self, layers, instance, parent_comp_id):
         project_settings = instance.context.data.get("project_settings", {})
@@ -76,6 +77,9 @@ class ValidateLayersNameLength(pyblish.api.InstancePlugin):
         active = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("active", True)
 
         if not active:
+            return
+
+        if not instance.data["creator_attributes"].get("extract_psd", False):
             return
 
         stub = get_stub()
