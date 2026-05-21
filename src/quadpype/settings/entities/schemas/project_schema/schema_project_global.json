@@ -20,6 +20,11 @@
                     "key": "workfile_cache_file_path",
                     "label": "Workfile Cache File Path",
                     "type": "path"
+                },
+                {
+                    "type": "boolean",
+                    "key": "display_short_name_tasks",
+                    "label": "Display Short Name Tasks"
                 }
             ]
         },

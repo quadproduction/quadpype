@@ -51,7 +51,7 @@ class ValidateNoEmptyLayers(
         for layer_id in empty_layers_dict.keys():
             layer_by_id = layers_by_ids.get(layer_id)
             return_list.append(layer_by_id)
-            msg = "{}\n\n The layer {} is not empty.".format(msg, layer_by_id.name)
+            msg = "{}\n\n The layer {} is empty.".format(msg, layer_by_id.name)
 
         if return_list:
             if not context.data.get('transientData'):
