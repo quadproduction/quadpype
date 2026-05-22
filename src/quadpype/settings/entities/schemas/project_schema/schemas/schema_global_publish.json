@@ -138,6 +138,32 @@
         },
         {
             "type": "dict",
+            "label": "Validate Layers Name Length",
+            "key": "ValidateLayersNameLength",
+            "is_group": true,
+            "checkbox_key": "enabled",
+            "children": [
+                {
+                    "type": "boolean",
+                    "key": "enabled",
+                    "label": "Enabled"
+                },
+                {
+                    "type": "boolean",
+                    "key": "active",
+                    "label": "Active"
+                },
+                {
+                    "key": "max_number_characters",
+                    "label": "Maximum number of characters",
+                    "type": "number",
+                    "minimum": 3,
+                    "maximum": 100
+                }
+            ]
+        },
+        {
+            "type": "dict",
             "label": "Validate Intent",
             "key": "ValidateIntent",
             "is_group": true,
