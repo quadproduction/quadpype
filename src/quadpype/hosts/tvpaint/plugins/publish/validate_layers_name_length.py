@@ -6,7 +6,7 @@ from quadpype.pipeline.publish import (
 from quadpype.hosts.tvpaint.api.lib import execute_george
 
 class ValidateLayersNameLengthSelect(pyblish.api.Action):
-    """Select the layers that names are too long"""
+    """Select the layers that have more than configured characters numbers allowed"""
 
     label = "Select Layers"
     icon = "mouse-pointer"
@@ -30,10 +30,13 @@ class ValidateLayersNameLengthCutName(pyblish.api.Action):
 
     def process(self, context, plugin):
 
+        project_settings = context.data.get("project_settings", {})
+        max_number_characters = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
+
         select_dict = context.data['transientData'][plugin.__name__]
 
         for layer_name, layer_id in select_dict.items():
-            layer_name = layer_name[:31]
+            layer_name = layer_name[:max_number_characters]
             execute_george(f"tv_layerrename {layer_id} \"{layer_name}\"")
 
 
@@ -53,14 +56,18 @@ class ValidateLayersNameLength(
     def process(self, instance):
 
         project_settings = instance.context.data.get("project_settings", {})
+        max_number_characters = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
         active = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("active", True)
 
         if not active:
             return
 
+        if not instance.data["creator_attributes"].get("extract_psd", False):
+            return
+
         layers_by_name = instance.context.data.get("layersByName", [])
 
-        return_dict = {layer_name: layer_data[0]["layer_id"] for layer_name, layer_data in layers_by_name.items() if len(layer_name) > 31}
+        return_dict = {layer_name: layer_data[0]["layer_id"] for layer_name, layer_data in layers_by_name.items() if len(layer_name) > max_number_characters}
 
         if not return_dict:
             self.log.info("good")
