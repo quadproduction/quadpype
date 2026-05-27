@@ -2,26 +2,52 @@
 """Submitting render job to Deadline."""
 
 import os
+import re
+import json
+import getpass
+import platform
+from copy import copy
+from pathlib import Path
+
+from datetime import datetime, timezone
+
+import requests
+import pyblish.api
 
 import pyblish.api
 from dataclasses import dataclass, field, asdict
 
+from quadpype.pipeline import (
+    legacy_io,
+)
+from quadpype.pipeline.publish import (
+    QuadPypePyblishPluginMixin
+)
+
+from quadpype.pipeline.context_tools import _get_modules_manager
+from quadpype.modules.deadline.utils import (
+    set_custom_deadline_name,
+    get_deadline_job_profile,
+    DeadlineDefaultJobAttrs
+)
+
+from quadpype.tests.lib import is_in_tests
 from quadpype.lib import (
     is_running_from_build,
     BoolDef,
-    NumberDef,
-    TextDef,
+    EnumDef,
 )
+
 from quadpype.settings import PROJECT_SETTINGS_KEY
 
 from quadpype.pipeline import legacy_io, OptionalPyblishPluginMixin
-from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
-from quadpype.pipeline.farm.tools import iter_expected_files
 
-from quadpype_modules.deadline import abstract_submit_deadline
+from quadpype.pipeline.farm.tools import iter_expected_files
+from quadpype.pipeline.publish.lib import get_template_name_profiles
+
+from quadpype_modules.deadline import abstract_submit_deadline, get_deadline_limits_plugin
 from quadpype_modules.deadline.utils import get_deadline_job_profile, DeadlineDefaultJobAttrs
 from quadpype_modules.deadline.blender.publish import common_job
-
 
 @dataclass
 class BlenderPluginInfo:
@@ -32,10 +58,11 @@ class BlenderPluginInfo:
 
 
 class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
+                            pyblish.api.InstancePlugin,
                             OptionalPyblishPluginMixin,
                             QuadPypePyblishPluginMixin,
                             DeadlineDefaultJobAttrs):
-    label = "Submit Render to Deadline"
+    label = "Submit Blender Render to Deadline"
     hosts = ["blender"]
     families = ["render", "renderlayer"]
     order = pyblish.api.IntegratorOrder + 0.12
@@ -49,6 +76,59 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
     group = None
     job_delay = "00:00:00:00"
     dependency = True
+    use_gpu = False
+
+    @classmethod
+    def get_job_attr(cls, attr_name):
+        if attr_name not in cls.deadline_attrs_names:
+            # Attribute not found
+            raise AttributeError("Unknown attribute {}".format(attr_name))
+
+        if hasattr(cls, "_" + attr_name):
+            # Attribute has been set, use it
+            return getattr(cls, "_" + attr_name)
+
+        try:
+            # Value from project setting default values
+            return get_current_project_settings()["deadline"]["JobAttrsValues"]["DefaultValues"][attr_name]
+        except Exception: # noqa
+            pass
+
+        # Value from global setting default values
+        return cls.global_default_attrs_values[attr_name]
+
+    @classmethod
+    def apply_settings(cls, project_settings):
+        profile = get_deadline_job_profile(project_settings, cls.hosts[0])
+        cls.set_job_attrs(profile)
+
+    @classmethod
+    def get_attribute_defs(cls):
+
+        cls.log.info("=== DÉBUT get_attribute_defs Blender ===")
+
+        defs = super(BlenderSubmitDeadline, cls).get_attribute_defs()
+        manager = _get_modules_manager()
+        deadline_module = manager.modules_by_name["deadline"]
+        deadline_url = deadline_module.deadline_urls["default"]
+        pools = deadline_module.get_deadline_pools(deadline_url, cls.log)
+
+        defs.extend([
+            EnumDef("pool",
+                    label="Primary Pool",
+                    items=pools,
+                    default=cls.get_job_attr("pool")),
+            EnumDef("pool_secondary",
+                    label="Secondary Pool",
+                    items=pools,
+                    default=cls.get_job_attr("pool_secondary")),
+
+            BoolDef("use_published",
+                    default=cls.use_published,
+                    label="Use Published Scene"),
+        ])
+
+        return defs
 
     def get_job_info(self):
 
@@ -60,7 +140,6 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
 
         jobs = list()
         for src_filepath in [context.data["currentFile"]]:
-            instance.data.get("blenderRenderPlugin", "Blender")
 
             job = common_job.generate(
                 job_instance=self,
@@ -70,6 +149,10 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
                 job_suffix="Render"
             )
 
+            deadline_publish_attributes = instance.data.get("publish_attributes", {}).get("BlenderSubmitDeadline", None)
+            job.Pool = deadline_publish_attributes.get("pool", "")
+            job.SecondaryPool = deadline_publish_attributes.get("pool_secondary", "")
+
             frames = "{start}-{end}x{step}".format(
                 start=int(instance.data["frameStartHandle"]),
                 end=int(instance.data["frameEndHandle"]),
@@ -78,6 +161,7 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
             job.Frames = frames
 
             attr_values = self.get_attr_values_from_data(instance.data)
+
             render_globals = instance.data.setdefault("renderGlobals", {})
             machine_list = attr_values.get("machineList", "")
             if machine_list:
@@ -193,39 +277,3 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         the metadata and the rendered files are in the same location.
         """
         return super().from_published_scene(replace_in_path)
-
-    @classmethod
-    def get_attribute_defs(cls):
-        defs = super(BlenderSubmitDeadline, cls).get_attribute_defs()
-        defs.extend([
-            BoolDef("use_published",
-                    default=cls.use_published,
-                    label="Use Published Scene"),
-
-            NumberDef("priority",
-                      minimum=1,
-                      maximum=250,
-                      decimals=0,
-                      default=cls.priority,
-                      label="Priority"),
-
-            NumberDef("chunkSize",
-                      minimum=1,
-                      maximum=50,
-                      decimals=0,
-                      default=cls.chunk_size,
-                      label="Frame Per Task"),
-
-            TextDef("group",
-                    default=cls.group,
-                    label="Group Name"),
-
-            TextDef("job_delay",
-                    default=cls.job_delay,
-                    label="Job Delay",
-                    placeholder="dd:hh:mm:ss",
-                    tooltip="Delay the job by the specified amount of time. "
-                            "Timecode: dd:hh:mm:ss."),
-        ])
-
-        return defs
