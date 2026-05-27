@@ -65,7 +65,7 @@ class ValidateLayersNameLength(
             return
 
         return_list = list()
-        msg = f"\n\nThe layers name are too long:"
+        msg = f"\n\nThe layers names are too long:"
 
         stub = photoshop.stub()
         layers = stub.get_layers()
@@ -84,4 +84,8 @@ class ValidateLayersNameLength(
 
             instance.context.data['transientData'][self.__class__.__name__] = return_list
             detail_lines = [f"- {layer.name}" for layer in return_list]
-            raise PublishXmlValidationError(self, msg, formatting_data={"layer_names": "<br/>".join(detail_lines)})
+            formatting_data = {
+                "layer_names": "<br/>".join(detail_lines),
+                "max_number_characters": max_number_characters
+            }
+            raise PublishXmlValidationError(self, msg, formatting_data=formatting_data)
