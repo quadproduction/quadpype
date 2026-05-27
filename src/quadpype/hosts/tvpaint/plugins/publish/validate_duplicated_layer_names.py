@@ -7,7 +7,7 @@ class ValidateLayersGroupSelect(pyblish.api.Action):
     """
 
     label = "Select Layers"
-    icon = "briefcase"
+    icon = "mouse-pointer"
     on = "failed"
 
     def process(self, context, plugin):
