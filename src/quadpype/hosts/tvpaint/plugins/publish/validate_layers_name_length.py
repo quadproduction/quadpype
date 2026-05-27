@@ -28,11 +28,7 @@ class ValidateLayersNameLengthCutName(pyblish.api.Action):
     icon = "scissors"
     on = "failed"
 
-    def process(self, context, plugin):
-
-        project_settings = context.data.get("project_settings", {})
-        max_number_characters = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
-
+    def process(self, context, plugin, max_number_characters):
         select_dict = context.data['transientData'][plugin.__name__]
 
         for layer_name, layer_id in select_dict.items():
@@ -56,8 +52,8 @@ class ValidateLayersNameLength(
     def process(self, instance):
 
         project_settings = instance.context.data.get("project_settings", {})
-        max_number_characters = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
-        active = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("active", True)
+        validate_layers_name_length_settings = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {})
+        active = validate_layers_name_length_settings.get("active", True)
 
         if not active:
             return
@@ -65,15 +61,16 @@ class ValidateLayersNameLength(
         if not instance.data["creator_attributes"].get("extract_psd", False):
             return
 
+        max_number_characters = validate_layers_name_length_settings.get("max_number_characters", 31)
+
         layers_by_name = instance.context.data.get("layersByName", [])
 
         return_dict = {layer_name: layer_data[0]["layer_id"] for layer_name, layer_data in layers_by_name.items() if len(layer_name) > max_number_characters}
 
         if not return_dict:
-            self.log.info("good")
             return
 
-        msg = "\n\nThe layers name are too long:"
+        msg = "\n\nThe layers names are too long:"
 
         for layer_name in return_dict.keys():
             msg += f"\n- {layer_name} ({len(layer_name)} characters)."
@@ -82,4 +79,8 @@ class ValidateLayersNameLength(
             instance.context.data['transientData'] = dict()
         instance.context.data['transientData'][self.__class__.__name__] = return_dict
         detail_lines = [f"- {layer_name}" for layer_name in return_dict.keys()]
-        raise PublishXmlValidationError(self, msg, formatting_data={"layer_names": "<br/>".join(detail_lines)})
+        formatting_data = {
+            "layer_names": "<br/>".join(detail_lines),
+            "max_number_characters": max_number_characters
+        }
+        raise PublishXmlValidationError(self, msg, formatting_data=formatting_data)
