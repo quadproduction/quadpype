@@ -36,6 +36,8 @@ from quadpype.lib import (
     is_running_from_build,
     BoolDef,
     EnumDef,
+    NumberDef,
+    TextDef
 )
 
 from quadpype.settings import PROJECT_SETTINGS_KEY
@@ -105,8 +107,6 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
     @classmethod
     def get_attribute_defs(cls):
 
-        cls.log.info("=== DÉBUT get_attribute_defs Blender ===")
-
         defs = super(BlenderSubmitDeadline, cls).get_attribute_defs()
         manager = _get_modules_manager()
         deadline_module = manager.modules_by_name["deadline"]
@@ -118,6 +118,7 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
                     label="Primary Pool",
                     items=pools,
                     default=cls.get_job_attr("pool")),
+
             EnumDef("pool_secondary",
                     label="Secondary Pool",
                     items=pools,
@@ -126,6 +127,31 @@ class BlenderSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
             BoolDef("use_published",
                     default=cls.use_published,
                     label="Use Published Scene"),
+
+            NumberDef("priority",
+                      minimum=1,
+                      maximum=250,
+                      decimals=0,
+                      default=cls.priority,
+                      label="Priority"),
+
+            NumberDef("chunkSize",
+                      minimum=1,
+                      maximum=50,
+                      decimals=0,
+                      default=cls.chunk_size,
+                      label="Frame Per Task"),
+
+            TextDef("group",
+                    default=cls.group,
+                    label="Group Name"),
+
+            TextDef("job_delay",
+                    default=cls.job_delay,
+                    label="Job Delay",
+                    placeholder="dd:hh:mm:ss",
+                    tooltip="Delay the job by the specified amount of time. "
+                            "Timecode: dd:hh:mm:ss.")
         ])
 
         return defs
