@@ -28,6 +28,18 @@ class ExtractAudioForReview(pyblish.api.Extractor):
         if not self.sound_for_review:
             return
 
+        reponse_audio = execute_george("tv_SoundProjectInfo")
+        should_process_sound = False
+
+        if self.sound_for_review:
+            reponse_clean = str(reponse_audio).strip()
+            if not reponse_clean or reponse_clean in ("0", "0 0 -1") or "ERROR" in reponse_clean.upper()
+                self.log.warning("No sound loaded")
+                should_process_sound = False
+            else:
+                self.log.warning("No sound loaded")
+                should_process_sound = True
+
         self.log.info(
             "* Processing instance \"{}\"".format(instance.data["label"])
         )
@@ -69,60 +81,61 @@ class ExtractAudioForReview(pyblish.api.Extractor):
         )
 
         # Special render to get audio from TvPP
-        audio_george_script_lines = []
-        audio_tv_export = "tv_SaveSequence '\"'export_path'\"' {} {}".format(mark_in, mark_out)
-        audio_avi_filepath = os.path.join(
-            output_dir,
-            "audio_review.avi"
-        ).replace("\\", "/")
+        if should_process_sound:
+            audio_george_script_lines = []
+            audio_tv_export = "tv_SaveSequence '\"'export_path'\"' {} {}".format(mark_in, mark_out)
+            audio_avi_filepath = os.path.join(
+                output_dir,
+                "audio_review.avi"
+            ).replace("\\", "/")
 
-        audio_george_script_lines.extend([
-            "export_path = \"{}\"".format(
-                audio_avi_filepath
-            ),
-            # Necessity to export an AVI, since MP4 not available in script
-            "tv_SaveMode \"AVI\" \"MPEG\" 100 \"Sound\"",
-            audio_tv_export
-        ])
+            audio_george_script_lines.extend([
+                "export_path = \"{}\"".format(
+                    audio_avi_filepath
+                ),
+                # Necessity to export an AVI, since MP4 not available in script
+                "tv_SaveMode \"AVI\" \"MPEG\" 100 \"Sound\"",
+                audio_tv_export
+            ])
 
-        audio_george_script_lines = "\n".join(audio_george_script_lines)
-        execute_george_through_file(audio_george_script_lines)
+            audio_george_script_lines = "\n".join(audio_george_script_lines)
+            execute_george_through_file(audio_george_script_lines)
 
-        # Convert AVI to WAV
-        audio_wav_filepath = os.path.join(
-            output_dir,
-            "audio_review.wav"
-        ).replace("\\", "/")
+            # Convert AVI to WAV
+            audio_wav_filepath = os.path.join(
+                output_dir,
+                "audio_review.wav"
+            ).replace("\\", "/")
 
-        ffmpeg_args = [
-            subprocess.list2cmdline(get_ffmpeg_tool_args("ffmpeg")),
-            "-y",
-            "-i",
-            f"{audio_avi_filepath}",
-            "-vn",
-            "-c:a",
-            "pcm_s16le",
-            f"{audio_wav_filepath}"
-        ]
+            ffmpeg_args = [
+                subprocess.list2cmdline(get_ffmpeg_tool_args("ffmpeg")),
+                "-y",
+                "-i",
+                f"{audio_avi_filepath}",
+                "-vn",
+                "-c:a",
+                "pcm_s16le",
+                f"{audio_wav_filepath}"
+            ]
 
-        subprcs_cmd = " ".join(ffmpeg_args)
-        if os.getenv("SHELL") in ("/bin/bash", "/bin/sh"):
-            # Escape parentheses for bash
-            subprcs_cmd = (
-                subprcs_cmd
-                .replace("(", "\\(")
-                .replace(")", "\\)")
-            )
+            subprcs_cmd = " ".join(ffmpeg_args)
+            if os.getenv("SHELL") in ("/bin/bash", "/bin/sh"):
+                # Escape parentheses for bash
+                subprcs_cmd = (
+                    subprcs_cmd
+                    .replace("(", "\\(")
+                    .replace(")", "\\)")
+                )
 
-        # run subprocess
-        self.log.debug("Executing: {}".format(subprcs_cmd))
-        run_subprocess(subprcs_cmd, shell=True, logger=self.log)
+            # run subprocess
+            self.log.debug("Executing: {}".format(subprcs_cmd))
+            run_subprocess(subprcs_cmd, shell=True, logger=self.log)
+
+            # Audio add to instance
+            instance.data["audio"] = [{
+                "offset": 0,
+                "filename": audio_wav_filepath
+            }]
+            self.log.debug("Audio Data added to instance ...")
 
         execute_george("tv_startframe {}".format(scene_start_frame))
-
-        # Audio add to instance
-        instance.data["audio"] = [{
-            "offset": 0,
-            "filename": audio_wav_filepath
-        }]
-        self.log.debug("Audio Data added to instance ...")
