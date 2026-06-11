@@ -155,8 +155,9 @@ def extract_sequence_and_shot(asset=None):
     if "_" not in asset_name:
         return asset_name, DEFAULT_SHOT_NAME
 
-    is_valid_pattern = re.match('^SQ[a-zA-Z0-9_.]+_[a-zA-Z.]+[a-zA-Z0-9_.]*$', asset_name)
+    is_valid_pattern = re.match('^([a-zA-Z0-9._]+_)?SQ[a-zA-Z0-9_.]+_[a-zA-Z0-9_.]+$', asset_name)
     if not is_valid_pattern:
         raise RuntimeError(f"Can not extract sequence and shot from asset_name {asset_name}")
 
-    return asset_name.split('_', 1)
+    sq_part = asset_name[asset_name.index('SQ'):]
+    return sq_part.split('_', 1)
