@@ -152,12 +152,21 @@ def extract_sequence_and_shot(asset=None):
     asset_name = get_current_context()['asset_name']
     if asset:
         asset_name = asset
-    if "_" not in asset_name:
-        return asset_name, DEFAULT_SHOT_NAME
 
-    is_valid_pattern = re.match('^([a-zA-Z0-9._]+_)?SQ[a-zA-Z0-9_.]+_[a-zA-Z0-9_.]+$', asset_name)
-    if not is_valid_pattern:
+    match = re.match(
+        '^(?:(?P<episode>[a-zA-Z0-9.]+)_)?(?P<sequence>SQ[a-zA-Z0-9.]+)(?:_(?P<shot>[a-zA-Z0-9.]+))?$',
+        asset_name
+        )
+
+    if not match:
         raise RuntimeError(f"Can not extract sequence and shot from asset_name {asset_name}")
 
-    sq_part = asset_name[asset_name.index('SQ'):]
-    return sq_part.split('_', 1)
+    episode = match.group("episode")
+    sequence = match.group("sequence")
+    shot = match.group("shot")
+
+    if sequence and shot:
+        return sequence, shot
+
+    if sequence and not shot:
+        return sequence, DEFAULT_SHOT_NAME
