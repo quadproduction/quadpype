@@ -391,9 +391,7 @@ def import_file_dialog_clic(file_name, verbose=False):
 
     time.sleep(0.2)
     force_foreground_window(second_window)
-    ### ajouter de quoi surligner valider
     press_enter_key()
-
     print("Import ended with success.")
 
     return True
