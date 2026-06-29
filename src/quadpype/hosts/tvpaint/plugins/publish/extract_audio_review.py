@@ -28,6 +28,12 @@ class ExtractAudioForReview(pyblish.api.Extractor):
         if not self.sound_for_review:
             return
 
+        audio = execute_george(f"tv_SoundClipInfo 0 0")
+
+        if audio in ["-1", "-2", "-3"]:
+            self.log.warning("No sound loaded, bypassing this step")
+            return
+
         self.log.info(
             "* Processing instance \"{}\"".format(instance.data["label"])
         )
@@ -118,11 +124,11 @@ class ExtractAudioForReview(pyblish.api.Extractor):
         self.log.debug("Executing: {}".format(subprcs_cmd))
         run_subprocess(subprcs_cmd, shell=True, logger=self.log)
 
-        execute_george("tv_startframe {}".format(scene_start_frame))
-
         # Audio add to instance
         instance.data["audio"] = [{
             "offset": 0,
             "filename": audio_wav_filepath
         }]
         self.log.debug("Audio Data added to instance ...")
+
+        execute_george("tv_startframe {}".format(scene_start_frame))
