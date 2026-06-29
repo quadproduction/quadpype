@@ -13,10 +13,12 @@ from quadpype.settings import PROJECT_SETTINGS_KEY
 from quadpype.pipeline import legacy_io, OptionalPyblishPluginMixin
 from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
 
+from quadpype.pipeline.context_tools import _get_modules_manager
+from quadpype.lib import EnumDef
+
 from quadpype_modules.deadline import abstract_submit_deadline
 from quadpype_modules.deadline.utils import get_deadline_job_profile, DeadlineDefaultJobAttrs
 from quadpype_modules.deadline.blender.publish import common_job
-
 
 UPDATE_BLENDER_PATHS_SCRIPT_NAME = 'update_blender_paths'
 
@@ -67,7 +69,13 @@ class BlenderRenderPathsUpdateDeadline(abstract_submit_deadline.AbstractSubmitDe
                 src_filepath=src_filepath,
                 job_suffix="Update render paths"
             )
+
+            deadline_publish_attributes = instance.data.get("publish_attributes", {}).get("BlenderSubmitDeadline", None)
+            job.Pool = deadline_publish_attributes.get("pool", "")
+            job.SecondaryPool = deadline_publish_attributes.get("pool_secondary", "")
+
             jobs.append(job)
+            self.log.info(f"Job 'Update Paths' Pool: {job.Pool}, SecondaryPool: {job.SecondaryPool}")
 
         return jobs
 
