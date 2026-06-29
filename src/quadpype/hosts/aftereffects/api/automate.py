@@ -8,14 +8,14 @@ import win32con
 
 SMALL_OFFSET = 10
 LARGE_OFFSET = 50
-FIRST_WINDOW_IMPORT_AS_COMP_OPTION_INDEX = 2  # Starts from 0
-SECOND_WINDOW_IMPORT_AS_COMP_OPTION_INDEX = 1
+CREATE_COMP_CHECKBOX_INDEX = 2
+TABS_NUMBER_TO_REACH_IMPORT_AS_COMP = 2
 ONLY_LETTERS_REGEX = r'[^a-zA-Z]'
 TRIES = 5
 DEFAULT_WAITING_TIME = 0.1
 
 IMPORT_FILE = ["Importer fichier", "Import File"]
-IMPORT = ["Importer sous :", "Import As :"]
+IMPORT = ["Importer sous :", "Import As:"]
 
 EXPORT_FILE = ["Enregistrer sous", "Save as"]
 ADDRESS_BAR_CLASS = "ToolbarWindow32"
@@ -67,7 +67,7 @@ def find_window_by_title(window_names):
     return None
 
 @try_several_times
-def find_window_by_partial_title(partial_title):
+def find_window_by_partial_title(partial_title, verbose=False):
     result = {'hwnd': None}
 
     def callback(hwnd, _):
@@ -80,7 +80,10 @@ def find_window_by_partial_title(partial_title):
         return True
 
     win32gui.EnumWindows(callback, None)
-    return result['hwnd']
+    window = result['hwnd']
+    if verbose:
+        print(f"Window found: {win32gui.GetWindowText(window)}")
+    return window
 
 
 @wait_after(DEFAULT_WAITING_TIME*2)
@@ -305,9 +308,55 @@ def set_combobox_index(combobox_hwnd, index):
                          win32con.CBN_SELCHANGE << 16 | win32gui.GetDlgCtrlID(combobox_hwnd),
                          combobox_hwnd)
 
+
 @wait_after(DEFAULT_WAITING_TIME)
 def press_enter_key():
     pyautogui.press('enter')
+
+
+@wait_after(DEFAULT_WAITING_TIME)
+def press_tab_key():
+    pyautogui.press('tab')
+
+
+@wait_after(DEFAULT_WAITING_TIME)
+def press_space_key():
+    pyautogui.press('space')
+
+
+@wait_after(DEFAULT_WAITING_TIME)
+def write_character(character):
+    """ Write a character using pyautogui, with a small delay to avoid missing characters.
+    """
+    pyautogui.write(character)
+
+
+@wait_after(DEFAULT_WAITING_TIME)
+def unselect_checkbox(ae_import_window, checkbox_index, verbose=False):
+    create_comp_checkbox = get_controls(ae_import_window, filter_by_class="Button", verbose=True)
+    if verbose:
+        print(f"Buttons found: {len(create_comp_checkbox) if create_comp_checkbox else 0}")
+
+    if create_comp_checkbox:
+        checkbox = create_comp_checkbox[checkbox_index]
+        state = win32gui.SendMessage(checkbox, win32con.BM_GETCHECK, 0, 0)
+        if state == win32con.BST_CHECKED:
+            print("Checkbox is checked, clicking to uncheck")
+            click_on_element(checkbox)
+        else:
+            print("Checkbox is already unchecked")
+
+
+def select_combobox_option_with_keyboard(tabs_press_number):
+    """Select an option in a combobox using keyboard navigation.
+    Uses secondary method for windows with specific class which do not expose
+    usable children.
+    """
+    for _ in range(tabs_press_number):
+        press_tab_key()
+    press_space_key()
+    write_character('c')
+    press_enter_key()
 
 
 def import_file_dialog_clic(file_name, verbose=False):
@@ -349,37 +398,14 @@ def import_file_dialog_clic(file_name, verbose=False):
 
     click_on_element(file_selection_window, offset=LARGE_OFFSET)
 
-
-    # FISRT WINDOW Get combobox and select third option : composition
-    combobox_found = get_combobox(ae_import_window, IMPORT, verbose=verbose)
-    if not combobox_found:
-        print(f"Can not find combobox with name '{IMPORT}' in current window.")
-        return
-
-    set_combobox_index(combobox_found, FIRST_WINDOW_IMPORT_AS_COMP_OPTION_INDEX)
-
-    time.sleep(2.0)
-
     # Unselect Create Composition
-    create_comp_checkbox = get_controls(ae_import_window, filter_by_class="Button", verbose=True)
-    print(f"Buttons found: {len(create_comp_checkbox) if create_comp_checkbox else 0}")
-    if create_comp_checkbox:
-        checkbox = create_comp_checkbox[2]
-        state = win32gui.SendMessage(checkbox, win32con.BM_GETCHECK, 0, 0)
-        if state == win32con.BST_CHECKED:
-            print("Checkbox is checked, clicking to uncheck")
-            click_on_element(checkbox)
-        else:
-            print("Checkbox is already unchecked")
-
-    time.sleep(1.0)
+    unselect_checkbox(ae_import_window, CREATE_COMP_CHECKBOX_INDEX, verbose=verbose)
 
     press_enter_key()  # Validate import
 
     # SECOND WINDOW Wait for new window appearance and finalize import
-    time.sleep(0.5)
-    second_window = find_window_by_partial_title(file_name)
-    print(f"Window found: {win32gui.GetWindowText(second_window)}")
+    time.sleep(.5)
+    second_window = find_window_by_partial_title(file_name, verbose=verbose)
 
     if not second_window:
         print("Can not find second import window to finalize process.")
@@ -389,15 +415,11 @@ def import_file_dialog_clic(file_name, verbose=False):
         print("Can not force given window to foreground.")
         return
 
-    time.sleep(0.2)
-    force_foreground_window(second_window)
+    select_combobox_option_with_keyboard(tabs_press_number=TABS_NUMBER_TO_REACH_IMPORT_AS_COMP)
     press_enter_key()
     print("Import ended with success.")
 
     return True
-
-
-import_file_dialog_clic("test")
 
 def save_frame_dialog_clic(output_folder: str, file_name: str, verbose: bool = False, init_path: bool = False) -> bool:
     """
