@@ -419,6 +419,45 @@ function getActiveCompWithInnerLayers(depth){
     return JSON.stringify(retrieved_comps);
 }
 
+function getCompWithInnerLayers(comp_id, depth){
+    retrieved_comps = [];
+
+    item = app.project.itemByID(comp_id)
+    if (item instanceof FootageItem || item instanceof FolderItem){ return;  }
+
+    comp = {
+        "name": item.name,
+        "id": item.id,
+        "markers": item.markerProperty.numKeys > 0,
+        "type": "comp",
+        "layers": []
+    };
+
+    retrieved_comps.push(comp);
+    _getInnerLayers(comp, item, depth, 0);
+
+    return JSON.stringify(retrieved_comps);
+}
+
+function selectLayers(layer_ids){
+
+    for (var i = 0; i <= layer_ids.length; i++){
+        var layer_id = layer_ids[i];
+        var layer = app.project.layerByID(layer_id);
+        layer.selected = true ;
+    }
+}
+
+function renameLayer(layer_id, new_name){
+
+    var layer = app.project.layerByID(layer_id);
+    if (layer){
+        layer.name = new_name;
+        return _prepareSingleValue(true);
+    };
+    return _prepareError("There is no layer with "+ layer_id);
+}
+
 function _getInnerLayers(previousComp, item, depth, recursive_level){
     if (depth >= 0 && recursive_level >= depth){ return; }
     recursive_level++;
@@ -1922,7 +1961,6 @@ function assembleShotsInSeqComp(seq_comp_id, shots_data) {
         }
     }
 }
-
 
 function _prepareSingleValue(value){
     return JSON.stringify({"result": value})

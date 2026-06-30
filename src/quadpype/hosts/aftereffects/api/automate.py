@@ -8,7 +8,8 @@ import win32con
 
 SMALL_OFFSET = 10
 LARGE_OFFSET = 50
-IMPORT_AS_COMP_OPTION_INDEX = 2  # Starts from 0
+CREATE_COMP_CHECKBOX_INDEX = 2
+TABS_NUMBER_TO_REACH_IMPORT_AS_COMP = 2
 ONLY_LETTERS_REGEX = r'[^a-zA-Z]'
 TRIES = 5
 DEFAULT_WAITING_TIME = 0.1
@@ -66,7 +67,7 @@ def find_window_by_title(window_names):
     return None
 
 @try_several_times
-def find_window_by_partial_title(partial_title):
+def find_window_by_partial_title(partial_title, verbose=False):
     result = {'hwnd': None}
 
     def callback(hwnd, _):
@@ -79,7 +80,10 @@ def find_window_by_partial_title(partial_title):
         return True
 
     win32gui.EnumWindows(callback, None)
-    return result['hwnd']
+    window = result['hwnd']
+    if verbose:
+        print(f"Window found: {win32gui.GetWindowText(window)}")
+    return window
 
 
 @wait_after(DEFAULT_WAITING_TIME*2)
@@ -120,14 +124,15 @@ def _pass_filter(hwnd, class_name, text):
     return class_ok and text_ok
 
 
-def get_controls(hwnd_parent, filter_by_class=None, filter_by_text=None, verbose=False):
+def get_controls(hwnd_parent, filter_by_class=None, filter_by_text=None, sort_by_size=False, verbose=False):
     """ Get controls in given window, based on class or text (or nothing to get all existing and visible controls).
 
     Arguments:
         hwnd_parent (int): Window handle (hwnd) in which to look out for file selection view.
         filter_by_class (str): Get specific controls with class
-        filter_by_class (str): Get specifics controls with text
+        filter_by_text (str): Get specifics controls with text
         verbose (bool): display more details regarding analyzed elements.
+        sort_by_size: sort by size of components
 
     Returns:
         object: Control corresponding to file selection view.
@@ -181,13 +186,15 @@ def get_controls(hwnd_parent, filter_by_class=None, filter_by_text=None, verbose
         pass
 
     # Sort by global size
-    controls.sort(
-        key=lambda c: (
-            (win32gui.GetWindowRect(c)[2] - win32gui.GetWindowRect(c)[0]) +
-            (win32gui.GetWindowRect(c)[3] - win32gui.GetWindowRect(c)[1])
-        ),
-        reverse=True
-    )
+
+    if sort_by_size:
+        controls.sort(
+            key=lambda c: (
+                (win32gui.GetWindowRect(c)[2] - win32gui.GetWindowRect(c)[0]) +
+                (win32gui.GetWindowRect(c)[3] - win32gui.GetWindowRect(c)[1])
+            ),
+            reverse=True
+        )
 
     if not verbose:
         return controls
@@ -205,7 +212,7 @@ def get_controls(hwnd_parent, filter_by_class=None, filter_by_text=None, verbose
     return controls
 
 
-def get_file_selection_view(hwnd_parent, verbose=False):
+def get_file_selection_view(hwnd_parent, sort_by_size=True, verbose=False):
     """ Get file selection view from given window.
     We assume that this is the second larger DirectUIHWND of the given window, as the first one seems
     to always correspond to the global window.
@@ -217,7 +224,7 @@ def get_file_selection_view(hwnd_parent, verbose=False):
     Returns:
         object: Control corresponding to file selection view.
     """
-    direct_huiwnd_windows = get_controls(hwnd_parent, filter_by_class="DirectUIHWND", verbose=verbose)
+    direct_huiwnd_windows = get_controls(hwnd_parent, filter_by_class="DirectUIHWND", sort_by_size=sort_by_size, verbose=verbose)
     windows_number = len(direct_huiwnd_windows)
     if not windows_number >= 2:
         print(f"Correct window should be the second of found windows, but only {windows_number} have been found.")
@@ -295,14 +302,61 @@ def get_combobox(hwnd_parent, text, verbose=False):
 @wait_after(DEFAULT_WAITING_TIME)
 def set_combobox_index(combobox_hwnd, index):
     win32gui.SendMessage(combobox_hwnd, win32con.CB_SETCURSEL, index, 0)
+    print(f"CB_SETCURSEL done, handle still valid: {win32gui.IsWindow(combobox_hwnd)}")
     parent = win32gui.GetParent(combobox_hwnd)
     win32gui.SendMessage(parent, win32con.WM_COMMAND,
                          win32con.CBN_SELCHANGE << 16 | win32gui.GetDlgCtrlID(combobox_hwnd),
                          combobox_hwnd)
 
+
 @wait_after(DEFAULT_WAITING_TIME)
 def press_enter_key():
     pyautogui.press('enter')
+
+
+@wait_after(DEFAULT_WAITING_TIME)
+def press_tab_key():
+    pyautogui.press('tab')
+
+
+@wait_after(DEFAULT_WAITING_TIME)
+def press_space_key():
+    pyautogui.press('space')
+
+
+@wait_after(DEFAULT_WAITING_TIME)
+def write_character(character):
+    """ Write a character using pyautogui, with a small delay to avoid missing characters.
+    """
+    pyautogui.write(character)
+
+
+@wait_after(DEFAULT_WAITING_TIME)
+def unselect_checkbox(ae_import_window, checkbox_index, verbose=False):
+    create_comp_checkbox = get_controls(ae_import_window, filter_by_class="Button", verbose=True)
+    if verbose:
+        print(f"Buttons found: {len(create_comp_checkbox) if create_comp_checkbox else 0}")
+
+    if create_comp_checkbox:
+        checkbox = create_comp_checkbox[checkbox_index]
+        state = win32gui.SendMessage(checkbox, win32con.BM_GETCHECK, 0, 0)
+        if state == win32con.BST_CHECKED:
+            print("Checkbox is checked, clicking to uncheck")
+            click_on_element(checkbox)
+        else:
+            print("Checkbox is already unchecked")
+
+
+def select_combobox_option_with_keyboard(tabs_press_number):
+    """Select an option in a combobox using keyboard navigation.
+    Uses secondary method for windows with specific class which do not expose
+    usable children.
+    """
+    for _ in range(tabs_press_number):
+        press_tab_key()
+    press_space_key()
+    write_character('c')
+    press_enter_key()
 
 
 def import_file_dialog_clic(file_name, verbose=False):
@@ -344,28 +398,25 @@ def import_file_dialog_clic(file_name, verbose=False):
 
     click_on_element(file_selection_window, offset=LARGE_OFFSET)
 
-    # Get combobox and select third option
-    combobox_found = get_combobox(ae_import_window, IMPORT, verbose=verbose)
-    if not combobox_found:
-        print(f"Can not find combobox with name '{IMPORT}' in current window.")
-        return
-
-    set_combobox_index(combobox_found, IMPORT_AS_COMP_OPTION_INDEX)
+    # Unselect Create Composition
+    unselect_checkbox(ae_import_window, CREATE_COMP_CHECKBOX_INDEX, verbose=verbose)
 
     press_enter_key()  # Validate import
 
-    # Wait for new window appearance and finalize import
+    # SECOND WINDOW Wait for new window appearance and finalize import
     time.sleep(.5)
-    new_import_window = find_window_by_partial_title(file_name)
-    if not new_import_window:
+    second_window = find_window_by_partial_title(file_name, verbose=verbose)
+
+    if not second_window:
         print("Can not find second import window to finalize process.")
         return
 
-    if not force_foreground_window(new_import_window):
+    if not force_foreground_window(second_window):
         print("Can not force given window to foreground.")
         return
 
-    press_enter_key()  # Finalise import
+    select_combobox_option_with_keyboard(tabs_press_number=TABS_NUMBER_TO_REACH_IMPORT_AS_COMP)
+    press_enter_key()
     print("Import ended with success.")
 
     return True

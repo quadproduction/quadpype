@@ -73,6 +73,12 @@
             "enabled": false,
             "profiles": []
         },
+        "ValidateLayersNameLength": {
+            "enabled": true,
+            "active": true,
+            "max_number_characters": 31
+        },
+
         "ExtractThumbnail": {
             "enabled": true,
             "subsets": [],
