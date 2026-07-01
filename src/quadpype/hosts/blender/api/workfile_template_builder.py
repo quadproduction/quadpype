@@ -79,16 +79,17 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
 
         workfile_path = save_file(current_file())
         shutil.copy2(path, workfile_path)
-        open_file(workfile_path)
 
-        bpy.context.scene.name = self.current_asset_name
+        def _delayed_open():
+            open_file(workfile_path)
+            bpy.context.scene.name = self.current_asset_name
+            purge_orphans(is_recursive=True)
+            if should_apply_settings_on_build_first_workfile():
+                self._set_settings()
+            save_file(current_file())
+            return None
 
-        purge_orphans(is_recursive=True)
-
-        if should_apply_settings_on_build_first_workfile():
-            self._set_settings()
-
-        save_file(current_file())
+        bpy.app.timers.register(_delayed_open, first_interval=0.1)
         return True
 
     @staticmethod
