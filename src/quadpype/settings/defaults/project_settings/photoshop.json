@@ -57,6 +57,11 @@
         "CollectVersion": {
             "enabled": false
         },
+        "ValidateLayersNameLength": {
+            "enabled": true,
+            "active": true,
+            "max_number_characters": 31
+        },
         "ValidateContainers": {
             "enabled": true,
             "optional": true,
