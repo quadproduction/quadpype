@@ -17,9 +17,7 @@ from quadpype.pipeline.workfile.workfile_template_builder import (
     AbstractTemplateBuilder,
     PlaceholderPlugin,
     LoadPlaceholderItem,
-    CreatePlaceholderItem,
     PlaceholderLoadMixin,
-    PlaceholderCreateMixin,
     should_apply_settings_on_build_first_workfile
 )
 
@@ -180,10 +178,7 @@ class TVPPlaceholderPlugin(PlaceholderPlugin):
                 item = LoadPlaceholderItem(item["uuid"],
                                            item["data"],
                                            self)
-            elif isinstance(self, TVPPlaceholderCreatePlugin):
-                item = CreatePlaceholderItem(item["uuid"],
-                                             item["data"],
-                                             self)
+
             else:
                 raise NotImplementedError(f"Not implemented for {type(self)}")
 
@@ -310,66 +305,6 @@ class TVPPlaceholderPlugin(PlaceholderPlugin):
 
         pipeline.write_workfile_metadata(pipeline.SECTION_NAME_PLACEHOLDERS, current_placeholders)
 
-
-class TVPPlaceholderCreatePlugin(TVPPlaceholderPlugin, PlaceholderCreateMixin):
-    """Adds Create placeholder.
-    """
-    identifier = "tvpaint.create"
-    label = "TvPaint create"
-
-    def create_placeholder(self, placeholder_data):
-        pass
-
-    def populate_placeholder(self, placeholder):
-        """Replace 'placeholder' with publishable instance."""
-        pass
-
-    def delete_placeholder(self, placeholder):
-        pass
-
-    def get_placeholder_options(self, options=None):
-        if not options:
-            options = {}
-        options.update({"create_variant" : "Main"})
-        attr_defs = self.get_create_plugin_options(options)
-        attr_defs.append(attribute_definitions.UISeparatorDef())
-
-        creators_by_name = self.builder.get_creators_by_name()
-        for creator_name, creator in creators_by_name.items():
-            if not hasattr(creator, "get_pre_create_attr_defs"):
-                continue
-            if not isinstance(creator, Creator):
-                continue
-            attr_defs.extend(creator.get_pre_create_attr_defs())
-
-        attr_defs.extend([
-            attribute_definitions.UISeparatorDef(),
-            attribute_definitions.UILabelDef("PlaceHolders Options"),
-            attribute_definitions.EnumDef(
-                "text_color",
-                items=[
-                    TextColor.RED.label,
-                    TextColor.GREEN.label,
-                    TextColor.BLUE.label,
-                    TextColor.YELLOW.label,
-                    TextColor.ORANGE.label,
-                ],
-                default=options.get("text_color", TextColor.RED.label),
-                label="PlaceHolder Text Color",
-            ),
-            attribute_definitions.NumberDef(
-                "text_size",
-                label="PlaceHolder Text Size",
-                minimum=24,
-                maximum=500,
-                default=options.get("text_size", 50)
-            ),
-            attribute_definitions.UISeparatorDef(),
-        ])
-        return attr_defs
-
-    def update_all_placeholders_ids(self):
-        pass
 
 class TVPPlaceholderLoadPlugin(TVPPlaceholderPlugin, PlaceholderLoadMixin):
     identifier = "tvpaint.load"

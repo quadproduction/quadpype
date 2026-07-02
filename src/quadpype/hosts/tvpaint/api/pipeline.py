@@ -20,10 +20,8 @@ from quadpype.pipeline import (
 from quadpype.pipeline.context_tools import get_global_context
 from quadpype.tools.utils.workfile_cache import WorkFileCache
 
-from quadpype.hosts.tvpaint.api.workfile_template_builder import (
-    TVPPlaceholderLoadPlugin,
-    TVPPlaceholderCreatePlugin
-)
+from quadpype.hosts.tvpaint.api.workfile_template_builder import TVPPlaceholderLoadPlugin
+
 
 from .lib import (
     execute_george,
@@ -103,10 +101,7 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCach
         register_event_callback("application.exit", self.application_exit)
 
     def get_workfile_build_placeholder_plugins(self):
-        return [
-            TVPPlaceholderLoadPlugin,
-            TVPPlaceholderCreatePlugin
-        ]
+        return [TVPPlaceholderLoadPlugin]
 
     def get_current_project_name(self):
         """
