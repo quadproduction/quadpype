@@ -6,7 +6,6 @@ from quadpype.pipeline import legacy_io
 from quadpype.pipeline.action.utils import get_actions_by_family
 from quadpype.tools.attribute_defs import AttributeDefinitionsWidget
 
-from time import sleep
 
 
 class WorkfileBuildPlaceholderDialog(QtWidgets.QDialog):
