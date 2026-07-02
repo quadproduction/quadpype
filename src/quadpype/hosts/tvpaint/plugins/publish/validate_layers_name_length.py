@@ -52,7 +52,7 @@ class ValidateLayersNameLength(
     def process(self, instance):
 
         project_settings = instance.context.data.get("project_settings", {})
-        validate_layers_name_length_settings = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {})
+        validate_layers_name_length_settings = project_settings.get("tvpaint", {}).get("publish", {}).get("ValidateLayersNameLength", {})
         active = validate_layers_name_length_settings.get("active", True)
 
         if not active:

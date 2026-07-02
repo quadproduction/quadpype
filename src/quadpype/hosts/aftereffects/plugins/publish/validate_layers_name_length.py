@@ -35,7 +35,7 @@ class ValidateLayersNameLengthCutName(pyblish.api.Action):
 
     def process(self, context, plugin):
         project_settings = context.data.get("project_settings", {})
-        max_number_characters = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
+        max_number_characters = project_settings.get("aftereffects", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
 
         data = context.data['transientData'][plugin.__name__]
         invalid_layers = data["layers"]
@@ -60,7 +60,7 @@ class ValidateLayersNameLength(pyblish.api.InstancePlugin):
 
     def collect_invalid_layers(self, layers, instance, parent_comp_id):
         project_settings = instance.context.data.get("project_settings", {})
-        max_number_characters = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
+        max_number_characters = project_settings.get("aftereffects", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
 
         invalid = []
 
@@ -74,7 +74,9 @@ class ValidateLayersNameLength(pyblish.api.InstancePlugin):
 
     def process(self, instance):
         project_settings = instance.context.data.get("project_settings", {})
-        active = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("active", True)
+        active = project_settings.get("aftereffects", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("active", True)
+        max_number_characters = project_settings.get("aftereffects", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
+
 
         if not active:
             return
@@ -100,4 +102,4 @@ class ValidateLayersNameLength(pyblish.api.InstancePlugin):
                 "comp_id": instance.data["comp_id"]
             }
             detail_lines = [f"- {layer['name']}" for layer in invalid_layers]
-            raise PublishXmlValidationError(self, msg, formatting_data={"layer_names": "<br/>".join(detail_lines)})
+            raise PublishXmlValidationError(self, msg, formatting_data={"layer_names": "<br/>".join(detail_lines), "max_number_characters": max_number_characters})

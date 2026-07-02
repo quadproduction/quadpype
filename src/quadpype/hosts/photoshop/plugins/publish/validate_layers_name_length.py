@@ -30,7 +30,7 @@ class ValidateLayersNameLengthCutName(pyblish.api.Action):
     def process(self, context, plugin):
 
         project_settings = context.data.get("project_settings", {})
-        max_number_characters = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
+        max_number_characters = project_settings.get("photoshop", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
 
         stub = photoshop.stub()
         layers = context.data['transientData'][plugin.__name__]
@@ -55,7 +55,7 @@ class ValidateLayersNameLength(
 
     def process(self, instance):
         project_settings = instance.context.data.get("project_settings", {})
-        active = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("active", True)
+        active = project_settings.get("photoshop", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("active", True)
 
         if not active:
             return
@@ -69,7 +69,7 @@ class ValidateLayersNameLength(
 
         stub = photoshop.stub()
         layers = stub.get_layers()
-        max_number_characters = project_settings.get("global", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
+        max_number_characters = project_settings.get("photoshop", {}).get("publish", {}).get("ValidateLayersNameLength", {}).get("max_number_characters", 31)
 
         for layer in layers:
             if len(layer.name) <= max_number_characters:

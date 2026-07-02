@@ -79,6 +79,11 @@
          "ExtractJson":  {
             "enabled": true
         },
+        "ValidateLayersNameLength": {
+            "enabled": true,
+            "active": true,
+            "max_number_characters": 31
+        },
         "ValidateProjectSettings": {
             "enabled": true,
             "optional": true,
