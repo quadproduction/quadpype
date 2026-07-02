@@ -49,8 +49,8 @@
             "enabled": true
         },
         "ValidateLayersNameLength": {
-            "enabled": true,
-            "active": true,
+            "enabled": false,
+            "active": false,
             "max_number_characters": 31
         },
         "ValidateSceneSettings": {
