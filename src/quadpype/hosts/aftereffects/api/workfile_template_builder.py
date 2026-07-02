@@ -18,6 +18,35 @@ from quadpype.hosts.aftereffects.api import get_stub
 
 PLACEHOLDER_SET = "PLACEHOLDERS_SET"
 PLACEHOLDER_ID = "quadpype.placeholder"
+_ACTIVE_PLACEHOLDER_DIALOGS = {
+    "create": None,
+    "update": None,
+}
+
+
+def _show_placeholder_dialog(host, builder, dialog_key, placeholder_item=None):
+    dialog = _ACTIVE_PLACEHOLDER_DIALOGS.get(dialog_key)
+
+    if dialog and dialog.isVisible():
+        if placeholder_item is not None:
+            dialog.set_update_mode(placeholder_item)
+        else:
+            dialog.set_create_mode()
+        dialog.raise_()
+        dialog.activateWindow()
+        return
+
+    dialog = WorkfileBuildPlaceholderDialog(host, builder)
+    if placeholder_item is not None:
+        dialog.set_update_mode(placeholder_item)
+
+    _ACTIVE_PLACEHOLDER_DIALOGS[dialog_key] = dialog
+    dialog.finished.connect(
+        lambda *_: _ACTIVE_PLACEHOLDER_DIALOGS.__setitem__(dialog_key, None)
+    )
+    dialog.show()
+    dialog.raise_()
+    dialog.activateWindow()
 
 class AETemplateBuilder(AbstractTemplateBuilder):
     """Concrete implementation of AbstractTemplateBuilder for AE"""
@@ -263,10 +292,7 @@ def create_placeholder(*args):
     """Called when new workile placeholder should be created."""
     host = registered_host()
     builder = AETemplateBuilder(host)
-    window = WorkfileBuildPlaceholderDialog(host, builder)
-    window.show()
-    window.raise_()
-    window.activateWindow()
+    _show_placeholder_dialog(host, builder, "create")
 
 
 def update_placeholder(*args):
@@ -301,8 +327,9 @@ def update_placeholder(*args):
                        "Remove and re-create placeholder.")
         return
 
-    window = WorkfileBuildPlaceholderDialog(host, builder)
-    window.set_update_mode(placeholder_item)
-    window.show()
-    window.raise_()
-    window.activateWindow()
+    _show_placeholder_dialog(
+        host,
+        builder,
+        "update",
+        placeholder_item=placeholder_item
+    )
