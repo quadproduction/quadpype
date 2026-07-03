@@ -544,23 +544,18 @@ class AbstractTemplateBuilder(ABC):
         if create_first_version:
             created_version_workfile = self.create_first_workfile_version(template_path)
 
-        if created_version_workfile and not autobuild_first_version:
+        if created_version_workfile and not autobuild_first_version and not workfile_creation_enabled:
             self.log.info("Auto build not activated, stopping the template build")
             return
 
         # if first version is created, import template
         # and populate placeholders
-        if (
-            create_first_version
-            and workfile_creation_enabled
-            and created_version_workfile
-        ):
+        if (created_version_workfile):
             self.import_template(template_path)
-            self.populate_scene_placeholders(
-                level_limit, keep_placeholders)
-
+            self.populate_scene_placeholders(level_limit, keep_placeholders)
             # save workfile after template is populated
             self.save_workfile(created_version_workfile)
+            return
 
         # ignore process if first workfile is enabled
         # but a version is already created
@@ -568,8 +563,7 @@ class AbstractTemplateBuilder(ABC):
             return
 
         self.import_template(template_path)
-        self.populate_scene_placeholders(
-            level_limit, keep_placeholders)
+        self.populate_scene_placeholders(level_limit, keep_placeholders)
         return True
 
     def rebuild_template(self):

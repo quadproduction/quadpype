@@ -56,7 +56,65 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
     use_legacy_creators = False
     template_data = ""
 
-    def import_template(self, path):
+    def build_template(
+    self,
+    template_path=None,
+    level_limit=None,
+    keep_placeholders=None,
+    create_first_version=None,
+    workfile_creation_enabled=False
+    ):
+        """Blender override of build_template.
+        Needed because Blender uses a timer to load the template file,
+        so populate_scene_placeholders must be called AFTER the timer,
+        not immediately after import_template like the generic does.
+        """
+
+        template_preset = self.get_template_preset()
+
+        if template_path is None:
+            template_path = template_preset["path"]
+
+        if self.compare_current_workfile_and_template(template_path, None):
+            self.log.info(
+                "Current workfile is the template or already built, "
+                "aborting build."
+            )
+            return
+
+        if keep_placeholders is None:
+            keep_placeholders = template_preset["keep_placeholder"]
+        if create_first_version is None:
+            create_first_version = template_preset["create_first_version"]
+
+        autobuild_first_version = template_preset.get(
+            "autobuild_first_version", False
+        )
+
+        created_version_workfile = False
+        if create_first_version:
+            created_version_workfile = self.create_first_workfile_version(
+                template_path
+            )
+
+        if (
+            created_version_workfile
+            and not autobuild_first_version
+            and not workfile_creation_enabled
+        ):
+            self.log.info(
+                "Auto build not activated, stopping the template build"
+            )
+            return
+
+        ''' Pour Blender : import_template gère juste apres populate et save dans un timer différé'''
+        self.import_template(
+            template_path,
+            level_limit=level_limit,
+            keep_placeholders=keep_placeholders
+        )
+
+    def import_template(self, path, level_limit=None, keep_placeholders=None):
         """Import template into current scene.
         Block if a template is already loaded.
         Args:
@@ -86,10 +144,11 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
             purge_orphans(is_recursive=True)
             if should_apply_settings_on_build_first_workfile():
                 self._set_settings()
+            self.populate_scene_placeholders(level_limit, keep_placeholders)
             save_file(current_file())
             return None
 
-        bpy.app.timers.register(_delayed_open, first_interval=0.1)
+        bpy.app.timers.register(_delayed_open, first_interval=2.0)
         return True
 
     @staticmethod
@@ -188,8 +247,43 @@ class BlenderPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
         placeholder_nodes = self.builder.get_shared_populate_data(
             "placeholder_nodes"
         )
+        print("1")
+        print(placeholder_nodes)
         if placeholder_nodes is None:
-            empties = [obj for obj in bpy.data.objects if pipeline.get_avalon_node(obj).get("plugin_identifier", None)]
+
+            print("===SCENE ACTIVE===")
+            print(bpy.context.scene.name)
+
+            print("===TOUTES SCENES EN MEMOIRE===")
+            for s in bpy.data.scenes:
+                print(s.name)
+
+            print("===TOUS OBJETS EN MEMOIRE===")
+            for obj in bpy.data.objects:
+                print(f" obj: {obj.name} & avalon.node: {pipeline.get_avalon_node(obj)}")
+
+            print("TOUTES COLLECTIONS EN MEMOIRE")
+            for col in bpy.data.collections:
+                print(f"col:{col.name} & avalon_node: {pipeline.get_avalon_node(col)} & idenf: {pipeline.get_avalon_node(col).get('plugin_identifier', None)}")
+
+            empties = []
+
+            # empties.extend(
+            #     [
+            #         obj for obj in bpy.data.collections if
+            #         pipeline.get_avalon_node(obj).get("plugin_identifier", None)
+            #     ]
+            # )
+            empties.extend(
+                [
+                    obj for obj in bpy.data.objects if
+                    pipeline.get_avalon_node(obj).get("plugin_identifier", None)
+                ]
+            )
+
+            print("===EMPTIES===")
+            print(empties)
+
             placeholder_nodes = {}
             for empty in empties:
                 node_name = empty.name
@@ -293,6 +387,8 @@ class BlenderPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
     def collect_placeholders(self):
         output = []
         scene_placeholders = self._collect_scene_placeholders()
+        print('9')
+        print(scene_placeholders)
         for obj_name, placeholder_data in scene_placeholders.items():
             if placeholder_data.get("plugin_identifier") != self.identifier:
                 continue
@@ -568,7 +664,7 @@ class BlenderPlaceholderCreatePlugin(PlaceholderPlugin, PlaceholderCreateMixin):
 
 def build_workfile_template(*args):
     builder = BlenderTemplateBuilder(registered_host())
-    builder.build_template()
+    builder.build_template(workfile_creation_enabled=True)
 
 
 def update_workfile_template(*args):
