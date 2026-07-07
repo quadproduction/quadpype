@@ -30,9 +30,7 @@ class ReassignMaterials(
             for i, mat in enumerate(reversed(materials)):
                 if not mat:
                     continue
-                if mat in obj.data.materials[:]:
-                    continue
 
-                obj.material_slots[i].material = mat
+                obj.data.material_slots[i].material = mat
                 self.log.info(f"{mat.name} has been affected to {obj.name}.")
         return

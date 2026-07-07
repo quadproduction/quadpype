@@ -15,11 +15,11 @@ class ValidateMaterialSlotLinkMode(
     plugin.BlenderInstancePlugin,
     OptionalPyblishPluginMixin,
 ):
-    """Validate that material slots are inb object mode, even empty."""
+    """Validate that material slots are in object mode, even empty."""
 
     order = ValidateContentsOrder
     hosts = ["blender"]
-    families = ["model", "rig", "layout", "blendScene"]
+    families = ["png"]
     label = "Material Slots in Object Link"
     actions = [RepairAction]
     optional = True
@@ -27,17 +27,25 @@ class ValidateMaterialSlotLinkMode(
     @staticmethod
     def is_material_slot_linked_object(obj: bpy.types.Object) -> bool:
         for slot in obj.material_slots:
-            if slot.link != "OBJECT":
-                return False
-        return True
+            if slot.link == "OBJECT" and slot.material != None :
+                return True
+        return False
+
+    @staticmethod
+    def is_material_slot_linked_data(obj: bpy.types.Object) -> bool:
+        for slot in obj.material_slots:
+            if slot.link == "DATA":
+                return True
+        return False
 
     @classmethod
     def get_invalid(cls, instance) -> List:
         invalid = []
         for obj in instance:
             if isinstance(obj, bpy.types.Object) and obj.type == 'MESH':
-                if not cls.is_material_slot_linked_object(obj):
+                if cls.is_material_slot_linked_data(obj) or cls.is_material_slot_linked_object :
                     invalid.append(obj)
+                    print(f"===INVALID SLOT : {invalid}===")
         return invalid
 
     def process(self, instance):
@@ -47,7 +55,7 @@ class ValidateMaterialSlotLinkMode(
         invalid = self.get_invalid(instance)
         if invalid:
             raise PublishValidationError(
-                f"Objects found in instance without material slot in OBJECT mode: {invalid}"
+                f"Objects in instance must have only one empty material slot in OBJECT mode: INVALID OBJECT : {invalid}"
             )
 
     @classmethod
@@ -55,4 +63,8 @@ class ValidateMaterialSlotLinkMode(
         invalid = cls.get_invalid(instance)
         for obj in invalid:
             for slot in obj.material_slots:
-                slot.link = "OBJECT"
+                if slot.link == "DATA" or slot.link == "OBJECT":
+                    print(f"===SLOT PLEIN : {slot.name} sur {obj.name}===")
+                    slot.material = None
+                    slot.link = "OBJECT"
+                    print(f"=== SLOT VIDE sur {obj.name}===")

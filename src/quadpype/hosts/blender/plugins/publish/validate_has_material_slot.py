@@ -19,7 +19,7 @@ class ValidateObjectsHaveMaterial(
 
     order = ValidateContentsOrder
     hosts = ["blender"]
-    families = ["model", "rig", "layout", "blendScene"]
+    families = ["png"]
     label = "Objects Have Material Slot"
     actions = [RepairAction]
     optional = True
