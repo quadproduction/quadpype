@@ -13,6 +13,9 @@
             "rules": {}
         }
     },
+    "colorspace": {
+        "colorspace_name": "sRGB IEC61966-2.1"
+    },
     "create": {
         "ImageCreator": {
             "enabled": true,
@@ -56,6 +59,11 @@
         },
         "CollectVersion": {
             "enabled": false
+        },
+        "ValidateLayersNameLength": {
+            "enabled": false,
+            "active": false,
+            "max_number_characters": 31
         },
         "ValidateContainers": {
             "enabled": true,

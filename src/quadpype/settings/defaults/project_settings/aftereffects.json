@@ -48,6 +48,11 @@
         "CollectReview": {
             "enabled": true
         },
+        "ValidateLayersNameLength": {
+            "enabled": false,
+            "active": false,
+            "max_number_characters": 31
+        },
         "ValidateSceneSettings": {
             "enabled": true,
             "optional": true,

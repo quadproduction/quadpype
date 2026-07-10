@@ -7,6 +7,7 @@ from quadpype.pipeline.action.utils import get_actions_by_family
 from quadpype.tools.attribute_defs import AttributeDefinitionsWidget
 
 
+
 class WorkfileBuildPlaceholderDialog(QtWidgets.QDialog):
     def __init__(self, host, builder, parent=None):
         super().__init__(parent)
