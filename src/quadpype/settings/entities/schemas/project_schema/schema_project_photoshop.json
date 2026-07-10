@@ -25,6 +25,12 @@
             "collapsible": true,
             "children": [
                 {
+                    "type": "boolean",
+                    "key": "enabled",
+                    "label": "Enabled",
+                    "default": true
+                },
+                {
                     "type": "text",
                     "key": "colorspace_name",
                     "label": "Colorspace Name"
