@@ -13,6 +13,9 @@
             "rules": {}
         }
     },
+    "colorspace": {
+        "colorspace_name": "sRGB IEC61966-2.1"
+    },
     "create": {
         "ImageCreator": {
             "enabled": true,

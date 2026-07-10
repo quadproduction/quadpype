@@ -19,6 +19,19 @@
             ]
         },
         {
+            "key": "colorspace",
+            "type": "dict",
+            "label": "Color Management (set dcc colorspace)",
+            "collapsible": true,
+            "children": [
+                {
+                    "type": "text",
+                    "key": "colorspace_name",
+                    "label": "Colorspace Name"
+                }
+            ]
+        },
+        {
             "type": "dict",
             "collapsible": true,
             "key": "create",
