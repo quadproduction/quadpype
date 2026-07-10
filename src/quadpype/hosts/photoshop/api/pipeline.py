@@ -346,6 +346,11 @@ def set_colorspace_from_settings():
     project_name = os.environ['AVALON_PROJECT']
     project_settings = get_project_settings(project_name)
 
+    colorspace_enabled = project_settings['photoshop']['colorspace'].get('enabled', False)
+    if not colorspace_enabled:
+        log.info("Colorspace setting is disabled in project settings.")
+        return
+
     colorspace_name = project_settings['photoshop']['colorspace']['colorspace_name']
     stub = lib.stub()
     stub.set_working_colorspace_rgb(colorspace_name)
