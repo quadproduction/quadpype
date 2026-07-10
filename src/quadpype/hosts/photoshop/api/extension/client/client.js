@@ -378,6 +378,15 @@ function main(websocket_url) {
             });
     });
 
+    RPC.addRoute('Photoshop.set_working_colorspace_rgb', function (data) {
+        log.warn('Server called client route "set_working_colorspace_rgb":', data);
+        return runEvalScript("setWorkingColorspaceRGB('" + data.colorspace + "')")
+            .then(function (result) {
+                log.warn("set_working_colorspace_rgb: " + result);
+                return result;
+            });
+    });
+
     RPC.addRoute('Photoshop.get_extension_version', function (data) {
         log.warn('Server called client route "get_extension_version":', data);
         return get_extension_version();
