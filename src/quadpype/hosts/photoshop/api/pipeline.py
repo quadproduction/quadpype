@@ -346,12 +346,16 @@ def set_colorspace_from_settings():
     project_name = os.environ['AVALON_PROJECT']
     project_settings = get_project_settings(project_name)
 
-    colorspace_enabled = project_settings['photoshop']['colorspace'].get('enabled', False)
-    if not colorspace_enabled:
+    colorspace_settings = project_settings['photoshop'].get('colorspace', {})
+    if not colorspace_settings.get('enabled', False):
         log.info("Colorspace setting is disabled in project settings.")
         return
 
-    colorspace_name = project_settings['photoshop']['colorspace']['colorspace_name']
+    colorspace_name = colorspace_settings.get('colorspace_name', None)
+    if not colorspace_name:
+        log.warning("No colorspace name specified in project settings.")
+        return
+
     stub = lib.stub()
     stub.set_working_colorspace_rgb(colorspace_name)
     log.info(f"Set Photoshop colorspace to {colorspace_name} based on project settings.")
