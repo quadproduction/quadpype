@@ -36,7 +36,7 @@ class LoadImage(plugin.Loader):
         "filepath = '\"'\"{}\"'\"'\n"
         "layer_name = \"{}\"\n"
         "tv_loadsequence filepath {}PARSE layer_id\n"
-        "tv_layerrename layer_id layer_name"
+        "tv_layerrename layer_id layer_name\n"
     )
 
     defaults = {
