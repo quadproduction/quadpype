@@ -35,9 +35,10 @@ class RemoveLooksTemporarily(
                 continue
             mats = []
             for i, slot in enumerate(obj.material_slots):
+                print(f"=== SLOT {i} : {slot.material} | LINK : {slot.link} ===")
                 if slot.material:
                     mats.append(slot.material)
-                    self.log.info(f"{slot.material.name} in mode {slot.link} on {obj.name} will be removed temporarily")
+                    self.log.info(f"{slot.material.name} en mode {slot.link} sur {obj.name} va etre retiré temporairement")
                     obj.material_slots[i].material = None
 
             if mats:
