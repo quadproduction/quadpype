@@ -31,6 +31,6 @@ class ReassignMaterials(
                 if not mat:
                     continue
 
-                obj.material_slots[i].material = mat
+                obj.data.material_slots[i].material = mat
                 self.log.info(f"{mat.name} has been affected to {obj.name}.")
         return
