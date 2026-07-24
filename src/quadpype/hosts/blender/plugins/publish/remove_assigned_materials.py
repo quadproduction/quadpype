@@ -34,20 +34,14 @@ class RemoveLooksTemporarily(
             if not getattr(obj, "material_slots"):
                 continue
             mats = []
-            indices_to_remove = [i for i, slot in enumerate(obj.material_slots) if slot.material]
-            for i in reversed(indices_to_remove):
-                mat = obj.material_slots[i].material
-                if mat:
-                    mats.append(mat)
-                    self.log.info(f"{mat.name} on {obj.name} will be temporarily removed.")
-                obj.material_slots[i].material = None
+            for i, slot in enumerate(obj.material_slots):
+                if slot.material:
+                    mats.append(slot.material)
+                    self.log.info(f"{slot.material.name} in mode {slot.link} on {obj.name} will be removed temporarily")
+                    obj.material_slots[i].material = None
 
             if mats:
                 materials_by_objects[obj.name] = mats
-
-            if len(obj.material_slots) == 0:
-                obj.data.materials.append(None)
-                obj.material_slots[-1].link = "OBJECT"
 
         if not materials_by_objects:
             self.log.info(f"No materials from object found, continue...")
