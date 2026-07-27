@@ -56,7 +56,64 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
     use_legacy_creators = False
     template_data = ""
 
-    def import_template(self, path):
+    def build_template(
+    self,
+    template_path=None,
+    level_limit=None,
+    keep_placeholders=None,
+    create_first_version=None,
+    workfile_creation_enabled=False
+    ):
+        """Blender override of build_template.
+        Needed because Blender uses a timer to load the template file,
+        so populate_scene_placeholders must be called AFTER the timer,
+        not immediately after import_template like the generic does.
+        """
+
+        template_preset = self.get_template_preset()
+
+        if template_path is None:
+            template_path = template_preset["path"]
+
+        if self.compare_current_workfile_and_template(template_path, None):
+            self.log.info(
+                "Current workfile is the template or already built, "
+                "aborting build."
+            )
+            return
+
+        if keep_placeholders is None:
+            keep_placeholders = template_preset["keep_placeholder"]
+        if create_first_version is None:
+            create_first_version = template_preset["create_first_version"]
+
+        autobuild_first_version = template_preset.get(
+            "autobuild_first_version", False
+        )
+
+        created_version_workfile = False
+        if create_first_version:
+            created_version_workfile = self.create_first_workfile_version(
+                template_path
+            )
+
+        if (
+            created_version_workfile
+            and not autobuild_first_version
+            and not workfile_creation_enabled
+        ):
+            self.log.info(
+                "Auto build not activated, stopping the template build"
+            )
+            return
+
+        self.import_template(
+            template_path,
+            level_limit=level_limit,
+            keep_placeholders=keep_placeholders
+        )
+
+    def import_template(self, path, level_limit=None, keep_placeholders=None):
         """Import template into current scene.
         Block if a template is already loaded.
         Args:
@@ -79,16 +136,18 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
 
         workfile_path = save_file(current_file())
         shutil.copy2(path, workfile_path)
-        open_file(workfile_path)
 
-        bpy.context.scene.name = self.current_asset_name
+        def _delayed_open():
+            open_file(workfile_path)
+            bpy.context.scene.name = self.current_asset_name
+            purge_orphans(is_recursive=True)
+            if should_apply_settings_on_build_first_workfile():
+                self._set_settings()
+            self.populate_scene_placeholders(level_limit, keep_placeholders)
+            save_file(current_file())
+            return None
 
-        purge_orphans(is_recursive=True)
-
-        if should_apply_settings_on_build_first_workfile():
-            self._set_settings()
-
-        save_file(current_file())
+        bpy.app.timers.register(_delayed_open, first_interval=2.0)
         return True
 
     @staticmethod
@@ -188,7 +247,11 @@ class BlenderPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
             "placeholder_nodes"
         )
         if placeholder_nodes is None:
-            empties = [obj for obj in bpy.data.objects if pipeline.get_avalon_node(obj).get("plugin_identifier", None)]
+            empties = [
+                obj for obj in bpy.data.objects if
+                pipeline.get_avalon_node(obj).get("plugin_identifier", None)
+            ]
+
             placeholder_nodes = {}
             for empty in empties:
                 node_name = empty.name
@@ -567,7 +630,7 @@ class BlenderPlaceholderCreatePlugin(PlaceholderPlugin, PlaceholderCreateMixin):
 
 def build_workfile_template(*args):
     builder = BlenderTemplateBuilder(registered_host())
-    builder.build_template()
+    builder.build_template(workfile_creation_enabled=True)
 
 
 def update_workfile_template(*args):
