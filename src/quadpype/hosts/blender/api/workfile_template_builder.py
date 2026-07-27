@@ -107,7 +107,6 @@ class BlenderTemplateBuilder(AbstractTemplateBuilder):
             )
             return
 
-        ''' Pour Blender : import_template gère juste apres populate et save dans un timer différé'''
         self.import_template(
             template_path,
             level_limit=level_limit,
@@ -247,42 +246,11 @@ class BlenderPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
         placeholder_nodes = self.builder.get_shared_populate_data(
             "placeholder_nodes"
         )
-        print("1")
-        print(placeholder_nodes)
         if placeholder_nodes is None:
-
-            print("===SCENE ACTIVE===")
-            print(bpy.context.scene.name)
-
-            print("===TOUTES SCENES EN MEMOIRE===")
-            for s in bpy.data.scenes:
-                print(s.name)
-
-            print("===TOUS OBJETS EN MEMOIRE===")
-            for obj in bpy.data.objects:
-                print(f" obj: {obj.name} & avalon.node: {pipeline.get_avalon_node(obj)}")
-
-            print("TOUTES COLLECTIONS EN MEMOIRE")
-            for col in bpy.data.collections:
-                print(f"col:{col.name} & avalon_node: {pipeline.get_avalon_node(col)} & idenf: {pipeline.get_avalon_node(col).get('plugin_identifier', None)}")
-
-            empties = []
-
-            # empties.extend(
-            #     [
-            #         obj for obj in bpy.data.collections if
-            #         pipeline.get_avalon_node(obj).get("plugin_identifier", None)
-            #     ]
-            # )
-            empties.extend(
-                [
-                    obj for obj in bpy.data.objects if
-                    pipeline.get_avalon_node(obj).get("plugin_identifier", None)
-                ]
-            )
-
-            print("===EMPTIES===")
-            print(empties)
+            empties = [
+                obj for obj in bpy.data.objects if
+                pipeline.get_avalon_node(obj).get("plugin_identifier", None)
+            ]
 
             placeholder_nodes = {}
             for empty in empties:
@@ -387,8 +355,6 @@ class BlenderPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
     def collect_placeholders(self):
         output = []
         scene_placeholders = self._collect_scene_placeholders()
-        print('9')
-        print(scene_placeholders)
         for obj_name, placeholder_data in scene_placeholders.items():
             if placeholder_data.get("plugin_identifier") != self.identifier:
                 continue
