@@ -5,7 +5,6 @@ from qtpy import QtWidgets
 import pyblish.api
 
 from quadpype.lib import register_event_callback, Logger
-from quadpype.settings import get_project_settings
 from quadpype.pipeline import (
     register_loader_plugin_path,
     register_creator_plugin_path,
@@ -80,7 +79,7 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCa
     def open_workfile(self, filepath):
         stub = _get_stub()
         stub.open(filepath)
-        set_colorspace_from_settings()
+
         return True
 
     def save_workfile(self, filepath=None):
@@ -220,7 +219,6 @@ def check_inventory():
 
 
 def on_application_launch():
-    set_colorspace_from_settings()
     check_inventory()
 
 
@@ -336,17 +334,3 @@ def cache_and_get_instances(creator):
         creator.collection_shared_data[shared_key] = \
             creator.host.list_instances()
     return creator.collection_shared_data[shared_key]
-
-def set_colorspace_from_settings():
-    """Set colorspace for Photoshop from settings.
-
-    This function retrieves the colorspace setting from the configuration
-    and applies it to Photoshop using the stub.
-    """
-    project_name = os.environ['AVALON_PROJECT']
-    project_settings = get_project_settings(project_name)
-
-    colorspace_name = project_settings['photoshop']['colorspace']['colorspace_name']
-    stub = lib.stub()
-    stub.set_working_colorspace_rgb(colorspace_name)
-    log.info(f"Set Photoshop colorspace to {colorspace_name} based on project settings.")

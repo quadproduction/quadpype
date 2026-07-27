@@ -708,12 +708,6 @@ class PhotoshopServerStub:
             self.client.call('Photoshop.export_scene_to_json', path=path)
         )
 
-    def set_working_colorspace_rgb(self, colorspace):
-        """Set working colorspace."""
-        return self.websocketserver.call(
-            self.client.call('Photoshop.set_working_colorspace_rgb', colorspace=colorspace)
-        )
-
     def get_extension_version(self):
         """Returns version number of installed extension."""
         return self.websocketserver.call(
