@@ -753,3 +753,18 @@ function exportSceneToJSON(path) {
 
     return true
 }
+
+function setWorkingColorspaceRGB(profileName) {
+    var ref = new ActionReference();
+    ref.putProperty(charIDToTypeID("Prpr"), stringIDToTypeID("colorSettings"));
+    ref.putEnumerated(charIDToTypeID("capp"), charIDToTypeID("Ordn"), charIDToTypeID("Trgt"));
+
+    var desc = new ActionDescriptor();
+    desc.putReference(charIDToTypeID("null"), ref);
+
+    var colorSettingsDesc = new ActionDescriptor();
+    colorSettingsDesc.putString(stringIDToTypeID("workingRGB"), profileName);
+
+    desc.putObject(charIDToTypeID("T   "), stringIDToTypeID("colorSettings"), colorSettingsDesc);
+    executeAction(charIDToTypeID("setd"), desc, DialogModes.NO);
+}

@@ -9,7 +9,8 @@ from .launch_logic import stub
 from .pipeline import (
     PhotoshopHost,
     ls,
-    containerise
+    containerise,
+    set_colorspace_from_settings
 )
 from .plugin import (
     PhotoshopLoader,
@@ -30,6 +31,7 @@ __all__ = [
     "PhotoshopHost",
     "ls",
     "containerise",
+    "set_colorspace_from_settings",
 
     # Plugin
     "PhotoshopLoader",

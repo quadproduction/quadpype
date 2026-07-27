@@ -5,6 +5,7 @@ from qtpy import QtWidgets
 import pyblish.api
 
 from quadpype.lib import register_event_callback, Logger
+from quadpype.settings import get_project_settings
 from quadpype.pipeline import (
     register_loader_plugin_path,
     register_creator_plugin_path,
@@ -79,7 +80,7 @@ class PhotoshopHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost, WorkFileCa
     def open_workfile(self, filepath):
         stub = _get_stub()
         stub.open(filepath)
-
+        set_colorspace_from_settings()
         return True
 
     def save_workfile(self, filepath=None):
@@ -219,6 +220,7 @@ def check_inventory():
 
 
 def on_application_launch():
+    set_colorspace_from_settings()
     check_inventory()
 
 
