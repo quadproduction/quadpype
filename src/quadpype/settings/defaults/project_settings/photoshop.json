@@ -13,6 +13,10 @@
             "rules": {}
         }
     },
+    "colorspace": {
+        "enabled": true,
+        "colorspace_name": "sRGB IEC61966-2.1"
+    },
     "create": {
         "ImageCreator": {
             "enabled": true,

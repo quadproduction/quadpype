@@ -171,6 +171,12 @@ class MongoUserHandler(UserHandler):
             updated_entity='settings'
         )
 
+        # Keep tracker login/id information in sync at each QuadPype startup.
+        try:
+            self.set_tracker_login_to_user_profile()
+        except Exception as exc:
+            print(f"Failed to update tracker logins on startup: {exc}")
+
         return user_profile
 
     @staticmethod
