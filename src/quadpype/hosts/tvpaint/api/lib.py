@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 import math
 from PIL import Image
+from quadpype.lib.transcoding import get_ffprobe_streams
 
 from quadpype.hosts.tvpaint.api import communication_server
 
@@ -749,6 +750,36 @@ def transform_layer(layer_id, scale_x, scale_y, pos_x, pos_y):
 def show_warning(msg):
     execute_george_through_file(f"tv_warn \"{msg}\"")
 
+
+def _get_media_dimensions(path):
+    """Return media width and height for images and videos.
+
+    Tries PIL first (images), then ffprobe (videos and other media).
+    """
+    try:
+        with Image.open(path) as img:
+            return img.size
+    except Exception:
+        pass
+
+    try:
+        streams = get_ffprobe_streams(path, logger=log)
+    except Exception:
+        log.warning("Failed to get media dimensions for path '%s'.", path)
+        log.debug("Media dimensions lookup traceback for path '%s'.", path, exc_info=True)
+        return None, None
+
+    for stream in streams:
+        if stream.get("codec_type") != "video":
+            continue
+
+        width = stream.get("width")
+        height = stream.get("height")
+        if width and height:
+            return int(width), int(height)
+
+    return None, None
+
 def correct_pixel_ratio_after_stretch_load(layer_id, path):
     """Since the correct pixel ratio is not available through george script,
     we must calculate and emulate it by resize"""
@@ -757,23 +788,33 @@ def correct_pixel_ratio_after_stretch_load(layer_id, path):
     position_x = math.ceil(project_width / 2)
     position_y = math.ceil(project_height / 2)
 
-    img = Image.open(path)
-    width, height = img.size
+    width, height = _get_media_dimensions(path)
+    if not width or not height:
+        log.warning(
+            "Could not determine media size for '%s'. Skipping pixel ratio correction.",
+            path
+        )
+        return
 
-    ration_img = width / height
+    ratio_img = width / height
+    ratio_project = project_width / project_height
 
-    if project_width >= project_height:
-        final_width = ration_img * project_height
-        resize_percent = 100 * final_width / project_width
-        transform_layer(layer_id, resize_percent, 100, position_x, position_y)
-
-    else:
-        final_height = project_width / ration_img
+    # If media is wider than project, fit by width (adjust height).
+    # If media is taller/narrower, fit by height (adjust width).
+    if ratio_img >= ratio_project:
+        final_height = project_width / ratio_img
         resize_percent = 100 * final_height / project_height
         transform_layer(layer_id, 100, resize_percent, position_x, position_y)
 
+    else:
+        final_width = ratio_img * project_height
+        resize_percent = 100 * final_width / project_width
+        transform_layer(layer_id, resize_percent, 100, position_x, position_y)
+
 def is_image_larger_than_project(path):
     project_width, project_height = get_project_size()
-    img = Image.open(path)
-    width, height = img.size
+    width, height = _get_media_dimensions(path)
+    if not width or not height:
+        return False
+
     return width > project_width or height > project_height

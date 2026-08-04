@@ -440,7 +440,7 @@ class UpdatePlaceholder(LaunchQtApp):
 
 
 class BuildWorkfileFromTemplate(bpy.types.Operator):
-    bl_idname = "wm.ayon_build_workfile_from_tempalte"
+    bl_idname = "wm.ayon_build_workfile_from_template"
     bl_label = "Build Workfile From Template"
     def execute(self, context):
         build_workfile_template()

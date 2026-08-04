@@ -27,7 +27,7 @@ def safe_excepthook(*args):
 
 
 def main(*subprocess_args):
-    from quadpype.hosts.photoshop.api import PhotoshopHost
+    from quadpype.hosts.photoshop.api import PhotoshopHost, set_colorspace_from_settings
 
     host = PhotoshopHost()
     install_host(host)
@@ -61,7 +61,7 @@ def main(*subprocess_args):
 
     if not is_last_workfile_exists() and should_build_first_workfile():
         launcher.execute_in_main_thread(build_workfile_template)
-
+    launcher.execute_in_main_thread(set_colorspace_from_settings)
     sys.exit(app.exec_())
 
 

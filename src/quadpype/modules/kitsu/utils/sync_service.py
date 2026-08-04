@@ -129,6 +129,12 @@ class Listener:
         gazu.events.add_listener(
             self.event_client, "task:delete", self._delete_task
         )
+        gazu.events.add_listener(
+            self.event_client, "task:assign", self._update_task
+        )
+        gazu.events.add_listener(
+            self.event_client, "task:unassign", self._update_task
+        )
 
     def start(self):
         """Start listening for events."""
