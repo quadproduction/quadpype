@@ -4,6 +4,7 @@
         "sequence": "SQ##",
         "shot": "SH##"
     },
+    "admin_token":"",
     "publish": {
         "IntegrateKitsuNote": {
             "set_status_note": false,

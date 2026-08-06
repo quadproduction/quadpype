@@ -28,6 +28,11 @@
             ]
         },
         {
+            "type": "text",
+            "key": "admin_token",
+            "label": "Admin_Token:"
+        },
+        {
             "type": "dict",
             "collapsible": true,
             "key": "publish",
