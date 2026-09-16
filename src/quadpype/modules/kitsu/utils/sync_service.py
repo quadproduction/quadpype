@@ -37,7 +37,7 @@ log = Logger.get_logger(__name__)
 class Listener:
     """Host Kitsu listener."""
 
-    def __init__(self, login, password, sync_quick_active_projects=False):
+    def __init__(self, login, password, totp_secret=None, sync_quick_active_projects=False):
         """Create client and add listeners to events without starting it.
 
             Run `listener.start()` to actually start the service.
@@ -45,6 +45,8 @@ class Listener:
         Args:
             login (str): Kitsu user login
             password (str): Kitsu user password
+            totp_secret (str, optional): Kitsu user TOTP secret for two-factor authentication. Defaults to None.
+            sync_quick_active_projects (bool, optional): Whether to sync quick active projects. Defaults to False.
 
         Raises:
             AuthFailedException: Wrong user login and/or password
@@ -57,7 +59,7 @@ class Listener:
         gazu.client.set_host(os.environ["KITSU_SERVER"])
 
         # Authenticate
-        if not validate_credentials(login, password):
+        if not validate_credentials(login, password, totp_secret):
             raise gazu.exception.AuthFailedException(
                 'Kitsu authentication failed for login: "{}"...'.format(login)
             )
@@ -788,12 +790,14 @@ class Listener:
                     return
 
 
-def start_listeners(login: str, password: str, sync_quick_active_projects: bool = False):
+def start_listeners(login: str, password: str, totp_secret: str = None, sync_quick_active_projects: bool = False):
     """Start listeners to keep QuadPype up-to-date with Kitsu.
 
     Args:
         login (str): Kitsu user login
         password (str): Kitsu user password
+        totp_secret (str, optional): Kitsu user TOTP secret for two-factor authentication. Defaults to None.
+        sync_quick_active_projects (bool, optional): Whether to sync quick active projects. Defaults to False.
     """
 
     # Refresh token every week
@@ -805,5 +809,5 @@ def start_listeners(login: str, password: str, sync_quick_active_projects: bool 
     refresh_token_every_week()
 
     # Connect to server
-    listener = Listener(login, password, sync_quick_active_projects)
+    listener = Listener(login, password, totp_secret=totp_secret, sync_quick_active_projects=sync_quick_active_projects)
     listener.start()

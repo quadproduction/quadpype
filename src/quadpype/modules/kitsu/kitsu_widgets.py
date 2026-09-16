@@ -31,16 +31,15 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         window_icon = QtGui.QIcon(style.get_app_icon_path())
         self.setWindowIcon(window_icon)
 
-        self.resize(300, 120)
+        self.resize(420, 220)
 
         global_settings = get_global_settings()
-        user_login, user_pwd = load_credentials()
+        user_login, user_pwd, totp_secret = load_credentials()
 
         self._final_result = None
         self._connectable = bool(
             global_settings[ADDONS_SETTINGS_KEY].get("kitsu", {}).get("server")
         )
-
         # Server label
         server_message = (
             global_settings[ADDONS_SETTINGS_KEY]["kitsu"]["server"]
@@ -95,6 +94,51 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
 
         # Message label
         message_label = QtWidgets.QLabel("", self)
+        message_label.setWordWrap(True)
+
+        # Two-factor options
+        twofa_toggle_btn = QtWidgets.QPushButton(
+            "I use two-factor authentication",
+            self
+        )
+        twofa_toggle_btn.setCheckable(True)
+
+        twofa_widget = QtWidgets.QWidget(self)
+        twofa_widget.setVisible(False)
+
+        twofa_info_label = QtWidgets.QLabel(
+            "If your account uses 2FA, enter your authenticator app code.",
+            twofa_widget
+        )
+        twofa_info_label.setWordWrap(True)
+
+        twofa_code_label = QtWidgets.QLabel("Code:", twofa_widget)
+        twofa_code_input = QtWidgets.QLineEdit(
+            twofa_widget,
+            text=totp_secret,
+        )
+        twofa_code_input.setPlaceholderText("Enter your 2FA code...")
+        twofa_code_input.setEchoMode(QtWidgets.QLineEdit.Password)
+
+        show_twofa_btn = PressHoverButton(twofa_widget)
+        show_twofa_btn.setObjectName("PasswordBtn")
+        show_twofa_btn.setIcon(show_password_icon)
+        show_twofa_btn.setFocusPolicy(QtCore.Qt.ClickFocus)
+
+        twofa_code_widget = QtWidgets.QWidget(twofa_widget)
+        twofa_code_layout = QtWidgets.QHBoxLayout(twofa_code_widget)
+        twofa_code_layout.setContentsMargins(0, 0, 0, 0)
+        twofa_code_layout.addWidget(twofa_code_input)
+        twofa_code_layout.addWidget(show_twofa_btn)
+
+        twofa_form_layout = QtWidgets.QFormLayout()
+        twofa_form_layout.setContentsMargins(0, 0, 0, 0)
+        twofa_form_layout.addRow(twofa_code_label, twofa_code_widget)
+
+        twofa_layout = QtWidgets.QVBoxLayout(twofa_widget)
+        twofa_layout.setContentsMargins(0, 0, 0, 0)
+        twofa_layout.addWidget(twofa_info_label)
+        twofa_layout.addLayout(twofa_form_layout)
 
         # Buttons
         buttons_widget = QtWidgets.QWidget(self)
@@ -120,6 +164,8 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         layout.addSpacing(5)
         layout.addWidget(login_widget, 0)
         layout.addWidget(password_widget, 0)
+        layout.addWidget(twofa_toggle_btn, 0)
+        layout.addWidget(twofa_widget, 0)
         layout.addWidget(message_label, 0)
         layout.addStretch(1)
         layout.addWidget(buttons_widget, 0)
@@ -127,11 +173,16 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         ok_btn.clicked.connect(self._on_ok_click)
         cancel_btn.clicked.connect(self._on_cancel_click)
         show_password_btn.change_state.connect(self._on_show_password)
+        show_twofa_btn.change_state.connect(self._on_show_twofa_code)
+        twofa_toggle_btn.clicked.connect(self._on_toggle_twofa_options)
 
         self.login_input = login_input
         self.password_input = password_input
         self.remember_checkbox = remember_checkbox
         self.message_label = message_label
+        self.twofa_toggle_btn = twofa_toggle_btn
+        self.twofa_widget = twofa_widget
+        self.twofa_code_input = twofa_code_input
 
         self.setStyleSheet(style.load_stylesheet())
 
@@ -159,19 +210,23 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         # Collect values
         login_value = self.login_input.text()
         pwd_value = self.password_input.text()
+        secret_code = self.twofa_code_input.text()
         remember = self.remember_checkbox.isChecked()
 
         # Authenticate
-        if validate_credentials(login_value, pwd_value):
-            set_credentials_envs(login_value, pwd_value)
+        if validate_credentials(login_value, pwd_value, secret_code):
+            set_credentials_envs(login_value, pwd_value, secret_code)
         else:
-            self.message_label.setText("Authentication failed...")
+            self.message_label.setText(
+                "Unable to sign in. Check your credentials. If your account "
+                "uses 2FA, enter your authenticator app code."
+            )
+            self._set_twofa_options_visible(True)
             return
 
         # Remember password cases
         if remember:
-            save_credentials(login_value, pwd_value)
-            user_id = get_kitsu_user_id(login_value, pwd_value)
+            save_credentials(login_value, pwd_value, secret_code)
             set_tracker_login_to_user_profile()
 
         else:
@@ -191,6 +246,27 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         else:
             echo_mode = QtWidgets.QLineEdit.Password
         self.password_input.setEchoMode(echo_mode)
+
+    def _on_show_twofa_code(self, show_twofa_code):
+        if show_twofa_code:
+            echo_mode = QtWidgets.QLineEdit.Normal
+        else:
+            echo_mode = QtWidgets.QLineEdit.Password
+        self.twofa_code_input.setEchoMode(echo_mode)
+
+    def _set_twofa_options_visible(self, visible):
+        self.twofa_widget.setVisible(visible)
+        self.twofa_toggle_btn.setChecked(visible)
+        if visible:
+            self.twofa_toggle_btn.setText("Hide two-factor options")
+        else:
+            self.twofa_toggle_btn.setText("I use two-factor authentication")
+
+    def _on_toggle_twofa_options(self, _checked=False):
+        show_twofa_options = not self.twofa_widget.isVisible()
+        self._set_twofa_options_visible(show_twofa_options)
+        if show_twofa_options:
+            self.twofa_code_input.setFocus()
 
     def _on_cancel_click(self):
         self.close()

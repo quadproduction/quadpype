@@ -3,6 +3,7 @@
 import os
 from typing import Tuple, Optional
 import gazu
+import pyotp
 
 from quadpype.lib import emit_event, QuadPypeSecureRegistry
 
@@ -10,6 +11,7 @@ from quadpype.lib import emit_event, QuadPypeSecureRegistry
 def validate_credentials(
     login: str,
     password: str,
+    secret_code: str = None,
     kitsu_url: Optional[str] = None,
 ) -> bool:
     """Validate credentials by trying to connect to Kitsu host URL.
@@ -33,7 +35,11 @@ def validate_credentials(
 
     # Authenticate
     try:
-        gazu.log_in(login, password)
+        gazu.log_in(
+            login,
+            password,
+            totp=pyotp.TOTP(secret_code).now() if secret_code else None
+        )
     except gazu.exception.AuthFailedException:
         return False
 
@@ -77,12 +83,13 @@ def clear_credentials():
         user_registry.delete_item("password")
 
 
-def save_credentials(login: str, password: str):
+def save_credentials(login: str, password: str, totp_secret: str=None):
     """Save credentials in Secure Registry.
 
     Args:
         login (str): Kitsu user login
         password (str): Kitsu user password
+        totp_secret (str, optional): Kitsu user TOTP secret for two-factor authentication. Defaults to None.
     """
     # Get user registry
     user_registry = QuadPypeSecureRegistry("kitsu_user")
@@ -90,23 +97,24 @@ def save_credentials(login: str, password: str):
     # Set user settings
     user_registry.set_item("login", login)
     user_registry.set_item("password", password)
+    user_registry.set_item("totp_secret", totp_secret)
 
 
-def load_credentials() -> Tuple[str, str]:
+def load_credentials() -> Tuple[str, str, str]:
     """Load registered credentials.
 
     Returns:
-        Tuple[str, str]: (Login, Password)
+        Tuple[str, str, str]: (Login, Password, TOTP Secret)
     """
     # Get user registry
     user_registry = QuadPypeSecureRegistry("kitsu_user")
-
     return (
         user_registry.get_item("login", None),
-        user_registry.get_item("password", None)
+        user_registry.get_item("password", None),
+        user_registry.get_item("totp_secret", None)
     )
 
-def get_kitsu_user_id(login=None, password=None, kitsu_url=None):
+def get_kitsu_user_id(login=None, password=None, totp_secret=None, kitsu_url=None):
     if kitsu_url is None:
         kitsu_url = os.getenv("KITSU_SERVER")
         if not kitsu_url:
@@ -119,23 +127,30 @@ def get_kitsu_user_id(login=None, password=None, kitsu_url=None):
         password = os.getenv("KITSU_PWD")
         if not password:
             raise ValueError(f"No Kitsu Password Found, instead:{password}")
+    if totp_secret is None:
+        totp_secret = os.getenv("KITSU_TOTP_SECRET", None)
 
     validate_host(kitsu_url)
     # Authenticate
     try:
-        gazu.log_in(login, password)
+        gazu.log_in(login, password, totp=pyotp.TOTP(totp_secret).now() if totp_secret else None)
     except gazu.exception.AuthFailedException:
         return False
     user = gazu.person.get_person_by_email(os.environ["KITSU_LOGIN"])
     gazu.log_out()
     return user["id"]
 
-def set_credentials_envs(login: str, password: str):
+def set_credentials_envs(login: str, password: str, totp_secret: str=None):
     """Set environment variables with Kitsu login and password.
 
     Args:
         login (str): Kitsu user login
         password (str): Kitsu user password
+        totp_secret (str, optional): Kitsu user TOTP code for two-factor authentication. Defaults to None.
     """
     os.environ["KITSU_LOGIN"] = login
     os.environ["KITSU_PWD"] = password
+    if not totp_secret:
+        return
+
+    os.environ["KITSU_TOTP_SECRET"] = totp_secret
