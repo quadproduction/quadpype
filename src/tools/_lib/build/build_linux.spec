@@ -20,6 +20,7 @@ hiddenimports = collect_submodules('quadpype') + collect_submodules('igniter') +
     collect_submodules("httplib2") + \
     collect_submodules("shotgun_api3") + \
     collect_submodules("gazu") + \
+    collect_submodules("pyotp") + \
     collect_submodules("googleapiclient") + \
     collect_submodules("jsonschema") + \
     collect_submodules("keyring") + \

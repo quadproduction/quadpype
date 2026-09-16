@@ -3,6 +3,7 @@ import os
 
 import pyblish.api
 import gazu
+import pyotp
 
 from quadpype.pipeline.publish import QuadPypePyblishPluginMixin
 from quadpype.lib.attribute_definitions import (
@@ -44,7 +45,12 @@ class CollectKitsuStatus(
             project = gazu.project.get_project_by_name(get_current_project_name())
         except:
             gazu.set_host(os.environ["KITSU_SERVER"])
-            gazu.log_in(os.environ["KITSU_LOGIN"], os.environ["KITSU_PWD"])
+            totp_secret = os.getenv("KITSU_TOTP_SECRET", None)
+            gazu.log_in(
+                os.environ["KITSU_LOGIN"],
+                os.environ["KITSU_PWD"],
+                totp=pyotp.TOTP(totp_secret).now() if totp_secret else None
+            )
             project = gazu.project.get_project_by_name(get_current_project_name())
 
         statuses = gazu.task.all_task_statuses_for_project(project)

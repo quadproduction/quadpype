@@ -74,7 +74,6 @@
             "cwd": "${workspaceFolder}/src",
             "justMyCode": false,
             "args": ["tray", "--debug", "--additional-env-file", "${workspaceFolder}/src/tools/.env"],
-            "preLaunchTask": "prod_pre"
         },
         {
             "type": "extendscript-debug",
