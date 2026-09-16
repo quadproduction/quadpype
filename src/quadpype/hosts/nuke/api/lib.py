@@ -2398,10 +2398,13 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
                     if str(value).startswith("0x"):
                         value = int(value, 16)
 
-                    log.debug("knob: {}| value: {}".format(
-                        knob["name"], value
-                    ))
+                    if not knob.get("set_value_at_start", False):
+                        log.debug("knob: {} is set to Not set at start ".format(knob["name"]))
+                        continue
+                    log.debug("knob: {}| value: {}".format(knob["name"], value))
+
                     write_node[knob["name"]].setValue(value)
+
             except TypeError:
                 log.warning(
                     "Legacy workflow didn't work, switching to current")
