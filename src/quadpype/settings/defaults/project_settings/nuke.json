@@ -57,22 +57,26 @@
                         {
                             "type": "text",
                             "name": "file_type",
-                            "value": "exr"
+                            "value": "exr",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "text",
                             "name": "datatype",
-                            "value": "16 bit half"
+                            "value": "16 bit half",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "text",
                             "name": "compression",
-                            "value": "Zip (1 scanline)"
+                            "value": "Zip (1 scanline)",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "bool",
                             "name": "autocrop",
-                            "value": true
+                            "value": true,
+                            "set_value_at_start": false
                         },
                         {
                             "type": "color_gui",
@@ -82,22 +86,26 @@
                                 35,
                                 35,
                                 255
-                            ]
+                            ],
+                            "set_value_at_start": false
                         },
                         {
                             "type": "text",
                             "name": "channels",
-                            "value": "rgb"
+                            "value": "rgb",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "text",
                             "name": "colorspace",
-                            "value": "scene_linear"
+                            "value": "scene_linear",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "bool",
                             "name": "create_directories",
-                            "value": true
+                            "value": true,
+                            "set_value_at_start": false
                         }
                     ]
                 },
@@ -110,22 +118,26 @@
                         {
                             "type": "text",
                             "name": "file_type",
-                            "value": "exr"
+                            "value": "exr",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "text",
                             "name": "datatype",
-                            "value": "16 bit half"
+                            "value": "16 bit half",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "text",
                             "name": "compression",
-                            "value": "Zip (1 scanline)"
+                            "value": "Zip (1 scanline)",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "bool",
                             "name": "autocrop",
-                            "value": true
+                            "value": true,
+                            "set_value_at_start": false
                         },
                         {
                             "type": "color_gui",
@@ -135,22 +147,26 @@
                                 171,
                                 10,
                                 255
-                            ]
+                            ],
+                            "set_value_at_start": false
                         },
                         {
                             "type": "text",
                             "name": "channels",
-                            "value": "rgb"
+                            "value": "rgb",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "text",
                             "name": "colorspace",
-                            "value": "scene_linear"
+                            "value": "scene_linear",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "bool",
                             "name": "create_directories",
-                            "value": true
+                            "value": true,
+                            "set_value_at_start": false
                         }
                     ]
                 },
@@ -163,17 +179,20 @@
                         {
                             "type": "text",
                             "name": "file_type",
-                            "value": "tiff"
+                            "value": "tiff",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "text",
                             "name": "datatype",
-                            "value": "16 bit"
+                            "value": "16 bit",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "text",
                             "name": "compression",
-                            "value": "Deflate"
+                            "value": "Deflate",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "color_gui",
@@ -183,22 +202,26 @@
                                 162,
                                 7,
                                 255
-                            ]
+                            ],
+                            "set_value_at_start": false
                         },
                         {
                             "type": "text",
                             "name": "channels",
-                            "value": "rgb"
+                            "value": "rgb",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "text",
                             "name": "colorspace",
-                            "value": "texture_paint"
+                            "value": "texture_paint",
+                            "set_value_at_start": false
                         },
                         {
                             "type": "bool",
                             "name": "create_directories",
-                            "value": true
+                            "value": true,
+                            "set_value_at_start": false
                         }
                     ]
                 }

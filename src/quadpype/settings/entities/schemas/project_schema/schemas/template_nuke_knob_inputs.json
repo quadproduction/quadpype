@@ -25,6 +25,12 @@
                                 "type": "text",
                                 "key": "value",
                                 "label": "Value"
+                            },
+                            {
+                                "type": "boolean",
+                                "key": "set_value_at_start",
+                                "label": "Set value at start",
+                                "default": false
                             }
                         ]
                     },
@@ -51,6 +57,12 @@
                                         }
                         ]
                     }
+                            },
+                            {
+                                "type": "boolean",
+                                "key": "set_value_at_start",
+                                "label": "Set value at start",
+                                "default": false
                             }
                         ]
                     },
@@ -67,6 +79,12 @@
                                 "type": "text",
                                 "key": "expression",
                                 "label": "Expression"
+                            },
+                            {
+                                "type": "boolean",
+                                "key": "set_value_at_start",
+                                "label": "Set value at start",
+                                "default": false
                             }
                         ]
                     },
@@ -103,6 +121,12 @@
                                         "2d_vector": "2D vector"
                                     }
                                 ]
+                            },
+                            {
+                                "type": "boolean",
+                                "key": "set_value_at_start",
+                                "label": "Set value at start",
+                                "default": false
                             }
                         ]
                     },
@@ -120,6 +144,12 @@
                                 "key": "value",
                                 "label": "Value",
                                 "use_alpha": false
+                            },
+                            {
+                                "type": "boolean",
+                                "key": "set_value_at_start",
+                                "label": "Set value at start",
+                                "default": false
                             }
                         ]
                     },
@@ -136,6 +166,12 @@
                                 "type": "boolean",
                                 "key": "value",
                                 "label": "Value"
+                            },
+                            {
+                                "type": "boolean",
+                                "key": "set_value_at_start",
+                                "label": "Set value at start",
+                                "default": false
                             }
                         ]
                     },
@@ -154,6 +190,12 @@
                                 "default": 1,
                                 "decimal": 0,
                                 "maximum": 99999999
+                            },
+                            {
+                                "type": "boolean",
+                                "key": "set_value_at_start",
+                                "label": "Set value at start",
+                                "default": false
                             }
 
                         ]
@@ -173,6 +215,12 @@
                                 "default": 1,
                                 "decimal": 4,
                                 "maximum": 99999999
+                            },
+                            {
+                                "type": "boolean",
+                                "key": "set_value_at_start",
+                                "label": "Set value at start",
+                                "default": false
                             }
 
                         ]
@@ -206,6 +254,12 @@
                                         "maximum": 99999999
                                     }
                                 ]
+                            },
+                            {
+                                "type": "boolean",
+                                "key": "set_value_at_start",
+                                "label": "Set value at start",
+                                "default": false
                             }
                         ]
                     },
@@ -245,6 +299,12 @@
                                         "maximum": 99999999
                                     }
                                 ]
+                            },
+                            {
+                                "type": "boolean",
+                                "key": "set_value_at_start",
+                                "label": "Set value at start",
+                                "default": false
                             }
                         ]
                     },
@@ -291,6 +351,12 @@
                                         "maximum": 99999999
                                     }
                                 ]
+                            },
+                            {
+                                "type": "boolean",
+                                "key": "set_value_at_start",
+                                "label": "Set value at start",
+                                "default": false
                             }
                         ]
                     },
@@ -337,6 +403,12 @@
                                         "maximum": 99999999
                                     }
                                 ]
+                            },
+                            {
+                                "type": "boolean",
+                                "key": "set_value_at_start",
+                                "label": "Set value at start",
+                                "default": false
                             }
                         ]
                     },
@@ -353,6 +425,12 @@
                                 "type": "text",
                                 "key": "value",
                                 "label": "Value"
+                            },
+                            {
+                                "type": "boolean",
+                                "key": "set_value_at_start",
+                                "label": "Set value at start",
+                                "default": false
                             }
                         ]
                     }
