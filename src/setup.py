@@ -110,6 +110,7 @@ install_requires = [
     "speedcopy",
     "googleapiclient",
     "httplib2",
+    "pyotp",
     # Harmony implementation
     "filecmp",
     "dns",
