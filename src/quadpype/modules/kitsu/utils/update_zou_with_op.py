@@ -16,7 +16,7 @@ from quadpype.settings import get_project_settings
 from quadpype.modules.kitsu.utils.credentials import validate_credentials
 
 
-def sync_zou(login: str, password: str):
+def sync_zou(login: str, password: str, totp_secret: str = None):
     """Synchronize Zou database (Kitsu backend) with QuadPype database.
     This is an utility function to help updating zou data with OP's, it may not
     handle correctly all cases, a human intervention might
@@ -26,13 +26,14 @@ def sync_zou(login: str, password: str):
     Args:
         login (str): Kitsu user login
         password (str): Kitsu user password
+        totp_secret (str, optional): Kitsu user TOTP secret for two-factor authentication. Defaults to None.
 
     Raises:
         gazu.exception.AuthFailedException: Wrong user login and/or password
     """
 
     # Authenticate
-    if not validate_credentials(login, password):
+    if not validate_credentials(login, password, totp_secret):
         raise gazu.exception.AuthFailedException(
             f"Kitsu authentication failed for login: '{login}'..."
         )

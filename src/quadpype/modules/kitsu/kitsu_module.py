@@ -54,11 +54,11 @@ class KitsuModule(QuadPypeModule, IPluginPaths, ITrayService):
             set_credentials_envs,
         )
 
-        login, password = load_credentials()
+        login, password, totp_secret = load_credentials()
 
         # Check credentials, ask them if needed
-        if validate_credentials(login, password):
-            set_credentials_envs(login, password)
+        if validate_credentials(login, password, totp_secret):
+            set_credentials_envs(login, password, totp_secret)
         else:
             self.show_dialog()
 
@@ -114,16 +114,25 @@ def cli_main():
 @click_wrap.option(
     "--password", envvar="KITSU_PWD", help="Password for kitsu username"
 )
-def push_to_zou(login, password):
+@click_wrap.option(
+    "-totp",
+    "--totp-secret",
+    "totp_secret",
+    envvar="KITSU_TOTP_SECRET",
+    default=None,
+    help="TOTP secret for two-factor authentication"
+)
+def push_to_zou(login, password, totp_secret=None):
     """Synchronize Zou database (Kitsu backend) with QuadPype database.
 
     Args:
         login (str): Kitsu user login
         password (str): Kitsu user password
+        totp_secret (str, optional): Kitsu user TOTP secret for two-factor authentication. Defaults to None.
     """
     from .utils.update_zou_with_op import sync_zou
 
-    sync_zou(login, password)
+    sync_zou(login, password, totp_secret)
 
 
 @cli_main.command()
@@ -156,6 +165,14 @@ def push_to_zou(login, password):
     help="Listen to events only without any syncing",
 )
 @click_wrap.option(
+    "-totp",
+    "--totp-secret",
+    "totp_secret",
+    envvar="KITSU_TOTP_SECRET",
+    default=None,
+    help="TOTP secret for two-factor authentication"
+)
+@click_wrap.option(
     "-act",
     "--sync-quick-active-projects",
     "sync_quick_active_projects",
@@ -163,15 +180,17 @@ def push_to_zou(login, password):
     default=False,
     help="Sync projects with specific active projects collection for quick access",
 )
-def sync_service(login, password, exclude_projects, include_projects, listen_only, sync_quick_active_projects):
+def sync_service(login, password, exclude_projects, include_projects, listen_only, totp_secret=None, sync_quick_active_projects=False):
     """Synchronize QuadPype database from Zou sever database.
 
     Args:
         login (str): Kitsu user login
         password (str): Kitsu user password
-        exclude_projects (tuple): List of kitsu project names to exclude from the sync
-        include_projects (tuple): List of kitsu project names to include from the sync, by default all projects are synced
-        listen_only (bool): run listen only without any syncing
+        exclude_projects (list): List of kitsu project names to exclude from the sync
+        include_projects (list): List of kitsu project names to include from the sync, by default all projects are synced
+        listen_only (bool): Listen to events only without any syncing
+        totp_secret (str, optional): Kitsu user TOTP secret for two-factor authentication. Defaults to None.
+        sync_quick_active_projects (bool, optional): Whether to sync quick active projects. Defaults to False.
     """
     from .utils.update_op_with_zou import sync_all_projects
     from .utils.sync_service import start_listeners
@@ -180,6 +199,6 @@ def sync_service(login, password, exclude_projects, include_projects, listen_onl
     include_projects = set(include_projects)
 
     if not listen_only:
-        sync_all_projects(login, password, exclude_projects, include_projects, sync_quick_active_projects)
+        sync_all_projects(login, password, exclude_projects, include_projects, totp_secret, sync_quick_active_projects)
 
-    start_listeners(login, password, sync_quick_active_projects)
+    start_listeners(login, password, totp_secret, sync_quick_active_projects)

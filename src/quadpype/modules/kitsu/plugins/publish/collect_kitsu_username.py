@@ -3,6 +3,7 @@ import os
 import re
 
 import pyblish.api
+import pyotp
 
 from quadpype.pipeline import get_current_project_name
 from quadpype.settings import get_project_settings
@@ -27,6 +28,7 @@ class CollectKitsuUsername(pyblish.api.ContextPlugin):
 
         user_login = os.getenv("KITSU_LOGIN")
         user_password = os.getenv("KITSU_PWD")
+        totp_secret = os.getenv("KITSU_TOTP_SECRET", None)
 
         settings = get_project_settings(get_current_project_name())
         bot_token = settings["kitsu"].get("admin_token", None)
@@ -44,7 +46,11 @@ class CollectKitsuUsername(pyblish.api.ContextPlugin):
             finally:
                 gazu.client.set_tokens({})
                 if user_login and user_password:
-                    gazu.log_in(user_login, user_password)
+                    gazu.log_in(
+                        user_login,
+                        user_password,
+                        totp=pyotp.TOTP(totp_secret).now() if totp_secret else None
+                    )
         else:
             user = get_person_by_email(kitsu_login)
 

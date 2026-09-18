@@ -386,23 +386,26 @@ def write_project_to_op(project: dict) -> UpdateOne:
 def sync_all_projects(
     login: str,
     password: str,
-    ignore_projects: set = None,
-    include_projects: set = None,
-    sync_quick_active_projects: bool = False,
+    ignore_projects: set[str] = None,
+    include_projects: set[str] = None,
+    totp_secret: str = None,
+    sync_quick_active_projects: bool = False
 ):
     """Update all QuadPype projects in DB with Zou data.
 
     Args:
         login (str): Kitsu user login
         password (str): Kitsu user password
-        ignore_projects (list): List of project names to ignore (not sync)
-        include_projects (list): List of project names to sync (only sync them)
+        ignore_projects (set): Set of project names to ignore (not sync)
+        include_projects (set): Set of project names to sync (only sync them)
+        totp_secret (str, optional): Kitsu user TOTP secret for two-factor authentication. Defaults to None.
+        sync_quick_active_projects (bool, optional): Whether to sync quick active projects. Defaults to False.
     Raises:
         gazu.exception.AuthFailedException: Wrong user login and/or password
     """
 
     # Authenticate
-    if not validate_credentials(login, password):
+    if not validate_credentials(login, password, totp_secret):
         raise gazu.exception.AuthFailedException(
             f"Kitsu authentication failed for login: '{login}'..."
         )
