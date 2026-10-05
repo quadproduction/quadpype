@@ -1,3 +1,5 @@
+import html
+
 from qtpy import QtWidgets, QtCore, QtGui
 
 from quadpype import style
@@ -34,15 +36,19 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         self.resize(420, 220)
 
         global_settings = get_global_settings()
+        kitsu_settings = global_settings[ADDONS_SETTINGS_KEY].get("kitsu", {})
         user_login, user_pwd, totp_secret = load_credentials()
 
+        self.twofa_toggle_btn = None
+        self.twofa_widget = None
+        self.twofa_code_input = None
         self._final_result = None
         self._connectable = bool(
-            global_settings[ADDONS_SETTINGS_KEY].get("kitsu", {}).get("server")
+            kitsu_settings.get("server")
         )
         # Server label
         server_message = (
-            global_settings[ADDONS_SETTINGS_KEY]["kitsu"]["server"]
+            kitsu_settings.get("server")
             if self._connectable
             else "no server url set in Studio Settings..."
         )
@@ -96,51 +102,70 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         message_label = QtWidgets.QLabel("", self)
         message_label.setWordWrap(True)
 
-        # Two-factor options
-        twofa_toggle_btn = QtWidgets.QPushButton(
-            "I use two-factor authentication",
-            self
-        )
-        twofa_toggle_btn.setCheckable(True)
+        settings_2fa = kitsu_settings.get("2fa", {})
 
-        twofa_widget = QtWidgets.QWidget(self)
-        twofa_widget.setVisible(False)
+        use_2fa = settings_2fa.get("enabled", True)
+        optional = settings_2fa.get("optional", False)
 
-        twofa_info_label = QtWidgets.QLabel(
-            "If your account uses 2FA, enter your authenticator app code.",
-            twofa_widget
-        )
-        twofa_info_label.setWordWrap(True)
+        if use_2fa:
 
-        twofa_code_label = QtWidgets.QLabel("Code:", twofa_widget)
-        twofa_code_input = QtWidgets.QLineEdit(
-            twofa_widget,
-            text=totp_secret,
-        )
-        twofa_code_input.setPlaceholderText("Enter your 2FA code...")
-        twofa_code_input.setEchoMode(QtWidgets.QLineEdit.Password)
+            twofa_widget = QtWidgets.QWidget(self)
+            twofa_widget.setVisible(not optional)
+            if optional:
+                twofa_toggle_btn = QtWidgets.QPushButton(
+                    "I use two-factor authentication",
+                    self
+                )
+                twofa_toggle_btn.setCheckable(True)
 
-        show_twofa_btn = PressHoverButton(twofa_widget)
-        show_twofa_btn.setObjectName("PasswordBtn")
-        show_twofa_btn.setIcon(show_password_icon)
-        show_twofa_btn.setFocusPolicy(QtCore.Qt.ClickFocus)
+                twofa_info_label = QtWidgets.QLabel(
+                    "If your account uses 2FA, please enter your account secret.",
+                    twofa_widget
+                )
+                twofa_info_label.setWordWrap(True)
 
-        twofa_code_widget = QtWidgets.QWidget(twofa_widget)
-        twofa_code_layout = QtWidgets.QHBoxLayout(twofa_code_widget)
-        twofa_code_layout.setContentsMargins(0, 0, 0, 0)
-        twofa_code_layout.addWidget(twofa_code_input)
-        twofa_code_layout.addWidget(show_twofa_btn)
+            twofa_code_label = QtWidgets.QLabel("OTP Secret :", twofa_widget)
+            twofa_code_input = QtWidgets.QLineEdit(
+                twofa_widget,
+                text=totp_secret,
+            )
+            twofa_code_input.setPlaceholderText("Enter your OTP secret...")
+            twofa_code_input.setEchoMode(QtWidgets.QLineEdit.Password)
 
-        twofa_form_layout = QtWidgets.QFormLayout()
-        twofa_form_layout.setContentsMargins(0, 0, 0, 0)
-        twofa_form_layout.addRow(twofa_code_label, twofa_code_widget)
+            show_twofa_btn = PressHoverButton(twofa_widget)
+            show_twofa_btn.setObjectName("2faBtn")
+            show_twofa_btn.setIcon(show_password_icon)
+            show_twofa_btn.setFocusPolicy(QtCore.Qt.ClickFocus)
 
-        twofa_layout = QtWidgets.QVBoxLayout(twofa_widget)
-        twofa_layout.setContentsMargins(0, 0, 0, 0)
-        twofa_layout.addWidget(twofa_info_label)
-        twofa_layout.addLayout(twofa_form_layout)
+            twofa_code_widget = QtWidgets.QWidget(twofa_widget)
+            twofa_code_layout = QtWidgets.QHBoxLayout(twofa_code_widget)
+            twofa_code_layout.setContentsMargins(0, 0, 0, 0)
+            twofa_code_layout.addWidget(twofa_code_input)
+            twofa_code_layout.addWidget(show_twofa_btn)
 
-        # Buttons
+            self.twofa_code_input = twofa_code_input
+
+            twofa_form_layout = QtWidgets.QFormLayout()
+            twofa_form_layout.setContentsMargins(0, 0, 0, 0)
+            twofa_form_layout.addRow(twofa_code_label, twofa_code_widget)
+
+            twofa_layout = QtWidgets.QVBoxLayout(twofa_widget)
+            twofa_layout.setContentsMargins(0, 0, 0, 0)
+            if optional:
+                twofa_layout.addWidget(twofa_info_label)
+                twofa_toggle_btn.clicked.connect(self._on_toggle_twofa_options)
+
+            twofa_layout.addLayout(twofa_form_layout)
+
+            show_twofa_btn.change_state.connect(self._on_show_twofa_code)
+
+        kitsu_connection_help = kitsu_settings.get("connection_help", None)
+        if kitsu_connection_help:
+            helper_label = QtWidgets.QLabel(
+                f'<a href="{kitsu_connection_help}">I have troubles connecting, please help me !</a>'
+            )
+            helper_label.setOpenExternalLinks(True)
+
         buttons_widget = QtWidgets.QWidget(self)
 
         remember_checkbox = QtWidgets.QCheckBox("Remember", buttons_widget)
@@ -164,25 +189,33 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         layout.addSpacing(5)
         layout.addWidget(login_widget, 0)
         layout.addWidget(password_widget, 0)
-        layout.addWidget(twofa_toggle_btn, 0)
-        layout.addWidget(twofa_widget, 0)
+
+        if use_2fa:
+            if optional:
+                layout.addWidget(twofa_toggle_btn, 0)
+                self.twofa_toggle_btn = twofa_toggle_btn
+
+            self.twofa_widget = twofa_widget
+            layout.addWidget(twofa_widget, 0)
+
         layout.addWidget(message_label, 0)
         layout.addStretch(1)
+        if kitsu_connection_help:
+            layout.addWidget(helper_label, 1)
         layout.addWidget(buttons_widget, 0)
 
         ok_btn.clicked.connect(self._on_ok_click)
         cancel_btn.clicked.connect(self._on_cancel_click)
         show_password_btn.change_state.connect(self._on_show_password)
-        show_twofa_btn.change_state.connect(self._on_show_twofa_code)
-        twofa_toggle_btn.clicked.connect(self._on_toggle_twofa_options)
 
         self.login_input = login_input
         self.password_input = password_input
         self.remember_checkbox = remember_checkbox
         self.message_label = message_label
-        self.twofa_toggle_btn = twofa_toggle_btn
-        self.twofa_widget = twofa_widget
-        self.twofa_code_input = twofa_code_input
+        self.use_2fa = use_2fa
+        self.kitsu_connection_help = kitsu_connection_help
+
+        self.kitsu_2fa_help = settings_2fa.get("2fa_help", None)
 
         self.setStyleSheet(style.load_stylesheet())
 
@@ -210,18 +243,19 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         # Collect values
         login_value = self.login_input.text()
         pwd_value = self.password_input.text()
-        secret_code = self.twofa_code_input.text()
+        secret_code = (
+            self.twofa_code_input.text() if
+            self.twofa_code_input and self.twofa_code_input.isVisible() else
+            None
+        )
         remember = self.remember_checkbox.isChecked()
 
         # Authenticate
         if validate_credentials(login_value, pwd_value, secret_code):
             set_credentials_envs(login_value, pwd_value, secret_code)
         else:
-            self.message_label.setText(
-                "Unable to sign in. Check your credentials. If your account "
-                "uses 2FA, enter your authenticator app code."
-            )
-            self._set_twofa_options_visible(True)
+            self.message_label.setText("Unable to sign in.")
+            self._show_connection_error_dialog()
             return
 
         # Remember password cases
@@ -270,3 +304,82 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
 
     def _on_cancel_click(self):
         self.close()
+
+    def _show_connection_error_dialog(self):
+        dialog = QtWidgets.QMessageBox(self)
+        dialog.setWindowTitle("Connection error")
+        dialog.setIcon(QtWidgets.QMessageBox.Warning)
+        dialog.setTextFormat(QtCore.Qt.RichText)
+        dialog.setText(self._get_connection_error_message())
+        dialog.setStandardButtons(QtWidgets.QMessageBox.Ok)
+
+        message_label = dialog.findChild(QtWidgets.QLabel, "qt_msgbox_label")
+        if message_label:
+            message_label.setOpenExternalLinks(True)
+            message_label.setTextInteractionFlags(
+                QtCore.Qt.TextBrowserInteraction
+            )
+
+        dialog.exec_()
+
+    def _get_connection_error_message(self):
+        help_msg = "please read the following guide if not"
+        connection_kitsu_help = self._format_kitsu_help_link(
+            self.kitsu_connection_help,
+            help_msg
+        )
+        two_factor_help = self._format_kitsu_help_link(
+            self.kitsu_2fa_help,
+            help_msg
+        )
+        checklist_items = [
+            "That your login and your password are correct;"
+        ]
+
+        if self.use_2fa:
+            connection_help_link = f"<br />(<i>{connection_kitsu_help}</i>)" if connection_kitsu_help else ""
+            two_factor_help_link = f"<br />(<i>{two_factor_help}</i>)" if two_factor_help else ""
+            checklist_items.extend([
+                (
+                    "That you successfully activated two-factor "
+                    "authentication on your Kitsu account."
+                    f"{connection_help_link}"
+
+                ),
+                (
+                    "That you enter the OTP SECRET code that you registered "
+                    "when activating two-factor authentication on your "
+                    "Kitsu account, <b>and not the generated 6-character code "
+                    "delivered by your authenticator app.</b>"
+                    f"{two_factor_help_link}"
+
+                )
+            ])
+
+        if self.kitsu_connection_help is not None:
+            msg = self._format_kitsu_help_link(
+                self.kitsu_connection_help,
+                "how to connect to kitsu guide"
+            )
+            checklist_items.append(
+                "And that you read the "
+                f"{msg}."
+            )
+
+        checklist_html = "".join(
+            f"<li>{item}</li>" for item in checklist_items
+        )
+        return (
+            "<p><b>An error has occurred when trying to connect to tracker.</b></p>"
+            "<p>Please check :"
+            f"<ul>{checklist_html}</ul>"
+            "If none of this worked, please contact an administrator.</p>"
+        )
+
+    def _format_kitsu_help_link(self, guide_link, label):
+        escaped_label = html.escape(label)
+        if not guide_link:
+            return ""
+
+        escaped_url = html.escape(guide_link, quote=True)
+        return f'<a href="{escaped_url}">{escaped_label}</a>'

@@ -17,6 +17,35 @@
             "label": "Server"
         },
         {
+            "type": "text",
+            "key": "connection_help",
+            "label": "Connection documentation link"
+        },
+        {
+            "type": "dict",
+            "key": "2fa",
+            "label": "Two factor authentication",
+            "collapsible": true,
+            "checkbox_key": "enabled",
+            "children": [
+                {
+                    "type": "boolean",
+                    "key": "enabled",
+                    "label": "Enabled"
+                },
+                {
+                    "type": "boolean",
+                    "key": "optional",
+                    "label": "Optional"
+                },
+                {
+                    "type": "text",
+                    "key": "2fa_help",
+                    "label": "2FA documentation link"
+                }
+            ]
+        },
+        {
             "type": "splitter"
         }
     ]

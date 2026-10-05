@@ -129,8 +129,14 @@
         }
     },
     "kitsu": {
-        "enabled": false,
-        "server": ""
+        "enabled": true,
+        "server": "",
+        "connection_help": "",
+        "2fa": {
+            "enabled": false,
+            "optional": true,
+            "2fa_help": ""
+        }
     },
     "shotgrid": {
         "enabled": false,
