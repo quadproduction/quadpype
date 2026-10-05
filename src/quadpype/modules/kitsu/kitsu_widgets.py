@@ -251,9 +251,11 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         remember = self.remember_checkbox.isChecked()
 
         # Authenticate
-        if validate_credentials(login_value, pwd_value, secret_code):
+        try:
+            if not validate_credentials(login_value, pwd_value, secret_code):
+                raise Exception("Invalid credentials")
             set_credentials_envs(login_value, pwd_value, secret_code)
-        else:
+        except Exception as e:
             self.message_label.setText("Unable to sign in.")
             self._show_connection_error_dialog()
             return
@@ -272,6 +274,7 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
             self.password_input.clear()
 
         self._final_result = True
+        self._show_connection_success_dialog()
         self.close()
 
     def _on_show_password(self, show_password):
@@ -320,6 +323,15 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
                 QtCore.Qt.TextBrowserInteraction
             )
 
+        dialog.exec_()
+
+    def _show_connection_success_dialog(self):
+        dialog = QtWidgets.QMessageBox(self)
+        dialog.setWindowTitle("Connection successful")
+        dialog.setIcon(QtWidgets.QMessageBox.Information)
+        dialog.setTextFormat(QtCore.Qt.RichText)
+        dialog.setText("Successfully connected to Kitsu.")
+        dialog.setStandardButtons(QtWidgets.QMessageBox.Ok)
         dialog.exec_()
 
     def _get_connection_error_message(self):
