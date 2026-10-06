@@ -105,7 +105,7 @@ class KitsuPasswordDialog(QtWidgets.QDialog):
         settings_2fa = kitsu_settings.get("2fa", {})
 
         use_2fa = settings_2fa.get("enabled", True)
-        optional = settings_2fa.get("optional", False)
+        optional = settings_2fa.get("optional", True)
 
         if use_2fa:
 
