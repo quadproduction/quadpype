@@ -120,7 +120,8 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
         "QUADPYPE_USERNAME",
         "QUADPYPE_SG_USER",
         "KITSU_LOGIN",
-        "KITSU_PWD"
+        "KITSU_PWD",
+        "KITSU_TOTP_SECRET"
     ]
 
     # Deadline attributes

@@ -240,6 +240,7 @@ class MongoUserHandler(UserHandler):
         trackers = {
             "kitsu": {"login_value":os.getenv("KITSU_LOGIN"),
                       "password_value":os.getenv("KITSU_PWD"),
+                      "totp_secret": os.getenv("KITSU_TOTP_SECRET", None),
                       "id_value":get_kitsu_user_id()},
             "shotgrid": {"login_value": os.getenv("QUADPYPE_SG_USER"),
                          "password_value": os.getenv("QUADPYPE_SG_PSD"),
