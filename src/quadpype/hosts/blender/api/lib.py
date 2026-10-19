@@ -1199,7 +1199,7 @@ def get_viewport_shading():
                 continue
             try:
                 value = getattr(shading, attr)
-                if value is None or value == "":
+                if not value:
                     continue
                 setattr(shading, attr, value)  # test write
                 result[attr] = value
