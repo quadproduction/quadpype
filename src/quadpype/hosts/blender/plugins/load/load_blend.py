@@ -159,6 +159,11 @@ class BlendLoader(plugin.BlenderLoader):
             )
         )
 
+        avalon_container = bpy.data.collections.get(AVALON_CONTAINERS)
+        if not avalon_container:
+            avalon_container = bpy.data.collections.new(name=AVALON_CONTAINERS)
+            bpy.context.scene.collection.children.link(avalon_container)
+
         container, members = self.load_assets_and_create_hierarchy(
             representation=representation,
             libpath=libpath,
