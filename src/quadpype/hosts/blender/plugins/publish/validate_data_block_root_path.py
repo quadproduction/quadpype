@@ -17,8 +17,19 @@ from quadpype.pipeline.publish import (
     PublishValidationError
 )
 
-class ValidateDataBlockRootPaths(pyblish.api.ContextPlugin,
-                                     OptionalPyblishPluginMixin):
+class ValidateDataBlockRootPathError(PublishValidationError):
+    """Custom error for invalid data block root paths."""
+    label = "Save Workfile"
+    on = "failed"
+    icon = "wrench"
+
+    def process(self, context, plugin):
+        bpy.ops.wm.avalon_workfiles()
+
+class ValidateDataBlockRootPaths(
+    pyblish.api.ContextPlugin,
+    OptionalPyblishPluginMixin
+    ):
     """Validates Data Block Paths are in any given root path
 
     This validator checks if all external data paths are from
@@ -31,6 +42,7 @@ class ValidateDataBlockRootPaths(pyblish.api.ContextPlugin,
     exclude_families = []
     optional = True
     root_paths = list()
+    actions = [RepairContextAction]
 
     @classmethod
     def get_invalid(cls, context):
@@ -95,4 +107,41 @@ class ValidateDataBlockRootPaths(pyblish.api.ContextPlugin,
         return inspect.cleandoc("""
             ### DataBlock filepaths are invalid
             Data Block filepaths must be in any of the root paths.
+
+            Use the repair function to automatically:
+            - move packed images to the correct root path and unpack them
+            - remove linked-library datablocks
         """)
+
+    @classmethod
+    def repair(cls, instance):
+        invalid = cls.get_invalid(instance)
+        if not invalid:
+            return
+
+        for data_block in list(invalid):
+            if isinstance(data_block, bpy.types.Library):
+                bpy.data.batch_remove([data_block])
+                continue
+
+            if isinstance(data_block, bpy.types.Image) and data_block.packed_file:
+
+                blend_dir = Path(bpy.data.filepath).parent
+                texture_dir = blend_dir / "textures"
+                texture_dir.mkdir(parents=True, exist_ok=True)
+
+                filename = Path(data_block.name.replace("\\", "/")).name
+                if not Path(filename).suffix:
+                    suffix = Path(data_block.filepath).suffix if data_block.filepath else ""
+                    filename += suffix or ".png"
+
+                unpack_path = texture_dir / filename
+
+                unpack_path.write_bytes(data_block.packed_file.data)
+
+                data_block.unpack(method="REMOVE")
+
+                data_block.filepath = str(unpack_path)
+                data_block.source = "FILE"
+                data_block.reload()
+                continue
