@@ -8,6 +8,7 @@ import bpy
 from .lib import maintained_time, purge_orphans
 from .plugin import deselect_all, create_blender_context
 
+SHADING_PRIORITY = ("type", "light", "color_type", "background_type")
 
 def capture(
     camera=None,
@@ -204,13 +205,32 @@ def restore_global_view(window):
         if bpy.context.space_data.local_view:
             bpy.ops.view3d.localview()
 
+def _ordered_keys(entity, options):
+    if not isinstance(entity, bpy.types.View3DShading):
+        return list(options)
+    first = [k for k in SHADING_PRIORITY if k in options]
+    return first + [k for k in options if k not in SHADING_PRIORITY]
 
 def _apply_options(entity, options):
-    for option, value in options.items():
+    is_shading = isinstance(entity, bpy.types.View3DShading)
+
+    for option in _ordered_keys(entity, options):
+        value = options[option]
+
         if isinstance(value, dict):
             _apply_options(getattr(entity, option), value)
-        else:
-            setattr(entity, option, value)
+            continue
+
+        if is_shading and option == "studio_light":
+            valid = {
+                item.identifier
+                for item in entity.bl_rna.properties["studio_light"].enum_items
+            }
+            if value not in valid:
+                print(f"[capture] studio_light {value!r} not available, values : {sorted(valid)}")
+                continue
+
+        setattr(entity, option, value)
 
 
 def applied_view(window, camera, isolate=None, options=None, offset=0.2):
