@@ -630,18 +630,30 @@ class LauncherModel(QtCore.QObject):
             return
 
         for project_doc in get_projects():
-            project_team = project_doc.get("data", {}).get("team", [])
+            project_name = project_doc["name"]
 
+            if curr_user_is_admin:
+                project_names.add(project_name)
+                project_docs_by_name[project_name] = project_doc
+                continue
+
+            settings = get_project_settings(project_name)
+            global_settings = settings.get("global", {})
+
+            by_pass_assignees = global_settings.get('launcher', {}).get("by_pass_assignees", False)
+
+            if by_pass_assignees:
+                project_names.add(project_name)
+                project_docs_by_name[project_name] = project_doc
+                continue
+
+            project_team = project_doc.get("data", {}).get("team", [])
             user_is_in_project = any(
                 value in project_team for value in trackers_id if value is not None
             )
-
-            if not curr_user_is_admin and not user_is_in_project:
-                continue
-
-            project_name = project_doc["name"]
-            project_names.add(project_name)
-            project_docs_by_name[project_name] = project_doc
+            if user_is_in_project:
+                project_names.add(project_name)
+                project_docs_by_name[project_name] = project_doc
 
         self._project_docs_by_name = project_docs_by_name
         self._project_names = project_names
