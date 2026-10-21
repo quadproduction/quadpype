@@ -616,9 +616,9 @@ class LauncherModel(QtCore.QObject):
         trackers_id = get_trackers_user_id()
         if not trackers_id:
             parents = {
-                        widget.objectName(): widget
-                        for widget in QtWidgets.QApplication.topLevelWidgets()
-                    }
+                widget.objectName(): widget
+                for widget in QtWidgets.QApplication.topLevelWidgets()
+            }
             Window(
                 title="No trackers user ID",
                 message="Trackers user ID not found. Please connect to your tracker "
@@ -640,9 +640,9 @@ class LauncherModel(QtCore.QObject):
             settings = get_project_settings(project_name)
             global_settings = settings.get("global", {})
 
-            by_pass_assignees = global_settings.get('launcher', {}).get("by_pass_assignees", False)
+            bypass_assignees = global_settings.get('launcher', {}).get("bypass_assignees", False)
 
-            if by_pass_assignees:
+            if bypass_assignees:
                 project_names.add(project_name)
                 project_docs_by_name[project_name] = project_doc
                 continue

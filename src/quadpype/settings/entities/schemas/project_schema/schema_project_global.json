@@ -28,7 +28,7 @@
                 },
                 {
                     "type": "boolean",
-                    "key": "by_pass_assignees",
+                    "key": "bypass_assignees",
                     "label": "Bypass Sort Project by Assignees"
                 }
             ]

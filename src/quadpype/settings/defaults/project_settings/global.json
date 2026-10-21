@@ -3,7 +3,7 @@
         "display_short_name_tasks": false,
         "use_icons": false,
         "workfile_cache_file_path": "",
-        "by_pass_assignees": false
+        "bypass_assignees": false
     },
     "version_start_category": {
         "profiles": []
