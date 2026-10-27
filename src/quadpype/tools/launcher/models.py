@@ -7,8 +7,9 @@ import time
 from pathlib import Path
 
 import appdirs
-from qtpy import QtCore, QtGui, QtWidgets
+from qtpy import QtCore, QtGui
 import qtawesome
+from quadpype.tools.utils.filter import filter_projects_by_assignee
 
 from quadpype.client import (
     get_projects,
@@ -20,7 +21,7 @@ from quadpype.lib.applications import (
     CUSTOM_LAUNCH_APP_GROUPS,
     ApplicationManager
 )
-from quadpype.lib.user import get_trackers_user_id, get_user_profile
+
 from quadpype.settings import get_project_settings, APPS_SETTINGS_KEY
 from quadpype.pipeline import (
     discover_launcher_actions,
@@ -44,8 +45,6 @@ from quadpype.tools.utils.tasks_widget import (
 )
 
 from quadpype.tools.utils.workfile_cache import launch_threaded_icon_worker
-
-from quadpype.widgets.message_window import Window
 
 
 from . import lib
@@ -609,51 +608,11 @@ class LauncherModel(QtCore.QObject):
         project_names = set()
         project_docs_by_name = {}
 
-        curr_user_profile = get_user_profile()
-        curr_user_role = curr_user_profile["role"]
-        curr_user_is_admin = curr_user_role == "administrator"
-
-        trackers_id = get_trackers_user_id()
-        if not trackers_id:
-            parents = {
-                widget.objectName(): widget
-                for widget in QtWidgets.QApplication.topLevelWidgets()
-            }
-            Window(
-                title="No trackers user ID",
-                message="Trackers user ID not found. Please connect to your tracker "
-                "account before using the launcher.",
-                parent=parents.get("LauncherWindow"),
-                level="info"
-            )
-
-            return
-
-        for project_doc in get_projects():
+        project_docs = get_projects()
+        for project_doc in filter_projects_by_assignee(project_docs):
             project_name = project_doc["name"]
-
-            if curr_user_is_admin:
-                project_names.add(project_name)
-                project_docs_by_name[project_name] = project_doc
-                continue
-
-            settings = get_project_settings(project_name)
-            global_settings = settings.get("global", {})
-
-            bypass_assignees = global_settings.get('launcher', {}).get("bypass_assignees", False)
-
-            if bypass_assignees:
-                project_names.add(project_name)
-                project_docs_by_name[project_name] = project_doc
-                continue
-
-            project_team = project_doc.get("data", {}).get("team", [])
-            user_is_in_project = any(
-                value in project_team for value in trackers_id if value is not None
-            )
-            if user_is_in_project:
-                project_names.add(project_name)
-                project_docs_by_name[project_name] = project_doc
+            project_names.add(project_name)
+            project_docs_by_name[project_name] = project_doc
 
         self._project_docs_by_name = project_docs_by_name
         self._project_names = project_names

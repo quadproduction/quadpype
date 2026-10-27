@@ -4,6 +4,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
 
 from quadpype.client import get_projects
+from quadpype.tools.utils.filter import filter_projects_by_assignee
 from quadpype.style import get_app_icon_path, get_objected_colors
 from quadpype.tools.utils.widgets import ImageButton
 from quadpype.tools.utils.lib import paint_image_with_color
@@ -912,10 +913,11 @@ class ProjectModel(QtGui.QStandardItemModel):
 
         self._default_item.setData("", PROJECT_VERSION_ROLE)
         project_names = set()
-        for project_doc in get_projects(
+        project_docs = get_projects(
             inactive=not self._only_active,
             fields=["name", "data.active"]
-        ):
+        )
+        for project_doc in filter_projects_by_assignee(project_docs):
             project_name = project_doc["name"]
             project_names.add(project_name)
             if project_name in self._items_by_name:
