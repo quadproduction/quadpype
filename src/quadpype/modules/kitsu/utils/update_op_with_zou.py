@@ -349,12 +349,15 @@ def write_project_to_op(project: dict) -> UpdateOne:
         gazu.project.update_project(project)
 
     # Update data
+    project_team = gazu.project.get_team(project)
+
     project_data.update(
         {
             "code": project_code,
             "fps": float(project["fps"]),
             "zou_id": project["id"],
-            "active": KitsuStateToBool[project["project_status_name"]]
+            "active": KitsuStateToBool[project["project_status_name"]],
+            "team": [person["id"] for person in project_team]
         }
     )
 

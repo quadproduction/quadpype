@@ -25,6 +25,11 @@
                     "type": "boolean",
                     "key": "display_short_name_tasks",
                     "label": "Display Short Name Tasks"
+                },
+                {
+                    "type": "boolean",
+                    "key": "bypass_assignees",
+                    "label": "Bypass Sort Project by Assignees"
                 }
             ]
         },

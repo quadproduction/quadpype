@@ -167,6 +167,12 @@ def get_projects(active=True, inactive=False, fields=None, summarized_retrieval=
             yield from active_projects
             return
 
+    if fields:
+        fields.append("data.team")
+
+        if "name" not in fields:
+            fields.append("name")
+
     mongodb = get_project_database()
     for project_name in mongodb.collection_names():
         if project_name in ("system.indexes",):

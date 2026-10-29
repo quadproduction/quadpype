@@ -9,6 +9,8 @@ from quadpype.tools.settings import style
 from quadpype.lib import Logger, get_local_site_id, open_in_explorer
 
 from quadpype.tools.utils.delegates import pretty_timestamp
+from quadpype.client import get_projects
+from quadpype.tools.utils.filter import filter_projects_by_assignee
 
 from .models import (
     SyncRepresentationSummaryModel,
@@ -76,6 +78,7 @@ class SyncProjectListWidget(QtWidgets.QWidget):
         self.project_model = project_model
         self.project_list = project_list
         self.sync_server = sync_server
+        self.project_available_names = []
         self.current_project = None
         self.project_name = None
         self.local_site = None
@@ -111,6 +114,16 @@ class SyncProjectListWidget(QtWidgets.QWidget):
         self.refresh()
         self._selection_changed = False
 
+    def _refresh_project_list(self):
+        if self.project_available_names:
+            return
+        project_docs = get_projects(
+            inactive=not self.show_only_enabled,
+            fields=["name", "data.active"]
+        )
+        self.project_available_names = [p["name"] for p in
+                                        filter_projects_by_assignee(project_docs)]
+
     def refresh(self):
         selected_index = None
         model = self.project_model
@@ -120,7 +133,10 @@ class SyncProjectListWidget(QtWidgets.QWidget):
 
         selected_item = None
         sync_settings = self.sync_server.sync_project_settings
+        self._refresh_project_list()
         for project_name in sync_settings.keys():
+            if project_name not in self.project_available_names:
+                continue
             if self.sync_server.is_paused() or \
                self.sync_server.is_project_paused(project_name):
                 icon = self._get_icon("paused")
