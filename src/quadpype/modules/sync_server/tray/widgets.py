@@ -115,12 +115,14 @@ class SyncProjectListWidget(QtWidgets.QWidget):
         self._selection_changed = False
 
     def _refresh_project_list(self):
-        if not self.project_available_names:
-            project_docs = get_projects(
-                inactive=not self.show_only_enabled,
-                fields=["name", "data.active"]
-            )
-            self.project_available_names = [p["name"] for p in filter_projects_by_assignee(project_docs)]
+        if self.project_available_names:
+            return
+        project_docs = get_projects(
+            inactive=not self.show_only_enabled,
+            fields=["name", "data.active"]
+        )
+        self.project_available_names = [p["name"] for p in
+                                        filter_projects_by_assignee(project_docs)]
 
     def refresh(self):
         selected_index = None
