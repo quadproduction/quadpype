@@ -9,6 +9,7 @@ from pathlib import Path
 import appdirs
 from qtpy import QtCore, QtGui
 import qtawesome
+from quadpype.tools.utils.filter import filter_projects_by_assignee
 
 from quadpype.client import (
     get_projects,
@@ -20,6 +21,7 @@ from quadpype.lib.applications import (
     CUSTOM_LAUNCH_APP_GROUPS,
     ApplicationManager
 )
+
 from quadpype.settings import get_project_settings, APPS_SETTINGS_KEY
 from quadpype.pipeline import (
     discover_launcher_actions,
@@ -605,7 +607,9 @@ class LauncherModel(QtCore.QObject):
         current_project = self.project_name
         project_names = set()
         project_docs_by_name = {}
-        for project_doc in get_projects():
+
+        project_docs = get_projects()
+        for project_doc in filter_projects_by_assignee(project_docs):
             project_name = project_doc["name"]
             project_names.add(project_name)
             project_docs_by_name[project_name] = project_doc

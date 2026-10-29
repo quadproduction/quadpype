@@ -17,6 +17,7 @@ from quadpype.tools.loader.widgets import (
 from quadpype.tools.utils.assets_widget import MultiSelectAssetsWidget
 
 from quadpype.modules import ModulesManager
+from quadpype.tools.utils.filter import filter_projects_by_assignee
 
 module = sys.modules[__name__]
 module.window = None
@@ -200,9 +201,7 @@ class LibraryLoaderWindow(BaseToolDialog):
 
             tools_lib.center_window(self)
 
-        if not self._initial_refresh:
-            self._initial_refresh = True
-            self.refresh()
+        self.refresh()
 
     def _set_projects(self):
         # Store current project
@@ -241,7 +240,9 @@ class LibraryLoaderWindow(BaseToolDialog):
 
     def get_filtered_projects(self):
         projects = list()
-        for project in get_projects(fields=["name", "data.library_project"], summarized_retrieval=True):
+        project_docs = get_projects(fields=["name", "data.library_project"], summarized_retrieval=True)
+
+        for project in filter_projects_by_assignee(project_docs):
             is_library = project.get("data", {}).get("library_project", False)
             if (
                 (is_library and self.show_libraries) or

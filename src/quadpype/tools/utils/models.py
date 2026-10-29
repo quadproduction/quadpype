@@ -9,6 +9,7 @@ from .constants import (
     PROJECT_NAME_ROLE,
     DEFAULT_PROJECT_LABEL
 )
+from quadpype.tools.utils.filter import filter_projects_by_assignee
 
 log = logging.getLogger(__name__)
 
@@ -316,7 +317,7 @@ class ProjectModel(QtGui.QStandardItemModel):
             inactive=not self._only_active,
             fields=["name", "data.active"]
         )
-        for project_doc in project_docs:
+        for project_doc in filter_projects_by_assignee(project_docs):
             project_name = project_doc["name"]
             project_names.add(project_name)
             if project_name in self._items_by_name:
