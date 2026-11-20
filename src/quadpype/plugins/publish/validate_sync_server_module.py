@@ -3,6 +3,7 @@ from quadpype.pipeline import (
     OptionalPyblishPluginMixin
 )
 from quadpype.pipeline.publish import PublishValidationError
+from quadpype.settings import get_project_settings
 
 
 class ValidateSyncServerModule(OptionalPyblishPluginMixin,
@@ -18,7 +19,14 @@ class ValidateSyncServerModule(OptionalPyblishPluginMixin,
         if not self.is_active(context.data):
             return
 
-        self.log.info("Validating Sync Server Module")
+        project_name = context.data.get("projectName")
+        project_settings = get_project_settings(project_name)
+
+        sync_settings = project_settings["global"].get("sync_server", {})
+        if not sync_settings["enabled"]:
+            self.log.info("Sync Server is not enabled for this project.")
+            return
+
         modules = context.data.get("quadpypeModules", {})
         sync_module = modules.get("sync_server")
         if not sync_module:
